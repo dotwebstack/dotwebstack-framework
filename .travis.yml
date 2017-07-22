@@ -9,6 +9,6 @@ addons:
   sonarcloud:
     organization: dotwebstack
     token:
-      secure: $SONAR_TOKEN
+      secure: "WBtMS6v2MLuK+yNySYxZ/mMSmzB+bBNqjX6h5AH7UgjQU0g/D/Ij3KKLB9gsGJyF5QNZgBkgoyGXZrnmldObmxuVg5/YTVdVsC11BxdK4E7i9pBYouu/ThW8NMxEi100yhPOeZRn04IHuTqYSo7ipSKL7JxP3sHsD0fn6C9ajqrlrHhWBdboNWSZeGeJsR0HdNYlNH8ujaGwWqR0yAcNVa2kUeY9KOQp0lBl0W+iYLhS9IyGDs55VyHXlfPcmpLtPFzzUfsPjnHt81LS8FC7UMXzNCsM+fx8LiVmDPI6n9Meldj2f+vWBWSll8OnppkLRM/qtxE6Mmaxl30eZ5vOSlBeg4jdmw9H+8P/DZ53dTNGp659YpAzdVcTZVYGyTHsnVwuu3FAXt0Ivw7Q7XMnITdI+JIdL3SO7bFC2S6A3Q8wR/GeZ5rEslc/gDSVRgPh2wTFtPRRTkQ2NsnhOftCBxG49V8wHQ6AlgTMEgyF2bTsABRtOXN27oLqpoW+Wxn8p5j/0Ovi9QbBC9j5SdNmyj6eNc9ejgX+zL6vE0IRaAaR4tPdVALAJzxFvCxs5Fx0Mzr9EhOkyJvbMU0RN3X4GrwyF00SEDZvPBzD5ostW15jTjdyi67ZSXH6O6Al2WbuzFIaiOHZKKRLR8hI1buRKOTG1iPOCwrnryVz5iQFiH0="
 script:
   - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
