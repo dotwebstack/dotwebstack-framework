@@ -1,5 +1,5 @@
 package org.dotwebstack.framework.product;
 
-public abstract class Source {
+public interface Source {
 
 }

@@ -21,7 +21,7 @@ public class ProductConfigLoader {
 
   @PostConstruct
   public void load() {
-
+    throw new UnsupportedOperationException();
   }
 
 }
