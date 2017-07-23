@@ -17,12 +17,16 @@ public class ProductConfigurationLoaderTest {
 
   ProductRegistry productRegistry;
 
+  IRI movies, actors;
+
   @Before
   public void setUp() {
     productProperties = new ProductProperties();
     productRegistry = new ProductRegistry();
     productConfigurationLoader = new ProductConfigurationLoader(productProperties, productRegistry);
     productConfigurationLoader.setResourceLoader(null);
+    movies = SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#Movies");
+    actors = SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#Actors");
   }
 
   @Test
@@ -38,8 +42,15 @@ public class ProductConfigurationLoaderTest {
     productProperties.setConfigPath("single");
     productConfigurationLoader.loadConfiguration();
 
-    IRI movies = SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#Movies");
-    IRI actors = SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#Actors");
+    assertEquals(2, productRegistry.getNumberOfProducts());
+    assertEquals(movies, productRegistry.getProduct(movies).getIdentifier());
+    assertEquals(actors, productRegistry.getProduct(actors).getIdentifier());
+  }
+
+  @Test
+  public void testLoadMultipleConfigurationFiles() throws IOException {
+    productProperties.setConfigPath("multiple");
+    productConfigurationLoader.loadConfiguration();
 
     assertEquals(2, productRegistry.getNumberOfProducts());
     assertEquals(movies, productRegistry.getProduct(movies).getIdentifier());
