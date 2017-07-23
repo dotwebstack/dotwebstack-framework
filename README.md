@@ -8,3 +8,7 @@ An extensible full-stack framework which offers the foundation and building bloc
 
 * Travis CI: https://travis-ci.org/dotwebstack/dotwebstack-framework
 * SonarCloud: https://sonarcloud.io/dashboard/index/org.dotwebstack.framework:dotwebstack-framework
+
+## License
+
+The DotWebStack Framework is published under the [MIT License](LICENSE.md).
