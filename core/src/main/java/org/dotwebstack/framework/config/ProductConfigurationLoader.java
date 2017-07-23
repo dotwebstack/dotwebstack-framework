@@ -1,12 +1,12 @@
-package org.dotwebstack.framework.product.config;
+package org.dotwebstack.framework.config;
 
 import java.io.IOException;
 import java.io.InputStream;
 import javax.annotation.PostConstruct;
-import org.dotwebstack.framework.product.Product;
-import org.dotwebstack.framework.product.ProductRegistry;
-import org.dotwebstack.framework.product.Source;
-import org.dotwebstack.framework.product.vocabulary.ELMO;
+import org.dotwebstack.framework.Product;
+import org.dotwebstack.framework.ProductRegistry;
+import org.dotwebstack.framework.Source;
+import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;

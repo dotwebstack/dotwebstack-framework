@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.product;
+package org.dotwebstack.framework;
 
 import java.util.HashMap;
 import org.eclipse.rdf4j.model.IRI;

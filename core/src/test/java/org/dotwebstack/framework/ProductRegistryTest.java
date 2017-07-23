@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.product;
+package org.dotwebstack.framework;
 
 import static org.junit.Assert.assertEquals;
 

@@ -1,9 +1,9 @@
-package org.dotwebstack.framework.product.config;
+package org.dotwebstack.framework.config;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import org.dotwebstack.framework.product.ProductRegistry;
+import org.dotwebstack.framework.ProductRegistry;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;

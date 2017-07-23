@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.product.config;
+package org.dotwebstack.framework.config;
 
 public class ProductConfigurationException extends RuntimeException {
 

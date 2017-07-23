@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.product.vocabulary;
+package org.dotwebstack.framework.vocabulary;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
