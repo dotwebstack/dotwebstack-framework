@@ -17,6 +17,7 @@
 
   <modules>
     <module>elasticsearch</module>
+    <module>sparql</module>
   </modules>
 
 </project>
