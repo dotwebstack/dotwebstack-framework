@@ -1,4 +1,5 @@
 .DS_Store
+.checkstyle
 .classpath
 .factorypath
 .idea

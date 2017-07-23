@@ -7,4 +7,14 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "dotwebstack.product")
 public class ProductProperties {
 
+  private String configPath = "product";
+
+  public String getConfigPath() {
+    return configPath;
+  }
+
+  public void setConfigPath(String configPath) {
+    this.configPath = configPath;
+  }
+
 }

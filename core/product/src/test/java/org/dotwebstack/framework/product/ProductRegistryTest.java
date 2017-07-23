@@ -2,7 +2,8 @@ package org.dotwebstack.framework.product;
 
 import static org.junit.Assert.assertEquals;
 
-import org.dotwebstack.framework.product.config.ProductRegistry;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,16 +18,24 @@ public class ProductRegistryTest {
 
   @Test
   public void testRegisterProduct() {
-    String productName = "movies";
-    Product product = new Product(new Source() {});
-    productRegistry.registerProduct("movies", product);
+    IRI identifier =
+        SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#Movies");
+    Source source = new Source() {};
+    Product product = new Product(identifier, source);
+    productRegistry.registerProduct(product);
+    Product registeredProduct = productRegistry.getProduct(identifier);
 
-    assertEquals(product, productRegistry.getProduct(productName));
+    assertEquals(product, registeredProduct);
+    assertEquals(identifier, registeredProduct.getIdentifier());
+    assertEquals(source, registeredProduct.getSource());
+    assertEquals(1, productRegistry.getNumberOfProducts());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetProductNotFound() {
-    productRegistry.getProduct("actors");
+    IRI identifier =
+        SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#NotExisting");
+    productRegistry.getProduct(identifier);
   }
 
 }

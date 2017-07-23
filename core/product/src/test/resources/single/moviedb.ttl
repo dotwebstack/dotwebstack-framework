@@ -1,0 +1,6 @@
+@prefix product: <http://moviedb.org/product#> .
+@prefix elmo: <http://dotwebstack.org/elmo/def#> .
+
+product:Movies a elmo:Product .
+
+product:Actors a elmo:Product .
