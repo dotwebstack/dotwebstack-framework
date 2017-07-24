@@ -17,6 +17,7 @@ public final class ProductFileFormats {
   public static boolean containsExtension(String extension) {
     return formats.containsKey(extension);
   }
+
   public static RDFFormat getFormat(String extension) {
     return formats.get(extension);
   }
