@@ -16,7 +16,8 @@ public final class ELMO {
   }
 
   private ELMO() {
-    throw new UnsupportedOperationException("Vocabulary classes are not meant to be instantiated.");
+    throw new UnsupportedOperationException(
+        String.format("%s is not meant to be instantiated.", ELMO.class.getName()));
   }
 
 }
