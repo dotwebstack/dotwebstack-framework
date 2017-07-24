@@ -83,8 +83,8 @@ public class ConfigLoader implements ResourceLoaderAware {
       }
 
       try {
-        Model model = Rio.parse(configResourceStream, ELMO.NAMESPACE,
-            ConfigFileFormats.getFormat(extension));
+        Model model =
+            Rio.parse(configResourceStream, ELMO.NAMESPACE, ConfigFileFormats.getFormat(extension));
         productConfigurationModel.addAll(model);
       } catch (RDFParseException ex) {
         throw new ConfigException(ex.getMessage(), ex);
