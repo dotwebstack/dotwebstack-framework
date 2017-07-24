@@ -5,7 +5,7 @@ import java.io.InputStream;
 import javax.annotation.PostConstruct;
 import org.apache.commons.io.FilenameUtils;
 import org.dotwebstack.framework.Product;
-import org.dotwebstack.framework.ProductRegistry;
+import org.dotwebstack.framework.Registry;
 import org.dotwebstack.framework.Source;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -22,24 +22,23 @@ import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-public class ProductConfigurationLoader implements ResourceLoaderAware {
+@Service
+public class ConfigLoader implements ResourceLoaderAware {
 
-  private static final Logger logger = LoggerFactory.getLogger(ProductConfigurationLoader.class);
+  private static final Logger logger = LoggerFactory.getLogger(ConfigLoader.class);
 
-  private ProductProperties productProperties;
+  private ConfigProperties configProperties;
 
-  private ProductRegistry productRegistry;
+  private Registry registry;
 
   private ResourceLoader resourceLoader;
 
   @Autowired
-  public ProductConfigurationLoader(ProductProperties productProperties,
-      ProductRegistry productRegistry) {
-    this.productProperties = productProperties;
-    this.productRegistry = productRegistry;
+  public ConfigLoader(ConfigProperties productProperties, Registry productRegistry) {
+    this.configProperties = productProperties;
+    this.registry = productRegistry;
   }
 
   @Override
@@ -51,23 +50,21 @@ public class ProductConfigurationLoader implements ResourceLoaderAware {
   public void loadConfiguration() throws IOException {
     Resource[] resources =
         ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-            String.format("classpath:%s/**", productProperties.getConfigPath()));
+            String.format("classpath:%s/**", configProperties.getConfigPath()));
 
     if (resources.length == 0) {
       logger.info("No product configuration files found.");
       return;
     }
 
-    Model productConfigurationModel = loadResources(resources);
-    registerProducts(productConfigurationModel);
+    Model configurationModel = loadResources(resources);
+    registerProducts(configurationModel);
   }
 
   private void registerProducts(Model productConfigurationModel) {
     for (Statement typeStatement : productConfigurationModel.filter(null, RDF.TYPE, ELMO.PRODUCT)) {
       Product product = createProductFromModel((IRI) typeStatement.getSubject());
-
-      productRegistry.registerProduct(product);
-
+      registry.registerProduct(product);
       logger.debug("Loaded product \"%s\".", product.getIdentifier());
     }
   }
@@ -79,27 +76,28 @@ public class ProductConfigurationLoader implements ResourceLoaderAware {
       InputStream configResourceStream = configResource.getInputStream();
       String extension = FilenameUtils.getExtension(configResource.getFilename());
 
-      if (!ProductFileFormats.containsExtension(extension)) {
-        logger.debug("File extension not supported, ignoring file: \"%s\"",
+      if (!ConfigFileFormats.containsExtension(extension)) {
+        logger.debug("File extension not supported, ignoring file: \"%s\".",
             configResource.getFilename());
         continue;
       }
 
       try {
         Model model = Rio.parse(configResourceStream, ELMO.NAMESPACE,
-            ProductFileFormats.getFormat(extension));
-
+            ConfigFileFormats.getFormat(extension));
         productConfigurationModel.addAll(model);
       } catch (RDFParseException ex) {
-        throw new ProductConfigurationException(ex.getMessage(), ex);
+        throw new ConfigException(ex.getMessage(), ex);
+      } finally {
+        configResourceStream.close();
       }
     }
+
     return productConfigurationModel;
   }
 
   private Product createProductFromModel(IRI identifier) {
-    return new Product(identifier, new Source() {
-    });
+    return new Product(identifier, new Source() {});
   }
 
 }

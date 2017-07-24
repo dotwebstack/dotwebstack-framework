@@ -11,7 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProductRegistryTest {
+public class RegistryTest {
 
   @Mock
   IRI identifier;
@@ -19,31 +19,31 @@ public class ProductRegistryTest {
   @Mock
   Product product;
 
-  private ProductRegistry productRegistry;
+  private Registry registry;
 
   @Before
   public void setUp() {
-    productRegistry = new ProductRegistry();
+    registry = new Registry();
   }
 
   @Test
   public void testRegisterProduct() {
     // Arrange
     when(product.getIdentifier()).thenReturn(identifier);
-    productRegistry.registerProduct(product);
+    registry.registerProduct(product);
 
     // Act
-    Product registeredProduct = productRegistry.getProduct(identifier);
+    Product registeredProduct = registry.getProduct(identifier);
 
     // Assert
     assertEquals(product, registeredProduct);
-    assertEquals(1, productRegistry.getNumberOfProducts());
+    assertEquals(1, registry.getNumberOfProducts());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetProductNotFound() {
     // Act & Assert
-    productRegistry.getProduct(identifier);
+    registry.getProduct(identifier);
   }
 
 }

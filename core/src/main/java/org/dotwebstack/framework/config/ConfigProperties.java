@@ -1,13 +1,13 @@
 package org.dotwebstack.framework.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-@ConfigurationProperties(prefix = "dotwebstack.product")
-public class ProductProperties {
+@Service
+@ConfigurationProperties(prefix = "dotwebstack")
+public class ConfigProperties {
 
-  private String configPath = "product";
+  private String configPath = "dotwebstack";
 
   public String getConfigPath() {
     return configPath;

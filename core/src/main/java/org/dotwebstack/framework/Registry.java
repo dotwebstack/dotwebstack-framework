@@ -2,10 +2,10 @@ package org.dotwebstack.framework;
 
 import java.util.HashMap;
 import org.eclipse.rdf4j.model.IRI;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
-public class ProductRegistry {
+@Service
+public class Registry {
 
   private HashMap<IRI, Product> products = new HashMap<>();
 

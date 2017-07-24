@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.List;
 import org.dotwebstack.framework.Product;
-import org.dotwebstack.framework.ProductRegistry;
+import org.dotwebstack.framework.Registry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,45 +22,47 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ProductConfigurationLoaderTest {
+public class ConfigLoaderTest {
 
   @Mock
-  ProductProperties productProperties;
+  ConfigProperties configProperties;
 
   @Mock
-  ProductRegistry productRegistry;
+  Registry registry;
 
-  private ProductConfigurationLoader productConfigurationLoader;
+  private ConfigLoader configLoader;
 
   @Before
   public void setUp() {
-    productConfigurationLoader = new ProductConfigurationLoader(productProperties, productRegistry);
+    configLoader = new ConfigLoader(configProperties, registry);
   }
 
   @Test
   public void testLoadEmptyConfiguration() throws IOException {
     // Arrange
-    when(productProperties.getConfigPath()).thenReturn("empty");
+    when(configProperties.getConfigPath()).thenReturn("config/empty");
 
     // Act
-    productConfigurationLoader.loadConfiguration();
+    configLoader.loadConfiguration();
 
     // Assert
-    assertEquals(0, productRegistry.getNumberOfProducts());
+    assertEquals(0, registry.getNumberOfProducts());
   }
 
   @Test
   public void testLoadSingleConfigurationFile() throws IOException {
     // Arrange
-    when(productProperties.getConfigPath()).thenReturn("single");
+    when(configProperties.getConfigPath()).thenReturn("config/single");
 
     // Act
-    productConfigurationLoader.loadConfiguration();
+    configLoader.loadConfiguration();
 
     // Assert
     ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
-    verify(productRegistry, times(2)).registerProduct(captureProducts.capture());
-    List<String> identifiers = captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(toList());
+    verify(registry, times(2)).registerProduct(captureProducts.capture());
+    List<String> identifiers =
+        captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(
+            toList());
 
     assertThat("Should contain both movies and actors", identifiers,
         hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
@@ -69,15 +71,17 @@ public class ProductConfigurationLoaderTest {
   @Test
   public void testLoadMultipleConfigurationFiles() throws IOException {
     // Arrange
-    when(productProperties.getConfigPath()).thenReturn("multiple");
+    when(configProperties.getConfigPath()).thenReturn("config/multiple");
 
     // Act
-    productConfigurationLoader.loadConfiguration();
+    configLoader.loadConfiguration();
 
     // Assert
     ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
-    verify(productRegistry, times(2)).registerProduct(captureProducts.capture());
-    List<String> identifiers = captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(toList());
+    verify(registry, times(2)).registerProduct(captureProducts.capture());
+    List<String> identifiers =
+        captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(
+            toList());
 
     assertThat("Should contain both movies and actors", identifiers,
         hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
@@ -86,43 +90,45 @@ public class ProductConfigurationLoaderTest {
   @Test(expected = IOException.class)
   public void testLoadNonExistingPath() throws IOException {
     // Arrange
-    when(productProperties.getConfigPath()).thenReturn("non-existing");
+    when(configProperties.getConfigPath()).thenReturn("non-existing");
 
     // Act
-    productConfigurationLoader.loadConfiguration();
+    configLoader.loadConfiguration();
 
     // Assert
-    verify(productRegistry, never()).registerProduct(any());
+    verify(registry, never()).registerProduct(any());
   }
 
   @Test
   public void testLoadXmlConfigurationFile() throws IOException {
     // Arrange
-    when(productProperties.getConfigPath()).thenReturn("rdf-xml");
+    when(configProperties.getConfigPath()).thenReturn("config/rdf-xml");
 
     // Act
-    productConfigurationLoader.loadConfiguration();
+    configLoader.loadConfiguration();
 
     // Assert
     ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
-    verify(productRegistry, times(2)).registerProduct(captureProducts.capture());
-    List<String> identifiers = captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(toList());
+    verify(registry, times(2)).registerProduct(captureProducts.capture());
+    List<String> identifiers =
+        captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(
+            toList());
 
     assertThat("Should contain both movies and actors", identifiers,
         hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
   }
 
 
-  @Test(expected = ProductConfigurationException.class)
+  @Test(expected = ConfigException.class)
   public void testLoadInvalidFormat() throws IOException {
     // Arrange
-    when(productProperties.getConfigPath()).thenReturn("invalid");
+    when(configProperties.getConfigPath()).thenReturn("config/invalid");
 
     // Act
-    productConfigurationLoader.loadConfiguration();
+    configLoader.loadConfiguration();
 
     // Assert
-    verify(productRegistry, never()).registerProduct(any());
+    verify(registry, never()).registerProduct(any());
   }
 
 }

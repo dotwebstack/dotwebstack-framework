@@ -6,7 +6,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public final class ELMO {
 
-  public static final String NAMESPACE = "http://dotwebstack.org/elmo/def#";
+  public static final String NAMESPACE = "http://bp4mc2.org/elmo/def#";
 
   public static final IRI PRODUCT;
 
