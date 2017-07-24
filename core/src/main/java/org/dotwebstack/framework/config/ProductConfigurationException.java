@@ -7,5 +7,4 @@ public class ProductConfigurationException extends RuntimeException {
   public ProductConfigurationException(String message, Throwable cause) {
     super(message, cause);
   }
-
 }

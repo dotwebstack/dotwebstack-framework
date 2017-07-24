@@ -1,18 +1,10 @@
 package org.dotwebstack.framework.config;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.PostConstruct;
 import org.apache.commons.io.FilenameUtils;
 import org.dotwebstack.framework.Product;
 import org.dotwebstack.framework.ProductRegistry;
 import org.dotwebstack.framework.Source;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -20,9 +12,7 @@ import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
-import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
-import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +21,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class ProductConfigurationLoader implements ResourceLoaderAware {
@@ -89,15 +85,16 @@ public class ProductConfigurationLoader implements ResourceLoaderAware {
       InputStream configResourceStream = configResource.getInputStream();
       String extension = FilenameUtils.getExtension(configResource.getFilename());
 
-      if(!fileFormats.containsKey(extension)) {
-        logger.debug("File extension not supported, ignoring file: \"%s\"", configResource.getFilename());
+      if (!fileFormats.containsKey(extension)) {
+        logger.debug("File extension not supported, ignoring file: \"%s\"",
+            configResource.getFilename());
         continue;
       }
 
       try {
         Model model = Rio.parse(configResourceStream, ELMO.NAMESPACE, fileFormats.get(extension));
         productConfigurationModel.addAll(model);
-      } catch(RDFParseException ex) {
+      } catch (RDFParseException ex) {
         throw new ProductConfigurationException(ex.getMessage(), ex);
       }
     }
@@ -105,7 +102,8 @@ public class ProductConfigurationLoader implements ResourceLoaderAware {
   }
 
   private Product createProductFromModel(IRI identifier) {
-    return new Product(identifier, new Source() {});
+    return new Product(identifier, new Source() {
+    });
   }
 
   private Map<String, RDFFormat> getFileFormats() {
