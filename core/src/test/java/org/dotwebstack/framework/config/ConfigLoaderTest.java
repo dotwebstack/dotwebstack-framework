@@ -82,6 +82,7 @@ public class ConfigLoaderTest {
     // Arrange
     Resource actorsResource = new ClassPathResource("config/cinemadb.ttl");
     Resource moviesResource = new ClassPathResource("config/moviedb.ttl");
+    Resource nonrdfResource = new ClassPathResource("config/nonrdf.md");
     when(resourceLoader.getResources(any(String.class))).thenReturn(
         new Resource[] {actorsResource, moviesResource});
 
