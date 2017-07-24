@@ -101,4 +101,5 @@ public class ProductConfigurationLoader implements ResourceLoaderAware {
     return new Product(identifier, new Source() {
     });
   }
+
 }

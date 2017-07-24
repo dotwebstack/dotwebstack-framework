@@ -39,25 +39,25 @@ public class ProductConfigurationLoaderTest {
 
   @Test
   public void testLoadEmptyConfiguration() throws IOException {
-    //arrange
+    // Arrange
     when(productProperties.getConfigPath()).thenReturn("empty");
 
-    //act
+    // Act
     productConfigurationLoader.loadConfiguration();
 
-    //assert
+    // Assert
     assertEquals(0, productRegistry.getNumberOfProducts());
   }
 
   @Test
   public void testLoadSingleConfigurationFile() throws IOException {
-    //arrange
+    // Arrange
     when(productProperties.getConfigPath()).thenReturn("single");
 
-    //act
+    // Act
     productConfigurationLoader.loadConfiguration();
 
-    //assert
+    // Assert
     ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
     verify(productRegistry, times(2)).registerProduct(captureProducts.capture());
     List<String> identifiers = captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(toList());
@@ -68,13 +68,13 @@ public class ProductConfigurationLoaderTest {
 
   @Test
   public void testLoadMultipleConfigurationFiles() throws IOException {
-    //arrange
+    // Arrange
     when(productProperties.getConfigPath()).thenReturn("multiple");
 
-    //act
+    // Act
     productConfigurationLoader.loadConfiguration();
 
-    //assert
+    // Assert
     ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
     verify(productRegistry, times(2)).registerProduct(captureProducts.capture());
     List<String> identifiers = captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(toList());
@@ -85,25 +85,25 @@ public class ProductConfigurationLoaderTest {
 
   @Test(expected = IOException.class)
   public void testLoadNonExistingPath() throws IOException {
-    //arrange
+    // Arrange
     when(productProperties.getConfigPath()).thenReturn("non-existing");
 
-    //act
+    // Act
     productConfigurationLoader.loadConfiguration();
 
-    //assert
+    // Assert
     verify(productRegistry, never()).registerProduct(any());
   }
 
   @Test
   public void testLoadXmlConfigurationFile() throws IOException {
-    //arrange
+    // Arrange
     when(productProperties.getConfigPath()).thenReturn("rdf-xml");
 
-    //act
+    // Act
     productConfigurationLoader.loadConfiguration();
 
-    //assert
+    // Assert
     ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
     verify(productRegistry, times(2)).registerProduct(captureProducts.capture());
     List<String> identifiers = captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(toList());
@@ -115,13 +115,13 @@ public class ProductConfigurationLoaderTest {
 
   @Test(expected = ProductConfigurationException.class)
   public void testLoadInvalidFormat() throws IOException {
-    //arrange
+    // Arrange
     when(productProperties.getConfigPath()).thenReturn("invalid");
 
-    //act
+    // Act
     productConfigurationLoader.loadConfiguration();
 
-    //assert
+    // Assert
     verify(productRegistry, never()).registerProduct(any());
   }
 

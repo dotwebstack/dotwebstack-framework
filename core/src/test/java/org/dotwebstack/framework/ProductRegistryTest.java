@@ -28,21 +28,21 @@ public class ProductRegistryTest {
 
   @Test
   public void testRegisterProduct() {
-    //arrange
+    // Arrange
     when(product.getIdentifier()).thenReturn(identifier);
     productRegistry.registerProduct(product);
 
-    //act
+    // Act
     Product registeredProduct = productRegistry.getProduct(identifier);
 
-    //assert
+    // Assert
     assertEquals(product, registeredProduct);
     assertEquals(1, productRegistry.getNumberOfProducts());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetProductNotFound() {
-    //act & assert
+    // Act & Assert
     productRegistry.getProduct(identifier);
   }
 
