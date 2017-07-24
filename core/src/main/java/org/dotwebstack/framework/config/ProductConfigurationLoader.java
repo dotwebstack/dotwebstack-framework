@@ -1,5 +1,10 @@
 package org.dotwebstack.framework.config;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.PostConstruct;
 import org.apache.commons.io.FilenameUtils;
 import org.dotwebstack.framework.Product;
 import org.dotwebstack.framework.ProductRegistry;
@@ -21,12 +26,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 public class ProductConfigurationLoader implements ResourceLoaderAware {
