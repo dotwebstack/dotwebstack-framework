@@ -1,15 +1,25 @@
 package org.dotwebstack.framework;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ProductRegistryTest {
 
-  ProductRegistry productRegistry;
+  @Mock
+  IRI identifier;
+
+  @Mock
+  Product product;
+
+  private ProductRegistry productRegistry;
 
   @Before
   public void setUp() {
@@ -18,23 +28,21 @@ public class ProductRegistryTest {
 
   @Test
   public void testRegisterProduct() {
-    IRI identifier =
-        SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#Movies");
-    Source source = new Source() {};
-    Product product = new Product(identifier, source);
+    // Arrange
+    when(product.getIdentifier()).thenReturn(identifier);
     productRegistry.registerProduct(product);
+
+    // Act
     Product registeredProduct = productRegistry.getProduct(identifier);
 
+    // Assert
     assertEquals(product, registeredProduct);
-    assertEquals(identifier, registeredProduct.getIdentifier());
-    assertEquals(source, registeredProduct.getSource());
     assertEquals(1, productRegistry.getNumberOfProducts());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetProductNotFound() {
-    IRI identifier =
-        SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#NotExisting");
+    // Act & Assert
     productRegistry.getProduct(identifier);
   }
 

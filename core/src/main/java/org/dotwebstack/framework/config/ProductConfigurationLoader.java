@@ -3,20 +3,18 @@ package org.dotwebstack.framework.config;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.annotation.PostConstruct;
+import org.apache.commons.io.FilenameUtils;
 import org.dotwebstack.framework.Product;
 import org.dotwebstack.framework.ProductRegistry;
 import org.dotwebstack.framework.Source;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
-import org.eclipse.rdf4j.rio.helpers.StatementCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,31 +51,18 @@ public class ProductConfigurationLoader implements ResourceLoaderAware {
   public void loadConfiguration() throws IOException {
     Resource[] resources =
         ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-            String.format("classpath:%s/*.ttl", productProperties.getConfigPath()));
+            String.format("classpath:%s/**", productProperties.getConfigPath()));
 
     if (resources.length == 0) {
       logger.info("No product configuration files found.");
       return;
     }
 
-    Model productConfigurationModel = new LinkedHashModel();
-    RDFParser turtleParser = Rio.createParser(RDFFormat.TURTLE);
-    turtleParser.setRDFHandler(new StatementCollector(productConfigurationModel));
+    Model productConfigurationModel = loadResources(resources);
+    registerProducts(productConfigurationModel);
+  }
 
-    for (Resource configResource : resources) {
-      InputStream configResourceStream = configResource.getInputStream();
-
-      try {
-        turtleParser.parse(configResourceStream, "#");
-      } catch (RDF4JException e) {
-        throw new ProductConfigurationException(e.getMessage());
-      } finally {
-        configResourceStream.close();
-      }
-
-      logger.info("Loaded configuration file \"%s\".", configResource.getFilename());
-    }
-
+  private void registerProducts(Model productConfigurationModel) {
     for (Statement typeStatement : productConfigurationModel.filter(null, RDF.TYPE, ELMO.PRODUCT)) {
       Product product = createProductFromModel((IRI) typeStatement.getSubject());
 
@@ -87,8 +72,34 @@ public class ProductConfigurationLoader implements ResourceLoaderAware {
     }
   }
 
+  private Model loadResources(Resource[] resources) throws IOException {
+    Model productConfigurationModel = new LinkedHashModel();
+
+    for (Resource configResource : resources) {
+      InputStream configResourceStream = configResource.getInputStream();
+      String extension = FilenameUtils.getExtension(configResource.getFilename());
+
+      if (!ProductFileFormats.containsExtension(extension)) {
+        logger.debug("File extension not supported, ignoring file: \"%s\"",
+            configResource.getFilename());
+        continue;
+      }
+
+      try {
+        Model model = Rio.parse(configResourceStream, ELMO.NAMESPACE,
+            ProductFileFormats.getFormat(extension));
+
+        productConfigurationModel.addAll(model);
+      } catch (RDFParseException ex) {
+        throw new ProductConfigurationException(ex.getMessage(), ex);
+      }
+    }
+    return productConfigurationModel;
+  }
+
   private Product createProductFromModel(IRI identifier) {
-    return new Product(identifier, new Source() {});
+    return new Product(identifier, new Source() {
+    });
   }
 
 }

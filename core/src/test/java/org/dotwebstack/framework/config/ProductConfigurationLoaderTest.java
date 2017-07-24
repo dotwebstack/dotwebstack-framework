@@ -1,72 +1,128 @@
 package org.dotwebstack.framework.config;
 
+import static java.util.stream.Collectors.toList;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.List;
+import org.dotwebstack.framework.Product;
 import org.dotwebstack.framework.ProductRegistry;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ProductConfigurationLoaderTest {
 
-  ProductConfigurationLoader productConfigurationLoader;
-
+  @Mock
   ProductProperties productProperties;
 
+  @Mock
   ProductRegistry productRegistry;
 
-  IRI movies, actors;
+  private ProductConfigurationLoader productConfigurationLoader;
 
   @Before
   public void setUp() {
-    productProperties = new ProductProperties();
-    productRegistry = new ProductRegistry();
     productConfigurationLoader = new ProductConfigurationLoader(productProperties, productRegistry);
-    productConfigurationLoader.setResourceLoader(null);
-    movies = SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#Movies");
-    actors = SimpleValueFactory.getInstance().createIRI("http://moviedb.org/product#Actors");
   }
 
   @Test
   public void testLoadEmptyConfiguration() throws IOException {
-    productProperties.setConfigPath("empty");
+    // Arrange
+    when(productProperties.getConfigPath()).thenReturn("empty");
+
+    // Act
     productConfigurationLoader.loadConfiguration();
 
+    // Assert
     assertEquals(0, productRegistry.getNumberOfProducts());
   }
 
   @Test
   public void testLoadSingleConfigurationFile() throws IOException {
-    productProperties.setConfigPath("single");
+    // Arrange
+    when(productProperties.getConfigPath()).thenReturn("single");
+
+    // Act
     productConfigurationLoader.loadConfiguration();
 
-    assertEquals(2, productRegistry.getNumberOfProducts());
-    assertEquals(movies, productRegistry.getProduct(movies).getIdentifier());
-    assertEquals(actors, productRegistry.getProduct(actors).getIdentifier());
+    // Assert
+    ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
+    verify(productRegistry, times(2)).registerProduct(captureProducts.capture());
+    List<String> identifiers = captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(toList());
+
+    assertThat("Should contain both movies and actors", identifiers,
+        hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
   }
 
   @Test
   public void testLoadMultipleConfigurationFiles() throws IOException {
-    productProperties.setConfigPath("multiple");
+    // Arrange
+    when(productProperties.getConfigPath()).thenReturn("multiple");
+
+    // Act
     productConfigurationLoader.loadConfiguration();
 
-    assertEquals(2, productRegistry.getNumberOfProducts());
-    assertEquals(movies, productRegistry.getProduct(movies).getIdentifier());
-    assertEquals(actors, productRegistry.getProduct(actors).getIdentifier());
+    // Assert
+    ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
+    verify(productRegistry, times(2)).registerProduct(captureProducts.capture());
+    List<String> identifiers = captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(toList());
+
+    assertThat("Should contain both movies and actors", identifiers,
+        hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
   }
 
   @Test(expected = IOException.class)
   public void testLoadNonExistingPath() throws IOException {
-    productProperties.setConfigPath("non-existing");
+    // Arrange
+    when(productProperties.getConfigPath()).thenReturn("non-existing");
+
+    // Act
     productConfigurationLoader.loadConfiguration();
+
+    // Assert
+    verify(productRegistry, never()).registerProduct(any());
   }
+
+  @Test
+  public void testLoadXmlConfigurationFile() throws IOException {
+    // Arrange
+    when(productProperties.getConfigPath()).thenReturn("rdf-xml");
+
+    // Act
+    productConfigurationLoader.loadConfiguration();
+
+    // Assert
+    ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
+    verify(productRegistry, times(2)).registerProduct(captureProducts.capture());
+    List<String> identifiers = captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(toList());
+
+    assertThat("Should contain both movies and actors", identifiers,
+        hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
+  }
+
 
   @Test(expected = ProductConfigurationException.class)
   public void testLoadInvalidFormat() throws IOException {
-    productProperties.setConfigPath("invalid");
+    // Arrange
+    when(productProperties.getConfigPath()).thenReturn("invalid");
+
+    // Act
     productConfigurationLoader.loadConfiguration();
+
+    // Assert
+    verify(productRegistry, never()).registerProduct(any());
   }
 
 }
