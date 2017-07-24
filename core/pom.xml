@@ -41,7 +41,7 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.rdf4j</groupId>
-      <artifactId>rdf4j-rio-rdfjson</artifactId>
+      <artifactId>rdf4j-rio-jsonld</artifactId>
     </dependency>
 
     <dependency>

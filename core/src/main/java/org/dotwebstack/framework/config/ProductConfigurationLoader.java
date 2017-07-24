@@ -2,8 +2,6 @@ package org.dotwebstack.framework.config;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.apache.commons.io.FilenameUtils;
 import org.dotwebstack.framework.Product;
@@ -15,7 +13,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.Rio;
 import org.slf4j.Logger;
@@ -76,22 +73,22 @@ public class ProductConfigurationLoader implements ResourceLoaderAware {
   }
 
   private Model loadResources(Resource[] resources) throws IOException {
-    Map<String, RDFFormat> fileFormats = getFileFormats();
-
     Model productConfigurationModel = new LinkedHashModel();
 
     for (Resource configResource : resources) {
       InputStream configResourceStream = configResource.getInputStream();
       String extension = FilenameUtils.getExtension(configResource.getFilename());
 
-      if (!fileFormats.containsKey(extension)) {
+      if (!ProductFileFormats.containsExtension(extension)) {
         logger.debug("File extension not supported, ignoring file: \"%s\"",
             configResource.getFilename());
         continue;
       }
 
       try {
-        Model model = Rio.parse(configResourceStream, ELMO.NAMESPACE, fileFormats.get(extension));
+        Model model = Rio.parse(configResourceStream, ELMO.NAMESPACE,
+            ProductFileFormats.getFormat(extension));
+
         productConfigurationModel.addAll(model);
       } catch (RDFParseException ex) {
         throw new ProductConfigurationException(ex.getMessage(), ex);
@@ -103,13 +100,5 @@ public class ProductConfigurationLoader implements ResourceLoaderAware {
   private Product createProductFromModel(IRI identifier) {
     return new Product(identifier, new Source() {
     });
-  }
-
-  private Map<String, RDFFormat> getFileFormats() {
-    Map<String, RDFFormat> formatMap = new HashMap<>();
-    formatMap.put("ttl", RDFFormat.TURTLE);
-    formatMap.put("xml", RDFFormat.RDFXML);
-    formatMap.put("json", RDFFormat.RDFJSON);
-    return formatMap;
   }
 }
