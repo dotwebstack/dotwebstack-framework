@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductRegistry {
 
-  HashMap<IRI, Product> products = new HashMap<>();
+  private HashMap<IRI, Product> products = new HashMap<>();
 
   public void registerProduct(Product product) {
     products.put(product.getIdentifier(), product);
