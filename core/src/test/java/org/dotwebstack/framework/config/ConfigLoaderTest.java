@@ -60,8 +60,7 @@ public class ConfigLoaderTest {
   public void testLoadSingleConfigurationFile() throws IOException {
     // Arrange
     Resource moviesResource = new ClassPathResource("config/moviedb.ttl");
-    when(resourceLoader.getResources(any(String.class))).thenReturn(
-        new Resource[] {moviesResource});
+    when(resourceLoader.getResources(any())).thenReturn(new Resource[] {moviesResource});
 
     // Act
     configLoader.loadConfiguration();
@@ -83,7 +82,7 @@ public class ConfigLoaderTest {
     Resource actorsResource = new ClassPathResource("config/cinemadb.ttl");
     Resource moviesResource = new ClassPathResource("config/moviedb.ttl");
     Resource nonrdfResource = new ClassPathResource("config/nonrdf.md");
-    when(resourceLoader.getResources(any(String.class))).thenReturn(
+    when(resourceLoader.getResources(any())).thenReturn(
         new Resource[] {actorsResource, moviesResource, nonrdfResource});
 
     // Act
