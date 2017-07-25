@@ -1,6 +1,0 @@
-@prefix product: <http://moviedb.org/product#> .
-@prefix elmo: <http://bp4mc2.org/elmo/def#> .
-
-product:Movies a elmo:Product .
-
-product:Actors a elmo:Product .

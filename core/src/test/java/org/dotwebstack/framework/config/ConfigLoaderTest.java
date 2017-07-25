@@ -20,6 +20,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourcePatternResolver;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigLoaderTest {
@@ -30,17 +33,21 @@ public class ConfigLoaderTest {
   @Mock
   Registry registry;
 
+  @Mock
+  ResourcePatternResolver resourceLoader;
+
   private ConfigLoader configLoader;
 
   @Before
   public void setUp() {
     configLoader = new ConfigLoader(configProperties, registry);
+    configLoader.setResourceLoader(resourceLoader);
   }
 
   @Test
   public void testLoadEmptyConfiguration() throws IOException {
     // Arrange
-    when(configProperties.getConfigPath()).thenReturn("config/empty");
+    when(resourceLoader.getResources(any(String.class))).thenReturn(new Resource[0]);
 
     // Act
     configLoader.loadConfiguration();
@@ -52,7 +59,8 @@ public class ConfigLoaderTest {
   @Test
   public void testLoadSingleConfigurationFile() throws IOException {
     // Arrange
-    when(configProperties.getConfigPath()).thenReturn("config/single");
+    Resource moviesResource = new ClassPathResource("config/moviedb.ttl");
+    when(resourceLoader.getResources(any())).thenReturn(new Resource[] {moviesResource});
 
     // Act
     configLoader.loadConfiguration();
@@ -64,33 +72,38 @@ public class ConfigLoaderTest {
         captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(
             toList());
 
-    assertThat("Should contain both movies and actors", identifiers,
+    assertThat("Should contain actors and movies", identifiers,
         hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
   }
 
   @Test
   public void testLoadMultipleConfigurationFiles() throws IOException {
     // Arrange
-    when(configProperties.getConfigPath()).thenReturn("config/multiple");
+    Resource actorsResource = new ClassPathResource("config/cinemadb.ttl");
+    Resource moviesResource = new ClassPathResource("config/moviedb.ttl");
+    Resource nonrdfResource = new ClassPathResource("config/nonrdf.md");
+    when(resourceLoader.getResources(any())).thenReturn(
+        new Resource[] {actorsResource, moviesResource, nonrdfResource});
 
     // Act
     configLoader.loadConfiguration();
 
     // Assert
     ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
-    verify(registry, times(2)).registerProduct(captureProducts.capture());
+    verify(registry, times(3)).registerProduct(captureProducts.capture());
     List<String> identifiers =
         captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(
             toList());
 
     assertThat("Should contain both movies and actors", identifiers,
-        hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
+        hasItems("http://cinemadb.org/product#Cinemas", "http://moviedb.org/product#Actors",
+            "http://moviedb.org/product#Movies"));
   }
 
   @Test(expected = IOException.class)
   public void testLoadNonExistingPath() throws IOException {
     // Arrange
-    when(configProperties.getConfigPath()).thenReturn("non-existing");
+    when(resourceLoader.getResources(any(String.class))).thenThrow(IOException.class);
 
     // Act
     configLoader.loadConfiguration();
@@ -102,7 +115,9 @@ public class ConfigLoaderTest {
   @Test
   public void testLoadXmlConfigurationFile() throws IOException {
     // Arrange
-    when(configProperties.getConfigPath()).thenReturn("config/rdf-xml");
+    Resource moviesResource = new ClassPathResource("config/moviedb.xml");
+    when(resourceLoader.getResources(any(String.class))).thenReturn(
+        new Resource[] {moviesResource});
 
     // Act
     configLoader.loadConfiguration();
@@ -122,7 +137,9 @@ public class ConfigLoaderTest {
   @Test(expected = ConfigException.class)
   public void testLoadInvalidFormat() throws IOException {
     // Arrange
-    when(configProperties.getConfigPath()).thenReturn("config/invalid");
+    Resource invalidResource = new ClassPathResource("config/invalid.ttl");
+    when(resourceLoader.getResources(any(String.class))).thenReturn(
+        new Resource[] {invalidResource});
 
     // Act
     configLoader.loadConfiguration();

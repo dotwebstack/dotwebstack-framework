@@ -2,3 +2,4 @@
 @prefix elmo: <http://bp4mc2.org/elmo/def#> .
 
 product:Actors a elmo:Product .
+product:Movies a elmo:Product .
