@@ -10,7 +10,7 @@ public final class ConfigFileFormats {
 
   private ConfigFileFormats() {
     throw new UnsupportedOperationException(
-        String.format("%s is not meant to be instantiated.", ConfigProperties.class.getName()));
+        String.format("%s is not meant to be instantiated.", ConfigFileFormats.class.getName()));
   }
 
   public static boolean containsExtension(String extension) {
