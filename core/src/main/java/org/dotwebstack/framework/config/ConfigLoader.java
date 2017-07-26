@@ -36,9 +36,9 @@ public class ConfigLoader implements ResourceLoaderAware {
   private ResourceLoader resourceLoader;
 
   @Autowired
-  public ConfigLoader(ConfigProperties productProperties, Registry productRegistry) {
-    this.configProperties = productProperties;
-    this.registry = productRegistry;
+  public ConfigLoader(ConfigProperties configProperties, Registry registry) {
+    this.configProperties = configProperties;
+    this.registry = registry;
   }
 
   @Override
@@ -53,7 +53,7 @@ public class ConfigLoader implements ResourceLoaderAware {
             String.format("classpath:%s/**", configProperties.getConfigPath()));
 
     if (resources.length == 0) {
-      logger.info("No product configuration files found.");
+      logger.info("No configuration files found.");
       return;
     }
 
@@ -94,7 +94,7 @@ public class ConfigLoader implements ResourceLoaderAware {
       InformationProduct product =
           createInformationProductFromModel((IRI) typeStatement.getSubject());
       registry.registerInformationProduct(product);
-      logger.debug("Loaded product \"%s\".", product.getIdentifier());
+      logger.debug("Loaded information product \"%s\".", product.getIdentifier());
     }
   }
 
