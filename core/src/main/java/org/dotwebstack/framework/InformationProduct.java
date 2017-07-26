@@ -2,13 +2,13 @@ package org.dotwebstack.framework;
 
 import org.eclipse.rdf4j.model.IRI;
 
-public class Product {
+public class InformationProduct {
 
   private IRI identifier;
 
   private Source source;
 
-  public Product(IRI identifier, Source source) {
+  public InformationProduct(IRI identifier, Source source) {
     this.identifier = identifier;
     this.source = source;
   }

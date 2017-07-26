@@ -7,23 +7,23 @@ import org.springframework.stereotype.Service;
 @Service
 public class Registry {
 
-  private HashMap<IRI, Product> products = new HashMap<>();
+  private HashMap<IRI, InformationProduct> informationProducts = new HashMap<>();
 
-  public void registerProduct(Product product) {
-    products.put(product.getIdentifier(), product);
+  public void registerInformationProduct(InformationProduct product) {
+    informationProducts.put(product.getIdentifier(), product);
   }
 
-  public Product getProduct(IRI identifier) {
-    if (!products.containsKey(identifier)) {
+  public InformationProduct getInformationProduct(IRI identifier) {
+    if (!informationProducts.containsKey(identifier)) {
       throw new IllegalArgumentException(
           String.format("Product with name \"%s\" not found.", identifier.toString()));
     }
 
-    return products.get(identifier);
+    return informationProducts.get(identifier);
   }
 
-  public int getNumberOfProducts() {
-    return products.size();
+  public int getNumberOfInformationProducts() {
+    return informationProducts.size();
   }
 
 }

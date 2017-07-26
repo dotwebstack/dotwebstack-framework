@@ -1,4 +1,4 @@
-@prefix product: <http://cinemadb.org/product#> .
+@prefix product: <http://cinemadb.org#> .
 @prefix elmo: <http://bp4mc2.org/elmo/def#> .
 
-product:Cinemas a elmo:Product .
+product:Cinemas a elmo:InformationProduct .

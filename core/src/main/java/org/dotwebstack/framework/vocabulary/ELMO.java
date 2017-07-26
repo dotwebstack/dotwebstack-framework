@@ -8,11 +8,11 @@ public final class ELMO {
 
   public static final String NAMESPACE = "http://bp4mc2.org/elmo/def#";
 
-  public static final IRI PRODUCT;
+  public static final IRI INFORMATION_PRODUCT;
 
   static {
     ValueFactory factory = SimpleValueFactory.getInstance();
-    PRODUCT = factory.createIRI(ELMO.NAMESPACE, "Product");
+    INFORMATION_PRODUCT = factory.createIRI(ELMO.NAMESPACE, "InformationProduct");
   }
 
   private ELMO() {

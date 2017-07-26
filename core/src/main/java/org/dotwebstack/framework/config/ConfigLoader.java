@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import javax.annotation.PostConstruct;
 import org.apache.commons.io.FilenameUtils;
-import org.dotwebstack.framework.Product;
+import org.dotwebstack.framework.InformationProduct;
 import org.dotwebstack.framework.Registry;
 import org.dotwebstack.framework.Source;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -58,13 +58,15 @@ public class ConfigLoader implements ResourceLoaderAware {
     }
 
     Model configurationModel = loadResources(resources);
-    registerProducts(configurationModel);
+    registerInformationProducts(configurationModel);
   }
 
-  private void registerProducts(Model productConfigurationModel) {
-    for (Statement typeStatement : productConfigurationModel.filter(null, RDF.TYPE, ELMO.PRODUCT)) {
-      Product product = createProductFromModel((IRI) typeStatement.getSubject());
-      registry.registerProduct(product);
+  private void registerInformationProducts(Model productConfigurationModel) {
+    for (Statement typeStatement : productConfigurationModel.filter(null, RDF.TYPE,
+        ELMO.INFORMATION_PRODUCT)) {
+      InformationProduct product =
+          createInformationProductFromModel((IRI) typeStatement.getSubject());
+      registry.registerInformationProduct(product);
       logger.debug("Loaded product \"%s\".", product.getIdentifier());
     }
   }
@@ -96,8 +98,8 @@ public class ConfigLoader implements ResourceLoaderAware {
     return productConfigurationModel;
   }
 
-  private Product createProductFromModel(IRI identifier) {
-    return new Product(identifier, new Source() {});
+  private InformationProduct createInformationProductFromModel(IRI identifier) {
+    return new InformationProduct(identifier, new Source() {});
   }
 
 }

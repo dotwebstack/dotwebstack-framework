@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.List;
-import org.dotwebstack.framework.Product;
+import org.dotwebstack.framework.InformationProduct;
 import org.dotwebstack.framework.Registry;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class ConfigLoaderTest {
     configLoader.loadConfiguration();
 
     // Assert
-    assertEquals(0, registry.getNumberOfProducts());
+    assertEquals(0, registry.getNumberOfInformationProducts());
   }
 
   @Test
@@ -66,14 +66,15 @@ public class ConfigLoaderTest {
     configLoader.loadConfiguration();
 
     // Assert
-    ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
-    verify(registry, times(2)).registerProduct(captureProducts.capture());
+    ArgumentCaptor<InformationProduct> captureProducts =
+        ArgumentCaptor.forClass(InformationProduct.class);
+    verify(registry, times(2)).registerInformationProduct(captureProducts.capture());
     List<String> identifiers =
         captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(
             toList());
 
     assertThat("Should contain actors and movies", identifiers,
-        hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
+        hasItems("http://moviedb.org#Actors", "http://moviedb.org#Movies"));
   }
 
   @Test
@@ -89,15 +90,15 @@ public class ConfigLoaderTest {
     configLoader.loadConfiguration();
 
     // Assert
-    ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
-    verify(registry, times(3)).registerProduct(captureProducts.capture());
+    ArgumentCaptor<InformationProduct> captureProducts =
+        ArgumentCaptor.forClass(InformationProduct.class);
+    verify(registry, times(3)).registerInformationProduct(captureProducts.capture());
     List<String> identifiers =
         captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(
             toList());
 
-    assertThat("Should contain both movies and actors", identifiers,
-        hasItems("http://cinemadb.org/product#Cinemas", "http://moviedb.org/product#Actors",
-            "http://moviedb.org/product#Movies"));
+    assertThat("Should contain both movies and actors", identifiers, hasItems(
+        "http://cinemadb.org#Cinemas", "http://moviedb.org#Actors", "http://moviedb.org#Movies"));
   }
 
   @Test(expected = IOException.class)
@@ -109,7 +110,7 @@ public class ConfigLoaderTest {
     configLoader.loadConfiguration();
 
     // Assert
-    verify(registry, never()).registerProduct(any());
+    verify(registry, never()).registerInformationProduct(any());
   }
 
   @Test
@@ -123,14 +124,15 @@ public class ConfigLoaderTest {
     configLoader.loadConfiguration();
 
     // Assert
-    ArgumentCaptor<Product> captureProducts = ArgumentCaptor.forClass(Product.class);
-    verify(registry, times(2)).registerProduct(captureProducts.capture());
+    ArgumentCaptor<InformationProduct> captureProducts =
+        ArgumentCaptor.forClass(InformationProduct.class);
+    verify(registry, times(2)).registerInformationProduct(captureProducts.capture());
     List<String> identifiers =
         captureProducts.getAllValues().stream().map(p -> p.getIdentifier().toString()).collect(
             toList());
 
     assertThat("Should contain both movies and actors", identifiers,
-        hasItems("http://moviedb.org/product#Actors", "http://moviedb.org/product#Movies"));
+        hasItems("http://moviedb.org#Actors", "http://moviedb.org#Movies"));
   }
 
 
@@ -145,7 +147,7 @@ public class ConfigLoaderTest {
     configLoader.loadConfiguration();
 
     // Assert
-    verify(registry, never()).registerProduct(any());
+    verify(registry, never()).registerInformationProduct(any());
   }
 
 }

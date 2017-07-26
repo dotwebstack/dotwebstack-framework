@@ -17,7 +17,7 @@ public class RegistryTest {
   IRI identifier;
 
   @Mock
-  Product product;
+  InformationProduct informationProduct;
 
   private Registry registry;
 
@@ -27,23 +27,23 @@ public class RegistryTest {
   }
 
   @Test
-  public void testRegisterProduct() {
+  public void testRegisterInformationProduct() {
     // Arrange
-    when(product.getIdentifier()).thenReturn(identifier);
-    registry.registerProduct(product);
+    when(informationProduct.getIdentifier()).thenReturn(identifier);
+    registry.registerInformationProduct(informationProduct);
 
     // Act
-    Product registeredProduct = registry.getProduct(identifier);
+    InformationProduct registeredInformationProduct = registry.getInformationProduct(identifier);
 
     // Assert
-    assertEquals(product, registeredProduct);
-    assertEquals(1, registry.getNumberOfProducts());
+    assertEquals(informationProduct, registeredInformationProduct);
+    assertEquals(1, registry.getNumberOfInformationProducts());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testGetProductNotFound() {
     // Act & Assert
-    registry.getProduct(identifier);
+    registry.getInformationProduct(identifier);
   }
 
 }
