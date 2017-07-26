@@ -61,18 +61,8 @@ public class ConfigLoader implements ResourceLoaderAware {
     registerInformationProducts(configurationModel);
   }
 
-  private void registerInformationProducts(Model productConfigurationModel) {
-    for (Statement typeStatement : productConfigurationModel.filter(null, RDF.TYPE,
-        ELMO.INFORMATION_PRODUCT)) {
-      InformationProduct product =
-          createInformationProductFromModel((IRI) typeStatement.getSubject());
-      registry.registerInformationProduct(product);
-      logger.debug("Loaded product \"%s\".", product.getIdentifier());
-    }
-  }
-
   private Model loadResources(Resource[] resources) throws IOException {
-    Model productConfigurationModel = new LinkedHashModel();
+    Model configurationModel = new LinkedHashModel();
 
     for (Resource configResource : resources) {
       InputStream configResourceStream = configResource.getInputStream();
@@ -87,7 +77,7 @@ public class ConfigLoader implements ResourceLoaderAware {
       try {
         Model model =
             Rio.parse(configResourceStream, ELMO.NAMESPACE, ConfigFileFormats.getFormat(extension));
-        productConfigurationModel.addAll(model);
+        configurationModel.addAll(model);
       } catch (RDFParseException ex) {
         throw new ConfigException(ex.getMessage(), ex);
       } finally {
@@ -95,7 +85,17 @@ public class ConfigLoader implements ResourceLoaderAware {
       }
     }
 
-    return productConfigurationModel;
+    return configurationModel;
+  }
+
+  private void registerInformationProducts(Model configurationModel) {
+    for (Statement typeStatement : configurationModel.filter(null, RDF.TYPE,
+        ELMO.INFORMATION_PRODUCT)) {
+      InformationProduct product =
+          createInformationProductFromModel((IRI) typeStatement.getSubject());
+      registry.registerInformationProduct(product);
+      logger.debug("Loaded product \"%s\".", product.getIdentifier());
+    }
   }
 
   private InformationProduct createInformationProductFromModel(IRI identifier) {
