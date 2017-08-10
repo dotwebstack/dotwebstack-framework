@@ -11,8 +11,8 @@ class SparqlBackend implements Backend {
   private String endpoint;
 
   private SparqlBackend(Builder builder) {
-    this.identifier = builder.identifier;
-    this.endpoint = builder.endpoint;
+    identifier = builder.identifier;
+    endpoint = builder.endpoint;
   }
 
   @Override

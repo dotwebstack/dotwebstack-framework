@@ -11,8 +11,8 @@ class InformationProduct {
   private String label;
 
   private InformationProduct(Builder builder) {
-    this.identifier = builder.identifier;
-    this.label = builder.label;
+    identifier = builder.identifier;
+    label = builder.label;
   }
 
   public IRI getIdentifier() {
