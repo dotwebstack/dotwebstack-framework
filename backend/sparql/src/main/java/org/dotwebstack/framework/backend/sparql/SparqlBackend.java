@@ -9,7 +9,7 @@ class SparqlBackend extends AbstractBackend {
   private String endpoint;
 
   public SparqlBackend(IRI identifier, String endpoint) {
-    super(Objects.requireNonNull(identifier));
+    super(identifier);
     this.endpoint = Objects.requireNonNull(endpoint);
   }
 

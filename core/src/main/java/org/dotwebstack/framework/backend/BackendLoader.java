@@ -56,13 +56,9 @@ public class BackendLoader {
     });
   }
 
+  @java.lang.SuppressWarnings("squid:S3655")
   private Backend createBackend(Model backendModel, IRI identifier) {
     Optional<IRI> backendType = Models.objectIRI(backendModel.filter(identifier, RDF.TYPE, null));
-
-    if (!backendType.isPresent()) {
-      throw new ConfigurationException(String.format(
-          "No <%s> statement has been found for backend <%s>.", RDF.TYPE, identifier));
-    }
 
     for (BackendFactory backendFactory : backendFactories) {
       if (backendFactory.supports(backendType.get())) {

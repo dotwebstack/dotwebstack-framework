@@ -14,6 +14,8 @@ public final class DBEERPEDIA {
 
   public static final IRI BACKEND;
 
+  public static final Literal BACKEND_LABEL;
+
   public static final Literal ENDPOINT;
 
   public static final IRI BREWERIES;
@@ -24,6 +26,7 @@ public final class DBEERPEDIA {
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     BACKEND = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Backend");
+    BACKEND_LABEL = valueFactory.createLiteral("Beer breweries in The Netherlands");
     ENDPOINT = valueFactory.createLiteral("http://localhost:8080/sparql", XMLSchema.ANYURI);
     BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Breweries");
     BROUWTOREN = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
