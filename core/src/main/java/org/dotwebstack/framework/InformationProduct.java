@@ -2,23 +2,26 @@ package org.dotwebstack.framework;
 
 import org.eclipse.rdf4j.model.IRI;
 
-public class InformationProduct {
+class InformationProduct {
 
   private IRI identifier;
 
-  private Source source;
+  private String label;
 
-  public InformationProduct(IRI identifier, Source source) {
+  public InformationProduct(IRI identifier) {
     this.identifier = identifier;
-    this.source = source;
   }
 
   public IRI getIdentifier() {
     return identifier;
   }
 
-  public Source getSource() {
-    return source;
+  public String getLabel() {
+    return label;
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
   }
 
 }
