@@ -12,7 +12,7 @@
 
   <artifactId>dotwebstack-test</artifactId>
 
-  <name>DotWebStack Backend - Test</name>
+  <name>DotWebStack Test</name>
 
   <dependencies>
     <dependency>

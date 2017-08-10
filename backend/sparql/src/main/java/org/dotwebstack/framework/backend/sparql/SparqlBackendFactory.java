@@ -31,7 +31,7 @@ class SparqlBackendFactory implements BackendFactory {
               identifier, XMLSchema.ANYURI));
     }
 
-    return new SparqlBackend(identifier, endpoint.get().stringValue());
+    return new SparqlBackend.Builder(identifier, endpoint.get().stringValue()).build();
   }
 
   @Override

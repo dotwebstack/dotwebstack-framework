@@ -1,5 +1,7 @@
 package org.dotwebstack.framework;
 
+import java.util.Objects;
+import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 
 class InformationProduct {
@@ -8,8 +10,9 @@ class InformationProduct {
 
   private String label;
 
-  public InformationProduct(IRI identifier) {
-    this.identifier = identifier;
+  private InformationProduct(Builder builder) {
+    this.identifier = builder.identifier;
+    this.label = builder.label;
   }
 
   public IRI getIdentifier() {
@@ -20,8 +23,33 @@ class InformationProduct {
     return label;
   }
 
-  public void setLabel(String label) {
-    this.label = label;
+  public static class Builder {
+
+    private IRI identifier;
+
+    private String label;
+
+    public Builder(IRI identifier) {
+      this.identifier = Objects.requireNonNull(identifier);
+    }
+
+    public Builder label(String label) {
+      this.label = label;
+      return this;
+    }
+
+    public Builder label(Optional<String> label) {
+      if (label.isPresent()) {
+        this.label = label.get();
+      }
+
+      return this;
+    }
+
+    public InformationProduct build() {
+      return new InformationProduct(this);
+    }
+
   }
 
 }
