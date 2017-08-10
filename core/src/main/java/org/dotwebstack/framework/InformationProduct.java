@@ -34,15 +34,12 @@ class InformationProduct {
     }
 
     public Builder label(String label) {
-      this.label = label;
+      this.label = Objects.requireNonNull(label);
       return this;
     }
 
     public Builder label(Optional<String> label) {
-      if (label.isPresent()) {
-        this.label = label.get();
-      }
-
+      this.label = label.isPresent() ? label.get() : null;
       return this;
     }
 
