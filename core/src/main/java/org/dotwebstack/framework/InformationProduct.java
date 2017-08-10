@@ -39,7 +39,7 @@ class InformationProduct {
     }
 
     public Builder label(Optional<String> label) {
-      this.label = label.isPresent() ? label.get() : null;
+      this.label = label.orElse(null);
       return this;
     }
 
