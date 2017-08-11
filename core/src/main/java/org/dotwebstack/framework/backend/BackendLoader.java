@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import org.dotwebstack.framework.Registry;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -56,18 +55,19 @@ public class BackendLoader {
     });
   }
 
-  @java.lang.SuppressWarnings("squid:S3655")
   private Backend createBackend(Model backendModel, IRI identifier) {
-    Optional<IRI> backendType = Models.objectIRI(backendModel.filter(identifier, RDF.TYPE, null));
+    IRI backendType = Models.objectIRI(backendModel.filter(identifier, RDF.TYPE, null)).orElseThrow(
+        () -> new ConfigurationException(String.format(
+            "No <%s> statement has been found for backend <%s>.", RDF.TYPE, identifier)));
 
     for (BackendFactory backendFactory : backendFactories) {
-      if (backendFactory.supports(backendType.get())) {
+      if (backendFactory.supports(backendType)) {
         return backendFactory.create(backendModel, identifier);
       }
     }
 
     throw new ConfigurationException(
-        String.format("No backend factories available for type <%s>.", backendType.get()));
+        String.format("No backend factories available for type <%s>.", backendType));
   }
 
 }
