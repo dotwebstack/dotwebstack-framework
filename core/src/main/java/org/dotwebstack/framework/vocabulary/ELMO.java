@@ -16,7 +16,7 @@ public final class ELMO {
 
   public static final IRI ENDPOINT;
 
-  public static final IRI SOURCE;
+  public static final IRI BACKEND_PROP;
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -28,7 +28,7 @@ public final class ELMO {
     ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "Endpoint");
 
     // Properties
-    SOURCE = valueFactory.createIRI(ELMO.NAMESPACE, "source");
+    BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
   }
 
   private ELMO() {

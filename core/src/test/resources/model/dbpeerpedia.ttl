@@ -4,9 +4,9 @@
 
 dbeerpedia:Backend a elmo:SparqlBackend ;
   elmo:endpoint "http://localhost:8890/sparql"^^xsd:AnyURI ;
-  .
+.
   
 dbeerpedia:Breweries a elmo:InformationProduct ;
-  rdfs:label "Beer breweries in The Netherlands";
-  elmo:source dbeerpedia:Backend ;
-  .
+  rdfs:label "Beer breweries in The Netherlands" ;
+  elmo:backend dbeerpedia:Backend ;
+.
