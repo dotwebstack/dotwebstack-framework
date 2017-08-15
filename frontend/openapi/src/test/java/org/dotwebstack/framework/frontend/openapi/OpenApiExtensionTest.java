@@ -15,17 +15,17 @@ public class OpenApiExtensionTest {
   @Mock
   private HttpConfiguration httpConfiguration;
 
-  private OpenApiExtension ldExtension;
+  private OpenApiExtension openApiExtension;
 
   @Before
   public void setUp() {
-    ldExtension = new OpenApiExtension(httpConfiguration);
+    openApiExtension = new OpenApiExtension(httpConfiguration);
   }
 
   @Test
   public void postLoadDoesNothing() {
     // Act
-    ldExtension.postLoad();
+    openApiExtension.postLoad();
 
     // Assert
     verifyZeroInteractions(httpConfiguration);
