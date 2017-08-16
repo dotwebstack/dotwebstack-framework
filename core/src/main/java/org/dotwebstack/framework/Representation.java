@@ -12,5 +12,6 @@ public class Representation {
 
   public static class Builder {
 
+    private IRI identifier;
   }
 }
