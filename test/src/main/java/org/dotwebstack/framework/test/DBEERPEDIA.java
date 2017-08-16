@@ -8,7 +8,11 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 public final class DBEERPEDIA {
 
+  public static final String DOMAIN = "dbeerpedia.org";
+
   public static final String NAMESPACE = "http://dbeerpedia.org#";
+
+  public static final String BASE_PATH = "/special";
 
   public static final String OBJECT_NAMESPACE = "http://dbeerpedia.org/id/";
 
