@@ -1,6 +1,6 @@
 package org.dotwebstack.framework;
 
-public interface Extension {
+public interface PostLoadExtension {
 
   void postLoad();
 

@@ -16,11 +16,11 @@ class Application {
 
   private BackendLoader backendLoader;
 
-  private List<Extension> extensions;
+  private List<PostLoadExtension> extensions;
 
   @Autowired
   public Application(ConfigurationBackend configurationBackend, BackendLoader backendLoader,
-      List<Extension> extensions) {
+      List<PostLoadExtension> extensions) {
     this.configurationBackend = Objects.requireNonNull(configurationBackend);
     this.backendLoader = Objects.requireNonNull(backendLoader);
     this.extensions = Objects.requireNonNull(extensions);
@@ -30,7 +30,7 @@ class Application {
   public void load() throws IOException {
     configurationBackend.initialize();
     backendLoader.load();
-    extensions.forEach(Extension::postLoad);
+    extensions.forEach(PostLoadExtension::postLoad);
   }
 
 }

@@ -38,17 +38,17 @@ public class ApplicationTest {
   @Test
   public void extensionPostLoadCalled() throws IOException {
     // Arrange
-    Extension extensionA = mock(Extension.class);
-    Extension extensionB = mock(Extension.class);
+    PostLoadExtension postLoadExtensionA = mock(PostLoadExtension.class);
+    PostLoadExtension postLoadExtensionB = mock(PostLoadExtension.class);
     Application application = new Application(configurationBackend, backendLoader,
-        ImmutableList.of(extensionA, extensionB));
+        ImmutableList.of(postLoadExtensionA, postLoadExtensionB));
 
     // Act
     application.load();
 
     // Assert
-    verify(extensionA).postLoad();
-    verify(extensionB).postLoad();
+    verify(postLoadExtensionA).postLoad();
+    verify(postLoadExtensionB).postLoad();
   }
 
 }
