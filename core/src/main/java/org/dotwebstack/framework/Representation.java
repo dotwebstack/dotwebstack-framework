@@ -22,6 +22,10 @@ public class Representation {
     return identifier;
   }
 
+  public InformationProduct getInformationProduct() {
+    return informationProduct;
+  }
+
   public static class Builder {
 
     private IRI identifier;
