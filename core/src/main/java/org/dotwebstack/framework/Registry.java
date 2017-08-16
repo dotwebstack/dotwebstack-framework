@@ -60,4 +60,8 @@ public class Registry {
     return informationProducts.size();
   }
 
+  public int getNumberOfRepresentations() {
+    return representations.size();
+  }
+
 }
