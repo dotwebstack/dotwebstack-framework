@@ -8,7 +8,6 @@ import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -22,7 +21,6 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private ResourceLoader resourceLoader;
 
-  @Autowired
   public FileConfigurationBackend() {
     repository = new SailRepository(new MemoryStore());
   }
