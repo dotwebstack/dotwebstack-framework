@@ -34,4 +34,20 @@ public class RepresentationTest {
     assertThat(representation.getUrlPattern(), equalTo(DBEERPEDIA.URL_PATTERN));
   }
 
+  @Test
+  public void builderWithNullValues() {
+    // [todo] add stage to representation object
+    // Act
+    final Representation representation =
+        new Representation.Builder(DBEERPEDIA.BREWERIES)
+            .inforamationProduct(null)
+            .urlPattern(null)
+            .build();
+
+    // Assert
+    assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertThat(representation.getInformationProduct(), equalTo(null));
+    assertThat(representation.getUrlPattern(), equalTo(null));
+  }
+
 }
