@@ -44,5 +44,9 @@ public class Representation {
       this.stage = stage;
       return this;
     }*/
+
+    public Representation build() {
+      return new Representation(this);
+    }
   }
 }
