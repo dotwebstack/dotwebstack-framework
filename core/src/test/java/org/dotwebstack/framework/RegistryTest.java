@@ -69,6 +69,20 @@ public class RegistryTest {
   }
 
   @Test
+  public void registerRepresentation() {
+    // Arrange
+    when(representation.getIdentifier()).thenReturn(identifier);
+
+    // Act
+    registry.registerRepresentation(representation);
+
+    // Assert
+    Representation registeredRepresentation = registry.getRepresentation(identifier);
+    assertThat(registeredRepresentation, Matchers.equalTo(representation));
+    assertThat(registry.getNumberOfRepresentations(), Matchers.equalTo(1));
+  }
+
+  @Test
   public void backendNotFound() {
     // Assert
     expectedException.expect(IllegalArgumentException.class);
