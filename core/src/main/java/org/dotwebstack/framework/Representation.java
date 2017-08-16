@@ -30,6 +30,10 @@ public class Representation {
     return urlPattern;
   }
 
+ /* public Stage getStage() {
+    return stage;
+  }*/
+
   public static class Builder {
 
     private IRI identifier;
