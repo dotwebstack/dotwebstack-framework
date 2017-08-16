@@ -43,6 +43,15 @@ public class Registry {
     return informationProducts.get(identifier);
   }
 
+  public Representation getRepresentation(IRI identifier) {
+    if (!representations.containsKey(identifier)) {
+      throw new IllegalArgumentException(
+          String.format("Representation <%s> not found.", identifier)
+      );
+    }
+    return representations.get(identifier);
+  }
+
   public int getNumberOfBackends() {
     return backends.size();
   }
