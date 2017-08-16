@@ -22,6 +22,10 @@ public class Registry {
     informationProducts.put(product.getIdentifier(), product);
   }
 
+  public void registerRepresentation(Representation representation) {
+    representations.put(representation.getIdentifier(), representation);
+  }
+
   public Backend getBackend(IRI identifier) {
     if (!backends.containsKey(identifier)) {
       throw new IllegalArgumentException(String.format("Backend <%s> not found.", identifier));
