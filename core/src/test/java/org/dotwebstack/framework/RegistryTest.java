@@ -102,4 +102,14 @@ public class RegistryTest {
     registry.getInformationProduct(identifier);
   }
 
+  @Test
+  public void representationNotFound() {
+    // Assert
+    expectedException.expect(IllegalArgumentException.class);
+    expectedException.expectMessage(String.format("Representation <%s> not found."));
+
+    // Act
+    registry.getRepresentation(identifier);
+  }
+
 }
