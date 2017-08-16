@@ -27,5 +27,10 @@ public class Representation {
       this.informationProduct = informationProduct;
       return this;
     }
+
+    public Builder urlPattern(String urlPattern) {
+      this.urlPattern = urlPattern;
+      return this;
+    }
   }
 }
