@@ -22,5 +22,10 @@ public class Representation {
     public Builder(IRI identifier) {
       this.identifier = Objects.requireNonNull(identifier);
     }
+
+    public Builder inforamationProduct(InformationProduct informationProduct) {
+      this.informationProduct = informationProduct;
+      return this;
+    }
   }
 }
