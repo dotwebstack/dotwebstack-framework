@@ -30,6 +30,9 @@ public class RegistryTest {
   @Mock
   private InformationProduct informationProduct;
 
+  @Mock
+  private Representation representation;
+
   private Registry registry;
 
   @Before
