@@ -18,6 +18,10 @@ public class Representation {
     // stage = builder.stage;
   }
 
+  public IRI getIdentifier() {
+    return identifier;
+  }
+
   public static class Builder {
 
     private IRI identifier;
