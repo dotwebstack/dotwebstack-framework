@@ -55,8 +55,6 @@ public class RegistryTest {
     registry.registerBackend(backend);
 
     // Assert
-    Backend registeredBackend = registry.getBackend(identifier);
-    assertThat(registeredBackend, equalTo(backend));
     assertThat(registry.getNumberOfBackends(), equalTo(1));
   }
 
