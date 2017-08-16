@@ -12,6 +12,8 @@ public class Registry {
 
   private HashMap<IRI, InformationProduct> informationProducts = new HashMap<>();
 
+  private HashMap<IRI, Representation> representations = new HashMap<>();
+
   public void registerBackend(Backend backend) {
     backends.put(backend.getIdentifier(), backend);
   }
