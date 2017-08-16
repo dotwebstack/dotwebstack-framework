@@ -29,6 +29,12 @@ public class RegistryTest {
   private Backend backend;
 
   @Mock
+  private Site site;
+
+  @Mock
+  private Stage stage;
+
+  @Mock
   private InformationProduct informationProduct;
 
   private Registry registry;
@@ -50,6 +56,34 @@ public class RegistryTest {
     Backend backend = registry.getBackend(identifier);
     assertThat(backend, equalTo(backend));
     assertThat(registry.getNumberOfBackends(), equalTo(1));
+  }
+
+  @Test
+  public void registerSite() {
+    // Arrange
+    when(site.getIdentifier()).thenReturn(identifier);
+
+    // Act
+    registry.registerSite(site);
+
+    // Assert
+    Site registeredSite = registry.getSite(identifier);
+    assertThat(registeredSite, Matchers.equalTo(site));
+    assertThat(registry.getNumberOfSites(), Matchers.equalTo(1));
+  }
+
+  @Test
+  public void registerStage() {
+    // Arrange
+    when(stage.getIdentifier()).thenReturn(identifier);
+
+    // Act
+    registry.registerStage(stage);
+
+    // Assert
+    Stage registeredStage = registry.getStage(identifier);
+    assertThat(registeredStage, Matchers.equalTo(stage));
+    assertThat(registry.getNumberOfStages(), Matchers.equalTo(1));
   }
 
   @Test
