@@ -8,4 +8,6 @@ public class Representation {
   private InformationProduct informationProduct;
   private String urlPattern;
 
+  // private Stage stage;
+
 }
