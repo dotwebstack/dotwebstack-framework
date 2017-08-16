@@ -41,6 +41,7 @@
   <modules>
     <module>backend</module>
     <module>core</module>
+    <module>frontend</module>
     <module>test</module>
   </modules>
 
@@ -49,6 +50,11 @@
       <dependency>
         <groupId>org.dotwebstack.framework</groupId>
         <artifactId>dotwebstack-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dotwebstack.framework</groupId>
+        <artifactId>dotwebstack-frontend-http</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
