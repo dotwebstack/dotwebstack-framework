@@ -10,4 +10,7 @@ public class Representation {
 
   // private Stage stage;
 
+  public static class Builder {
+
+  }
 }
