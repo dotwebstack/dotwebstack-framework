@@ -32,5 +32,10 @@ public class Representation {
       this.urlPattern = urlPattern;
       return this;
     }
+
+     /*public Builder stage(Stage stage) {
+      this.stage = stage;
+      return this;
+    }*/
   }
 }
