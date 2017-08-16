@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -90,7 +89,7 @@ public class BackendLoaderTest {
     backendLoader.load();
 
     // Assert
-    verify(registry, times(1)).registerBackend(backend);
+    verify(registry).registerBackend(backend);
     verifyNoMoreInteractions(registry);
   }
 

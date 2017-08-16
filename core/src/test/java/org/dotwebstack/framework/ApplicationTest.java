@@ -1,7 +1,6 @@
 package org.dotwebstack.framework;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableList;
@@ -32,8 +31,8 @@ public class ApplicationTest {
     application.load();
 
     // Assert
-    verify(configurationBackend, times(1)).initialize();
-    verify(backendLoader, times(1)).load();
+    verify(configurationBackend).initialize();
+    verify(backendLoader).load();
   }
 
   @Test
@@ -48,8 +47,8 @@ public class ApplicationTest {
     application.load();
 
     // Assert
-    verify(extensionA, times(1)).postLoad();
-    verify(extensionB, times(1)).postLoad();
+    verify(extensionA).postLoad();
+    verify(extensionB).postLoad();
   }
 
 }
