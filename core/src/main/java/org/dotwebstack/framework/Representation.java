@@ -1,5 +1,6 @@
 package org.dotwebstack.framework;
 
+import java.util.Objects;
 import org.eclipse.rdf4j.model.IRI;
 
 public class Representation {
@@ -17,5 +18,9 @@ public class Representation {
     private String urlPattern;
 
     // private Stage stage;
+
+    public Builder(IRI identifier) {
+      this.identifier = Objects.requireNonNull(identifier);
+    }
   }
 }
