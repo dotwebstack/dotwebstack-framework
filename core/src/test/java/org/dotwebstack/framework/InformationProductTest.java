@@ -30,18 +30,6 @@ public class InformationProductTest {
   }
 
   @Test
-  public void builderWithPresentValues() {
-    // Act
-    InformationProduct informationProduct =
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, backendSource).label(
-            DBEERPEDIA.BREWERIES_LABEL.stringValue()).build();
-
-    assertThat(informationProduct.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-    assertThat(informationProduct.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
-  }
-
-
-  @Test
   public void builderWithNullValues() {
     // Act
     InformationProduct informationProduct =
