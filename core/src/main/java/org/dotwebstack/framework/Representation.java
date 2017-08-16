@@ -6,5 +6,6 @@ public class Representation {
 
   private IRI identifier;
   private InformationProduct informationProduct;
+  private String urlPattern;
 
 }
