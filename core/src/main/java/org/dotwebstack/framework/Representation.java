@@ -11,6 +11,13 @@ public class Representation {
 
   // private Stage stage;
 
+  private Representation(Builder builder) {
+    identifier = builder.identifier;
+    informationProduct = builder.informationProduct;
+    urlPattern = builder.urlPattern;
+    // stage = builder.stage;
+  }
+
   public static class Builder {
 
     private IRI identifier;
