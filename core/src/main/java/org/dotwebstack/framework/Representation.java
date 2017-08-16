@@ -26,6 +26,10 @@ public class Representation {
     return informationProduct;
   }
 
+  public String getUrlPattern() {
+    return urlPattern;
+  }
+
   public static class Builder {
 
     private IRI identifier;
