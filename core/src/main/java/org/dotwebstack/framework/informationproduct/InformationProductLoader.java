@@ -22,10 +22,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class InformationProductLoader {
+
   private static final Logger LOG = LoggerFactory.getLogger(InformationProductLoader.class);
 
   private final BackendLoader backendLoader;
+
   private final ConfigurationBackend configurationBackend;
+
   private HashMap<IRI, InformationProduct> informationProducts = new HashMap<>();
 
   @Autowired
@@ -72,10 +75,9 @@ public class InformationProductLoader {
             String.format("No <%s> backend has been found for information product <%s>.",
                 ELMO.BACKEND_PROP, identifier)));
 
-    InformationProduct.Builder builder =
-        new InformationProduct.Builder(identifier, createBackendSource(backendIRI, statements));
-    getObjectString(statements, RDFS.LABEL).ifPresent(label -> builder.label(label));
-    return builder.build();
+    return new InformationProduct.Builder(identifier,
+        createBackendSource(backendIRI, statements)).label(
+            getObjectString(statements, RDFS.LABEL).orElse(null)).build();
   }
 
   private Optional<String> getObjectString(Model informationProductTriples, IRI predicate) {
@@ -98,4 +100,5 @@ public class InformationProductLoader {
       return QueryResults.asModel(graphQuery.evaluate());
     }
   }
+
 }
