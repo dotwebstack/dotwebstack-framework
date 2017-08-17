@@ -1,16 +1,15 @@
 package org.dotwebstack.framework.backend;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
-import org.dotwebstack.framework.Registry;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -39,9 +38,6 @@ public class BackendLoaderTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private Registry registry;
-
-  @Mock
   private ConfigurationBackend configurationBackend;
 
   @Mock
@@ -68,10 +64,20 @@ public class BackendLoaderTest {
   @Before
   public void setUp() {
     backendFactories = ImmutableList.of(backendFactory);
-    backendLoader = new BackendLoader(registry, configurationBackend, backendFactories);
+    backendLoader = new BackendLoader(configurationBackend, backendFactories);
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
+  }
+
+  @Test
+  public void backendNotFound() {
+    // Assert
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(String.format("Backend <%s> not found.", DBEERPEDIA.BACKEND));
+
+    // Act
+    backendLoader.getBackend(DBEERPEDIA.BACKEND);
   }
 
   @Test
@@ -89,8 +95,8 @@ public class BackendLoaderTest {
     backendLoader.load();
 
     // Assert
-    verify(registry).registerBackend(backend);
-    verifyNoMoreInteractions(registry);
+    assertThat(backendLoader.getNumberOfBackends(), equalTo(1));
+    assertThat(backendLoader.getBackend(DBEERPEDIA.BACKEND), equalTo(backend));
   }
 
   @Test

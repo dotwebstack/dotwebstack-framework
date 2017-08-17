@@ -15,7 +15,6 @@ public class TestConfigurationBackend implements ConfigurationBackend {
     this.initialize();
   }
 
-  @Override
   public void initialize() throws IOException {
     MemoryStore sail = new MemoryStore();
 

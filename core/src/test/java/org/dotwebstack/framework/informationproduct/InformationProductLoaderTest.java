@@ -1,17 +1,18 @@
 package org.dotwebstack.framework.informationproduct;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.dotwebstack.framework.Registry;
 import org.dotwebstack.framework.backend.Backend;
+import org.dotwebstack.framework.backend.BackendLoader;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -30,8 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -42,7 +41,7 @@ public class InformationProductLoaderTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private Registry registry;
+  private BackendLoader backendLoader;
 
   @Mock
   private ConfigurationBackend configurationBackend;
@@ -62,16 +61,13 @@ public class InformationProductLoaderTest {
   @Mock
   private BackendSource backendSource;
 
-  @Captor
-  private ArgumentCaptor<InformationProduct> productArgumentCaptor;
-
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   private InformationProductLoader informationProductLoader;
 
   @Before
   public void setUp() {
-    informationProductLoader = new InformationProductLoader(registry, configurationBackend);
+    informationProductLoader = new InformationProductLoader(backendLoader, configurationBackend);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -85,17 +81,20 @@ public class InformationProductLoaderTest {
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, ELMO.BACKEND,
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND))));
 
-    when(registry.getBackend(any())).thenReturn(backend);
+    when(backendLoader.getBackend(any())).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
 
     // Act
     informationProductLoader.load();
 
     // Assert
-    verify(registry).registerInformationProduct(any());
+    assertThat(informationProductLoader.getNumberOfInformationProducts(), equalTo(1));
+    InformationProduct product =
+        informationProductLoader.getInformationProduct(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
+    assertThat(product, is(not(nullValue())));
   }
 
   @Test
@@ -107,19 +106,19 @@ public class InformationProductLoaderTest {
                 ELMO.INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, ELMO.BACKEND,
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND),
-            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND,
+            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND))));
 
-    when(registry.getBackend(any())).thenReturn(backend);
+    when(backendLoader.getBackend(any())).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
 
     // Act
     informationProductLoader.load();
 
     // Assert
-    verify(registry, times(2)).registerInformationProduct(any());
+    assertThat(informationProductLoader.getNumberOfInformationProducts(), equalTo(2));
   }
 
   @Test
@@ -129,23 +128,22 @@ public class InformationProductLoaderTest {
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, ELMO.BACKEND,
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
-                valueFactory.createLiteral("label")))));
+                DBEERPEDIA.BREWERIES_LABEL))));
 
-    when(registry.getBackend(DBEERPEDIA.BACKEND)).thenReturn(backend);
+    when(backendLoader.getBackend(DBEERPEDIA.BACKEND)).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
 
     // Act
     informationProductLoader.load();
 
     // Assert
-    verify(registry).registerInformationProduct(productArgumentCaptor.capture());
-    assertThat(productArgumentCaptor.getValue().getBackendSource(), equalTo(backendSource));
-    assertThat(productArgumentCaptor.getValue().getIdentifier(),
-        equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
-    assertThat(productArgumentCaptor.getValue().getLabel(), equalTo("label"));
+    InformationProduct product = informationProductLoader.getInformationProduct(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
+    assertThat(product.getBackendSource(), equalTo(backendSource));
+    assertThat(product.getIdentifier(), equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
+    assertThat(product.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
   }
 
 
@@ -160,7 +158,7 @@ public class InformationProductLoaderTest {
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
-        String.format("No <%s> backend has been found for information product <%s>.", ELMO.BACKEND,
+        String.format("No <%s> backend has been found for information product <%s>.", ELMO.BACKEND_PROP,
             DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
 
     // Act

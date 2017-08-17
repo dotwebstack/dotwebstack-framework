@@ -2,6 +2,7 @@ package org.dotwebstack.framework.config;
 
 import java.io.IOException;
 import java.util.Objects;
+import javax.annotation.PostConstruct;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -12,7 +13,9 @@ import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class FileConfigurationBackend implements ConfigurationBackend, ResourceLoaderAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
@@ -30,7 +33,7 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
     this.resourceLoader = Objects.requireNonNull(resourceLoader);
   }
 
-  @Override
+  @PostConstruct
   public void initialize() throws IOException {
     repository.initialize();
     loadResources();

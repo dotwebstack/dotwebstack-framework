@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.informationproduct;
 
+import java.util.HashMap;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
-import org.dotwebstack.framework.Registry;
 import org.dotwebstack.framework.backend.BackendLoader;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -24,36 +24,52 @@ import org.springframework.stereotype.Service;
 public class InformationProductLoader {
   private static final Logger LOG = LoggerFactory.getLogger(BackendLoader.class);
 
-  private final Registry registry;
+  private final BackendLoader backendLoader;
   private final ConfigurationBackend configurationBackend;
+  private HashMap<IRI, InformationProduct> informationProducts = new HashMap<>();
 
   @Autowired
   public InformationProductLoader(
-      Registry registry, ConfigurationBackend configurationBackend) {
-    this.registry = registry;
+      BackendLoader backendLoader, ConfigurationBackend configurationBackend) {
+    this.backendLoader = backendLoader;
     this.configurationBackend = configurationBackend;
   }
 
   @PostConstruct
   public void load() {
-    Model informationProducts = getModelFromConfiguration();
+    Model informationProductModels = getModelFromConfiguration();
 
-    informationProducts.subjects().forEach(identifier -> {
-      Model informationProductTriples = informationProducts.filter(identifier, null, null);
+    informationProductModels.subjects().forEach(identifier -> {
+      Model informationProductTriples = informationProductModels.filter(identifier, null, null);
       if(identifier instanceof IRI) {
+        IRI iri = (IRI) identifier;
         InformationProduct informationProduct =
-            createInformationProduct((IRI) identifier, informationProductTriples);
-        registry.registerInformationProduct(informationProduct);
+            createInformationProduct(iri, informationProductTriples);
+
+        informationProducts.put(iri, informationProduct);
+
         LOG.info("Registered informationProduct: <{}>", informationProduct.getIdentifier());
       }
     });
+  }
 
+  public InformationProduct getInformationProduct(IRI identifier) {
+    if (!informationProducts.containsKey(identifier)) {
+      throw new IllegalArgumentException(
+          String.format("Information product <%s> not found.", identifier));
+    }
+
+    return informationProducts.get(identifier);
+  }
+
+  public int getNumberOfInformationProducts() {
+    return informationProducts.size();
   }
 
   private InformationProduct createInformationProduct(IRI identifier,
       Model statements) {
-    IRI backendIRI = getIRI(statements, ELMO.BACKEND).orElseThrow(() -> new ConfigurationException(String.format(
-        "No <%s> backend has been found for information product <%s>.", ELMO.BACKEND, identifier)));
+    IRI backendIRI = getIRI(statements, ELMO.BACKEND_PROP).orElseThrow(() -> new ConfigurationException(String.format(
+        "No <%s> backend has been found for information product <%s>.", ELMO.BACKEND_PROP, identifier)));
 
     InformationProduct.Builder builder = new InformationProduct.Builder(identifier, createBackendSource(backendIRI, statements));
     getObjectString(statements, RDFS.LABEL).ifPresent(label -> builder.label(label));
@@ -68,7 +84,7 @@ public class InformationProductLoader {
   }
 
   private BackendSource createBackendSource(IRI backendIdentifier, Model statements) {
-    return registry.getBackend(backendIdentifier).createSource(statements);
+    return backendLoader.getBackend(backendIdentifier).createSource(statements);
   }
 
   private Model getModelFromConfiguration() {
