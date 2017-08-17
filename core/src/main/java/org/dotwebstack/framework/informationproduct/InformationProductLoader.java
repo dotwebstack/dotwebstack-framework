@@ -2,7 +2,6 @@ package org.dotwebstack.framework.informationproduct;
 
 import java.util.Optional;
 import javax.annotation.PostConstruct;
-import org.dotwebstack.framework.InformationProduct;
 import org.dotwebstack.framework.Registry;
 import org.dotwebstack.framework.backend.BackendLoader;
 import org.dotwebstack.framework.backend.BackendSource;
@@ -68,8 +67,8 @@ public class InformationProductLoader {
     return Models.objectIRI(informationProductTriples.filter(null, predicate, null));
   }
 
-  private BackendSource createBackendSource(IRI backend, Model statements) {
-    return registry.getBackend(backend).createSource(statements);
+  private BackendSource createBackendSource(IRI backendIdentifier, Model statements) {
+    return registry.getBackend(backendIdentifier).createSource(statements);
   }
 
   private Model getModelFromConfiguration() {

@@ -44,7 +44,7 @@ public class SparqlBackendCreateSourceTest {
     BackendSource backendSource = backend.createSource(backendSourceModel);
 
     // Assert
-    assertThat(backendSource.getBackendReference(), equalTo(identifier));
+    assertThat(backendSource.getBackend(), equalTo(backend));
     assertThat(backendSource, instanceOf(SparqlBackendSource.class));
     assertThat(((SparqlBackendSource)backendSource).getQuery(), equalTo("myQuery"));
   }

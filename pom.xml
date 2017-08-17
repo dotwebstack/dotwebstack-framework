@@ -42,6 +42,7 @@
     <module>backend</module>
     <module>core</module>
     <module>test</module>
+    <module>integration-test</module>
   </modules>
 
   <dependencyManagement>

@@ -31,7 +31,7 @@ class SparqlBackend implements Backend {
         .orElseThrow(() -> new ConfigurationException(String.format(
             "No <%s> query has been found for backend source <%s>.", ELMO.QUERY, identifier)));
 
-    return new SparqlBackendSource.Builder(identifier, query).build();
+    return new SparqlBackendSource.Builder(this, query).build();
   }
 
   public String getEndpoint() {

@@ -1,23 +1,23 @@
 package org.dotwebstack.framework.backend.sparql;
 
 import java.util.Objects;
+import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendSource;
-import org.eclipse.rdf4j.model.IRI;
 
 public class SparqlBackendSource implements BackendSource {
 
-  private IRI backendReference;
+  private Backend backend;
 
   private String query;
 
   public SparqlBackendSource(Builder builder) {
-    this.backendReference = builder.backendReference;
+    this.backend = builder.backend;
     this.query = builder.query;
   }
 
   @Override
-  public IRI getBackendReference() {
-    return backendReference;
+  public Backend getBackend() {
+    return backend;
   }
 
   public String getQuery() {
@@ -26,12 +26,12 @@ public class SparqlBackendSource implements BackendSource {
 
   public static class Builder {
 
-    private IRI backendReference;
+    private Backend backend;
 
     private String query;
 
-    public Builder(IRI backendReference, String query) {
-      this.backendReference = Objects.requireNonNull(backendReference);
+    public Builder(Backend backend, String query) {
+      this.backend = Objects.requireNonNull(backend);
       this.query = Objects.requireNonNull(query);
     }
 
