@@ -29,8 +29,8 @@ public class InformationProductLoader {
   private HashMap<IRI, InformationProduct> informationProducts = new HashMap<>();
 
   @Autowired
-  public InformationProductLoader(
-      BackendLoader backendLoader, ConfigurationBackend configurationBackend) {
+  public InformationProductLoader(BackendLoader backendLoader,
+      ConfigurationBackend configurationBackend) {
     this.backendLoader = backendLoader;
     this.configurationBackend = configurationBackend;
   }
@@ -41,7 +41,7 @@ public class InformationProductLoader {
 
     informationProductModels.subjects().forEach(identifier -> {
       Model informationProductTriples = informationProductModels.filter(identifier, null, null);
-      if(identifier instanceof IRI) {
+      if (identifier instanceof IRI) {
         IRI iri = (IRI) identifier;
         InformationProduct informationProduct =
             createInformationProduct(iri, informationProductTriples);
@@ -66,12 +66,14 @@ public class InformationProductLoader {
     return informationProducts.size();
   }
 
-  private InformationProduct createInformationProduct(IRI identifier,
-      Model statements) {
-    IRI backendIRI = getIRI(statements, ELMO.BACKEND_PROP).orElseThrow(() -> new ConfigurationException(String.format(
-        "No <%s> backend has been found for information product <%s>.", ELMO.BACKEND_PROP, identifier)));
+  private InformationProduct createInformationProduct(IRI identifier, Model statements) {
+    IRI backendIRI =
+        getIRI(statements, ELMO.BACKEND_PROP).orElseThrow(() -> new ConfigurationException(
+            String.format("No <%s> backend has been found for information product <%s>.",
+                ELMO.BACKEND_PROP, identifier)));
 
-    InformationProduct.Builder builder = new InformationProduct.Builder(identifier, createBackendSource(backendIRI, statements));
+    InformationProduct.Builder builder =
+        new InformationProduct.Builder(identifier, createBackendSource(backendIRI, statements));
     getObjectString(statements, RDFS.LABEL).ifPresent(label -> builder.label(label));
     return builder.build();
   }
@@ -79,6 +81,7 @@ public class InformationProductLoader {
   private Optional<String> getObjectString(Model informationProductTriples, IRI predicate) {
     return Models.objectString(informationProductTriples.filter(null, predicate, null));
   }
+
   private Optional<IRI> getIRI(Model informationProductTriples, IRI predicate) {
     return Models.objectIRI(informationProductTriples.filter(null, predicate, null));
   }

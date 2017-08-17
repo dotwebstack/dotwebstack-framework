@@ -50,7 +50,8 @@ public class BackendLoader {
 
     backendModel.subjects().forEach(identifier -> {
       IRI backendIri = (IRI) identifier;
-      Backend backend = createBackend(backendModel.filter(backendIri, null, null), (IRI) identifier);
+      Backend backend =
+          createBackend(backendModel.filter(backendIri, null, null), (IRI) identifier);
       backends.put(backendIri, backend);
       LOG.info("Registered backend: <{}>", backend.getIdentifier());
     });

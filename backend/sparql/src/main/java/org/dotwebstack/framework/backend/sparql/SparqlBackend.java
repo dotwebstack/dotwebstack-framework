@@ -27,9 +27,9 @@ class SparqlBackend implements Backend {
 
   @Override
   public BackendSource createSource(Model model) {
-    String query = Models.objectString(model.filter(null, ELMO.QUERY, null))
-        .orElseThrow(() -> new ConfigurationException(String.format(
-            "No <%s> query has been found for backend source <%s>.", ELMO.QUERY, identifier)));
+    String query = Models.objectString(model.filter(null, ELMO.QUERY, null)).orElseThrow(
+        () -> new ConfigurationException(String.format(
+            "No <%s> statement has been found for backend source <%s>.", ELMO.QUERY, identifier)));
 
     return new SparqlBackendSource.Builder(this, query).build();
   }

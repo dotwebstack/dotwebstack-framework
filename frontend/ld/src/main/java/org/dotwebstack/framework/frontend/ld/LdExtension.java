@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld;
 
+import java.util.Objects;
 import javax.annotation.PostConstruct;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ class LdExtension {
 
   @Autowired
   public LdExtension(HttpConfiguration httpConfiguration) {
-    this.httpConfiguration = httpConfiguration;
+    this.httpConfiguration = Objects.requireNonNull(httpConfiguration);
   }
 
   @PostConstruct
