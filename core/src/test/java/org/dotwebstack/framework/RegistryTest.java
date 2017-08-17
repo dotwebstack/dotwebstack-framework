@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.site.Site;
+import org.dotwebstack.framework.stage.Stage;
 import org.eclipse.rdf4j.model.IRI;
 import org.hamcrest.Matchers;
 import org.junit.Before;
