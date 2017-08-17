@@ -15,12 +15,12 @@ import org.dotwebstack.framework.informationproduct.InformationProductLoader;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ResourceLoaderAware;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
@@ -55,11 +55,11 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
   public void importDefinitions() {
     try {
-      Resource[] resources =
+      org.springframework.core.io.Resource[] resources =
           ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
               "classpath:**/openapi/*");
 
-      for (Resource resource : resources) {
+      for (org.springframework.core.io.Resource resource : resources) {
         Swagger swagger = swaggerParser.parse(IOUtils.toString(resource.getInputStream(), "UTF-8"));
         mapSwaggerDefinition(swagger);
       }
@@ -73,10 +73,7 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
     swagger.getPaths().forEach((path, pathItem) -> {
       String absolutePath = basePath.concat(path);
-
-      org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
-          org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
-
+      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       Operation getOperation = pathItem.getGet();
 
       if (getOperation != null) {

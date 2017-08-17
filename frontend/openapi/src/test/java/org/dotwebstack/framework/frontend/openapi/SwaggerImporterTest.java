@@ -26,6 +26,7 @@ import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductLoader;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +36,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
@@ -71,7 +71,7 @@ public class SwaggerImporterTest {
   public void noDefinitionFilesFound() throws IOException {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[0]);
+        new org.springframework.core.io.Resource[0]);
 
     // Act
     swaggerImporter.importDefinitions();
@@ -119,8 +119,7 @@ public class SwaggerImporterTest {
                 "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductLoader.getInformationProduct(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
-    ArgumentCaptor<org.glassfish.jersey.server.model.Resource> argumentCaptor =
-        ArgumentCaptor.forClass(org.glassfish.jersey.server.model.Resource.class);
+    ArgumentCaptor<Resource> argumentCaptor = ArgumentCaptor.forClass(Resource.class);
 
     // Act
     swaggerImporter.importDefinitions();
@@ -128,7 +127,7 @@ public class SwaggerImporterTest {
     // Assert
     verify(httpConfiguration).registerResource(argumentCaptor.capture());
 
-    org.glassfish.jersey.server.model.Resource resource = argumentCaptor.getValue();
+    Resource resource = argumentCaptor.getValue();
     assertThat(argumentCaptor.getAllValues(), hasSize(1));
     assertThat(resource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/breweries"));
@@ -148,15 +147,14 @@ public class SwaggerImporterTest {
             "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductLoader.getInformationProduct(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
-    ArgumentCaptor<org.glassfish.jersey.server.model.Resource> argumentCaptor =
-        ArgumentCaptor.forClass(org.glassfish.jersey.server.model.Resource.class);
+    ArgumentCaptor<Resource> argumentCaptor = ArgumentCaptor.forClass(Resource.class);
 
     // Act
     swaggerImporter.importDefinitions();
 
     // Assert
     verify(httpConfiguration).registerResource(argumentCaptor.capture());
-    org.glassfish.jersey.server.model.Resource resource = argumentCaptor.getValue();
+    Resource resource = argumentCaptor.getValue();
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
   }
 
@@ -187,8 +185,7 @@ public class SwaggerImporterTest {
                     MediaType.APPLICATION_JSON)));
     when(informationProductLoader.getInformationProduct(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
-    ArgumentCaptor<org.glassfish.jersey.server.model.Resource> argumentCaptor =
-        ArgumentCaptor.forClass(org.glassfish.jersey.server.model.Resource.class);
+    ArgumentCaptor<Resource> argumentCaptor = ArgumentCaptor.forClass(Resource.class);
 
     // Act
     swaggerImporter.importDefinitions();
@@ -201,10 +198,11 @@ public class SwaggerImporterTest {
   }
 
   private Swagger mockDefinition() throws IOException {
-    Resource resource = mock(Resource.class);
+    org.springframework.core.io.Resource resource =
+        mock(org.springframework.core.io.Resource.class);
     when(resource.getInputStream()).thenReturn(IOUtils.toInputStream("spec", "UTF-8"));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[] {resource});
+        new org.springframework.core.io.Resource[] {resource});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
     when(swaggerParser.parse(eq("spec"))).thenReturn(swagger);
     return swagger;
