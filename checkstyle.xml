@@ -167,7 +167,7 @@
     <module name="AbbreviationAsWordInName">
       <property name="ignoreFinal" value="false" />
       <property name="allowedAbbreviationLength" value="1" />
-      <property name="allowedAbbreviations" value="ELMO, DBEERPEDIA"/>
+      <property name="allowedAbbreviations" value="IRI, ELMO, DBEERPEDIA"/>
     </module>
     <module name="OverloadMethodsDeclarationOrder" />
     <module name="VariableDeclarationUsageDistance" />
