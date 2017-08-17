@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
-import org.dotwebstack.framework.PostLoadExtension;
+import javax.annotation.PostConstruct;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-class OpenApiExtension implements PostLoadExtension {
+class OpenApiExtension {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiExtension.class);
 
@@ -19,7 +19,7 @@ class OpenApiExtension implements PostLoadExtension {
     this.httpConfiguration = httpConfiguration;
   }
 
-  @Override
+  @PostConstruct
   public void postLoad() {
     // Dummy statement
     if (LOG.isDebugEnabled()) {

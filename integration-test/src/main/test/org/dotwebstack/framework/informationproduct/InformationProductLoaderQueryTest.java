@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import java.io.IOException;
-import org.dotwebstack.framework.Registry;
 import org.dotwebstack.framework.TestConfigurationBackend;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendSource;

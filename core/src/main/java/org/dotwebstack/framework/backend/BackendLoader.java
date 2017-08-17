@@ -1,8 +1,9 @@
 package org.dotwebstack.framework.backend;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import org.dotwebstack.framework.Registry;
+import javax.annotation.PostConstruct;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -23,20 +24,20 @@ public class BackendLoader {
 
   private static final Logger LOG = LoggerFactory.getLogger(BackendLoader.class);
 
-  private Registry registry;
-
   private ConfigurationBackend configurationBackend;
+
+  private HashMap<IRI, Backend> backends = new HashMap<>();
 
   private List<BackendFactory> backendFactories;
 
   @Autowired
-  public BackendLoader(Registry registry, ConfigurationBackend configurationBackend,
+  public BackendLoader(ConfigurationBackend configurationBackend,
       List<BackendFactory> backendFactories) {
-    this.registry = Objects.requireNonNull(registry);
     this.configurationBackend = Objects.requireNonNull(configurationBackend);
     this.backendFactories = Objects.requireNonNull(backendFactories);
   }
 
+  @PostConstruct
   public void load() {
     Model backendModel;
 
@@ -48,11 +49,23 @@ public class BackendLoader {
     }
 
     backendModel.subjects().forEach(identifier -> {
-      Backend backend =
-          createBackend(backendModel.filter(identifier, null, null), (IRI) identifier);
-      registry.registerBackend(backend);
+      IRI backendIri = (IRI) identifier;
+      Backend backend = createBackend(backendModel.filter(backendIri, null, null), (IRI) identifier);
+      backends.put(backendIri, backend);
       LOG.info("Registered backend: <{}>", backend.getIdentifier());
     });
+  }
+
+  public Backend getBackend(IRI identifier) {
+    if (!backends.containsKey(identifier)) {
+      throw new IllegalArgumentException(String.format("Backend <%s> not found.", identifier));
+    }
+
+    return backends.get(identifier);
+  }
+
+  public int getNumberOfBackends() {
+    return backends.size();
   }
 
   private Backend createBackend(Model backendModel, IRI identifier) {
