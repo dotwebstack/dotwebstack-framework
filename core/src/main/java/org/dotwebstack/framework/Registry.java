@@ -3,6 +3,8 @@ package org.dotwebstack.framework;
 import java.util.HashMap;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.site.Site;
+import org.dotwebstack.framework.stage.Stage;
 import org.eclipse.rdf4j.model.IRI;
 import org.springframework.stereotype.Service;
 
@@ -21,9 +23,13 @@ public class Registry {
     backends.put(backend.getIdentifier(), backend);
   }
 
-  public void registerSite(Site site) { sites.put(site.getIdentifier(), site); }
+  public void registerSite(Site site) {
+    sites.put(site.getIdentifier(), site);
+  }
 
-  public void registerStage(Stage stage) { stages.put(stage.getIdentifier(), stage); }
+  public void registerStage(Stage stage) {
+    stages.put(stage.getIdentifier(), stage);
+  }
 
   public void registerInformationProduct(InformationProduct product) {
     informationProducts.put(product.getIdentifier(), product);
