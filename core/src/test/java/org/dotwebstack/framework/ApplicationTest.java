@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import org.dotwebstack.framework.backend.BackendLoader;
 import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.informationproduct.InformationProductLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -21,11 +22,13 @@ public class ApplicationTest {
   @Mock
   private BackendLoader backendLoader;
 
+  @Mock
+  private InformationProductLoader informationProductLoader;
+
   @Test
   public void loaderMethodsCalled() throws IOException {
-    // Arrange
-    Application application =
-        new Application(configurationBackend, backendLoader, ImmutableList.of());
+    Application application = new Application(configurationBackend, backendLoader,
+        informationProductLoader, ImmutableList.of());
 
     // Act
     application.load();
@@ -33,6 +36,7 @@ public class ApplicationTest {
     // Assert
     verify(configurationBackend).initialize();
     verify(backendLoader).load();
+    verify(informationProductLoader).load();
   }
 
   @Test
@@ -41,7 +45,7 @@ public class ApplicationTest {
     PostLoadExtension postLoadExtensionA = mock(PostLoadExtension.class);
     PostLoadExtension postLoadExtensionB = mock(PostLoadExtension.class);
     Application application = new Application(configurationBackend, backendLoader,
-        ImmutableList.of(postLoadExtensionA, postLoadExtensionB));
+        informationProductLoader, ImmutableList.of(postLoadExtensionA, postLoadExtensionB));
 
     // Act
     application.load();

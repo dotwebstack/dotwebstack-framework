@@ -10,6 +10,8 @@ public final class ELMO {
 
   public static final IRI INFORMATION_PRODUCT;
 
+  public static final IRI QUERY;
+
   public static final IRI BACKEND;
 
   public static final IRI SPARQL_BACKEND;
@@ -29,6 +31,7 @@ public final class ELMO {
 
     // Properties
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
+    QUERY = valueFactory.createIRI(ELMO.NAMESPACE, "query");
   }
 
   private ELMO() {

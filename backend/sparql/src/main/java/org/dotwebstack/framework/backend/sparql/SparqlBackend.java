@@ -2,7 +2,12 @@ package org.dotwebstack.framework.backend.sparql;
 
 import java.util.Objects;
 import org.dotwebstack.framework.backend.Backend;
+import org.dotwebstack.framework.backend.BackendSource;
+import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.util.Models;
 
 class SparqlBackend implements Backend {
 
@@ -18,6 +23,15 @@ class SparqlBackend implements Backend {
   @Override
   public IRI getIdentifier() {
     return identifier;
+  }
+
+  @Override
+  public BackendSource createSource(Model model) {
+    String query = Models.objectString(model.filter(null, ELMO.QUERY, null))
+        .orElseThrow(() -> new ConfigurationException(String.format(
+            "No <%s> query has been found for backend source <%s>.", ELMO.QUERY, identifier)));
+
+    return new SparqlBackendSource.Builder(this, query).build();
   }
 
   public String getEndpoint() {
