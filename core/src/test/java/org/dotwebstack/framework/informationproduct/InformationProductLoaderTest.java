@@ -15,8 +15,8 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -62,15 +62,12 @@ public class InformationProductLoaderTest {
   @Mock
   private BackendSource backendSource;
 
-  @Mock
-  private IRI backendIri, identifier, identifier2;
-
   @Captor
   private ArgumentCaptor<InformationProduct> productArgumentCaptor;
 
-  private InformationProductLoader informationProductLoader;
-
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
+  private InformationProductLoader informationProductLoader;
 
   @Before
   public void setUp() {
@@ -86,8 +83,10 @@ public class InformationProductLoaderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(identifier, RDF.TYPE, ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(identifier, ELMO.BACKEND, backendIri))));
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+                ELMO.INFORMATION_PRODUCT),
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, ELMO.BACKEND,
+                DBEERPEDIA.BACKEND))));
 
     when(registry.getBackend(any())).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
@@ -104,10 +103,14 @@ public class InformationProductLoaderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(identifier, RDF.TYPE, ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(identifier2, RDF.TYPE, ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(identifier, ELMO.BACKEND, backendIri),
-            valueFactory.createStatement(identifier2, ELMO.BACKEND, backendIri))));
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+                ELMO.INFORMATION_PRODUCT),
+            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
+                ELMO.INFORMATION_PRODUCT),
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, ELMO.BACKEND,
+                DBEERPEDIA.BACKEND),
+            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND,
+                DBEERPEDIA.BACKEND))));
 
     when(registry.getBackend(any())).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
@@ -124,11 +127,14 @@ public class InformationProductLoaderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(identifier, RDF.TYPE, ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(identifier, ELMO.BACKEND, backendIri),
-            valueFactory.createStatement(identifier, RDFS.LABEL, valueFactory.createLiteral("label")))));
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+                ELMO.INFORMATION_PRODUCT),
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, ELMO.BACKEND,
+                DBEERPEDIA.BACKEND),
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
+                valueFactory.createLiteral("label")))));
 
-    when(registry.getBackend(backendIri)).thenReturn(backend);
+    when(registry.getBackend(DBEERPEDIA.BACKEND)).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
 
     // Act
@@ -137,7 +143,8 @@ public class InformationProductLoaderTest {
     // Assert
     verify(registry).registerInformationProduct(productArgumentCaptor.capture());
     assertThat(productArgumentCaptor.getValue().getBackendSource(), equalTo(backendSource));
-    assertThat(productArgumentCaptor.getValue().getIdentifier(), equalTo(identifier));
+    assertThat(productArgumentCaptor.getValue().getIdentifier(),
+        equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
     assertThat(productArgumentCaptor.getValue().getLabel(), equalTo("label"));
   }
 
@@ -147,12 +154,14 @@ public class InformationProductLoaderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(identifier, RDF.TYPE, ELMO.INFORMATION_PRODUCT))));
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+                ELMO.INFORMATION_PRODUCT))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
-        String.format("No <%s> backend has been found for information product <%s>.", ELMO.BACKEND, identifier));
+        String.format("No <%s> backend has been found for information product <%s>.", ELMO.BACKEND,
+            DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
 
     // Act
     informationProductLoader.load();

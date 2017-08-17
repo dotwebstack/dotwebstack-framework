@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -22,7 +23,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class SparqlBackendCreateSourceTest {
 
   @Mock
-  IRI identifier;
+  private IRI identifier;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -38,7 +39,7 @@ public class SparqlBackendCreateSourceTest {
   public void sourceIsCreated() {
     // Arrange
     Model backendSourceModel =
-        new ModelBuilder().add(identifier, ELMO.QUERY, "myQuery").build();
+        new ModelBuilder().add(identifier, ELMO.QUERY, DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
     BackendSource backendSource = backend.createSource(backendSourceModel);
@@ -46,7 +47,8 @@ public class SparqlBackendCreateSourceTest {
     // Assert
     assertThat(backendSource.getBackend(), equalTo(backend));
     assertThat(backendSource, instanceOf(SparqlBackendSource.class));
-    assertThat(((SparqlBackendSource)backendSource).getQuery(), equalTo("myQuery"));
+    assertThat(((SparqlBackendSource) backendSource).getQuery(),
+        equalTo(DBEERPEDIA.SELECT_ALL_QUERY.stringValue()));
   }
 
   @Test
