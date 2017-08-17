@@ -2,6 +2,7 @@ package org.dotwebstack.framework;
 
 import java.util.HashMap;
 import org.dotwebstack.framework.backend.Backend;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 import org.springframework.stereotype.Service;
 

@@ -8,11 +8,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import java.io.IOException;
-import org.dotwebstack.framework.InformationProduct;
 import org.dotwebstack.framework.Registry;
+import org.dotwebstack.framework.TestConfigurationBackend;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendSource;
-import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -21,9 +20,6 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -119,43 +115,5 @@ public class InformationProductLoaderQueryTest {
     assertThat(informationProduct2.getBackendSource(), equalTo(backendSource2));
     assertThat(informationProduct2.getLabel(), equalTo("myLabel2"));
     assertThat(informationProduct2.getIdentifier(), equalTo(informationProductIRI2));
-  }
-
-  public class TestConfigurationBackend implements ConfigurationBackend {
-
-    private SailRepository sailRepository;
-
-    public TestConfigurationBackend() throws IOException {
-      this.initialize();
-    }
-
-    @Override
-    public void initialize() throws IOException {
-      MemoryStore sail = new MemoryStore();
-      //sail.setPersist(true);
-
-      sailRepository = new SailRepository(sail);
-      sailRepository.initialize();
-
-      clearAllData();
-    }
-
-    private void clearAllData() {
-      try(RepositoryConnection connection = sailRepository.getConnection()) {
-        connection.clear();
-      }
-    }
-
-    @Override
-    public SailRepository getRepository() {
-      return sailRepository;
-    }
-
-    public void addModel(Model model) {
-      try(RepositoryConnection connection = sailRepository.getConnection()) {
-        connection.add(model);
-        connection.commit();
-      }
-    }
   }
 }

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.backend.Backend;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 import org.hamcrest.Matchers;
 import org.junit.Before;

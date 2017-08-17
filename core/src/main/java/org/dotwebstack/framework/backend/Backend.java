@@ -7,5 +7,6 @@ public interface Backend {
 
   IRI getIdentifier();
 
-  BackendSource createSource(Model model);
+  BackendSource createSource(Model statements);
+
 }

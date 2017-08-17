@@ -43,6 +43,7 @@
     <module>core</module>
     <module>frontend</module>
     <module>test</module>
+    <module>integration-test</module>
   </modules>
 
   <dependencyManagement>

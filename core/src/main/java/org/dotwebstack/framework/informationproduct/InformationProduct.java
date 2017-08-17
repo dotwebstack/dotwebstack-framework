@@ -1,4 +1,4 @@
-package org.dotwebstack.framework;
+package org.dotwebstack.framework.informationproduct;
 
 import java.util.Objects;
 import org.dotwebstack.framework.backend.BackendSource;
