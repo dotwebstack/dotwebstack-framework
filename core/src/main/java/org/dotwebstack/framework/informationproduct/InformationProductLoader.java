@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class InformationProductLoader {
-  private static final Logger LOG = LoggerFactory.getLogger(BackendLoader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(InformationProductLoader.class);
 
   private final BackendLoader backendLoader;
   private final ConfigurationBackend configurationBackend;
