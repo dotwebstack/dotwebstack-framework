@@ -12,11 +12,11 @@ import org.dotwebstack.framework.Registry;
 import org.dotwebstack.framework.TestConfigurationBackend;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendSource;
+import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -45,8 +45,6 @@ public class InformationProductLoaderQueryTest {
 
   private InformationProductLoader informationProductLoader;
 
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
-
   private TestConfigurationBackend configurationBackend;
 
   @Before
@@ -59,11 +57,10 @@ public class InformationProductLoaderQueryTest {
   @Test
   public void loadInformationProduct() {
     // Arrange
-    IRI informationProductIRI = valueFactory.createIRI("http://example.org/InformationProduct");
-    IRI backendIRI = valueFactory.createIRI("http://example.org/myBackend");
-    addTriples(informationProductIRI, backendIRI, "myLabel");
+    addTriples(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, DBEERPEDIA.BACKEND,
+        DBEERPEDIA.BREWERIES_LABEL);
 
-    when(registry.getBackend(backendIRI)).thenReturn(backend);
+    when(registry.getBackend(DBEERPEDIA.BACKEND)).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
 
     // Act
@@ -72,11 +69,13 @@ public class InformationProductLoaderQueryTest {
     // Assert
     verify(registry).registerInformationProduct(productArgumentCaptor.capture());
     assertThat(productArgumentCaptor.getValue().getBackendSource(), equalTo(backendSource));
-    assertThat(productArgumentCaptor.getValue().getLabel(), equalTo("myLabel"));
-    assertThat(productArgumentCaptor.getValue().getIdentifier(), equalTo(informationProductIRI));
+    assertThat(productArgumentCaptor.getValue().getLabel(),
+        equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
+    assertThat(productArgumentCaptor.getValue().getIdentifier(),
+        equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
   }
 
-  private void addTriples(IRI informationProductIRI, IRI backendIRI, String label) {
+  private void addTriples(IRI informationProductIRI, IRI backendIRI, Literal label) {
     Model informationProductTriples = new ModelBuilder().subject(informationProductIRI)
         .add(RDF.TYPE, ELMO.INFORMATION_PRODUCT)
         .add(RDFS.LABEL, label)
@@ -84,20 +83,17 @@ public class InformationProductLoaderQueryTest {
     configurationBackend.addModel(informationProductTriples);
   }
 
-
   @Test
   public void loadTwoInformationProducts() {
     // Arrange
-    IRI informationProductIRI1 = valueFactory.createIRI("http://example.org/InformationProduct1");
-    IRI informationProductIRI2 = valueFactory.createIRI("http://example.org/InformationProduct2");
-    IRI backendIRI1 = valueFactory.createIRI("http://example.org/myBackend1");
-    IRI backendIRI2 = valueFactory.createIRI("http://example.org/myBackend2");
-    addTriples(informationProductIRI1, backendIRI1, "myLabel1");
-    addTriples(informationProductIRI2, backendIRI2, "myLabel2");
+    addTriples(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, DBEERPEDIA.BACKEND,
+        DBEERPEDIA.BREWERIES_LABEL);
+    addTriples(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.SECOND_BACKEND,
+        DBEERPEDIA.WINERIES_LABEL);
 
-    when(registry.getBackend(backendIRI1)).thenReturn(backend);
+    when(registry.getBackend(DBEERPEDIA.BACKEND)).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
-    when(registry.getBackend(backendIRI2)).thenReturn(backend2);
+    when(registry.getBackend(DBEERPEDIA.SECOND_BACKEND)).thenReturn(backend2);
     when(backend2.createSource(any())).thenReturn(backendSource2);
 
     // Act
@@ -108,12 +104,13 @@ public class InformationProductLoaderQueryTest {
 
     InformationProduct informationProduct1 = productArgumentCaptor.getAllValues().get(0);
     assertThat(informationProduct1.getBackendSource(), equalTo(backendSource));
-    assertThat(informationProduct1.getLabel(), equalTo("myLabel1"));
-    assertThat(informationProduct1.getIdentifier(), equalTo(informationProductIRI1));
+    assertThat(informationProduct1.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
+    assertThat(informationProduct1.getIdentifier(),
+        equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
 
     InformationProduct informationProduct2 = productArgumentCaptor.getAllValues().get(1);
     assertThat(informationProduct2.getBackendSource(), equalTo(backendSource2));
-    assertThat(informationProduct2.getLabel(), equalTo("myLabel2"));
-    assertThat(informationProduct2.getIdentifier(), equalTo(informationProductIRI2));
+    assertThat(informationProduct2.getLabel(), equalTo(DBEERPEDIA.WINERIES_LABEL.stringValue()));
+    assertThat(informationProduct2.getIdentifier(), equalTo(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT));
   }
 }
