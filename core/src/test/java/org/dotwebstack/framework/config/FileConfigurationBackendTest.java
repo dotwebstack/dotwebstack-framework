@@ -19,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -31,6 +32,9 @@ public class FileConfigurationBackendTest {
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
+  @Mock
+  private Resource elmoConfiguration;
+
   private ResourceLoader resourceLoader;
 
   private FileConfigurationBackend backend;
@@ -39,8 +43,17 @@ public class FileConfigurationBackendTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    backend = new FileConfigurationBackend();
+    backend = new FileConfigurationBackend(elmoConfiguration);
     backend.setResourceLoader(resourceLoader);
+  }
+
+  @Test
+  public void requireElmoConfigurationResource() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new FileConfigurationBackend(null);
   }
 
   @Test
