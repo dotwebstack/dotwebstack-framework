@@ -78,6 +78,7 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
       if (getOperation != null) {
         if (!getOperation.getVendorExtensions().containsKey("x-dotwebstack-information-product")) {
+          LOG.warn("Path '{}' is not mapped to an information product.", absolutePath);
           return;
         }
 

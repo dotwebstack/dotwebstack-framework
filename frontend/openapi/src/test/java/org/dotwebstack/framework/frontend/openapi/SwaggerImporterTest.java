@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ResourceLoader;
@@ -45,6 +46,9 @@ public class SwaggerImporterTest {
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
+  @Captor
+  ArgumentCaptor<Resource> resourceCaptor;
+
   @Mock
   private InformationProductLoader informationProductLoader;
 
@@ -53,6 +57,9 @@ public class SwaggerImporterTest {
 
   @Mock
   private SwaggerParser swaggerParser;
+
+  @Mock
+  private org.springframework.core.io.Resource fileResource;
 
   private ResourceLoader resourceLoader;
 
@@ -119,16 +126,15 @@ public class SwaggerImporterTest {
                 "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductLoader.getInformationProduct(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
-    ArgumentCaptor<Resource> argumentCaptor = ArgumentCaptor.forClass(Resource.class);
 
     // Act
     swaggerImporter.importDefinitions();
 
     // Assert
-    verify(httpConfiguration).registerResource(argumentCaptor.capture());
+    verify(httpConfiguration).registerResource(resourceCaptor.capture());
 
-    Resource resource = argumentCaptor.getValue();
-    assertThat(argumentCaptor.getAllValues(), hasSize(1));
+    Resource resource = resourceCaptor.getValue();
+    assertThat(resourceCaptor.getAllValues(), hasSize(1));
     assertThat(resource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/breweries"));
     assertThat(resource.getResourceMethods(), hasSize(1));
@@ -147,14 +153,13 @@ public class SwaggerImporterTest {
             "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductLoader.getInformationProduct(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
-    ArgumentCaptor<Resource> argumentCaptor = ArgumentCaptor.forClass(Resource.class);
 
     // Act
     swaggerImporter.importDefinitions();
 
     // Assert
-    verify(httpConfiguration).registerResource(argumentCaptor.capture());
-    Resource resource = argumentCaptor.getValue();
+    verify(httpConfiguration).registerResource(resourceCaptor.capture());
+    Resource resource = resourceCaptor.getValue();
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
   }
 
@@ -185,24 +190,21 @@ public class SwaggerImporterTest {
                     MediaType.APPLICATION_JSON)));
     when(informationProductLoader.getInformationProduct(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
-    ArgumentCaptor<Resource> argumentCaptor = ArgumentCaptor.forClass(Resource.class);
 
     // Act
     swaggerImporter.importDefinitions();
 
     // Assert
-    verify(httpConfiguration).registerResource(argumentCaptor.capture());
-    ResourceMethod method = argumentCaptor.getValue().getResourceMethods().get(0);
+    verify(httpConfiguration).registerResource(resourceCaptor.capture());
+    ResourceMethod method = resourceCaptor.getValue().getResourceMethods().get(0);
     assertThat(method.getProducedTypes(), hasSize(1));
     assertThat(method.getProducedTypes().get(0), equalTo(MediaType.APPLICATION_JSON_TYPE));
   }
 
   private Swagger mockDefinition() throws IOException {
-    org.springframework.core.io.Resource resource =
-        mock(org.springframework.core.io.Resource.class);
-    when(resource.getInputStream()).thenReturn(IOUtils.toInputStream("spec", "UTF-8"));
+    when(fileResource.getInputStream()).thenReturn(IOUtils.toInputStream("spec", "UTF-8"));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new org.springframework.core.io.Resource[] {resource});
+        new org.springframework.core.io.Resource[] {fileResource});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
     when(swaggerParser.parse(eq("spec"))).thenReturn(swagger);
     return swagger;

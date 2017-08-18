@@ -21,7 +21,7 @@ class SparqlBackendFactory implements BackendFactory {
             () -> new ConfigurationException(String.format(
                 "No <%s> statement has been found for backend <%s>.", ELMO.ENDPOINT, identifier)));
 
-    if (!endpoint.getDatatype().equals(XMLSchema.ANYURI)) {
+    if (!XMLSchema.ANYURI.equals(endpoint.getDatatype())) {
       throw new ConfigurationException(
           String.format("Object <%s> for backend <%s> must be of datatype <%s>.", ELMO.ENDPOINT,
               identifier, XMLSchema.ANYURI));
