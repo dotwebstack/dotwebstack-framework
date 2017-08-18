@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.stage;
 
+import java.util.Objects;
+
 import org.dotwebstack.framework.site.Site;
 import org.eclipse.rdf4j.model.IRI;
-
-import java.util.Objects;
 
 public class Stage {
   private static final String DEFAULT_BASE_PATH = "/";
