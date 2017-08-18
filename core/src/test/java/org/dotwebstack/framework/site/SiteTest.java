@@ -17,11 +17,11 @@ public class SiteTest {
     @Test
     public void builder() {
         // Act
-        Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN).build();
+        Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
 
         // Assert
         assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-        assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN));
+        assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN.stringValue()));
         assertFalse(site.isMatchAllDomain());
     }
 
