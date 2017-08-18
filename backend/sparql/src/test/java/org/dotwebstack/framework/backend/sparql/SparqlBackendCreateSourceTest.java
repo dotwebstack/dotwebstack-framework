@@ -54,12 +54,11 @@ public class SparqlBackendCreateSourceTest {
   @Test
   public void queryIsMissing() {
     // Arrange
-    Model backendSourceModel =
-        new ModelBuilder().build();
+    Model backendSourceModel = new ModelBuilder().build();
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("No <%s> query has been found for backend source <%s>.",
+    thrown.expectMessage(String.format("No <%s> statement has been found for backend source <%s>.",
         ELMO.QUERY, identifier));
 
     // Act

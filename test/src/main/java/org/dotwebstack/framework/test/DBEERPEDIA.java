@@ -32,6 +32,11 @@ public final class DBEERPEDIA {
 
   public static final IRI ORIGIN_INFORMATION_PRODUCT;
 
+  public static final String OPENAPI_DESCRIPTION = "DBeerpedia API";
+
+  public static final String OPENAPI_HOST = "dbpeerpedia.org";
+
+  public static final String OPENAPI_BASE_PATH = "/api/v1";
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();

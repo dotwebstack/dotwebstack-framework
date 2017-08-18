@@ -1,8 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi;
 
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verify;
 
-import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,13 +12,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class OpenApiExtensionTest {
 
   @Mock
-  private HttpConfiguration httpConfiguration;
+  private SwaggerImporter swaggerImporter;
 
   private OpenApiExtension openApiExtension;
 
   @Before
   public void setUp() {
-    openApiExtension = new OpenApiExtension(httpConfiguration);
+    openApiExtension = new OpenApiExtension(swaggerImporter);
   }
 
   @Test
@@ -28,7 +27,7 @@ public class OpenApiExtensionTest {
     openApiExtension.postLoad();
 
     // Assert
-    verifyZeroInteractions(httpConfiguration);
+    verify(swaggerImporter).importDefinitions();
   }
 
 }

@@ -12,7 +12,7 @@
 
   <artifactId>dotwebstack-frontend-openapi</artifactId>
 
-  <name>DotWebStack Frontend - Open API</name>
+  <name>DotWebStack Frontend - OpenAPI</name>
 
   <dependencies>
     <dependency>
@@ -27,7 +27,17 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-parser</artifactId>
+      <version>1.0.32</version>
+    </dependency>
 
+    <dependency>
+      <groupId>org.dotwebstack.framework</groupId>
+      <artifactId>dotwebstack-test</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
