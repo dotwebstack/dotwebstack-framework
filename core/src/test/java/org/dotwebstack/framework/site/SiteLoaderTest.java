@@ -65,7 +65,7 @@ public class SiteLoaderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
-            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN))));
+            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN_PROP, DBEERPEDIA.DOMAIN))));
 
     // Act
     siteLoader.load();
@@ -81,9 +81,9 @@ public class SiteLoaderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
-            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN),
+            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN_PROP, DBEERPEDIA.DOMAIN),
             valueFactory.createStatement(DBEERPEDIA.SITE_NL, RDF.TYPE, ELMO.SITE),
-            valueFactory.createStatement(DBEERPEDIA.SITE_NL, ELMO.DOMAIN, DBEERPEDIA.DOMAIN_NL))));
+            valueFactory.createStatement(DBEERPEDIA.SITE_NL, ELMO.DOMAIN_PROP, DBEERPEDIA.DOMAIN_NL))));
 
     // Act
     siteLoader.load();

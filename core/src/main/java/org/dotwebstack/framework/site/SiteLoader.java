@@ -68,7 +68,7 @@ public class SiteLoader {
             "No <%s> statement has been found for site <%s>.", RDF.TYPE, identifier)));
 
     Site.Builder builder = new Site.Builder(identifier);
-    getObjectString(statements, ELMO.DOMAIN).ifPresent(domain -> builder.domain(domain));
+    getObjectString(statements, ELMO.DOMAIN_PROP).ifPresent(domain -> builder.domain(domain));
 
     return builder.build();
   }

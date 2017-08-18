@@ -74,8 +74,8 @@ public class StageLoaderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE, DBEERPEDIA.SITE),
-            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH))));
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH_PROP, DBEERPEDIA.BASE_PATH))));
 
     // Act
     stageLoader.load();
@@ -94,10 +94,10 @@ public class StageLoaderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE, DBEERPEDIA.SITE),
-            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH_PROP, DBEERPEDIA.BASE_PATH),
             valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, RDF.TYPE, ELMO.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, ELMO.SITE, DBEERPEDIA.SITE))));
+            valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE))));
 
     // Act
     stageLoader.load();
@@ -115,7 +115,7 @@ public class StageLoaderTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("No <%s> site has been found for stage <%s>.", ELMO.SITE, DBEERPEDIA.STAGE));
+    thrown.expectMessage(String.format("No <%s> site has been found for stage <%s>.", ELMO.SITE_PROP, DBEERPEDIA.STAGE));
 
     // Act
     stageLoader.load();

@@ -65,11 +65,11 @@ public class StageLoader {
   }
 
   private Stage createStage(IRI identifier, Model statements) {
-    IRI siteIri = getIri(statements, ELMO.SITE).orElseThrow(() -> new ConfigurationException(
-        String.format("No <%s> site has been found for stage <%s>.", ELMO.SITE, identifier)));
+    IRI siteIri = getIri(statements, ELMO.SITE_PROP).orElseThrow(() -> new ConfigurationException(
+        String.format("No <%s> site has been found for stage <%s>.", ELMO.SITE_PROP, identifier)));
 
     Stage.Builder builder = new Stage.Builder(identifier, createSite(siteIri));
-    getObjectString(statements, ELMO.BASE_PATH).ifPresent(basePath -> builder.basePath(basePath));
+    getObjectString(statements, ELMO.BASE_PATH_PROP).ifPresent(basePath -> builder.basePath(basePath));
     return builder.build();
   }
 

@@ -12,11 +12,17 @@ public final class ELMO {
 
   public static final IRI SITE;
 
+  public static final IRI SITE_PROP;
+
   public static final IRI STAGE;
 
   public static final IRI BASE_PATH;
 
+  public static final IRI BASE_PATH_PROP;
+
   public static final IRI DOMAIN;
+
+  public static final IRI DOMAIN_PROP;
 
   public static final IRI QUERY;
 
@@ -33,10 +39,16 @@ public final class ELMO {
 
     // Classes
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
+
     SITE = valueFactory.createIRI(ELMO.NAMESPACE, "Site");
+    SITE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "site");
     STAGE = valueFactory.createIRI(ELMO.NAMESPACE, "Stage");
+
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "BasePath");
+    BASE_PATH_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
     DOMAIN = valueFactory.createIRI(ELMO.NAMESPACE, "Domain");
+    DOMAIN_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "domain");
+
     BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "Backend");
     SPARQL_BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "SparqlBackend");
 
