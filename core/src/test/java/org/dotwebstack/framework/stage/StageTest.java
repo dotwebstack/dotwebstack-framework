@@ -22,12 +22,14 @@ public class StageTest {
     @Test
     public void builder() {
         //Act
-        Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(DBEERPEDIA.BASE_PATH).build();
+        Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock)
+            .basePath(DBEERPEDIA.BASE_PATH.stringValue())
+            .build();
 
         // Assert
         assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
         assertThat(stage.getSite(), equalTo(siteMock));
-        assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH));
+        assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
     }
 
     @Test
