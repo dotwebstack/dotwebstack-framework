@@ -36,6 +36,7 @@ public final class DBEERPEDIA {
 
   public static final String OPENAPI_HOST = "dbpeerpedia.org";
 
+  @java.lang.SuppressWarnings("squid:S1075")
   public static final String OPENAPI_BASE_PATH = "/api/v1";
 
   static {
