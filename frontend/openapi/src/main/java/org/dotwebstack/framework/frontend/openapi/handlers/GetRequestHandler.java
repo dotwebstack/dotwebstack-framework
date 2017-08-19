@@ -20,10 +20,8 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
 
   @Override
   public Response apply(ContainerRequestContext containerRequestContext) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Handling {} request for path {}", containerRequestContext.getMethod(),
-          containerRequestContext.getUriInfo().getPath());
-    }
+    String path = containerRequestContext.getUriInfo().getPath();
+    LOG.debug("Handling GET request for path {}", path);
 
     return Response.ok(informationProduct.getIdentifier().stringValue()).build();
   }
