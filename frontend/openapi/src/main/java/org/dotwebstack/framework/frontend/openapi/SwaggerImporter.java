@@ -76,35 +76,37 @@ public class SwaggerImporter implements ResourceLoaderAware {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       Operation getOperation = pathItem.getGet();
 
-      if (getOperation != null) {
-        if (!getOperation.getVendorExtensions().containsKey("x-dotwebstack-information-product")) {
-          LOG.warn("Path '{}' is not mapped to an information product.", absolutePath);
-          return;
-        }
-
-        List<String> produces =
-            getOperation.getProduces() != null ? getOperation.getProduces() : swagger.getProduces();
-
-        if (produces == null) {
-          throw new ConfigurationException(
-              String.format("Path '%s' should produce at least one media type.", absolutePath));
-        }
-
-        IRI informationProductIdentifier = valueFactory.createIRI(
-            (String) getOperation.getVendorExtensions().get("x-dotwebstack-information-product"));
-
-        InformationProduct informationProduct =
-            informationProductLoader.getInformationProduct(informationProductIdentifier);
-
-        ResourceMethod.Builder methodBuilder =
-            resourceBuilder.addMethod("GET").handledBy(new GetRequestHandler(informationProduct));
-
-        produces.forEach(methodBuilder::produces);
-
-        LOG.debug("Mapped GET operation for request path {}", absolutePath);
+      if (getOperation == null) {
+        return;
       }
 
+      if (!getOperation.getVendorExtensions().containsKey("x-dotwebstack-information-product")) {
+        LOG.warn("Path '{}' is not mapped to an information product.", absolutePath);
+        return;
+      }
+
+      List<String> produces =
+          getOperation.getProduces() != null ? getOperation.getProduces() : swagger.getProduces();
+
+      if (produces == null) {
+        throw new ConfigurationException(
+            String.format("Path '%s' should produce at least one media type.", absolutePath));
+      }
+
+      IRI informationProductIdentifier = valueFactory.createIRI(
+          (String) getOperation.getVendorExtensions().get("x-dotwebstack-information-product"));
+
+      InformationProduct informationProduct =
+          informationProductLoader.getInformationProduct(informationProductIdentifier);
+
+      ResourceMethod.Builder methodBuilder =
+          resourceBuilder.addMethod("GET").handledBy(new GetRequestHandler(informationProduct));
+
+      produces.forEach(methodBuilder::produces);
+
       httpConfiguration.registerResource(resourceBuilder.build());
+
+      LOG.debug("Mapped GET operation for request path {}", absolutePath);
     });
   }
 

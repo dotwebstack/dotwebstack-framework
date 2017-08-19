@@ -118,10 +118,23 @@ public class SwaggerImporterTest {
   }
 
   @Test
-  public void ignoreUnmappedPaths() throws IOException {
+  public void ignoreUnmappedGetPaths() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
         new Path().get(new Operation()));
+
+    // Act
+    swaggerImporter.importDefinitions();
+
+    // Assert
+    verifyZeroInteractions(httpConfiguration);
+  }
+
+  @Test
+  public void ignoreNonGetPaths() throws IOException {
+    // Arrange
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
+        new Path().put(new Operation()));
 
     // Act
     swaggerImporter.importDefinitions();
