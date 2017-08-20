@@ -58,7 +58,7 @@ public final class DBEERPEDIA {
   }
 
   private DBEERPEDIA() {
-    throw new UnsupportedOperationException(
+    throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", DBEERPEDIA.class));
   }
 

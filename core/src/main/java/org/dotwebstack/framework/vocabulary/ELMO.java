@@ -35,7 +35,7 @@ public final class ELMO {
   }
 
   private ELMO() {
-    throw new UnsupportedOperationException(
+    throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", ELMO.class));
   }
 
