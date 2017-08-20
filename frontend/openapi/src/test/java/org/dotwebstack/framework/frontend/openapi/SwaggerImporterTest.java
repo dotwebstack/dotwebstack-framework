@@ -157,7 +157,7 @@ public class SwaggerImporterTest {
     swaggerImporter.importDefinitions();
 
     // Assert
-    verify(httpConfiguration).registerResource(resourceCaptor.capture());
+    verify(httpConfiguration).registerResources(resourceCaptor.capture());
 
     Resource resource = resourceCaptor.getValue();
     assertThat(resourceCaptor.getAllValues(), hasSize(1));
@@ -184,7 +184,7 @@ public class SwaggerImporterTest {
     swaggerImporter.importDefinitions();
 
     // Assert
-    verify(httpConfiguration).registerResource(resourceCaptor.capture());
+    verify(httpConfiguration).registerResources(resourceCaptor.capture());
     Resource resource = resourceCaptor.getValue();
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
   }
@@ -221,7 +221,7 @@ public class SwaggerImporterTest {
     swaggerImporter.importDefinitions();
 
     // Assert
-    verify(httpConfiguration).registerResource(resourceCaptor.capture());
+    verify(httpConfiguration).registerResources(resourceCaptor.capture());
     ResourceMethod method = resourceCaptor.getValue().getResourceMethods().get(0);
     assertThat(method.getProducedTypes(), hasSize(1));
     assertThat(method.getProducedTypes().get(0), equalTo(MediaType.APPLICATION_JSON_TYPE));

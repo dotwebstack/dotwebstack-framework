@@ -28,7 +28,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SwaggerImporter implements ResourceLoaderAware {
 
-  private static final Logger LOG = LoggerFactory.getLogger(OpenApiExtension.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SwaggerImporter.class);
 
   private ResourceLoader resourceLoader;
 
@@ -73,7 +73,6 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
     swagger.getPaths().forEach((path, pathItem) -> {
       String absolutePath = basePath.concat(path);
-      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       Operation getOperation = pathItem.getGet();
 
       if (getOperation == null) {
@@ -99,12 +98,14 @@ public class SwaggerImporter implements ResourceLoaderAware {
       InformationProduct informationProduct =
           informationProductLoader.getInformationProduct(informationProductIdentifier);
 
+      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+
       ResourceMethod.Builder methodBuilder =
           resourceBuilder.addMethod("GET").handledBy(new GetRequestHandler(informationProduct));
 
       produces.forEach(methodBuilder::produces);
 
-      httpConfiguration.registerResource(resourceBuilder.build());
+      httpConfiguration.registerResources(resourceBuilder.build());
 
       LOG.debug("Mapped GET operation for request path {}", absolutePath);
     });
