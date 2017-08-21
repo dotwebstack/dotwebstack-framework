@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.config;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.PostConstruct;
 import org.apache.commons.io.FilenameUtils;
@@ -19,11 +22,14 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
 
+  private final Resource elmoConfiguration;
+
   private SailRepository repository;
 
   private ResourceLoader resourceLoader;
 
-  public FileConfigurationBackend(SailRepository repository) {
+  public FileConfigurationBackend(Resource elmoConfiguration, SailRepository repository) {
+    this.elmoConfiguration = Objects.requireNonNull(elmoConfiguration);
     this.repository = repository;
     repository.initialize();
   }
@@ -40,11 +46,11 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   @PostConstruct
   public void loadResources() throws IOException {
-    Resource[] resources =
+    Resource[] projectResources =
         ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
             "classpath:**/model/*");
 
-    if (resources.length == 0) {
+    if (projectResources.length == 0) {
       LOG.info("No configuration files found");
       return;
     }
@@ -56,6 +62,8 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
+
+    List<Resource> resources = getCombinedResources(projectResources);
 
     try {
       for (Resource resource : resources) {
@@ -74,6 +82,12 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
     } finally {
       repositoryConnection.close();
     }
+  }
+
+  private List<Resource> getCombinedResources(Resource[] projectResources) {
+    List<Resource> result = new ArrayList<>(Arrays.asList(projectResources));
+    result.add(elmoConfiguration);
+    return result;
   }
 
 }
