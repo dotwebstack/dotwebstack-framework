@@ -1,4 +1,4 @@
-package org.dotwebstack.framework;
+package org.dotwebstack.framework.informationproduct;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
