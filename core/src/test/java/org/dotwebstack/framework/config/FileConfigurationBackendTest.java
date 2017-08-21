@@ -1,24 +1,19 @@
 package org.dotwebstack.framework.config;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import java.io.IOException;
-import java.io.InputStream;
-import org.eclipse.rdf4j.repository.RepositoryException;
+import java.util.List;
+import org.eclipse.rdf4j.common.iteration.Iterations;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.RDFParseException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,6 +21,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -37,10 +33,7 @@ public class FileConfigurationBackendTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private SailRepository repository;
-
-  @Mock
-  private SailRepositoryConnection repositoryConnection;
+  private Resource elmoConfiguration;
 
   private ResourceLoader resourceLoader;
 
@@ -50,30 +43,45 @@ public class FileConfigurationBackendTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    backend = new FileConfigurationBackend(repository);
+    backend = new FileConfigurationBackend(elmoConfiguration);
     backend.setResourceLoader(resourceLoader);
-    when(repository.getConnection()).thenReturn(repositoryConnection);
+  }
+
+  @Test
+  public void requireElmoConfigurationResource() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new FileConfigurationBackend(null);
+  }
+
+  @Test
+  public void getRepositoryWhenNotInitialized() {
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage("Repository cannot be retrieved until it has been initialized.");
+
+    // Act
+    backend.getRepository();
   }
 
   @Test
   public void loadTurtleFile() throws IOException {
     // Arrange
-    Resource resource = mock(Resource.class);
-    InputStream resourceInputStream = mock(InputStream.class);
-    when(resource.getInputStream()).thenReturn(resourceInputStream);
-    when(resource.getFilename()).thenReturn("config.ttl");
+    Resource resource = new ClassPathResource("model/dbpeerpedia.ttl");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
 
     // Act
-    backend.loadResources();
+    backend.initialize();
+    SailRepository repository = backend.getRepository();
 
     // Assert
-    assertThat(backend.getRepository(), equalTo(repository));
-    verify(repository).initialize();
-    verify(repositoryConnection).add(eq(resourceInputStream), eq("#"), eq(RDFFormat.TURTLE));
-    verify(repositoryConnection).close();
-    verifyNoMoreInteractions(repositoryConnection);
+    List<Statement> statements =
+        Iterations.asList(repository.getConnection().getStatements(null, null, null));
+    assertThat(repository.isInitialized(), equalTo(true));
+    assertThat(statements, not(empty()));
   }
 
   @Test
@@ -83,10 +91,14 @@ public class FileConfigurationBackendTest {
         new Resource[0]);
 
     // Act
-    backend.loadResources();
+    backend.initialize();
+    SailRepository repository = backend.getRepository();
 
     // Assert
-    verifyZeroInteractions(repositoryConnection);
+    List<Statement> statements =
+        Iterations.asList(repository.getConnection().getStatements(null, null, null));
+    assertThat(repository.isInitialized(), equalTo(true));
+    assertThat(statements, empty());
   }
 
   @Test
@@ -98,47 +110,14 @@ public class FileConfigurationBackendTest {
         new Resource[] {resource});
 
     // Act
-    backend.loadResources();
+    backend.initialize();
+    SailRepository repository = backend.getRepository();
 
     // Assert
-    verify(repositoryConnection).close();
-    verifyNoMoreInteractions(repositoryConnection);
-  }
-
-  @Test
-  public void repositoryConnectionError() throws IOException {
-    // Arrange
-    Resource resource = mock(Resource.class);
-    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[] {resource});
-    when(repository.getConnection()).thenThrow(RepositoryException.class);
-
-    // Assert
-    thrown.expect(ConfigurationException.class);
-    thrown.expectMessage("Error while getting repository connection.");
-
-    // Act
-    backend.loadResources();
-  }
-
-  @Test
-  public void dataLoadError() throws IOException {
-    // Arrange
-    Resource resource = mock(Resource.class);
-    InputStream resourceInputStream = mock(InputStream.class);
-    when(resource.getInputStream()).thenReturn(resourceInputStream);
-    when(resource.getFilename()).thenReturn("config.ttl");
-    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[] {resource});
-    doThrow(RDFParseException.class).when(repositoryConnection).add(resourceInputStream, "#",
-        RDFFormat.TURTLE);
-
-    // Assert
-    thrown.expect(ConfigurationException.class);
-    thrown.expectMessage("Error while loading RDF data.");
-
-    // Act
-    backend.loadResources();
+    List<Statement> statements =
+        Iterations.asList(repository.getConnection().getStatements(null, null, null));
+    assertThat(repository.isInitialized(), equalTo(true));
+    assertThat(statements, empty());
   }
 
 }
