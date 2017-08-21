@@ -50,7 +50,7 @@ public class SwaggerImporterTest {
   ArgumentCaptor<Resource> resourceCaptor;
 
   @Mock
-  private InformationProductResourceProvider informationProductLoader;
+  private InformationProductResourceProvider informationProductResourceProvider;
 
   @Mock
   private HttpConfiguration httpConfiguration;
@@ -70,7 +70,7 @@ public class SwaggerImporterTest {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     swaggerImporter =
-        new SwaggerImporter(informationProductLoader, httpConfiguration, swaggerParser);
+        new SwaggerImporter(informationProductResourceProvider, httpConfiguration, swaggerParser);
     swaggerImporter.setResourceLoader(resourceLoader);
   }
 
@@ -84,7 +84,7 @@ public class SwaggerImporterTest {
     swaggerImporter.importDefinitions();
 
     // Assert
-    verifyZeroInteractions(informationProductLoader);
+    verifyZeroInteractions(informationProductResourceProvider);
     verifyZeroInteractions(httpConfiguration);
   }
 
@@ -136,7 +136,7 @@ public class SwaggerImporterTest {
         MediaType.TEXT_PLAIN).path("/breweries",
             new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
                 "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
-    when(informationProductLoader.get(DBEERPEDIA.BREWERIES)).thenReturn(
+    when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 
     // Act
@@ -163,7 +163,7 @@ public class SwaggerImporterTest {
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.TEXT_PLAIN).path("/breweries",
         new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
             "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
-    when(informationProductLoader.get(DBEERPEDIA.BREWERIES)).thenReturn(
+    when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 
     // Act
@@ -200,7 +200,7 @@ public class SwaggerImporterTest {
             new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
                 "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
                     MediaType.APPLICATION_JSON)));
-    when(informationProductLoader.get(DBEERPEDIA.BREWERIES)).thenReturn(
+    when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 
     // Act
