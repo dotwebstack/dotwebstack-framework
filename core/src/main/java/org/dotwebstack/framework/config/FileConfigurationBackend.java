@@ -49,10 +49,10 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
       return;
     }
 
-    RepositoryConnection conn;
+    RepositoryConnection repositoryConnection;
 
     try {
-      conn = repository.getConnection();
+      repositoryConnection = repository.getConnection();
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
@@ -66,13 +66,13 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
           continue;
         }
 
-        conn.add(resource.getInputStream(), "#", FileFormats.getFormat(extension));
+        repositoryConnection.add(resource.getInputStream(), "#", FileFormats.getFormat(extension));
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
     } catch (RDF4JException e) {
       throw new ConfigurationException("Error while loading RDF data.", e);
     } finally {
-      conn.close();
+      repositoryConnection.close();
     }
   }
 
