@@ -51,6 +51,7 @@ public class InformationProduct {
     public InformationProduct build() {
       return new InformationProduct(this);
     }
+
   }
 
 }

@@ -23,9 +23,7 @@ class LdExtension {
   @PostConstruct
   public void postLoad() {
     // Dummy statement
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(httpConfiguration.toString());
-    }
+    LOG.debug(httpConfiguration.getClass().getName());
   }
 
 }

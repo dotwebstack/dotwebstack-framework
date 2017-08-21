@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -20,7 +21,9 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
 import org.junit.Before;
@@ -32,7 +35,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BackendLoaderTest {
+public class BackendResourceProviderTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -55,7 +58,7 @@ public class BackendLoaderTest {
   @Mock
   private Backend backend;
 
-  private BackendLoader backendLoader;
+  private BackendResourceProvider backendResourceProvider;
 
   private List<BackendFactory> backendFactories;
 
@@ -64,7 +67,7 @@ public class BackendLoaderTest {
   @Before
   public void setUp() {
     backendFactories = ImmutableList.of(backendFactory);
-    backendLoader = new BackendLoader(configurationBackend, backendFactories);
+    backendResourceProvider = new BackendResourceProvider(configurationBackend, backendFactories);
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
@@ -74,10 +77,10 @@ public class BackendLoaderTest {
   public void backendNotFound() {
     // Assert
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(String.format("Backend <%s> not found.", DBEERPEDIA.BACKEND));
+    thrown.expectMessage(String.format("Resource <%s> not found.", DBEERPEDIA.BACKEND));
 
     // Act
-    backendLoader.getBackend(DBEERPEDIA.BACKEND);
+    backendResourceProvider.get(DBEERPEDIA.BACKEND);
   }
 
   @Test
@@ -89,14 +92,13 @@ public class BackendLoaderTest {
             valueFactory.createStatement(DBEERPEDIA.BACKEND, ELMO.ENDPOINT, DBEERPEDIA.ENDPOINT))));
     when(backendFactory.create(any(Model.class), eq(DBEERPEDIA.BACKEND))).thenReturn(backend);
     when(backendFactory.supports(any(IRI.class))).thenReturn(true);
-    when(backend.getIdentifier()).thenReturn(DBEERPEDIA.BREWERIES);
 
     // Act
-    backendLoader.load();
+    backendResourceProvider.loadResources();
 
     // Assert
-    assertThat(backendLoader.getNumberOfBackends(), equalTo(1));
-    assertThat(backendLoader.getBackend(DBEERPEDIA.BACKEND), equalTo(backend));
+    assertThat(backendResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(backendResourceProvider.get(DBEERPEDIA.BACKEND), equalTo(backend));
   }
 
   @Test
@@ -111,10 +113,10 @@ public class BackendLoaderTest {
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
-        String.format("No backend factories available for type <%s>.", ELMO.SPARQL_BACKEND));
+        String.format("No backend factory available for type <%s>.", ELMO.SPARQL_BACKEND));
 
     // Act
-    backendLoader.load();
+    backendResourceProvider.loadResources();
   }
 
   @Test
@@ -130,7 +132,33 @@ public class BackendLoaderTest {
         RDF.TYPE, DBEERPEDIA.BACKEND));
 
     // Act
-    backendLoader.load();
+    backendResourceProvider.loadResources();
+  }
+
+  @Test
+  public void repositoryConnectionError() {
+    // Arrange
+    when(configurationRepository.getConnection()).thenThrow(RepositoryException.class);
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage("Error while getting repository connection.");
+
+    // Act
+    backendResourceProvider.loadResources();
+  }
+
+  @Test
+  public void queryEvaluationError() {
+    // Arrange
+    when(graphQuery.evaluate()).thenThrow(QueryEvaluationException.class);
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage("Error while evaluating SPARQL query.");
+
+    // Act
+    backendResourceProvider.loadResources();
   }
 
 }
