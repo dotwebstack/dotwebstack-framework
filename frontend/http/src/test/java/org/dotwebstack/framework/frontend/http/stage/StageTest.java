@@ -15,49 +15,49 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class StageTest {
 
-    @Mock
-    Site siteMock;
+  @Mock
+  Site siteMock;
 
-    @Test
-    public void builder() {
-        //Act
-        Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock)
-            .basePath(DBEERPEDIA.BASE_PATH.stringValue())
-            .build();
+  @Test
+  public void builder() {
+    //Act
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock)
+        .basePath(DBEERPEDIA.BASE_PATH.stringValue())
+        .build();
 
-        // Assert
-        assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-        assertThat(stage.getSite(), equalTo(siteMock));
-        assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
-    }
+    // Assert
+    assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertThat(stage.getSite(), equalTo(siteMock));
+    assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
+  }
 
-    @Test
-    public void builderWithDefaultValues() {
-        //Act
-        Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).build();
+  @Test
+  public void builderWithDefaultValues() {
+    //Act
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).build();
 
-        // Assert
-        assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-        assertThat(stage.getSite(), equalTo(siteMock));
-        assertThat(stage.getBasePath(), equalTo("/"));
-    }
+    // Assert
+    assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertThat(stage.getSite(), equalTo(siteMock));
+    assertThat(stage.getBasePath(), equalTo("/"));
+  }
 
-    @Test(expected = NullPointerException.class)
-    public void buildWithMandatoryNullValues1() {
-        // Act
-        Stage stage = new Stage.Builder(null, null).build();
-    }
+  @Test(expected = NullPointerException.class)
+  public void buildWithMandatoryNullValues1() {
+    // Act
+    Stage stage = new Stage.Builder(null, null).build();
+  }
 
-    @Test(expected = NullPointerException.class)
-    public void buildWithMandatoryNullValues2() {
-        // Act
-        Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, null).build();
-    }
+  @Test(expected = NullPointerException.class)
+  public void buildWithMandatoryNullValues2() {
+    // Act
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, null).build();
+  }
 
-    @Test(expected = NullPointerException.class)
-    public void buildWithOptionalNullValues() {
-        // Act
-        Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(null).build();
-    }
+  @Test(expected = NullPointerException.class)
+  public void buildWithOptionalNullValues() {
+    // Act
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(null).build();
+  }
 
 }

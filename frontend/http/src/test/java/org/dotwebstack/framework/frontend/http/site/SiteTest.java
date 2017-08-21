@@ -13,37 +13,37 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SiteTest {
 
-    @Test
-    public void builder() {
-        // Act
-        Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
+  @Test
+  public void builder() {
+    // Act
+    Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
 
-        // Assert
-        assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-        assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN.stringValue()));
-        assertFalse(site.isMatchAllDomain());
-    }
+    // Assert
+    assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN.stringValue()));
+    assertFalse(site.isMatchAllDomain());
+  }
 
-    @Test
-    public void builderWithDefaultValues() {
-        // Act
-        Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
+  @Test
+  public void builderWithDefaultValues() {
+    // Act
+    Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
 
-        // Assert
-        assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-        assertTrue(site.isMatchAllDomain());
-    }
+    // Assert
+    assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertTrue(site.isMatchAllDomain());
+  }
 
-    @Test(expected = NullPointerException.class)
-    public void builderWithMandatoryNullValues() {
-        // Act
-        Site site = new Site.Builder(null).build();
-    }
+  @Test(expected = NullPointerException.class)
+  public void builderWithMandatoryNullValues() {
+    // Act
+    Site site = new Site.Builder(null).build();
+  }
 
-    @Test(expected = NullPointerException.class)
-    public void builderWithOptionalNullValues() {
-        // Act
-        Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(null).build();
-    }
+  @Test(expected = NullPointerException.class)
+  public void builderWithOptionalNullValues() {
+    // Act
+    Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(null).build();
+  }
 
 }
