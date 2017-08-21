@@ -3,13 +3,12 @@ package org.dotwebstack.framework.informationproduct;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import java.io.IOException;
 import org.dotwebstack.framework.TestConfigurationBackend;
 import org.dotwebstack.framework.backend.Backend;
+import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -28,10 +27,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class InformationProductLoaderQueryTest {
+public class InformationProductResourceProviderQueryTest {
 
   @Mock
-  private Registry registry;
+  private BackendResourceProvider backendResourceProvider;
 
   @Mock
   private Backend backend, backend2;
@@ -42,15 +41,15 @@ public class InformationProductLoaderQueryTest {
   @Captor
   private ArgumentCaptor<InformationProduct> productArgumentCaptor;
 
-  private InformationProductLoader informationProductLoader;
+  private InformationProductResourceProvider informationProductResourceProvider;
 
   private TestConfigurationBackend configurationBackend;
 
   @Before
   public void setUp() throws IOException {
     configurationBackend = new TestConfigurationBackend();
-    informationProductLoader = new InformationProductLoader(registry,
-        configurationBackend);
+    informationProductResourceProvider = new InformationProductResourceProvider(
+        configurationBackend, backendResourceProvider);
   }
 
   @Test
@@ -59,14 +58,13 @@ public class InformationProductLoaderQueryTest {
     addTriples(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, DBEERPEDIA.BACKEND,
         DBEERPEDIA.BREWERIES_LABEL);
 
-    when(registry.getBackend(DBEERPEDIA.BACKEND)).thenReturn(backend);
+    when(backendResourceProvider.get(DBEERPEDIA.BACKEND)).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
 
     // Act
-    informationProductLoader.load();
+    informationProductResourceProvider.loadResources();
 
     // Assert
-    verify(registry).registerInformationProduct(productArgumentCaptor.capture());
     assertThat(productArgumentCaptor.getValue().getBackendSource(), equalTo(backendSource));
     assertThat(productArgumentCaptor.getValue().getLabel(),
         equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
@@ -90,17 +88,15 @@ public class InformationProductLoaderQueryTest {
     addTriples(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.SECOND_BACKEND,
         DBEERPEDIA.WINERIES_LABEL);
 
-    when(registry.getBackend(DBEERPEDIA.BACKEND)).thenReturn(backend);
+    when(backendResourceProvider.get(DBEERPEDIA.BACKEND)).thenReturn(backend);
     when(backend.createSource(any())).thenReturn(backendSource);
-    when(registry.getBackend(DBEERPEDIA.SECOND_BACKEND)).thenReturn(backend2);
+    when(backendResourceProvider.get(DBEERPEDIA.SECOND_BACKEND)).thenReturn(backend2);
     when(backend2.createSource(any())).thenReturn(backendSource2);
 
     // Act
-    informationProductLoader.load();
+    informationProductResourceProvider.loadResources();
 
     // Assert
-    verify(registry, times(2)).registerInformationProduct(productArgumentCaptor.capture());
-
     InformationProduct informationProduct1 = productArgumentCaptor.getAllValues().get(0);
     assertThat(informationProduct1.getBackendSource(), equalTo(backendSource));
     assertThat(informationProduct1.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
