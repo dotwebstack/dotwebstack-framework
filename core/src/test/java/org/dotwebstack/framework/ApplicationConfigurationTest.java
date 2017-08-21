@@ -7,8 +7,16 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.io.Resource;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ApplicationConfigurationTest {
+
+  @Mock
+  private Resource resource;
 
   ApplicationConfiguration applicationConfiguration;
 
@@ -20,7 +28,7 @@ public class ApplicationConfigurationTest {
   @Test
   public void getConfigurationBackend() {
     // Act
-    ConfigurationBackend backend = applicationConfiguration.configurationBackend();
+    ConfigurationBackend backend = applicationConfiguration.configurationBackend(resource);
 
     // Assert
     assertThat(backend, instanceOf(FileConfigurationBackend.class));
