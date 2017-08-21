@@ -6,33 +6,24 @@
 
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
-    <artifactId>dotwebstack-frontend</artifactId>
+    <artifactId>dotwebstack-framework</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>dotwebstack-frontend-openapi</artifactId>
+  <artifactId>dotwebstack-integration-test</artifactId>
 
-  <name>DotWebStack Frontend - OpenAPI</name>
+  <name>DotWebStack Integration Test</name>
 
   <dependencies>
     <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-model</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.dotwebstack.framework</groupId>
       <artifactId>dotwebstack-core</artifactId>
+      <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>dotwebstack-frontend-http</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.swagger</groupId>
-      <artifactId>swagger-parser</artifactId>
-      <version>1.0.32</version>
-    </dependency>
-
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
       <artifactId>dotwebstack-test</artifactId>

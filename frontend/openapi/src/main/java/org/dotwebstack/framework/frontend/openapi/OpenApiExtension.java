@@ -1,30 +1,22 @@
 package org.dotwebstack.framework.frontend.openapi;
 
-import org.dotwebstack.framework.PostLoadExtension;
-import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-class OpenApiExtension implements PostLoadExtension {
+class OpenApiExtension {
 
-  private static final Logger LOG = LoggerFactory.getLogger(OpenApiExtension.class);
-
-  private HttpConfiguration httpConfiguration;
+  private SwaggerImporter swaggerImporter;
 
   @Autowired
-  public OpenApiExtension(HttpConfiguration httpConfiguration) {
-    this.httpConfiguration = httpConfiguration;
+  public OpenApiExtension(SwaggerImporter swaggerImporter) {
+    this.swaggerImporter = swaggerImporter;
   }
 
-  @Override
+  @PostConstruct
   public void postLoad() {
-    // Dummy statement
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(httpConfiguration.toString());
-    }
+    swaggerImporter.importDefinitions();
   }
 
 }
