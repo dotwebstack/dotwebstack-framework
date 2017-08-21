@@ -1,15 +1,16 @@
-package org.dotwebstack.framework.site;
+package org.dotwebstack.framework.stage;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.site.Site;
+import org.dotwebstack.framework.site.SiteResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -24,15 +25,22 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SiteLoaderTest {
+public class StageResourceProviderTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
+
+  @Mock
+  private SiteResourceProvider siteResourceProvider;
+
+  @Mock
+  private Site site;
 
   @Mock
   private ConfigurationBackend configurationBackend;
@@ -48,62 +56,70 @@ public class SiteLoaderTest {
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-  private SiteLoader siteLoader;
+  private StageResourceProvider stageResourceProvider;
 
   @Before
   public void setUp() {
-    siteLoader = new SiteLoader(configurationBackend);
+    stageResourceProvider = new StageResourceProvider(configurationBackend, siteResourceProvider);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
+
+    when(siteResourceProvider.get(any())).thenReturn(site);
   }
 
   @Test
-  public void loadSite() {
+  public void loadStage() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
-            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN_PROP, DBEERPEDIA.DOMAIN))));
+            valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH_PROP, DBEERPEDIA.BASE_PATH))));
 
     // Act
-    siteLoader.load();
+    stageResourceProvider.loadResources();
 
     // Assert
-    assertThat(siteLoader.getNumberOfSites(), equalTo(1));
-    assertThat(siteLoader.getSite(DBEERPEDIA.SITE), is(not(nullValue())));
+    assertThat(stageResourceProvider.getAll().entrySet(), hasSize(1));
+    Stage stage = stageResourceProvider.get(DBEERPEDIA.STAGE);
+    assertThat(stage, is(not(nullValue())));
+    assertThat(stage.getSite(), equalTo(site));
+    assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
   }
 
   @Test
-  public void loadsSeveralSites() {
+  public void loadMultipleStages() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
-            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN_PROP, DBEERPEDIA.DOMAIN),
-            valueFactory.createStatement(DBEERPEDIA.SITE_NL, RDF.TYPE, ELMO.SITE),
-            valueFactory.createStatement(DBEERPEDIA.SITE_NL, ELMO.DOMAIN_PROP, DBEERPEDIA.DOMAIN_NL))));
+            valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH_PROP, DBEERPEDIA.BASE_PATH),
+            valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, RDF.TYPE, ELMO.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE))));
 
     // Act
-    siteLoader.load();
+    stageResourceProvider.loadResources();
 
     // Assert
-    assertThat(siteLoader.getNumberOfSites(), equalTo(2));
+    assertThat(stageResourceProvider.getAll().entrySet(), hasSize(2));
   }
 
   @Test
-  public void loadCatchAllSite() {
+  public void expectsSite() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE))));
-
-    // Act
-    siteLoader.load();
+            valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE))));
 
     // Assert
-    assertThat(siteLoader.getNumberOfSites(), equalTo(1));
-    assertThat(siteLoader.getSite(DBEERPEDIA.SITE), is(not(nullValue())));
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("No <%s> site has been found for stage <%s>.", ELMO.SITE_PROP, DBEERPEDIA.STAGE));
+
+    // Act
+    stageResourceProvider.loadResources();
+
   }
 }
