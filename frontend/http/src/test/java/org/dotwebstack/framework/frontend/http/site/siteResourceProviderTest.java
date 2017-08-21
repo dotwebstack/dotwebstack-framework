@@ -1,15 +1,13 @@
-package org.dotwebstack.framework.site;
+package org.dotwebstack.framework.frontend.http.site;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.config.ConfigurationBackend;
-import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;

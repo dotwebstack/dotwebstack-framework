@@ -1,9 +1,8 @@
-package org.dotwebstack.framework.stage;
+package org.dotwebstack.framework.frontend.http.site;
 
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.site.SiteResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -15,32 +14,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StageResourceProvider extends AbstractResourceProvider<Stage> {
-
-  private SiteResourceProvider siteResourceProvider;
+public class SiteResourceProvider
+    extends AbstractResourceProvider<Site> {
 
   @Autowired
-  public StageResourceProvider(ConfigurationBackend configurationBackend,
-                               SiteResourceProvider siteResourceProvider) {
+  public SiteResourceProvider(ConfigurationBackend configurationBackend) {
     super(configurationBackend);
-    this.siteResourceProvider = siteResourceProvider;
   }
 
   @Override
   protected GraphQuery getQueryForResources(RepositoryConnection conn) {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
-    graphQuery.setBinding("type", ELMO.STAGE);
+    graphQuery.setBinding("type", ELMO.SITE);
     return graphQuery;
   }
 
   @Override
-  protected Stage createResource(Model model, IRI identifier) {
-    IRI siteIRI = getObjectIRI(model, identifier, ELMO.SITE_PROP).orElseThrow(() -> new ConfigurationException(
-        String.format("No <%s> site has been found for stage <%s>.", ELMO.SITE_PROP, identifier)));
+  protected Site createResource(Model model, IRI identifier) {
+    Models.objectIRI(model.filter(identifier, RDF.TYPE, null)).orElseThrow(
+        () -> new ConfigurationException(String.format(
+            "No <%s> statement has been found for site <%s>.", RDF.TYPE, identifier)));
 
-    Stage.Builder builder = new Stage.Builder(identifier, siteResourceProvider.get((siteIRI)));
-    getObjectString(model, identifier, ELMO.BASE_PATH_PROP).ifPresent(basePath -> builder.basePath(basePath));
+    Site.Builder builder = new Site.Builder(identifier);
+    getObjectString(model, identifier, ELMO.DOMAIN_PROP).ifPresent(domain -> builder.domain(domain));
+
     return builder.build();
   }
 }

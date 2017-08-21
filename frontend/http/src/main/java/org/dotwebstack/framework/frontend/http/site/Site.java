@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.site;
+package org.dotwebstack.framework.frontend.http.site;
 
 import java.util.Objects;
 

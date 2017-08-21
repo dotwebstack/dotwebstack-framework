@@ -1,8 +1,8 @@
-package org.dotwebstack.framework.stage;
+package org.dotwebstack.framework.frontend.http.stage;
 
 import java.util.Objects;
 
-import org.dotwebstack.framework.site.Site;
+import org.dotwebstack.framework.frontend.http.site.Site;
 import org.eclipse.rdf4j.model.IRI;
 
 public class Stage {

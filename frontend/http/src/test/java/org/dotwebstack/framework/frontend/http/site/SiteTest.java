@@ -1,11 +1,10 @@
-package org.dotwebstack.framework.site;
+package org.dotwebstack.framework.frontend.http.site;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org. junit.Assert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.dotwebstack.framework.site.Site;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,11 +1,11 @@
-package org.dotwebstack.framework.stage;
+package org.dotwebstack.framework.frontend.http.stage;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.site.Site;
-import org.dotwebstack.framework.site.SiteResourceProvider;
+import org.dotwebstack.framework.frontend.http.site.Site;
+import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.ValueFactory;
