@@ -11,7 +11,7 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandler;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.informationproduct.InformationProductLoader;
+import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -32,7 +32,7 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
   private ResourceLoader resourceLoader;
 
-  private InformationProductLoader informationProductLoader;
+  private InformationProductResourceProvider informationProductResourceProvider;
 
   private HttpConfiguration httpConfiguration;
 
@@ -41,9 +41,9 @@ public class SwaggerImporter implements ResourceLoaderAware {
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
-  public SwaggerImporter(InformationProductLoader informationProductLoader,
+  public SwaggerImporter(InformationProductResourceProvider informationProductLoader,
       HttpConfiguration httpConfiguration, SwaggerParser swaggerParser) {
-    this.informationProductLoader = Objects.requireNonNull(informationProductLoader);
+    this.informationProductResourceProvider = Objects.requireNonNull(informationProductLoader);
     this.httpConfiguration = Objects.requireNonNull(httpConfiguration);
     this.swaggerParser = Objects.requireNonNull(swaggerParser);
   }
@@ -53,18 +53,14 @@ public class SwaggerImporter implements ResourceLoaderAware {
     this.resourceLoader = Objects.requireNonNull(resourceLoader);
   }
 
-  public void importDefinitions() {
-    try {
-      org.springframework.core.io.Resource[] resources =
-          ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-              "classpath:**/openapi/*");
+  public void importDefinitions() throws IOException {
+    org.springframework.core.io.Resource[] resources =
+        ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
+            "classpath:**/openapi/*");
 
-      for (org.springframework.core.io.Resource resource : resources) {
-        Swagger swagger = swaggerParser.parse(IOUtils.toString(resource.getInputStream(), "UTF-8"));
-        mapSwaggerDefinition(swagger);
-      }
-    } catch (IOException e) {
-      throw new ConfigurationException("Could not load OpenAPI definition documents.", e);
+    for (org.springframework.core.io.Resource resource : resources) {
+      Swagger swagger = swaggerParser.parse(IOUtils.toString(resource.getInputStream(), "UTF-8"));
+      mapSwaggerDefinition(swagger);
     }
   }
 
@@ -96,7 +92,7 @@ public class SwaggerImporter implements ResourceLoaderAware {
           (String) getOperation.getVendorExtensions().get("x-dotwebstack-information-product"));
 
       InformationProduct informationProduct =
-          informationProductLoader.getInformationProduct(informationProductIdentifier);
+          informationProductResourceProvider.get(informationProductIdentifier);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 

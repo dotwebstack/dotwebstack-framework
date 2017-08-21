@@ -9,7 +9,7 @@ public final class FileFormats {
       ImmutableMap.of("ttl", RDFFormat.TURTLE, "xml", RDFFormat.RDFXML, "json", RDFFormat.JSONLD);
 
   private FileFormats() {
-    throw new UnsupportedOperationException(
+    throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", FileFormats.class));
   }
 
