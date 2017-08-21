@@ -1,5 +1,12 @@
 package org.dotwebstack.framework.frontend.http.site;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -19,13 +26,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class siteResourceProviderTest {
@@ -64,7 +64,7 @@ public class siteResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
-            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN_PROP, DBEERPEDIA.DOMAIN))));
+            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN))));
 
     // Act
     siteResourceProvider.loadResources();
@@ -80,9 +80,9 @@ public class siteResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
-            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN_PROP, DBEERPEDIA.DOMAIN),
+            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN),
             valueFactory.createStatement(DBEERPEDIA.SITE_NL, RDF.TYPE, ELMO.SITE),
-            valueFactory.createStatement(DBEERPEDIA.SITE_NL, ELMO.DOMAIN_PROP, DBEERPEDIA.DOMAIN_NL))));
+            valueFactory.createStatement(DBEERPEDIA.SITE_NL, ELMO.DOMAIN, DBEERPEDIA.DOMAIN_NL))));
 
     // Act
     siteResourceProvider.loadResources();
@@ -105,4 +105,5 @@ public class siteResourceProviderTest {
     assertThat(siteResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(siteResourceProvider.get(DBEERPEDIA.SITE), is(not(nullValue())));
   }
+
 }

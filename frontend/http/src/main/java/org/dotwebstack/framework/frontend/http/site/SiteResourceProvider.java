@@ -14,8 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SiteResourceProvider
-    extends AbstractResourceProvider<Site> {
+public class SiteResourceProvider extends AbstractResourceProvider<Site> {
 
   @Autowired
   public SiteResourceProvider(ConfigurationBackend configurationBackend) {
@@ -37,8 +36,9 @@ public class SiteResourceProvider
             "No <%s> statement has been found for site <%s>.", RDF.TYPE, identifier)));
 
     Site.Builder builder = new Site.Builder(identifier);
-    getObjectString(model, identifier, ELMO.DOMAIN_PROP).ifPresent(domain -> builder.domain(domain));
+    getObjectString(model, identifier, ELMO.DOMAIN).ifPresent(domain -> builder.domain(domain));
 
     return builder.build();
   }
+
 }

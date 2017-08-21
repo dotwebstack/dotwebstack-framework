@@ -6,6 +6,7 @@ import org.dotwebstack.framework.frontend.http.site.Site;
 import org.eclipse.rdf4j.model.IRI;
 
 public class Stage {
+
   private static final String DEFAULT_BASE_PATH = "/";
 
   private IRI identifier;
@@ -51,5 +52,7 @@ public class Stage {
     public Stage build() {
       return new Stage(this);
     }
+
   }
+
 }

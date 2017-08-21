@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.http.site;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org. junit.Assert.assertThat;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -45,4 +45,5 @@ public class SiteTest {
         // Act
         Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(null).build();
     }
+
 }

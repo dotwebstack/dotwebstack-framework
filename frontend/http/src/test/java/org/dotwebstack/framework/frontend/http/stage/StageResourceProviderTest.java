@@ -1,5 +1,12 @@
 package org.dotwebstack.framework.frontend.http.stage;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -22,13 +29,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StageResourceProviderTest {
@@ -76,7 +76,7 @@ public class StageResourceProviderTest {
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
             valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
-            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH_PROP, DBEERPEDIA.BASE_PATH))));
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH))));
 
     // Act
     stageResourceProvider.loadResources();
@@ -96,7 +96,7 @@ public class StageResourceProviderTest {
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
             valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
-            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH_PROP, DBEERPEDIA.BASE_PATH),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH),
             valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, RDF.TYPE, ELMO.STAGE),
             valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE))));
 
@@ -122,4 +122,5 @@ public class StageResourceProviderTest {
     stageResourceProvider.loadResources();
 
   }
+
 }

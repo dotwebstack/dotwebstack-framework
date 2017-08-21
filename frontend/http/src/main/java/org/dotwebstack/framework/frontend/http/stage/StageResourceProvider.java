@@ -38,7 +38,8 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
         String.format("No <%s> site has been found for stage <%s>.", ELMO.SITE_PROP, identifier)));
 
     Stage.Builder builder = new Stage.Builder(identifier, siteResourceProvider.get((siteIRI)));
-    getObjectString(model, identifier, ELMO.BASE_PATH_PROP).ifPresent(basePath -> builder.basePath(basePath));
+    getObjectString(model, identifier, ELMO.BASE_PATH).ifPresent(basePath -> builder.basePath(basePath));
     return builder.build();
   }
+
 }

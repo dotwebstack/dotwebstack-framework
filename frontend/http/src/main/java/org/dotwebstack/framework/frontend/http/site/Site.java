@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.eclipse.rdf4j.model.IRI;
 
 public class Site {
+
   private static final String MATCH_ALL_DOMAIN = "*";
 
   private IRI identifier;
@@ -25,7 +26,7 @@ public class Site {
   }
 
   public Boolean isMatchAllDomain() {
-    return this.domain.equals(MATCH_ALL_DOMAIN);
+    return domain.equals(MATCH_ALL_DOMAIN);
   }
 
   public static class Builder {
@@ -47,4 +48,5 @@ public class Site {
       return new Site(this);
     }
   }
+
 }
