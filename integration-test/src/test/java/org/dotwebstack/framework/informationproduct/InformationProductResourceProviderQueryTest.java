@@ -21,8 +21,6 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -37,9 +35,6 @@ public class InformationProductResourceProviderQueryTest {
 
   @Mock
   private BackendSource backendSource, backendSource2;
-
-  @Captor
-  private ArgumentCaptor<InformationProduct> productArgumentCaptor;
 
   private InformationProductResourceProvider informationProductResourceProvider;
 
@@ -65,18 +60,19 @@ public class InformationProductResourceProviderQueryTest {
     informationProductResourceProvider.loadResources();
 
     // Assert
-    assertThat(productArgumentCaptor.getValue().getBackendSource(), equalTo(backendSource));
-    assertThat(productArgumentCaptor.getValue().getLabel(),
-        equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
-    assertThat(productArgumentCaptor.getValue().getIdentifier(),
-        equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
+    InformationProduct value = informationProductResourceProvider.get(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
+    assertThat(value.getBackendSource(), equalTo(backendSource));
+    assertThat(value.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
+    assertThat(value.getIdentifier(), equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
   }
+
 
   private void addTriples(IRI informationProductIRI, IRI backendIRI, Literal label) {
     Model informationProductTriples = new ModelBuilder().subject(informationProductIRI)
         .add(RDF.TYPE, ELMO.INFORMATION_PRODUCT)
         .add(RDFS.LABEL, label)
-        .add(ELMO.BACKEND, backendIRI).build();
+        .add(ELMO.BACKEND_PROP, backendIRI).build();
+
     configurationBackend.addModel(informationProductTriples);
   }
 
@@ -97,13 +93,15 @@ public class InformationProductResourceProviderQueryTest {
     informationProductResourceProvider.loadResources();
 
     // Assert
-    InformationProduct informationProduct1 = productArgumentCaptor.getAllValues().get(0);
+    InformationProduct informationProduct1 = informationProductResourceProvider.
+        get(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
     assertThat(informationProduct1.getBackendSource(), equalTo(backendSource));
     assertThat(informationProduct1.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
     assertThat(informationProduct1.getIdentifier(),
         equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
 
-    InformationProduct informationProduct2 = productArgumentCaptor.getAllValues().get(1);
+    InformationProduct informationProduct2 = informationProductResourceProvider.
+        get(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT);
     assertThat(informationProduct2.getBackendSource(), equalTo(backendSource2));
     assertThat(informationProduct2.getLabel(), equalTo(DBEERPEDIA.WINERIES_LABEL.stringValue()));
     assertThat(informationProduct2.getIdentifier(), equalTo(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT));
