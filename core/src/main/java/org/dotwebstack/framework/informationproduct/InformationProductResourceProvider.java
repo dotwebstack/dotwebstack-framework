@@ -29,7 +29,7 @@ public class InformationProductResourceProvider
   }
 
   @Override
-  protected GraphQuery getQuery(RepositoryConnection conn) {
+  protected GraphQuery getQueryForResources(RepositoryConnection conn) {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.INFORMATION_PRODUCT);
@@ -37,7 +37,7 @@ public class InformationProductResourceProvider
   }
 
   @Override
-  protected InformationProduct create(Model model, IRI identifier) {
+  protected InformationProduct createResource(Model model, IRI identifier) {
     IRI backendIRI =
         Models.objectIRI(model.filter(identifier, ELMO.BACKEND_PROP, null)).orElseThrow(
             () -> new ConfigurationException(

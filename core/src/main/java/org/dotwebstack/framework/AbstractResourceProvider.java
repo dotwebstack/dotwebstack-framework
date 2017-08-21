@@ -45,33 +45,33 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
 
   @PostConstruct
   public void loadResources() {
-    RepositoryConnection conn;
+    RepositoryConnection repositoryConnection;
 
     try {
-      conn = configurationBackend.getRepository().getConnection();
+      repositoryConnection = configurationBackend.getRepository().getConnection();
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
 
-    GraphQuery query = getQuery(conn);
+    GraphQuery query = getQueryForResources(repositoryConnection);
 
     try {
       Model model = QueryResults.asModel(query.evaluate());
       model.subjects().forEach(identifier -> {
-        R resource = create(model, (IRI) identifier);
+        R resource = createResource(model, (IRI) identifier);
         resources.put((IRI) identifier, resource);
         LOG.info("Registered resource: <{}>", identifier);
       });
     } catch (QueryEvaluationException e) {
       throw new ConfigurationException("Error while evaluating SPARQL query.", e);
     } finally {
-      conn.close();
+      repositoryConnection.close();
     }
   }
 
-  protected abstract GraphQuery getQuery(RepositoryConnection conn);
+  protected abstract GraphQuery getQueryForResources(RepositoryConnection conn);
 
-  protected abstract R create(Model model, IRI identifier);
+  protected abstract R createResource(Model model, IRI identifier);
 
   protected Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
     return Models.objectString(model.filter(subject, predicate, null));

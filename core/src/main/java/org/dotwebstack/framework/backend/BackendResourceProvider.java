@@ -26,7 +26,7 @@ public class BackendResourceProvider extends AbstractResourceProvider<Backend> {
   }
 
   @Override
-  protected GraphQuery getQuery(RepositoryConnection conn) {
+  protected GraphQuery getQueryForResources(RepositoryConnection conn) {
     String query =
         "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . ?type rdfs:subClassOf ?backend }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
@@ -35,7 +35,7 @@ public class BackendResourceProvider extends AbstractResourceProvider<Backend> {
   }
 
   @Override
-  protected Backend create(Model model, IRI identifier) {
+  protected Backend createResource(Model model, IRI identifier) {
     IRI backendType = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for backend <%s>.", RDF.TYPE, identifier)));
