@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-class LdExtension {
+public class LdExtension {
 
   private static final Logger LOG = LoggerFactory.getLogger(LdExtension.class);
 
