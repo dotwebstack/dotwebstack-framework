@@ -10,6 +10,8 @@ public final class ELMO {
 
   public static final IRI INFORMATION_PRODUCT;
 
+  public static final IRI INFORMATION_PRODUCT_PROP;
+
   public static final IRI QUERY;
 
   public static final IRI BACKEND;
@@ -19,6 +21,10 @@ public final class ELMO {
   public static final IRI ENDPOINT;
 
   public static final IRI BACKEND_PROP;
+
+  public static final IRI REPRESENTATION;
+
+  public static final IRI URL_PATTERN;
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
