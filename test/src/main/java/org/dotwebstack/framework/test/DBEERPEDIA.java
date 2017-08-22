@@ -34,6 +34,10 @@ public final class DBEERPEDIA {
 
   public static final IRI ORIGIN_INFORMATION_PRODUCT;
 
+  public static final IRI REPRESENTATION;
+
+  public static final IRI SECOND_REPRESENTATION;
+
   public static final String OPENAPI_DESCRIPTION = "DBeerpedia API";
 
   public static final String OPENAPI_HOST = "dbpeerpedia.org";
