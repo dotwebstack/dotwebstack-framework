@@ -1,11 +1,15 @@
 package org.dotwebstack.framework.config;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -14,6 +18,7 @@ import static org.mockito.Mockito.withSettings;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
@@ -24,6 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.Resource;
@@ -40,6 +46,9 @@ public class FileConfigurationBackendTest {
   private SailRepository repository;
 
   @Mock
+  private Resource elmoConfiguration;
+
+  @Mock
   private SailRepositoryConnection repositoryConnection;
 
   private ResourceLoader resourceLoader;
@@ -50,7 +59,7 @@ public class FileConfigurationBackendTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    backend = new FileConfigurationBackend(repository);
+    backend = new FileConfigurationBackend(elmoConfiguration, repository);
     backend.setResourceLoader(resourceLoader);
     when(repository.getConnection()).thenReturn(repositoryConnection);
   }
@@ -141,4 +150,29 @@ public class FileConfigurationBackendTest {
     backend.loadResources();
   }
 
+  @Test
+  public void loadsDefaultElmoResource() throws IOException {
+    // Arrange
+    Resource resource = mock(Resource.class);
+    InputStream resourceInputStream = mock(InputStream.class);
+    when(resource.getInputStream()).thenReturn(resourceInputStream);
+    when(resource.getFilename()).thenReturn("config.ttl");
+    when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
+        new Resource[] {resource});
+
+    InputStream elmoInputStream = mock(InputStream.class);
+    when(elmoConfiguration.getInputStream()).thenReturn(elmoInputStream);
+    when(elmoConfiguration.getFilename()).thenReturn("elmo.ttl");
+
+    // Act
+    backend.loadResources();
+
+    // Assert
+    verify(elmoConfiguration, atLeastOnce()).getInputStream();
+    ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
+    verify(repositoryConnection, times(2)).add(captor.capture(), any(), any());
+
+    List<InputStream> inputStreams = captor.getAllValues();
+    assertThat(inputStreams, contains(resourceInputStream, elmoInputStream));
+  }
 }

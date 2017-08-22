@@ -1,4 +1,4 @@
-package org.dotwebstack.framework;
+package org.dotwebstack.framework.informationproduct;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -28,18 +28,6 @@ public class InformationProductTest {
     assertThat(informationProduct.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(informationProduct.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
   }
-
-  @Test
-  public void builderWithPresentValues() {
-    // Act
-    InformationProduct informationProduct =
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, backendSource).label(
-            DBEERPEDIA.BREWERIES_LABEL.stringValue()).build();
-
-    assertThat(informationProduct.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-    assertThat(informationProduct.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
-  }
-
 
   @Test
   public void builderWithNullValues() {
