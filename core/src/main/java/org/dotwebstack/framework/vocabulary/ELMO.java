@@ -33,11 +33,14 @@ public final class ELMO {
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
     BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "Backend");
     SPARQL_BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "SparqlBackend");
+    REPRESENTATION = valueFactory.createIRI(ELMO.NAMESPACE, "Representation");
 
     // Properties
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "endpoint");
     QUERY = valueFactory.createIRI(ELMO.NAMESPACE, "query");
+    INFORMATION_PRODUCT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "informationProduct");
+    URL_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "urlPattern");
   }
 
   private ELMO() {
