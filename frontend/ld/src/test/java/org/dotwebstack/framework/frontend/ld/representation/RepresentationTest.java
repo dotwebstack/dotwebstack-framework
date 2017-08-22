@@ -16,6 +16,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class RepresentationTest {
 
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
+
   @Mock
   BackendSource backendSource;
 
