@@ -4,6 +4,22 @@ An extensible full-stack framework which offers the foundation and building bloc
 
 [![Build Status](https://travis-ci.org/dotwebstack/dotwebstack-framework.svg?branch=master)](https://travis-ci.org/dotwebstack/dotwebstack-framework)
 
+## Release
+
+To release a new version, run the following statement and follow instructions:
+
+```
+mvn release:prepare
+```
+
+Travis CI will now pick up the new tag and deploy the artifacts to the Central repository.
+
+Clean up afterwards:
+
+```
+mvn release:clean
+```
+
 ## Links
 
 * Travis CI: https://travis-ci.org/dotwebstack/dotwebstack-framework
