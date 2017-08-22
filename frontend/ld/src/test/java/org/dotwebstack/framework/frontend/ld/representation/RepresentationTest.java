@@ -40,20 +40,18 @@ public class RepresentationTest {
     assertThat(representation.getInformationProduct(), equalTo(informationProduct));
     assertThat(representation.getInformationProduct().getLabel(),
         equalTo(informationProduct.getLabel()));
-    assertThat(representation.getUrlPattern(), equalTo(DBEERPEDIA.URL_PATTERN));
+    assertThat(representation.getUrlPattern(), equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
   }
 
   @Test
   public void builderWithNullValues() {
     // [todo] add stage to representation object
+    // Assert
+    thrown.expect(NullPointerException.class);
+
     // Act
     final Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES, null, null).build();
-
-    // Assert
-    assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-    assertThat(representation.getInformationProduct(), equalTo(null));
-    assertThat(representation.getUrlPattern(), equalTo(null));
   }
 
 }
