@@ -12,7 +12,7 @@ public final class DBEERPEDIA {
 
   public static final String OBJECT_NAMESPACE = "http://dbeerpedia.org/id/";
 
-  public static final String URL_PATTERN = "/test/url/pattern";
+  public static final IRI URL_PATTERN;
 
   public static final IRI BACKEND;
 
