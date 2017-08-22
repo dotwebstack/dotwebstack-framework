@@ -7,7 +7,7 @@ import org.eclipse.rdf4j.model.IRI;
 
 public class Stage {
 
-  private static final String DEFAULT_BASE_PATH = "/";
+  public static final String DEFAULT_BASE_PATH = "/";
 
   private IRI identifier;
 

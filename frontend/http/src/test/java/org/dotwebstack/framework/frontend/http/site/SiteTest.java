@@ -1,17 +1,27 @@
 package org.dotwebstack.framework.frontend.http.site;
 
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SiteTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void builder() {
@@ -34,14 +44,17 @@ public class SiteTest {
     assertTrue(site.isMatchAllDomain());
   }
 
-  @Test(expected = NullPointerException.class)
   public void builderWithMandatoryNullValues() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
     // Act
     Site site = new Site.Builder(null).build();
   }
 
-  @Test(expected = NullPointerException.class)
   public void builderWithOptionalNullValues() {
+    thrown.expect(NullPointerException.class);
+
     // Act
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(null).build();
   }

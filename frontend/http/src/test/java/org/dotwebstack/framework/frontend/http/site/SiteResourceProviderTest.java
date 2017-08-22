@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -28,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class siteResourceProviderTest {
+public class SiteResourceProviderTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -104,6 +105,40 @@ public class siteResourceProviderTest {
     // Assert
     assertThat(siteResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(siteResourceProvider.get(DBEERPEDIA.SITE), is(not(nullValue())));
+  }
+
+  @Test
+  public void expectNoSitesWithSimilairDomain() {
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
+            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN),
+            valueFactory.createStatement(DBEERPEDIA.SITE_NL, RDF.TYPE, ELMO.SITE),
+            valueFactory.createStatement(DBEERPEDIA.SITE_NL, ELMO.DOMAIN, DBEERPEDIA.DOMAIN))));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("Domain <%s> found for multiple sites.", DBEERPEDIA.DOMAIN.stringValue()));
+
+    // Act
+    siteResourceProvider.loadResources();
+  }
+
+  @Test
+  public void expectOnlyOneCatchAllSite() {
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
+            valueFactory.createStatement(DBEERPEDIA.SITE_NL, RDF.TYPE, ELMO.SITE))));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage("Catch all domain found for multiple sites.");
+
+    // Act
+    siteResourceProvider.loadResources();
   }
 
 }

@@ -13,6 +13,9 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.Optional;
+
 @Service
 public class SiteResourceProvider extends AbstractResourceProvider<Site> {
 
@@ -36,7 +39,21 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
             "No <%s> statement has been found for site <%s>.", RDF.TYPE, identifier)));
 
     Site.Builder builder = new Site.Builder(identifier);
-    getObjectString(model, identifier, ELMO.DOMAIN).ifPresent(domain -> builder.domain(domain));
+    Optional<String> domain = getObjectString(model, identifier, ELMO.DOMAIN);
+
+    // Check if domain already exists
+    if (domain.isPresent()) {
+      if (getAll().entrySet().stream().anyMatch(
+          mapSite -> mapSite.getValue().getDomain().equals(domain.toString()))) {
+        throw new ConfigurationException(String.format("Domain <%s> found for multiple sites.", domain.get()));
+      }
+      builder.domain(domain.toString());
+    } else {
+      if (getAll().entrySet().stream().anyMatch(
+          mapSite -> mapSite.getValue().isMatchAllDomain())) {
+        throw new ConfigurationException("Catch all domain found for multiple sites.");
+      }
+    }
 
     return builder.build();
   }

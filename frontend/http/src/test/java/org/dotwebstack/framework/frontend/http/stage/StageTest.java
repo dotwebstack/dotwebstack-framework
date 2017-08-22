@@ -7,13 +7,18 @@ import static org.junit.Assert.assertTrue;
 
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class StageTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   Site siteMock;
@@ -39,23 +44,29 @@ public class StageTest {
     // Assert
     assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(stage.getSite(), equalTo(siteMock));
-    assertThat(stage.getBasePath(), equalTo("/"));
+    assertThat(stage.getBasePath(), equalTo(Stage.DEFAULT_BASE_PATH));
   }
 
-  @Test(expected = NullPointerException.class)
   public void buildWithMandatoryNullValues1() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
     // Act
     Stage stage = new Stage.Builder(null, null).build();
   }
 
-  @Test(expected = NullPointerException.class)
   public void buildWithMandatoryNullValues2() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
     // Act
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, null).build();
   }
 
-  @Test(expected = NullPointerException.class)
   public void buildWithOptionalNullValues() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
     // Act
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(null).build();
   }
