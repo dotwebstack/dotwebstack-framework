@@ -61,6 +61,9 @@ public final class DBEERPEDIA {
         "brewery/information/alcohol-percentages");
     ORIGIN_INFORMATION_PRODUCT =
         valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "brewery/information/origins");
+    REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Representation");
+    SECOND_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SecondRepresentation");
+    URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
   }
 
   private DBEERPEDIA() {
