@@ -1,13 +1,13 @@
 language: java
 jdk:
   - oraclejdk8
-env:
-  global:
-    secure: Av2mpl9zx5M/DVjBFpLSPABmMh9nhfzZ5VEt0+cp807N+pHNBC0l9TgIKvEygrzSmw6+u4hxY1Mh4MsqeOwCy6P1Lq+GGZApfbA8d80mPH3jG+Po4h9G+5K6P+illYV0qckJXjpyJ3FfEB5Jraoimx8pEwrQkMyrnQiF1+dijFWOPR4FYvCjWuMV0FnhycEWoCoEjbLHXvkRCcAWcA8E1wPzbh8RmUnhS3jmaS0rtpoFubzdtwvo65VEFy133+61SUSX4UPWCLm3V5jNVaQ/jC8AntdCq5ZMKFAN9qtq1kFpZ0ga2egd4PmXiMKcfT+cnoLcha7LM1hMVcfZbIVCsw1bOHiQXOsj7Q2R8DDgyXF7eFvDWPLsNtbmd4i8R8vhIKB6j3x0UnmxEyl7kG1I473LAinw3K2rN43YtNnYjHkDnMbOosmG6DoEHv+PRKjy4lMQlkDR7uXAXuZocnPBLhE/uzdnWZoJKbWdjVkrCC6Vvx7Q4Sr74nbvZml7cbt69UIvXNdYcCVyyRWbTtFR8eIqrf01Z0LWVfc0ZQE/eUnARUq+qy0OXR/1weUbf1hc35MQ6lKUbXDoWbhAPh9Qnr51CsfXJ20nOBzUI71TgfN+NhxDKZmtsJ8w9jThx/Qjf3Uex7JHbV+c7XcBuqCmQJSLzLjbGaqeqFNZkpdiyVA=
 cache:
   directories:
     - $HOME/.m2/repository
     - $HOME/.sonar/cache
+env:
+  global:
+    secure: LGSZXFJX81z73SZcoQ8OBzLjMi7geUhcUyH5WyDOcyrGZSwufrMw79puzbIvv08jj9bqYc1vviFdAl4kgTGLAjxZCsqKFqYSn3Iw2kuZ+hjS/GErR1TxPPW9epwkBp0EllLdrg7ygzX3DgTB5LASh1Qmd9McnPFoSdwasRJwCSyvwT4p1csYqmOsV2X2Uv1zpmwv4bOSRMeR5Kjyscc1d0josquVC/MmwZ+APa1GhFri/ozKIWgzgMAPafkpIsCwUni7Y8Wz7DdDu2EW/qCs0yvan9r8F10d0nNlDMQ5vSi7OjGqAo+/G5ImkAFXdAJCoBgslTS0If7CUKq/BQRxBsiO+dEJMT/WInXJ24DjZ6AlzTuySKlgXaGnV0hY6KBYxgoGrlEaic/qWZlkywA7MsfhCsgbVFsUzggIHtiWvyjKXx7/ixfnPQqua+dTcKtJl+Cygtj6af6icmijmy1u2/ahJJCrLMjsjOqgk0duorq5zZaJO2tIwrLB2/HA49EHiHtq65PgZvRAO1YNNKZ9vEC4ghLOPvP9K/B1KZks++dIqhFq5voNJtJRwuYqVQUswjAK2fMHz58YKGVJYARftQxDCo2uiaqJfdu22knvtSypTUbR99/kFZA/10tgg2evvjwQcjuuloCxnrK+5Z94mZapxKAYxcWF6zxggowLVBk=
 addons:
   sonarcloud:
     organization: dotwebstack
@@ -17,7 +17,7 @@ script:
   - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar
 deploy:
   - provider: script
-    script: "cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy"
+    script: cp .travis.settings.xml $HOME/.m2/settings.xml && mvn deploy
     skip_cleanup: true
     on:
       branch: master
