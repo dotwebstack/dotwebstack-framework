@@ -60,7 +60,8 @@ public class InformationProductResourceProviderQueryTest {
     informationProductResourceProvider.loadResources();
 
     // Assert
-    InformationProduct value = informationProductResourceProvider.get(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
+    InformationProduct value = informationProductResourceProvider
+        .get(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
     assertThat(value.getBackendSource(), equalTo(backendSource));
     assertThat(value.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
     assertThat(value.getIdentifier(), equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
@@ -91,7 +92,7 @@ public class InformationProductResourceProviderQueryTest {
 
     // Act
     informationProductResourceProvider.loadResources();
-
+    
     // Assert
     InformationProduct informationProduct1 = informationProductResourceProvider.
         get(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);

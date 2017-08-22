@@ -34,23 +34,23 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   @Override
   protected Representation createResource(Model model, IRI identifier) {
     // [todo] add stage
-    IRI informationProductIRI = getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP)
+    IRI informationProductIri = getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP)
         .orElseThrow(() -> new ConfigurationException(
             String.format("No <%s> information product has been found for representation <%s>.",
                 ELMO.INFORMATION_PRODUCT_PROP,
                 identifier)));
 
-    final String URL_PATTERN;
+    final String urlPattern;
     if (getObjectString(model, identifier, ELMO.URL_PATTERN).isPresent()) {
-      URL_PATTERN = getObjectString(model, identifier, ELMO.URL_PATTERN).get();
+      urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN).get();
     } else {
       throw new ConfigurationException(String
           .format("No <%s> url pattern has been found for representation <%s>.", ELMO.URL_PATTERN,
               identifier));
     }
     Representation.Builder builder = new Representation.Builder(identifier,
-        informationProductResourceProvider.get((informationProductIRI)),
-        URL_PATTERN);
+        informationProductResourceProvider.get((informationProductIri)),
+        urlPattern);
     return builder.build();
   }
 }
