@@ -16,6 +16,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   private InformationProductResourceProvider informationProductResourceProvider;
 
+  private StageResourceProvider stageResourceProvider;
+
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
       InformationProductResourceProvider informationProductResourceProvider) {
