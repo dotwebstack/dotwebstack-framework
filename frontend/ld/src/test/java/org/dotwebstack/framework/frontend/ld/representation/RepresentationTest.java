@@ -43,6 +43,31 @@ public class RepresentationTest {
   }
 
   @Test
+  public void builderComplete() {
+    // Act
+    final InformationProduct informationProduct =
+        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, backendSource).label(
+            DBEERPEDIA.BREWERIES_LABEL.stringValue()).build();
+
+    final Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
+        DBEERPEDIA.BASE_PATH.stringValue()).build();
+
+    final Representation representation =
+        new Representation.Builder(DBEERPEDIA.BREWERIES, DBEERPEDIA.URL_PATTERN.stringValue())
+            .informationProduct(informationProduct)
+            .stage(stage)
+            .build();
+
+    // Assert
+    assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertThat(representation.getInformationProduct(), equalTo(informationProduct));
+    assertThat(representation.getStage(), equalTo(stage));
+    assertThat(representation.getUrlPatterns().toArray()[0],
+        equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
+    assertThat(representation.getUrlPatterns().size(), equalTo(3));
+  }
+
+  @Test
   public void builderWithNullValues() {
     // Assert
     thrown.expect(NullPointerException.class);
