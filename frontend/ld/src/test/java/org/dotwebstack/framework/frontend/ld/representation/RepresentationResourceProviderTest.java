@@ -103,7 +103,9 @@ public class RepresentationResourceProviderTest {
     Representation representation = representationResourceProvider.get(DBEERPEDIA.REPRESENTATION);
     assertThat(representation, is(not(nullValue())));
     assertThat(representation.getInformationProduct(), equalTo(informationProduct));
-    assertThat(representation.getUrlPattern(), equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
+    assertThat(representation.getUrlPatterns().toArray()[0],
+        equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
+    assertThat(representation.getStage(), equalTo(stage));
   }
 
   @Test
