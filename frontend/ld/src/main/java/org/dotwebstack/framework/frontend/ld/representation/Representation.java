@@ -21,6 +21,8 @@ public class Representation {
   private Representation(Builder builder) {
     identifier = builder.identifier;
     urlPatterns = builder.urlPatterns;
+    stage = builder.stage;
+    informationProduct = builder.informationProduct;
   }
 
   public IRI getIdentifier() {
