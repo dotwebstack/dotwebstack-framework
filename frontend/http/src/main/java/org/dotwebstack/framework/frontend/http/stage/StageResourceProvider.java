@@ -1,0 +1,45 @@
+package org.dotwebstack.framework.frontend.http.stage;
+
+import org.dotwebstack.framework.AbstractResourceProvider;
+import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
+import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.query.GraphQuery;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class StageResourceProvider extends AbstractResourceProvider<Stage> {
+
+  private SiteResourceProvider siteResourceProvider;
+
+  @Autowired
+  public StageResourceProvider(ConfigurationBackend configurationBackend,
+                               SiteResourceProvider siteResourceProvider) {
+    super(configurationBackend);
+    this.siteResourceProvider = siteResourceProvider;
+  }
+
+  @Override
+  protected GraphQuery getQueryForResources(RepositoryConnection conn) {
+    String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
+    GraphQuery graphQuery = conn.prepareGraphQuery(query);
+    graphQuery.setBinding("type", ELMO.STAGE);
+    return graphQuery;
+  }
+
+  @Override
+  protected Stage createResource(Model model, IRI identifier) {
+    IRI siteIRI = getObjectIRI(model, identifier, ELMO.SITE_PROP).orElseThrow(() -> new ConfigurationException(
+        String.format("No <%s> site has been found for stage <%s>.", ELMO.SITE_PROP, identifier)));
+
+    Stage.Builder builder = new Stage.Builder(identifier, siteResourceProvider.get(siteIRI));
+    getObjectString(model, identifier, ELMO.BASE_PATH).ifPresent(basePath -> builder.basePath(basePath));
+    return builder.build();
+  }
+
+}
