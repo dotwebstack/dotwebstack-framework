@@ -14,13 +14,13 @@ public class Representation {
 
   private InformationProduct informationProduct;
 
-  private String urlPattern;
+  private List<String> urlPatterns;
 
   private Stage stage;
 
   private Representation(Builder builder) {
     identifier = builder.identifier;
-    urlPattern = builder.urlPattern;
+    urlPatterns = builder.urlPatterns;
   }
 
   public IRI getIdentifier() {
