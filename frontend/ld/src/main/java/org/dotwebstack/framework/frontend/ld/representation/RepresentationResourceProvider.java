@@ -57,7 +57,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     }
     Representation.Builder builder = new Representation.Builder(identifier,
         informationProductResourceProvider.get((informationProductIri)),
-        urlPattern);
+        urlPattern, stageResourceProvider.get(stageIri));
     return builder.build();
   }
 }
