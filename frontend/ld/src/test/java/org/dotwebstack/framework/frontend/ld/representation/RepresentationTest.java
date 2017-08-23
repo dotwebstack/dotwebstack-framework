@@ -4,8 +4,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.backend.BackendSource;
+import org.dotwebstack.framework.frontend.http.site.Site;
+import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
