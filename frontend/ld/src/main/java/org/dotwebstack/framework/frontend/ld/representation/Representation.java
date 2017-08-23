@@ -46,12 +46,9 @@ public class Representation {
 
     private Stage stage;
 
-    public Builder(IRI identifier, InformationProduct informationProduct, String urlPattern,
-        Stage stage) {
+    public Builder(IRI identifier, String urlPattern) {
       this.identifier = Objects.requireNonNull(identifier);
-      this.informationProduct = Objects.requireNonNull(informationProduct);
-      this.urlPattern = urlPattern;
-      this.stage = stage;
+      this.urlPattern = Objects.requireNonNull(urlPattern);
     }
 
     public Builder informationProduct(
