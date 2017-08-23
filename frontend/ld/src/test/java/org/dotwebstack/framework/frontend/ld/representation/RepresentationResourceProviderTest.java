@@ -70,7 +70,6 @@ public class RepresentationResourceProviderTest {
 
   @Before
   public void setUp() {
-    // [todo] add stage
     representationResourceProvider = new RepresentationResourceProvider(configurationBackend,
         informationProductResourceProvider);
 
@@ -83,7 +82,6 @@ public class RepresentationResourceProviderTest {
 
   @Test
   public void loadReprestentation() {
-    // [todo] add stage
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
