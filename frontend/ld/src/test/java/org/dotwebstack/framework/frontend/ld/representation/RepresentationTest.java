@@ -43,6 +43,24 @@ public class RepresentationTest {
   }
 
   @Test
+  public void builderMultipleUrlPatterns() {
+    // Act
+    final Representation representation =
+        new Representation.Builder(DBEERPEDIA.BREWERIES, DBEERPEDIA.URL_PATTERN.stringValue(),
+            DBEERPEDIA.URL_PATTERN.stringValue(),
+            DBEERPEDIA.URL_PATTERN.stringValue())
+            .build();
+
+    // Assert
+    assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertThat(representation.getInformationProduct(), equalTo(null));
+    assertThat(representation.getStage(), equalTo(null));
+    assertThat(representation.getUrlPatterns().toArray()[0],
+        equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
+    assertThat(representation.getUrlPatterns().size(), equalTo(3));
+  }
+
+  @Test
   public void builderComplete() {
     // Act
     final InformationProduct informationProduct =
