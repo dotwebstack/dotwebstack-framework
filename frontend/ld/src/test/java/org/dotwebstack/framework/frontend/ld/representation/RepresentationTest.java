@@ -45,7 +45,7 @@ public class RepresentationTest {
 
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES, null, null).build();
+        new Representation.Builder(DBEERPEDIA.BREWERIES, null).build();
   }
 
 }
