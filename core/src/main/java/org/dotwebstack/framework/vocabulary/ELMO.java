@@ -61,6 +61,7 @@ public final class ELMO {
     INFORMATION_PRODUCT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "informationProduct");
     URL_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "urlPattern");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
+    STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
   }
 
   private ELMO() {
