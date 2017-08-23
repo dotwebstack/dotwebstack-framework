@@ -16,6 +16,8 @@ public final class ELMO {
 
   public static final IRI STAGE;
 
+  public static final IRI STAGE_PROP;
+
   public static final IRI DOMAIN;
 
   public static final IRI BACKEND;
