@@ -57,11 +57,6 @@ public class Representation {
       return this;
     }
 
-    public Builder urlPattern(String urlPattern) {
-      this.urlPattern = urlPattern;
-      return this;
-    }
-
     public Builder stage(Stage stage) {
       this.stage = stage;
       return this;
