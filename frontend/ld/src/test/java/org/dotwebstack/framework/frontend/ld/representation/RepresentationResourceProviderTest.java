@@ -44,7 +44,13 @@ public class RepresentationResourceProviderTest {
   private InformationProductResourceProvider informationProductResourceProvider;
 
   @Mock
+  private StageResourceProvider stageResourceProvider;
+
+  @Mock
   private InformationProduct informationProduct;
+
+  @Mock
+  private Stage stage;
 
   @Mock
   private ConfigurationBackend configurationBackend;
