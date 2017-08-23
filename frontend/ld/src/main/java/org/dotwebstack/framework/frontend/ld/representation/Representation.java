@@ -67,10 +67,10 @@ public class Representation {
       return this;
     }
 
-     /*public Builder stage(Stage stage) {
+    public Builder stage(Stage stage) {
       this.stage = stage;
       return this;
-    }*/
+    }
 
     public Representation build() {
       return new Representation(this);
