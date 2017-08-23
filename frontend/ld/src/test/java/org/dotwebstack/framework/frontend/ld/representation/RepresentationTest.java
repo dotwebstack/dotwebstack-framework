@@ -24,22 +24,16 @@ public class RepresentationTest {
 
   @Test
   public void builder() {
-    // [todo] add stage to representation object
     // Act
-    final InformationProduct informationProduct =
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, backendSource)
-            .label(DBEERPEDIA.BREWERIES_LABEL.stringValue())
-            .build();
-
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES, informationProduct,
-            DBEERPEDIA.URL_PATTERN.stringValue()).build();
+        new Representation.Builder(DBEERPEDIA.BREWERIES,
+            DBEERPEDIA.URL_PATTERN.stringValue())
+            .build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-    assertThat(representation.getInformationProduct(), equalTo(informationProduct));
-    assertThat(representation.getInformationProduct().getLabel(),
-        equalTo(informationProduct.getLabel()));
+    assertThat(representation.getInformationProduct(), equalTo(null));
+    assertThat(representation.getStage(), equalTo(null));
     assertThat(representation.getUrlPattern(), equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
   }
 
