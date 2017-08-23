@@ -41,7 +41,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
             String.format("No <%s> information product has been found for representation <%s>.",
                 ELMO.INFORMATION_PRODUCT_PROP,
                 identifier)));
-    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE)
+    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP)
         .orElseThrow(() -> new ConfigurationException(
             String.format("No <%s> stage has been found for representation <%s>.", ELMO.STAGE,
                 identifier)
