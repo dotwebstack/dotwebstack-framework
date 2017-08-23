@@ -43,6 +43,20 @@ public class RepresentationTest {
   }
 
   @Test
+  public void builderWithoutUrlPatterns() {
+    // Act
+    final Representation representation =
+        new Representation.Builder(DBEERPEDIA.BREWERIES)
+            .build();
+
+    // Assert
+    assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertThat(representation.getInformationProduct(), equalTo(null));
+    assertThat(representation.getStage(), equalTo(null));
+    Assert.assertNotNull(representation.getUrlPatterns());
+  }
+
+  @Test
   public void builderWithUrlPattern() {
     // Act
     final Representation representation = new Representation.Builder(DBEERPEDIA.BREWERIES,
