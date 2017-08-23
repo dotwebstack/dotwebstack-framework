@@ -47,13 +47,13 @@ public class Representation {
 
     private InformationProduct informationProduct;
 
-    private String urlPattern;
+    private List<String> urlPatterns;
 
     private Stage stage;
 
-    public Builder(IRI identifier, String urlPattern) {
+    public Builder(IRI identifier, String... urlPatterns) {
       this.identifier = Objects.requireNonNull(identifier);
-      this.urlPattern = Objects.requireNonNull(urlPattern);
+      this.urlPatterns = Arrays.asList(Objects.requireNonNull(urlPatterns));
     }
 
     public Builder informationProduct(
