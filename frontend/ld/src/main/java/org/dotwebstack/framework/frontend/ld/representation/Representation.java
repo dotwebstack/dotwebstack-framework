@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
 import java.util.Objects;
+import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 
