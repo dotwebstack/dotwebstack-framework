@@ -91,7 +91,9 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, ELMO.INFORMATION_PRODUCT_PROP,
                 DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, ELMO.URL_PATTERN,
-                DBEERPEDIA.URL_PATTERN))));
+                DBEERPEDIA.URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, ELMO.STAGE_PROP,
+                DBEERPEDIA.STAGE))));
 
     // Act
     representationResourceProvider.loadResources();
