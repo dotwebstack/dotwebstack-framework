@@ -25,6 +25,9 @@ public class RepresentationTest {
   @Mock
   BackendSource backendSource;
 
+  @Mock
+  Site site;
+
   @Test
   public void builder() {
     // Act
