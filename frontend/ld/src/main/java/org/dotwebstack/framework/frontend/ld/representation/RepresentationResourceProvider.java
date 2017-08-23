@@ -36,7 +36,6 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Override
   protected Representation createResource(Model model, IRI identifier) {
-    // [todo] add stage
     IRI informationProductIri = getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP)
         .orElseThrow(() -> new ConfigurationException(
             String.format("No <%s> information product has been found for representation <%s>.",
