@@ -37,28 +37,26 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Override
   protected Representation createResource(Model model, IRI identifier) {
-    IRI informationProductIri = getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP)
+    final IRI informationProductIri = getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP)
         .orElseThrow(() -> new ConfigurationException(
             String.format("No <%s> information product has been found for representation <%s>.",
                 ELMO.INFORMATION_PRODUCT_PROP,
                 identifier)));
-    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP)
+    final IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP)
         .orElseThrow(() -> new ConfigurationException(
             String.format("No <%s> stage has been found for representation <%s>.", ELMO.STAGE,
                 identifier)
         ));
 
-    final String urlPattern;
-    if (getObjectString(model, identifier, ELMO.URL_PATTERN).isPresent()) {
-      urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN).get();
-    } else {
-      throw new ConfigurationException(String
-          .format("No <%s> url pattern has been found for representation <%s>.", ELMO.URL_PATTERN,
-              identifier));
-    }
-    Representation.Builder builder = new Representation.Builder(identifier,
-        informationProductResourceProvider.get((informationProductIri)),
-        urlPattern, stageResourceProvider.get(stageIri));
+    final String urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN)
+        .orElseThrow(() -> new ConfigurationException(
+            String.format("No <%s> url pattern has been found for representation <%s>.",
+                ELMO.URL_PATTERN,
+                identifier)));
+
+    Representation.Builder builder = new Representation.Builder(identifier, urlPattern);
+    builder.stage(stageResourceProvider.get(stageIri));
+    builder.informationProduct(informationProductResourceProvider.get(informationProductIri));
     return builder.build();
   }
 }
