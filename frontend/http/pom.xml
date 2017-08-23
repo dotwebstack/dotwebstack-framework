@@ -19,12 +19,6 @@
       <artifactId>dotwebstack-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>dotwebstack-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-server</artifactId>
     </dependency>
@@ -41,6 +35,11 @@
       <artifactId>rdf4j-model</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.dotwebstack.framework</groupId>
+      <artifactId>dotwebstack-test</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

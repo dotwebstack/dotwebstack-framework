@@ -1,9 +1,10 @@
 package org.dotwebstack.framework.frontend.http.site;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -63,8 +64,7 @@ public class SiteResourceProviderTest {
   public void loadSite() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
             valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN))));
 
     // Act
@@ -79,8 +79,7 @@ public class SiteResourceProviderTest {
   public void loadsSeveralSites() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
             valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN),
             valueFactory.createStatement(DBEERPEDIA.SITE_NL, RDF.TYPE, ELMO.SITE),
             valueFactory.createStatement(DBEERPEDIA.SITE_NL, ELMO.DOMAIN, DBEERPEDIA.DOMAIN_NL))));
@@ -96,8 +95,7 @@ public class SiteResourceProviderTest {
   public void loadCatchAllSite() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE))));
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE))));
 
     // Act
     siteResourceProvider.loadResources();
@@ -111,15 +109,15 @@ public class SiteResourceProviderTest {
   public void expectNoSitesWithSimilairDomain() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
             valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN),
             valueFactory.createStatement(DBEERPEDIA.SITE_NL, RDF.TYPE, ELMO.SITE),
             valueFactory.createStatement(DBEERPEDIA.SITE_NL, ELMO.DOMAIN, DBEERPEDIA.DOMAIN))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("Domain <%s> found for multiple sites.", DBEERPEDIA.DOMAIN.stringValue()));
+    thrown.expectMessage(
+        String.format("Domain <%s> found for multiple sites.", DBEERPEDIA.DOMAIN.stringValue()));
 
     // Act
     siteResourceProvider.loadResources();
@@ -129,8 +127,7 @@ public class SiteResourceProviderTest {
   public void expectOnlyOneCatchAllSite() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
             valueFactory.createStatement(DBEERPEDIA.SITE_NL, RDF.TYPE, ELMO.SITE))));
 
     // Assert

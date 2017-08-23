@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.http.site;
 
+import java.util.Optional;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -13,8 +14,6 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class SiteResourceProvider extends AbstractResourceProvider<Site> {
@@ -45,12 +44,12 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
     if (domain.isPresent()) {
       if (getAll().entrySet().stream().anyMatch(
           mapSite -> mapSite.getValue().getDomain().equals(domain.toString()))) {
-        throw new ConfigurationException(String.format("Domain <%s> found for multiple sites.", domain.get()));
+        throw new ConfigurationException(
+            String.format("Domain <%s> found for multiple sites.", domain.get()));
       }
       builder.domain(domain.toString());
     } else {
-      if (getAll().entrySet().stream().anyMatch(
-          mapSite -> mapSite.getValue().isMatchAllDomain())) {
+      if (getAll().entrySet().stream().anyMatch(mapSite -> mapSite.getValue().isMatchAllDomain())) {
         throw new ConfigurationException("Catch all domain found for multiple sites.");
       }
     }

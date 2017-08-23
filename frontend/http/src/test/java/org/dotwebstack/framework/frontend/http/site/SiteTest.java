@@ -3,12 +3,7 @@ package org.dotwebstack.framework.frontend.http.site;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Rule;
@@ -26,7 +21,8 @@ public class SiteTest {
   @Test
   public void builder() {
     // Act
-    Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
+    Site site =
+        new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
 
     // Assert
     assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -49,14 +45,14 @@ public class SiteTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    Site site = new Site.Builder(null).build();
+    new Site.Builder(null).build();
   }
 
   public void builderWithOptionalNullValues() {
     thrown.expect(NullPointerException.class);
 
     // Act
-    Site site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(null).build();
+    new Site.Builder(DBEERPEDIA.BREWERIES).domain(null).build();
   }
 
 }

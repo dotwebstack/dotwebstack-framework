@@ -2,8 +2,6 @@ package org.dotwebstack.framework.frontend.http.stage;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -25,10 +23,9 @@ public class StageTest {
 
   @Test
   public void builder() {
-    //Act
-    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock)
-        .basePath(DBEERPEDIA.BASE_PATH.stringValue())
-        .build();
+    // Act
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(
+        DBEERPEDIA.BASE_PATH.stringValue()).build();
 
     // Assert
     assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -38,7 +35,7 @@ public class StageTest {
 
   @Test
   public void builderWithDefaultValues() {
-    //Act
+    // Act
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).build();
 
     // Assert
@@ -52,7 +49,7 @@ public class StageTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    Stage stage = new Stage.Builder(null, null).build();
+    new Stage.Builder(null, null).build();
   }
 
   public void buildWithMandatoryNullValues2() {
@@ -60,7 +57,7 @@ public class StageTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, null).build();
+    new Stage.Builder(DBEERPEDIA.BREWERIES, null).build();
   }
 
   public void buildWithOptionalNullValues() {
@@ -68,7 +65,7 @@ public class StageTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(null).build();
+    new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(null).build();
   }
 
 }

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.http.site;
 
 import java.util.Objects;
-
 import org.eclipse.rdf4j.model.IRI;
 
 public class Site {
@@ -28,6 +27,7 @@ public class Site {
   }
 
   public static class Builder {
+
     private IRI identifier;
 
     // Default is match all domain
@@ -45,6 +45,7 @@ public class Site {
     public Site build() {
       return new Site(this);
     }
+
   }
 
 }

@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.frontend.http.stage;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,8 +76,7 @@ public class StageResourceProviderTest {
   public void loadStage() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
             valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
             valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH))));
 
@@ -93,12 +95,12 @@ public class StageResourceProviderTest {
   public void loadMultipleStages() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
             valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
             valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH),
             valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, RDF.TYPE, ELMO.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE))));
+            valueFactory.createStatement(DBEERPEDIA.SECOND_STAGE, ELMO.SITE_PROP,
+                DBEERPEDIA.SITE))));
 
     // Act
     stageResourceProvider.loadResources();
@@ -111,12 +113,12 @@ public class StageResourceProviderTest {
   public void expectsSite() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE))));
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("No <%s> site has been found for stage <%s>.", ELMO.SITE_PROP, DBEERPEDIA.STAGE));
+    thrown.expectMessage(String.format("No <%s> statement has been found for stage <%s>.",
+        ELMO.SITE_PROP, DBEERPEDIA.STAGE));
 
     // Act
     stageResourceProvider.loadResources();
