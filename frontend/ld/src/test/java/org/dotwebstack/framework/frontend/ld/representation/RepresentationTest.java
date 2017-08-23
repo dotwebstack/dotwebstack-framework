@@ -39,7 +39,6 @@ public class RepresentationTest {
 
   @Test
   public void builderWithNullValues() {
-    // [todo] add stage to representation object
     // Assert
     thrown.expect(NullPointerException.class);
 
