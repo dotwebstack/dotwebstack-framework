@@ -13,7 +13,7 @@ public class Representation {
 
   private String urlPattern;
 
-  // private Stage stage;
+  private Stage stage;
 
   private Representation(Builder builder) {
     identifier = builder.identifier;
