@@ -41,6 +41,11 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
             String.format("No <%s> information product has been found for representation <%s>.",
                 ELMO.INFORMATION_PRODUCT_PROP,
                 identifier)));
+    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE)
+        .orElseThrow(() -> new ConfigurationException(
+            String.format("No <%s> stage has been found for representation <%s>.", ELMO.STAGE,
+                identifier)
+        ));
 
     final String urlPattern;
     if (getObjectString(model, identifier, ELMO.URL_PATTERN).isPresent()) {
