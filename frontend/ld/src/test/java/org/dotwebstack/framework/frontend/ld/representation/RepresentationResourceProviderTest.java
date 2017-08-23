@@ -120,13 +120,17 @@ public class RepresentationResourceProviderTest {
             valueFactory
                 .createStatement(DBEERPEDIA.REPRESENTATION, ELMO.URL_PATTERN,
                     DBEERPEDIA.URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, ELMO.STAGE_PROP,
+                DBEERPEDIA.STAGE),
             valueFactory
                 .createStatement(DBEERPEDIA.SECOND_REPRESENTATION, RDF.TYPE, ELMO.REPRESENTATION),
             valueFactory
                 .createStatement(DBEERPEDIA.SECOND_REPRESENTATION, ELMO.INFORMATION_PRODUCT_PROP,
                     DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.SECOND_REPRESENTATION, ELMO.URL_PATTERN,
-                DBEERPEDIA.URL_PATTERN))));
+                DBEERPEDIA.URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.SECOND_REPRESENTATION, ELMO.STAGE_PROP,
+                DBEERPEDIA.STAGE))));
 
     // Act
     representationResourceProvider.loadResources();
