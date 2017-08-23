@@ -46,7 +46,7 @@ public class Representation {
 
     private String urlPattern;
 
-    // private Stage stage;
+    private Stage stage;
 
     public Builder(IRI identifier, InformationProduct informationProduct, String urlPattern) {
       this.identifier = Objects.requireNonNull(identifier);
