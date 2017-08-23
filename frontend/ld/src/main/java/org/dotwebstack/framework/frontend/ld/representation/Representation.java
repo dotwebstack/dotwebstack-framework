@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
