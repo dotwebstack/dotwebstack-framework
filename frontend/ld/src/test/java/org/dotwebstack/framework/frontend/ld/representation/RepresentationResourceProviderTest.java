@@ -138,42 +138,4 @@ public class RepresentationResourceProviderTest {
     // Assert
     assertThat(representationResourceProvider.getAll().entrySet(), hasSize(2));
   }
-
-  @Test
-  public void expectsInformatieProduct() {
-    // Arrange
-    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory
-                .createStatement(DBEERPEDIA.REPRESENTATION, RDF.TYPE, ELMO.REPRESENTATION))));
-
-    // Assert
-    thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String
-        .format("No <%s> information product has been found for representation <%s>.",
-            ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.REPRESENTATION));
-
-    // Act
-    representationResourceProvider.loadResources();
-  }
-
-  @Test
-  public void expectsUrlPattern() {
-    // Arrange
-    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory
-                .createStatement(DBEERPEDIA.REPRESENTATION, RDF.TYPE, ELMO.REPRESENTATION),
-            valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, ELMO.INFORMATION_PRODUCT_PROP,
-                DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT))));
-
-    // Assert
-    thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String
-        .format("No <%s> url pattern has been found for representation <%s>.",
-            ELMO.URL_PATTERN, DBEERPEDIA.REPRESENTATION));
-
-    // Act
-    representationResourceProvider.loadResources();
-  }
 }
