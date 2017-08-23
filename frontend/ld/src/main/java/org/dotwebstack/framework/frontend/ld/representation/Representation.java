@@ -19,7 +19,7 @@ public class Representation {
     identifier = builder.identifier;
     informationProduct = builder.informationProduct;
     urlPattern = builder.urlPattern;
-    // stage = builder.stage;
+    stage = builder.stage;
   }
 
   public IRI getIdentifier() {
