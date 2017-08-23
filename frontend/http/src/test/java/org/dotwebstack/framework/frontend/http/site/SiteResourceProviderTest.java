@@ -138,4 +138,20 @@ public class SiteResourceProviderTest {
     siteResourceProvider.loadResources();
   }
 
+  @Test
+  public void expectsSite() {
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(
+        new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN))));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("No <%s> statement has been found for site <%s>.", RDF.TYPE,
+        DBEERPEDIA.SITE));
+
+    // Act
+    siteResourceProvider.loadResources();
+  }
+
 }
