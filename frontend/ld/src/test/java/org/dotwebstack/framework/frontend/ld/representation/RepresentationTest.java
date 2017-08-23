@@ -29,15 +29,14 @@ public class RepresentationTest {
   public void builder() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES,
-            DBEERPEDIA.URL_PATTERN.stringValue())
+        new Representation.Builder(DBEERPEDIA.BREWERIES, DBEERPEDIA.URL_PATTERN.stringValue())
             .build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), equalTo(null));
     assertThat(representation.getStage(), equalTo(null));
-    assertThat(representation.getUrlPattern(), equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
+    Assert.assertNotNull(representation.getUrlPatterns());
   }
 
   @Test
