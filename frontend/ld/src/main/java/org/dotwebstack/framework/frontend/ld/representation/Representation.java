@@ -33,8 +33,8 @@ public class Representation {
     return informationProduct;
   }
 
-  public String getUrlPattern() {
-    return urlPattern;
+  public Collection<String> getUrlPatterns() {
+    return urlPatterns;
   }
 
   public Stage getStage() {
