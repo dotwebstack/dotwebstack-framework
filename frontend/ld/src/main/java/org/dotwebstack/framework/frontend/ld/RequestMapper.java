@@ -31,4 +31,11 @@ public class RequestMapper implements ResourceLoaderAware {
   public void setResourceLoader(ResourceLoader resourceLoader) {
     this.resourceLoader = Objects.requireNonNull(resourceLoader);
   }
+
+  public void loadRepresenations() {
+    for (Representation representation : representationResourceProvider.getAll().values()) {
+
+    }
+  }
+
 }
