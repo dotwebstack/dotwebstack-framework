@@ -109,7 +109,7 @@ public class RepresentationTest {
     assertThat(representation.getStage(), equalTo(stage));
     assertThat(representation.getUrlPatterns().toArray()[0],
         equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
-    assertThat(representation.getUrlPatterns().size(), equalTo(3));
+    assertThat(representation.getUrlPatterns().size(), equalTo(1));
   }
 
   @Test
