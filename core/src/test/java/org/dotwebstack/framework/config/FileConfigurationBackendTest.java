@@ -65,12 +65,12 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  public void loadTurtleFile() throws IOException {
+  public void loadTrigFile() throws IOException {
     // Arrange
     Resource resource = mock(Resource.class);
     InputStream resourceInputStream = mock(InputStream.class);
     when(resource.getInputStream()).thenReturn(resourceInputStream);
-    when(resource.getFilename()).thenReturn("config.ttl");
+    when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
 
@@ -80,7 +80,7 @@ public class FileConfigurationBackendTest {
     // Assert
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
-    verify(repositoryConnection).add(eq(resourceInputStream), eq("#"), eq(RDFFormat.TURTLE));
+    verify(repositoryConnection).add(eq(resourceInputStream), eq("#"), eq(RDFFormat.TRIG));
     verify(repositoryConnection).close();
     verifyNoMoreInteractions(repositoryConnection);
   }
@@ -136,11 +136,11 @@ public class FileConfigurationBackendTest {
     Resource resource = mock(Resource.class);
     InputStream resourceInputStream = mock(InputStream.class);
     when(resource.getInputStream()).thenReturn(resourceInputStream);
-    when(resource.getFilename()).thenReturn("config.ttl");
+    when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
     doThrow(RDFParseException.class).when(repositoryConnection).add(resourceInputStream, "#",
-        RDFFormat.TURTLE);
+        RDFFormat.TRIG);
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -156,13 +156,13 @@ public class FileConfigurationBackendTest {
     Resource resource = mock(Resource.class);
     InputStream resourceInputStream = mock(InputStream.class);
     when(resource.getInputStream()).thenReturn(resourceInputStream);
-    when(resource.getFilename()).thenReturn("config.ttl");
+    when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {resource});
 
     InputStream elmoInputStream = mock(InputStream.class);
     when(elmoConfiguration.getInputStream()).thenReturn(elmoInputStream);
-    when(elmoConfiguration.getFilename()).thenReturn("elmo.ttl");
+    when(elmoConfiguration.getFilename()).thenReturn("elmo.trig");
 
     // Act
     backend.loadResources();
