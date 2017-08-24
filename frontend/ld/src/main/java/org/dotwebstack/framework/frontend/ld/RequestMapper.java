@@ -38,4 +38,8 @@ public class RequestMapper implements ResourceLoaderAware {
     }
   }
 
+  private void mapRepresentation(Representation representation) {
+
+  }
+
 }
