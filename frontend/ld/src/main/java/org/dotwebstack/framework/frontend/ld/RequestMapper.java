@@ -42,4 +42,7 @@ public class RequestMapper implements ResourceLoaderAware {
 
   }
 
+  private String createBasePath(Representation representation) {
+    return "";
+  }
 }
