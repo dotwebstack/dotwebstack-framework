@@ -11,6 +11,8 @@ import org.springframework.core.io.ResourceLoader;
 
 public class RequestMapper implements ResourceLoaderAware {
 
+  private static final Logger LOG = LoggerFactory.getLogger(RequestMapper.class);
+
   private ResourceLoader resourceLoader;
 
   private HttpConfiguration httpConfiguration;
