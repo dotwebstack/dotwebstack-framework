@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.ld;
 import java.util.Objects;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
 
