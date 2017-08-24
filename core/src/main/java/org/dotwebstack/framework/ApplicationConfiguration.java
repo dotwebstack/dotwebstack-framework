@@ -13,8 +13,8 @@ import org.springframework.core.io.Resource;
 public class ApplicationConfiguration {
 
   @Bean
-  public ConfigurationBackend configurationBackend(@Value("classpath:/model/elmo.ttl")
-      Resource elmoConfiguration) {
+  public ConfigurationBackend configurationBackend(
+      @Value("classpath:/model/elmo.trig") Resource elmoConfiguration) {
     return new FileConfigurationBackend(elmoConfiguration, new SailRepository(new MemoryStore()));
   }
 

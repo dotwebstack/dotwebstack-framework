@@ -6,7 +6,7 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 public final class FileFormats {
 
   private static final ImmutableMap<String, RDFFormat> FORMATS =
-      ImmutableMap.of("ttl", RDFFormat.TURTLE, "xml", RDFFormat.RDFXML, "json", RDFFormat.JSONLD);
+      ImmutableMap.of("trig", RDFFormat.TRIG, "nq", RDFFormat.NQUADS, "json", RDFFormat.JSONLD);
 
   private FileFormats() {
     throw new IllegalStateException(
