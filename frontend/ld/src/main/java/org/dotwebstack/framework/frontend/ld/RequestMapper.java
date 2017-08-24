@@ -9,6 +9,8 @@ public class RequestMapper implements ResourceLoaderAware {
 
   private ResourceLoader resourceLoader;
 
+  private HttpConfiguration httpConfiguration;
+
   @Override
   public void setResourceLoader(ResourceLoader resourceLoader) {
     this.resourceLoader = Objects.requireNonNull(resourceLoader);
