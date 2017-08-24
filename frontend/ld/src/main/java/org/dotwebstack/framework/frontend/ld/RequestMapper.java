@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import java.util.Objects;
+import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
 
