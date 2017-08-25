@@ -35,9 +35,9 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
 
       // prefix host to request path
       UriInfo uriInfo = requestContext.getUriInfo();
-      UriBuilder uriBuilder = UriBuilder.fromUri(uriInfo.getBaseUri() + host + uriInfo.getPath());
-      LOG.info("Set new request path to {} (was {})", uriBuilder.toString(), uriInfo.getAbsolutePath());
-      String tmp = "Set new request path to {} (was {})" + uriBuilder.toString() + "-" + uriInfo.getAbsolutePath();
+
+      UriBuilder uriBuilder = UriBuilder.fromUri(uriInfo.getBaseUri() + host + "/" + uriInfo.getPath());
+      LOG.debug("Set new request path to {} (was {})", uriBuilder.toString(), uriInfo.getAbsolutePath());
 
       requestContext.setRequestUri(uriBuilder.build());
     }

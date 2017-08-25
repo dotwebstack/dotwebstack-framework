@@ -43,7 +43,7 @@ public class HostPreMatchingRequestFilterTest {
     // Arrange
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getBaseUri()).thenReturn(URI.create("http://" + DBEERPEDIA.ORG_HOST));
-    when(uriInfo.getPath()).thenReturn("/beer");
+    when(uriInfo.getPath()).thenReturn("beer");
 
     when(containerRequestContext.getHeaderString(HttpHeaders.HOST)).thenReturn(DBEERPEDIA.NL_HOST);
 
@@ -60,7 +60,7 @@ public class HostPreMatchingRequestFilterTest {
     // Arrange
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getBaseUri()).thenReturn(URI.create("http://" + DBEERPEDIA.ORG_HOST));
-    when(uriInfo.getPath()).thenReturn("/beer");
+    when(uriInfo.getPath()).thenReturn("beer");
 
     when(containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST)).thenReturn(DBEERPEDIA.NL_HOST);
 
@@ -77,7 +77,7 @@ public class HostPreMatchingRequestFilterTest {
     // Arrange
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getBaseUri()).thenReturn(URI.create("http://" + DBEERPEDIA.ORG_HOST));
-    when(uriInfo.getPath()).thenReturn("/beer");
+    when(uriInfo.getPath()).thenReturn("beer");
 
     when(containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST)).thenReturn(DBEERPEDIA.NL_HOST + ":8080");
 
