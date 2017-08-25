@@ -14,7 +14,6 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class SiteResourceProvider extends AbstractResourceProvider<Site> {
 

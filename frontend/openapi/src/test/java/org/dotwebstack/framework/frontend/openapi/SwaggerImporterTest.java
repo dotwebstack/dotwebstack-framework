@@ -17,6 +17,7 @@ import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
@@ -79,6 +80,20 @@ public class SwaggerImporterTest {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[0]);
+
+    // Act
+    swaggerImporter.importDefinitions();
+
+    // Assert
+    verifyZeroInteractions(informationProductResourceProvider);
+    verifyZeroInteractions(httpConfiguration);
+  }
+
+  @Test
+  public void nonExistingFolder() throws IOException {
+    // Arrange
+    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenThrow(
+        FileNotFoundException.class);
 
     // Act
     swaggerImporter.importDefinitions();

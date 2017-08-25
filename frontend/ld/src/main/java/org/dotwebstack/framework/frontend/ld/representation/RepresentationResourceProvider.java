@@ -11,7 +11,9 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class RepresentationResourceProvider extends AbstractResourceProvider<Representation> {
 
   private InformationProductResourceProvider informationProductResourceProvider;
@@ -37,26 +39,24 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Override
   protected Representation createResource(Model model, IRI identifier) {
-    final IRI informationProductIri = getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP)
-        .orElseThrow(() -> new ConfigurationException(
-            String.format("No <%s> information product has been found for representation <%s>.",
-                ELMO.INFORMATION_PRODUCT_PROP,
-                identifier)));
-    final IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP)
-        .orElseThrow(() -> new ConfigurationException(
-            String.format("No <%s> stage has been found for representation <%s>.", ELMO.STAGE,
-                identifier)
-        ));
+    IRI informationProductIri =
+        getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).orElseThrow(
+            () -> new ConfigurationException(
+                String.format("No <%s> information product has been found for representation <%s>.",
+                    ELMO.INFORMATION_PRODUCT_PROP, identifier)));
 
-    final String urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN)
-        .orElseThrow(() -> new ConfigurationException(
+    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP).orElseThrow(
+        () -> new ConfigurationException(String.format(
+            "No <%s> stage has been found for representation <%s>.", ELMO.STAGE, identifier)));
+
+
+    String urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN).orElseThrow(
+        () -> new ConfigurationException(
             String.format("No <%s> url pattern has been found for representation <%s>.",
-                ELMO.URL_PATTERN,
-                identifier)));
+                ELMO.URL_PATTERN, identifier)));
 
-    Representation.Builder builder = new Representation.Builder(identifier, urlPattern);
-    builder.stage(stageResourceProvider.get(stageIri));
-    builder.informationProduct(informationProductResourceProvider.get(informationProductIri));
-    return builder.build();
+    return new Representation.Builder(identifier, urlPattern).stage(
+        stageResourceProvider.get(stageIri)).informationProduct(
+            informationProductResourceProvider.get(informationProductIri)).build();
   }
 }
