@@ -46,6 +46,10 @@ public final class DBEERPEDIA {
   @java.lang.SuppressWarnings("squid:S1075")
   public static final String OPENAPI_BASE_PATH = "/api/v1";
 
+  public static final String ORG_HOST = "dbeerpedia.org/";
+
+  public static final String NL_HOST = "dbeerpedia.nl/";
+
   public static final IRI SITE;
 
   public static final IRI SITE_NL;

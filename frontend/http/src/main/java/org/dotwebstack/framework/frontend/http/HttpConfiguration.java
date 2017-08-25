@@ -6,4 +6,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class HttpConfiguration extends ResourceConfig {
 
+  public HttpConfiguration() {
+    super();
+    packages("org.dotwebstack.framework.frontend.http");
+  }
+
 }

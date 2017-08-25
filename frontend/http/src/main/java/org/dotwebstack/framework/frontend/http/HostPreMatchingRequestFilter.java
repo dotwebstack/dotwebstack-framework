@@ -4,9 +4,11 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 
+import com.google.common.net.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,20 +22,25 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
   @Override
   public void filter(ContainerRequestContext requestContext)
       throws IOException {
-    UriInfo uriInfo = requestContext.getUriInfo();
 
-    LOG.debug("baseURI: {}", uriInfo.getBaseUri().toString());
-    LOG.debug("requestURI: {}", uriInfo.getRequestUri().toString());
-    LOG.debug("Header host: {}", requestContext.getHeaderString("Host"));
-    LOG.debug("Header x-forwarded-host host: {}", requestContext.getHeaderString("X-Forwarded-Host"));
-//    if (requestContext.getHeaderString("X-Forwarded-Host") != null) {
-//
-//      URIBuilder uriBuilder = new URIBuilder().setHost(requestContext.getHeaderString("X-Forwarded-Host"));
-//      uriBuilder.setPath().requestContext.getUriInfo().getAbsolutePath();
-//
-//      requestContext.setRequestUri(uriBuilder.ge);
-//    } elseif (requestContext.getHeaderString("Host") != null) {
+    // get host from header (forwarded host if set, otherwise host)
+    String host = requestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
+    if (host == null) {
+      host = requestContext.getHeaderString(HttpHeaders.HOST);
+    }
 
-//    }
+    // strip port
+    if (host != null) {
+      host = host.split(":")[0];
+
+      // prefix host to request path
+      UriInfo uriInfo = requestContext.getUriInfo();
+      UriBuilder uriBuilder = UriBuilder.fromUri(uriInfo.getBaseUri() + host + uriInfo.getPath());
+      LOG.info("Set new request path to {} (was {})", uriBuilder.toString(), uriInfo.getAbsolutePath());
+      String tmp = "Set new request path to {} (was {})" + uriBuilder.toString() + "-" + uriInfo.getAbsolutePath();
+
+      requestContext.setRequestUri(uriBuilder.build());
+    }
   }
+
 }
