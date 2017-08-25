@@ -41,7 +41,7 @@ public class OpenApiIntegrationTest {
   @Test
   public void getBreweryCollection() {
     // Act
-    Response response = target.path("/localhost/dbp/api/v1/breweries").request().get();
+    Response response = target.path("/dbp/api/v1/breweries").request().get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -52,7 +52,7 @@ public class OpenApiIntegrationTest {
   @Test
   public void getBrewery() {
     // Act
-    Response response = target.path(String.format("/localhost/dbp/api/v1/breweries/%s",
+    Response response = target.path(String.format("/dbp/api/v1/breweries/%s",
         DBEERPEDIA.BROUWTOREN.getLocalName())).request().get();
 
     // Assert
@@ -64,7 +64,7 @@ public class OpenApiIntegrationTest {
   @Test
   public void resourceNotFound() {
     // Act
-    Response response = target.path("/localhost/dbp/api/v1/foo").request().get();
+    Response response = target.path("/dbp/api/v1/foo").request().get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
@@ -73,7 +73,7 @@ public class OpenApiIntegrationTest {
   @Test
   public void methodNotAllowed() {
     // Act
-    Response response = target.path("/localhost/dbp/api/v1/breweries").request().delete();
+    Response response = target.path("/dbp/api/v1/breweries").request().delete();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.METHOD_NOT_ALLOWED.getStatusCode()));
@@ -82,7 +82,7 @@ public class OpenApiIntegrationTest {
   @Test
   public void notAcceptable() {
     // Act
-    Response response = target.path("/localhost/dbp/api/v1/breweries").request(
+    Response response = target.path("/dbp/api/v1/breweries").request(
         MediaType.APPLICATION_OCTET_STREAM).get();
 
     // Assert
