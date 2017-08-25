@@ -47,6 +47,11 @@
       <artifactId>slf4j-nop</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.dotwebstack.framework</groupId>
+      <artifactId>dotwebstack-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>

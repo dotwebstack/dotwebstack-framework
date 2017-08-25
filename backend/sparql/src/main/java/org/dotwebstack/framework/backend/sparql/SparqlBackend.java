@@ -9,7 +9,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 
-class SparqlBackend implements Backend {
+public class SparqlBackend implements Backend {
 
   private IRI identifier;
 

@@ -1,0 +1,29 @@
+@prefix dbeerpedia: <http://dbeerpedia.org#> .
+@prefix elmo: <http://dotwebstack.org/def/elmo#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+dbeerpedia:Site a elmo:Site;
+  elmo:domain "dbeerpedia.org";
+.
+
+dbeerpedia:Stage a elmo:Stage;
+  elmo:site dbeerpedia:Site;
+  elmo:basePath: "/dbp";
+.
+
+dbeerpedia:Backend a elmo:SparqlBackend;
+  elmo:endpoint "http://localhost:8890/sparql"^^xsd:anyURI;
+.
+
+dbeerpedia:Breweries a elmo:InformationProduct;
+  rdfs:label "Beer breweries in The Netherlands";
+  elmo:backend dbeerpedia:Backend;
+  elmo:query "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o } . { ?s a <http://dbeerpedia.org#Brewery> }";
+.
+
+dbeerpedia:BreweryListRepresentation a elmo:Representation;
+  elmo:urlPattern "/breweries";
+  elmo:stage dbeerpedia:Stage;
+  elmo:informationProduct dbeerpedia:Breweries;
+.

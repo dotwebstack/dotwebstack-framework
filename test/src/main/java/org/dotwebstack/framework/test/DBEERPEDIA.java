@@ -15,6 +15,8 @@ public final class DBEERPEDIA {
 
   public static final String OBJECT_NAMESPACE = "http://dbeerpedia.org/id/";
 
+  public static final IRI URL_PATTERN;
+
   public static final Literal DOMAIN;
 
   public static final Literal DOMAIN_NL;
@@ -39,6 +41,10 @@ public final class DBEERPEDIA {
 
   public static final IRI ORIGIN_INFORMATION_PRODUCT;
 
+  public static final IRI BREWERY_LIST_REPRESENTATION;
+
+  public static final IRI BREWERY_REPRESENTATION;
+
   public static final String OPENAPI_DESCRIPTION = "DBeerpedia API";
 
   public static final String OPENAPI_HOST = "dbpeerpedia.org";
@@ -60,13 +66,13 @@ public final class DBEERPEDIA {
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
-    SITE = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "Site");
-    STAGE = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "Stage");
-    SECOND_STAGE = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "SecondStage");
+    SITE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Site");
+    STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Stage");
+    SECOND_STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SecondStage");
     DOMAIN = valueFactory.createLiteral("dbeerpedia.org");
     BASE_PATH = valueFactory.createLiteral("/special");
 
-    SITE_NL = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "SiteNL");
+    SITE_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SiteNL");
     DOMAIN_NL = valueFactory.createLiteral("dbeerpedia.nl");
 
     BACKEND = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Backend");
@@ -84,6 +90,9 @@ public final class DBEERPEDIA {
         "brewery/information/alcohol-percentages");
     ORIGIN_INFORMATION_PRODUCT =
         valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "brewery/information/origins");
+    BREWERY_LIST_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryListRepresentation");
+    BREWERY_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryRepresentation");
+    URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
   }
 
   private DBEERPEDIA() {
