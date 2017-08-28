@@ -34,7 +34,7 @@ public class RequestMapper implements ResourceLoaderAware {
 
   public void loadRepresenations() {
     for (Representation representation : representationResourceProvider.getAll().values()) {
-
+      mapRepresentation(representation);
     }
   }
 
