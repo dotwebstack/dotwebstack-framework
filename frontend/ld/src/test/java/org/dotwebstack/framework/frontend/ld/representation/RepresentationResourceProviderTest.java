@@ -82,17 +82,18 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void loadReprestentation() {
+  public void loadRepresentation() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, RDF.TYPE,
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
-            valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, ELMO.INFORMATION_PRODUCT_PROP,
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
+                ELMO.INFORMATION_PRODUCT_PROP,
                 DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, ELMO.URL_PATTERN,
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.URL_PATTERN,
                 DBEERPEDIA.URL_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, ELMO.STAGE_PROP,
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE))));
 
     // Act
@@ -100,7 +101,8 @@ public class RepresentationResourceProviderTest {
 
     // Assert
     assertThat(representationResourceProvider.getAll().entrySet(), hasSize(1));
-    Representation representation = representationResourceProvider.get(DBEERPEDIA.REPRESENTATION);
+    Representation representation = representationResourceProvider
+        .get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
     assertThat(representation, is(not(nullValue())));
     assertThat(representation.getInformationProduct(), equalTo(informationProduct));
     assertThat(representation.getUrlPatterns().toArray()[0],
@@ -113,23 +115,22 @@ public class RepresentationResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, RDF.TYPE, ELMO.REPRESENTATION),
-            valueFactory
-                .createStatement(DBEERPEDIA.REPRESENTATION, ELMO.INFORMATION_PRODUCT_PROP,
-                    DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-            valueFactory
-                .createStatement(DBEERPEDIA.REPRESENTATION, ELMO.URL_PATTERN,
-                    DBEERPEDIA.URL_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.REPRESENTATION, ELMO.STAGE_PROP,
-                DBEERPEDIA.STAGE),
-            valueFactory
-                .createStatement(DBEERPEDIA.SECOND_REPRESENTATION, RDF.TYPE, ELMO.REPRESENTATION),
-            valueFactory
-                .createStatement(DBEERPEDIA.SECOND_REPRESENTATION, ELMO.INFORMATION_PRODUCT_PROP,
-                    DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.SECOND_REPRESENTATION, ELMO.URL_PATTERN,
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
+                ELMO.INFORMATION_PRODUCT_PROP,
+                DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.URL_PATTERN,
                 DBEERPEDIA.URL_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.SECOND_REPRESENTATION, ELMO.STAGE_PROP,
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
+                DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_REPRESENTATION, RDF.TYPE,
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_REPRESENTATION,
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_REPRESENTATION, ELMO.URL_PATTERN,
+                DBEERPEDIA.URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.BREWERY_REPRESENTATION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE))));
 
     // Act

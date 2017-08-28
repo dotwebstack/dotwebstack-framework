@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -54,9 +55,15 @@ public class SwaggerImporter implements ResourceLoaderAware {
   }
 
   public void importDefinitions() throws IOException {
-    org.springframework.core.io.Resource[] resources =
-        ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-            "classpath:**/openapi/*");
+    org.springframework.core.io.Resource[] resources;
+
+    try {
+      resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
+          "classpath:openapi/*");
+    } catch (FileNotFoundException e) {
+      LOG.warn("Path 'openapi' does not exist in resources folder.");
+      return;
+    }
 
     for (org.springframework.core.io.Resource resource : resources) {
       Swagger swagger = swaggerParser.parse(IOUtils.toString(resource.getInputStream(), "UTF-8"));

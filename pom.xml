@@ -74,7 +74,27 @@
       </dependency>
       <dependency>
         <groupId>org.dotwebstack.framework</groupId>
+        <artifactId>dotwebstack-backend-elasticsearch</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dotwebstack.framework</groupId>
+        <artifactId>dotwebstack-backend-sparql</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dotwebstack.framework</groupId>
         <artifactId>dotwebstack-frontend-http</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dotwebstack.framework</groupId>
+        <artifactId>dotwebstack-frontend-openapi</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dotwebstack.framework</groupId>
+        <artifactId>dotwebstack-frontend-ld</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
