@@ -11,11 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-public class RequestMapper implements ResourceLoaderAware {
+@Service
+public class RequestMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestMapper.class);
-
-  private ResourceLoader resourceLoader;
 
   private HttpConfiguration httpConfiguration;
 
