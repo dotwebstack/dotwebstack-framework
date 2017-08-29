@@ -38,7 +38,18 @@ public class RequestMapper {
   }
 
   private void mapRepresentation(Representation representation) {
+    String basePath = createBasePath(representation);
 
+    representation.getUrlPatterns().forEach(path -> {
+      String absolutePath = basePath.concat(path);
+
+      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+
+      resourceBuilder.addMethod("GET").handledBy(new GetRequestHandler(representation));
+
+      httpConfiguration.registerResources(resourceBuilder.build());
+      LOG.debug("Mapped GET operation for request path {}", absolutePath);
+    });
   }
 
   private String createBasePath(Representation representation) {
