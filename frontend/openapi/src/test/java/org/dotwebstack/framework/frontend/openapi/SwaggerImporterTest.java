@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
+import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -66,12 +67,15 @@ public class SwaggerImporterTest {
 
   private SwaggerImporter swaggerImporter;
 
+  private EnvVariableParser envVariableParser;
+
   @Before
   public void setUp() {
+    envVariableParser = new EnvVariableParser();
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     swaggerImporter =
-        new SwaggerImporter(informationProductResourceProvider, httpConfiguration, swaggerParser);
+        new SwaggerImporter(informationProductResourceProvider, httpConfiguration, swaggerParser, envVariableParser);
     swaggerImporter.setResourceLoader(resourceLoader);
   }
 
@@ -149,8 +153,8 @@ public class SwaggerImporterTest {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
         MediaType.TEXT_PLAIN).path("/breweries",
-            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
+        new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+            "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 
@@ -211,10 +215,10 @@ public class SwaggerImporterTest {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(
         MediaType.TEXT_PLAIN).path(
-            "/breweries",
-            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
-                    MediaType.APPLICATION_JSON)));
+        "/breweries",
+        new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+            "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
+            MediaType.APPLICATION_JSON)));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 

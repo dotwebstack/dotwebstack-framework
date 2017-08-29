@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
 import org.dotwebstack.framework.AbstractResourceProvider;
+import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
@@ -20,11 +21,13 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   private StageResourceProvider stageResourceProvider;
 
+  private EnvVariableParser envVariableParser;
+
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
-      InformationProductResourceProvider informationProductResourceProvider,
-      StageResourceProvider stageResourceProvider) {
-    super(configurationBackend);
+                                        InformationProductResourceProvider informationProductResourceProvider,
+                                        StageResourceProvider stageResourceProvider, EnvVariableParser envVariableParser) {
+    super(configurationBackend, envVariableParser);
     this.informationProductResourceProvider = informationProductResourceProvider;
     this.stageResourceProvider = stageResourceProvider;
   }
@@ -57,6 +60,6 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
     return new Representation.Builder(identifier, urlPattern).stage(
         stageResourceProvider.get(stageIri)).informationProduct(
-            informationProductResourceProvider.get(informationProductIri)).build();
+        informationProductResourceProvider.get(informationProductIri)).build();
   }
 }

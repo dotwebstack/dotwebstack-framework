@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.site.Site;
@@ -43,6 +44,8 @@ public class StageResourceProviderTest {
   private SiteResourceProvider siteResourceProvider;
 
   @Mock
+  private EnvVariableParser envVariableParser;
+  @Mock
   private Site site;
 
   @Mock
@@ -63,7 +66,7 @@ public class StageResourceProviderTest {
 
   @Before
   public void setUp() {
-    stageResourceProvider = new StageResourceProvider(configurationBackend, siteResourceProvider);
+    stageResourceProvider = new StageResourceProvider(configurationBackend, siteResourceProvider, envVariableParser);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);

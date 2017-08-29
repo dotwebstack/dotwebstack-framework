@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend;
 
 import java.util.List;
 import org.dotwebstack.framework.AbstractResourceProvider;
+import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -20,8 +21,8 @@ public class BackendResourceProvider extends AbstractResourceProvider<Backend> {
 
   @Autowired
   public BackendResourceProvider(ConfigurationBackend configurationBackend,
-      List<BackendFactory> backendFactories) {
-    super(configurationBackend);
+                                 List<BackendFactory> backendFactories, EnvVariableParser envVariableParser) {
+    super(configurationBackend, envVariableParser);
     this.backendFactories = backendFactories;
   }
 

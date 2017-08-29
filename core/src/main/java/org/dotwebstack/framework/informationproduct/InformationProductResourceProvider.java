@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.informationproduct;
 
 import org.dotwebstack.framework.AbstractResourceProvider;
+import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -23,8 +24,8 @@ public class InformationProductResourceProvider
 
   @Autowired
   public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
-      BackendResourceProvider backendResourceProvider) {
-    super(configurationBackend);
+                                            BackendResourceProvider backendResourceProvider, EnvVariableParser envVariableParser) {
+    super(configurationBackend, envVariableParser);
     this.backendResourceProvider = backendResourceProvider;
   }
 

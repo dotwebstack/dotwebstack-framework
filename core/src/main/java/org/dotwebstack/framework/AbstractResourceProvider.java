@@ -25,8 +25,12 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
 
   private HashMap<IRI, R> resources = new HashMap<>();
 
-  public AbstractResourceProvider(ConfigurationBackend configurationBackend) {
+  private EnvVariableParser envVariableParser;
+
+  public AbstractResourceProvider(ConfigurationBackend configurationBackend,
+                                  EnvVariableParser envVariableParser) {
     this.configurationBackend = configurationBackend;
+    this.envVariableParser = envVariableParser;
   }
 
   @Override
