@@ -27,11 +27,6 @@ public class RequestMapper {
     this.httpConfiguration = Objects.requireNonNull(httpConfiguration);
   }
 
-  @Override
-  public void setResourceLoader(ResourceLoader resourceLoader) {
-    this.resourceLoader = Objects.requireNonNull(resourceLoader);
-  }
-
   public void loadRepresenations() {
     for (Representation representation : representationResourceProvider.getAll().values()) {
       mapRepresentation(representation);
