@@ -29,7 +29,11 @@ public class RequestMapper {
 
   public void loadRepresenations() {
     for (Representation representation : representationResourceProvider.getAll().values()) {
-      mapRepresentation(representation);
+      if (representation.getStage() != null) {
+        mapRepresentation(representation);
+      } else {
+        LOG.warn("Representation '{}' is not mapped to a stage.", representation.getIdentifier());
+      }
     }
   }
 
