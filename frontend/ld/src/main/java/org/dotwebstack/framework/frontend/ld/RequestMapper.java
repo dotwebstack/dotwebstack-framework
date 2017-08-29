@@ -53,6 +53,7 @@ public class RequestMapper {
   }
 
   private String createBasePath(Representation representation) {
-    return "";
+    return representation.getStage().getSite().getDomain() + representation.getStage()
+        .getBasePath();
   }
 }
