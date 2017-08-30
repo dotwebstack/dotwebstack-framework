@@ -39,15 +39,16 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Override
   protected Representation createResource(Model model, IRI identifier) {
+
+    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP).orElseThrow(
+        () -> new ConfigurationException(String.format(
+            "No <%s> stage has been found for representation <%s>.", ELMO.STAGE_PROP, identifier)));
+
     IRI informationProductIri =
         getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).orElseThrow(
             () -> new ConfigurationException(
                 String.format("No <%s> information product has been found for representation <%s>.",
                     ELMO.INFORMATION_PRODUCT_PROP, identifier)));
-
-    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP).orElseThrow(
-        () -> new ConfigurationException(String.format(
-            "No <%s> stage has been found for representation <%s>.", ELMO.STAGE, identifier)));
 
     String urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN).orElseThrow(
         () -> new ConfigurationException(
