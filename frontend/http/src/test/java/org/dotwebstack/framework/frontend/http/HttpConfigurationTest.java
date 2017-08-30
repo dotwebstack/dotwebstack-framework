@@ -24,7 +24,7 @@ public class HttpConfigurationTest {
   }
 
   @Test
-  public void singleExtension() {
+  public void multipleExtensions() {
     // Act
     HttpConfiguration httpConfiguration =
         new HttpConfiguration(ImmutableList.of(extensionA, extensionB));
