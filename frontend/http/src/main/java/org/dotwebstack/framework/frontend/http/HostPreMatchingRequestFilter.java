@@ -30,8 +30,8 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
       hostUriBuilder.uri("http://" + host);
     }
 
-    UriBuilder uriBuilder = UriBuilder.fromUri(uriInfo.getBaseUri() +
-        hostUriBuilder.build().getHost() + "/" + uriInfo.getPath());
+    UriBuilder uriBuilder = UriBuilder.fromUri(
+        uriInfo.getBaseUri() + hostUriBuilder.build().getHost() + "/" + uriInfo.getPath());
 
     LOG.debug("Set new request path to {} (was {})", uriBuilder, uriInfo.getAbsolutePath());
 
