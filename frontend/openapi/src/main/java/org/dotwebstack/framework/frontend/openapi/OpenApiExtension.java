@@ -22,7 +22,7 @@ public class OpenApiExtension implements HttpExtension {
     try {
       swaggerImporter.importDefinitions(httpConfiguration);
     } catch (IOException e) {
-      throw new ConfigurationException("Failed loading OpenAPI definitions", e);
+      throw new ConfigurationException("Failed loading OpenAPI definitions.", e);
     }
   }
 
