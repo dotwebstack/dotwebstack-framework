@@ -35,17 +35,14 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
   private InformationProductResourceProvider informationProductResourceProvider;
 
-  private HttpConfiguration httpConfiguration;
-
   private SwaggerParser swaggerParser;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
   public SwaggerImporter(InformationProductResourceProvider informationProductLoader,
-      HttpConfiguration httpConfiguration, SwaggerParser swaggerParser) {
+      SwaggerParser swaggerParser) {
     this.informationProductResourceProvider = Objects.requireNonNull(informationProductLoader);
-    this.httpConfiguration = Objects.requireNonNull(httpConfiguration);
     this.swaggerParser = Objects.requireNonNull(swaggerParser);
   }
 
@@ -54,7 +51,7 @@ public class SwaggerImporter implements ResourceLoaderAware {
     this.resourceLoader = Objects.requireNonNull(resourceLoader);
   }
 
-  public void importDefinitions() throws IOException {
+  public void importDefinitions(HttpConfiguration httpConfiguration) throws IOException {
     org.springframework.core.io.Resource[] resources;
 
     try {
@@ -67,11 +64,11 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
     for (org.springframework.core.io.Resource resource : resources) {
       Swagger swagger = swaggerParser.parse(IOUtils.toString(resource.getInputStream(), "UTF-8"));
-      mapSwaggerDefinition(swagger);
+      mapSwaggerDefinition(swagger, httpConfiguration);
     }
   }
 
-  private void mapSwaggerDefinition(Swagger swagger) {
+  private void mapSwaggerDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
