@@ -2,7 +2,9 @@ package org.dotwebstack.framework.frontend.ld;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,6 +12,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -37,9 +41,14 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+@PrepareForTest(HttpConfiguration.class)
+@RunWith(PowerMockRunner.class)
 public class RequestMapperTest {
 
   @Rule
@@ -50,12 +59,16 @@ public class RequestMapperTest {
   @Mock
   BackendSource backendSource;
 
+  @Mock
   Stage stage;
 
+  @Mock
   Site site;
 
+  @Mock
   InformationProduct informationProduct;
 
+  @Mock
   Representation representation;
 
   @Mock
@@ -73,8 +86,8 @@ public class RequestMapperTest {
   @Mock
   private ConfigurationBackend configurationBackend;
 
-  @Mock
-  private HttpConfiguration httpConfiguration;
+  @Spy
+  private HttpConfiguration httpConfiguration = new HttpConfiguration();
 
   private RequestMapper requestMapper;
 
@@ -116,7 +129,6 @@ public class RequestMapperTest {
   @Test
   public void dubbleRequestMappingRepresentation() {
     //temp();
-
     int numbers = representationResourceProvider.getAll().size();
     System.out.println("got " + numbers + " representations");
 
