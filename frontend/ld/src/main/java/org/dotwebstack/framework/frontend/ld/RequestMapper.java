@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.ld;
 
 import java.util.Objects;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.ld.handlers.GetRequestHandler;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.glassfish.jersey.server.model.Resource;
@@ -45,11 +44,20 @@ public class RequestMapper {
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
-      resourceBuilder.addMethod("GET").handledBy(new GetRequestHandler(representation));
-
-      httpConfiguration.registerResources(resourceBuilder.build());
-      LOG.debug("Mapped GET operation for request path {}", absolutePath);
+      if (!resourceAlreadyRegistered(httpConfiguration, absolutePath)) {
+        httpConfiguration.registerResources(resourceBuilder.build());
+        LOG.debug("Mapped GET operation for request path {}", absolutePath);
+      } else {
+        LOG.error(String.format("Resource <%s> is registered", absolutePath));
+      }
     });
+  }
+
+  private boolean resourceAlreadyRegistered(HttpConfiguration httpConfiguration,
+      String absolutePath) {
+    return httpConfiguration.getResources().stream()
+        .map(Resource::getPath)
+        .anyMatch(absolutePath::equals);
   }
 
   private String createBasePath(Representation representation) {

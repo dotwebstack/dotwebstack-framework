@@ -64,6 +64,8 @@ public final class DBEERPEDIA {
 
   public static final IRI SECOND_STAGE;
 
+  public static final String URL_PATTERN_VALUE = "/helloWorld";
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SITE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Site");
