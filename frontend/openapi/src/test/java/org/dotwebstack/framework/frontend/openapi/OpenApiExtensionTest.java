@@ -43,13 +43,26 @@ public class OpenApiExtensionTest {
   }
 
   @Test
-  public void importDefinitionsFailed() throws IOException {
+  public void importDefinitionsFailedIO() throws IOException {
     // Arrange
     doThrow(IOException.class).when(swaggerImporter).importDefinitions(httpConfiguration);
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Failed loading OpenAPI definitions.");
+
+    // Act
+    openApiExtension.initialize(httpConfiguration);
+  }
+
+  @Test
+  public void importDefinitionsFailedConfiguration() throws IOException {
+    // Arrange
+    doThrow(ConfigurationException.class).when(swaggerImporter).importDefinitions(
+        httpConfiguration);
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
 
     // Act
     openApiExtension.initialize(httpConfiguration);

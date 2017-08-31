@@ -12,19 +12,19 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class HttpConfigurationTest {
 
   @Mock
-  HttpExtension extensionA;
+  private HttpExtension extensionA;
 
   @Mock
-  HttpExtension extensionB;
+  private HttpExtension extensionB;
 
   @Test
-  public void noExtensions() {
-    // Act
+  public void noErrorsWithoutExtensions() {
+    // Act & assert
     new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
-  public void multipleExtensions() {
+  public void extensionsInitialized() {
     // Act
     HttpConfiguration httpConfiguration =
         new HttpConfiguration(ImmutableList.of(extensionA, extensionB));

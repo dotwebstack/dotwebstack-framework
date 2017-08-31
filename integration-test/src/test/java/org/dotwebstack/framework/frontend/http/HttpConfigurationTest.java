@@ -22,7 +22,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class HttpConfigurationTest {
 
-  WebTarget target;
+  private WebTarget target;
 
   @LocalServerPort
   private int port;
