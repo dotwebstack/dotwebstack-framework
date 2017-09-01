@@ -2,16 +2,17 @@ package org.dotwebstack.framework;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.test.DBEERPEDIA;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +39,7 @@ public class EnvVariableParserTest {
   }
 
   @Test
-  public void parse() throws Exception {
+  public void parseWithBrackets() throws Exception {
     String input = "${NAME}";
 
     String output = envVariableParser.parse(input);
@@ -47,19 +48,37 @@ public class EnvVariableParserTest {
   }
 
   @Test
-  public void parseRdf4jStatement() throws Exception {
-    ValueFactory factory = SimpleValueFactory.getInstance();
+  public void parseWithoutBrackets() throws Exception {
+    String input = "$NAME";
 
-    IRI subject = DBEERPEDIA.BREWERIES;
-    IRI predicate = DBEERPEDIA.NAME;
-    Literal object = factory.createLiteral("${NAME}");
-    Statement nameStatement = factory.createStatement(subject, predicate, object);
+    String output = envVariableParser.parse(input);
 
-    Statement newStatement = envVariableParser.parse(nameStatement);
+    assertThat(output, is(DBEERPEDIA.BREWERY_DAVO_NAME));
+  }
 
-    assertThat(newStatement.getSubject(), is(subject));
-    assertThat(newStatement.getPredicate(), is(predicate));
-    Literal newObject = DBEERPEDIA.BREWERY_DAVO;
-    assertThat(newStatement.getObject(), is(newObject));
+  @Test
+  public void parseWithoutBracketsAndShouldNotMatch() throws Exception {
+    String input = "$NAMES";
+
+    String output = envVariableParser.parse(input);
+
+    assertThat(output, is(input));
+  }
+
+  @Test
+  public void parseInputStream() {
+    String input = "${NAME}";
+    InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+
+    InputStream output = null;
+    try {
+      output = envVariableParser.parse(inputStream);
+
+      InputStream expectedOutputStream =
+          new ByteArrayInputStream(DBEERPEDIA.BREWERY_DAVO_NAME.getBytes(StandardCharsets.UTF_8));
+      assertTrue(IOUtils.contentEquals(output, expectedOutputStream));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }

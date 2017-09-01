@@ -1,5 +1,6 @@
 package org.dotwebstack.framework;
 
+
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
@@ -17,6 +18,9 @@ public class ApplicationConfigurationTest {
 
   @Mock
   private Resource resource;
+
+  @Mock
+  private EnvVariableParser envVariableParser;
 
   ApplicationConfiguration applicationConfiguration;
 

@@ -19,6 +19,7 @@ import static org.mockito.Mockito.withSettings;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import org.dotwebstack.framework.EnvVariableParser;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
@@ -51,6 +52,9 @@ public class FileConfigurationBackendTest {
   @Mock
   private SailRepositoryConnection repositoryConnection;
 
+  @Mock
+  private EnvVariableParser envVariableParser;
+
   private ResourceLoader resourceLoader;
 
   private FileConfigurationBackend backend;
@@ -59,7 +63,7 @@ public class FileConfigurationBackendTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    backend = new FileConfigurationBackend(elmoConfiguration, repository);
+    backend = new FileConfigurationBackend(elmoConfiguration, envVariableParser, repository);
     backend.setResourceLoader(resourceLoader);
     when(repository.getConnection()).thenReturn(repositoryConnection);
   }
@@ -70,6 +74,7 @@ public class FileConfigurationBackendTest {
     Resource resource = mock(Resource.class);
     InputStream resourceInputStream = mock(InputStream.class);
     when(resource.getInputStream()).thenReturn(resourceInputStream);
+    when(envVariableParser.parse(any(InputStream.class))).thenReturn(resourceInputStream);
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
@@ -136,6 +141,7 @@ public class FileConfigurationBackendTest {
     Resource resource = mock(Resource.class);
     InputStream resourceInputStream = mock(InputStream.class);
     when(resource.getInputStream()).thenReturn(resourceInputStream);
+    when(envVariableParser.parse(any(InputStream.class))).thenReturn(resourceInputStream);
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
@@ -156,12 +162,14 @@ public class FileConfigurationBackendTest {
     Resource resource = mock(Resource.class);
     InputStream resourceInputStream = mock(InputStream.class);
     when(resource.getInputStream()).thenReturn(resourceInputStream);
+    when(envVariableParser.parse(resourceInputStream)).thenReturn(resourceInputStream);
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {resource});
 
     InputStream elmoInputStream = mock(InputStream.class);
     when(elmoConfiguration.getInputStream()).thenReturn(elmoInputStream);
+    when(envVariableParser.parse(elmoInputStream)).thenReturn(elmoInputStream);
     when(elmoConfiguration.getFilename()).thenReturn("elmo.trig");
 
     // Act

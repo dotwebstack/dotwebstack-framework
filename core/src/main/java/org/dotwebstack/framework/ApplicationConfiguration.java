@@ -4,6 +4,7 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,10 +13,19 @@ import org.springframework.core.io.Resource;
 @Configuration
 public class ApplicationConfiguration {
 
+  @Autowired
+  private EnvVariableParser envVariableParser;
+
+  @Bean
+  public EnvVariableParser getEnvVariableParser() {
+    return envVariableParser;
+  }
+
   @Bean
   public ConfigurationBackend configurationBackend(
       @Value("classpath:/model/elmo.trig") Resource elmoConfiguration) {
-    return new FileConfigurationBackend(elmoConfiguration, new SailRepository(new MemoryStore()));
+
+    return new FileConfigurationBackend(elmoConfiguration, envVariableParser, new SailRepository(new MemoryStore()));
   }
 
 }

@@ -1,42 +1,93 @@
 package org.dotwebstack.framework;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.Map;
-import org.apache.commons.lang3.text.StrSubstitutor;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EnvVariableParser {
 
-  private Map<String, String> envVars;
+  private static final Logger LOG = LoggerFactory.getLogger(EnvVariableParser.class);
 
-  private StrSubstitutor strSubstitutor;
+  private Map<String, String> envVars;
 
   public EnvVariableParser() {
     envVars = System.getenv();
-    strSubstitutor = new StrSubstitutor(envVars);
   }
 
   public String parse(String input) {
-    String output = strSubstitutor.replace(input);
 
-    return output;
+    String patternWithBrackets = "\\$\\{([A-Za-z0-9]+)\\}";
+    String patternWithoutBrackets = "\\$([A-Za-z0-9]+)";
+
+    String output = parsePattern(input, patternWithBrackets);
+
+    return parsePattern(output, patternWithoutBrackets);
   }
 
-  public Statement parse(Statement statement) {
-    ValueFactory factory = SimpleValueFactory.getInstance();
+  private String parsePattern(String text, String pattern) {
+    // construct and compile reg expression
+    Pattern expr = Pattern.compile(pattern);
+    Matcher matcher = expr.matcher(text);
 
-    IRI subject = factory.createIRI(parse(statement.getSubject().stringValue()));
-    IRI predicate = factory.createIRI(parse(statement.getPredicate().stringValue()));
-    Literal object = factory.createLiteral(parse(statement.getObject().stringValue()));
+    // find pattern
+    while (matcher.find()) {
+      String foundEnvVariables = matcher.group(1);
+      String envValue = envVars.get(foundEnvVariables);
+      if (envValue == null) {
+        LOG.error(String.format("Env variable {} found but not defined", foundEnvVariables));
+        continue;
+      }
 
-    Statement updatedStatement = factory.createStatement(subject, predicate, object);
+      // replace the env variable
+      envValue = envValue.replace("\\", "\\\\");
+      Pattern subexpr = Pattern.compile(Pattern.quote(matcher.group(0)));
+      text = subexpr.matcher(text).replaceAll(envValue);
+    }
 
-    return updatedStatement;
+    return text;
   }
 
+  public InputStream parse(InputStream input) throws IOException {
+
+    // create buffered reader
+    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+    BufferedWriter bufferedWriter = null;
+    ByteArrayOutputStream byteArrayOutputStream = null;
+
+    try {
+      // create buffered writer
+      byteArrayOutputStream = new ByteArrayOutputStream();
+      OutputStreamWriter outputStreamWriter = new OutputStreamWriter(byteArrayOutputStream);
+      bufferedWriter = new BufferedWriter(outputStreamWriter);
+
+      // read lines and parse
+      String line;
+      while ((line = bufferedReader.readLine()) != null) {
+        bufferedWriter.write(parse(line));
+      }
+    } finally {
+      if (bufferedWriter != null) {
+        bufferedWriter.close();
+      }
+    }
+
+    // convert outputstream to inputstream
+    byte[] byteArray = byteArrayOutputStream.toByteArray();
+    InputStream updatedInputStream = new ByteArrayInputStream(byteArray);
+
+    return updatedInputStream;
+
+  }
 }
