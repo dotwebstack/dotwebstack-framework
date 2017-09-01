@@ -22,11 +22,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SparqlBackendCreateSourceTest {
 
-  @Mock
-  private IRI identifier;
-
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+
+  @Mock
+  private IRI identifier;
 
   private SparqlBackend backend;
 

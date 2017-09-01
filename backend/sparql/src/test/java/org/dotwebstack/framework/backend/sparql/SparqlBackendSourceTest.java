@@ -14,11 +14,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SparqlBackendSourceTest {
 
-  @Mock
-  Backend backend;
-
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+
+  @Mock
+  private Backend backend;
 
   @Test
   public void builder() {

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import java.util.Objects;
-import javax.ws.rs.Produces;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -17,7 +16,7 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
-  InformationProduct informationProduct;
+  private InformationProduct informationProduct;
 
   public GetRequestHandler(InformationProduct informationProduct) {
     this.informationProduct = Objects.requireNonNull(informationProduct);
@@ -30,7 +29,8 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
 
     //TODO: Query the actual information product
     Model builder = new ModelBuilder().subject("http://dbeerpedia.org#Heineken")
-        .add(RDF.TYPE, SimpleValueFactory.getInstance().createIRI("http://dbeerpedia.org#Breweries"))
+        .add(RDF.TYPE,
+            SimpleValueFactory.getInstance().createIRI("http://dbeerpedia.org#Breweries"))
         .build();
 
     return Response.ok(builder).build();

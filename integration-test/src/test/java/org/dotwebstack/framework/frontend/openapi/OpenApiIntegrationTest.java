@@ -26,7 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class OpenApiIntegrationTest {
 
-  WebTarget target;
+  private WebTarget target;
 
   @LocalServerPort
   private int port;
@@ -48,13 +48,15 @@ public class OpenApiIntegrationTest {
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.valueOf("text/turtle")));
-    assertThat(response.readEntity(String.class), containsString(DBEERPEDIA.BREWERIES.stringValue()));
+    assertThat(response.readEntity(String.class),
+        containsString(DBEERPEDIA.BREWERIES.stringValue()));
   }
 
   @Test
   public void getBreweryCollectionNotAcceptableForJson() {
     // Act
-    Response response = target.path("/dbp/api/v1/breweries").request(MediaType.APPLICATION_JSON).get();
+    Response response = target.path("/dbp/api/v1/breweries").request(MediaType.APPLICATION_JSON)
+        .get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
@@ -91,7 +93,8 @@ public class OpenApiIntegrationTest {
   @Test
   public void getBreweryCollectionInTrig() {
     // Act
-    String mediaType = "application/trig";;
+    String mediaType = "application/trig";
+
     Response response = target.path("/dbp/api/v1/breweries").request(mediaType).get();
 
     // Assert
@@ -125,7 +128,8 @@ public class OpenApiIntegrationTest {
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.valueOf("text/turtle")));
-    assertThat(response.readEntity(String.class), containsString(DBEERPEDIA.BREWERIES.stringValue()));
+    assertThat(response.readEntity(String.class),
+        containsString(DBEERPEDIA.BREWERIES.stringValue()));
   }
 
   @Test
