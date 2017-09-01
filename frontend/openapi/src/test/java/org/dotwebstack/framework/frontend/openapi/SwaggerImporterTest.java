@@ -75,7 +75,7 @@ public class SwaggerImporterTest {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     swaggerImporter =
-        new SwaggerImporter(informationProductResourceProvider, httpConfiguration, swaggerParser, envVariableParser);
+        new SwaggerImporter(informationProductResourceProvider, swaggerParser, envVariableParser);
     swaggerImporter.setResourceLoader(resourceLoader);
   }
 
@@ -86,7 +86,7 @@ public class SwaggerImporterTest {
         new org.springframework.core.io.Resource[0]);
 
     // Act
-    swaggerImporter.importDefinitions();
+    swaggerImporter.importDefinitions(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(informationProductResourceProvider);
@@ -100,7 +100,7 @@ public class SwaggerImporterTest {
         FileNotFoundException.class);
 
     // Act
-    swaggerImporter.importDefinitions();
+    swaggerImporter.importDefinitions(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(informationProductResourceProvider);
@@ -119,7 +119,7 @@ public class SwaggerImporterTest {
             DBEERPEDIA.OPENAPI_DESCRIPTION));
 
     // Act
-    swaggerImporter.importDefinitions();
+    swaggerImporter.importDefinitions(httpConfiguration);
   }
 
   @Test
@@ -129,7 +129,7 @@ public class SwaggerImporterTest {
         new Path().get(new Operation()));
 
     // Act
-    swaggerImporter.importDefinitions();
+    swaggerImporter.importDefinitions(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(httpConfiguration);
@@ -142,7 +142,7 @@ public class SwaggerImporterTest {
         new Path().put(new Operation()));
 
     // Act
-    swaggerImporter.importDefinitions();
+    swaggerImporter.importDefinitions(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(httpConfiguration);
@@ -159,7 +159,7 @@ public class SwaggerImporterTest {
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 
     // Act
-    swaggerImporter.importDefinitions();
+    swaggerImporter.importDefinitions(httpConfiguration);
 
     // Assert
     verify(httpConfiguration).registerResources(resourceCaptor.capture());
@@ -186,7 +186,7 @@ public class SwaggerImporterTest {
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 
     // Act
-    swaggerImporter.importDefinitions();
+    swaggerImporter.importDefinitions(httpConfiguration);
 
     // Assert
     verify(httpConfiguration).registerResources(resourceCaptor.capture());
@@ -207,7 +207,7 @@ public class SwaggerImporterTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
     // Act
-    swaggerImporter.importDefinitions();
+    swaggerImporter.importDefinitions(httpConfiguration);
   }
 
   @Test
@@ -223,7 +223,7 @@ public class SwaggerImporterTest {
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 
     // Act
-    swaggerImporter.importDefinitions();
+    swaggerImporter.importDefinitions(httpConfiguration);
 
     // Assert
     verify(httpConfiguration).registerResources(resourceCaptor.capture());

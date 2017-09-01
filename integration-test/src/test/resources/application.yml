@@ -1,6 +1,8 @@
 spring:
   main:
     banner-mode: "off"
+  jersey:
+    type: filter
 
 logging:
   level:

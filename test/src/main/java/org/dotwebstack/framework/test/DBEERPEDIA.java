@@ -58,6 +58,10 @@ public final class DBEERPEDIA {
   @java.lang.SuppressWarnings("squid:S1075")
   public static final String OPENAPI_BASE_PATH = "/api/v1";
 
+  public static final String ORG_HOST = "dbeerpedia.org";
+
+  public static final String NL_HOST = "dbeerpedia.nl";
+
   public static final IRI SITE;
 
   public static final IRI SITE_NL;
@@ -95,7 +99,8 @@ public final class DBEERPEDIA {
         "brewery/information/alcohol-percentages");
     ORIGIN_INFORMATION_PRODUCT =
         valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "brewery/information/origins");
-    BREWERY_LIST_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryListRepresentation");
+    BREWERY_LIST_REPRESENTATION =
+        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryListRepresentation");
     BREWERY_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryRepresentation");
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
   }

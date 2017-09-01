@@ -52,7 +52,7 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
   public void loadResources() throws IOException {
     Resource[] projectResources =
         ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-            "classpath:**/model/*");
+            "classpath:**/model/**");
 
     if (projectResources.length == 0) {
       LOG.info("No configuration files found");
