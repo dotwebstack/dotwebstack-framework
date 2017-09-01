@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.Assert.assertThat;
 
@@ -26,7 +25,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class OpenApiIntegrationTest {
 
-  private WebTarget target;
+  WebTarget target;
 
   @LocalServerPort
   private int port;
@@ -47,76 +46,9 @@ public class OpenApiIntegrationTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.valueOf("text/turtle")));
-    assertThat(response.readEntity(String.class),
-        containsString(DBEERPEDIA.BREWERIES.stringValue()));
-  }
-
-  @Test
-  public void getBreweryCollectionNotAcceptableForJson() {
-    // Act
-    Response response = target.path("/dbp/api/v1/breweries").request(MediaType.APPLICATION_JSON)
-        .get();
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
-  }
-
-  @Test
-  public void getBreweryCollectionInRdfXml() {
-    // Act
-    String mediaType = "application/rdf+xml";
-    Response response = target.path("/dbp/api/v1/breweries").request(mediaType).get();
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.valueOf(mediaType)));
-    String entity = response.readEntity(String.class);
-    assertThat(entity, containsString(DBEERPEDIA.BREWERIES.stringValue()));
-    assertThat(entity, containsString("?xml"));
-  }
-
-  @Test
-  public void getBreweryCollectionInLdJson() {
-    // Act
-    String mediaType = "application/ld+json";
-    Response response = target.path("/dbp/api/v1/breweries").request(mediaType).get();
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.valueOf(mediaType)));
-    String entity = response.readEntity(String.class);
-    assertThat(entity, containsString(DBEERPEDIA.BREWERIES.stringValue()));
-    assertThat(entity, containsString("[{"));
-  }
-
-  @Test
-  public void getBreweryCollectionInTrig() {
-    // Act
-    String mediaType = "application/trig";
-
-    Response response = target.path("/dbp/api/v1/breweries").request(mediaType).get();
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.valueOf(mediaType)));
-    String entity = response.readEntity(String.class);
-    assertThat(entity, containsString(DBEERPEDIA.BREWERIES.stringValue()));
-    assertThat(entity, containsString("<" + DBEERPEDIA.BREWERIES.stringValue() + ">"));
-  }
-
-  @Test
-  public void getBreweryCollectionInTurtle() {
-    // Act
-    String mediaType = "text/turtle";
-    Response response = target.path("/dbp/api/v1/breweries").request(mediaType).get();
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.valueOf(mediaType)));
-    String entity = response.readEntity(String.class);
-    assertThat(entity, containsString(DBEERPEDIA.BREWERIES.stringValue()));
-    assertThat(entity, containsString("<" + DBEERPEDIA.BREWERIES.stringValue() + ">"));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
+    assertThat(response.getLength(), equalTo(31));
+    assertThat(response.readEntity(String.class), equalTo(DBEERPEDIA.BREWERIES.stringValue()));
   }
 
   @Test
@@ -127,9 +59,8 @@ public class OpenApiIntegrationTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.valueOf("text/turtle")));
-    assertThat(response.readEntity(String.class),
-        containsString(DBEERPEDIA.BREWERIES.stringValue()));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
+    assertThat(response.readEntity(String.class), equalTo(DBEERPEDIA.BREWERIES.stringValue()));
   }
 
   @Test
@@ -152,7 +83,8 @@ public class OpenApiIntegrationTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.valueOf("text/turtle")));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
+    assertThat(response.getLength(), equalTo(31));
     assertThat(response.readEntity(String.class), isEmptyString());
   }
 

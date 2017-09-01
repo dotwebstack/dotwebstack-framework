@@ -5,10 +5,7 @@ info:
 host: localhost
 basePath: /dbp/api/v1
 produces:
-  - text/turtle
-  - application/trig
-  - application/ld+json
-  - application/rdf+xml
+  - text/plain
 paths:
   /breweries:
     get:
