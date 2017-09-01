@@ -8,7 +8,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 @Produces("application/rdf+xml")
 public class RdfXmlGraphProvider extends GraphProviderBase {
 
-  RdfXmlGraphProvider() {
+  @SuppressWarnings("WeakerAccess")
+  public RdfXmlGraphProvider() {
     super(RDFFormat.RDFXML);
   }
 

@@ -8,7 +8,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 @Produces("text/turtle")
 public class TurtleGraphProvider extends GraphProviderBase {
 
-  TurtleGraphProvider() {
+  @SuppressWarnings("WeakerAccess")
+  public TurtleGraphProvider() {
     super(RDFFormat.TURTLE);
   }
 

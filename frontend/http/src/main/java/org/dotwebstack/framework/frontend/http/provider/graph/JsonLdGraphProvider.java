@@ -8,7 +8,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 @Produces("application/ld+json")
 public class JsonLdGraphProvider extends GraphProviderBase {
 
-  JsonLdGraphProvider() {
+  @SuppressWarnings("WeakerAccess")
+  public JsonLdGraphProvider() {
     super(RDFFormat.JSONLD);
   }
 

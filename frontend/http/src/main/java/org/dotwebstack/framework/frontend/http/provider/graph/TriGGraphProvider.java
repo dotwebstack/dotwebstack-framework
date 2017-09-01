@@ -8,7 +8,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 @Produces("application/trig")
 public class TriGGraphProvider extends GraphProviderBase {
 
-  TriGGraphProvider() {
+  @SuppressWarnings("WeakerAccess")
+  public TriGGraphProvider() {
     super(RDFFormat.TRIG);
   }
 
