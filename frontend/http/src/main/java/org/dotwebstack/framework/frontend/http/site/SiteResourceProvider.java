@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.http.site;
 
 import java.util.Optional;
 import org.dotwebstack.framework.AbstractResourceProvider;
-import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -19,8 +18,8 @@ import org.springframework.stereotype.Service;
 public class SiteResourceProvider extends AbstractResourceProvider<Site> {
 
   @Autowired
-  public SiteResourceProvider(ConfigurationBackend configurationBackend, EnvVariableParser envVariableParser) {
-    super(configurationBackend, envVariableParser);
+  public SiteResourceProvider(ConfigurationBackend configurationBackend) {
+    super(configurationBackend);
   }
 
   @Override

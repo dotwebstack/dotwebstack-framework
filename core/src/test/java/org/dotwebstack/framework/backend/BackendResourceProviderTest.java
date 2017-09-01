@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
-import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -59,9 +58,6 @@ public class BackendResourceProviderTest {
   @Mock
   private Backend backend;
 
-  @Mock
-  private EnvVariableParser envVariableParser;
-
   private BackendResourceProvider backendResourceProvider;
 
   private List<BackendFactory> backendFactories;
@@ -71,7 +67,7 @@ public class BackendResourceProviderTest {
   @Before
   public void setUp() {
     backendFactories = ImmutableList.of(backendFactory);
-    backendResourceProvider = new BackendResourceProvider(configurationBackend, backendFactories, envVariableParser);
+    backendResourceProvider = new BackendResourceProvider(configurationBackend, backendFactories);
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);

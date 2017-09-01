@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -40,9 +39,6 @@ public class SiteResourceProviderTest {
   private ConfigurationBackend configurationBackend;
 
   @Mock
-  private EnvVariableParser envVariableParser;
-
-  @Mock
   private SailRepository configurationRepository;
 
   @Mock
@@ -57,7 +53,7 @@ public class SiteResourceProviderTest {
 
   @Before
   public void setUp() {
-    siteResourceProvider = new SiteResourceProvider(configurationBackend, envVariableParser);
+    siteResourceProvider = new SiteResourceProvider(configurationBackend);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);

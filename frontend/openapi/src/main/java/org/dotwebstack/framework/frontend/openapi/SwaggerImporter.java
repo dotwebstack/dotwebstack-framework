@@ -46,7 +46,8 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
   @Autowired
   public SwaggerImporter(InformationProductResourceProvider informationProductLoader,
-                         HttpConfiguration httpConfiguration, SwaggerParser swaggerParser, EnvVariableParser envVariableParser) {
+                         HttpConfiguration httpConfiguration, SwaggerParser swaggerParser,
+                         EnvVariableParser envVariableParser) {
     this.informationProductResourceProvider = Objects.requireNonNull(informationProductLoader);
     this.httpConfiguration = Objects.requireNonNull(httpConfiguration);
     this.swaggerParser = Objects.requireNonNull(swaggerParser);

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.http.stage;
 
 import org.dotwebstack.framework.AbstractResourceProvider;
-import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
@@ -20,8 +19,8 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
 
   @Autowired
   public StageResourceProvider(ConfigurationBackend configurationBackend,
-                               SiteResourceProvider siteResourceProvider, EnvVariableParser envVariableParser) {
-    super(configurationBackend, envVariableParser);
+                               SiteResourceProvider siteResourceProvider) {
+    super(configurationBackend);
     this.siteResourceProvider = siteResourceProvider;
   }
 

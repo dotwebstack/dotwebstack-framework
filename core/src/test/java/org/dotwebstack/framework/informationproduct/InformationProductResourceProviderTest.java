@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.backend.BackendSource;
@@ -62,17 +61,15 @@ public class InformationProductResourceProviderTest {
   @Mock
   private BackendSource backendSource;
 
-  @Mock
-  private EnvVariableParser envVariableParser;
-
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   private InformationProductResourceProvider informationProductResourceProvider;
 
   @Before
   public void setUp() {
+
     informationProductResourceProvider =
-        new InformationProductResourceProvider(configurationBackend, backendResourceProvider, envVariableParser);
+        new InformationProductResourceProvider(configurationBackend, backendResourceProvider);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);

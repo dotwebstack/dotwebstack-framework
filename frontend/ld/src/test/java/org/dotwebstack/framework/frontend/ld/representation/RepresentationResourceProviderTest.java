@@ -75,7 +75,7 @@ public class RepresentationResourceProviderTest {
   @Before
   public void setUp() {
     representationResourceProvider = new RepresentationResourceProvider(configurationBackend,
-        informationProductResourceProvider, stageResourceProvider, envVariableParser);
+        informationProductResourceProvider, stageResourceProvider);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
