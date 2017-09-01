@@ -14,7 +14,7 @@ public class HttpConfiguration extends ResourceConfig {
   public HttpConfiguration(List<HttpExtension> httpExtensions) {
     super();
     packages("org.dotwebstack.framework.frontend.http");
-    property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(robots.txt|assets/.*)");
+    property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(robots.txt|(assets|webjars)/.*)");
     property(ServerProperties.WADL_FEATURE_DISABLE, true);
     httpExtensions.forEach(extension -> extension.initialize(this));
   }
