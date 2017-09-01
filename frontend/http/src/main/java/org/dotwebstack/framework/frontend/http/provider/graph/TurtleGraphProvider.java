@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.provider.graph;
+package org.dotwebstack.framework.frontend.http.provider.graph;
 
 import org.eclipse.rdf4j.rio.RDFFormat;
 

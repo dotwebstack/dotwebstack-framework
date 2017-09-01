@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -10,6 +11,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.Model;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +35,7 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void alwaysReturnInformationProductIdentifier() {
+  public void alwaysReturnRdfModel() {
     // Arrange
     when(informationProduct.getIdentifier()).thenReturn(DBEERPEDIA.BREWERIES);
     UriInfo uriInfo = mock(UriInfo.class);
@@ -45,7 +47,7 @@ public class GetRequestHandlerTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(200));
-    assertThat(response.getEntity(), equalTo(DBEERPEDIA.BREWERIES.stringValue()));
+    assertThat(response.getEntity(), instanceOf(Model.class));
   }
 
 }

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.provider.graph;
+package org.dotwebstack.framework.frontend.http.provider.graph;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -17,7 +17,7 @@ public abstract class GraphProviderBase implements MessageBodyWriter<Model> {
 
     private final RDFFormat format;
 
-    GraphProviderBase(RDFFormat format) {
+    protected GraphProviderBase(RDFFormat format) {
         this.format = format;
     }
 

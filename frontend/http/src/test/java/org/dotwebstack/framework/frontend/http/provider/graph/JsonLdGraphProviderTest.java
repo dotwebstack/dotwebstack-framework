@@ -1,7 +1,7 @@
-package org.dotwebstack.framework.frontend.provider.graph;
+package org.dotwebstack.framework.frontend.http.provider.graph;
 
 
-import org.dotwebstack.framework.provider.graph.RdfXmlGraphProvider;
+import org.dotwebstack.framework.frontend.http.provider.graph.JsonLdGraphProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RdfXmlGraphProviderTest {
+public class JsonLdGraphProviderTest {
 
     @Mock
     private OutputStream outputStream;
@@ -35,13 +35,13 @@ public class RdfXmlGraphProviderTest {
     private ArgumentCaptor<byte[]> byteCaptor;
 
     @Test
-    public void isWritableForRdfXmlMediaType() {
+    public void isWritableForJsonLdMediaType() {
         // Arrange
-        RdfXmlGraphProvider provider = new RdfXmlGraphProvider();
+        JsonLdGraphProvider provider = new JsonLdGraphProvider();
 
         // Act
         boolean result = provider.isWriteable(LinkedHashModel.class, null, null,
-                new MediaType("application", "rdf+xml"));
+                new MediaType("application", "ld+json"));
 
         // Assert
         assertThat(result, is(true));
@@ -50,11 +50,11 @@ public class RdfXmlGraphProviderTest {
     @Test
     public void isNotWritableForStringClass() {
         // Arrange
-        RdfXmlGraphProvider provider = new RdfXmlGraphProvider();
+        JsonLdGraphProvider provider = new JsonLdGraphProvider();
 
         // Act
         boolean result = provider.isWriteable(String.class, null, null,
-                new MediaType("application", "rdf+xml"));
+                new MediaType("application", "ld+json"));
 
         // Assert
         assertThat(result, is(false));
@@ -63,7 +63,7 @@ public class RdfXmlGraphProviderTest {
     @Test
     public void isNotWritableForXmlMediaType() {
         // Arrange
-        RdfXmlGraphProvider provider = new RdfXmlGraphProvider();
+        JsonLdGraphProvider provider = new JsonLdGraphProvider();
 
         // Act
         boolean result = provider.isWriteable(String.class, null, null,
@@ -74,9 +74,9 @@ public class RdfXmlGraphProviderTest {
     }
 
     @Test
-    public void writesRdfXmlFormat() throws IOException {
+    public void writesJsonLdFormat() throws IOException {
         // Arrange
-        RdfXmlGraphProvider provider = new RdfXmlGraphProvider();
+        JsonLdGraphProvider provider = new JsonLdGraphProvider();
         Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES)
                 .add(RDF.TYPE, DBEERPEDIA.BACKEND)
                 .add(RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL)
@@ -88,10 +88,8 @@ public class RdfXmlGraphProviderTest {
         // Assert
         verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
         String result = new String(byteCaptor.getValue());
-        assertThat(result, containsString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
-        assertThat(result, containsString("<rdf:Description rdf:about=\"http://dbeerpedia.org#Breweries\">"));
-        assertThat(result, containsString("<rdf:type rdf:resource=\"http://dbeerpedia.org#Backend\"/>"));
-        assertThat(result, containsString("<label xmlns=\"http://www.w3.org/2000/01/rdf-schema#\">Beer breweries in The Netherlands</label>"));
+        assertThat(result, containsString("[{\"@id\":\"http://dbeerpedia.org#Breweries\",\"@type\":[\"http://dbeerpedia.org#Backend\"]"));
+        assertThat(result, containsString("http://www.w3.org/2000/01/rdf-schema#label\":[{\"@value\":\"Beer breweries in The Netherlands\"}]}]"));
     }
 
 }
