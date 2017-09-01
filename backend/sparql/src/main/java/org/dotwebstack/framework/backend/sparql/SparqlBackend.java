@@ -8,21 +8,29 @@ import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 
 public class SparqlBackend implements Backend {
 
   private IRI identifier;
 
-  private String endpoint;
+  private SPARQLRepository repository;
+
+  private RepositoryConnection repositoryConnection;
 
   private SparqlBackend(Builder builder) {
     identifier = builder.identifier;
-    endpoint = builder.endpoint;
+    repository = builder.repository;
   }
 
   @Override
   public IRI getIdentifier() {
     return identifier;
+  }
+
+  public SPARQLRepository getRepository() {
+    return repository;
   }
 
   @Override
@@ -34,19 +42,23 @@ public class SparqlBackend implements Backend {
     return new SparqlBackendSource.Builder(this, query).build();
   }
 
-  public String getEndpoint() {
-    return endpoint;
+  public RepositoryConnection getConnection() {
+    if (repositoryConnection == null) {
+      repositoryConnection = repository.getConnection();
+    }
+
+    return repositoryConnection;
   }
 
   public static class Builder {
 
     private IRI identifier;
 
-    private String endpoint;
+    private SPARQLRepository repository;
 
-    public Builder(IRI identifier, String endpoint) {
+    public Builder(IRI identifier, SPARQLRepository repository) {
       this.identifier = Objects.requireNonNull(identifier);
-      this.endpoint = Objects.requireNonNull(endpoint);
+      this.repository = Objects.requireNonNull(repository);
     }
 
     public SparqlBackend build() {

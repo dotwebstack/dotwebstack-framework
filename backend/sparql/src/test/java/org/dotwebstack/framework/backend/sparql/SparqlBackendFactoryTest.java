@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.sparql;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -47,7 +48,8 @@ public class SparqlBackendFactoryTest {
 
     // Assert
     assertThat(backend.getIdentifier(), equalTo(identifier));
-    assertThat(backend.getEndpoint(), equalTo(DBEERPEDIA.ENDPOINT.stringValue()));
+    assertThat(backend.getRepository(), notNullValue());
+    assertThat(backend.getRepository().isInitialized(), equalTo(true));
   }
 
   @Test

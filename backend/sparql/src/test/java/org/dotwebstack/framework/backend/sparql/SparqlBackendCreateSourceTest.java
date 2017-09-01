@@ -11,6 +11,7 @@ import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,11 +29,14 @@ public class SparqlBackendCreateSourceTest {
   @Mock
   private IRI identifier;
 
+  @Mock
+  private SPARQLRepository repository;
+
   private SparqlBackend backend;
 
   @Before
   public void setUp() {
-    backend = new SparqlBackend.Builder(identifier, "endpoint").build();
+    backend = new SparqlBackend.Builder(identifier, repository).build();
   }
 
   @Test
