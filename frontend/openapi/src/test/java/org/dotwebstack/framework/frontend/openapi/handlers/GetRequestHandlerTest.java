@@ -37,7 +37,6 @@ public class GetRequestHandlerTest {
   @Test
   public void alwaysReturnRdfModel() {
     // Arrange
-    when(informationProduct.getIdentifier()).thenReturn(DBEERPEDIA.BREWERIES);
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getPath()).thenReturn("/");
