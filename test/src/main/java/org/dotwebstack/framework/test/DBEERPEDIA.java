@@ -51,7 +51,7 @@ public final class DBEERPEDIA {
 
   public static final IRI BREWERY_REPRESENTATION;
 
-  public static final String OPENAPI_DESCRIPTION = "DBeerpedia ${PORT} API";
+  public static final String OPENAPI_DESCRIPTION = "DBeerpedia API";
 
   public static final String OPENAPI_HOST = "dbpeerpedia.org";
 
