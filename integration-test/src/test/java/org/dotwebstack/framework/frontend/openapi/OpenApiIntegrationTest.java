@@ -136,11 +136,11 @@ public class OpenApiIntegrationTest {
   public void optionsMethod() {
     // Act
     Response response =
-        target.path("/dbp/api/v1/breweries").request().options();
+        target.path("/dbp/api/v1/breweries").request(MediaType.TEXT_PLAIN_TYPE).options();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
     assertThat(response.readEntity(String.class), equalTo("HEAD, GET, OPTIONS"));
     assertThat(response.getHeaderString("allow"), equalTo("HEAD,GET,OPTIONS"));
   }
