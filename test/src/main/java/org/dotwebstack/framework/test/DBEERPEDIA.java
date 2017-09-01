@@ -90,7 +90,8 @@ public final class DBEERPEDIA {
         "brewery/information/alcohol-percentages");
     ORIGIN_INFORMATION_PRODUCT =
         valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "brewery/information/origins");
-    BREWERY_LIST_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryListRepresentation");
+    BREWERY_LIST_REPRESENTATION =
+        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryListRepresentation");
     BREWERY_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryRepresentation");
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
   }
