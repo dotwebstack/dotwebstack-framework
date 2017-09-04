@@ -46,7 +46,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void getGraphQueryResult() {
+  public void evaluateGraphQuery() {
     // Arrange
     GraphQuery query = mock(GraphQuery.class);
     GraphQueryResult queryResult = mock(GraphQueryResult.class);
@@ -61,7 +61,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void getTupleQueryResult() {
+  public void evaluateTupleQuery() {
     // Arrange
     TupleQuery query = mock(TupleQuery.class);
     TupleQueryResult queryResult = mock(TupleQueryResult.class);
@@ -76,7 +76,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void getResultForUnsupportedQueryType() {
+  public void evaluateUnsupportedQueryType() {
     // Arrange
     BooleanQuery query = mock(BooleanQuery.class);
     when(repositoryConnection.prepareQuery(QueryLanguage.SPARQL, BOOLEAN_QUERY)).thenReturn(query);
@@ -90,7 +90,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void getResultForMalformedQuery() {
+  public void evaluateMalformedQuery() {
     // Arrange
     when(repositoryConnection.prepareQuery(QueryLanguage.SPARQL, TUPLE_QUERY)).thenThrow(
         MalformedQueryException.class);
@@ -104,7 +104,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void getResultForEvaluationError() {
+  public void evaluateError() {
     // Arrange
     TupleQuery query = mock(TupleQuery.class);
     when(repositoryConnection.prepareQuery(QueryLanguage.SPARQL, TUPLE_QUERY)).thenReturn(query);
