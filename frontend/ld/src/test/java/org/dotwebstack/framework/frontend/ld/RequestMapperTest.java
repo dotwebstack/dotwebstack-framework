@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendSource;
@@ -78,7 +79,7 @@ public class RequestMapperTest {
   private ConfigurationBackend configurationBackend;
 
   @Spy
-  private HttpConfiguration httpConfiguration = new HttpConfiguration();
+  private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
 
   private RequestMapper requestMapper;
 
