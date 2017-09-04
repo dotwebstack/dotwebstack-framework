@@ -53,6 +53,7 @@ public class SparqlBackendFactoryTest {
     assertThat(backend.getIdentifier(), equalTo(identifier));
     assertThat(backend.getRepository(), notNullValue());
     assertThat(backend.getRepository().isInitialized(), equalTo(true));
+    assertThat(backend.getSourceFactory(), equalTo(sourceFactory));
   }
 
   @Test
