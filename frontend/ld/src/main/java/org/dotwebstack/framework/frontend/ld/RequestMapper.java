@@ -27,7 +27,7 @@ public class RequestMapper {
     this.httpConfiguration = Objects.requireNonNull(httpConfiguration);
   }
 
-  public void loadRepresenations() {
+  public void loadRepresentations() {
     for (Representation representation : representationResourceProvider.getAll().values()) {
       if (representation.getStage() != null) {
         mapRepresentation(representation);

@@ -122,7 +122,7 @@ public class RequestMapperTest {
   @Test
   public void mapRepresentationTest() {
     // Act
-    requestMapper.loadRepresenations();
+    requestMapper.loadRepresentations();
 
     // Arrange
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
@@ -153,7 +153,7 @@ public class RequestMapperTest {
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     // Act
-    requestMapper.loadRepresenations();
+    requestMapper.loadRepresentations();
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
@@ -172,10 +172,10 @@ public class RequestMapperTest {
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     // Act
-    requestMapper.loadRepresenations();
+    requestMapper.loadRepresentations();
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
-  
+
 }
