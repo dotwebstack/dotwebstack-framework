@@ -56,7 +56,8 @@ public class Representation {
       this.urlPatterns = Arrays.asList(Objects.requireNonNull(urlPatterns));
     }
 
-    public Builder informationProduct(InformationProduct informationProduct) {
+    public Builder informationProduct(
+        InformationProduct informationProduct) {
       this.informationProduct = informationProduct;
       return this;
     }
@@ -69,7 +70,6 @@ public class Representation {
     public Representation build() {
       return new Representation(this);
     }
-
   }
 
 }
