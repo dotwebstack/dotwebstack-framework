@@ -157,4 +157,25 @@ public class RequestMapperTest {
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
+
+  @Test
+  public void mapRepresentationWithNullStageTest() {
+    // Arrange
+    representation = new Representation.Builder(DBEERPEDIA.BREWERIES,
+        DBEERPEDIA.URL_PATTERN_VALUE)
+        .informationProduct(informationProduct)
+        .stage(null)
+        .build();
+    Map<IRI, Representation> representationMap = new HashMap<>();
+    representationMap.put(representation.getIdentifier(), representation);
+
+    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+
+    // Act
+    requestMapper.loadRepresenations();
+
+    // Assert
+    assertThat(httpConfiguration.getResources(), hasSize(0));
+  }
+  
 }
