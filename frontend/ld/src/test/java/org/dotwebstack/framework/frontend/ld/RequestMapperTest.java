@@ -121,9 +121,12 @@ public class RequestMapperTest {
 
   @Test
   public void mapRepresentationTest() {
+    // Act
     requestMapper.loadRepresenations();
 
+    // Arrange
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
+    // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(resource.getPath(),
         equalTo(
@@ -131,12 +134,15 @@ public class RequestMapperTest {
                 + DBEERPEDIA.URL_PATTERN_VALUE));
     assertThat(resource.getResourceMethods(), hasSize(1));
 
+    // Arrange
     ResourceMethod method = resource.getResourceMethods().get(0);
+    // Assert
     assertThat(method.getHttpMethod(), equalTo("GET"));
   }
 
   @Test
   public void mapRepresentationWithoutStageTest() {
+    // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES,
         DBEERPEDIA.URL_PATTERN_VALUE)
         .informationProduct(informationProduct)
@@ -146,8 +152,9 @@ public class RequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
+    // Act
     requestMapper.loadRepresenations();
-
+    // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
 }
