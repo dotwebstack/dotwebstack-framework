@@ -43,7 +43,7 @@ public class SparqlBackendTest {
 
     // Assert
     assertThat(repositoryConnection1, notNullValue());
-    assertThat(repositoryConnection2, notNullValue());
+    assertThat(repositoryConnection1, equalTo(repositoryConnection2));
     verify(repository).getConnection();
   }
 
