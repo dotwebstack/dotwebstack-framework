@@ -64,7 +64,7 @@ public final class DBEERPEDIA {
 
   public static final IRI SECOND_STAGE;
 
-  public static final String URL_PATTERN_VALUE = "/helloWorld";
+  public static final String URL_PATTERN_VALUE = "/holyBeer";
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
