@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -80,7 +79,7 @@ public class FileConfigurationBackendTest {
     // Assert
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
-    verify(repositoryConnection).add(eq(resourceInputStream), eq("#"), eq(RDFFormat.TRIG));
+    verify(repositoryConnection).add(resourceInputStream, "#", RDFFormat.TRIG);
     verify(repositoryConnection).close();
     verifyNoMoreInteractions(repositoryConnection);
   }
