@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -148,8 +147,8 @@ public class SwaggerImporterTest {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
         MediaType.TEXT_PLAIN).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-            "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
+            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 
@@ -210,10 +209,10 @@ public class SwaggerImporterTest {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(
         MediaType.TEXT_PLAIN).path(
-        "/breweries",
-        new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-            "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
-            MediaType.APPLICATION_JSON)));
+            "/breweries",
+            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
+                    MediaType.APPLICATION_JSON)));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
 
@@ -230,9 +229,9 @@ public class SwaggerImporterTest {
   private Swagger mockDefinition() throws IOException {
     when(fileResource.getInputStream()).thenReturn(IOUtils.toInputStream("spec", "UTF-8"));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new org.springframework.core.io.Resource[]{fileResource});
+        new org.springframework.core.io.Resource[] {fileResource});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
-    when(swaggerParser.parse(eq("spec"))).thenReturn(swagger);
+    when(swaggerParser.parse("spec")).thenReturn(swagger);
     return swagger;
   }
 

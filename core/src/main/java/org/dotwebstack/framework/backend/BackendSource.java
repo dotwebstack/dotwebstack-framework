@@ -4,4 +4,6 @@ public interface BackendSource {
 
   Backend getBackend();
 
+  Object getResult();
+
 }

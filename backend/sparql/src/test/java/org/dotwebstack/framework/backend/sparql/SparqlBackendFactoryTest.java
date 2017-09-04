@@ -1,12 +1,12 @@
 package org.dotwebstack.framework.backend.sparql;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -27,27 +27,29 @@ public class SparqlBackendFactoryTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private IRI identifier;
+  private SparqlBackendSourceFactory sourceFactory;
 
   private SparqlBackendFactory backendFactory;
 
   @Before
   public void setUp() {
-    backendFactory = new SparqlBackendFactory();
+    backendFactory = new SparqlBackendFactory(sourceFactory);
   }
 
   @Test
   public void backendIsCreated() {
     // Arrange
     Model backendModel =
-        new ModelBuilder().add(identifier, ELMO.ENDPOINT, DBEERPEDIA.ENDPOINT).build();
+        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.ENDPOINT, DBEERPEDIA.ENDPOINT).build();
 
     // Act
-    SparqlBackend backend = (SparqlBackend) backendFactory.create(backendModel, identifier);
+    SparqlBackend backend = (SparqlBackend) backendFactory.create(backendModel, DBEERPEDIA.BACKEND);
 
     // Assert
-    assertThat(backend.getIdentifier(), equalTo(identifier));
-    assertThat(backend.getEndpoint(), equalTo(DBEERPEDIA.ENDPOINT.stringValue()));
+    assertThat(backend.getIdentifier(), equalTo(DBEERPEDIA.BACKEND));
+    assertThat(backend.getRepository(), notNullValue());
+    assertThat(backend.getRepository().isInitialized(), equalTo(true));
+    assertThat(backend.getSourceFactory(), equalTo(sourceFactory));
   }
 
   @Test
@@ -58,10 +60,10 @@ public class SparqlBackendFactoryTest {
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("No <%s> statement has been found for backend <%s>.",
-        ELMO.ENDPOINT, identifier));
+        ELMO.ENDPOINT, DBEERPEDIA.BACKEND));
 
     // Act
-    backendFactory.create(backendModel, identifier);
+    backendFactory.create(backendModel, DBEERPEDIA.BACKEND);
   }
 
   @Test
@@ -70,15 +72,15 @@ public class SparqlBackendFactoryTest {
     Literal endpointAsString =
         SimpleValueFactory.getInstance().createLiteral(DBEERPEDIA.ENDPOINT.stringValue());
     Model backendModel =
-        new ModelBuilder().add(identifier, ELMO.ENDPOINT, endpointAsString).build();
+        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.ENDPOINT, endpointAsString).build();
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("Object <%s> for backend <%s> must be of datatype <%s>.",
-        ELMO.ENDPOINT, identifier, XMLSchema.ANYURI));
+        ELMO.ENDPOINT, DBEERPEDIA.BACKEND, XMLSchema.ANYURI));
 
     // Act
-    backendFactory.create(backendModel, identifier);
+    backendFactory.create(backendModel, DBEERPEDIA.BACKEND);
   }
 
   @Test
