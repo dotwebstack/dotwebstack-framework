@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.frontend.ld;
 
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -20,6 +24,7 @@ import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
 import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,9 +33,12 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.Spy;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+@PrepareForTest(HttpConfiguration.class)
+@RunWith(PowerMockRunner.class)
 public class RequestMapperTest {
 
   @Rule
@@ -38,15 +46,20 @@ public class RequestMapperTest {
 
   @Captor
   ArgumentCaptor<Resource> resourceCaptor;
+
   @Mock
   BackendSource backendSource;
 
+  @Mock
   Stage stage;
 
+  @Mock
   Site site;
 
+  @Mock
   InformationProduct informationProduct;
 
+  @Mock
   Representation representation;
 
   @Mock
@@ -64,17 +77,15 @@ public class RequestMapperTest {
   @Mock
   private ConfigurationBackend configurationBackend;
 
+  @Spy
+  private HttpConfiguration httpConfiguration = new HttpConfiguration();
+
   private RequestMapper requestMapper;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-  @Mock
-  private HttpConfiguration http;
-
   @Before
   public void setUp() {
-    http = new HttpConfiguration();
-
     site = new Site.Builder(DBEERPEDIA.BREWERIES)
         .domain(DBEERPEDIA.DOMAIN.stringValue())
         .build();
@@ -93,27 +104,44 @@ public class RequestMapperTest {
         .informationProduct(informationProduct)
         .stage(stage)
         .build();
-    Representation representation1 = new Representation.Builder(DBEERPEDIA.BREWERY_REPRESENTATION,
-        DBEERPEDIA.URL_PATTERN_VALUE)
-        .informationProduct(informationProduct)
-        .stage(stage)
-        .build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
-    representationMap.put(representation1.getIdentifier(), representation1);
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     requestMapper =
-        new RequestMapper(representationResourceProvider, http);
+        new RequestMapper(representationResourceProvider, httpConfiguration);
   }
 
   @Test
-  public void dubbleRequestMappingRepresentation() {
+  public void mapRepresentationTest() {
+    requestMapper.loadRepresenations();
 
-    int numbers = representationResourceProvider.getAll().size();
-    System.out.println("got " + numbers + " representations");
+    Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
+    assertThat(httpConfiguration.getResources(), hasSize(1));
+    assertThat(resource.getPath(),
+        equalTo(
+            DBEERPEDIA.DOMAIN.getLabel() + DBEERPEDIA.BASE_PATH.getLabel()
+                + DBEERPEDIA.URL_PATTERN_VALUE));
+    assertThat(resource.getResourceMethods(), hasSize(1));
+
+    ResourceMethod method = resource.getResourceMethods().get(0);
+    assertThat(method.getHttpMethod(), equalTo("GET"));
+  }
+
+  @Test
+  public void mapRepresentationWithoutStageTest() {
+    representation = new Representation.Builder(DBEERPEDIA.BREWERIES,
+        DBEERPEDIA.URL_PATTERN_VALUE)
+        .informationProduct(informationProduct)
+        .build();
+    Map<IRI, Representation> representationMap = new HashMap<>();
+    representationMap.put(representation.getIdentifier(), representation);
+
+    when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     requestMapper.loadRepresenations();
+
+    assertThat(httpConfiguration.getResources(), hasSize(0));
   }
 }
