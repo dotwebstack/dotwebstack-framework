@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -24,7 +25,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class OpenApiIntegrationTest {
 
-  WebTarget target;
+  private WebTarget target;
 
   @LocalServerPort
   private int port;
@@ -41,18 +42,19 @@ public class OpenApiIntegrationTest {
   @Test
   public void getBreweryCollection() {
     // Act
-    Response response = target.path("/localhost/dbp/api/v1/breweries").request().get();
+    Response response = target.path("/dbp/api/v1/breweries").request().get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
+    assertThat(response.getLength(), equalTo(31));
     assertThat(response.readEntity(String.class), equalTo(DBEERPEDIA.BREWERIES.stringValue()));
   }
 
   @Test
   public void getBrewery() {
     // Act
-    Response response = target.path(String.format("/localhost/dbp/api/v1/breweries/%s",
+    Response response = target.path(String.format("/dbp/api/v1/breweries/%s",
         DBEERPEDIA.BROUWTOREN.getLocalName())).request().get();
 
     // Assert
@@ -62,9 +64,34 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
+  public void optionsMethod() {
+    // Act
+    Response response =
+        target.path("/dbp/api/v1/breweries").request(MediaType.TEXT_PLAIN_TYPE).options();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
+    assertThat(response.readEntity(String.class), equalTo("HEAD, GET, OPTIONS"));
+    assertThat(response.getHeaderString("allow"), equalTo("HEAD,GET,OPTIONS"));
+  }
+
+  @Test
+  public void headMethod() {
+    // Act
+    Response response = target.path("/dbp/api/v1/breweries").request().head();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
+    assertThat(response.getLength(), equalTo(31));
+    assertThat(response.readEntity(String.class), isEmptyString());
+  }
+
+  @Test
   public void resourceNotFound() {
     // Act
-    Response response = target.path("/localhost/dbp/api/v1/foo").request().get();
+    Response response = target.path("/dbp/api/v1/foo").request().get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
@@ -73,7 +100,7 @@ public class OpenApiIntegrationTest {
   @Test
   public void methodNotAllowed() {
     // Act
-    Response response = target.path("/localhost/dbp/api/v1/breweries").request().delete();
+    Response response = target.path("/dbp/api/v1/breweries").request().delete();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.METHOD_NOT_ALLOWED.getStatusCode()));
@@ -82,8 +109,8 @@ public class OpenApiIntegrationTest {
   @Test
   public void notAcceptable() {
     // Act
-    Response response = target.path("/localhost/dbp/api/v1/breweries").request(
-        MediaType.APPLICATION_OCTET_STREAM).get();
+    Response response =
+        target.path("/dbp/api/v1/breweries").request(MediaType.APPLICATION_OCTET_STREAM).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));

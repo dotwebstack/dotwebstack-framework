@@ -1,9 +1,22 @@
 package org.dotwebstack.framework.frontend.http;
 
+import java.util.List;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.servlet.ServletProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class HttpConfiguration extends ResourceConfig {
+
+  @Autowired
+  public HttpConfiguration(List<HttpExtension> httpExtensions) {
+    super();
+    packages("org.dotwebstack.framework.frontend.http");
+    property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(robots.txt|(assets|webjars)/.*)");
+    property(ServerProperties.WADL_FEATURE_DISABLE, true);
+    httpExtensions.forEach(extension -> extension.initialize(this));
+  }
 
 }

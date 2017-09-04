@@ -41,10 +41,6 @@ public final class DBEERPEDIA {
 
   public static final IRI ORIGIN_INFORMATION_PRODUCT;
 
-  public static final IRI REPRESENTATION;
-
-  public static final IRI SECOND_REPRESENTATION;
-
   public static final IRI BREWERY_LIST_REPRESENTATION;
 
   public static final IRI BREWERY_REPRESENTATION;
@@ -55,6 +51,10 @@ public final class DBEERPEDIA {
 
   @java.lang.SuppressWarnings("squid:S1075")
   public static final String OPENAPI_BASE_PATH = "/api/v1";
+
+  public static final String ORG_HOST = "dbeerpedia.org";
+
+  public static final String NL_HOST = "dbeerpedia.nl";
 
   public static final IRI SITE;
 
@@ -91,11 +91,9 @@ public final class DBEERPEDIA {
     ORIGIN_INFORMATION_PRODUCT =
         valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "brewery/information/origins");
 
-    REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Representation");
-    SECOND_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SecondRepresentation");
+    BREWERY_LIST_REPRESENTATION =
+        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryListRepresentation");
 
-    BREWERY_LIST_REPRESENTATION = valueFactory
-        .createIRI(DBEERPEDIA.NAMESPACE, "BreweryListRepresentation");
     BREWERY_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryRepresentation");
 
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");

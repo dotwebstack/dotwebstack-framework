@@ -31,9 +31,8 @@ public class RepresentationTest {
   @Test
   public void builder() {
     // Act
-    final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES, DBEERPEDIA.URL_PATTERN.stringValue())
-            .build();
+    final Representation representation = new Representation.Builder(DBEERPEDIA.BREWERIES,
+        DBEERPEDIA.URL_PATTERN.stringValue()).build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -45,9 +44,7 @@ public class RepresentationTest {
   @Test
   public void builderWithoutUrlPatterns() {
     // Act
-    final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES)
-            .build();
+    final Representation representation = new Representation.Builder(DBEERPEDIA.BREWERIES).build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -74,9 +71,7 @@ public class RepresentationTest {
     // Act
     final Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES, DBEERPEDIA.URL_PATTERN.stringValue(),
-            DBEERPEDIA.URL_PATTERN.stringValue(),
-            DBEERPEDIA.URL_PATTERN.stringValue())
-            .build();
+            DBEERPEDIA.URL_PATTERN.stringValue(), DBEERPEDIA.URL_PATTERN.stringValue()).build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -97,11 +92,9 @@ public class RepresentationTest {
     final Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
-    final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES, DBEERPEDIA.URL_PATTERN.stringValue())
-            .informationProduct(informationProduct)
-            .stage(stage)
-            .build();
+    final Representation representation = new Representation.Builder(DBEERPEDIA.BREWERIES,
+        DBEERPEDIA.URL_PATTERN.stringValue()).informationProduct(informationProduct).stage(
+            stage).build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -110,16 +103,6 @@ public class RepresentationTest {
     assertThat(representation.getUrlPatterns().toArray()[0],
         equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
     assertThat(representation.getUrlPatterns().size(), equalTo(1));
-  }
-
-  @Test
-  public void builderWithNullValues() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES, null).build();
   }
 
 }
