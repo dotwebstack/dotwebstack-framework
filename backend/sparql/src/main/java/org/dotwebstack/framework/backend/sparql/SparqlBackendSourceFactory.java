@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
+import java.util.Objects;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.backend.BackendSourceFactory;
@@ -17,7 +18,7 @@ public class SparqlBackendSourceFactory implements BackendSourceFactory {
 
   @Autowired
   public SparqlBackendSourceFactory(QueryEvaluator queryEvaluator) {
-    this.queryEvaluator = queryEvaluator;
+    this.queryEvaluator = Objects.requireNonNull(queryEvaluator);
   }
 
   public BackendSource create(Backend backend, Model statements) {
