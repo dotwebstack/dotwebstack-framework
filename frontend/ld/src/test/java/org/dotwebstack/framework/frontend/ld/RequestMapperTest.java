@@ -114,6 +114,11 @@ public class RequestMapperTest {
   }
 
   @Test
+  public void constructRequestMapperTest() {
+    new RequestMapper(representationResourceProvider, httpConfiguration);
+  }
+
+  @Test
   public void mapRepresentationTest() {
     requestMapper.loadRepresenations();
 
