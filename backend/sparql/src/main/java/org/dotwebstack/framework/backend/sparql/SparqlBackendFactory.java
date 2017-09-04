@@ -10,10 +10,18 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 class SparqlBackendFactory implements BackendFactory {
+
+  private SparqlBackendSourceFactory sourceFactory;
+
+  @Autowired
+  public SparqlBackendFactory(SparqlBackendSourceFactory sourceFactory) {
+    this.sourceFactory = sourceFactory;
+  }
 
   @Override
   public Backend create(Model backendModel, IRI identifier) {
@@ -32,7 +40,7 @@ class SparqlBackendFactory implements BackendFactory {
 
     repository.initialize();
 
-    return new SparqlBackend.Builder(identifier, repository).build();
+    return new SparqlBackend.Builder(identifier, repository, sourceFactory).build();
   }
 
   @Override

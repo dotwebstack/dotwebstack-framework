@@ -30,11 +30,14 @@ public class SparqlBackendFactoryTest {
   @Mock
   private IRI identifier;
 
+  @Mock
+  private SparqlBackendSourceFactory sourceFactory;
+
   private SparqlBackendFactory backendFactory;
 
   @Before
   public void setUp() {
-    backendFactory = new SparqlBackendFactory();
+    backendFactory = new SparqlBackendFactory(sourceFactory);
   }
 
   @Test

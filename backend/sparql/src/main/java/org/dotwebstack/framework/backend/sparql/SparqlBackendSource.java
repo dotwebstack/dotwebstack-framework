@@ -2,14 +2,7 @@ package org.dotwebstack.framework.backend.sparql;
 
 import java.util.Objects;
 import org.dotwebstack.framework.backend.Backend;
-import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.BackendSource;
-import org.eclipse.rdf4j.RDF4JException;
-import org.eclipse.rdf4j.query.GraphQuery;
-import org.eclipse.rdf4j.query.Query;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.TupleQuery;
 
 public class SparqlBackendSource implements BackendSource {
 
@@ -17,9 +10,12 @@ public class SparqlBackendSource implements BackendSource {
 
   private String query;
 
+  private QueryEvaluator queryEvaluator;
+
   public SparqlBackendSource(Builder builder) {
     this.backend = builder.backend;
     this.query = builder.query;
+    this.queryEvaluator = builder.queryEvaluator;
   }
 
   @Override
@@ -33,32 +29,7 @@ public class SparqlBackendSource implements BackendSource {
 
   @Override
   public Object getResult() {
-    Query preparedQuery;
-
-    try {
-      preparedQuery = backend.getConnection().prepareQuery(QueryLanguage.SPARQL, query);
-    } catch (RDF4JException e) {
-      throw new BackendException(String.format("Query could not be prepared: %s", query), e);
-    }
-
-    if (preparedQuery instanceof GraphQuery) {
-      try {
-        return ((GraphQuery) preparedQuery).evaluate();
-      } catch (QueryEvaluationException e) {
-        throw new BackendException(String.format("Query could not be evaluated: %s", query), e);
-      }
-    }
-
-    if (preparedQuery instanceof TupleQuery) {
-      try {
-        return ((TupleQuery) preparedQuery).evaluate();
-      } catch (QueryEvaluationException e) {
-        throw new BackendException(String.format("Query could not be evaluated: %s", query), e);
-      }
-    }
-
-    throw new BackendException(
-        String.format("Query type '%s' not supported.", preparedQuery.getClass()));
+    return queryEvaluator.evaluate(backend.getConnection(), query);
   }
 
   public static class Builder {
@@ -67,9 +38,12 @@ public class SparqlBackendSource implements BackendSource {
 
     private String query;
 
-    public Builder(SparqlBackend backend, String query) {
+    private QueryEvaluator queryEvaluator;
+
+    public Builder(SparqlBackend backend, String query, QueryEvaluator queryEvaluator) {
       this.backend = Objects.requireNonNull(backend);
       this.query = Objects.requireNonNull(query);
+      this.queryEvaluator = Objects.requireNonNull(queryEvaluator);
     }
 
     public SparqlBackendSource build() {

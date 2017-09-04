@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.informationproduct;
 
 import org.dotwebstack.framework.AbstractResourceProvider;
+import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -49,7 +50,8 @@ public class InformationProductResourceProvider
   }
 
   private BackendSource createBackendSource(IRI backendIdentifier, Model statements) {
-    return backendResourceProvider.get(backendIdentifier).createSource(statements);
+    Backend backend = backendResourceProvider.get(backendIdentifier);
+    return backend.getSourceFactory().create(backend, statements);
   }
 
 }

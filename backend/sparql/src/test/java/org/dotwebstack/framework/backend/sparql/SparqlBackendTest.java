@@ -21,20 +21,26 @@ public class SparqlBackendTest {
   @Mock
   private SPARQLRepository repository;
 
+  @Mock
+  private SparqlBackendSourceFactory sourceFactory;
+
   @Test
   public void builder() {
     // Act
-    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository).build();
+    SparqlBackend backend =
+        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, sourceFactory).build();
 
     // Assert
     assertThat(backend.getIdentifier(), equalTo(DBEERPEDIA.BACKEND));
     assertThat(backend.getRepository(), equalTo(repository));
+    assertThat(backend.getSourceFactory(), equalTo(sourceFactory));
   }
 
   @Test
   public void reuseConnection() {
     // Arrange
-    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository).build();
+    SparqlBackend backend =
+        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, sourceFactory).build();
     when(repository.getConnection()).thenReturn(mock(RepositoryConnection.class));
 
     // Act
