@@ -158,7 +158,7 @@ public class InformationProductResourceProviderTest {
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
-        String.format("No <%s> backend has been found for information product <%s>.",
+        String.format("No <%s> statement has been found for information product <%s>.",
             ELMO.BACKEND_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
 
     // Act

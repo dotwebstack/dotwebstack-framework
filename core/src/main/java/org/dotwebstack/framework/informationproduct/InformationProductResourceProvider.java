@@ -42,7 +42,7 @@ public class InformationProductResourceProvider
     IRI backendIRI =
         Models.objectIRI(model.filter(identifier, ELMO.BACKEND_PROP, null)).orElseThrow(
             () -> new ConfigurationException(
-                String.format("No <%s> backend has been found for information product <%s>.",
+                String.format("No <%s> statement has been found for information product <%s>.",
                     ELMO.BACKEND_PROP, identifier)));
 
     return new InformationProduct.Builder(identifier, createBackendSource(backendIRI, model)).label(

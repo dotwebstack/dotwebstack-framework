@@ -90,8 +90,7 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
-                ELMO.INFORMATION_PRODUCT_PROP,
-                DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.URL_PATTERN,
                 DBEERPEDIA.URL_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
@@ -102,8 +101,8 @@ public class RepresentationResourceProviderTest {
 
     // Assert
     assertThat(representationResourceProvider.getAll().entrySet(), hasSize(1));
-    Representation representation = representationResourceProvider
-        .get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
+    Representation representation =
+        representationResourceProvider.get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
     assertThat(representation, is(not(nullValue())));
     assertThat(representation.getInformationProduct(), equalTo(informationProduct));
     assertThat(representation.getUrlPatterns().toArray()[0],
@@ -119,8 +118,7 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
-                ELMO.INFORMATION_PRODUCT_PROP,
-                DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.URL_PATTERN,
                 DBEERPEDIA.URL_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
@@ -155,9 +153,8 @@ public class RepresentationResourceProviderTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(
-        String.format("No <%s> information product has been found for representation <%s>.",
-            ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.BREWERY_LIST_REPRESENTATION));
+    thrown.expectMessage(String.format(RepresentationResourceProvider.STATEMENT_NOT_FOUND_ERROR,
+        ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.BREWERY_LIST_REPRESENTATION));
 
     // Act
     representationResourceProvider.loadResources();
@@ -170,16 +167,14 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
-                ELMO.INFORMATION_PRODUCT_PROP,
-                DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.URL_PATTERN,
                 DBEERPEDIA.URL_PATTERN))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(
-        String.format("No <%s> stage has been found for representation <%s>.",
-            ELMO.STAGE_PROP, DBEERPEDIA.BREWERY_LIST_REPRESENTATION));
+    thrown.expectMessage(String.format(RepresentationResourceProvider.STATEMENT_NOT_FOUND_ERROR,
+        ELMO.STAGE_PROP, DBEERPEDIA.BREWERY_LIST_REPRESENTATION));
 
     // Act
     representationResourceProvider.loadResources();
@@ -193,16 +188,14 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
-                ELMO.INFORMATION_PRODUCT_PROP,
-                DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(
-        String.format("No <%s> url pattern has been found for representation <%s>.",
-            ELMO.URL_PATTERN, DBEERPEDIA.BREWERY_LIST_REPRESENTATION));
+    thrown.expectMessage(String.format(RepresentationResourceProvider.STATEMENT_NOT_FOUND_ERROR,
+        ELMO.URL_PATTERN, DBEERPEDIA.BREWERY_LIST_REPRESENTATION));
 
     // Act
     representationResourceProvider.loadResources();
