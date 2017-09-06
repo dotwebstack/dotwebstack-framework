@@ -5,12 +5,12 @@ import javax.ws.rs.ext.Provider;
 import org.eclipse.rdf4j.rio.RDFFormat;
 
 @Provider
-@Produces("application/rdf+xml")
-public class RdfXmlGraphProvider extends GraphProviderBase {
+@Produces("text/turtle")
+public class TurtleGraphMessageBodyWriter extends GraphMessageBodyWriter {
 
   @SuppressWarnings("WeakerAccess")
-  public RdfXmlGraphProvider() {
-    super(RDFFormat.RDFXML);
+  public TurtleGraphMessageBodyWriter() {
+    super(RDFFormat.TURTLE);
   }
 
 }

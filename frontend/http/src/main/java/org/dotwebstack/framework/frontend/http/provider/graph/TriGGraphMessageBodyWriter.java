@@ -6,10 +6,10 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 
 @Provider
 @Produces("application/trig")
-public class TriGGraphProvider extends GraphProviderBase {
+public class TriGGraphMessageBodyWriter extends GraphMessageBodyWriter {
 
   @SuppressWarnings("WeakerAccess")
-  public TriGGraphProvider() {
+  public TriGGraphMessageBodyWriter() {
     super(RDFFormat.TRIG);
   }
 

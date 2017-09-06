@@ -5,12 +5,12 @@ import javax.ws.rs.ext.Provider;
 import org.eclipse.rdf4j.rio.RDFFormat;
 
 @Provider
-@Produces("text/turtle")
-public class TurtleGraphProvider extends GraphProviderBase {
+@Produces("application/ld+json")
+public class JsonLdGraphMessageBodyWriter extends GraphMessageBodyWriter {
 
   @SuppressWarnings("WeakerAccess")
-  public TurtleGraphProvider() {
-    super(RDFFormat.TURTLE);
+  public JsonLdGraphMessageBodyWriter() {
+    super(RDFFormat.JSONLD);
   }
 
 }
