@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
+import java.util.Objects;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendFactory;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -9,10 +10,19 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 class SparqlBackendFactory implements BackendFactory {
+
+  private SparqlBackendSourceFactory sourceFactory;
+
+  @Autowired
+  public SparqlBackendFactory(SparqlBackendSourceFactory sourceFactory) {
+    this.sourceFactory = Objects.requireNonNull(sourceFactory);
+  }
 
   @Override
   public Backend create(Model backendModel, IRI identifier) {
@@ -27,7 +37,11 @@ class SparqlBackendFactory implements BackendFactory {
               identifier, XMLSchema.ANYURI));
     }
 
-    return new SparqlBackend.Builder(identifier, endpoint.stringValue()).build();
+    SPARQLRepository repository = new SPARQLRepository(endpoint.stringValue());
+
+    repository.initialize();
+
+    return new SparqlBackend.Builder(identifier, repository, sourceFactory).build();
   }
 
   @Override

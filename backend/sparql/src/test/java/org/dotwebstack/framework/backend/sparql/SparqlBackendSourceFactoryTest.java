@@ -3,12 +3,12 @@ package org.dotwebstack.framework.backend.sparql;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.junit.Before;
@@ -20,29 +20,33 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SparqlBackendCreateSourceTest {
-
-  @Mock
-  private IRI identifier;
+public class SparqlBackendSourceFactoryTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
+  @Mock
+  private QueryEvaluator queryEvaluator;
+
+  @Mock
   private SparqlBackend backend;
+
+  private SparqlBackendSourceFactory sourceFactory;
 
   @Before
   public void setUp() {
-    backend = new SparqlBackend.Builder(identifier, "endpoint").build();
+    sourceFactory = new SparqlBackendSourceFactory(queryEvaluator);
+    when(backend.getIdentifier()).thenReturn(DBEERPEDIA.BACKEND);
   }
 
   @Test
   public void sourceIsCreated() {
     // Arrange
-    Model backendSourceModel =
-        new ModelBuilder().add(identifier, ELMO.QUERY, DBEERPEDIA.SELECT_ALL_QUERY).build();
+    Model statements =
+        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
-    BackendSource backendSource = backend.createSource(backendSourceModel);
+    BackendSource backendSource = sourceFactory.create(backend, statements);
 
     // Assert
     assertThat(backendSource.getBackend(), equalTo(backend));
@@ -54,14 +58,14 @@ public class SparqlBackendCreateSourceTest {
   @Test
   public void queryIsMissing() {
     // Arrange
-    Model backendSourceModel = new ModelBuilder().build();
+    Model statements = new ModelBuilder().build();
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("No <%s> statement has been found for backend source <%s>.",
-        ELMO.QUERY, identifier));
+        ELMO.QUERY, DBEERPEDIA.BACKEND));
 
     // Act
-    backend.createSource(backendSourceModel);
+    sourceFactory.create(backend, statements);
   }
 }
