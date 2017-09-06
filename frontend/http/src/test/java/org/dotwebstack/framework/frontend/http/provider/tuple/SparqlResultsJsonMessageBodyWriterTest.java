@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.http.provider.tuple;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -57,6 +58,19 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
 
     // Assert
     assertThat(result, is(false));
+  }
+
+  @Test
+  public void sizeShouldReturnMinusOne() {
+    // Arrange
+    SparqlResultsJsonMessageBodyWriter writer = new SparqlResultsJsonMessageBodyWriter();
+
+    // Act
+    long result = writer.getSize(tupleQueryResult, null, null,
+        null, MediaType.APPLICATION_XML_TYPE);
+
+    // Assert
+    assertThat(result, equalTo(-1L));
   }
 
   @Test

@@ -34,7 +34,7 @@ public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQ
       Annotation[] annotations,
       MediaType mediaType) {
     // deprecated by JAX-RS 2.0 and ignored by Jersey runtime
-    return 0;
+    return -1;
   }
 
   @Override

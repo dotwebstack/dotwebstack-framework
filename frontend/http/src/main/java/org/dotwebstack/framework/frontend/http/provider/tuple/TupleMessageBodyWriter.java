@@ -33,7 +33,7 @@ public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQ
   public long getSize(TupleQueryResult tupleQueryResult, Class<?> aClass, Type type,
       Annotation[] annotations, MediaType mediaType) {
     // deprecated by JAX-RS 2.0 and ignored by Jersey runtime
-    return 0;
+    return -1;
   }
 
   @Override

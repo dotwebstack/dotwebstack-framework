@@ -4,6 +4,7 @@ package org.dotwebstack.framework.frontend.http.writer.graph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -76,6 +77,19 @@ public class JsonLdGraphMessageBodyWriterTest {
 
     // Assert
     assertThat(result, is(false));
+  }
+
+  @Test
+  public void sizeShouldReturnMinusOne() {
+    // Arrange
+    JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
+
+    // Act
+    long result = writer.getSize(graphQueryResult, null, null,
+        null, MediaType.APPLICATION_XML_TYPE);
+
+    // Assert
+    assertThat(result, equalTo(-1L));
   }
 
   @Test
