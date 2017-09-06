@@ -140,7 +140,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void expectsInformationProduct() {
+  public void doesNotExpectInformationProduct() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -150,14 +150,13 @@ public class RepresentationResourceProviderTest {
                 DBEERPEDIA.URL_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE))));
-
-    // Assert
-    thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format(RepresentationResourceProvider.STATEMENT_NOT_FOUND_ERROR,
-        ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.BREWERY_LIST_REPRESENTATION));
-
     // Act
     representationResourceProvider.loadResources();
+
+    // Assert
+    Representation representation =
+        representationResourceProvider.get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
+    assertThat(representation.getInformationProduct(), is(nullValue()));
   }
 
   @Test
