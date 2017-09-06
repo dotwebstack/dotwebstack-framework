@@ -9,5 +9,5 @@ dbeerpedia:Site a elmo:Site;
 
 dbeerpedia:Stage a elmo:Stage;
   elmo:site dbeerpedia:Site;
-  elmo:basePath: "/dbp";
+  elmo:basePath "/dbp";
 .
