@@ -60,7 +60,8 @@ public class RequestMapper {
     Objects.requireNonNull(representation.getStage());
     Objects.requireNonNull(representation.getStage().getSite());
 
-    return representation.getStage().getSite().getDomain() + representation.getStage()
-        .getBasePath();
+    final String host = representation.getStage().getSite().getDomain().split(":")[0];
+    return "/" + host + representation
+        .getStage().getBasePath();
   }
 }
