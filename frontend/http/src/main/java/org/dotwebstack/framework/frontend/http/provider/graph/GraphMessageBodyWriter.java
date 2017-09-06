@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -25,23 +24,21 @@ public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQ
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType) {
-    return Model.class.isAssignableFrom(type) && format.getMIMETypes()
-        .contains(mediaType.toString());
+    return Model.class.isAssignableFrom(type)
+        && format.getMIMETypes().contains(mediaType.toString());
   }
 
   @Override
   public long getSize(GraphQueryResult model, Class<?> type, Type genericType,
-      Annotation[] annotations,
-      MediaType mediaType) {
+      Annotation[] annotations, MediaType mediaType) {
     // deprecated by JAX-RS 2.0 and ignored by Jersey runtime
     return -1;
   }
 
   @Override
   public void writeTo(GraphQueryResult queryResult, Class<?> type, Type genericType,
-      Annotation[] annotations,
-      MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap,
-      OutputStream outputStream) throws IOException, WebApplicationException {
+      Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap,
+      OutputStream outputStream) throws IOException {
     Model model = QueryResults.asModel(queryResult);
     Rio.write(model, outputStream, format);
   }

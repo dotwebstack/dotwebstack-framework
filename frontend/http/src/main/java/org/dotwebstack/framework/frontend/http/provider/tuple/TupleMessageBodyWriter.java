@@ -5,7 +5,6 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Objects;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -39,7 +38,7 @@ public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQ
   @Override
   public void writeTo(TupleQueryResult tupleQueryResult, Class<?> aClass, Type type,
       Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap,
-      OutputStream outputStream) throws IOException, WebApplicationException {
+      OutputStream outputStream) throws IOException {
     TupleQueryResultWriter writer = createWriter(outputStream);
     QueryResults.report(tupleQueryResult, writer);
   }

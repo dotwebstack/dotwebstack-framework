@@ -11,7 +11,7 @@ import org.eclipse.rdf4j.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
 @Produces(SparqlResultsXmlMessageBodyWriter.MEDIA_TYPE)
 public final class SparqlResultsXmlMessageBodyWriter extends TupleMessageBodyWriter {
 
-  public final static String MEDIA_TYPE = "application/sparql-results+xml";
+  public static final String MEDIA_TYPE = "application/sparql-results+xml";
 
   public SparqlResultsXmlMessageBodyWriter() {
     super(MediaType.valueOf(MEDIA_TYPE));

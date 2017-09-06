@@ -1,5 +1,4 @@
-package org.dotwebstack.framework.frontend.http.writer.graph;
-
+package org.dotwebstack.framework.frontend.http.provider.graph;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -11,7 +10,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.http.provider.graph.JsonLdGraphMessageBodyWriter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -59,8 +57,8 @@ public class JsonLdGraphMessageBodyWriterTest {
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(String.class, null, null,
-        new MediaType("application", "ld+json"));
+    boolean result =
+        writer.isWriteable(String.class, null, null, new MediaType("application", "ld+json"));
 
     // Assert
     assertThat(result, is(false));
@@ -72,8 +70,7 @@ public class JsonLdGraphMessageBodyWriterTest {
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(String.class, null, null,
-        MediaType.APPLICATION_XML_TYPE);
+    boolean result = writer.isWriteable(String.class, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -85,8 +82,8 @@ public class JsonLdGraphMessageBodyWriterTest {
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    long result = writer.getSize(graphQueryResult, null, null,
-        null, MediaType.APPLICATION_XML_TYPE);
+    long result =
+        writer.getSize(graphQueryResult, null, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, equalTo(-1L));
@@ -96,15 +93,13 @@ public class JsonLdGraphMessageBodyWriterTest {
   public void writesJsonLdFormat() throws Exception {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES)
-        .add(RDF.TYPE, DBEERPEDIA.BACKEND)
-        .add(RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL)
-        .build();
+    Model model =
+        new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDF.TYPE, DBEERPEDIA.BACKEND).add(
+            RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL).build();
 
     when(graphQueryResult.hasNext()).thenReturn(true, true, true, false);
-    when(graphQueryResult.next())
-        .thenReturn(model.stream().findFirst().get(),
-            model.stream().skip(1).toArray(Statement[]::new));
+    when(graphQueryResult.next()).thenReturn(model.stream().findFirst().get(),
+        model.stream().skip(1).toArray(Statement[]::new));
 
     // Act
     writer.writeTo(graphQueryResult, null, null, null, null, null, outputStream);

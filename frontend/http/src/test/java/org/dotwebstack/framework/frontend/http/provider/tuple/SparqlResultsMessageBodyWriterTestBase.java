@@ -26,8 +26,8 @@ class SparqlResultsMessageBodyWriterTestBase {
   ArgumentCaptor<byte[]> byteCaptor;
 
   BindingSet configureBindingSetWithValue(BindingSet bindingSet, String value) {
-
-    Iterator iterator = mock(Iterator.class);
+    @SuppressWarnings("unchecked")
+    Iterator<Binding> iterator = mock(Iterator.class);
     when(bindingSet.iterator()).thenReturn(iterator);
 
     ValueFactory factory = SimpleValueFactory.getInstance();
