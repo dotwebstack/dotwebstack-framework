@@ -42,11 +42,11 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
     // Check if domain already exists
     if (domain.isPresent()) {
       if (getAll().entrySet().stream().anyMatch(
-          mapSite -> mapSite.getValue().getDomain().equals(domain.toString()))) {
+          mapSite -> mapSite.getValue().getDomain().equals(domain.get()))) {
         throw new ConfigurationException(
             String.format("Domain <%s> found for multiple sites.", domain.get()));
       }
-      builder.domain(domain.toString());
+      builder.domain(domain.get());
     } else {
       if (getAll().entrySet().stream().anyMatch(mapSite -> mapSite.getValue().isMatchAllDomain())) {
         throw new ConfigurationException("Catch all domain found for multiple sites.");
