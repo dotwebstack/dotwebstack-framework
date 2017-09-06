@@ -18,16 +18,16 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SparqlResultsXmlProviderTest extends SparqlResultsProviderTestBase {
+public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
 
   @Test
-  public void isWritableForSparqlResultsXmlMediaType() {
+  public void isWritableForSparqlResultsJsonMediaType() {
     // Arrange
-    SparqlResultsXmlProvider provider = new SparqlResultsXmlProvider();
+    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
 
     // Act
     boolean result = provider.isWriteable(TupleQueryResult.class, null, null,
-        MediaType.valueOf(SparqlResultsXmlProvider.MEDIA_TYPE));
+        MediaType.valueOf(SparqlResultsJsonMessageBodyWriter.MEDIA_TYPE));
 
     // Assert
     assertThat(result, is(true));
@@ -36,33 +36,33 @@ public class SparqlResultsXmlProviderTest extends SparqlResultsProviderTestBase 
   @Test
   public void isNotWritableForStringClass() {
     // Arrange
-    SparqlResultsXmlProvider provider = new SparqlResultsXmlProvider();
+    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
 
     // Act
     boolean result = provider.isWriteable(String.class, null, null,
-        MediaType.valueOf(SparqlResultsXmlProvider.MEDIA_TYPE));
+        MediaType.valueOf(SparqlResultsJsonMessageBodyWriter.MEDIA_TYPE));
 
     // Assert
     assertThat(result, is(false));
   }
 
   @Test
-  public void isNotWritableForXmlMediaType() {
+  public void isNotWritableForJsonMediaType() {
     // Arrange
-    SparqlResultsXmlProvider provider = new SparqlResultsXmlProvider();
+    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
 
     // Act
     boolean result = provider.isWriteable(TupleQueryResult.class, null, null,
-        MediaType.APPLICATION_XML_TYPE);
+        MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(result, is(false));
   }
 
   @Test
-  public void writesSparqlResultXmlFormat() throws IOException {
+  public void writesSparqlResultJsonFormat() throws IOException {
     // Arrange
-    SparqlResultsXmlProvider provider = new SparqlResultsXmlProvider();
+    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
     when(tupleQueryResult.getBindingNames()).thenReturn(Arrays.asList("beer"));
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);
@@ -80,13 +80,11 @@ public class SparqlResultsXmlProviderTest extends SparqlResultsProviderTestBase 
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
     assertThat(result,
-        containsString("sparql xmlns='http://www.w3.org/2005/sparql-results#'"));
-    assertThat(result,
-        containsString("<head><variable name='beer'/></head>"));
+        containsString("{\"head\":{\"vars\":[\"beer\"]}"));
     assertThat(result, containsString(
-        "<results>"
-            + "<result><binding name='beer'><literal>Heineken</literal></binding></result>"
-            + "<result><binding name='beer'><literal>Amstel</literal></binding></result>"
-            + "</results>"));
+        "{\"bindings\":"
+            + "[{\"beer\":{\"type\":\"literal\",\"value\":\"Heineken\"}},"
+            + "{\"beer\":{\"type\":\"literal\",\"value\":\"Amstel\"}}]}}"));
   }
+
 }

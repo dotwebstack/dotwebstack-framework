@@ -14,19 +14,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-/**
- * Created by Rick Fleuren on 9/5/2017.
- */
-public class SparqlResultsProviderTestBase {
+class SparqlResultsMessageBodyWriterTestBase {
 
   @Mock
-  protected OutputStream outputStream;
+  OutputStream outputStream;
+
   @Mock
-  protected TupleQueryResult tupleQueryResult;
+  TupleQueryResult tupleQueryResult;
+
   @Captor
-  protected ArgumentCaptor<byte[]> byteCaptor;
+  ArgumentCaptor<byte[]> byteCaptor;
 
-  protected BindingSet configureBindingSetWithValue(BindingSet bindingSet, String value) {
+  BindingSet configureBindingSetWithValue(BindingSet bindingSet, String value) {
 
     Iterator iterator = mock(Iterator.class);
     when(bindingSet.iterator()).thenReturn(iterator);

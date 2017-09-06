@@ -8,12 +8,12 @@ import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 
 @Provider
-@Produces(SparqlResultsJsonProvider.MEDIA_TYPE)
-public final class SparqlResultsJsonProvider extends TupleProviderBase {
+@Produces(SparqlResultsJsonMessageBodyWriter.MEDIA_TYPE)
+public final class SparqlResultsJsonMessageBodyWriter extends TupleMessageBodyWriter {
 
   public final static String MEDIA_TYPE = "application/sparql-results+json";
 
-  public SparqlResultsJsonProvider() {
+  public SparqlResultsJsonMessageBodyWriter() {
     super(MediaType.valueOf(MEDIA_TYPE));
   }
 

@@ -13,11 +13,11 @@ import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 
-public abstract class TupleProviderBase implements MessageBodyWriter<TupleQueryResult> {
+public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQueryResult> {
 
   private MediaType mediaType;
 
-  TupleProviderBase(MediaType mediaType) {
+  TupleMessageBodyWriter(MediaType mediaType) {
     this.mediaType = Objects.requireNonNull(mediaType);
   }
 
@@ -32,6 +32,7 @@ public abstract class TupleProviderBase implements MessageBodyWriter<TupleQueryR
   @Override
   public long getSize(TupleQueryResult tupleQueryResult, Class<?> aClass, Type type,
       Annotation[] annotations, MediaType mediaType) {
+    // deprecated by JAX-RS 2.0 and ignored by Jersey runtime
     return 0;
   }
 

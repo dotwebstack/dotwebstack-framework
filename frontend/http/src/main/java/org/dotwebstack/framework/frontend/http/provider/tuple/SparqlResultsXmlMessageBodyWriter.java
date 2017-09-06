@@ -8,12 +8,12 @@ import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 import org.eclipse.rdf4j.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
 
 @Provider
-@Produces(SparqlResultsXmlProvider.MEDIA_TYPE)
-public final class SparqlResultsXmlProvider extends TupleProviderBase {
+@Produces(SparqlResultsXmlMessageBodyWriter.MEDIA_TYPE)
+public final class SparqlResultsXmlMessageBodyWriter extends TupleMessageBodyWriter {
 
   public final static String MEDIA_TYPE = "application/sparql-results+xml";
 
-  public SparqlResultsXmlProvider() {
+  public SparqlResultsXmlMessageBodyWriter() {
     super(MediaType.valueOf(MEDIA_TYPE));
   }
 

@@ -5,12 +5,12 @@ import javax.ws.rs.ext.Provider;
 import org.eclipse.rdf4j.rio.RDFFormat;
 
 @Provider
-@Produces("application/ld+json")
-public class JsonLdGraphProvider extends GraphProviderBase {
+@Produces("application/rdf+xml")
+public class RdfXmlGraphMessageBodyWriter extends GraphMessageBodyWriter {
 
   @SuppressWarnings("WeakerAccess")
-  public JsonLdGraphProvider() {
-    super(RDFFormat.JSONLD);
+  public RdfXmlGraphMessageBodyWriter() {
+    super(RDFFormat.RDFXML);
   }
 
 }

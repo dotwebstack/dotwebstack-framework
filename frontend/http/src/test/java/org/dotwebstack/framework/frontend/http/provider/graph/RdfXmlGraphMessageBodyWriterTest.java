@@ -6,16 +6,19 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -24,10 +27,13 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RdfXmlGraphProviderTest {
+public class RdfXmlGraphMessageBodyWriterTest {
 
   @Mock
   private OutputStream outputStream;
+
+  @Mock
+  private GraphQueryResult graphQueryResult;
 
   @Captor
   private ArgumentCaptor<byte[]> byteCaptor;
@@ -35,10 +41,10 @@ public class RdfXmlGraphProviderTest {
   @Test
   public void isWritableForRdfXmlMediaType() {
     // Arrange
-    RdfXmlGraphProvider provider = new RdfXmlGraphProvider();
+    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(LinkedHashModel.class, null, null,
+    boolean result = writer.isWriteable(LinkedHashModel.class, null, null,
         new MediaType("application", "rdf+xml"));
 
     // Assert
@@ -48,10 +54,10 @@ public class RdfXmlGraphProviderTest {
   @Test
   public void isNotWritableForStringClass() {
     // Arrange
-    RdfXmlGraphProvider provider = new RdfXmlGraphProvider();
+    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(String.class, null, null,
+    boolean result = writer.isWriteable(String.class, null, null,
         new MediaType("application", "rdf+xml"));
 
     // Assert
@@ -61,10 +67,10 @@ public class RdfXmlGraphProviderTest {
   @Test
   public void isNotWritableForXmlMediaType() {
     // Arrange
-    RdfXmlGraphProvider provider = new RdfXmlGraphProvider();
+    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(String.class, null, null,
+    boolean result = writer.isWriteable(String.class, null, null,
         MediaType.APPLICATION_XML_TYPE);
 
     // Assert
@@ -74,14 +80,19 @@ public class RdfXmlGraphProviderTest {
   @Test
   public void writesRdfXmlFormat() throws IOException {
     // Arrange
-    RdfXmlGraphProvider provider = new RdfXmlGraphProvider();
+    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
     Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES)
         .add(RDF.TYPE, DBEERPEDIA.BACKEND)
         .add(RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL)
         .build();
 
+    when(graphQueryResult.hasNext()).thenReturn(true, true, true, false);
+    when(graphQueryResult.next())
+        .thenReturn(model.stream().findFirst().get(),
+            model.stream().skip(1).toArray(Statement[]::new));
+
     // Act
-    provider.writeTo(model, null, null, null, null, null, outputStream);
+    writer.writeTo(graphQueryResult, null, null, null, null, null, outputStream);
 
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());

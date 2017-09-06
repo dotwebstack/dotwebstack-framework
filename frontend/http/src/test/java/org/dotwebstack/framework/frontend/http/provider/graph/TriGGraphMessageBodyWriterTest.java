@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.http.provider.graph;
+package org.dotwebstack.framework.frontend.http.writer.graph;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -7,17 +7,21 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.http.provider.graph.TriGGraphMessageBodyWriter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -26,10 +30,13 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TriGGraphProviderTest {
+public class TriGGraphMessageBodyWriterTest {
 
   @Mock
   private OutputStream outputStream;
+
+  @Mock
+  private GraphQueryResult graphQueryResult;
 
   @Captor
   private ArgumentCaptor<byte[]> byteCaptor;
@@ -37,10 +44,10 @@ public class TriGGraphProviderTest {
   @Test
   public void isWritableForTriGMediaType() {
     // Arrange
-    TriGGraphProvider provider = new TriGGraphProvider();
+    TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(LinkedHashModel.class, null, null,
+    boolean result = writer.isWriteable(LinkedHashModel.class, null, null,
         new MediaType("application", "trig"));
 
     // Assert
@@ -50,10 +57,10 @@ public class TriGGraphProviderTest {
   @Test
   public void isNotWritableForStringClass() {
     // Arrange
-    TriGGraphProvider provider = new TriGGraphProvider();
+    TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(String.class, null, null,
+    boolean result = writer.isWriteable(String.class, null, null,
         new MediaType("application", "trig"));
 
     // Assert
@@ -63,10 +70,10 @@ public class TriGGraphProviderTest {
   @Test
   public void isNotWritableForXmlMediaType() {
     // Arrange
-    TriGGraphProvider provider = new TriGGraphProvider();
+    TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(String.class, null, null,
+    boolean result = writer.isWriteable(String.class, null, null,
         MediaType.APPLICATION_XML_TYPE);
 
     // Assert
@@ -76,14 +83,19 @@ public class TriGGraphProviderTest {
   @Test
   public void writesTriGFormat() throws IOException {
     // Arrange
-    TriGGraphProvider provider = new TriGGraphProvider();
+    TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
     Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES)
         .add(RDF.TYPE, DBEERPEDIA.BACKEND)
         .add(RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL)
         .build();
 
+    when(graphQueryResult.hasNext()).thenReturn(true, true, true, false);
+    when(graphQueryResult.next())
+        .thenReturn(model.stream().findFirst().get(),
+            model.stream().skip(1).toArray(Statement[]::new));
+
     // Act
-    provider.writeTo(model, null, null, null, null, null, outputStream);
+    writer.writeTo(graphQueryResult, null, null, null, null, null, outputStream);
 
     // Assert
     // 2 times? feels like weird behaviour of the TriG parser

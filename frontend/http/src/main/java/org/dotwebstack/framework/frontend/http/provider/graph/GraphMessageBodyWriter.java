@@ -9,14 +9,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 
-public abstract class GraphProviderBase implements MessageBodyWriter<Model> {
+public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQueryResult> {
 
   private final RDFFormat format;
 
-  GraphProviderBase(RDFFormat format) {
+  GraphMessageBodyWriter(RDFFormat format) {
     this.format = format;
   }
 
@@ -28,16 +30,19 @@ public abstract class GraphProviderBase implements MessageBodyWriter<Model> {
   }
 
   @Override
-  public long getSize(Model model, Class<?> type, Type genericType, Annotation[] annotations,
+  public long getSize(GraphQueryResult model, Class<?> type, Type genericType,
+      Annotation[] annotations,
       MediaType mediaType) {
     // deprecated by JAX-RS 2.0 and ignored by Jersey runtime
     return 0;
   }
 
   @Override
-  public void writeTo(Model model, Class<?> type, Type genericType, Annotation[] annotations,
+  public void writeTo(GraphQueryResult queryResult, Class<?> type, Type genericType,
+      Annotation[] annotations,
       MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap,
       OutputStream outputStream) throws IOException, WebApplicationException {
+    Model model = QueryResults.asModel(queryResult);
     Rio.write(model, outputStream, format);
   }
 
