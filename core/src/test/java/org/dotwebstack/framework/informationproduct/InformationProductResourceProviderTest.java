@@ -72,7 +72,6 @@ public class InformationProductResourceProviderTest {
 
   @Before
   public void setUp() {
-
     informationProductResourceProvider =
         new InformationProductResourceProvider(configurationBackend, backendResourceProvider);
 

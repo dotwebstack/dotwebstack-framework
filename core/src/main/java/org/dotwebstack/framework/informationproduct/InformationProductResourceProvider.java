@@ -24,7 +24,7 @@ public class InformationProductResourceProvider
 
   @Autowired
   public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
-                                            BackendResourceProvider backendResourceProvider) {
+      BackendResourceProvider backendResourceProvider) {
     super(configurationBackend);
     this.backendResourceProvider = backendResourceProvider;
   }

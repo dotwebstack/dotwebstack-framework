@@ -5,7 +5,15 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
 import java.io.IOException;
@@ -141,7 +149,8 @@ public class FileConfigurationBackendTest {
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[]{resource});
-    doThrow(RDFParseException.class).when(repositoryConnection).add(environmentAwareInputStream, "#", RDFFormat.TRIG);
+    doThrow(RDFParseException.class).when(repositoryConnection)
+        .add(environmentAwareInputStream, "#", RDFFormat.TRIG);
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -158,7 +167,8 @@ public class FileConfigurationBackendTest {
 
     InputStream environmentAwareInputStream = mock(InputStream.class);
     EnvironmentAwareResource environmentAwareResource = mock(EnvironmentAwareResource.class);
-    whenNew(EnvironmentAwareResource.class).withArguments(resource.getInputStream()).thenReturn(environmentAwareResource);
+    whenNew(EnvironmentAwareResource.class).withArguments(resource.getInputStream())
+        .thenReturn(environmentAwareResource);
     when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareInputStream);
 
     when(resource.getFilename()).thenReturn("config.trig");
@@ -167,7 +177,8 @@ public class FileConfigurationBackendTest {
 
     InputStream environmentAwareElmoInputStream = mock(InputStream.class);
     EnvironmentAwareResource environmentAwareElmoResource = mock(EnvironmentAwareResource.class);
-    whenNew(EnvironmentAwareResource.class).withAnyArguments().thenReturn(environmentAwareElmoResource);
+    whenNew(EnvironmentAwareResource.class).withAnyArguments()
+        .thenReturn(environmentAwareElmoResource);
     when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareElmoInputStream);
 
     when(elmoConfiguration.getFilename()).thenReturn("elmo.trig");

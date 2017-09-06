@@ -26,8 +26,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
-                                        InformationProductResourceProvider informationProductResourceProvider,
-                                        StageResourceProvider stageResourceProvider) {
+      InformationProductResourceProvider informationProductResourceProvider,
+      StageResourceProvider stageResourceProvider) {
     super(configurationBackend);
     this.informationProductResourceProvider = informationProductResourceProvider;
     this.stageResourceProvider = stageResourceProvider;

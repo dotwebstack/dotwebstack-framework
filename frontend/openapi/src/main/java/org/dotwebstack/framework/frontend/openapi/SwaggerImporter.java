@@ -42,7 +42,7 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
   @Autowired
   public SwaggerImporter(InformationProductResourceProvider informationProductLoader,
-                         SwaggerParser swaggerParser) {
+      SwaggerParser swaggerParser) {
     this.informationProductResourceProvider = Objects.requireNonNull(informationProductLoader);
     this.swaggerParser = Objects.requireNonNull(swaggerParser);
   }
@@ -65,7 +65,8 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
     for (org.springframework.core.io.Resource resource : resources) {
       Swagger swagger = swaggerParser.parse(
-          IOUtils.toString(new EnvironmentAwareResource(resource.getInputStream()).getInputStream()));
+          IOUtils
+              .toString(new EnvironmentAwareResource(resource.getInputStream()).getInputStream()));
       mapSwaggerDefinition(swagger, httpConfiguration);
     }
   }
