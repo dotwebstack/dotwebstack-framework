@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
+import java.util.Optional;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -42,10 +43,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Override
   protected Representation createResource(Model model, IRI identifier) {
-    IRI informationProductIri =
-        getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).orElseThrow(
-            () -> new ConfigurationException(String.format(STATEMENT_NOT_FOUND_ERROR,
-                ELMO.INFORMATION_PRODUCT_PROP, identifier)));
+    Optional<IRI> informationProductIri =
+        getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP);
 
     IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP).orElseThrow(
         () -> new ConfigurationException(
@@ -55,8 +54,13 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
         () -> new ConfigurationException(
             String.format(STATEMENT_NOT_FOUND_ERROR, ELMO.URL_PATTERN, identifier)));
 
-    return new Representation.Builder(identifier, urlPattern).stage(
-        stageResourceProvider.get(stageIri)).informationProduct(
-            informationProductResourceProvider.get(informationProductIri)).build();
+    Representation.Builder builder = new Representation.Builder(identifier, urlPattern).stage(
+        stageResourceProvider.get(stageIri));
+
+    if (informationProductIri.isPresent()) {
+      builder.informationProduct(
+          informationProductResourceProvider.get(informationProductIri.get()));
+    }
+    return builder.build();
   }
 }
