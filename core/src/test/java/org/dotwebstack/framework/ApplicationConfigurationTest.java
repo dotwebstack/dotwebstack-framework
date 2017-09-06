@@ -3,7 +3,6 @@ package org.dotwebstack.framework;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
-
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.junit.Before;
@@ -18,9 +17,6 @@ public class ApplicationConfigurationTest {
 
   @Mock
   private Resource resource;
-
-  @Mock
-  private EnvVariableParser envVariableParser;
 
   ApplicationConfiguration applicationConfiguration;
 

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.PostConstruct;
 import org.apache.commons.io.FilenameUtils;
-import org.dotwebstack.framework.EnvVariableParser;
+import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -28,12 +28,8 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private ResourceLoader resourceLoader;
 
-  private EnvVariableParser envVariableParser;
-
-  public FileConfigurationBackend(Resource elmoConfiguration, EnvVariableParser envVariableParser,
-                                  SailRepository repository) {
+  public FileConfigurationBackend(Resource elmoConfiguration, SailRepository repository) {
     this.elmoConfiguration = Objects.requireNonNull(elmoConfiguration);
-    this.envVariableParser = envVariableParser;
     this.repository = repository;
     repository.initialize();
   }
@@ -78,7 +74,7 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
           continue;
         }
 
-        repositoryConnection.add(envVariableParser.parse(resource.getInputStream()),
+        repositoryConnection.add(new EnvironmentAwareResource(resource.getInputStream()).getInputStream(),
             "#", FileFormats.getFormat(extension));
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }

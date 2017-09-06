@@ -5,23 +5,17 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
-
+import static org.mockito.Mockito.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import javax.ws.rs.core.MediaType;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Info;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
-import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -67,15 +61,11 @@ public class SwaggerImporterTest {
 
   private SwaggerImporter swaggerImporter;
 
-  private EnvVariableParser envVariableParser;
-
   @Before
   public void setUp() {
-    envVariableParser = new EnvVariableParser();
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    swaggerImporter =
-        new SwaggerImporter(informationProductResourceProvider, swaggerParser, envVariableParser);
+    swaggerImporter = new SwaggerImporter(informationProductResourceProvider, swaggerParser);
     swaggerImporter.setResourceLoader(resourceLoader);
   }
 
@@ -235,7 +225,7 @@ public class SwaggerImporterTest {
   private Swagger mockDefinition() throws IOException {
     when(fileResource.getInputStream()).thenReturn(IOUtils.toInputStream("spec", "UTF-8"));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new org.springframework.core.io.Resource[] {fileResource});
+        new org.springframework.core.io.Resource[]{fileResource});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
     when(swaggerParser.parse(eq("spec"))).thenReturn(swagger);
     return swagger;

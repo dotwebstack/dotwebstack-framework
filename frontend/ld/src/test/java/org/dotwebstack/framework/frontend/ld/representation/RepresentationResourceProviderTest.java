@@ -1,18 +1,13 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
@@ -55,9 +50,6 @@ public class RepresentationResourceProviderTest {
 
   @Mock
   private ConfigurationBackend configurationBackend;
-
-  @Mock
-  private EnvVariableParser envVariableParser;
 
   @Mock
   private SailRepository configurationRepository;

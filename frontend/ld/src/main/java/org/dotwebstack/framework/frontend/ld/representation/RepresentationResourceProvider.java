@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
 import org.dotwebstack.framework.AbstractResourceProvider;
-import org.dotwebstack.framework.EnvVariableParser;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
@@ -20,8 +19,6 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   private InformationProductResourceProvider informationProductResourceProvider;
 
   private StageResourceProvider stageResourceProvider;
-
-  private EnvVariableParser envVariableParser;
 
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
