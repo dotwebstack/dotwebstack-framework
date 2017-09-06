@@ -18,35 +18,34 @@ public class RequestMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestMapper.class);
 
-  private HttpConfiguration httpConfiguration;
-
   private RepresentationResourceProvider representationResourceProvider;
 
   @Autowired
-  public RequestMapper(RepresentationResourceProvider representationResourceProvider,
-      HttpConfiguration httpConfiguration) {
+  public RequestMapper(RepresentationResourceProvider representationResourceProvider) {
     this.representationResourceProvider = Objects.requireNonNull(representationResourceProvider);
-    this.httpConfiguration = Objects.requireNonNull(httpConfiguration);
   }
 
-  public void loadRepresentations() {
+  public void loadRepresentations(HttpConfiguration httpConfiguration) {
     for (Representation representation : representationResourceProvider.getAll().values()) {
       if (representation.getStage() != null) {
-        mapRepresentation(representation);
+        mapRepresentation(representation, httpConfiguration);
       } else {
         LOG.warn("Representation '{}' is not mapped to a stage.", representation.getIdentifier());
       }
     }
   }
 
-  private void mapRepresentation(Representation representation) {
+  private void mapRepresentation(Representation representation,
+      HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(representation);
 
     representation.getUrlPatterns().forEach(path -> {
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-      resourceBuilder.addMethod("GET").handledBy(new GetRequestHandler(representation));
+      ResourceMethod.Builder methodBuilder =
+          resourceBuilder.addMethod("GET").handledBy(new GetRequestHandler(representation));
+      methodBuilder.consumes(MediaType.TEXT_HTML_TYPE);
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());
