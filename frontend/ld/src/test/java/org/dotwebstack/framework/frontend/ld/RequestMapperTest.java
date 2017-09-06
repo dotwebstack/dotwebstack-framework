@@ -111,27 +111,26 @@ public class RequestMapperTest {
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     requestMapper =
-        new RequestMapper(representationResourceProvider, httpConfiguration);
+        new RequestMapper(representationResourceProvider);
   }
 
   @Test
   public void constructRequestMapperTest() {
-    new RequestMapper(representationResourceProvider, httpConfiguration);
+    new RequestMapper(representationResourceProvider);
   }
 
   @Test
   public void mapRepresentationTest() {
     // Act
-    requestMapper.loadRepresentations();
+    requestMapper.loadRepresentations(httpConfiguration);
 
     // Arrange
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(resource.getPath(),
-        equalTo(
-            DBEERPEDIA.DOMAIN.getLabel() + DBEERPEDIA.BASE_PATH.getLabel()
-                + DBEERPEDIA.URL_PATTERN_VALUE));
+        equalTo("/" + DBEERPEDIA.ORG_HOST + DBEERPEDIA.BASE_PATH.getLabel()
+            + DBEERPEDIA.URL_PATTERN_VALUE));
     assertThat(resource.getResourceMethods(), hasSize(1));
 
     // Arrange
@@ -153,7 +152,7 @@ public class RequestMapperTest {
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     // Act
-    requestMapper.loadRepresentations();
+    requestMapper.loadRepresentations(httpConfiguration);
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
@@ -172,7 +171,7 @@ public class RequestMapperTest {
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     // Act
-    requestMapper.loadRepresentations();
+    requestMapper.loadRepresentations(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
