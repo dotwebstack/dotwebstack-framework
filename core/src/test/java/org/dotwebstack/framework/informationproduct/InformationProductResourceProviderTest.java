@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -14,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.backend.BackendSource;
+import org.dotwebstack.framework.backend.BackendSourceFactory;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -44,6 +46,9 @@ public class InformationProductResourceProviderTest {
   private BackendResourceProvider backendResourceProvider;
 
   @Mock
+  private BackendSourceFactory backendSourceFactory;
+
+  @Mock
   private ConfigurationBackend configurationBackend;
 
   @Mock
@@ -71,6 +76,10 @@ public class InformationProductResourceProviderTest {
     informationProductResourceProvider =
         new InformationProductResourceProvider(configurationBackend, backendResourceProvider);
 
+    when(backendResourceProvider.get(any())).thenReturn(backend);
+    when(backend.getSourceFactory()).thenReturn(backendSourceFactory);
+    when(backendSourceFactory.create(eq(backend), any())).thenReturn(backendSource);
+
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
@@ -85,9 +94,6 @@ public class InformationProductResourceProviderTest {
                 ELMO.INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND))));
-
-    when(backendResourceProvider.get(any())).thenReturn(backend);
-    when(backend.createSource(any())).thenReturn(backendSource);
 
     // Act
     informationProductResourceProvider.loadResources();
@@ -113,9 +119,6 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND))));
 
-    when(backendResourceProvider.get(any())).thenReturn(backend);
-    when(backend.createSource(any())).thenReturn(backendSource);
-
     // Act
     informationProductResourceProvider.loadResources();
 
@@ -135,9 +138,6 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL))));
 
-    when(backendResourceProvider.get(DBEERPEDIA.BACKEND)).thenReturn(backend);
-    when(backend.createSource(any())).thenReturn(backendSource);
-
     // Act
     informationProductResourceProvider.loadResources();
 
@@ -149,7 +149,6 @@ public class InformationProductResourceProviderTest {
     assertThat(product.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
   }
 
-
   @Test
   public void expectsBackendParameter() {
     // Arrange
@@ -160,10 +159,11 @@ public class InformationProductResourceProviderTest {
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
-        String.format("No <%s> backend has been found for information product <%s>.",
+        String.format("No <%s> statement has been found for information product <%s>.",
             ELMO.BACKEND_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
 
     // Act
     informationProductResourceProvider.loadResources();
   }
+
 }

@@ -6,8 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -80,8 +80,10 @@ public class FileConfigurationBackendTest {
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
     verify(repositoryConnection).add(eq(environmentAwareInputStream), eq("#"), eq(RDFFormat.TRIG));
+
     verify(repositoryConnection).close();
     verifyNoMoreInteractions(repositoryConnection);
+
   }
 
   @Test

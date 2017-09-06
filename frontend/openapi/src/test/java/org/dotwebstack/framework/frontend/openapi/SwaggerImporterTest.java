@@ -4,17 +4,17 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import javax.ws.rs.core.MediaType;
+
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Info;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -43,7 +43,7 @@ public class SwaggerImporterTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Captor
-  ArgumentCaptor<Resource> resourceCaptor;
+  private ArgumentCaptor<Resource> resourceCaptor;
 
   @Mock
   private InformationProductResourceProvider informationProductResourceProvider;
@@ -227,7 +227,7 @@ public class SwaggerImporterTest {
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[]{fileResource});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
-    when(swaggerParser.parse(eq("spec"))).thenReturn(swagger);
+    when(swaggerParser.parse("spec")).thenReturn(swagger);
     return swagger;
   }
 
