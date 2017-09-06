@@ -4,7 +4,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 dbeerpedia:Site a elmo:Site;
-  elmo:domain "dbeerpedia.org";
+  elmo:domain "localhost:8080";
 .
 
 dbeerpedia:Stage a elmo:Stage;
