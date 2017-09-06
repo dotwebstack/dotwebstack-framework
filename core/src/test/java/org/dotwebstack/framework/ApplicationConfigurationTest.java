@@ -1,8 +1,8 @@
 package org.dotwebstack.framework;
 
-
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
+
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.junit.Before;
