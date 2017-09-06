@@ -154,8 +154,8 @@ public class RepresentationResourceProviderTest {
     representationResourceProvider.loadResources();
 
     // Assert
-    Representation representation = representationResourceProvider
-        .get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
+    Representation representation =
+        representationResourceProvider.get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
     assertThat(representation.getInformationProduct(), is(nullValue()));
   }
 
