@@ -13,8 +13,7 @@ public class EnvironmentAwareResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(EnvironmentAwareResource.class);
 
-  static final String REGEX_ENV_VAR_WITH_BRACKETS = "\\$\\{([A-Za-z0-9_]+)\\}";
-  static final String REGEX_ENV_VAR_WITHOUT_BRACKETS = "\\$([A-Za-z0-9_]+)";
+  static final String REGEX_ENV_VAR = "\\$\\{?([A-Za-z0-9_]+)\\}?";
 
   private InputStream inputStream;
 
@@ -25,14 +24,7 @@ public class EnvironmentAwareResource {
   public InputStream getInputStream() throws IOException {
     String result = IOUtils.toString(inputStream, "UTF-8");
 
-    return new ByteArrayInputStream(replaceEnvironementVariables(result).getBytes());
-  }
-
-  private String replaceEnvironementVariables(String input) {
-
-    String output = parsePattern(input, REGEX_ENV_VAR_WITH_BRACKETS);
-
-    return parsePattern(output, REGEX_ENV_VAR_WITHOUT_BRACKETS);
+    return new ByteArrayInputStream(parsePattern(result, REGEX_ENV_VAR).getBytes());
   }
 
   private String parsePattern(String text, String regex) {
