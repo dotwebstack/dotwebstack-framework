@@ -100,10 +100,10 @@ public class RequestMapperTest {
         .label(DBEERPEDIA.BREWERIES_LABEL.stringValue())
         .build();
 
-    representation = new Representation.Builder(DBEERPEDIA.BREWERIES,
-        DBEERPEDIA.URL_PATTERN_VALUE)
+    representation = new Representation.Builder(DBEERPEDIA.BREWERIES)
         .informationProduct(informationProduct)
         .stage(stage)
+        .urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE)
         .build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
@@ -142,9 +142,9 @@ public class RequestMapperTest {
   @Test
   public void mapRepresentationWithoutStageTest() {
     // Arrange
-    representation = new Representation.Builder(DBEERPEDIA.BREWERIES,
-        DBEERPEDIA.URL_PATTERN_VALUE)
+    representation = new Representation.Builder(DBEERPEDIA.BREWERIES)
         .informationProduct(informationProduct)
+        .urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE)
         .build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
@@ -160,9 +160,9 @@ public class RequestMapperTest {
   @Test
   public void mapRepresentationWithNullStageTest() {
     // Arrange
-    representation = new Representation.Builder(DBEERPEDIA.BREWERIES,
-        DBEERPEDIA.URL_PATTERN_VALUE)
+    representation = new Representation.Builder(DBEERPEDIA.BREWERIES)
         .informationProduct(informationProduct)
+        .urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE)
         .stage(null)
         .build();
     Map<IRI, Representation> representationMap = new HashMap<>();
