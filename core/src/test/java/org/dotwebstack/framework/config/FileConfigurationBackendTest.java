@@ -49,7 +49,7 @@ public class FileConfigurationBackendTest {
   private SailRepository repository;
 
   @Mock
-  private Resource elmoConfiguration;
+  private Resource elmoConfigurationResource;
 
   @Mock
   private SailRepositoryConnection repositoryConnection;
@@ -65,7 +65,7 @@ public class FileConfigurationBackendTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    backend = new FileConfigurationBackend(elmoConfiguration, repository);
+    backend = new FileConfigurationBackend(elmoConfigurationResource, repository);
     backend.setResourceLoader(resourceLoader);
     when(repository.getConnection()).thenReturn(repositoryConnection);
   }
@@ -163,10 +163,11 @@ public class FileConfigurationBackendTest {
   public void loadsDefaultElmoResource() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
-
+    InputStream rawInputStream = mock(InputStream.class);
+    when(resource.getInputStream()).thenReturn(rawInputStream);
     InputStream environmentAwareInputStream = mock(InputStream.class);
     EnvironmentAwareResource environmentAwareResource = mock(EnvironmentAwareResource.class);
-    whenNew(EnvironmentAwareResource.class).withArguments(resource.getInputStream())
+    whenNew(EnvironmentAwareResource.class).withArguments(rawInputStream)
         .thenReturn(environmentAwareResource);
     when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareInputStream);
 
@@ -174,24 +175,27 @@ public class FileConfigurationBackendTest {
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[]{resource});
 
+    InputStream rawElmoInputStream = mock(InputStream.class);
+    when(elmoConfigurationResource.getInputStream()).thenReturn(rawElmoInputStream);
     InputStream environmentAwareElmoInputStream = mock(InputStream.class);
     EnvironmentAwareResource environmentAwareElmoResource = mock(EnvironmentAwareResource.class);
-    whenNew(EnvironmentAwareResource.class).withArguments(elmoConfiguration.getInputStream())
+    whenNew(EnvironmentAwareResource.class)
+        .withArguments(rawElmoInputStream)
         .thenReturn(environmentAwareElmoResource);
-    when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareElmoInputStream);
+    when(environmentAwareElmoResource.getInputStream()).thenReturn(environmentAwareElmoInputStream);
 
-    when(elmoConfiguration.getFilename()).thenReturn("elmo.trig");
+    when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
 
     // Act
     backend.loadResources();
 
     // Assert
-    verify(elmoConfiguration, atLeastOnce()).getInputStream();
+    verify(elmoConfigurationResource, atLeastOnce()).getInputStream();
     ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
-    verify(repositoryConnection, times(2)).add(captor.capture(), any(), any());
+    verify(repositoryConnection, times(2))
+        .add(captor.capture(), any(), any());
 
     List<InputStream> inputStreams = captor.getAllValues();
-    // TODO should work, what's wrong here???
     assertThat(inputStreams,
         contains(environmentAwareInputStream, environmentAwareElmoInputStream));
   }
