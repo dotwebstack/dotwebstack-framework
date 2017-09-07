@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import java.util.Objects;
-import javax.annotation.PostConstruct;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.HttpExtension;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
@@ -25,10 +24,4 @@ public class LdExtension implements HttpExtension {
     Objects.requireNonNull(httpConfiguration);
     requestMapper.loadRepresentations(httpConfiguration);
   }
-
-  @PostConstruct
-  public void postLoad() {
-    // Dummy statement
-  }
-
 }
