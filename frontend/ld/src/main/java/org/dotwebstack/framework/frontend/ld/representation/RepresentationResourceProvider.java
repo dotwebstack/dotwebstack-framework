@@ -49,13 +49,11 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
     Optional<String> urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN);
 
-    Representation.Builder builder;
-    if (urlPattern.isPresent()) {
-      builder = new Representation.Builder(identifier, urlPattern.get());
-    } else {
-      builder = new Representation.Builder(identifier);
-    }
+    Representation.Builder builder = new Representation.Builder(identifier);
 
+    if (urlPattern.isPresent()) {
+      builder.urlPatterns(urlPattern.get());
+    }
     if (informationProductIri.isPresent()) {
       builder.informationProduct(
           informationProductResourceProvider.get(informationProductIri.get()));
