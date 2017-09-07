@@ -107,7 +107,7 @@ public class EnvironmentAwareResourceTest {
   }
 
   @Test
-  public void environmentVariableShouldNotBeReplaced1() throws IOException {
+  public void environmentVariableShouldNotBeReplacedWhenFollowedByLetter() throws IOException {
     // Arrange
     String input = "$NAMES";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
@@ -120,7 +120,7 @@ public class EnvironmentAwareResourceTest {
   }
 
   @Test
-  public void environmentVariableShouldNotBeReplaced2() throws IOException {
+  public void environmentVariableShouldNotBeReplacedWhenFollowedByUnderscore() throws IOException {
     // Arrange
     String input = "$NAME_";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
