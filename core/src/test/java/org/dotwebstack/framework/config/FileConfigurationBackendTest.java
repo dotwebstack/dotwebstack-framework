@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.config;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -39,7 +39,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({FileConfigurationBackend.class, EnvironmentAwareResource.class})
+@PrepareForTest({FileConfigurationBackend.class, EnvironmentAwareResource.class, InputStream.class})
 public class FileConfigurationBackendTest {
 
   @Rule
@@ -87,11 +87,10 @@ public class FileConfigurationBackendTest {
     // Assert
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
-    verify(repositoryConnection).add(eq(environmentAwareInputStream), eq("#"), eq(RDFFormat.TRIG));
+    verify(repositoryConnection).add(environmentAwareInputStream, "#", RDFFormat.TRIG);
 
     verify(repositoryConnection).close();
     verifyNoMoreInteractions(repositoryConnection);
-
   }
 
   @Test
@@ -177,7 +176,7 @@ public class FileConfigurationBackendTest {
 
     InputStream environmentAwareElmoInputStream = mock(InputStream.class);
     EnvironmentAwareResource environmentAwareElmoResource = mock(EnvironmentAwareResource.class);
-    whenNew(EnvironmentAwareResource.class).withAnyArguments()
+    whenNew(EnvironmentAwareResource.class).withArguments(elmoConfiguration.getInputStream())
         .thenReturn(environmentAwareElmoResource);
     when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareElmoInputStream);
 
@@ -193,6 +192,7 @@ public class FileConfigurationBackendTest {
 
     List<InputStream> inputStreams = captor.getAllValues();
     // TODO should work, what's wrong here???
-//    assertThat(inputStreams, contains(environmentAwareInputStream, environmentAwareElmoInputStream));
+    assertThat(inputStreams,
+        contains(environmentAwareInputStream, environmentAwareElmoInputStream));
   }
 }

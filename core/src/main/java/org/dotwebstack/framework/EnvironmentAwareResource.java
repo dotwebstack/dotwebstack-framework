@@ -13,7 +13,7 @@ public class EnvironmentAwareResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(EnvironmentAwareResource.class);
 
-  static final String REGEX_ENV_VAR = "\\$\\{?([A-Za-z0-9_]+)\\}?";
+  private static final String REGEX_ENV_VAR = "\\$\\{?([A-Za-z0-9_]+)\\}?";
 
   private InputStream inputStream;
 
@@ -28,11 +28,9 @@ public class EnvironmentAwareResource {
   }
 
   private String parsePattern(String text, String regex) {
-    // construct and compile reg expression
     Pattern pattern = Pattern.compile(regex);
     Matcher matcher = pattern.matcher(text);
 
-    // find pattern
     while (matcher.find()) {
       String foundEnvVariables = matcher.group(1);
       String envValue = System.getenv().get(foundEnvVariables);
@@ -41,7 +39,6 @@ public class EnvironmentAwareResource {
         continue;
       }
 
-      // replace the env variable
       envValue = envValue.replace("\\", "\\\\");
       Pattern subexpr = Pattern.compile(Pattern.quote(matcher.group(0)));
       text = subexpr.matcher(text).replaceAll(envValue);
