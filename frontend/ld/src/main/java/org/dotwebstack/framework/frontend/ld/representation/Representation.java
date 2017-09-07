@@ -66,6 +66,11 @@ public class Representation {
       return this;
     }
 
+    public Builder urlPatterns(String... urlPatterns) {
+      this.urlPatterns = Arrays.asList(urlPatterns);
+      return this;
+    }
+
     public Representation build() {
       return new Representation(this);
     }
