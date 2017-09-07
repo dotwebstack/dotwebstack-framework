@@ -39,25 +39,33 @@ public class HttpConfigurationTest {
 
   @Test
   public void resourceNotAlreadyRegisteredTest() {
+    // Arrange
     final String absolutePath = "https://run.forrest.run/";
     HttpConfiguration httpConfiguration = new HttpConfiguration(
         ImmutableList.of(extensionA, extensionB));
     org.glassfish.jersey.server.model.Resource.Builder resourceBuilder = org.glassfish.jersey.server.model.Resource
         .builder().path(absolutePath);
+    // Assert
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
+    // Act
     httpConfiguration.registerResources(resourceBuilder.build());
+    // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
   }
 
   @Test
   public void resourceAlreadyRegisteredTest() {
+    // Arrange
     final String absolutePath = "https://run.forrest.run/";
     HttpConfiguration httpConfiguration = new HttpConfiguration(
         ImmutableList.of(extensionA, extensionB));
     org.glassfish.jersey.server.model.Resource.Builder resourceBuilder = org.glassfish.jersey.server.model.Resource
         .builder().path(absolutePath);
+    // Assert
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
+    // Act
     httpConfiguration.registerResources(resourceBuilder.build());
+    // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(true));
   }
