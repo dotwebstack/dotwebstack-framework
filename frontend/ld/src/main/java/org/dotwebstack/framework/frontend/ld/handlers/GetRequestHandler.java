@@ -12,7 +12,7 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
-  Representation representation;
+  private Representation representation;
 
   public GetRequestHandler(Representation representation) {
     this.representation = Objects.requireNonNull(representation);
