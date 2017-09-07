@@ -68,4 +68,77 @@ public class SparqlBackendSourceFactoryTest {
     // Act
     sourceFactory.create(backend, statements);
   }
+
+  @Test
+  public void determineCorrectQueryTypeForSelect() {
+    // Arrange
+    Model statements =
+        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.SELECT_ALL_QUERY).build();
+
+    // Act
+    BackendSource backendSource = sourceFactory.create(backend, statements);
+
+    // Assert
+    assertThat(((SparqlBackendSource) backendSource).getSparqlQueryType(),
+        equalTo(SparqlQueryType.TUPLE));
+  }
+
+  @Test
+  public void determineCorrectQueryTypeForGraph() {
+    // Arrange
+    Model statements = new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY,
+        DBEERPEDIA.CONSTRUCT_ALL_QUERY).build();
+
+    // Act
+    BackendSource backendSource = sourceFactory.create(backend, statements);
+
+    // Assert
+    assertThat(((SparqlBackendSource) backendSource).getSparqlQueryType(),
+        equalTo(SparqlQueryType.GRAPH));
+  }
+
+  @Test
+  public void determineCorrectQueryTypeForAsk() {
+    // Arrange
+    Model statements =
+        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.ASK_ALL_QUERY).build();
+
+    // Act
+    BackendSource backendSource = sourceFactory.create(backend, statements);
+
+    // Assert
+    assertThat(((SparqlBackendSource) backendSource).getSparqlQueryType(),
+        equalTo(SparqlQueryType.BOOLEAN));
+  }
+
+  @Test
+  public void determineCorrectQueryTypeForDescribe() {
+    // Arrange
+    Model statements = new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY,
+        DBEERPEDIA.DESCRIBE_ALL_QUERY).build();
+
+    // Act
+    BackendSource backendSource = sourceFactory.create(backend, statements);
+
+    // Assert
+    assertThat(((SparqlBackendSource) backendSource).getSparqlQueryType(),
+        equalTo(SparqlQueryType.DESCRIBE));
+  }
+
+  @Test
+  public void queryIsMalformed() {
+    // Arrange
+    Model statements =
+        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.MALFORMED_QUERY).build();
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format(
+        "Type of query <%s> could not be determined. Query is a malformed query and cannot be processed: "
+            + "Encountered \" <VAR1> \"?s \"\" at line 1, column 11.",
+        DBEERPEDIA.MALFORMED_QUERY.stringValue()));
+
+    // Act
+    sourceFactory.create(backend, statements);
+  }
 }

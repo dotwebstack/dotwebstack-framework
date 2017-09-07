@@ -32,8 +32,8 @@ public class SparqlBackendSourceTest {
   @Test
   public void builder() {
     // Act
-    SparqlBackendSource backendSource =
-        new SparqlBackendSource.Builder(backend, GRAPH_QUERY, queryEvaluator).build();
+    SparqlBackendSource backendSource = new SparqlBackendSource.Builder(backend, GRAPH_QUERY,
+        SparqlQueryType.GRAPH, queryEvaluator).build();
 
     // Assert
     assertThat(backendSource.getBackend(), equalTo(backend));
@@ -46,7 +46,8 @@ public class SparqlBackendSourceTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendSource.Builder(null, GRAPH_QUERY, queryEvaluator).build();
+    new SparqlBackendSource.Builder(null, GRAPH_QUERY, SparqlQueryType.GRAPH,
+        queryEvaluator).build();
   }
 
   @Test
@@ -55,7 +56,16 @@ public class SparqlBackendSourceTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendSource.Builder(backend, null, queryEvaluator).build();
+    new SparqlBackendSource.Builder(backend, null, SparqlQueryType.GRAPH, queryEvaluator).build();
+  }
+
+  @Test
+  public void requiredSparqlQueryType() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SparqlBackendSource.Builder(backend, GRAPH_QUERY, null, queryEvaluator).build();
   }
 
   @Test
@@ -64,7 +74,7 @@ public class SparqlBackendSourceTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendSource.Builder(backend, GRAPH_QUERY, null).build();
+    new SparqlBackendSource.Builder(backend, GRAPH_QUERY, SparqlQueryType.GRAPH, null).build();
   }
 
   @Test
@@ -73,8 +83,8 @@ public class SparqlBackendSourceTest {
     Object expectedResult = new Object();
     when(backend.getConnection()).thenReturn(repositoryConnection);
     when(queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY)).thenReturn(expectedResult);
-    SparqlBackendSource source =
-        new SparqlBackendSource.Builder(backend, GRAPH_QUERY, queryEvaluator).build();
+    SparqlBackendSource source = new SparqlBackendSource.Builder(backend, GRAPH_QUERY,
+        SparqlQueryType.GRAPH, queryEvaluator).build();
 
     // Act
     Object result = source.getResult();

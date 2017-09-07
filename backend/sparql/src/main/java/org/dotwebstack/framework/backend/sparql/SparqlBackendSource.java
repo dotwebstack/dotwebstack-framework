@@ -10,11 +10,14 @@ public class SparqlBackendSource implements BackendSource {
 
   private String query;
 
+  private SparqlQueryType sparqlQueryType;
+
   private QueryEvaluator queryEvaluator;
 
   public SparqlBackendSource(Builder builder) {
     this.backend = builder.backend;
     this.query = builder.query;
+    this.sparqlQueryType = builder.sparqlQueryType;
     this.queryEvaluator = builder.queryEvaluator;
   }
 
@@ -32,17 +35,25 @@ public class SparqlBackendSource implements BackendSource {
     return queryEvaluator.evaluate(backend.getConnection(), query);
   }
 
+  public SparqlQueryType getSparqlQueryType() {
+    return sparqlQueryType;
+  }
+
   public static class Builder {
 
     private SparqlBackend backend;
 
     private String query;
 
+    private SparqlQueryType sparqlQueryType;
+
     private QueryEvaluator queryEvaluator;
 
-    public Builder(SparqlBackend backend, String query, QueryEvaluator queryEvaluator) {
+    public Builder(SparqlBackend backend, String query, SparqlQueryType sparqlQueryType,
+        QueryEvaluator queryEvaluator) {
       this.backend = Objects.requireNonNull(backend);
       this.query = Objects.requireNonNull(query);
+      this.sparqlQueryType = Objects.requireNonNull(sparqlQueryType);
       this.queryEvaluator = Objects.requireNonNull(queryEvaluator);
     }
 
