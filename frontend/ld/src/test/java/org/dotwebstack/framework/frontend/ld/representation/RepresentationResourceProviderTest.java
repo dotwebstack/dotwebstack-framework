@@ -82,7 +82,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void loadRepresentation() {
+  public void loadRepresentationTest() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -110,7 +110,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void loadMultipleRepresentations() {
+  public void loadMultipleRepresentationsTest() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -139,7 +139,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void doesNotExpectInformationProduct() {
+  public void doesNotExpectInformationProductTest() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -159,7 +159,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void doesNotExpectStage() {
+  public void doesNotExpectStageTest() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
