@@ -20,12 +20,12 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class GetRequestHandlerTest {
 
   @Mock
-  Representation representation;
+  private Representation representation;
 
   @Mock
-  ContainerRequestContext containerRequestContext;
+  private ContainerRequestContext containerRequestContext;
 
-  GetRequestHandler getRequestHandler;
+  private GetRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
