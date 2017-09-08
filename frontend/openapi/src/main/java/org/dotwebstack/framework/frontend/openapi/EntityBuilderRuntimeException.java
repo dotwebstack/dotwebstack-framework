@@ -8,8 +8,4 @@ public class EntityBuilderRuntimeException extends RuntimeException {
     super(message);
   }
 
-  public EntityBuilderRuntimeException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
 }
