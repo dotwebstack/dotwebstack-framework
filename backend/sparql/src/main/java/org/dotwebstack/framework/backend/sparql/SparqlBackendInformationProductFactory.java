@@ -2,10 +2,9 @@ package org.dotwebstack.framework.backend.sparql;
 
 import java.util.Objects;
 import org.dotwebstack.framework.backend.Backend;
-import org.dotwebstack.framework.backend.BackendSource;
-import org.dotwebstack.framework.backend.BackendSourceFactory;
-import org.dotwebstack.framework.backend.QueryType;
+import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
@@ -19,35 +18,36 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SparqlBackendSourceFactory implements BackendSourceFactory {
+public class SparqlBackendInformationProductFactory {
 
   private QueryEvaluator queryEvaluator;
 
   @Autowired
-  public SparqlBackendSourceFactory(QueryEvaluator queryEvaluator) {
+  public SparqlBackendInformationProductFactory(QueryEvaluator queryEvaluator) {
     this.queryEvaluator = Objects.requireNonNull(queryEvaluator);
   }
 
-  public BackendSource create(Backend backend, Model statements) {
+  public InformationProduct create(InformationProduct informationProduct, Backend backend,
+      Model statements) {
     String query = Models.objectString(statements.filter(null, ELMO.QUERY, null)).orElseThrow(
         () -> new ConfigurationException(
-            String.format("No <%s> statement has been found for backend source <%s>.", ELMO.QUERY,
-                backend.getIdentifier())));
+            String.format("No <%s> statement has been found for a sparql information product <%s>.",
+                ELMO.QUERY, backend.getIdentifier())));
 
-    QueryType queryType = getQueryType(query);
+    ResultType resultType = getQueryType(query);
 
-    return new SparqlBackendSource.Builder((SparqlBackend) backend, query, queryType,
-        queryEvaluator).build();
+    return new SparqlBackendInformationProduct.Builder(informationProduct, (SparqlBackend) backend,
+        query, resultType, queryEvaluator).build();
   }
 
-  private QueryType getQueryType(String query) {
+  private ResultType getQueryType(String query) {
     try {
       ParsedQuery parsedQuery = QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, null);
       if (parsedQuery instanceof ParsedTupleQuery) {
-        return QueryType.TUPLE;
+        return ResultType.TUPLE;
       }
       if (parsedQuery instanceof ParsedGraphQuery) {
-        return QueryType.GRAPH;
+        return ResultType.GRAPH;
       }
       throw new ConfigurationException(String.format(
           "Type of query <%s> could not be determined. Only SELECT and CONSTRUCT are supported.",

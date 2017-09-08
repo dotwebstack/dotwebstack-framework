@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
-import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -150,7 +149,7 @@ public class SwaggerImporterTest {
             new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
                 "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
+        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).build());
 
     // Act
     swaggerImporter.importDefinitions(httpConfiguration);
@@ -177,7 +176,7 @@ public class SwaggerImporterTest {
         new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
             "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
+        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).build());
 
     // Act
     swaggerImporter.importDefinitions(httpConfiguration);
@@ -214,7 +213,7 @@ public class SwaggerImporterTest {
                 "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
                     MediaType.APPLICATION_JSON)));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, mock(BackendSource.class)).build());
+        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).build());
 
     // Act
     swaggerImporter.importDefinitions(httpConfiguration);

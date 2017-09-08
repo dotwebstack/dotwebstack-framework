@@ -3,24 +3,25 @@ package org.dotwebstack.framework.informationproduct;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.dotwebstack.framework.backend.BackendSource;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class InformationProductTest {
 
-  @Mock
-  private  BackendSource backendSource;
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void builder() {
     // Act
     InformationProduct informationProduct =
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, backendSource).label(
+        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).label(
             DBEERPEDIA.BREWERIES_LABEL.stringValue()).build();
 
     // Assert
@@ -32,10 +33,39 @@ public class InformationProductTest {
   public void builderWithNullValues() {
     // Act
     InformationProduct informationProduct =
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, backendSource).label(null).build();
+        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).label(null).build();
 
+    // Assert
     assertThat(informationProduct.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(informationProduct.getLabel(), equalTo(null));
+  }
+
+  @Test
+  public void cannotGetTypeOnUndecoratedInformationProduct() {
+    // Arrange
+    InformationProduct informationProduct =
+        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).build();
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage("Result type cannot be determined.");
+
+    // Act
+    informationProduct.getResultType();
+  }
+
+  @Test
+  public void cannotGetResultOnUndecoratedInformationProduct() {
+    // Arrange
+    InformationProduct informationProduct =
+        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).build();
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage("Result cannot be determined.");
+
+    // Act
+    informationProduct.getResult();
   }
 
 }

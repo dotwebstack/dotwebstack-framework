@@ -5,9 +5,9 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-import org.dotwebstack.framework.backend.BackendSource;
-import org.dotwebstack.framework.backend.QueryType;
+import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Model;
@@ -21,7 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SparqlBackendSourceFactoryTest {
+public class SparqlBackendInformationProductFactoryTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -32,11 +32,14 @@ public class SparqlBackendSourceFactoryTest {
   @Mock
   private SparqlBackend backend;
 
-  private SparqlBackendSourceFactory sourceFactory;
+  @Mock
+  private InformationProduct informationProduct;
+
+  private SparqlBackendInformationProductFactory informationProductFactory;
 
   @Before
   public void setUp() {
-    sourceFactory = new SparqlBackendSourceFactory(queryEvaluator);
+    informationProductFactory = new SparqlBackendInformationProductFactory(queryEvaluator);
     when(backend.getIdentifier()).thenReturn(DBEERPEDIA.BACKEND);
   }
 
@@ -47,12 +50,12 @@ public class SparqlBackendSourceFactoryTest {
         new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
-    BackendSource backendSource = sourceFactory.create(backend, statements);
+    InformationProduct result =
+        informationProductFactory.create(informationProduct, backend, statements);
 
     // Assert
-    assertThat(backendSource.getBackend(), equalTo(backend));
-    assertThat(backendSource, instanceOf(SparqlBackendSource.class));
-    assertThat(((SparqlBackendSource) backendSource).getQuery(),
+    assertThat(result, instanceOf(SparqlBackendInformationProduct.class));
+    assertThat(((SparqlBackendInformationProduct) result).getQuery(),
         equalTo(DBEERPEDIA.SELECT_ALL_QUERY.stringValue()));
   }
 
@@ -63,11 +66,12 @@ public class SparqlBackendSourceFactoryTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("No <%s> statement has been found for backend source <%s>.",
-        ELMO.QUERY, DBEERPEDIA.BACKEND));
+    thrown.expectMessage(
+        String.format("No <%s> statement has been found for a sparql information product <%s>.",
+            ELMO.QUERY, DBEERPEDIA.BACKEND));
 
     // Act
-    sourceFactory.create(backend, statements);
+    informationProductFactory.create(informationProduct, backend, statements);
   }
 
   @Test
@@ -77,10 +81,11 @@ public class SparqlBackendSourceFactoryTest {
         new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
-    BackendSource backendSource = sourceFactory.create(backend, statements);
+    InformationProduct result =
+        informationProductFactory.create(informationProduct, backend, statements);
 
     // Assert
-    assertThat(backendSource.getQueryType(), equalTo(QueryType.TUPLE));
+    assertThat(result.getResultType(), equalTo(ResultType.TUPLE));
   }
 
   @Test
@@ -90,10 +95,11 @@ public class SparqlBackendSourceFactoryTest {
         DBEERPEDIA.CONSTRUCT_ALL_QUERY).build();
 
     // Act
-    BackendSource backendSource = sourceFactory.create(backend, statements);
+    InformationProduct result =
+        informationProductFactory.create(informationProduct, backend, statements);
 
     // Assert
-    assertThat(backendSource.getQueryType(), equalTo(QueryType.GRAPH));
+    assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
   }
 
   @Test
@@ -108,7 +114,7 @@ public class SparqlBackendSourceFactoryTest {
         + "Only SELECT and CONSTRUCT are supported.");
 
     // Act
-    sourceFactory.create(backend, statements);
+    informationProductFactory.create(informationProduct, backend, statements);
   }
 
   @Test
@@ -125,6 +131,6 @@ public class SparqlBackendSourceFactoryTest {
         DBEERPEDIA.MALFORMED_QUERY.stringValue()));
 
     // Act
-    sourceFactory.create(backend, statements);
+    informationProductFactory.create(informationProduct, backend, statements);
   }
 }

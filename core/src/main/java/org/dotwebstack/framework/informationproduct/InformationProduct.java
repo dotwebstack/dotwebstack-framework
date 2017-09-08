@@ -1,7 +1,8 @@
 package org.dotwebstack.framework.informationproduct;
 
 import java.util.Objects;
-import org.dotwebstack.framework.backend.BackendSource;
+import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 
 public class InformationProduct {
@@ -10,12 +11,13 @@ public class InformationProduct {
 
   private String label;
 
-  private BackendSource backendSource;
+  protected InformationProduct() {
+
+  }
 
   private InformationProduct(Builder builder) {
     identifier = builder.identifier;
     label = builder.label;
-    backendSource = builder.backendSource;
   }
 
   public IRI getIdentifier() {
@@ -26,21 +28,22 @@ public class InformationProduct {
     return label;
   }
 
-  public BackendSource getBackendSource() {
-    return backendSource;
+  public Object getResult() {
+    throw new ConfigurationException("Result cannot be determined.");
+  }
+
+  public ResultType getResultType() {
+    throw new ConfigurationException("Result type cannot be determined.");
   }
 
   public static class Builder {
 
     private IRI identifier;
 
-    private BackendSource backendSource;
-
     private String label;
 
-    public Builder(IRI identifier, BackendSource backendSource) {
+    public Builder(IRI identifier) {
       this.identifier = Objects.requireNonNull(identifier);
-      this.backendSource = Objects.requireNonNull(backendSource);
     }
 
     public Builder label(String label) {

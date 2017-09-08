@@ -2,8 +2,9 @@ package org.dotwebstack.framework.backend.sparql;
 
 import java.util.Objects;
 import org.dotwebstack.framework.backend.Backend;
-import org.dotwebstack.framework.backend.BackendSourceFactory;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 
@@ -13,14 +14,14 @@ public class SparqlBackend implements Backend {
 
   private SPARQLRepository repository;
 
-  private SparqlBackendSourceFactory sourceFactory;
+  private SparqlBackendInformationProductFactory informationProductFactory;
 
   private RepositoryConnection repositoryConnection;
 
   private SparqlBackend(Builder builder) {
     identifier = builder.identifier;
     repository = builder.repository;
-    sourceFactory = builder.sourceFactory;
+    informationProductFactory = builder.informationProductFactory;
   }
 
   @Override
@@ -28,13 +29,13 @@ public class SparqlBackend implements Backend {
     return identifier;
   }
 
-  public SPARQLRepository getRepository() {
-    return repository;
+  @Override
+  public InformationProduct decorate(InformationProduct informationProduct, Model statements) {
+    return informationProductFactory.create(informationProduct, this, statements);
   }
 
-  @Override
-  public BackendSourceFactory getSourceFactory() {
-    return sourceFactory;
+  public SPARQLRepository getRepository() {
+    return repository;
   }
 
   public RepositoryConnection getConnection() {
@@ -51,13 +52,13 @@ public class SparqlBackend implements Backend {
 
     private SPARQLRepository repository;
 
-    private SparqlBackendSourceFactory sourceFactory;
+    private SparqlBackendInformationProductFactory informationProductFactory;
 
     public Builder(IRI identifier, SPARQLRepository repository,
-        SparqlBackendSourceFactory sourceFactory) {
+        SparqlBackendInformationProductFactory informationProductFactory) {
       this.identifier = Objects.requireNonNull(identifier);
       this.repository = Objects.requireNonNull(repository);
-      this.sourceFactory = Objects.requireNonNull(sourceFactory);
+      this.informationProductFactory = Objects.requireNonNull(informationProductFactory);
     }
 
     public SparqlBackend build() {

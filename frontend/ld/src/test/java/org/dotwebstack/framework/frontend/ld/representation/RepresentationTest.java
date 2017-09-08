@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.ld.representation;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -21,9 +20,6 @@ public class RepresentationTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
-
-  @Mock
-  BackendSource backendSource;
 
   @Mock
   Site site;
@@ -86,7 +82,7 @@ public class RepresentationTest {
   public void builderComplete() {
     // Act
     final InformationProduct informationProduct =
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES, backendSource).label(
+        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).label(
             DBEERPEDIA.BREWERIES_LABEL.stringValue()).build();
 
     final Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
