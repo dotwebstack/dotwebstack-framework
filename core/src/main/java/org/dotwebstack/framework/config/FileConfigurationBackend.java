@@ -74,8 +74,9 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
           continue;
         }
 
-        repositoryConnection.add(new EnvironmentAwareResource(resource.getInputStream()).getInputStream(),
-            "#", FileFormats.getFormat(extension));
+        repositoryConnection.add(
+            new EnvironmentAwareResource(resource.getInputStream()).getInputStream(), "#",
+            FileFormats.getFormat(extension));
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
     } catch (RDF4JException e) {

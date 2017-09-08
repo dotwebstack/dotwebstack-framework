@@ -29,14 +29,14 @@ public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQ
   }
 
   @Override
-  public long getSize(TupleQueryResult tupleQueryResult, Class<?> aClass, Type type,
+  public long getSize(TupleQueryResult tupleQueryResult, Class<?> type, Type genericType,
       Annotation[] annotations, MediaType mediaType) {
     // deprecated by JAX-RS 2.0 and ignored by Jersey runtime
     return -1;
   }
 
   @Override
-  public void writeTo(TupleQueryResult tupleQueryResult, Class<?> aClass, Type type,
+  public void writeTo(TupleQueryResult tupleQueryResult, Class<?> type, Type genericType,
       Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap,
       OutputStream outputStream) throws IOException {
     TupleQueryResultWriter writer = createWriter(outputStream);

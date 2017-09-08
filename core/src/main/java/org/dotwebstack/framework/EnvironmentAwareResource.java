@@ -30,21 +30,22 @@ public class EnvironmentAwareResource {
   private String parsePattern(String text, String regex) {
     Pattern pattern = Pattern.compile(regex);
     Matcher matcher = pattern.matcher(text);
+    String replacedText = text;
 
     while (matcher.find()) {
       String foundEnvVariables = matcher.group(1);
       String envValue = System.getenv().get(foundEnvVariables);
       if (envValue == null) {
-        LOG.error(String.format("Env variable {} found but not defined", foundEnvVariables));
+        LOG.error("Env variable {} found but not defined", foundEnvVariables);
         continue;
       }
 
       envValue = envValue.replace("\\", "\\\\");
       Pattern subexpr = Pattern.compile(Pattern.quote(matcher.group(0)));
-      text = subexpr.matcher(text).replaceAll(envValue);
+      replacedText = subexpr.matcher(replacedText).replaceAll(envValue);
     }
 
-    return text;
+    return replacedText;
   }
 
 }
