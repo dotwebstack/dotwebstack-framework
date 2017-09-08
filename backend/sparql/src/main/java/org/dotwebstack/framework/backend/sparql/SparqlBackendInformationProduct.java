@@ -11,17 +11,10 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
   private final String query;
 
-  private final ResultType resultType;
-
   private final QueryEvaluator queryEvaluator;
 
   public String getQuery() {
     return query;
-  }
-
-  @Override
-  public ResultType getResultType() {
-    return resultType;
   }
 
   @Override
@@ -30,10 +23,9 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   }
 
   public SparqlBackendInformationProduct(Builder builder) {
-    super(builder.identifier, builder.label);
+    super(builder.identifier, builder.label, builder.resultType);
     this.backend = builder.backend;
     this.query = builder.query;
-    this.resultType = builder.resultType;
     this.queryEvaluator = builder.queryEvaluator;
   }
 
