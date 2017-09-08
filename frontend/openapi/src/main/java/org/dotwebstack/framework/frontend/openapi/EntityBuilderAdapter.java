@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EntityBuilderAdapter implements EntityBuilder<Object> {
 
-  TupleEntityBuilder tupleEntityBuilder;
+  private TupleEntityBuilder tupleEntityBuilder;
 
   @Autowired
   public EntityBuilderAdapter(@NonNull TupleEntityBuilder tupleEntityBuilder) {

@@ -29,8 +29,8 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
 
   @Override
   public Response apply(@NonNull ContainerRequestContext containerRequestContext) {
-    String absolutePath = containerRequestContext.getUriInfo().getPath();
-    LOG.debug("Handling request {}.", absolutePath);
+    String path = containerRequestContext.getUriInfo().getPath();
+    LOG.debug("Handling GET request for path {}", path);
 
     Object entity = entityBuilder.build(informationProduct.getResult(), schema);
 
