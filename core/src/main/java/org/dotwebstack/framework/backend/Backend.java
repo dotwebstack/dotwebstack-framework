@@ -8,5 +8,5 @@ public interface Backend {
 
   IRI getIdentifier();
 
-  InformationProduct decorate(InformationProduct informationProduct, Model statements);
+  InformationProduct createInformationProduct(IRI identifier, String label, Model statements);
 }

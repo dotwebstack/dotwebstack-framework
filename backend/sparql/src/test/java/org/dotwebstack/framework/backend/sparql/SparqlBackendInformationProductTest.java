@@ -27,9 +27,6 @@ public class SparqlBackendInformationProductTest {
   private SparqlBackend backend;
 
   @Mock
-  private InformationProduct informationProduct;
-
-  @Mock
   private QueryEvaluator queryEvaluator;
 
   @Mock
@@ -37,24 +34,19 @@ public class SparqlBackendInformationProductTest {
 
   @Test
   public void builder() {
-    // Arrange
-    when(informationProduct.getIdentifier()).thenReturn(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT);
-    when(informationProduct.getLabel()).thenReturn(DBEERPEDIA.BREWERIES_LABEL.stringValue());
-
     // Act
     SparqlBackendInformationProduct result =
-        new SparqlBackendInformationProduct.Builder(informationProduct, backend, GRAPH_QUERY,
-            ResultType.GRAPH, queryEvaluator).build();
+        new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
+            GRAPH_QUERY, ResultType.GRAPH, queryEvaluator).build();
 
     // Assert
     assertThat(result.getQuery(), equalTo(GRAPH_QUERY));
     assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
     assertThat(result.getIdentifier(), equalTo(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT));
-    assertThat(result.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
   }
 
   @Test
-  public void requiredInformationProduct() {
+  public void requiredIdentifier() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -64,13 +56,28 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
+  public void setsLabel() {
+    // Arrange
+    SparqlBackendInformationProduct.Builder builder =
+        new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
+            GRAPH_QUERY, ResultType.GRAPH, queryEvaluator);
+    builder.label(DBEERPEDIA.BREWERIES_LABEL.stringValue());
+
+    // Act
+    InformationProduct product = builder.build();
+
+    // Assert
+    assertThat(product.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
+  }
+
+  @Test
   public void requiredBackend() {
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendInformationProduct.Builder(informationProduct, null, GRAPH_QUERY,
-        ResultType.GRAPH, queryEvaluator).build();
+    new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, null,
+        GRAPH_QUERY, ResultType.GRAPH, queryEvaluator).build();
   }
 
   @Test
@@ -79,8 +86,8 @@ public class SparqlBackendInformationProductTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendInformationProduct.Builder(informationProduct, backend, null, ResultType.GRAPH,
-        queryEvaluator).build();
+    new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
+        null, ResultType.GRAPH, queryEvaluator).build();
   }
 
   @Test
@@ -89,8 +96,8 @@ public class SparqlBackendInformationProductTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendInformationProduct.Builder(informationProduct, backend, GRAPH_QUERY, null,
-        queryEvaluator).build();
+    new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
+        GRAPH_QUERY, null, queryEvaluator).build();
   }
 
   @Test
@@ -99,8 +106,8 @@ public class SparqlBackendInformationProductTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendInformationProduct.Builder(informationProduct, backend, GRAPH_QUERY,
-        ResultType.GRAPH, null).build();
+    new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
+        GRAPH_QUERY, ResultType.GRAPH, null).build();
   }
 
   @Test
@@ -110,8 +117,8 @@ public class SparqlBackendInformationProductTest {
     when(backend.getConnection()).thenReturn(repositoryConnection);
     when(queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY)).thenReturn(expectedResult);
     SparqlBackendInformationProduct source =
-        new SparqlBackendInformationProduct.Builder(informationProduct, backend, GRAPH_QUERY,
-            ResultType.GRAPH, queryEvaluator).build();
+        new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
+            GRAPH_QUERY, ResultType.GRAPH, queryEvaluator).build();
 
     // Act
     Object result = source.getResult();

@@ -60,6 +60,9 @@ public class SwaggerImporterTest {
   @Mock
   private org.springframework.core.io.Resource fileResource;
 
+  @Mock
+  private InformationProduct informationProduct;
+
   private ResourceLoader resourceLoader;
 
   private SwaggerImporter swaggerImporter;
@@ -149,7 +152,7 @@ public class SwaggerImporterTest {
             new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
                 "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).build());
+        informationProduct);
 
     // Act
     swaggerImporter.importDefinitions(httpConfiguration);
@@ -176,7 +179,7 @@ public class SwaggerImporterTest {
         new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
             "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).build());
+        informationProduct);
 
     // Act
     swaggerImporter.importDefinitions(httpConfiguration);
@@ -213,7 +216,7 @@ public class SwaggerImporterTest {
                 "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
                     MediaType.APPLICATION_JSON)));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).build());
+        informationProduct);
 
     // Act
     swaggerImporter.importDefinitions(httpConfiguration);

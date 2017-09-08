@@ -44,14 +44,14 @@ public class InformationProductResourceProvider
                 String.format("No <%s> statement has been found for information product <%s>.",
                     ELMO.BACKEND_PROP, identifier)));
 
-    return decorate(backendIRI, model, new InformationProduct.Builder(identifier).label(
-        getObjectString(model, identifier, RDFS.LABEL).orElse(null)).build());
+    String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
+    return create(backendIRI, identifier, label, model);
   }
 
-  private InformationProduct decorate(IRI backendIdentifier, Model statements,
-      InformationProduct informationProduct) {
+  private InformationProduct create(IRI backendIdentifier, IRI identifier, String label,
+      Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
-    return backend.decorate(informationProduct, statements);
+    return backend.createInformationProduct(identifier, label, statements);
   }
 
 }

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
@@ -27,10 +28,10 @@ public class SparqlBackendTest {
   private SparqlBackendInformationProductFactory informationProductFactory;
 
   @Mock
-  private InformationProduct informationProduct;
+  private Model model;
 
   @Mock
-  private Model model;
+  private IRI identifier;
 
   @Test
   public void builder() {
@@ -61,17 +62,18 @@ public class SparqlBackendTest {
   }
 
   @Test
-  public void decorateInformationProduct() {
+  public void createsInformationProduct() {
     // Arrange
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
         informationProductFactory).build();
 
     InformationProduct informationProductMock = mock(InformationProduct.class);
-    when(informationProductFactory.create(this.informationProduct, backend, model)).thenReturn(
-        informationProductMock);
+    when(informationProductFactory.create(identifier, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
+        backend, model)).thenReturn(informationProductMock);
 
     // Act
-    InformationProduct result = backend.decorate(informationProduct, model);
+    InformationProduct result = backend.createInformationProduct(identifier,
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), model);
 
     // Assert
     assertThat(result, equalTo(informationProductMock));

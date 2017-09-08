@@ -5,7 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -82,8 +84,9 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND))));
 
-    InformationProduct decoratedInformationProduct = mock(InformationProduct.class);
-    when(backend.decorate(any(), any())).thenReturn(decoratedInformationProduct);
+    InformationProduct informationProduct = mock(InformationProduct.class);
+    when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
+        any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
@@ -92,7 +95,7 @@ public class InformationProductResourceProviderTest {
     assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(1));
     InformationProduct product =
         informationProductResourceProvider.get(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
-    assertThat(product, equalTo(decoratedInformationProduct));
+    assertThat(product, equalTo(informationProduct));
   }
 
   @Test
@@ -117,7 +120,7 @@ public class InformationProductResourceProviderTest {
   }
 
   @Test
-  public void fillsInformationProduct() {
+  public void createsInformationProductWithCorrectValues() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -128,16 +131,16 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL))));
 
-    InformationProduct decoratedInformationProduct = mock(InformationProduct.class);
-    when(backend.decorate(any(), any())).thenReturn(decoratedInformationProduct);
+    InformationProduct informationProduct = mock(InformationProduct.class);
+    when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
 
     // Assert
-    InformationProduct product =
-        informationProductResourceProvider.get(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
-    assertThat(product, equalTo(decoratedInformationProduct));
+    verify(backend).createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), any());
   }
 
   @Test

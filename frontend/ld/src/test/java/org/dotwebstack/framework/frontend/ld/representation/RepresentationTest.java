@@ -22,7 +22,10 @@ public class RepresentationTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  Site site;
+  private Site site;
+
+  @Mock
+  private InformationProduct informationProduct;
 
   @Test
   public void builder() {
@@ -81,10 +84,6 @@ public class RepresentationTest {
   @Test
   public void builderComplete() {
     // Act
-    final InformationProduct informationProduct =
-        new InformationProduct.Builder(DBEERPEDIA.BREWERIES).label(
-            DBEERPEDIA.BREWERIES_LABEL.stringValue()).build();
-
     final Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 

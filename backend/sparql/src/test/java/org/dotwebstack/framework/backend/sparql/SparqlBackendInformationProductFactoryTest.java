@@ -32,9 +32,6 @@ public class SparqlBackendInformationProductFactoryTest {
   @Mock
   private SparqlBackend backend;
 
-  @Mock
-  private InformationProduct informationProduct;
-
   private SparqlBackendInformationProductFactory informationProductFactory;
 
   @Before
@@ -44,14 +41,15 @@ public class SparqlBackendInformationProductFactoryTest {
   }
 
   @Test
-  public void sourceIsCreated() {
+  public void informationProductIsCreated() {
     // Arrange
     Model statements =
         new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
     InformationProduct result =
-        informationProductFactory.create(informationProduct, backend, statements);
+        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
 
     // Assert
     assertThat(result, instanceOf(SparqlBackendInformationProduct.class));
@@ -71,7 +69,8 @@ public class SparqlBackendInformationProductFactoryTest {
             ELMO.QUERY, DBEERPEDIA.BACKEND));
 
     // Act
-    informationProductFactory.create(informationProduct, backend, statements);
+    informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
   }
 
   @Test
@@ -82,7 +81,8 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Act
     InformationProduct result =
-        informationProductFactory.create(informationProduct, backend, statements);
+        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.TUPLE));
@@ -96,7 +96,8 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Act
     InformationProduct result =
-        informationProductFactory.create(informationProduct, backend, statements);
+        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
@@ -114,7 +115,8 @@ public class SparqlBackendInformationProductFactoryTest {
         + "Only SELECT and CONSTRUCT are supported.");
 
     // Act
-    informationProductFactory.create(informationProduct, backend, statements);
+    informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
   }
 
   @Test
@@ -131,6 +133,7 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.MALFORMED_QUERY.stringValue()));
 
     // Act
-    informationProductFactory.create(informationProduct, backend, statements);
+    informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
   }
 }
