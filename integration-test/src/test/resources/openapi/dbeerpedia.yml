@@ -13,9 +13,13 @@ paths:
       responses:
         200:
           description: OK
+          schema:
+            type: object
   /breweries/{id}:
     get:
       x-dotwebstack-information-product: "http://dbeerpedia.org#Breweries"
       responses:
         200:
           description: OK
+          schema:
+            type: object

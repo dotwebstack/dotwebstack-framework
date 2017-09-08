@@ -2,11 +2,12 @@ package org.dotwebstack.framework.frontend.openapi;
 
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
+import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
+import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -38,21 +39,24 @@ public class SwaggerImporter implements ResourceLoaderAware {
 
   private SwaggerParser swaggerParser;
 
+  private EntityBuilder<Object> entityBuilder;
+
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
-  public SwaggerImporter(InformationProductResourceProvider informationProductLoader,
-      SwaggerParser swaggerParser) {
-    this.informationProductResourceProvider = Objects.requireNonNull(informationProductLoader);
-    this.swaggerParser = Objects.requireNonNull(swaggerParser);
+  public SwaggerImporter(@NonNull InformationProductResourceProvider informationProductLoader,
+      @NonNull SwaggerParser swaggerParser, @NonNull EntityBuilder<Object> entityBuilder) {
+    this.informationProductResourceProvider = informationProductLoader;
+    this.swaggerParser = swaggerParser;
+    this.entityBuilder = entityBuilder;
   }
 
   @Override
-  public void setResourceLoader(ResourceLoader resourceLoader) {
-    this.resourceLoader = Objects.requireNonNull(resourceLoader);
+  public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
+    this.resourceLoader = resourceLoader;
   }
 
-  public void importDefinitions(HttpConfiguration httpConfiguration) throws IOException {
+  public void importDefinitions(@NonNull HttpConfiguration httpConfiguration) throws IOException {
     org.springframework.core.io.Resource[] resources;
 
     try {
@@ -64,9 +68,8 @@ public class SwaggerImporter implements ResourceLoaderAware {
     }
 
     for (org.springframework.core.io.Resource resource : resources) {
-      Swagger swagger = swaggerParser.parse(
-          IOUtils
-              .toString(new EnvironmentAwareResource(resource.getInputStream()).getInputStream()));
+      Swagger swagger = swaggerParser.parse(IOUtils.toString(
+          new EnvironmentAwareResource(resource.getInputStream()).getInputStream()));
       mapSwaggerDefinition(swagger, httpConfiguration);
     }
   }
@@ -87,6 +90,30 @@ public class SwaggerImporter implements ResourceLoaderAware {
         return;
       }
 
+      IRI informationProductIdentifier = valueFactory.createIRI(
+          (String) getOperation.getVendorExtensions().get("x-dotwebstack-information-product"));
+
+      InformationProduct informationProduct =
+          informationProductResourceProvider.get(informationProductIdentifier);
+
+      if (!getOperation.getResponses().containsKey("200")) {
+        throw new ConfigurationException(
+            String.format("Resource '%s' does not specify a status 200 response.", absolutePath));
+      }
+
+      Property schema = getOperation.getResponses().get("200").getSchema();
+
+      if (schema == null) {
+        throw new ConfigurationException(String.format(
+            "Resource '%s' does not specify a schema property for the status 200 response.",
+            absolutePath));
+      }
+
+      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+
+      ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod("GET").handledBy(
+          new GetRequestHandler(informationProduct, entityBuilder, schema));
+
       List<String> produces =
           getOperation.getProduces() != null ? getOperation.getProduces() : swagger.getProduces();
 
@@ -94,17 +121,6 @@ public class SwaggerImporter implements ResourceLoaderAware {
         throw new ConfigurationException(
             String.format("Path '%s' should produce at least one media type.", absolutePath));
       }
-
-      IRI informationProductIdentifier = valueFactory.createIRI(
-          (String) getOperation.getVendorExtensions().get("x-dotwebstack-information-product"));
-
-      InformationProduct informationProduct =
-          informationProductResourceProvider.get(informationProductIdentifier);
-
-      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-
-      ResourceMethod.Builder methodBuilder =
-          resourceBuilder.addMethod("GET").handledBy(new GetRequestHandler(informationProduct));
 
       produces.forEach(methodBuilder::produces);
 
