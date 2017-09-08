@@ -13,6 +13,12 @@ public final class DBEERPEDIA {
 
   public static final Literal BASE_PATH;
 
+  public static final IRI NAME;
+
+  public static final String BREWERY_DAVO_NAME = "Davo Bieren Deventer";
+
+  public static final Literal BREWERY_DAVO;
+
   public static final String OBJECT_NAMESPACE = "http://dbeerpedia.org/id/";
 
   public static final IRI URL_PATTERN;
@@ -71,6 +77,9 @@ public final class DBEERPEDIA {
     SECOND_STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SecondStage");
     DOMAIN = valueFactory.createLiteral("dbeerpedia.org");
     BASE_PATH = valueFactory.createLiteral("/special");
+
+    NAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Name");
+    BREWERY_DAVO = valueFactory.createLiteral(BREWERY_DAVO_NAME);
 
     SITE_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SiteNL");
     DOMAIN_NL = valueFactory.createLiteral("dbeerpedia.nl");
