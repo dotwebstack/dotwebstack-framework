@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.sparql;
 import java.util.Objects;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendSource;
+import org.dotwebstack.framework.backend.QueryType;
 
 public class SparqlBackendSource implements BackendSource {
 
@@ -10,14 +11,14 @@ public class SparqlBackendSource implements BackendSource {
 
   private String query;
 
-  private SparqlQueryType sparqlQueryType;
+  private QueryType queryType;
 
   private QueryEvaluator queryEvaluator;
 
   public SparqlBackendSource(Builder builder) {
     this.backend = builder.backend;
     this.query = builder.query;
-    this.sparqlQueryType = builder.sparqlQueryType;
+    this.queryType = builder.queryType;
     this.queryEvaluator = builder.queryEvaluator;
   }
 
@@ -35,8 +36,8 @@ public class SparqlBackendSource implements BackendSource {
     return queryEvaluator.evaluate(backend.getConnection(), query);
   }
 
-  public SparqlQueryType getSparqlQueryType() {
-    return sparqlQueryType;
+  public QueryType getQueryType() {
+    return queryType;
   }
 
   public static class Builder {
@@ -45,15 +46,15 @@ public class SparqlBackendSource implements BackendSource {
 
     private String query;
 
-    private SparqlQueryType sparqlQueryType;
+    private QueryType queryType;
 
     private QueryEvaluator queryEvaluator;
 
-    public Builder(SparqlBackend backend, String query, SparqlQueryType sparqlQueryType,
+    public Builder(SparqlBackend backend, String query, QueryType queryType,
         QueryEvaluator queryEvaluator) {
       this.backend = Objects.requireNonNull(backend);
       this.query = Objects.requireNonNull(query);
-      this.sparqlQueryType = Objects.requireNonNull(sparqlQueryType);
+      this.queryType = Objects.requireNonNull(queryType);
       this.queryEvaluator = Objects.requireNonNull(queryEvaluator);
     }
 

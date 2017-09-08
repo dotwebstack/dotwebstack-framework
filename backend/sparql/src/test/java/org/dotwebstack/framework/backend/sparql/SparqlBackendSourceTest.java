@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
+import org.dotwebstack.framework.backend.QueryType;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +34,7 @@ public class SparqlBackendSourceTest {
   public void builder() {
     // Act
     SparqlBackendSource backendSource = new SparqlBackendSource.Builder(backend, GRAPH_QUERY,
-        SparqlQueryType.GRAPH, queryEvaluator).build();
+        QueryType.GRAPH, queryEvaluator).build();
 
     // Assert
     assertThat(backendSource.getBackend(), equalTo(backend));
@@ -46,8 +47,7 @@ public class SparqlBackendSourceTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendSource.Builder(null, GRAPH_QUERY, SparqlQueryType.GRAPH,
-        queryEvaluator).build();
+    new SparqlBackendSource.Builder(null, GRAPH_QUERY, QueryType.GRAPH, queryEvaluator).build();
   }
 
   @Test
@@ -56,7 +56,7 @@ public class SparqlBackendSourceTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendSource.Builder(backend, null, SparqlQueryType.GRAPH, queryEvaluator).build();
+    new SparqlBackendSource.Builder(backend, null, QueryType.GRAPH, queryEvaluator).build();
   }
 
   @Test
@@ -74,7 +74,7 @@ public class SparqlBackendSourceTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendSource.Builder(backend, GRAPH_QUERY, SparqlQueryType.GRAPH, null).build();
+    new SparqlBackendSource.Builder(backend, GRAPH_QUERY, QueryType.GRAPH, null).build();
   }
 
   @Test
@@ -84,7 +84,7 @@ public class SparqlBackendSourceTest {
     when(backend.getConnection()).thenReturn(repositoryConnection);
     when(queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY)).thenReturn(expectedResult);
     SparqlBackendSource source = new SparqlBackendSource.Builder(backend, GRAPH_QUERY,
-        SparqlQueryType.GRAPH, queryEvaluator).build();
+        QueryType.GRAPH, queryEvaluator).build();
 
     // Act
     Object result = source.getResult();

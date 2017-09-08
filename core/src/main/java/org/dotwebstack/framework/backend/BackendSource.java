@@ -6,4 +6,6 @@ public interface BackendSource {
 
   Object getResult();
 
+  QueryType getQueryType();
+
 }

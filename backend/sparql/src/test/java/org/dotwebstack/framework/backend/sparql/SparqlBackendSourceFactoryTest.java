@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.backend.BackendSource;
+import org.dotwebstack.framework.backend.QueryType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -79,8 +80,7 @@ public class SparqlBackendSourceFactoryTest {
     BackendSource backendSource = sourceFactory.create(backend, statements);
 
     // Assert
-    assertThat(((SparqlBackendSource) backendSource).getSparqlQueryType(),
-        equalTo(SparqlQueryType.TUPLE));
+    assertThat(backendSource.getQueryType(), equalTo(QueryType.TUPLE));
   }
 
   @Test
@@ -93,36 +93,22 @@ public class SparqlBackendSourceFactoryTest {
     BackendSource backendSource = sourceFactory.create(backend, statements);
 
     // Assert
-    assertThat(((SparqlBackendSource) backendSource).getSparqlQueryType(),
-        equalTo(SparqlQueryType.GRAPH));
+    assertThat(backendSource.getQueryType(), equalTo(QueryType.GRAPH));
   }
 
   @Test
-  public void determineCorrectQueryTypeForAsk() {
+  public void queryIsNotSupported() {
     // Arrange
     Model statements =
         new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.ASK_ALL_QUERY).build();
 
-    // Act
-    BackendSource backendSource = sourceFactory.create(backend, statements);
-
     // Assert
-    assertThat(((SparqlBackendSource) backendSource).getSparqlQueryType(),
-        equalTo(SparqlQueryType.BOOLEAN));
-  }
-
-  @Test
-  public void determineCorrectQueryTypeForDescribe() {
-    // Arrange
-    Model statements = new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY,
-        DBEERPEDIA.DESCRIBE_ALL_QUERY).build();
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage("Type of query <ASK WHERE { ?s ?p ?o }> could not be determined. "
+        + "Only SELECT and CONSTRUCT are supported.");
 
     // Act
-    BackendSource backendSource = sourceFactory.create(backend, statements);
-
-    // Assert
-    assertThat(((SparqlBackendSource) backendSource).getSparqlQueryType(),
-        equalTo(SparqlQueryType.DESCRIBE));
+    sourceFactory.create(backend, statements);
   }
 
   @Test

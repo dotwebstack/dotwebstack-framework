@@ -4,14 +4,13 @@ import java.util.Objects;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.backend.BackendSourceFactory;
+import org.dotwebstack.framework.backend.QueryType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryLanguage;
-import org.eclipse.rdf4j.query.parser.ParsedBooleanQuery;
-import org.eclipse.rdf4j.query.parser.ParsedDescribeQuery;
 import org.eclipse.rdf4j.query.parser.ParsedGraphQuery;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.ParsedTupleQuery;
@@ -35,27 +34,24 @@ public class SparqlBackendSourceFactory implements BackendSourceFactory {
             String.format("No <%s> statement has been found for backend source <%s>.", ELMO.QUERY,
                 backend.getIdentifier())));
 
-    SparqlQueryType queryType = getQueryType(query);
+    QueryType queryType = getQueryType(query);
 
     return new SparqlBackendSource.Builder((SparqlBackend) backend, query, queryType,
         queryEvaluator).build();
   }
 
-  private SparqlQueryType getQueryType(String query) {
+  private QueryType getQueryType(String query) {
     try {
       ParsedQuery parsedQuery = QueryParserUtil.parseQuery(QueryLanguage.SPARQL, query, null);
-      if (parsedQuery instanceof ParsedDescribeQuery) {
-        return SparqlQueryType.DESCRIBE;
-      } else if (parsedQuery instanceof ParsedTupleQuery) {
-        return SparqlQueryType.TUPLE;
-      } else if (parsedQuery instanceof ParsedGraphQuery) {
-        return SparqlQueryType.GRAPH;
-      } else if (parsedQuery instanceof ParsedBooleanQuery) {
-        return SparqlQueryType.BOOLEAN;
+      if (parsedQuery instanceof ParsedTupleQuery) {
+        return QueryType.TUPLE;
       }
-
-      throw new ConfigurationException(
-          String.format("Type of query <%s> could not be determined.", query));
+      if (parsedQuery instanceof ParsedGraphQuery) {
+        return QueryType.GRAPH;
+      }
+      throw new ConfigurationException(String.format(
+          "Type of query <%s> could not be determined. Only SELECT and CONSTRUCT are supported.",
+          query));
 
     } catch (MalformedQueryException exception) {
       throw new ConfigurationException(String.format(

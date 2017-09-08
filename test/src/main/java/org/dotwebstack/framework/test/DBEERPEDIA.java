@@ -39,8 +39,6 @@ public final class DBEERPEDIA {
 
   public static final Literal ASK_ALL_QUERY;
 
-  public static final Literal DESCRIBE_ALL_QUERY;
-
   public static final Literal MALFORMED_QUERY;
 
   public static final IRI BROUWTOREN;
@@ -93,7 +91,6 @@ public final class DBEERPEDIA {
     MALFORMED_QUERY = valueFactory.createLiteral("CONSTRUCT ?s ?p ?o WHERE { ?s ?p ?o }");
     SELECT_ALL_QUERY = valueFactory.createLiteral("SELECT ?s ?p ?o WHERE { ?s ?p ?o }");
     CONSTRUCT_ALL_QUERY = valueFactory.createLiteral("CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }");
-    DESCRIBE_ALL_QUERY = valueFactory.createLiteral("DESCRIBE ?s ?p ?o WHERE { ?s ?p ?o }");
     ASK_ALL_QUERY = valueFactory.createLiteral("ASK WHERE { ?s ?p ?o }");
 
     BROUWTOREN = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
