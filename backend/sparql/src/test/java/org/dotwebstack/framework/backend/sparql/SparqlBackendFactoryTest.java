@@ -27,13 +27,13 @@ public class SparqlBackendFactoryTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private SparqlBackendSourceFactory sourceFactory;
+  private SparqlBackendInformationProductFactory informationProductFactory;
 
   private SparqlBackendFactory backendFactory;
 
   @Before
   public void setUp() {
-    backendFactory = new SparqlBackendFactory(sourceFactory);
+    backendFactory = new SparqlBackendFactory(informationProductFactory);
   }
 
   @Test
@@ -49,7 +49,6 @@ public class SparqlBackendFactoryTest {
     assertThat(backend.getIdentifier(), equalTo(DBEERPEDIA.BACKEND));
     assertThat(backend.getRepository(), notNullValue());
     assertThat(backend.getRepository().isInitialized(), equalTo(true));
-    assertThat(backend.getSourceFactory(), equalTo(sourceFactory));
   }
 
   @Test

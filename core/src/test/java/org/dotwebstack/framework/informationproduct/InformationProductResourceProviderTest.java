@@ -1,21 +1,19 @@
 package org.dotwebstack.framework.informationproduct;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
-import org.dotwebstack.framework.backend.BackendSource;
-import org.dotwebstack.framework.backend.BackendSourceFactory;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -46,9 +44,6 @@ public class InformationProductResourceProviderTest {
   private BackendResourceProvider backendResourceProvider;
 
   @Mock
-  private BackendSourceFactory backendSourceFactory;
-
-  @Mock
   private ConfigurationBackend configurationBackend;
 
   @Mock
@@ -63,9 +58,6 @@ public class InformationProductResourceProviderTest {
   @Mock
   private Backend backend;
 
-  @Mock
-  private BackendSource backendSource;
-
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   private InformationProductResourceProvider informationProductResourceProvider;
@@ -76,8 +68,6 @@ public class InformationProductResourceProviderTest {
         new InformationProductResourceProvider(configurationBackend, backendResourceProvider);
 
     when(backendResourceProvider.get(any())).thenReturn(backend);
-    when(backend.getSourceFactory()).thenReturn(backendSourceFactory);
-    when(backendSourceFactory.create(eq(backend), any())).thenReturn(backendSource);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -94,6 +84,10 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND))));
 
+    InformationProduct informationProduct = mock(InformationProduct.class);
+    when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
+        any())).thenReturn(informationProduct);
+
     // Act
     informationProductResourceProvider.loadResources();
 
@@ -101,7 +95,7 @@ public class InformationProductResourceProviderTest {
     assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(1));
     InformationProduct product =
         informationProductResourceProvider.get(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
-    assertThat(product, not(nullValue()));
+    assertThat(product, equalTo(informationProduct));
   }
 
   @Test
@@ -126,7 +120,7 @@ public class InformationProductResourceProviderTest {
   }
 
   @Test
-  public void fillsInformationProduct() {
+  public void createsInformationProductWithCorrectValues() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -137,15 +131,16 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL))));
 
+    InformationProduct informationProduct = mock(InformationProduct.class);
+    when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), any())).thenReturn(informationProduct);
+
     // Act
     informationProductResourceProvider.loadResources();
 
     // Assert
-    InformationProduct product =
-        informationProductResourceProvider.get(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT);
-    assertThat(product.getBackendSource(), equalTo(backendSource));
-    assertThat(product.getIdentifier(), equalTo(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
-    assertThat(product.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
+    verify(backend).createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), any());
   }
 
   @Test

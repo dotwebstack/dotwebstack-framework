@@ -3,7 +3,6 @@ package org.dotwebstack.framework.informationproduct;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
-import org.dotwebstack.framework.backend.BackendSource;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -45,13 +44,14 @@ public class InformationProductResourceProvider
                 String.format("No <%s> statement has been found for information product <%s>.",
                     ELMO.BACKEND_PROP, identifier)));
 
-    return new InformationProduct.Builder(identifier, createBackendSource(backendIRI, model)).label(
-        getObjectString(model, identifier, RDFS.LABEL).orElse(null)).build();
+    String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
+    return create(backendIRI, identifier, label, model);
   }
 
-  private BackendSource createBackendSource(IRI backendIdentifier, Model statements) {
+  private InformationProduct create(IRI backendIdentifier, IRI identifier, String label,
+      Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
-    return backend.getSourceFactory().create(backend, statements);
+    return backend.createInformationProduct(identifier, label, statements);
   }
 
 }

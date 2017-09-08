@@ -7,7 +7,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.junit.Test;
@@ -22,25 +25,30 @@ public class SparqlBackendTest {
   private SPARQLRepository repository;
 
   @Mock
-  private SparqlBackendSourceFactory sourceFactory;
+  private SparqlBackendInformationProductFactory informationProductFactory;
+
+  @Mock
+  private Model model;
+
+  @Mock
+  private IRI identifier;
 
   @Test
   public void builder() {
     // Act
-    SparqlBackend backend =
-        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, sourceFactory).build();
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory).build();
 
     // Assert
     assertThat(backend.getIdentifier(), equalTo(DBEERPEDIA.BACKEND));
     assertThat(backend.getRepository(), equalTo(repository));
-    assertThat(backend.getSourceFactory(), equalTo(sourceFactory));
   }
 
   @Test
   public void reuseConnection() {
     // Arrange
-    SparqlBackend backend =
-        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, sourceFactory).build();
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory).build();
     when(repository.getConnection()).thenReturn(mock(RepositoryConnection.class));
 
     // Act
@@ -51,6 +59,24 @@ public class SparqlBackendTest {
     assertThat(repositoryConnection1, notNullValue());
     assertThat(repositoryConnection1, equalTo(repositoryConnection2));
     verify(repository).getConnection();
+  }
+
+  @Test
+  public void createsInformationProduct() {
+    // Arrange
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory).build();
+
+    InformationProduct informationProductMock = mock(InformationProduct.class);
+    when(informationProductFactory.create(identifier, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
+        backend, model)).thenReturn(informationProductMock);
+
+    // Act
+    InformationProduct result = backend.createInformationProduct(identifier,
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), model);
+
+    // Assert
+    assertThat(result, equalTo(informationProductMock));
   }
 
 }

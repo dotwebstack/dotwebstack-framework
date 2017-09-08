@@ -41,6 +41,12 @@ public final class DBEERPEDIA {
 
   public static final Literal SELECT_ALL_QUERY;
 
+  public static final Literal CONSTRUCT_ALL_QUERY;
+
+  public static final Literal ASK_ALL_QUERY;
+
+  public static final Literal MALFORMED_QUERY;
+
   public static final IRI BROUWTOREN;
 
   public static final Literal BROUWTOREN_NAME;
@@ -99,7 +105,10 @@ public final class DBEERPEDIA {
     BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Breweries");
     BREWERIES_LABEL = valueFactory.createLiteral("Beer breweries in The Netherlands");
     WINERIES_LABEL = valueFactory.createLiteral("Wineries in The Netherlands");
+    MALFORMED_QUERY = valueFactory.createLiteral("CONSTRUCT ?s ?p ?o WHERE { ?s ?p ?o }");
     SELECT_ALL_QUERY = valueFactory.createLiteral("SELECT ?s ?p ?o WHERE { ?s ?p ?o }");
+    CONSTRUCT_ALL_QUERY = valueFactory.createLiteral("CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }");
+    ASK_ALL_QUERY = valueFactory.createLiteral("ASK WHERE { ?s ?p ?o }");
 
     BROUWTOREN = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c");
