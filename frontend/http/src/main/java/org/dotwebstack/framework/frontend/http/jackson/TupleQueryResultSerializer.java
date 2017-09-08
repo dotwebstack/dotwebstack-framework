@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import org.dotwebstack.framework.LiteralDataTypes;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
 public class TupleQueryResultSerializer extends JsonSerializer<TupleQueryResult> {
@@ -41,29 +41,15 @@ public class TupleQueryResultSerializer extends JsonSerializer<TupleQueryResult>
 
     Literal literalValue = (Literal) value;
 
-    if (literalValue.getDatatype().equals(XMLSchema.BOOLEAN)) {
+    if (LiteralDataTypes.BOOLEAN_DATA_TYPES.contains(literalValue.getDatatype())) {
       return literalValue.booleanValue();
     }
 
-    if (literalValue.getDatatype().equals(XMLSchema.BYTE)
-        || literalValue.getDatatype().equals(XMLSchema.INT)
-        || literalValue.getDatatype().equals(XMLSchema.INTEGER)
-        || literalValue.getDatatype().equals(XMLSchema.LONG)
-        || literalValue.getDatatype().equals(XMLSchema.NEGATIVE_INTEGER)
-        || literalValue.getDatatype().equals(XMLSchema.NON_NEGATIVE_INTEGER)
-        || literalValue.getDatatype().equals(XMLSchema.NON_POSITIVE_INTEGER)
-        || literalValue.getDatatype().equals(XMLSchema.POSITIVE_INTEGER)
-        || literalValue.getDatatype().equals(XMLSchema.SHORT)
-        || literalValue.getDatatype().equals(XMLSchema.UNSIGNED_LONG)
-        || literalValue.getDatatype().equals(XMLSchema.UNSIGNED_INT)
-        || literalValue.getDatatype().equals(XMLSchema.UNSIGNED_SHORT)
-        || literalValue.getDatatype().equals(XMLSchema.UNSIGNED_BYTE)) {
+    if (LiteralDataTypes.INTEGER_DATA_TYPES.contains(literalValue.getDatatype())) {
       return literalValue.integerValue();
     }
 
-    if (literalValue.getDatatype().equals(XMLSchema.DECIMAL)
-        || literalValue.getDatatype().equals(XMLSchema.FLOAT)
-        || literalValue.getDatatype().equals(XMLSchema.DOUBLE)) {
+    if (LiteralDataTypes.DECIMAL_DATA_TYPES.contains(literalValue.getDatatype())) {
       return literalValue.decimalValue();
     }
 
