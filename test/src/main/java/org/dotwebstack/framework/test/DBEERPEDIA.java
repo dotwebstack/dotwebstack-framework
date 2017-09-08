@@ -43,6 +43,14 @@ public final class DBEERPEDIA {
 
   public static final IRI BROUWTOREN;
 
+  public static final Literal BROUWTOREN_NAME;
+
+  public static final Literal BROUWTOREN_YEAR_OF_FOUNDATION;
+
+  public static final Literal BROUWTOREN_CRAFT_MEMBER;
+
+  public static final Literal BROUWTOREN_FTE;
+
   public static final IRI PERCENTAGES_INFORMATION_PRODUCT;
 
   public static final IRI ORIGIN_INFORMATION_PRODUCT;
@@ -95,6 +103,11 @@ public final class DBEERPEDIA {
 
     BROUWTOREN = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c");
+    BROUWTOREN_NAME = valueFactory.createLiteral("Brouwtoren");
+    BROUWTOREN_YEAR_OF_FOUNDATION = valueFactory.createLiteral(2014);
+    BROUWTOREN_CRAFT_MEMBER = valueFactory.createLiteral(true);
+    BROUWTOREN_FTE = valueFactory.createLiteral(1.8);
+
     PERCENTAGES_INFORMATION_PRODUCT = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/information/alcohol-percentages");
     ORIGIN_INFORMATION_PRODUCT =
