@@ -7,6 +7,8 @@ import io.swagger.parser.SwaggerParser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
@@ -29,9 +31,9 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SwaggerImporter implements ResourceLoaderAware {
+public class OpenApiRequestMapper implements ResourceLoaderAware {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SwaggerImporter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
   private ResourceLoader resourceLoader;
 
@@ -44,7 +46,7 @@ public class SwaggerImporter implements ResourceLoaderAware {
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
-  public SwaggerImporter(@NonNull InformationProductResourceProvider informationProductLoader,
+  public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull SwaggerParser swaggerParser, @NonNull EntityBuilder<Object> entityBuilder) {
     this.informationProductResourceProvider = informationProductLoader;
     this.swaggerParser = swaggerParser;
@@ -56,7 +58,7 @@ public class SwaggerImporter implements ResourceLoaderAware {
     this.resourceLoader = resourceLoader;
   }
 
-  public void importDefinitions(@NonNull HttpConfiguration httpConfiguration) throws IOException {
+  public void mapResources(@NonNull HttpConfiguration httpConfiguration) throws IOException {
     org.springframework.core.io.Resource[] resources;
 
     try {
@@ -96,22 +98,25 @@ public class SwaggerImporter implements ResourceLoaderAware {
       InformationProduct informationProduct =
           informationProductResourceProvider.get(informationProductIdentifier);
 
-      if (!getOperation.getResponses().containsKey("200")) {
+      String okResponseStatus = Integer.toString(Status.OK.getStatusCode());
+
+      if (!getOperation.getResponses().containsKey(okResponseStatus)) {
         throw new ConfigurationException(
-            String.format("Resource '%s' does not specify a status 200 response.", absolutePath));
+            String.format("Resource '%s' does not specify a status %s response.", absolutePath,
+                okResponseStatus));
       }
 
-      Property schema = getOperation.getResponses().get("200").getSchema();
+      Property schema = getOperation.getResponses().get(okResponseStatus).getSchema();
 
       if (schema == null) {
         throw new ConfigurationException(String.format(
-            "Resource '%s' does not specify a schema property for the status 200 response.",
-            absolutePath));
+            "Resource '%s' does not specify a schema property for the status %s response.",
+            absolutePath, okResponseStatus));
       }
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
-      ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod("GET").handledBy(
+      ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
           new GetRequestHandler(informationProduct, entityBuilder, schema));
 
       List<String> produces =

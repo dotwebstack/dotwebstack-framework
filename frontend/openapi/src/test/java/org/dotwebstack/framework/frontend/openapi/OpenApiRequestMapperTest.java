@@ -42,7 +42,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SwaggerImporterTest {
+public class OpenApiRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -70,15 +70,15 @@ public class SwaggerImporterTest {
 
   private ResourceLoader resourceLoader;
 
-  private SwaggerImporter swaggerImporter;
+  private OpenApiRequestMapper requestMapper;
 
   @Before
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    swaggerImporter =
-        new SwaggerImporter(informationProductResourceProvider, swaggerParser, entityBuilder);
-    swaggerImporter.setResourceLoader(resourceLoader);
+    requestMapper =
+        new OpenApiRequestMapper(informationProductResourceProvider, swaggerParser, entityBuilder);
+    requestMapper.setResourceLoader(resourceLoader);
   }
 
   @Test
@@ -88,7 +88,7 @@ public class SwaggerImporterTest {
         new org.springframework.core.io.Resource[0]);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(informationProductResourceProvider);
@@ -102,7 +102,7 @@ public class SwaggerImporterTest {
         FileNotFoundException.class);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(informationProductResourceProvider);
@@ -121,7 +121,7 @@ public class SwaggerImporterTest {
             DBEERPEDIA.OPENAPI_DESCRIPTION));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
   }
 
   @Test
@@ -131,7 +131,7 @@ public class SwaggerImporterTest {
         new Path().get(new Operation()));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(httpConfiguration);
@@ -144,7 +144,7 @@ public class SwaggerImporterTest {
         new Path().put(new Operation()));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(httpConfiguration);
@@ -163,7 +163,7 @@ public class SwaggerImporterTest {
         informationProduct);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
 
     // Assert
     verify(httpConfiguration).registerResources(resourceCaptor.capture());
@@ -193,7 +193,7 @@ public class SwaggerImporterTest {
         informationProduct);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
 
     // Assert
     verify(httpConfiguration).registerResources(resourceCaptor.capture());
@@ -219,7 +219,7 @@ public class SwaggerImporterTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
   }
 
   @Test
@@ -240,7 +240,7 @@ public class SwaggerImporterTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
   }
 
   @Test
@@ -262,7 +262,7 @@ public class SwaggerImporterTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
   }
 
   @Test
@@ -279,7 +279,7 @@ public class SwaggerImporterTest {
         informationProduct);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.mapResources(httpConfiguration);
 
     // Assert
     verify(httpConfiguration).registerResources(resourceCaptor.capture());
