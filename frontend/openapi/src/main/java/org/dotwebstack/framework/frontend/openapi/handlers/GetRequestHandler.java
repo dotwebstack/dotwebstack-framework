@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import java.util.Objects;
+import io.swagger.models.properties.Property;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
+import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.EntityBuilder;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
@@ -12,18 +14,27 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
-  InformationProduct informationProduct;
+  private InformationProduct informationProduct;
 
-  public GetRequestHandler(InformationProduct informationProduct) {
-    this.informationProduct = Objects.requireNonNull(informationProduct);
+  private EntityBuilder<Object> entityBuilder;
+
+  private Property schema;
+
+  public GetRequestHandler(@NonNull InformationProduct informationProduct,
+      @NonNull EntityBuilder<Object> entityBuilder, @NonNull Property schema) {
+    this.informationProduct = informationProduct;
+    this.entityBuilder = entityBuilder;
+    this.schema = schema;
   }
 
   @Override
-  public Response apply(ContainerRequestContext containerRequestContext) {
+  public Response apply(@NonNull ContainerRequestContext containerRequestContext) {
     String path = containerRequestContext.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
-    return Response.ok(informationProduct.getIdentifier().stringValue()).build();
+    Object entity = entityBuilder.build(informationProduct.getResult(), schema);
+
+    return Response.ok(entity).build();
   }
 
 }

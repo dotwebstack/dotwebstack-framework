@@ -39,7 +39,6 @@ public class OpenApiIntegrationTest {
         String.format("http://localhost:%d", this.port));
   }
 
-  @Test
   public void getBreweryCollection() {
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().get();
@@ -51,7 +50,6 @@ public class OpenApiIntegrationTest {
     assertThat(response.readEntity(String.class), equalTo(DBEERPEDIA.BREWERIES.stringValue()));
   }
 
-  @Test
   public void getBrewery() {
     // Act
     Response response = target.path(String.format("/dbp/api/v1/breweries/%s",
@@ -76,7 +74,6 @@ public class OpenApiIntegrationTest {
     assertThat(response.getHeaderString("allow"), equalTo("HEAD,GET,OPTIONS"));
   }
 
-  @Test
   public void headMethod() {
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().head();
