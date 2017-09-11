@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -14,13 +13,13 @@ public class LdExtensionTest {
   private HttpConfiguration httpConfiguration;
 
   @Mock
-  private RepresentationResourceProvider representationResourceProvider;
+  private RequestMapper requestMapper;
 
   private LdExtension ldExtension;
 
   @Test
   public void setUp() {
-    ldExtension = new LdExtension(representationResourceProvider);
+    ldExtension = new LdExtension(requestMapper);
     ldExtension.initialize(httpConfiguration);
   }
 }

@@ -9,7 +9,6 @@ import org.dotwebstack.framework.frontend.ld.handlers.GetRequestHandler;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +19,18 @@ public class RequestMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestMapper.class);
 
-  private RepresentationResourceProvider representationResourceProvider;
+  private final RepresentationResourceProvider representationResourceProvider;
+
+  private final SupportedMediaTypesScanner supportedMediaTypeScanner;
 
   @Autowired
-  public RequestMapper(RepresentationResourceProvider representationResourceProvider) {
+  public RequestMapper(RepresentationResourceProvider representationResourceProvider,
+      SupportedMediaTypesScanner supportedMediaTypeScanner) {
     this.representationResourceProvider = Objects.requireNonNull(representationResourceProvider);
+    this.supportedMediaTypeScanner = supportedMediaTypeScanner;
   }
 
-  public void loadRepresentations(HttpConfiguration httpConfiguration) {
+  void loadRepresentations(HttpConfiguration httpConfiguration) {
 
     for (Representation representation : representationResourceProvider.getAll().values()) {
       try {
@@ -37,23 +40,26 @@ public class RequestMapper {
           LOG.warn("Representation '{}' is not mapped to a stage.", representation.getIdentifier());
         }
       } catch (URISyntaxException ex) {
-        LOG.error("Representation '{}' is not mapped, cause of not found base path.",
+        LOG.error("Representation '{}' is not mapped, because of not found base path.",
             representation.getIdentifier());
       }
     }
   }
 
-  private void mapRepresentation(Representation representation,
-      HttpConfiguration httpConfiguration) throws URISyntaxException {
+  private void mapRepresentation(Representation representation, HttpConfiguration httpConfiguration)
+      throws URISyntaxException {
     String basePath = createBasePath(representation);
 
     representation.getUrlPatterns().forEach(path -> {
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-      ResourceMethod.Builder methodBuilder =
-          resourceBuilder.addMethod(HttpMethod.GET)
-              .handledBy(new GetRequestHandler(representation));
+      resourceBuilder.addMethod(HttpMethod.GET).handledBy(
+          new GetRequestHandler(representation)).produces(
+              supportedMediaTypeScanner.getMediaTypes(
+                  representation.getInformationProduct().getResultType()));
+
+      representation.getInformationProduct().getResultType();
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());
@@ -64,12 +70,12 @@ public class RequestMapper {
     });
   }
 
+
   private String createBasePath(Representation representation) throws URISyntaxException {
     Objects.requireNonNull(representation.getStage());
     Objects.requireNonNull(representation.getStage().getSite());
 
     URI uri = new URI(representation.getStage().getSite().getDomain());
-    return "/" + uri.getPath() + representation
-        .getStage().getBasePath();
+    return "/" + uri.getPath() + representation.getStage().getBasePath();
   }
 }
