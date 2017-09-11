@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.frontend.ld;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Objects;
 import javax.ws.rs.HttpMethod;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -26,17 +28,23 @@ public class RequestMapper {
   }
 
   public void loadRepresentations(HttpConfiguration httpConfiguration) {
+
     for (Representation representation : representationResourceProvider.getAll().values()) {
-      if (representation.getStage() != null) {
-        mapRepresentation(representation, httpConfiguration);
-      } else {
-        LOG.warn("Representation '{}' is not mapped to a stage.", representation.getIdentifier());
+      try {
+        if (representation.getStage() != null) {
+          mapRepresentation(representation, httpConfiguration);
+        } else {
+          LOG.warn("Representation '{}' is not mapped to a stage.", representation.getIdentifier());
+        }
+      } catch (URISyntaxException ex) {
+        LOG.error("Representation '{}' is not mapped, cause of not found base path.",
+            representation.getIdentifier());
       }
     }
   }
 
   private void mapRepresentation(Representation representation,
-      HttpConfiguration httpConfiguration) {
+      HttpConfiguration httpConfiguration) throws URISyntaxException {
     String basePath = createBasePath(representation);
 
     representation.getUrlPatterns().forEach(path -> {
@@ -56,12 +64,12 @@ public class RequestMapper {
     });
   }
 
-  private String createBasePath(Representation representation) {
+  private String createBasePath(Representation representation) throws URISyntaxException {
     Objects.requireNonNull(representation.getStage());
     Objects.requireNonNull(representation.getStage().getSite());
 
-    final String host = representation.getStage().getSite().getDomain().split(":")[0];
-    return "/" + host + representation
+    URI uri = new URI(representation.getStage().getSite().getDomain());
+    return "/" + uri.getPath() + representation
         .getStage().getBasePath();
   }
 }
