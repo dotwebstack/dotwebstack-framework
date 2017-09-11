@@ -56,22 +56,31 @@ public class RequestMapperTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Captor
-  ArgumentCaptor<Resource> resourceCaptor;
+  private ArgumentCaptor<Resource> resourceCaptor;
 
   @Mock
-  BackendSource backendSource;
+  private BackendResourceProvider backendResourceProvider;
 
   @Mock
-  Stage stage;
+  private Backend backend;
 
   @Mock
-  Site site;
+  private Stage stage;
 
   @Mock
-  InformationProduct informationProduct;
+  private Site site;
 
   @Mock
-  Representation representation;
+  private InformationProduct informationProduct;
+
+  @Mock
+  private InformationProductResourceProvider informationProductResourceProvider;
+
+  @Mock
+  private AbstractInformationProduct abstractInformationProduct;
+
+  @Mock
+  private Representation representation;
 
   @Mock
   private SailRepository configurationRepository;
