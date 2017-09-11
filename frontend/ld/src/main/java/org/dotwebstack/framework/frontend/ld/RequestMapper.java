@@ -44,8 +44,8 @@ public class RequestMapper {
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       ResourceMethod.Builder methodBuilder =
-          resourceBuilder.addMethod("GET").handledBy(new GetRequestHandler(representation));
-      methodBuilder.consumes(MediaType.TEXT_HTML_TYPE);
+          resourceBuilder.addMethod(HttpMethod.GET)
+              .handledBy(new GetRequestHandler(representation));
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());
