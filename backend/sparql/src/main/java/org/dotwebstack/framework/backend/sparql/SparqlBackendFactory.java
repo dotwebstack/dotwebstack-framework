@@ -17,11 +17,11 @@ import org.springframework.stereotype.Service;
 @Service
 class SparqlBackendFactory implements BackendFactory {
 
-  private SparqlBackendSourceFactory sourceFactory;
+  private SparqlBackendInformationProductFactory informationProductFactory;
 
   @Autowired
-  public SparqlBackendFactory(SparqlBackendSourceFactory sourceFactory) {
-    this.sourceFactory = Objects.requireNonNull(sourceFactory);
+  public SparqlBackendFactory(SparqlBackendInformationProductFactory informationProductFactory) {
+    this.informationProductFactory = Objects.requireNonNull(informationProductFactory);
   }
 
   @Override
@@ -41,7 +41,7 @@ class SparqlBackendFactory implements BackendFactory {
 
     repository.initialize();
 
-    return new SparqlBackend.Builder(identifier, repository, sourceFactory).build();
+    return new SparqlBackend.Builder(identifier, repository, informationProductFactory).build();
   }
 
   @Override

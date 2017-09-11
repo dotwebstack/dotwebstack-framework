@@ -31,6 +31,7 @@ public class BackendResourceProvider extends AbstractResourceProvider<Backend> {
         "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . ?type rdfs:subClassOf ?backend }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("backend", ELMO.BACKEND);
+
     return graphQuery;
   }
 

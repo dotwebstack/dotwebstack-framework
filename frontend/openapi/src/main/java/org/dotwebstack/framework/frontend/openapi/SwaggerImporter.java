@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.io.IOUtils;
+import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandler;
@@ -63,7 +64,9 @@ public class SwaggerImporter implements ResourceLoaderAware {
     }
 
     for (org.springframework.core.io.Resource resource : resources) {
-      Swagger swagger = swaggerParser.parse(IOUtils.toString(resource.getInputStream(), "UTF-8"));
+      Swagger swagger = swaggerParser.parse(
+          IOUtils
+              .toString(new EnvironmentAwareResource(resource.getInputStream()).getInputStream()));
       mapSwaggerDefinition(swagger, httpConfiguration);
     }
   }

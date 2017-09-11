@@ -13,6 +13,12 @@ public final class DBEERPEDIA {
 
   public static final Literal BASE_PATH;
 
+  public static final IRI NAME;
+
+  public static final String BREWERY_DAVO_NAME = "Davo Bieren Deventer";
+
+  public static final Literal BREWERY_DAVO;
+
   public static final String OBJECT_NAMESPACE = "http://dbeerpedia.org/id/";
 
   public static final IRI URL_PATTERN;
@@ -35,7 +41,21 @@ public final class DBEERPEDIA {
 
   public static final Literal SELECT_ALL_QUERY;
 
+  public static final Literal CONSTRUCT_ALL_QUERY;
+
+  public static final Literal ASK_ALL_QUERY;
+
+  public static final Literal MALFORMED_QUERY;
+
   public static final IRI BROUWTOREN;
+
+  public static final Literal BROUWTOREN_NAME;
+
+  public static final Literal BROUWTOREN_YEAR_OF_FOUNDATION;
+
+  public static final Literal BROUWTOREN_CRAFT_MEMBER;
+
+  public static final Literal BROUWTOREN_FTE;
 
   public static final IRI PERCENTAGES_INFORMATION_PRODUCT;
 
@@ -74,6 +94,9 @@ public final class DBEERPEDIA {
     DOMAIN = valueFactory.createLiteral("dbeerpedia.org");
     BASE_PATH = valueFactory.createLiteral("/special");
 
+    NAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Name");
+    BREWERY_DAVO = valueFactory.createLiteral(BREWERY_DAVO_NAME);
+
     SITE_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SiteNL");
     DOMAIN_NL = valueFactory.createLiteral("dbeerpedia.nl");
 
@@ -84,10 +107,18 @@ public final class DBEERPEDIA {
     BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Breweries");
     BREWERIES_LABEL = valueFactory.createLiteral("Beer breweries in The Netherlands");
     WINERIES_LABEL = valueFactory.createLiteral("Wineries in The Netherlands");
+    MALFORMED_QUERY = valueFactory.createLiteral("CONSTRUCT ?s ?p ?o WHERE { ?s ?p ?o }");
     SELECT_ALL_QUERY = valueFactory.createLiteral("SELECT ?s ?p ?o WHERE { ?s ?p ?o }");
+    CONSTRUCT_ALL_QUERY = valueFactory.createLiteral("CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }");
+    ASK_ALL_QUERY = valueFactory.createLiteral("ASK WHERE { ?s ?p ?o }");
 
     BROUWTOREN = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c");
+    BROUWTOREN_NAME = valueFactory.createLiteral("Brouwtoren");
+    BROUWTOREN_YEAR_OF_FOUNDATION = valueFactory.createLiteral(2014);
+    BROUWTOREN_CRAFT_MEMBER = valueFactory.createLiteral(true);
+    BROUWTOREN_FTE = valueFactory.createLiteral(1.8);
+
     PERCENTAGES_INFORMATION_PRODUCT = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/information/alcohol-percentages");
     ORIGIN_INFORMATION_PRODUCT =
