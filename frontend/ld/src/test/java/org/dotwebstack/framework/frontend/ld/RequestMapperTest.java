@@ -4,7 +4,9 @@ package org.dotwebstack.framework.frontend.ld;
 import static javax.ws.rs.HttpMethod.GET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.IsNot.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -145,8 +147,12 @@ public class RequestMapperTest {
   }
 
   @Test
-  public void constructRequestMapperTest() {
-    new RequestMapper(representationResourceProvider);
+  public void constructRequestMapperNotNullTest() {
+    // Arrange/Act
+    RequestMapper requestMapper = new RequestMapper(representationResourceProvider);
+
+    // Assert
+    assertThat(requestMapper, not(nullValue()));
   }
 
   @Test
