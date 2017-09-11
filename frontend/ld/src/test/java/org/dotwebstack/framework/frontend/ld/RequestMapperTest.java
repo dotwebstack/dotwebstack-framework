@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.ld;
 
 
+import static javax.ws.rs.HttpMethod.GET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -155,17 +156,15 @@ public class RequestMapperTest {
 
     // Arrange
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
+    ResourceMethod method = resource.getResourceMethods().get(0);
+
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(resource.getPath(),
         equalTo("/" + DBEERPEDIA.ORG_HOST + DBEERPEDIA.BASE_PATH.getLabel()
             + DBEERPEDIA.URL_PATTERN_VALUE));
     assertThat(resource.getResourceMethods(), hasSize(1));
-
-    // Arrange
-    ResourceMethod method = resource.getResourceMethods().get(0);
-    // Assert
-    assertThat(method.getHttpMethod(), equalTo("GET"));
+    assertThat(method.getHttpMethod(), equalTo(GET));
   }
 
   @Test
@@ -177,11 +176,11 @@ public class RequestMapperTest {
         .build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
-
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     // Act
     requestMapper.loadRepresentations(httpConfiguration);
+
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
@@ -196,7 +195,6 @@ public class RequestMapperTest {
         .build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
-
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     // Act
