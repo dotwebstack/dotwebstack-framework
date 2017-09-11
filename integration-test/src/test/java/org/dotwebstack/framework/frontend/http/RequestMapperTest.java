@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.frontend.http;
 
+import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyString;
@@ -7,7 +10,6 @@ import static org.hamcrest.Matchers.isEmptyString;
 import java.io.IOException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -47,8 +49,8 @@ public class RequestMapperTest {
     Response response = target.path("/dbp/breweries").request().get();
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(TEXT_HTML_TYPE));
     assertThat(response.readEntity(String.class),
         equalTo(DBEERPEDIA.BREWERY_LIST_REPRESENTATION.stringValue()));
   }
@@ -57,11 +59,11 @@ public class RequestMapperTest {
   public void optionsMethodTest() {
     // Act
     Response response =
-        target.path("/dbp/breweries").request(MediaType.TEXT_HTML_TYPE).options();
+        target.path("/dbp/breweries").request(TEXT_HTML_TYPE).options();
 
     // Assert
-    Assert.assertThat(response.getStatus(), CoreMatchers.equalTo(Status.OK.getStatusCode()));
-    Assert.assertThat(response.getMediaType(), CoreMatchers.equalTo(MediaType.TEXT_HTML_TYPE));
+    Assert.assertThat(response.getStatus(), CoreMatchers.equalTo(OK.getStatusCode()));
+    Assert.assertThat(response.getMediaType(), CoreMatchers.equalTo(TEXT_HTML_TYPE));
     Assert
         .assertThat(response.readEntity(String.class), CoreMatchers.equalTo(""));
     Assert
@@ -74,8 +76,8 @@ public class RequestMapperTest {
     Response response = target.path("/dbp/breweries").request().head();
 
     // Assert
-    Assert.assertThat(response.getStatus(), CoreMatchers.equalTo(Status.OK.getStatusCode()));
-    Assert.assertThat(response.getMediaType(), CoreMatchers.equalTo(MediaType.TEXT_HTML_TYPE));
+    Assert.assertThat(response.getStatus(), CoreMatchers.equalTo(OK.getStatusCode()));
+    Assert.assertThat(response.getMediaType(), CoreMatchers.equalTo(TEXT_HTML_TYPE));
     Assert.assertThat(response.getLength(), CoreMatchers.equalTo(47));
     Assert.assertThat(response.readEntity(String.class), isEmptyString());
   }
@@ -86,7 +88,7 @@ public class RequestMapperTest {
     Response response = target.path("/dbp/xxx").request().get();
 
     // Assert
-    Assert.assertThat(response.getStatus(), CoreMatchers.equalTo(Status.NOT_FOUND.getStatusCode()));
+    Assert.assertThat(response.getStatus(), CoreMatchers.equalTo(NOT_FOUND.getStatusCode()));
   }
 
   @Test
