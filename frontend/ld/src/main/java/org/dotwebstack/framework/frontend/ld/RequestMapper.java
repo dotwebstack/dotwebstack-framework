@@ -1,8 +1,7 @@
 package org.dotwebstack.framework.frontend.ld;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Objects;
+import javax.inject.Inject;
 import javax.ws.rs.HttpMethod;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.handlers.GetRequestHandler;
