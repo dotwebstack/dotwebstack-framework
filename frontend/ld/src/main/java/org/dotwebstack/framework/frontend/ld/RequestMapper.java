@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import java.util.Objects;
-import javax.inject.Inject;
 import javax.ws.rs.HttpMethod;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.handlers.GetRequestHandler;
@@ -19,6 +18,8 @@ public class RequestMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestMapper.class);
 
+  private final String pathDomainParameter = "{DOMAIN_PARAMETER}";
+  
   private RepresentationResourceProvider representationResourceProvider;
 
   @Autowired
