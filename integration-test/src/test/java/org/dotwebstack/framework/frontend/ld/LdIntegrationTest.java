@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.Assert.assertThat;
 
@@ -10,8 +11,15 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.dotwebstack.framework.SparqlHttpStub;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.util.ModelBuilder;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,17 +45,33 @@ public class LdIntegrationTest {
         String.format("http://localhost:%d", this.port));
   }
 
+  @BeforeClass
+  public static void startStub() {
+    SparqlHttpStub.start();
+  }
+
+  @AfterClass
+  public static void stopStub() {
+    SparqlHttpStub.stop();
+  }
+
   @Test
   public void getBreweryCollection() {
-    // Act
+    // Arrange
+    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
+        DBEERPEDIA.BREWERIES_LABEL).build();
+    SparqlHttpStub.returnModel(model);
     MediaType mediaType = MediaType.valueOf("text/turtle");
+
+    // Act
     Response response = target.path("/dbp/ld/v1/breweries").request().accept(mediaType).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(mediaType));
-    assertThat(response.getLength(), equalTo(0));
-    assertThat(response.readEntity(String.class), equalTo(""));
+    assertThat(response.getLength(), equalTo(120));
+    assertThat(response.readEntity(String.class),
+        containsString(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
   }
 
   @Test
@@ -65,13 +89,18 @@ public class LdIntegrationTest {
 
   @Test
   public void headMethod() {
+    // Arrange
+    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
+        DBEERPEDIA.BREWERIES_LABEL).build();
+    SparqlHttpStub.returnModel(model);
+
     // Act
     Response response = target.path("/dbp/ld/v1/breweries").request().head();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.valueOf("application/ld+json")));
-    assertThat(response.getLength(), equalTo(2));
+    assertThat(response.getLength(), equalTo(137));
     assertThat(response.readEntity(String.class), isEmptyString());
   }
 
