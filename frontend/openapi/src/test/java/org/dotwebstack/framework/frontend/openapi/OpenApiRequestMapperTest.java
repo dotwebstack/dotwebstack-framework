@@ -60,7 +60,7 @@ public class OpenApiRequestMapperTest {
   private HttpConfiguration httpConfiguration;
 
   @Mock
-  private SwaggerParser swaggerParser;
+  private SwaggerParser openApiParser;
 
   @Mock
   private org.springframework.core.io.Resource fileResource;
@@ -76,7 +76,7 @@ public class OpenApiRequestMapperTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    requestMapper = new OpenApiRequestMapper(informationProductResourceProvider, swaggerParser);
+    requestMapper = new OpenApiRequestMapper(informationProductResourceProvider, openApiParser);
     requestMapper.setResourceLoader(resourceLoader);
   }
 
@@ -309,7 +309,7 @@ public class OpenApiRequestMapperTest {
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[] {fileResource});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
-    when(swaggerParser.parse("spec")).thenReturn(swagger);
+    when(openApiParser.parse("spec")).thenReturn(swagger);
     return swagger;
   }
 
