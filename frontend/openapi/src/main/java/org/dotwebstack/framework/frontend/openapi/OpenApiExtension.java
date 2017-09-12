@@ -10,17 +10,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class OpenApiExtension implements HttpExtension {
 
-  private SwaggerImporter swaggerImporter;
+  private OpenApiRequestMapper requestMapper;
 
   @Autowired
-  public OpenApiExtension(SwaggerImporter swaggerImporter) {
-    this.swaggerImporter = swaggerImporter;
+  public OpenApiExtension(OpenApiRequestMapper requestMapper) {
+    this.requestMapper = requestMapper;
   }
 
   @Override
   public void initialize(HttpConfiguration httpConfiguration) {
     try {
-      swaggerImporter.importDefinitions(httpConfiguration);
+      requestMapper.map(httpConfiguration);
     } catch (IOException e) {
       throw new ConfigurationException("Failed loading OpenAPI definitions.", e);
     }

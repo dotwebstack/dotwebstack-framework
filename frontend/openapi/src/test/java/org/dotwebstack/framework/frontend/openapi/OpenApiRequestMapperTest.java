@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -10,11 +11,14 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Info;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
+import io.swagger.models.Response;
 import io.swagger.models.Swagger;
+import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,6 +26,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandler;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -40,7 +45,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SwaggerImporterTest {
+public class OpenApiRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -65,14 +70,14 @@ public class SwaggerImporterTest {
 
   private ResourceLoader resourceLoader;
 
-  private SwaggerImporter swaggerImporter;
+  private OpenApiRequestMapper requestMapper;
 
   @Before
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    swaggerImporter = new SwaggerImporter(informationProductResourceProvider, swaggerParser);
-    swaggerImporter.setResourceLoader(resourceLoader);
+    requestMapper = new OpenApiRequestMapper(informationProductResourceProvider, swaggerParser);
+    requestMapper.setResourceLoader(resourceLoader);
   }
 
   @Test
@@ -82,7 +87,7 @@ public class SwaggerImporterTest {
         new org.springframework.core.io.Resource[0]);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.map(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(informationProductResourceProvider);
@@ -96,7 +101,7 @@ public class SwaggerImporterTest {
         FileNotFoundException.class);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.map(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(informationProductResourceProvider);
@@ -115,7 +120,7 @@ public class SwaggerImporterTest {
             DBEERPEDIA.OPENAPI_DESCRIPTION));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.map(httpConfiguration);
   }
 
   @Test
@@ -125,7 +130,7 @@ public class SwaggerImporterTest {
         new Path().get(new Operation()));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.map(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(httpConfiguration);
@@ -138,7 +143,7 @@ public class SwaggerImporterTest {
         new Path().put(new Operation()));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.map(httpConfiguration);
 
     // Assert
     verifyZeroInteractions(httpConfiguration);
@@ -147,15 +152,18 @@ public class SwaggerImporterTest {
   @Test
   public void mapEndpoint() throws IOException {
     // Arrange
+    Property schema = mock(Property.class);
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
-        MediaType.TEXT_PLAIN).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-            "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
+        ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path(
+            "/breweries",
+            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
+                    200, new Response().schema(schema))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.map(httpConfiguration);
 
     // Assert
     verify(httpConfiguration).registerResources(resourceCaptor.capture());
@@ -168,21 +176,30 @@ public class SwaggerImporterTest {
 
     ResourceMethod method = resource.getResourceMethods().get(0);
     assertThat(method.getHttpMethod(), equalTo("GET"));
-    assertThat(method.getProducedTypes(), hasSize(1));
-    assertThat(method.getProducedTypes().get(0), equalTo(MediaType.TEXT_PLAIN_TYPE));
+    assertThat(method.getProducedTypes(),
+        contains(MediaType.TEXT_PLAIN_TYPE, MediaType.APPLICATION_JSON_TYPE));
+
+    GetRequestHandler requestHandler =
+        (GetRequestHandler) resource.getHandlerInstances().iterator().next();
+    assertThat(requestHandler.getInformationProduct(), equalTo(informationProduct));
+    assertThat(requestHandler.getSchemaMap(),
+        equalTo(ImmutableMap.of(MediaType.TEXT_PLAIN, schema, MediaType.APPLICATION_JSON, schema)));
   }
 
   @Test
   public void mapEndpointWithoutBasePath() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.TEXT_PLAIN).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-            "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue()))));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(
+        MediaType.TEXT_PLAIN).path(
+            "/breweries",
+            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
+                    200, new Response().schema(mock(Property.class)))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.map(httpConfiguration);
 
     // Assert
     verify(httpConfiguration).registerResources(resourceCaptor.capture());
@@ -193,9 +210,12 @@ public class SwaggerImporterTest {
   @Test
   public void mapEndpointWithoutProduces() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries", new Path().get(
-        new Operation().vendorExtensions(ImmutableMap.of("x-dotwebstack-information-product",
-            DBEERPEDIA.BREWERIES.stringValue()))));
+    mockDefinition().host(
+        DBEERPEDIA.OPENAPI_HOST).path(
+            "/breweries",
+            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
+                    200, new Response().schema(mock(Property.class)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -203,7 +223,62 @@ public class SwaggerImporterTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.map(httpConfiguration);
+  }
+
+  @Test
+  public void mapEndpointWithoutResponses() throws IOException {
+    // Arrange
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries", new Path().get(
+        new Operation().vendorExtensions(ImmutableMap.of("x-dotwebstack-information-product",
+            DBEERPEDIA.BREWERIES.stringValue()))));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("Resource '%s' does not specify a status 200 response.",
+        "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
+
+    // Act
+    requestMapper.map(httpConfiguration);
+  }
+
+  @Test
+  public void mapEndpointWithoutOkResponse() throws IOException {
+    // Arrange
+    mockDefinition().host(
+        DBEERPEDIA.OPENAPI_HOST).path(
+            "/breweries",
+            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
+                    201, new Response().schema(mock(Property.class)))));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("Resource '%s' does not specify a status 200 response.",
+        "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
+
+    // Act
+    requestMapper.map(httpConfiguration);
+  }
+
+  @Test
+  public void mapEndpointWithoutOkResponseSchema() throws IOException {
+    // Arrange
+    mockDefinition().produces(MediaType.TEXT_PLAIN).host(
+        DBEERPEDIA.OPENAPI_HOST).path(
+            "/breweries",
+            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
+                    200, new Response())));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(
+        String.format("Resource '%s' does not specify a schema for the status 200 response.",
+            "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
+
+    // Act
+    requestMapper.map(httpConfiguration);
   }
 
   @Test
@@ -211,15 +286,16 @@ public class SwaggerImporterTest {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(
         MediaType.TEXT_PLAIN).path(
-        "/breweries",
-        new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-            "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
-            MediaType.APPLICATION_JSON)));
+            "/breweries",
+            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
+                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
+                    MediaType.APPLICATION_JSON).response(200,
+                        new Response().schema(mock(Property.class)))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 
     // Act
-    swaggerImporter.importDefinitions(httpConfiguration);
+    requestMapper.map(httpConfiguration);
 
     // Assert
     verify(httpConfiguration).registerResources(resourceCaptor.capture());
@@ -231,7 +307,7 @@ public class SwaggerImporterTest {
   private Swagger mockDefinition() throws IOException {
     when(fileResource.getInputStream()).thenReturn(IOUtils.toInputStream("spec", "UTF-8"));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new org.springframework.core.io.Resource[]{fileResource});
+        new org.springframework.core.io.Resource[] {fileResource});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
     when(swaggerParser.parse("spec")).thenReturn(swagger);
     return swagger;

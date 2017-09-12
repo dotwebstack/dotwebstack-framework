@@ -21,7 +21,7 @@ public class OpenApiExtensionTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private SwaggerImporter swaggerImporter;
+  private OpenApiRequestMapper swaggerImporter;
 
   @Mock
   private HttpConfiguration httpConfiguration;
@@ -39,13 +39,13 @@ public class OpenApiExtensionTest {
     openApiExtension.initialize(httpConfiguration);
 
     // Assert
-    verify(swaggerImporter).importDefinitions(httpConfiguration);
+    verify(swaggerImporter).map(httpConfiguration);
   }
 
   @Test
   public void importDefinitionsFailedIO() throws IOException {
     // Arrange
-    doThrow(IOException.class).when(swaggerImporter).importDefinitions(httpConfiguration);
+    doThrow(IOException.class).when(swaggerImporter).map(httpConfiguration);
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -58,7 +58,7 @@ public class OpenApiExtensionTest {
   @Test
   public void importDefinitionsFailedConfiguration() throws IOException {
     // Arrange
-    doThrow(ConfigurationException.class).when(swaggerImporter).importDefinitions(
+    doThrow(ConfigurationException.class).when(swaggerImporter).map(
         httpConfiguration);
 
     // Assert
