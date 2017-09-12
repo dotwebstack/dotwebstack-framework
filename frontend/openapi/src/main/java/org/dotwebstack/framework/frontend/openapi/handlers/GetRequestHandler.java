@@ -15,9 +15,9 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
-  InformationProduct informationProduct;
+  private InformationProduct informationProduct;
 
-  Map<String, Property> schemaMap;
+  private Map<String, Property> schemaMap;
 
   public GetRequestHandler(InformationProduct informationProduct, Map<String, Property> schemaMap) {
     this.informationProduct = Objects.requireNonNull(informationProduct);
