@@ -19,33 +19,48 @@ public class RequestMapper {
 
   private static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
 
-  private RepresentationResourceProvider representationResourceProvider;
+  private final RepresentationResourceProvider representationResourceProvider;
+
+  private final SupportedMediaTypesScanner supportedMediaTypeScanner;
 
   @Autowired
-  public RequestMapper(RepresentationResourceProvider representationResourceProvider) {
+  public RequestMapper(RepresentationResourceProvider representationResourceProvider,
+      SupportedMediaTypesScanner supportedMediaTypeScanner) {
     this.representationResourceProvider = Objects.requireNonNull(representationResourceProvider);
+    this.supportedMediaTypeScanner = supportedMediaTypeScanner;
   }
 
-  public void loadRepresentations(HttpConfiguration httpConfiguration) {
+  void loadRepresentations(HttpConfiguration httpConfiguration) {
+
     for (Representation representation : representationResourceProvider.getAll().values()) {
-      if (representation.getStage() != null) {
-        mapRepresentation(representation, httpConfiguration);
-      } else {
-        LOG.warn("Representation '{}' is not mapped to a stage.", representation.getIdentifier());
+      try {
+        if (representation.getStage() != null) {
+          mapRepresentation(representation, httpConfiguration);
+        } else {
+          LOG.warn("Representation '{}' is not mapped to a stage.", representation.getIdentifier());
+        }
+      } catch (URISyntaxException ex) {
+        LOG.error("Representation '{}' is not mapped, because of not found base path.",
+            representation.getIdentifier());
       }
     }
   }
 
-  private void mapRepresentation(Representation representation,
-      HttpConfiguration httpConfiguration) {
+
+  private void mapRepresentation(Representation representation, HttpConfiguration httpConfiguration)
+      throws URISyntaxException {
     String basePath = createBasePath(representation);
 
     representation.getUrlPatterns().forEach(path -> {
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-      resourceBuilder.addMethod(HttpMethod.GET)
-          .handledBy(new GetRequestHandler(representation));
+      resourceBuilder.addMethod(HttpMethod.GET).handledBy(
+          new GetRequestHandler(representation)).produces(
+              supportedMediaTypeScanner.getMediaTypes(
+                  representation.getInformationProduct().getResultType()));
+
+      representation.getInformationProduct().getResultType();
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());

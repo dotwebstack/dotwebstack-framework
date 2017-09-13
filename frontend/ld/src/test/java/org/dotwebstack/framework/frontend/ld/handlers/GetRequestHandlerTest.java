@@ -9,7 +9,8 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
-import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +26,12 @@ public class GetRequestHandlerTest {
   @Mock
   private ContainerRequestContext containerRequestContext;
 
+  @Mock
+  private InformationProduct informationProduct;
+
+  @Mock
+  private GraphQueryResult queryResult;
+
   private GetRequestHandler getRequestHandler;
 
   @Before
@@ -33,9 +40,10 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void alwaysReturnRepresentationIdentifier() {
+  public void alwaysReturnRepresentationInformationProductResult() {
     // Arrange
-    when(representation.getIdentifier()).thenReturn(DBEERPEDIA.BREWERY_REPRESENTATION);
+    when(representation.getInformationProduct()).thenReturn(informationProduct);
+    when(informationProduct.getResult()).thenReturn(queryResult);
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getPath()).thenReturn("/");
@@ -45,6 +53,6 @@ public class GetRequestHandlerTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(200));
-    assertThat(response.getEntity(), equalTo(DBEERPEDIA.BREWERY_REPRESENTATION.stringValue()));
+    assertThat(response.getEntity(), equalTo(queryResult));
   }
 }

@@ -4,7 +4,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 dbeerpedia:BreweryListRepresentation a elmo:Representation;
-  elmo:urlPattern "/breweries";
+  elmo:urlPattern "/ld/v1/breweries";
   elmo:stage dbeerpedia:Stage;
   elmo:informationProduct dbeerpedia:Breweries;
 .

@@ -24,7 +24,7 @@ public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQ
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType) {
-    return Model.class.isAssignableFrom(type)
+    return GraphQueryResult.class.isAssignableFrom(type)
         && format.getMIMETypes().contains(mediaType.toString());
   }
 
