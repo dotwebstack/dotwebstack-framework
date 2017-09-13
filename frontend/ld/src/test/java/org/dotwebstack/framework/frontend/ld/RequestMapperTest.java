@@ -33,7 +33,6 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
-
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
@@ -41,7 +40,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -72,6 +70,7 @@ public class RequestMapperTest {
   @Mock
   private Representation representation;
 
+  @Mock
   private GraphQuery graphQuery;
 
   @Mock
@@ -93,7 +92,6 @@ public class RequestMapperTest {
 
     stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
-
 
     when(backendResourceProvider.get(any())).thenReturn(backend);
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
@@ -132,7 +130,6 @@ public class RequestMapperTest {
 
   @Test
   public void mapRepresentationTest() {
-
     // Arrange
     when(supportedMediaTypesScanner.getMediaTypes(ResultType.GRAPH)).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
