@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.frontend.ld;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Objects;
 import javax.ws.rs.HttpMethod;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -18,6 +16,8 @@ import org.springframework.stereotype.Service;
 public class RequestMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestMapper.class);
+
+  private static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
 
   private final RepresentationResourceProvider representationResourceProvider;
 
@@ -46,6 +46,7 @@ public class RequestMapper {
     }
   }
 
+
   private void mapRepresentation(Representation representation, HttpConfiguration httpConfiguration)
       throws URISyntaxException {
     String basePath = createBasePath(representation);
@@ -70,12 +71,12 @@ public class RequestMapper {
     });
   }
 
-
-  private String createBasePath(Representation representation) throws URISyntaxException {
-    Objects.requireNonNull(representation.getStage());
-    Objects.requireNonNull(representation.getStage().getSite());
-
-    URI uri = new URI(representation.getStage().getSite().getDomain());
-    return "/" + uri.getPath() + representation.getStage().getBasePath();
+  private String createBasePath(Representation representation) {
+    if (representation.getStage().getSite().isMatchAllDomain()) {
+      return "/" + PATH_DOMAIN_PARAMETER + representation
+          .getStage().getBasePath();
+    }
+    return "/" + representation.getStage().getSite().getDomain() + representation
+        .getStage().getBasePath();
   }
 }

@@ -13,8 +13,7 @@ public class LdExtension implements HttpExtension {
 
   @Autowired
   public LdExtension(RequestMapper requestMapper) {
-    Objects.requireNonNull(requestMapper);
-    this.requestMapper = requestMapper;
+    this.requestMapper = Objects.requireNonNull(requestMapper);
   }
 
   @Override
