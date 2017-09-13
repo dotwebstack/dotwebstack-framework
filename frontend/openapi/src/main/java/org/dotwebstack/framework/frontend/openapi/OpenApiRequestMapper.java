@@ -87,13 +87,15 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
         return;
       }
 
-      if (!getOperation.getVendorExtensions().containsKey("x-dotwebstack-information-product")) {
+      if (!getOperation.getVendorExtensions().containsKey(
+          OpenApiSpecificationExtensions.INFORMATION_PRODUCT)) {
         LOG.warn("Path '{}' is not mapped to an information product.", absolutePath);
         return;
       }
 
-      IRI informationProductIdentifier = valueFactory.createIRI(
-          (String) getOperation.getVendorExtensions().get("x-dotwebstack-information-product"));
+      IRI informationProductIdentifier =
+          valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
+              OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
 
       InformationProduct informationProduct =
           informationProductResourceProvider.get(informationProductIdentifier);

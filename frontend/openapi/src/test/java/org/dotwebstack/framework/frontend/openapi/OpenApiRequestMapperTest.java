@@ -156,9 +156,10 @@ public class OpenApiRequestMapperTest {
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
         ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path(
             "/breweries",
-            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
-                    200, new Response().schema(schema))));
+            new Path().get(new Operation().vendorExtensions(
+                ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                    DBEERPEDIA.BREWERIES.stringValue())).response(200,
+                        new Response().schema(schema))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 
@@ -189,12 +190,11 @@ public class OpenApiRequestMapperTest {
   @Test
   public void mapEndpointWithoutBasePath() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(
-        MediaType.TEXT_PLAIN).path(
-            "/breweries",
-            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
-                    200, new Response().schema(mock(Property.class)))));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.TEXT_PLAIN).path("/breweries",
+        new Path().get(new Operation().vendorExtensions(
+            ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                DBEERPEDIA.BREWERIES.stringValue())).response(200,
+                    new Response().schema(mock(Property.class)))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 
@@ -210,12 +210,11 @@ public class OpenApiRequestMapperTest {
   @Test
   public void mapEndpointWithoutProduces() throws IOException {
     // Arrange
-    mockDefinition().host(
-        DBEERPEDIA.OPENAPI_HOST).path(
-            "/breweries",
-            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
-                    200, new Response().schema(mock(Property.class)))));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
+        new Path().get(new Operation().vendorExtensions(
+            ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                DBEERPEDIA.BREWERIES.stringValue())).response(200,
+                    new Response().schema(mock(Property.class)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -229,9 +228,10 @@ public class OpenApiRequestMapperTest {
   @Test
   public void mapEndpointWithoutResponses() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries", new Path().get(
-        new Operation().vendorExtensions(ImmutableMap.of("x-dotwebstack-information-product",
-            DBEERPEDIA.BREWERIES.stringValue()))));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
+        new Path().get(new Operation().vendorExtensions(
+            ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                DBEERPEDIA.BREWERIES.stringValue()))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -245,12 +245,11 @@ public class OpenApiRequestMapperTest {
   @Test
   public void mapEndpointWithoutOkResponse() throws IOException {
     // Arrange
-    mockDefinition().host(
-        DBEERPEDIA.OPENAPI_HOST).path(
-            "/breweries",
-            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
-                    201, new Response().schema(mock(Property.class)))));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
+        new Path().get(new Operation().vendorExtensions(
+            ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                DBEERPEDIA.BREWERIES.stringValue())).response(201,
+                    new Response().schema(mock(Property.class)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -264,12 +263,10 @@ public class OpenApiRequestMapperTest {
   @Test
   public void mapEndpointWithoutOkResponseSchema() throws IOException {
     // Arrange
-    mockDefinition().produces(MediaType.TEXT_PLAIN).host(
-        DBEERPEDIA.OPENAPI_HOST).path(
-            "/breweries",
-            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).response(
-                    200, new Response())));
+    mockDefinition().produces(MediaType.TEXT_PLAIN).host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
+        new Path().get(new Operation().vendorExtensions(
+            ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                DBEERPEDIA.BREWERIES.stringValue())).response(200, new Response())));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -284,13 +281,11 @@ public class OpenApiRequestMapperTest {
   @Test
   public void producesPrecedence() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(
-        MediaType.TEXT_PLAIN).path(
-            "/breweries",
-            new Path().get(new Operation().vendorExtensions(ImmutableMap.of(
-                "x-dotwebstack-information-product", DBEERPEDIA.BREWERIES.stringValue())).produces(
-                    MediaType.APPLICATION_JSON).response(200,
-                        new Response().schema(mock(Property.class)))));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.TEXT_PLAIN).path("/breweries",
+        new Path().get(new Operation().vendorExtensions(
+            ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                DBEERPEDIA.BREWERIES.stringValue())).produces(MediaType.APPLICATION_JSON).response(
+                    200, new Response().schema(mock(Property.class)))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 

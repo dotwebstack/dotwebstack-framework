@@ -3,17 +3,17 @@ package org.dotwebstack.framework.frontend.openapi;
 import java.io.IOException;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.http.HttpExtension;
+import org.dotwebstack.framework.frontend.http.HttpModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OpenApiExtension implements HttpExtension {
+public class OpenApiModule implements HttpModule {
 
   private OpenApiRequestMapper requestMapper;
 
   @Autowired
-  public OpenApiExtension(OpenApiRequestMapper requestMapper) {
+  public OpenApiModule(OpenApiRequestMapper requestMapper) {
     this.requestMapper = requestMapper;
   }
 

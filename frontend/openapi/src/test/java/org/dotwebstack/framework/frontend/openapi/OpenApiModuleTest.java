@@ -15,7 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OpenApiExtensionTest {
+public class OpenApiModuleTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -26,17 +26,17 @@ public class OpenApiExtensionTest {
   @Mock
   private HttpConfiguration httpConfiguration;
 
-  private OpenApiExtension openApiExtension;
+  private OpenApiModule openApiModule;
 
   @Before
   public void setUp() {
-    openApiExtension = new OpenApiExtension(requestMapper);
+    openApiModule = new OpenApiModule(requestMapper);
   }
 
   @Test
   public void importDefinitions() throws IOException {
     // Act
-    openApiExtension.initialize(httpConfiguration);
+    openApiModule.initialize(httpConfiguration);
 
     // Assert
     verify(requestMapper).map(httpConfiguration);
@@ -52,7 +52,7 @@ public class OpenApiExtensionTest {
     thrown.expectMessage("Failed loading OpenAPI definitions.");
 
     // Act
-    openApiExtension.initialize(httpConfiguration);
+    openApiModule.initialize(httpConfiguration);
   }
 
   @Test
@@ -65,7 +65,7 @@ public class OpenApiExtensionTest {
     thrown.expect(ConfigurationException.class);
 
     // Act
-    openApiExtension.initialize(httpConfiguration);
+    openApiModule.initialize(httpConfiguration);
   }
 
 }
