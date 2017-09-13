@@ -33,22 +33,17 @@ public class RequestMapper {
   void loadRepresentations(HttpConfiguration httpConfiguration) {
 
     for (Representation representation : representationResourceProvider.getAll().values()) {
-      try {
-        if (representation.getStage() != null) {
-          mapRepresentation(representation, httpConfiguration);
-        } else {
-          LOG.warn("Representation '{}' is not mapped to a stage.", representation.getIdentifier());
-        }
-      } catch (URISyntaxException ex) {
-        LOG.error("Representation '{}' is not mapped, because of not found base path.",
-            representation.getIdentifier());
+      if (representation.getStage() != null) {
+        mapRepresentation(representation, httpConfiguration);
+      } else {
+        LOG.warn("Representation '{}' is not mapped to a stage.", representation.getIdentifier());
       }
     }
   }
 
 
-  private void mapRepresentation(Representation representation, HttpConfiguration httpConfiguration)
-      throws URISyntaxException {
+  private void mapRepresentation(Representation representation,
+      HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(representation);
 
     representation.getUrlPatterns().forEach(path -> {
@@ -73,10 +68,9 @@ public class RequestMapper {
 
   private String createBasePath(Representation representation) {
     if (representation.getStage().getSite().isMatchAllDomain()) {
-      return "/" + PATH_DOMAIN_PARAMETER + representation
-          .getStage().getBasePath();
+      return "/" + PATH_DOMAIN_PARAMETER + representation.getStage().getBasePath();
     }
-    return "/" + representation.getStage().getSite().getDomain() + representation
-        .getStage().getBasePath();
+    return "/" + representation.getStage().getSite().getDomain()
+        + representation.getStage().getBasePath();
   }
 }
