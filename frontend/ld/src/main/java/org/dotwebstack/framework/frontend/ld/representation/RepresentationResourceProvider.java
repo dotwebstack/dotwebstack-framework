@@ -52,6 +52,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     informationProductIri.ifPresent(
         iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
     stageIri.ifPresent(iri -> builder.stage(stageResourceProvider.get(iri)));
+
     return builder.build();
   }
 }

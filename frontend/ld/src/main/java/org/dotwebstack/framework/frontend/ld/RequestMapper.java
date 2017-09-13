@@ -31,7 +31,6 @@ public class RequestMapper {
   }
 
   void loadRepresentations(HttpConfiguration httpConfiguration) {
-
     for (Representation representation : representationResourceProvider.getAll().values()) {
       if (representation.getStage() != null) {
         mapRepresentation(representation, httpConfiguration);
@@ -40,7 +39,6 @@ public class RequestMapper {
       }
     }
   }
-
 
   private void mapRepresentation(Representation representation,
       HttpConfiguration httpConfiguration) {
@@ -68,9 +66,11 @@ public class RequestMapper {
 
   private String createBasePath(Representation representation) {
     if (representation.getStage().getSite().isMatchAllDomain()) {
-      return "/" + PATH_DOMAIN_PARAMETER + representation.getStage().getBasePath();
+
+      return "/" + PATH_DOMAIN_PARAMETER + representation
+          .getStage().getBasePath();
     }
-    return "/" + representation.getStage().getSite().getDomain()
-        + representation.getStage().getBasePath();
+    return "/" + representation.getStage().getSite().getDomain() + representation
+        .getStage().getBasePath();
   }
 }

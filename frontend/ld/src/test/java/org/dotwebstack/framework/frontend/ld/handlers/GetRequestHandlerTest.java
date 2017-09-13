@@ -44,6 +44,7 @@ public class GetRequestHandlerTest {
     // Arrange
     when(representation.getInformationProduct()).thenReturn(informationProduct);
     when(informationProduct.getResult()).thenReturn(queryResult);
+
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getPath()).thenReturn("/");

@@ -33,6 +33,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
+
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
@@ -40,6 +41,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -70,7 +72,6 @@ public class RequestMapperTest {
   @Mock
   private Representation representation;
 
-  @Mock
   private GraphQuery graphQuery;
 
   @Mock
@@ -93,6 +94,7 @@ public class RequestMapperTest {
     stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
+
     when(backendResourceProvider.get(any())).thenReturn(backend);
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -108,12 +110,14 @@ public class RequestMapperTest {
 
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).stage(stage).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).build();
+
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     requestMapper = new RequestMapper(representationResourceProvider, supportedMediaTypesScanner);
+
   }
 
   @Test
@@ -128,6 +132,7 @@ public class RequestMapperTest {
 
   @Test
   public void mapRepresentationTest() {
+
     // Arrange
     when(supportedMediaTypesScanner.getMediaTypes(ResultType.GRAPH)).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
@@ -152,6 +157,7 @@ public class RequestMapperTest {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).build();
+
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
@@ -168,6 +174,7 @@ public class RequestMapperTest {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(null).build();
+
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
