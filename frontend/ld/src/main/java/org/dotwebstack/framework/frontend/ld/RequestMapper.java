@@ -7,7 +7,6 @@ import org.dotwebstack.framework.frontend.ld.handlers.GetRequestHandler;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +17,8 @@ public class RequestMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestMapper.class);
 
-  private final String pathDomainParameter = "{DOMAIN_PARAMETER}";
-  
+  private static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
+
   private RepresentationResourceProvider representationResourceProvider;
 
   @Autowired
@@ -45,9 +44,8 @@ public class RequestMapper {
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-      ResourceMethod.Builder methodBuilder =
-          resourceBuilder.addMethod(HttpMethod.GET)
-              .handledBy(new GetRequestHandler(representation));
+      resourceBuilder.addMethod(HttpMethod.GET)
+          .handledBy(new GetRequestHandler(representation));
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());
@@ -63,7 +61,7 @@ public class RequestMapper {
     Objects.requireNonNull(representation.getStage().getSite());
 
     if (representation.getStage().getSite().getDomain() == null) {
-      return "/" + pathDomainParameter + representation
+      return "/" + PATH_DOMAIN_PARAMETER + representation
           .getStage().getBasePath();
     } else {
       return "/" + representation.getStage().getSite().getDomain() + representation
