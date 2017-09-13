@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
@@ -127,7 +128,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
-      ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod("GET").handledBy(
+      ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
           new GetRequestHandler(informationProduct, schemaMap));
 
       produces.forEach(methodBuilder::produces);
