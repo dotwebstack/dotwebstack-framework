@@ -57,15 +57,11 @@ public class RequestMapper {
   }
 
   private String createBasePath(Representation representation) {
-    Objects.requireNonNull(representation.getStage());
-    Objects.requireNonNull(representation.getStage().getSite());
-
-    if (representation.getStage().getSite().getDomain() == null) {
+    if (representation.getStage().getSite().isMatchAllDomain()) {
       return "/" + PATH_DOMAIN_PARAMETER + representation
           .getStage().getBasePath();
-    } else {
-      return "/" + representation.getStage().getSite().getDomain() + representation
-          .getStage().getBasePath();
     }
+    return "/" + representation.getStage().getSite().getDomain() + representation
+        .getStage().getBasePath();
   }
 }
