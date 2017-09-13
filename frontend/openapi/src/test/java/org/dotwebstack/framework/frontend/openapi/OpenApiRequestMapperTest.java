@@ -23,6 +23,7 @@ import io.swagger.parser.SwaggerParser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -158,7 +159,7 @@ public class OpenApiRequestMapperTest {
             "/breweries",
             new Path().get(new Operation().vendorExtensions(
                 ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
-                    DBEERPEDIA.BREWERIES.stringValue())).response(200,
+                    DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
                         new Response().schema(schema))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
@@ -193,7 +194,7 @@ public class OpenApiRequestMapperTest {
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.TEXT_PLAIN).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
-                DBEERPEDIA.BREWERIES.stringValue())).response(200,
+                DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
                     new Response().schema(mock(Property.class)))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
@@ -213,7 +214,7 @@ public class OpenApiRequestMapperTest {
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
-                DBEERPEDIA.BREWERIES.stringValue())).response(200,
+                DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
                     new Response().schema(mock(Property.class)))));
 
     // Assert
@@ -235,8 +236,8 @@ public class OpenApiRequestMapperTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("Resource '%s' does not specify a status 200 response.",
-        "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
+    thrown.expectMessage(String.format("Resource '%s' does not specify a status %d response.",
+        "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
     requestMapper.map(httpConfiguration);
@@ -253,8 +254,8 @@ public class OpenApiRequestMapperTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("Resource '%s' does not specify a status 200 response.",
-        "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
+    thrown.expectMessage(String.format("Resource '%s' does not specify a status %d response.",
+        "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
     requestMapper.map(httpConfiguration);
@@ -266,13 +267,14 @@ public class OpenApiRequestMapperTest {
     mockDefinition().produces(MediaType.TEXT_PLAIN).host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
-                DBEERPEDIA.BREWERIES.stringValue())).response(200, new Response())));
+                DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
+                    new Response())));
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
-        String.format("Resource '%s' does not specify a schema for the status 200 response.",
-            "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
+        String.format("Resource '%s' does not specify a schema for the status %d response.",
+            "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
     requestMapper.map(httpConfiguration);
@@ -285,7 +287,7 @@ public class OpenApiRequestMapperTest {
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).produces(MediaType.APPLICATION_JSON).response(
-                    200, new Response().schema(mock(Property.class)))));
+                    Status.OK.getStatusCode(), new Response().schema(mock(Property.class)))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 
