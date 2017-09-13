@@ -51,9 +51,8 @@ public class Representation {
 
     private Stage stage;
 
-    public Builder(IRI identifier, String... urlPatterns) {
+    public Builder(IRI identifier) {
       this.identifier = Objects.requireNonNull(identifier);
-      this.urlPatterns = Arrays.asList(Objects.requireNonNull(urlPatterns));
     }
 
     public Builder informationProduct(
@@ -64,6 +63,11 @@ public class Representation {
 
     public Builder stage(Stage stage) {
       this.stage = stage;
+      return this;
+    }
+
+    public Builder urlPatterns(String... urlPatterns) {
+      this.urlPatterns = Arrays.asList(urlPatterns);
       return this;
     }
 

@@ -1,29 +1,24 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import java.util.Objects;
-import javax.annotation.PostConstruct;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dotwebstack.framework.frontend.http.HttpExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LdExtension {
+public class LdExtension implements HttpExtension {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LdExtension.class);
-
-  private HttpConfiguration httpConfiguration;
+  private RequestMapper requestMapper;
 
   @Autowired
-  public LdExtension(HttpConfiguration httpConfiguration) {
-    this.httpConfiguration = Objects.requireNonNull(httpConfiguration);
+  public LdExtension(RequestMapper requestMapper) {
+    this.requestMapper = Objects.requireNonNull(requestMapper);
   }
 
-  @PostConstruct
-  public void postLoad() {
-    // Dummy statement
-    LOG.debug(httpConfiguration.getClass().getName());
+  @Override
+  public void initialize(HttpConfiguration httpConfiguration) {
+    Objects.requireNonNull(httpConfiguration);
+    requestMapper.loadRepresentations(httpConfiguration);
   }
-
 }

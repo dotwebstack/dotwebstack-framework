@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.ld.representation;
 import java.util.Optional;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
-import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -46,20 +45,21 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     Optional<IRI> informationProductIri =
         getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP);
 
-    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP).orElseThrow(
-        () -> new ConfigurationException(
-            String.format(STATEMENT_NOT_FOUND_ERROR, ELMO.STAGE_PROP, identifier)));
+    Optional<IRI> stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP);
 
-    String urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN).orElseThrow(
-        () -> new ConfigurationException(
-            String.format(STATEMENT_NOT_FOUND_ERROR, ELMO.URL_PATTERN, identifier)));
+    Optional<String> urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN);
 
-    Representation.Builder builder = new Representation.Builder(identifier, urlPattern).stage(
-        stageResourceProvider.get(stageIri));
+    Representation.Builder builder = new Representation.Builder(identifier);
 
+    if (urlPattern.isPresent()) {
+      builder.urlPatterns(urlPattern.get());
+    }
     if (informationProductIri.isPresent()) {
       builder.informationProduct(
           informationProductResourceProvider.get(informationProductIri.get()));
+    }
+    if (stageIri.isPresent()) {
+      builder.stage(stageResourceProvider.get(stageIri.get()));
     }
     return builder.build();
   }
