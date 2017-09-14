@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfiguration {
 
   @Bean
-  public SwaggerParser swaggerParser() {
+  public SwaggerParser openApiParser() {
     return new SwaggerParser();
   }
 

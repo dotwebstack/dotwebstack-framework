@@ -19,7 +19,7 @@ public class OpenApiConfigurationTest {
   @Test
   public void testSwaggerParser() {
     // Act
-    SwaggerParser swaggerParser = openApiConfiguration.swaggerParser();
+    SwaggerParser swaggerParser = openApiConfiguration.openApiParser();
 
     // Assert
     assertThat(swaggerParser, notNullValue());

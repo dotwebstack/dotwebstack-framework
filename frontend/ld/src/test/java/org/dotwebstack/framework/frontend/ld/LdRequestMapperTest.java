@@ -53,7 +53,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 @PrepareForTest(HttpConfiguration.class)
 @RunWith(PowerMockRunner.class)
-public class RequestMapperTest {
+public class LdRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -103,7 +103,7 @@ public class RequestMapperTest {
   @Spy
   private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
 
-  private RequestMapper requestMapper;
+  private LdRequestMapper requestMapper;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
@@ -143,13 +143,13 @@ public class RequestMapperTest {
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     requestMapper =
-        new RequestMapper(representationResourceProvider);
+        new LdRequestMapper(representationResourceProvider);
   }
 
   @Test
   public void constructRequestMapperNotNullTest() {
     // Arrange/Act
-    RequestMapper requestMapper = new RequestMapper(representationResourceProvider);
+    LdRequestMapper requestMapper = new LdRequestMapper(representationResourceProvider);
 
     // Assert
     assertThat(requestMapper, not(nullValue()));

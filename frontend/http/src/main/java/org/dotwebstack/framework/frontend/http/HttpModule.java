@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.http;
 
-public interface HttpExtension {
+public interface HttpModule {
 
   void initialize(HttpConfiguration httpConfiguration);
 

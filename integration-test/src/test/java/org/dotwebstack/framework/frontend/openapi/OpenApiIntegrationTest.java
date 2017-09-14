@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
+  @Ignore
   public void getBreweryCollection() {
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().get();
@@ -52,6 +54,7 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
+  @Ignore
   public void getBrewery() {
     // Act
     Response response = target.path(String.format("/dbp/api/v1/breweries/%s",
@@ -77,6 +80,7 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
+  @Ignore
   public void headMethod() {
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().head();
