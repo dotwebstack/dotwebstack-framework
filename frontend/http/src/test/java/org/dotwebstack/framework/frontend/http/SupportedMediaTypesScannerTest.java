@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld;
+package org.dotwebstack.framework.frontend.http;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -37,6 +37,7 @@ public class SupportedMediaTypesScannerTest {
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.GRAPH)),
         hasItems(MediaType.valueOf("text/turtle")));
+    assertThat(scanner.getSparqlProviders().size(), equalTo(1));
   }
 
   @Test
@@ -49,10 +50,11 @@ public class SupportedMediaTypesScannerTest {
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.TUPLE)),
         hasItems(MediaType.valueOf("application/sparql-results+json")));
+    assertThat(scanner.getSparqlProviders().size(), equalTo(1));
   }
 
   @Test
-  public void throwsForUnsupportedResultType() {
+  public void ignoresForUnsupportedResultType() {
     // Arrange & Act
     SupportedMediaTypesScanner scanner =
         new SupportedMediaTypesScanner(Collections.singletonList(unsupportedGraphWriter),
@@ -61,6 +63,7 @@ public class SupportedMediaTypesScannerTest {
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(0));
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
+    assertThat(scanner.getSparqlProviders().size(), equalTo(0));
   }
 
 }

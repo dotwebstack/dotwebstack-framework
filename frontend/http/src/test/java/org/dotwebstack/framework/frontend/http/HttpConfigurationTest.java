@@ -4,8 +4,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Collections;
+import org.dotwebstack.framework.frontend.http.provider.graph.TurtleGraphMessageBodyWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -20,17 +23,20 @@ public class HttpConfigurationTest {
   @Mock
   private HttpModule moduleB;
 
+  @Mock
+  private SupportedMediaTypesScanner supportedMediaTypesScanner;
+
   @Test
   public void noErrorsWithoutExtensions() {
     // Act & assert
-    new HttpConfiguration(ImmutableList.of(), ImmutableList.of(), ImmutableList.of());
+    new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
   }
 
   @Test
   public void modulesInitialized() {
     // Act
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB),
-        ImmutableList.of(), ImmutableList.of());
+    HttpConfiguration httpConfiguration =
+        new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
 
     // Assert
     verify(moduleA).initialize(httpConfiguration);
@@ -41,14 +47,15 @@ public class HttpConfigurationTest {
   public void resourceNotAlreadyRegisteredTest() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB),
-        ImmutableList.of(), ImmutableList.of());
+    HttpConfiguration httpConfiguration =
+        new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
     org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
         org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
-    // Assert
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
+
     // Act
     httpConfiguration.registerResources(resourceBuilder.build());
+
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
   }
@@ -57,17 +64,33 @@ public class HttpConfigurationTest {
   public void resourceAlreadyRegisteredTest() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB),
-        ImmutableList.of(), ImmutableList.of());
+    HttpConfiguration httpConfiguration =
+        new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
     org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
         org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
-    // Assert
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
+
     // Act
     httpConfiguration.registerResources(resourceBuilder.build());
+
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(true));
+  }
+
+
+  @Test
+  public void registersSparqlProviders() {
+    // Arrange
+    when(supportedMediaTypesScanner.getSparqlProviders()).thenReturn(
+        Collections.singletonList(new TurtleGraphMessageBodyWriter()));
+
+    // Act
+    HttpConfiguration httpConfiguration =
+        new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
+
+    // Assert
+    assertThat(httpConfiguration.getInstances(), hasSize(1));
   }
 
 }

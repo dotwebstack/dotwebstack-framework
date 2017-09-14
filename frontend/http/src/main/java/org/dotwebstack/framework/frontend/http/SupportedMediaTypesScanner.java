@@ -1,7 +1,9 @@
-package org.dotwebstack.framework.frontend.ld;
+package org.dotwebstack.framework.frontend.http;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -23,14 +25,20 @@ public class SupportedMediaTypesScanner {
 
   private List<MediaType> tupleMediaTypes = new ArrayList<>();
 
+  private List<MessageBodyWriter<GraphQueryResult>> graphQueryWriters = new ArrayList<>();
+
+  private List<MessageBodyWriter<TupleQueryResult>> tupleQueryWriters = new ArrayList<>();
+
   @Autowired
   public SupportedMediaTypesScanner(List<MessageBodyWriter<GraphQueryResult>> graphQueryWriters,
       List<MessageBodyWriter<TupleQueryResult>> tupleQueryWriters) {
-    loadSupportedMediaTypes(graphQueryWriters, graphMediaTypes);
-    loadSupportedMediaTypes(tupleQueryWriters, tupleMediaTypes);
+    loadSupportedMediaTypes(graphQueryWriters, graphMediaTypes, this.graphQueryWriters);
+    loadSupportedMediaTypes(tupleQueryWriters, tupleMediaTypes, this.tupleQueryWriters);
   }
 
-  void loadSupportedMediaTypes(List sparqlProviders, List<MediaType> list) {
+  private <T> void loadSupportedMediaTypes(List<MessageBodyWriter<T>> sparqlProviders,
+      List<MediaType> list, List<MessageBodyWriter<T>> resultingList) {
+
     sparqlProviders.forEach(writer -> {
       Class<?> sparqlProviderClass = writer.getClass();
       SparqlProvider providerAnnotation = sparqlProviderClass.getAnnotation(SparqlProvider.class);
@@ -49,6 +57,7 @@ public class SupportedMediaTypesScanner {
       }
 
       addMediaTypes(list, produceAnnotation);
+      resultingList.add(writer);
       LOG.info("Registered %s provider for results.");
     });
   }
@@ -59,7 +68,7 @@ public class SupportedMediaTypesScanner {
     }
   }
 
-  MediaType[] getMediaTypes(ResultType type) {
+  public MediaType[] getMediaTypes(ResultType type) {
     switch (type) {
       case GRAPH:
         return graphMediaTypes.toArray(new MediaType[0]);
@@ -69,5 +78,10 @@ public class SupportedMediaTypesScanner {
         throw new NotSupportedException(
             String.format("ResultType %s has no supported media types", type));
     }
+  }
+
+  public List<MessageBodyWriter<?>> getSparqlProviders() {
+    return Stream.concat(graphQueryWriters.stream(), tupleQueryWriters.stream()).collect(
+        Collectors.toList());
   }
 }
