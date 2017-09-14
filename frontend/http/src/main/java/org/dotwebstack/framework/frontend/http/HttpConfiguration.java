@@ -15,6 +15,8 @@ public class HttpConfiguration extends ResourceConfig {
   @Autowired
   public HttpConfiguration(List<HttpExtension> httpExtensions) {
     super();
+    packages("org.dotwebstack.framework.frontend.http");
+
     register(ObjectMapperProvider.class);
     register(HostPreMatchingRequestFilter.class);
     property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(robots.txt|(assets|webjars)/.*)");
