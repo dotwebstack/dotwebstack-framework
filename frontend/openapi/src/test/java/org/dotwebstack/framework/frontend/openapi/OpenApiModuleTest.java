@@ -15,57 +15,57 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OpenApiExtensionTest {
+public class OpenApiModuleTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private SwaggerImporter swaggerImporter;
+  private OpenApiRequestMapper requestMapper;
 
   @Mock
   private HttpConfiguration httpConfiguration;
 
-  private OpenApiExtension openApiExtension;
+  private OpenApiModule openApiModule;
 
   @Before
   public void setUp() {
-    openApiExtension = new OpenApiExtension(swaggerImporter);
+    openApiModule = new OpenApiModule(requestMapper);
   }
 
   @Test
   public void importDefinitions() throws IOException {
     // Act
-    openApiExtension.initialize(httpConfiguration);
+    openApiModule.initialize(httpConfiguration);
 
     // Assert
-    verify(swaggerImporter).importDefinitions(httpConfiguration);
+    verify(requestMapper).map(httpConfiguration);
   }
 
   @Test
   public void importDefinitionsFailedIO() throws IOException {
     // Arrange
-    doThrow(IOException.class).when(swaggerImporter).importDefinitions(httpConfiguration);
+    doThrow(IOException.class).when(requestMapper).map(httpConfiguration);
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Failed loading OpenAPI definitions.");
 
     // Act
-    openApiExtension.initialize(httpConfiguration);
+    openApiModule.initialize(httpConfiguration);
   }
 
   @Test
   public void importDefinitionsFailedConfiguration() throws IOException {
     // Arrange
-    doThrow(ConfigurationException.class).when(swaggerImporter).importDefinitions(
+    doThrow(ConfigurationException.class).when(requestMapper).map(
         httpConfiguration);
 
     // Assert
     thrown.expect(ConfigurationException.class);
 
     // Act
-    openApiExtension.initialize(httpConfiguration);
+    openApiModule.initialize(httpConfiguration);
   }
 
 }

@@ -13,16 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RequestMapper {
+public class LdRequestMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RequestMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LdRequestMapper.class);
 
   private static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
 
   private RepresentationResourceProvider representationResourceProvider;
 
   @Autowired
-  public RequestMapper(RepresentationResourceProvider representationResourceProvider) {
+  public LdRequestMapper(RepresentationResourceProvider representationResourceProvider) {
     this.representationResourceProvider = Objects.requireNonNull(representationResourceProvider);
   }
 
