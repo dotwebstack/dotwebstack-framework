@@ -34,10 +34,9 @@ public class SupportedMediaTypesScanner {
     Set<BeanDefinition> sparqlProviderBeans = scanner.findCandidateComponents("org.dotwebstack");
     for (BeanDefinition sparlProviderBean : sparqlProviderBeans) {
       try {
-        Class sparqlProviderClass = Class.forName(sparlProviderBean.getBeanClassName());
-        SparqlProvider providerAnnotation =
-            (SparqlProvider) sparqlProviderClass.getAnnotation(SparqlProvider.class);
-        Produces produceAnnotation = (Produces) sparqlProviderClass.getAnnotation(Produces.class);
+        Class<?> sparqlProviderClass = Class.forName(sparlProviderBean.getBeanClassName());
+        SparqlProvider providerAnnotation = sparqlProviderClass.getAnnotation(SparqlProvider.class);
+        Produces produceAnnotation = sparqlProviderClass.getAnnotation(Produces.class);
 
         if (providerAnnotation.resultType() == ResultType.GRAPH) {
           addMediaTypes(graphMediaTypes, produceAnnotation);

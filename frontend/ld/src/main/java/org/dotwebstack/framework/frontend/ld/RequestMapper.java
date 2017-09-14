@@ -53,8 +53,6 @@ public class RequestMapper {
               supportedMediaTypeScanner.getMediaTypes(
                   representation.getInformationProduct().getResultType()));
 
-      representation.getInformationProduct().getResultType();
-
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());
         LOG.debug("Mapped GET operation for request path {}", absolutePath);
@@ -67,10 +65,9 @@ public class RequestMapper {
   private String createBasePath(Representation representation) {
     if (representation.getStage().getSite().isMatchAllDomain()) {
 
-      return "/" + PATH_DOMAIN_PARAMETER + representation
-          .getStage().getBasePath();
+      return "/" + PATH_DOMAIN_PARAMETER + representation.getStage().getBasePath();
     }
-    return "/" + representation.getStage().getSite().getDomain() + representation
-        .getStage().getBasePath();
+    return "/" + representation.getStage().getSite().getDomain()
+        + representation.getStage().getBasePath();
   }
 }
