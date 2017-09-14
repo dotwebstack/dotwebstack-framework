@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
@@ -42,7 +43,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -80,11 +80,9 @@ public class LdRequestMapperTest {
   @Mock
   private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
-  @Spy
-  private HttpConfiguration httpConfiguration =
-      new HttpConfiguration(ImmutableList.of(), ImmutableList.of(), ImmutableList.of());
-
   private LdRequestMapper requestMapper;
+
+  private HttpConfiguration httpConfiguration;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
@@ -114,7 +112,11 @@ public class LdRequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
+    when(supportedMediaTypesScanner.getSparqlProviders()).thenReturn(new ArrayList<>());
+
     requestMapper = new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
+
+    httpConfiguration = new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
   }
 
   @Test
