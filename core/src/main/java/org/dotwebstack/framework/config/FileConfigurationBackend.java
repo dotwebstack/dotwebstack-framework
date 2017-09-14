@@ -50,9 +50,17 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   @PostConstruct
   public void loadResources() throws IOException {
-    Resource[] projectResources =
-        ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-            "classpath:model/**");
+
+    Resource[] projectResources;
+    if (ldt_config_location != null && !ldt_config_location.equals("")) {
+      projectResources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+          .getResources(
+              "file:" + ldt_config_location);
+    } else {
+      projectResources =
+          ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
+              "classpath:model/**");
+    }
 
     if (projectResources.length == 0) {
       LOG.info("No configuration files found");
