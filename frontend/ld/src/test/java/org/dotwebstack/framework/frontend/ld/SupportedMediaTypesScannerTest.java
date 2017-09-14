@@ -5,59 +5,62 @@ import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.util.Arrays;
+import java.util.Collections;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.MessageBodyWriter;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.http.provider.graph.TurtleGraphMessageBodyWriter;
+import org.dotwebstack.framework.frontend.http.provider.tuple.SparqlResultsJsonMessageBodyWriter;
+import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SupportedMediaTypesScannerTest {
 
-  public ExpectedException thrown = ExpectedException.none();
+  @Mock
+  private MessageBodyWriter<GraphQueryResult> unsupportedGraphWriter;
+
+  @Mock
+  private MessageBodyWriter<TupleQueryResult> unsupportedTupleWriter;
 
   @Test
   public void findsSupportedGraphProviders() {
-    // Arrange
-    SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner();
-
-    // Act
-    scanner.loadSupportedMediaTypes();
+    // Arrange & Act
+    SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(
+        Collections.singletonList(new TurtleGraphMessageBodyWriter()), Collections.emptyList());
 
     // Assert
-    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(4));
+    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.GRAPH)),
-        hasItems(MediaType.valueOf("text/turtle"), MediaType.valueOf("application/trig"),
-            MediaType.valueOf("application/ld+json"), MediaType.valueOf("application/rdf+xml")));
+        hasItems(MediaType.valueOf("text/turtle")));
   }
 
   @Test
   public void findsSupportedTupleProviders() {
-    // Arrange
-    SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner();
-
-    // Act
-    scanner.loadSupportedMediaTypes();
+    // Arrange & Act
+    SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(Collections.emptyList(),
+        Collections.singletonList(new SparqlResultsJsonMessageBodyWriter()));
 
     // Assert
-    assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(2));
+    assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.TUPLE)),
-        hasItems(MediaType.valueOf("application/sparql-results+json"),
-            MediaType.valueOf("application/sparql-results+xml")));
+        hasItems(MediaType.valueOf("application/sparql-results+json")));
   }
 
   @Test
   public void throwsForUnsupportedResultType() {
-    // Arrange
-    SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner();
+    // Arrange & Act
+    SupportedMediaTypesScanner scanner =
+        new SupportedMediaTypesScanner(Collections.singletonList(unsupportedGraphWriter),
+            Collections.singletonList(unsupportedTupleWriter));
 
     // Assert
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("bla");
-
-    // Act
-    scanner.loadSupportedMediaTypes();
+    assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(0));
+    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
   }
 
 }

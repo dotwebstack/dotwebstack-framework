@@ -80,7 +80,8 @@ public class LdRequestMapperTest {
   private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Spy
-  private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
+  private HttpConfiguration httpConfiguration =
+      new HttpConfiguration(ImmutableList.of(), ImmutableList.of(), ImmutableList.of());
 
   private LdRequestMapper requestMapper;
 

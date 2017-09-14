@@ -23,13 +23,14 @@ public class HttpConfigurationTest {
   @Test
   public void noErrorsWithoutExtensions() {
     // Act & assert
-    new HttpConfiguration(ImmutableList.of());
+    new HttpConfiguration(ImmutableList.of(), ImmutableList.of(), ImmutableList.of());
   }
 
   @Test
   public void modulesInitialized() {
     // Act
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB),
+        ImmutableList.of(), ImmutableList.of());
 
     // Assert
     verify(moduleA).initialize(httpConfiguration);
@@ -40,7 +41,8 @@ public class HttpConfigurationTest {
   public void resourceNotAlreadyRegisteredTest() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB),
+        ImmutableList.of(), ImmutableList.of());
     org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
         org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
     // Assert
@@ -55,7 +57,8 @@ public class HttpConfigurationTest {
   public void resourceAlreadyRegisteredTest() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB),
+        ImmutableList.of(), ImmutableList.of());
     org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
         org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
     // Assert
