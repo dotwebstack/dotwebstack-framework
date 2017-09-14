@@ -9,4 +9,5 @@ public interface Backend {
   IRI getIdentifier();
 
   InformationProduct createInformationProduct(IRI identifier, String label, Model statements);
+
 }

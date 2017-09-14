@@ -7,11 +7,18 @@ import org.eclipse.rdf4j.model.IRI;
 
 public class SparqlBackendInformationProduct extends AbstractInformationProduct {
 
-  private final SparqlBackend backend;
+  private SparqlBackend backend;
 
-  private final String query;
+  private String query;
 
-  private final QueryEvaluator queryEvaluator;
+  private QueryEvaluator queryEvaluator;
+
+  public SparqlBackendInformationProduct(Builder builder) {
+    super(builder.identifier, builder.label, builder.resultType);
+    this.backend = builder.backend;
+    this.query = builder.query;
+    this.queryEvaluator = builder.queryEvaluator;
+  }
 
   public String getQuery() {
     return query;
@@ -20,13 +27,6 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   @Override
   public Object getResult() {
     return queryEvaluator.evaluate(backend.getConnection(), query);
-  }
-
-  public SparqlBackendInformationProduct(Builder builder) {
-    super(builder.identifier, builder.label, builder.resultType);
-    this.backend = builder.backend;
-    this.query = builder.query;
-    this.queryEvaluator = builder.queryEvaluator;
   }
 
   public static class Builder {
