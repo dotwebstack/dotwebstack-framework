@@ -14,6 +14,7 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -27,6 +28,9 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
   private SailRepository repository;
 
   private ResourceLoader resourceLoader;
+
+  @Value("${ldt.config.location}")
+  private String ldt_config_location;
 
   public FileConfigurationBackend(Resource elmoConfiguration, SailRepository repository) {
     this.elmoConfiguration = Objects.requireNonNull(elmoConfiguration);
