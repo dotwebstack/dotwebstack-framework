@@ -7,8 +7,6 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.util.Models;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +30,6 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
 
   @Override
   protected Site createResource(Model model, IRI identifier) {
-    Models.objectIRI(model.filter(identifier, RDF.TYPE, null)).orElseThrow(
-        () -> new ConfigurationException(String.format(
-            "No <%s> statement has been found for site <%s>.", RDF.TYPE, identifier)));
-
     Site.Builder builder = new Site.Builder(identifier);
     Optional<String> domain = getObjectString(model, identifier, ELMO.DOMAIN);
 

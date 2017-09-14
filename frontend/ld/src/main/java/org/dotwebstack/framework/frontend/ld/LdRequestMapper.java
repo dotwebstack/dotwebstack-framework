@@ -13,24 +13,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RequestMapper {
+public class LdRequestMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RequestMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LdRequestMapper.class);
 
   private static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
 
-  private final RepresentationResourceProvider representationResourceProvider;
-
-  private final SupportedMediaTypesScanner supportedMediaTypeScanner;
+  private RepresentationResourceProvider representationResourceProvider;
 
   @Autowired
-  public RequestMapper(RepresentationResourceProvider representationResourceProvider,
-      SupportedMediaTypesScanner supportedMediaTypeScanner) {
+  public LdRequestMapper(RepresentationResourceProvider representationResourceProvider) {
     this.representationResourceProvider = Objects.requireNonNull(representationResourceProvider);
-    this.supportedMediaTypeScanner = supportedMediaTypeScanner;
   }
 
-  void loadRepresentations(HttpConfiguration httpConfiguration) {
+  public void loadRepresentations(HttpConfiguration httpConfiguration) {
     for (Representation representation : representationResourceProvider.getAll().values()) {
       if (representation.getStage() != null) {
         mapRepresentation(representation, httpConfiguration);
@@ -48,10 +44,8 @@ public class RequestMapper {
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-      resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          new GetRequestHandler(representation)).produces(
-              supportedMediaTypeScanner.getMediaTypes(
-                  representation.getInformationProduct().getResultType()));
+      resourceBuilder.addMethod(HttpMethod.GET)
+          .handledBy(new GetRequestHandler(representation));
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());
@@ -64,10 +58,10 @@ public class RequestMapper {
 
   private String createBasePath(Representation representation) {
     if (representation.getStage().getSite().isMatchAllDomain()) {
-
-      return "/" + PATH_DOMAIN_PARAMETER + representation.getStage().getBasePath();
+      return "/" + PATH_DOMAIN_PARAMETER + representation
+          .getStage().getBasePath();
     }
-    return "/" + representation.getStage().getSite().getDomain()
-        + representation.getStage().getBasePath();
+    return "/" + representation.getStage().getSite().getDomain() + representation
+        .getStage().getBasePath();
   }
 }

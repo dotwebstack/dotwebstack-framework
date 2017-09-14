@@ -7,19 +7,19 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class LdExtensionTest {
+public class LdModuleTest {
 
   @Mock
   private HttpConfiguration httpConfiguration;
 
   @Mock
-  private RequestMapper requestMapper;
+  private LdRequestMapper requestMapper;
 
-  private LdExtension ldExtension;
+  private LdModule ldModule;
 
   @Test
   public void setUp() {
-    ldExtension = new LdExtension(requestMapper);
-    ldExtension.initialize(httpConfiguration);
+    ldModule = new LdModule(requestMapper);
+    ldModule.initialize(httpConfiguration);
   }
 }

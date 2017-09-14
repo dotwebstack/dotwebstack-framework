@@ -15,53 +15,53 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class HttpConfigurationTest {
 
   @Mock
-  private HttpExtension extensionA;
+  private HttpModule moduleA;
 
   @Mock
-  private HttpExtension extensionB;
+  private HttpModule moduleB;
 
   @Test
   public void noErrorsWithoutExtensions() {
-    // Act & Assert
+    // Act & assert
     new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
-  public void extensionsInitialized() {
+  public void modulesInitialized() {
     // Act
-    HttpConfiguration httpConfiguration =
-        new HttpConfiguration(ImmutableList.of(extensionA, extensionB));
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
 
     // Assert
-    verify(extensionA).initialize(httpConfiguration);
-    verify(extensionB).initialize(httpConfiguration);
+    verify(moduleA).initialize(httpConfiguration);
+    verify(moduleB).initialize(httpConfiguration);
   }
 
   @Test
   public void resourceNotAlreadyRegisteredTest() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-
-    // Act
-    HttpConfiguration httpConfiguration =
-        new HttpConfiguration(ImmutableList.of(extensionA, extensionB));
-
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
+    org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
+        org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
     // Assert
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
+    // Act
+    httpConfiguration.registerResources(resourceBuilder.build());
+    // Assert
+    assertThat(httpConfiguration.getResources(), hasSize(1));
   }
 
   @Test
   public void resourceAlreadyRegisteredTest() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    HttpConfiguration httpConfiguration =
-        new HttpConfiguration(ImmutableList.of(extensionA, extensionB));
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
     org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
         org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
-
+    // Assert
+    assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
     // Act
     httpConfiguration.registerResources(resourceBuilder.build());
-
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(true));
