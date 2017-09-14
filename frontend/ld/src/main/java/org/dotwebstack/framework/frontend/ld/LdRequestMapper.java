@@ -19,11 +19,15 @@ public class LdRequestMapper {
 
   private static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
 
-  private RepresentationResourceProvider representationResourceProvider;
+  private final RepresentationResourceProvider representationResourceProvider;
+
+  private final SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Autowired
-  public LdRequestMapper(RepresentationResourceProvider representationResourceProvider) {
+  public LdRequestMapper(RepresentationResourceProvider representationResourceProvider,
+      SupportedMediaTypesScanner supportedMediaTypesScanner) {
     this.representationResourceProvider = Objects.requireNonNull(representationResourceProvider);
+    this.supportedMediaTypesScanner = supportedMediaTypesScanner;
   }
 
   public void loadRepresentations(HttpConfiguration httpConfiguration) {
@@ -44,8 +48,10 @@ public class LdRequestMapper {
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-      resourceBuilder.addMethod(HttpMethod.GET)
-          .handledBy(new GetRequestHandler(representation));
+      resourceBuilder.addMethod(HttpMethod.GET).handledBy(
+          new GetRequestHandler(representation)).produces(
+              supportedMediaTypesScanner.getMediaTypes(
+                  representation.getInformationProduct().getResultType()));
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());
@@ -58,10 +64,9 @@ public class LdRequestMapper {
 
   private String createBasePath(Representation representation) {
     if (representation.getStage().getSite().isMatchAllDomain()) {
-      return "/" + PATH_DOMAIN_PARAMETER + representation
-          .getStage().getBasePath();
+      return "/" + PATH_DOMAIN_PARAMETER + representation.getStage().getBasePath();
     }
-    return "/" + representation.getStage().getSite().getDomain() + representation
-        .getStage().getBasePath();
+    return "/" + representation.getStage().getSite().getDomain()
+        + representation.getStage().getBasePath();
   }
 }

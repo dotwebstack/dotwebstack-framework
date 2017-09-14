@@ -96,7 +96,7 @@ public class LdIntegrationTest {
     SparqlHttpStub.returnModel(model);
 
     // Act
-    Response response = target.path("/dbp/ld/v1/breweries").request().head();
+    Response response = target.path("/dbp/ld/v1/breweries").request("application/ld+json").head();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));

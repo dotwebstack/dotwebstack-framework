@@ -9,24 +9,22 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsNot.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
-import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
-import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -35,8 +33,6 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
@@ -44,8 +40,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -57,9 +51,6 @@ public class LdRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
-
-  @Captor
-  private ArgumentCaptor<Resource> resourceCaptor;
 
   @Mock
   private BackendResourceProvider backendResourceProvider;
@@ -77,19 +68,7 @@ public class LdRequestMapperTest {
   private InformationProduct informationProduct;
 
   @Mock
-  private InformationProductResourceProvider informationProductResourceProvider;
-
-  @Mock
-  private AbstractInformationProduct abstractInformationProduct;
-
-  @Mock
   private Representation representation;
-
-  @Mock
-  private SailRepository configurationRepository;
-
-  @Mock
-  private SailRepositoryConnection configurationRepositoryConnection;
 
   @Mock
   private GraphQuery graphQuery;
@@ -98,7 +77,7 @@ public class LdRequestMapperTest {
   private RepresentationResourceProvider representationResourceProvider;
 
   @Mock
-  private ConfigurationBackend configurationBackend;
+  private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Spy
   private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
@@ -109,16 +88,10 @@ public class LdRequestMapperTest {
 
   @Before
   public void setUp() {
-    site = new Site.Builder(DBEERPEDIA.BREWERIES)
-        .domain(DBEERPEDIA.DOMAIN.stringValue())
-        .build();
+    site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
 
-    stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site)
-        .basePath(DBEERPEDIA.BASE_PATH.stringValue())
-        .build();
-
-    informationProductResourceProvider =
-        new InformationProductResourceProvider(configurationBackend, backendResourceProvider);
+    stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
+        DBEERPEDIA.BASE_PATH.stringValue()).build();
 
     when(backendResourceProvider.get(any())).thenReturn(backend);
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
@@ -128,28 +101,25 @@ public class LdRequestMapperTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND))));
 
-    informationProduct = mock(InformationProduct.class);
+    when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
         any())).thenReturn(informationProduct);
 
-    representation = new Representation.Builder(DBEERPEDIA.BREWERIES)
-        .informationProduct(informationProduct)
-        .stage(stage)
-        .urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE)
-        .build();
+    representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
+        informationProduct).stage(stage).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
-    requestMapper =
-        new LdRequestMapper(representationResourceProvider);
+    requestMapper = new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
   }
 
   @Test
   public void constructRequestMapperNotNullTest() {
     // Arrange/Act
-    LdRequestMapper requestMapper = new LdRequestMapper(representationResourceProvider);
+    LdRequestMapper requestMapper =
+        new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
 
     // Assert
     assertThat(requestMapper, not(nullValue()));
@@ -157,18 +127,19 @@ public class LdRequestMapperTest {
 
   @Test
   public void mapRepresentationTest() {
+    // Arrange
+    when(supportedMediaTypesScanner.getMediaTypes(ResultType.GRAPH)).thenReturn(
+        new MediaType[] {MediaType.valueOf("text/turtle")});
+
     // Act
     requestMapper.loadRepresentations(httpConfiguration);
 
-    // Arrange
+    // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
     ResourceMethod method = resource.getResourceMethods().get(0);
-
-    // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
-    assertThat(resource.getPath(),
-        equalTo("/" + DBEERPEDIA.ORG_HOST + DBEERPEDIA.BASE_PATH.getLabel()
-            + DBEERPEDIA.URL_PATTERN_VALUE));
+    assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
+        + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.URL_PATTERN_VALUE));
     assertThat(resource.getResourceMethods(), hasSize(1));
     assertThat(method.getHttpMethod(), equalTo(GET));
   }
@@ -176,10 +147,8 @@ public class LdRequestMapperTest {
   @Test
   public void mapRepresentationWithoutStageTest() {
     // Arrange
-    representation = new Representation.Builder(DBEERPEDIA.BREWERIES)
-        .informationProduct(informationProduct)
-        .urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE)
-        .build();
+    representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
+        informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
@@ -194,11 +163,8 @@ public class LdRequestMapperTest {
   @Test
   public void mapRepresentationWithNullStageTest() {
     // Arrange
-    representation = new Representation.Builder(DBEERPEDIA.BREWERIES)
-        .informationProduct(informationProduct)
-        .urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE)
-        .stage(null)
-        .build();
+    representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
+        informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(null).build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
