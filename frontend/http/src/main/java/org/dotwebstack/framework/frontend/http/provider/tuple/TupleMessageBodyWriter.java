@@ -42,4 +42,5 @@ public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQ
     TupleQueryResultWriter writer = createWriter(outputStream);
     QueryResults.report(tupleQueryResult, writer);
   }
+
 }
