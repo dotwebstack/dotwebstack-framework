@@ -93,13 +93,6 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
         return;
       }
 
-      IRI informationProductIdentifier =
-          valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
-              OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
-
-      InformationProduct informationProduct =
-          informationProductResourceProvider.get(informationProductIdentifier);
-
       String okStatusCode = Integer.toString(Status.OK.getStatusCode());
 
       if (getOperation.getResponses() == null
@@ -127,6 +120,13 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
       // Will eventually be replaced by OASv3 Content object
       Map<String, Property> schemaMap =
           produces.stream().collect(Collectors.toMap(Functions.identity(), mediaType -> schema));
+
+      IRI informationProductIdentifier =
+          valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
+              OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
+
+      InformationProduct informationProduct =
+          informationProductResourceProvider.get(informationProductIdentifier);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 

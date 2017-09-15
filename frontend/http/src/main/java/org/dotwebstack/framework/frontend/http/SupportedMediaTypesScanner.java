@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.http;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.ws.rs.NotSupportedException;
@@ -33,8 +34,10 @@ public class SupportedMediaTypesScanner {
   @Autowired
   public SupportedMediaTypesScanner(List<MessageBodyWriter<GraphQueryResult>> graphQueryWriters,
       List<MessageBodyWriter<TupleQueryResult>> tupleQueryWriters) {
-    loadSupportedMediaTypes(graphQueryWriters, graphMediaTypes, this.graphQueryWriters);
-    loadSupportedMediaTypes(tupleQueryWriters, tupleMediaTypes, this.tupleQueryWriters);
+    loadSupportedMediaTypes(Objects.requireNonNull(graphQueryWriters), graphMediaTypes,
+        this.graphQueryWriters);
+    loadSupportedMediaTypes(Objects.requireNonNull(tupleQueryWriters), tupleMediaTypes,
+        this.tupleQueryWriters);
   }
 
   private <T> void loadSupportedMediaTypes(List<MessageBodyWriter<T>> sparqlProviders,
@@ -44,12 +47,15 @@ public class SupportedMediaTypesScanner {
       Class<?> sparqlProviderClass = writer.getClass();
       SparqlProvider providerAnnotation = sparqlProviderClass.getAnnotation(SparqlProvider.class);
       Produces produceAnnotation = sparqlProviderClass.getAnnotation(Produces.class);
+
       if (providerAnnotation == null) {
         LOG.warn(String.format(
-            "Found writer that did not specify the SparqlProvider annotation correctly. Skipping %s",
+            "Found writer that did not specify the SparqlProvider annotation correctly."
+                + " Skipping %s",
             writer.getClass()));
         return;
       }
+
       if (produceAnnotation == null) {
         LOG.warn(String.format(
             "Found writer that did not specify the Produce annotation correctly. Skipping %s",
@@ -85,4 +91,5 @@ public class SupportedMediaTypesScanner {
     return Stream.concat(graphQueryWriters.stream(), tupleQueryWriters.stream()).collect(
         Collectors.toList());
   }
+
 }
