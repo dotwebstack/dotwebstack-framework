@@ -28,6 +28,9 @@ public class MediaTypes {
 
   public static final MediaType SPARQL_RESULTS_XML_TYPE = MediaType.valueOf(SPARQL_RESULTS_XML);
 
-  private MediaTypes() {}
+  private MediaTypes() {
+    throw new IllegalStateException(
+        String.format("%s is not meant to be instantiated.", MediaTypes.class));
+  }
 
 }
