@@ -14,8 +14,11 @@ import org.springframework.stereotype.Service;
 public class HttpConfiguration extends ResourceConfig {
 
   @Autowired
-  public HttpConfiguration(List<HttpModule> httpModules) {
+  public HttpConfiguration(List<HttpModule> httpModules,
+      SupportedMediaTypesScanner supportedMediaTypesScanner) {
     super();
+    supportedMediaTypesScanner.getSparqlProviders().forEach(this::register);
+
     register(ObjectMapperProvider.class);
     register(HostPreMatchingRequestFilter.class);
     property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(robots.txt|(assets|webjars)/.*)");

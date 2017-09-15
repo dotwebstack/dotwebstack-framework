@@ -16,9 +16,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepresentationResourceProvider extends AbstractResourceProvider<Representation> {
 
-  public static final String STATEMENT_NOT_FOUND_ERROR =
-      "No <%s> statement has been found for representation <%s>.";
-
   private InformationProductResourceProvider informationProductResourceProvider;
 
   private StageResourceProvider stageResourceProvider;
@@ -51,16 +48,11 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
     Representation.Builder builder = new Representation.Builder(identifier);
 
-    if (urlPattern.isPresent()) {
-      builder.urlPatterns(urlPattern.get());
-    }
-    if (informationProductIri.isPresent()) {
-      builder.informationProduct(
-          informationProductResourceProvider.get(informationProductIri.get()));
-    }
-    if (stageIri.isPresent()) {
-      builder.stage(stageResourceProvider.get(stageIri.get()));
-    }
+    urlPattern.ifPresent(builder::urlPatterns);
+    informationProductIri.ifPresent(
+        iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
+    stageIri.ifPresent(iri -> builder.stage(stageResourceProvider.get(iri)));
+
     return builder.build();
   }
 }
