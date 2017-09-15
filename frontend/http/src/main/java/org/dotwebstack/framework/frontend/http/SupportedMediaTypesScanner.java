@@ -87,7 +87,7 @@ public class SupportedMediaTypesScanner {
     }
   }
 
-  public List<MessageBodyWriter<?>> getSparqlProviders() {
+  public List<MessageBodyWriter> getSparqlProviders() {
     return Stream.concat(graphQueryWriters.stream(), tupleQueryWriters.stream()).collect(
         Collectors.toList());
   }
