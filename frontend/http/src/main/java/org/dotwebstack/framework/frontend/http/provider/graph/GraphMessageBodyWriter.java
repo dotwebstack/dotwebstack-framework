@@ -17,7 +17,7 @@ public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQ
 
   private final RDFFormat format;
 
-  GraphMessageBodyWriter(RDFFormat format) {
+  protected GraphMessageBodyWriter(RDFFormat format) {
     this.format = format;
   }
 

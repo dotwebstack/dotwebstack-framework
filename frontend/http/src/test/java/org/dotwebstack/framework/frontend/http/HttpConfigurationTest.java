@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
-import org.dotwebstack.framework.frontend.http.provider.graph.TurtleGraphMessageBodyWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -83,7 +82,7 @@ public class HttpConfigurationTest {
   public void registersSparqlProviders() {
     // Arrange
     when(supportedMediaTypesScanner.getSparqlProviders()).thenReturn(
-        Collections.singletonList(new TurtleGraphMessageBodyWriter()));
+        Collections.singletonList(new SupportedMediaTypesScannerTest.StubGraphMessageBodyWriter()));
 
     // Act
     HttpConfiguration httpConfiguration =
@@ -92,5 +91,4 @@ public class HttpConfigurationTest {
     // Assert
     assertThat(httpConfiguration.getInstances(), hasSize(1));
   }
-
 }

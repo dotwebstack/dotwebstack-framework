@@ -1,18 +1,24 @@
 package org.dotwebstack.framework.frontend.http;
 
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.Produces;
 import javax.ws.rs.ext.MessageBodyWriter;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.frontend.http.provider.graph.TurtleGraphMessageBodyWriter;
-import org.dotwebstack.framework.frontend.http.provider.tuple.SparqlResultsJsonMessageBodyWriter;
+import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
+import org.dotwebstack.framework.frontend.http.provider.SparqlProvider;
+import org.dotwebstack.framework.frontend.http.provider.graph.GraphMessageBodyWriter;
+import org.dotwebstack.framework.frontend.http.provider.tuple.TupleMessageBodyWriter;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
+import org.eclipse.rdf4j.rio.RDFFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -31,12 +37,12 @@ public class SupportedMediaTypesScannerTest {
   public void findsSupportedGraphProviders() {
     // Arrange & Act
     SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(
-        Collections.singletonList(new TurtleGraphMessageBodyWriter()), Collections.emptyList());
+        Collections.singletonList(new StubGraphMessageBodyWriter()), Collections.emptyList());
 
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.GRAPH)),
-        hasItems(MediaType.valueOf("text/turtle")));
+        hasItems(MediaTypes.LDJSON_TYPE));
     assertThat(scanner.getSparqlProviders().size(), equalTo(1));
   }
 
@@ -44,12 +50,12 @@ public class SupportedMediaTypesScannerTest {
   public void findsSupportedTupleProviders() {
     // Arrange & Act
     SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(Collections.emptyList(),
-        Collections.singletonList(new SparqlResultsJsonMessageBodyWriter()));
+        Collections.singletonList(new StubTupleMessageBodyWriter()));
 
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.TUPLE)),
-        hasItems(MediaType.valueOf("application/sparql-results+json")));
+        hasItems(MediaTypes.SPARQL_RESULTS_JSON_TYPE));
     assertThat(scanner.getSparqlProviders().size(), equalTo(1));
   }
 
@@ -64,6 +70,32 @@ public class SupportedMediaTypesScannerTest {
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(0));
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
     assertThat(scanner.getSparqlProviders().size(), equalTo(0));
+  }
+
+
+
+  @SparqlProvider(resultType = ResultType.GRAPH)
+  @Produces(MediaTypes.LDJSON)
+  static class StubGraphMessageBodyWriter extends GraphMessageBodyWriter {
+
+    StubGraphMessageBodyWriter() {
+      super(RDFFormat.JSONLD);
+    }
+  }
+
+  @SparqlProvider(resultType = ResultType.TUPLE)
+  @Produces(MediaTypes.SPARQL_RESULTS_JSON)
+  static class StubTupleMessageBodyWriter extends TupleMessageBodyWriter {
+
+    StubTupleMessageBodyWriter() {
+      super(MediaTypes.SPARQL_RESULTS_JSON_TYPE);
+    }
+
+    @Override
+    protected TupleQueryResultWriter createWriter(OutputStream outputStream) {
+      fail("Stub class should not be used");
+      return null;
+    }
   }
 
 }

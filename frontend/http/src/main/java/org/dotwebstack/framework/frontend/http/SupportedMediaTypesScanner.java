@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class SupportedMediaTypesScanner {
+
   private static final Logger LOG = LoggerFactory.getLogger(SupportedMediaTypesScanner.class);
 
   private List<MediaType> graphMediaTypes = new ArrayList<>();

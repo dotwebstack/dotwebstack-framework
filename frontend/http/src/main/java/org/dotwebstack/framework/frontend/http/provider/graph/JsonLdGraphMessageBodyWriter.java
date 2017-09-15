@@ -5,7 +5,6 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.dotwebstack.framework.frontend.http.provider.SparqlProvider;
 import org.eclipse.rdf4j.rio.RDFFormat;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,8 +12,7 @@ import org.springframework.stereotype.Service;
 @Produces(MediaTypes.LDJSON)
 public class JsonLdGraphMessageBodyWriter extends GraphMessageBodyWriter {
 
-  @Autowired
-  public JsonLdGraphMessageBodyWriter() {
+  JsonLdGraphMessageBodyWriter() {
     super(RDFFormat.JSONLD);
   }
 

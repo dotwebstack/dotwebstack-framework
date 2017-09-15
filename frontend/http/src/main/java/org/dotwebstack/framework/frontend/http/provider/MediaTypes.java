@@ -4,24 +4,30 @@ import javax.ws.rs.core.MediaType;
 
 public class MediaTypes {
 
-  private MediaTypes() {}
-
   public static final String LDJSON = "application/ld+json";
+
   public static final MediaType LDJSON_TYPE = MediaType.valueOf(LDJSON);
 
   public static final String TURTLE = "text/turtle";
+
   public static final MediaType TURTLE_TYPE = MediaType.valueOf(TURTLE);
 
   public static final String TRIG = "application/trig";
+
   public static final MediaType TRIG_TYPE = MediaType.valueOf(TRIG);
 
   public static final String RDFXML = "application/rdf+xml";
+
   public static final MediaType RDFXML_TYPE = MediaType.valueOf(RDFXML);
 
   public static final String SPARQL_RESULTS_JSON = "application/sparql-results+json";
+
   public static final MediaType SPARQL_RESULTS_JSON_TYPE = MediaType.valueOf(SPARQL_RESULTS_JSON);
 
   public static final String SPARQL_RESULTS_XML = "application/sparql-results+xml";
+
   public static final MediaType SPARQL_RESULTS_XML_TYPE = MediaType.valueOf(SPARQL_RESULTS_XML);
+
+  private MediaTypes() {}
 
 }

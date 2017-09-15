@@ -7,7 +7,6 @@ import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.dotwebstack.framework.frontend.http.provider.SparqlProvider;
 import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 import org.eclipse.rdf4j.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,8 +14,7 @@ import org.springframework.stereotype.Service;
 @Produces(MediaTypes.SPARQL_RESULTS_XML)
 public final class SparqlResultsXmlMessageBodyWriter extends TupleMessageBodyWriter {
 
-  @Autowired
-  public SparqlResultsXmlMessageBodyWriter() {
+  SparqlResultsXmlMessageBodyWriter() {
     super(MediaTypes.SPARQL_RESULTS_XML_TYPE);
   }
 

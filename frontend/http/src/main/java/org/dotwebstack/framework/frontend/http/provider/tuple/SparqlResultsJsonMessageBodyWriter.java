@@ -7,7 +7,6 @@ import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.dotwebstack.framework.frontend.http.provider.SparqlProvider;
 import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,8 +14,7 @@ import org.springframework.stereotype.Service;
 @Produces(MediaTypes.SPARQL_RESULTS_JSON)
 public final class SparqlResultsJsonMessageBodyWriter extends TupleMessageBodyWriter {
 
-  @Autowired
-  public SparqlResultsJsonMessageBodyWriter() {
+  SparqlResultsJsonMessageBodyWriter() {
     super(MediaTypes.SPARQL_RESULTS_JSON_TYPE);
   }
 
