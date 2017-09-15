@@ -39,4 +39,5 @@ class SparqlResultsMessageBodyWriterTestBase {
 
     return bindingSet;
   }
+
 }

@@ -87,4 +87,5 @@ public class SparqlResultsXmlMessageBodyWriterTest extends SparqlResultsMessageB
             + "<result><binding name='beer'><literal>Amstel</literal></binding></result>"
             + "</results>"));
   }
+
 }

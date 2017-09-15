@@ -22,6 +22,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 
+@SuppressWarnings("restriction")
 public class SparqlHttpStub {
 
   private static SparqlHttpStub instance;
