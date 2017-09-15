@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -45,8 +46,10 @@ public class TriGGraphMessageBodyWriterTest {
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(BackgroundGraphResult.class, null, null,
-        new MediaType("application", "trig"));
+    boolean result =
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaTypes.TRIG_TYPE);
+
+
 
     // Assert
     assertThat(result, is(true));
@@ -58,8 +61,7 @@ public class TriGGraphMessageBodyWriterTest {
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result =
-        writer.isWriteable(String.class, null, null, new MediaType("application", "trig"));
+    boolean result = writer.isWriteable(String.class, null, null, MediaTypes.TRIG_TYPE);
 
     // Assert
     assertThat(result, is(false));

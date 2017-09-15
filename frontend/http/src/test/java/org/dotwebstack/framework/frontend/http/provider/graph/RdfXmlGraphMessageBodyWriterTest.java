@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -44,8 +45,8 @@ public class RdfXmlGraphMessageBodyWriterTest {
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(BackgroundGraphResult.class, null, null,
-        new MediaType("application", "rdf+xml"));
+    boolean result =
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaTypes.RDFXML_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -57,8 +58,7 @@ public class RdfXmlGraphMessageBodyWriterTest {
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
     // Act
-    boolean result =
-        writer.isWriteable(String.class, null, null, new MediaType("application", "rdf+xml"));
+    boolean result = writer.isWriteable(String.class, null, null, MediaTypes.RDFXML_TYPE);
 
     // Assert
     assertThat(result, is(false));

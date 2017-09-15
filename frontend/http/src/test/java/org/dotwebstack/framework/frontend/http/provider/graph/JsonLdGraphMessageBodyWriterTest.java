@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -44,8 +45,8 @@ public class JsonLdGraphMessageBodyWriterTest {
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(BackgroundGraphResult.class, null, null,
-        new MediaType("application", "ld+json"));
+    boolean result =
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaTypes.LDJSON_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -57,8 +58,7 @@ public class JsonLdGraphMessageBodyWriterTest {
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    boolean result =
-        writer.isWriteable(String.class, null, null, new MediaType("application", "ld+json"));
+    boolean result = writer.isWriteable(String.class, null, null, MediaTypes.LDJSON_TYPE);
 
     // Assert
     assertThat(result, is(false));
