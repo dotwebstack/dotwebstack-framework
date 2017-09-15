@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.http;
 
-import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -93,8 +92,8 @@ public class SupportedMediaTypesScannerTest {
 
     @Override
     protected TupleQueryResultWriter createWriter(OutputStream outputStream) {
-      fail("Stub class should not be used");
-      return null;
+      throw new IllegalStateException(
+          String.format("%s is not meant to be instantiated.", StubTupleMessageBodyWriter.class));
     }
   }
 
