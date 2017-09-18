@@ -37,6 +37,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({FileConfigurationBackend.class, EnvironmentAwareResource.class, InputStream.class})
@@ -68,6 +69,8 @@ public class FileConfigurationBackendTest {
     backend = new FileConfigurationBackend(elmoConfigurationResource, repository);
     backend.setResourceLoader(resourceLoader);
     when(repository.getConnection()).thenReturn(repositoryConnection);
+
+    ReflectionTestUtils.setField(backend, "propertyLocationModel", "file:model/**");
   }
 
   @Test
@@ -87,7 +90,7 @@ public class FileConfigurationBackendTest {
     // Assert
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
-    verify(repositoryConnection).add(environmentAwareInputStream, "#", RDFFormat.TRIG);
+    verify(repositoryConnection, times(2)).add(environmentAwareInputStream, "#", RDFFormat.TRIG);
 
     verify(repositoryConnection).close();
     verifyNoMoreInteractions(repositoryConnection);
@@ -192,11 +195,12 @@ public class FileConfigurationBackendTest {
     // Assert
     verify(elmoConfigurationResource, atLeastOnce()).getInputStream();
     ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
-    verify(repositoryConnection, times(2))
+    verify(repositoryConnection, times(3))
         .add(captor.capture(), any(), any());
 
     List<InputStream> inputStreams = captor.getAllValues();
     assertThat(inputStreams,
-        contains(environmentAwareInputStream, environmentAwareElmoInputStream));
+        contains(environmentAwareInputStream, environmentAwareInputStream,
+            environmentAwareElmoInputStream));
   }
 }

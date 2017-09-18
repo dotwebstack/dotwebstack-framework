@@ -38,6 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SwaggerImporterTest {
@@ -73,6 +74,8 @@ public class SwaggerImporterTest {
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     swaggerImporter = new SwaggerImporter(informationProductResourceProvider, swaggerParser);
     swaggerImporter.setResourceLoader(resourceLoader);
+
+    ReflectionTestUtils.setField(swaggerImporter, "propertyLocationOpenApi", "file:openapi/*");
   }
 
   @Test

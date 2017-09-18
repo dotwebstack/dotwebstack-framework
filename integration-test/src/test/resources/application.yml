@@ -7,3 +7,9 @@ spring:
 logging:
   level:
     ROOT: ERROR
+
+ldt:
+  config:
+    location:
+      openapi: file:src/test/resources/openapi/*
+      model: file:src/test/resources/model/**
