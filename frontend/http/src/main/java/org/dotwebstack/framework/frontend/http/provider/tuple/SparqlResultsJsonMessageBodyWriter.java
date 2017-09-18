@@ -2,19 +2,20 @@ package org.dotwebstack.framework.frontend.http.provider.tuple;
 
 import java.io.OutputStream;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
+import org.dotwebstack.framework.frontend.http.provider.SparqlProvider;
 import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
+import org.springframework.stereotype.Service;
 
-@Provider
-@Produces(SparqlResultsJsonMessageBodyWriter.MEDIA_TYPE)
+@Service
+@SparqlProvider(resultType = ResultType.TUPLE)
+@Produces(MediaTypes.SPARQL_RESULTS_JSON)
 public final class SparqlResultsJsonMessageBodyWriter extends TupleMessageBodyWriter {
 
-  public static final String MEDIA_TYPE = "application/sparql-results+json";
-
-  public SparqlResultsJsonMessageBodyWriter() {
-    super(MediaType.valueOf(MEDIA_TYPE));
+  SparqlResultsJsonMessageBodyWriter() {
+    super(MediaTypes.SPARQL_RESULTS_JSON_TYPE);
   }
 
   @Override

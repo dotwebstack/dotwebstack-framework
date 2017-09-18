@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
 
     // Act
     boolean result = provider.isWriteable(TupleQueryResult.class, null, null,
-        MediaType.valueOf(SparqlResultsJsonMessageBodyWriter.MEDIA_TYPE));
+        MediaTypes.SPARQL_RESULTS_JSON_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -40,8 +41,8 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(String.class, null, null,
-        MediaType.valueOf(SparqlResultsJsonMessageBodyWriter.MEDIA_TYPE));
+    boolean result =
+        provider.isWriteable(String.class, null, null, MediaTypes.SPARQL_RESULTS_JSON_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -53,8 +54,8 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(TupleQueryResult.class, null, null,
-        MediaType.APPLICATION_JSON_TYPE);
+    boolean result =
+        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -66,8 +67,8 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     SparqlResultsJsonMessageBodyWriter writer = new SparqlResultsJsonMessageBodyWriter();
 
     // Act
-    long result = writer.getSize(tupleQueryResult, null, null,
-        null, MediaType.APPLICATION_XML_TYPE);
+    long result =
+        writer.getSize(tupleQueryResult, null, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, equalTo(-1L));
@@ -81,8 +82,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);
     BindingSet bindingSetAmstel = mock(BindingSet.class);
-    when(tupleQueryResult.next())
-        .thenReturn(bindingSetHeineken, bindingSetAmstel);
+    when(tupleQueryResult.next()).thenReturn(bindingSetHeineken, bindingSetAmstel);
 
     configureBindingSetWithValue(bindingSetHeineken, "Heineken");
     configureBindingSetWithValue(bindingSetAmstel, "Amstel");
@@ -93,12 +93,11 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
+    assertThat(result, containsString("{\"head\":{\"vars\":[\"beer\"]}"));
     assertThat(result,
-        containsString("{\"head\":{\"vars\":[\"beer\"]}"));
-    assertThat(result, containsString(
-        "{\"bindings\":"
-            + "[{\"beer\":{\"type\":\"literal\",\"value\":\"Heineken\"}},"
-            + "{\"beer\":{\"type\":\"literal\",\"value\":\"Amstel\"}}]}}"));
+        containsString(
+            "{\"bindings\":" + "[{\"beer\":{\"type\":\"literal\",\"value\":\"Heineken\"}},"
+                + "{\"beer\":{\"type\":\"literal\",\"value\":\"Amstel\"}}]}}"));
   }
 
 }

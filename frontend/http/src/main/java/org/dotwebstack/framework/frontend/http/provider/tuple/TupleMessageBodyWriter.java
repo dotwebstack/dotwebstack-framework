@@ -16,7 +16,7 @@ public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQ
 
   private MediaType mediaType;
 
-  TupleMessageBodyWriter(MediaType mediaType) {
+  protected TupleMessageBodyWriter(MediaType mediaType) {
     this.mediaType = Objects.requireNonNull(mediaType);
   }
 
@@ -42,4 +42,5 @@ public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQ
     TupleQueryResultWriter writer = createWriter(outputStream);
     QueryResults.report(tupleQueryResult, writer);
   }
+
 }

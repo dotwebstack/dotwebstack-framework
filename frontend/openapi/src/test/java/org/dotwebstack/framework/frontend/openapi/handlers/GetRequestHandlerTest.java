@@ -1,15 +1,19 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
+import io.swagger.models.properties.Property;
+import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,13 +33,15 @@ public class GetRequestHandlerTest {
 
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(informationProduct);
+    getRequestHandler = new GetRequestHandler(informationProduct, ImmutableMap.of());
   }
 
   @Test
-  public void alwaysReturnInformationProductIdentifier() {
+  public void returnResponseWithEntityObject() {
     // Arrange
-    when(informationProduct.getIdentifier()).thenReturn(DBEERPEDIA.BREWERIES);
+    Object result = new Object();
+    Map<String, Property> schemaMap = ImmutableMap.of();
+    when(informationProduct.getResult()).thenReturn(result);
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getPath()).thenReturn("/");
@@ -45,7 +51,9 @@ public class GetRequestHandlerTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(200));
-    assertThat(response.getEntity(), equalTo(DBEERPEDIA.BREWERIES.stringValue()));
+    assertThat(response.getEntity(), instanceOf(Entity.class));
+    assertThat(((Entity) response.getEntity()).getProperties(), equalTo(result));
+    assertThat(((Entity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
   }
 
 }

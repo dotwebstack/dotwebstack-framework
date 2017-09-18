@@ -12,14 +12,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.impl.BackgroundGraphResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -46,7 +47,9 @@ public class TriGGraphMessageBodyWriterTest {
 
     // Act
     boolean result =
-        writer.isWriteable(LinkedHashModel.class, null, null, new MediaType("application", "trig"));
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaTypes.TRIG_TYPE);
+
+
 
     // Assert
     assertThat(result, is(true));
@@ -58,8 +61,7 @@ public class TriGGraphMessageBodyWriterTest {
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result =
-        writer.isWriteable(String.class, null, null, new MediaType("application", "trig"));
+    boolean result = writer.isWriteable(String.class, null, null, MediaTypes.TRIG_TYPE);
 
     // Assert
     assertThat(result, is(false));

@@ -17,14 +17,14 @@ public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQ
 
   private final RDFFormat format;
 
-  GraphMessageBodyWriter(RDFFormat format) {
+  protected GraphMessageBodyWriter(RDFFormat format) {
     this.format = format;
   }
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType) {
-    return Model.class.isAssignableFrom(type)
+    return GraphQueryResult.class.isAssignableFrom(type)
         && format.getMIMETypes().contains(mediaType.toString());
   }
 
