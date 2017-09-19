@@ -23,7 +23,8 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
 
-  private final Resource elmoConfiguration;
+  private Resource elmoConfiguration;
+
   private SailRepository repository;
 
   private ResourceLoader resourceLoader;

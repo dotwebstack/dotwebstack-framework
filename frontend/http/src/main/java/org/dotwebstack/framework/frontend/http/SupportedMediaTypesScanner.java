@@ -65,7 +65,7 @@ public class SupportedMediaTypesScanner {
 
       addMediaTypes(list, produceAnnotation);
       resultingList.add(writer);
-      LOG.info("Registered %s provider for results.");
+      LOG.info(String.format("Registered %s provider for results.", writer.getClass()));
     });
   }
 
