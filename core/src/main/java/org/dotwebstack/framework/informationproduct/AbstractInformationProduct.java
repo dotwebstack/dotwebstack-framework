@@ -5,11 +5,11 @@ import org.eclipse.rdf4j.model.IRI;
 
 public abstract class AbstractInformationProduct implements InformationProduct {
 
-  private final IRI identifier;
+  protected final IRI identifier;
 
-  private final String label;
+  protected final String label;
 
-  private final ResultType resultType;
+  protected final ResultType resultType;
 
   protected AbstractInformationProduct(IRI identifier, String label, ResultType resultType) {
     this.identifier = identifier;

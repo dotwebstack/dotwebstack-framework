@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.sparql;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -37,14 +36,13 @@ public class SparqlBackendInformationProductFactoryTest {
   @Before
   public void setUp() {
     informationProductFactory = new SparqlBackendInformationProductFactory(queryEvaluator);
-    when(backend.getIdentifier()).thenReturn(DBEERPEDIA.BACKEND);
   }
 
   @Test
   public void informationProductIsCreated() {
     // Arrange
-    Model statements =
-        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.SELECT_ALL_QUERY).build();
+    Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
+        DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
     InformationProduct result =
@@ -65,8 +63,8 @@ public class SparqlBackendInformationProductFactoryTest {
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
-        String.format("No <%s> statement has been found for a sparql information product <%s>.",
-            ELMO.QUERY, DBEERPEDIA.BACKEND));
+        String.format("No <%s> statement has been found for a SPARQL information product <%s>.",
+            ELMO.QUERY, DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT));
 
     // Act
     informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
@@ -76,8 +74,8 @@ public class SparqlBackendInformationProductFactoryTest {
   @Test
   public void determineCorrectQueryTypeForSelect() {
     // Arrange
-    Model statements =
-        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.SELECT_ALL_QUERY).build();
+    Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
+        DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
     InformationProduct result =
@@ -91,7 +89,7 @@ public class SparqlBackendInformationProductFactoryTest {
   @Test
   public void determineCorrectQueryTypeForGraph() {
     // Arrange
-    Model statements = new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY,
+    Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
         DBEERPEDIA.CONSTRUCT_ALL_QUERY).build();
 
     // Act
@@ -106,8 +104,8 @@ public class SparqlBackendInformationProductFactoryTest {
   @Test
   public void queryIsNotSupported() {
     // Arrange
-    Model statements =
-        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.ASK_ALL_QUERY).build();
+    Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
+        DBEERPEDIA.ASK_ALL_QUERY).build();
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -122,8 +120,8 @@ public class SparqlBackendInformationProductFactoryTest {
   @Test
   public void queryIsMalformed() {
     // Arrange
-    Model statements =
-        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.QUERY, DBEERPEDIA.MALFORMED_QUERY).build();
+    Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
+        DBEERPEDIA.MALFORMED_QUERY).build();
 
     // Assert
     thrown.expect(ConfigurationException.class);
