@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.PostConstruct;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -25,17 +24,20 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
 
-  @Value("${ldt.config.location.model: file:./model/**}")
-  private String propertyLocationModel;
+  private String resourcePath;
 
   private final Resource elmoConfiguration;
   private SailRepository repository;
 
   private ResourceLoader resourceLoader;
 
-  public FileConfigurationBackend(Resource elmoConfiguration, SailRepository repository) {
+  public FileConfigurationBackend(Resource elmoConfiguration, SailRepository repository,
+      @Value("${dotwebstack.config.resourcePath: file:.}") String resourcePath) {
     this.elmoConfiguration = Objects.requireNonNull(elmoConfiguration);
     this.repository = repository;
+    this.resourcePath = resourcePath;
+    this.resourcePath = resourcePath + "/model/**";
+
     repository.initialize();
   }
 
@@ -51,11 +53,8 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   @PostConstruct
   public void loadResources() throws IOException {
-    Resource[] projectResources = ArrayUtils.addAll(
-        ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-            "classpath:model/**"),
-        ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-            propertyLocationModel));
+    Resource[] projectResources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+        .getResources(resourcePath);
 
     if (projectResources.length == 0) {
       LOG.info("No model configuration files found");

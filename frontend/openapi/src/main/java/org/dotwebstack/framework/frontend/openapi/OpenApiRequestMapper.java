@@ -39,8 +39,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
-  @Value("${ldt.config.location.openapi: file:./openapi/*}")
-  private String propertyLocationOpenApi;
+  private String resourcePath;
 
   private ResourceLoader resourceLoader;
 
@@ -52,9 +51,11 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
   @Autowired
   public OpenApiRequestMapper(InformationProductResourceProvider informationProductLoader,
-      SwaggerParser openApiParser) {
+      SwaggerParser openApiParser,
+      @Value("${dotwebstack.config.resourcePath: file:.}") String resourcePath) {
     this.informationProductResourceProvider = Objects.requireNonNull(informationProductLoader);
     this.openApiParser = Objects.requireNonNull(openApiParser);
+    this.resourcePath = resourcePath + "/openapi/*";
   }
 
   @Override
@@ -67,9 +68,9 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-          .getResources(propertyLocationOpenApi);
+          .getResources(resourcePath);
     } catch (FileNotFoundException e) {
-      LOG.warn("No openapi resources found in path:" + propertyLocationOpenApi);
+      LOG.warn("No openapi resources found in path:" + resourcePath);
       return;
     }
 

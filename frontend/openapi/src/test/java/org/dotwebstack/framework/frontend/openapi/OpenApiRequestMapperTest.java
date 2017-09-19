@@ -44,7 +44,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(MockitoJUnitRunner.class)
 public class OpenApiRequestMapperTest {
@@ -79,10 +78,9 @@ public class OpenApiRequestMapperTest {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
 
-    requestMapper = new OpenApiRequestMapper(informationProductResourceProvider, openApiParser);
+    requestMapper = new OpenApiRequestMapper(informationProductResourceProvider, openApiParser,
+        "file:.");
     requestMapper.setResourceLoader(resourceLoader);
-
-    ReflectionTestUtils.setField(requestMapper, "propertyLocationOpenApi", "file:openapi/*");
   }
 
   @Test

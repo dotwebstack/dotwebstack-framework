@@ -37,7 +37,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({FileConfigurationBackend.class, EnvironmentAwareResource.class, InputStream.class})
@@ -65,12 +64,11 @@ public class FileConfigurationBackendTest {
   @Before
   public void setUp() {
     resourceLoader =
-        mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    backend = new FileConfigurationBackend(elmoConfigurationResource, repository);
+      mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
+    backend = new FileConfigurationBackend(elmoConfigurationResource, repository,
+      "file:.");
     backend.setResourceLoader(resourceLoader);
     when(repository.getConnection()).thenReturn(repositoryConnection);
-
-    ReflectionTestUtils.setField(backend, "propertyLocationModel", "file:model/**");
   }
 
   @Test
@@ -82,7 +80,7 @@ public class FileConfigurationBackendTest {
     when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareInputStream);
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[]{resource});
+      new Resource[]{resource});
 
     // Act
     backend.loadResources();
@@ -90,7 +88,7 @@ public class FileConfigurationBackendTest {
     // Assert
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
-    verify(repositoryConnection, times(2)).add(environmentAwareInputStream, "#", RDFFormat.TRIG);
+    verify(repositoryConnection).add(environmentAwareInputStream, "#", RDFFormat.TRIG);
 
     verify(repositoryConnection).close();
     verifyNoMoreInteractions(repositoryConnection);
@@ -100,7 +98,7 @@ public class FileConfigurationBackendTest {
   public void doNothingWhenNoFilesFound() throws IOException {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[0]);
+      new Resource[0]);
 
     // Act
     backend.loadResources();
@@ -115,7 +113,7 @@ public class FileConfigurationBackendTest {
     Resource resource = mock(Resource.class);
     when(resource.getFilename()).thenReturn("not-existing.md");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[]{resource});
+      new Resource[]{resource});
 
     // Act
     backend.loadResources();
@@ -130,7 +128,7 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource resource = mock(Resource.class);
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[]{resource});
+      new Resource[]{resource});
     when(repository.getConnection()).thenThrow(RepositoryException.class);
 
     // Assert
@@ -150,9 +148,9 @@ public class FileConfigurationBackendTest {
     when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareInputStream);
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[]{resource});
+      new Resource[]{resource});
     doThrow(RDFParseException.class).when(repositoryConnection)
-        .add(environmentAwareInputStream, "#", RDFFormat.TRIG);
+      .add(environmentAwareInputStream, "#", RDFFormat.TRIG);
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -171,20 +169,20 @@ public class FileConfigurationBackendTest {
     InputStream environmentAwareInputStream = mock(InputStream.class);
     EnvironmentAwareResource environmentAwareResource = mock(EnvironmentAwareResource.class);
     whenNew(EnvironmentAwareResource.class).withArguments(rawInputStream)
-        .thenReturn(environmentAwareResource);
+      .thenReturn(environmentAwareResource);
     when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareInputStream);
 
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[]{resource});
+      new Resource[]{resource});
 
     InputStream rawElmoInputStream = mock(InputStream.class);
     when(elmoConfigurationResource.getInputStream()).thenReturn(rawElmoInputStream);
     InputStream environmentAwareElmoInputStream = mock(InputStream.class);
     EnvironmentAwareResource environmentAwareElmoResource = mock(EnvironmentAwareResource.class);
     whenNew(EnvironmentAwareResource.class)
-        .withArguments(rawElmoInputStream)
-        .thenReturn(environmentAwareElmoResource);
+      .withArguments(rawElmoInputStream)
+      .thenReturn(environmentAwareElmoResource);
     when(environmentAwareElmoResource.getInputStream()).thenReturn(environmentAwareElmoInputStream);
 
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
@@ -195,12 +193,11 @@ public class FileConfigurationBackendTest {
     // Assert
     verify(elmoConfigurationResource, atLeastOnce()).getInputStream();
     ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
-    verify(repositoryConnection, times(3))
-        .add(captor.capture(), any(), any());
+    verify(repositoryConnection, times(2))
+      .add(captor.capture(), any(), any());
 
     List<InputStream> inputStreams = captor.getAllValues();
     assertThat(inputStreams,
-        contains(environmentAwareInputStream, environmentAwareInputStream,
-            environmentAwareElmoInputStream));
+      contains(environmentAwareInputStream, environmentAwareElmoInputStream));
   }
 }
