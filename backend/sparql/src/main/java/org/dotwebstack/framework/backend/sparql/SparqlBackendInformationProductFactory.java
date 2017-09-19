@@ -30,7 +30,7 @@ public class SparqlBackendInformationProductFactory {
 
   public InformationProduct create(IRI identifier, String label, Backend backend,
       Model statements) {
-    String query = Models.objectString(statements.filter(null, ELMO.QUERY, null)).orElseThrow(
+    String query = Models.objectString(statements.filter(identifier, ELMO.QUERY, null)).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> statement has been found for a sparql information product <%s>.",
                 ELMO.QUERY, backend.getIdentifier())));
