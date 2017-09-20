@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.ld;
 
-import java.util.Objects;
 import javax.ws.rs.HttpMethod;
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.GetRequestHandler;
@@ -25,9 +25,9 @@ public class LdRequestMapper {
   private final SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Autowired
-  public LdRequestMapper(RepresentationResourceProvider representationResourceProvider,
+  public LdRequestMapper(@NonNull RepresentationResourceProvider representationResourceProvider,
       SupportedMediaTypesScanner supportedMediaTypesScanner) {
-    this.representationResourceProvider = Objects.requireNonNull(representationResourceProvider);
+    this.representationResourceProvider = representationResourceProvider;
     this.supportedMediaTypesScanner = supportedMediaTypesScanner;
   }
 
@@ -51,8 +51,8 @@ public class LdRequestMapper {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
           new GetRequestHandler(representation)).produces(
-              supportedMediaTypesScanner.getMediaTypes(
-                  representation.getInformationProduct().getResultType()));
+          supportedMediaTypesScanner.getMediaTypes(
+              representation.getInformationProduct().getResultType()));
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());

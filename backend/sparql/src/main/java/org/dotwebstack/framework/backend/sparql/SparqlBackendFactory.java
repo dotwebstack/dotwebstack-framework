@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
-import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendFactory;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -20,8 +20,9 @@ class SparqlBackendFactory implements BackendFactory {
   private SparqlBackendInformationProductFactory informationProductFactory;
 
   @Autowired
-  public SparqlBackendFactory(SparqlBackendInformationProductFactory informationProductFactory) {
-    this.informationProductFactory = Objects.requireNonNull(informationProductFactory);
+  public SparqlBackendFactory(
+      @NonNull SparqlBackendInformationProductFactory informationProductFactory) {
+    this.informationProductFactory = informationProductFactory;
   }
 
   @Override

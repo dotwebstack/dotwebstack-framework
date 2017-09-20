@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Objects;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
+import lombok.NonNull;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
@@ -16,8 +16,8 @@ public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQ
 
   private MediaType mediaType;
 
-  protected TupleMessageBodyWriter(MediaType mediaType) {
-    this.mediaType = Objects.requireNonNull(mediaType);
+  protected TupleMessageBodyWriter(@NonNull MediaType mediaType) {
+    this.mediaType = mediaType;
   }
 
   protected abstract TupleQueryResultWriter createWriter(OutputStream outputStream);

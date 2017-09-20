@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.http.stage;
 
-import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -40,13 +40,13 @@ public class Stage {
 
     private String basePath = DEFAULT_BASE_PATH;
 
-    public Builder(IRI identifier, Site site) {
-      this.identifier = Objects.requireNonNull(identifier);
-      this.site = Objects.requireNonNull(site);
+    public Builder(@NonNull IRI identifier, @NonNull Site site) {
+      this.identifier = identifier;
+      this.site = site;
     }
 
-    public Builder basePath(String basePath) {
-      this.basePath = Objects.requireNonNull(basePath);
+    public Builder basePath(@NonNull String basePath) {
+      this.basePath = basePath;
       return this;
     }
 
