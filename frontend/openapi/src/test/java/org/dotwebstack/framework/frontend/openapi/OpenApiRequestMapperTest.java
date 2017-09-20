@@ -157,8 +157,7 @@ public class OpenApiRequestMapperTest {
     // Arrange
     Property schema = mock(Property.class);
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
-        ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path(
-        "/breweries",
+        ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
