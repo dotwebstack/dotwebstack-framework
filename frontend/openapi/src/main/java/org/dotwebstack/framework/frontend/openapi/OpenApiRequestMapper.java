@@ -52,7 +52,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
   @Autowired
   public OpenApiRequestMapper(InformationProductResourceProvider informationProductLoader,
       SwaggerParser openApiParser,
-      @Value("${dotwebstack.config.resourcePath: file:.}") String resourcePath) {
+      @Value("${dotwebstack.config.resourcePath: classpath:.}") String resourcePath) {
     this.informationProductResourceProvider = Objects.requireNonNull(informationProductLoader);
     this.openApiParser = Objects.requireNonNull(openApiParser);
     this.resourcePath = resourcePath;

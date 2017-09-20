@@ -14,10 +14,10 @@ public class ApplicationConfiguration {
 
   @Bean
   public ConfigurationBackend configurationBackend(
-    @Value("classpath:/model/elmo.trig") Resource elmoConfiguration,
-    @Value("${dotwebstack.config.resourcePath: file:.}") String resourcePath) {
+      @Value("classpath:/model/elmo.trig") Resource elmoConfiguration,
+      @Value("${dotwebstack.config.resourcePath: classpath:.}") String resourcePath) {
     return new FileConfigurationBackend(elmoConfiguration, new SailRepository(new MemoryStore()),
-      resourcePath);
+        resourcePath);
   }
 
 }
