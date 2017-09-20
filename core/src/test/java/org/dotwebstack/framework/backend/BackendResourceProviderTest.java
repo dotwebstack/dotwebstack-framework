@@ -74,7 +74,7 @@ public class BackendResourceProviderTest {
   }
 
   @Test
-  public void backendNotFound() {
+  public void get_ThrowsExcception_BackendNotFound() {
     // Assert
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(String.format("Resource <%s> not found.", DBEERPEDIA.BACKEND));
@@ -84,7 +84,7 @@ public class BackendResourceProviderTest {
   }
 
   @Test
-  public void loadBackend() {
+  public void loadResources_GetResources_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -102,7 +102,7 @@ public class BackendResourceProviderTest {
   }
 
   @Test
-  public void noBackendFactoryFound() {
+  public void loadResources_ThrowsException_NoBackendFactoryFound() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -120,7 +120,7 @@ public class BackendResourceProviderTest {
   }
 
   @Test
-  public void typeStatementMissing() {
+  public void loadResources_ThrowsException_TypeStatementMissing() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(
         new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
@@ -136,7 +136,7 @@ public class BackendResourceProviderTest {
   }
 
   @Test
-  public void repositoryConnectionError() {
+  public void loadResources_ThrowsException_RepositoryConnectionError() {
     // Arrange
     when(configurationRepository.getConnection()).thenThrow(RepositoryException.class);
 
@@ -149,7 +149,7 @@ public class BackendResourceProviderTest {
   }
 
   @Test
-  public void queryEvaluationError() {
+  public void loadResources_ThrowsException_QueryEvaluationError() {
     // Arrange
     when(graphQuery.evaluate()).thenThrow(QueryEvaluationException.class);
 

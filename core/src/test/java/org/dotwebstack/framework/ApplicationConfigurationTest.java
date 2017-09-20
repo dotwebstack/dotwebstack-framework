@@ -18,7 +18,7 @@ public class ApplicationConfigurationTest {
   @Mock
   private Resource resource;
 
-  ApplicationConfiguration applicationConfiguration;
+  private ApplicationConfiguration applicationConfiguration;
 
   @Before
   public void setUp() {
@@ -26,7 +26,7 @@ public class ApplicationConfigurationTest {
   }
 
   @Test
-  public void getConfigurationBackend() {
+  public void configurationBackend_ReturnsBackend_WhenInstantiated() {
     // Act
     ConfigurationBackend backend = applicationConfiguration.configurationBackend(resource);
 

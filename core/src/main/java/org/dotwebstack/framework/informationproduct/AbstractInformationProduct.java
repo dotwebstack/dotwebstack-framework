@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.informationproduct;
 
+import java.util.Objects;
 import org.dotwebstack.framework.backend.ResultType;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -12,9 +13,9 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   protected final ResultType resultType;
 
   protected AbstractInformationProduct(IRI identifier, String label, ResultType resultType) {
-    this.identifier = identifier;
-    this.label = label;
-    this.resultType = resultType;
+    this.identifier = Objects.requireNonNull(identifier);
+    this.label = Objects.requireNonNull(label);
+    this.resultType = Objects.requireNonNull(resultType);
   }
 
   @Override
