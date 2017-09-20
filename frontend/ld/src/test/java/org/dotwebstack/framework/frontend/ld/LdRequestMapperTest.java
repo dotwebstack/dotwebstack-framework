@@ -181,16 +181,4 @@ public class LdRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
 
-  @Test
-  public void loadRepresentations_MapRepresentation_WithMatchAllDomain() {
-    // Arrange
-    site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
-
-    // Act
-    requestMapper.loadRepresentations(httpConfiguration);
-
-    // Assert
-    assertThat(httpConfiguration.getResources(), hasSize(0));
-  }
-
 }
