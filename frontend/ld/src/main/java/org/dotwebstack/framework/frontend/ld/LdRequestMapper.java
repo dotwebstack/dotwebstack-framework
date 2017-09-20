@@ -50,9 +50,8 @@ public class LdRequestMapper {
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          new GetRequestHandler(representation)).produces(
-          supportedMediaTypesScanner.getMediaTypes(
-              representation.getInformationProduct().getResultType()));
+          new GetRequestHandler(representation)).produces(supportedMediaTypesScanner.getMediaTypes(
+          representation.getInformationProduct().getResultType()));
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());
