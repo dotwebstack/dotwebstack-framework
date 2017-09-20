@@ -28,6 +28,7 @@ import org.glassfish.jersey.server.model.ResourceMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
@@ -37,6 +38,8 @@ import org.springframework.stereotype.Service;
 public class OpenApiRequestMapper implements ResourceLoaderAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
+
+  private String resourcePath;
 
   private ResourceLoader resourceLoader;
 
@@ -48,9 +51,11 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
   @Autowired
   public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
-      @NonNull SwaggerParser openApiParser) {
+      @NonNull SwaggerParser openApiParser,
+      @Value("${dotwebstack.config.resourcePath: classpath:.}") String resourcePath) {
     this.informationProductResourceProvider = informationProductLoader;
     this.openApiParser = openApiParser;
+    this.resourcePath = resourcePath;
   }
 
   @Override
@@ -62,10 +67,10 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
     org.springframework.core.io.Resource[] resources;
 
     try {
-      resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-          "classpath:openapi/*");
+      resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+          .getResources(resourcePath + "/openapi/*");
     } catch (FileNotFoundException e) {
-      LOG.warn("Path 'openapi' does not exist in resources folder.");
+      LOG.warn("No openapi resources found in path:" + resourcePath);
       return;
     }
 
