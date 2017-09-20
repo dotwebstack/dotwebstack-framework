@@ -14,7 +14,6 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -33,7 +32,7 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
   private ResourceLoader resourceLoader;
 
   public FileConfigurationBackend(Resource elmoConfiguration, SailRepository repository,
-      @Value("${dotwebstack.config.resourcePath: file:.}") String resourcePath) {
+      String resourcePath) {
     this.elmoConfiguration = Objects.requireNonNull(elmoConfiguration);
     this.repository = repository;
     this.resourcePath = resourcePath;
