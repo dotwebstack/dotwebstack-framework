@@ -36,7 +36,6 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
     this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
     this.resourcePath = resourcePath;
-
     repository.initialize();
   }
 
