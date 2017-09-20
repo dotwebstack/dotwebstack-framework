@@ -3,7 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.Property;
 import java.util.Map;
-import java.util.Objects;
+import lombok.NonNull;
 
 public final class Entity {
 
@@ -11,9 +11,9 @@ public final class Entity {
 
   private ImmutableMap<String, Property> schemaMap;
 
-  public Entity(Object properties, Map<String, Property> schemaMap) {
-    this.properties = Objects.requireNonNull(properties);
-    this.schemaMap = Objects.requireNonNull(ImmutableMap.copyOf(schemaMap));
+  public Entity(@NonNull Object properties, @NonNull Map<String, Property> schemaMap) {
+    this.properties = properties;
+    this.schemaMap = ImmutableMap.copyOf(schemaMap);
   }
 
   public Object getProperties() {

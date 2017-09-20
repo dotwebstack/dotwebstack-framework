@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.PostConstruct;
+import lombok.NonNull;
 import org.apache.commons.io.FilenameUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.eclipse.rdf4j.RDF4JException;
@@ -29,15 +29,15 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private ResourceLoader resourceLoader;
 
-  public FileConfigurationBackend(Resource elmoConfiguration, SailRepository repository) {
-    this.elmoConfiguration = Objects.requireNonNull(elmoConfiguration);
+  public FileConfigurationBackend(@NonNull Resource elmoConfiguration, SailRepository repository) {
+    this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
     repository.initialize();
   }
 
   @Override
-  public void setResourceLoader(ResourceLoader resourceLoader) {
-    this.resourceLoader = Objects.requireNonNull(resourceLoader);
+  public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
+    this.resourceLoader = resourceLoader;
   }
 
   @Override

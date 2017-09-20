@@ -9,10 +9,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
+import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -47,15 +47,15 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
-  public OpenApiRequestMapper(InformationProductResourceProvider informationProductLoader,
-      SwaggerParser openApiParser) {
-    this.informationProductResourceProvider = Objects.requireNonNull(informationProductLoader);
-    this.openApiParser = Objects.requireNonNull(openApiParser);
+  public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
+      @NonNull SwaggerParser openApiParser) {
+    this.informationProductResourceProvider = informationProductLoader;
+    this.openApiParser = openApiParser;
   }
 
   @Override
-  public void setResourceLoader(ResourceLoader resourceLoader) {
-    this.resourceLoader = Objects.requireNonNull(resourceLoader);
+  public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
+    this.resourceLoader = resourceLoader;
   }
 
   public void map(HttpConfiguration httpConfiguration) throws IOException {
