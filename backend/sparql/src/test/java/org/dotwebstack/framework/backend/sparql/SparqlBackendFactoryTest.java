@@ -37,7 +37,7 @@ public class SparqlBackendFactoryTest {
   }
 
   @Test
-  public void backendIsCreated() {
+  public void create_BackendIsCreated_WithValidData() {
     // Arrange
     Model backendModel =
         new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.ENDPOINT, DBEERPEDIA.ENDPOINT).build();
@@ -52,7 +52,7 @@ public class SparqlBackendFactoryTest {
   }
 
   @Test
-  public void endpointIsMissing() {
+  public void create_ThrowsException_WithMissingBackend() {
     // Arrange
     Model backendModel = new ModelBuilder().build();
 
@@ -66,7 +66,7 @@ public class SparqlBackendFactoryTest {
   }
 
   @Test
-  public void endpointHasInvalidDataType() {
+  public void create_ThrowsException_WithInvalidDataType() {
     // Arrange
     Literal endpointAsString =
         SimpleValueFactory.getInstance().createLiteral(DBEERPEDIA.ENDPOINT.stringValue());
@@ -83,7 +83,7 @@ public class SparqlBackendFactoryTest {
   }
 
   @Test
-  public void sparqlBackendIsSupported() {
+  public void supports_SparqlBackendSupported_ForELMOSparqlBackend() {
     // Act
     boolean isSupported = backendFactory.supports(ELMO.SPARQL_BACKEND);
 

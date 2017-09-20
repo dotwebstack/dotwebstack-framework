@@ -25,15 +25,6 @@ public class InformationProductTest {
   }
 
   @Test
-  public void constructor_ThrowsException_LabelMissing() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, null, ResultType.GRAPH);
-  }
-
-  @Test
   public void constructor_ThrowsException_ResultTypeMissing() {
     // Assert
     thrown.expect(NullPointerException.class);

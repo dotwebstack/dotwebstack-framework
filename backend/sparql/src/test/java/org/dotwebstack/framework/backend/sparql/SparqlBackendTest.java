@@ -34,7 +34,7 @@ public class SparqlBackendTest {
   private IRI identifier;
 
   @Test
-  public void builder() {
+  public void build_CreatesBackend_WithCorrectData() {
     // Act
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
         informationProductFactory).build();
@@ -45,7 +45,7 @@ public class SparqlBackendTest {
   }
 
   @Test
-  public void reuseConnection() {
+  public void getConnection_ReusesConnection_WhenCalledTwice() {
     // Arrange
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
         informationProductFactory).build();
@@ -62,7 +62,7 @@ public class SparqlBackendTest {
   }
 
   @Test
-  public void createsInformationProduct() {
+  public void createInformationProduct_CreatesInformationProduct_WithValidData() {
     // Arrange
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
         informationProductFactory).build();

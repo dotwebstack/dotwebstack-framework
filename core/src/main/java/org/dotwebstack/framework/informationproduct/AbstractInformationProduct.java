@@ -14,8 +14,8 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   protected AbstractInformationProduct(IRI identifier, String label, ResultType resultType) {
     this.identifier = Objects.requireNonNull(identifier);
-    this.label = Objects.requireNonNull(label);
     this.resultType = Objects.requireNonNull(resultType);
+    this.label = label;
   }
 
   @Override
