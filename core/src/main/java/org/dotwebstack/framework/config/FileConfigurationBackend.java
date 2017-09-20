@@ -27,7 +27,7 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
   private String resourcePath;
 
   private Resource elmoConfiguration;
-  
+
   private SailRepository repository;
 
   private ResourceLoader resourceLoader;
@@ -37,7 +37,6 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
     this.elmoConfiguration = Objects.requireNonNull(elmoConfiguration);
     this.repository = repository;
     this.resourcePath = resourcePath;
-    this.resourcePath = resourcePath + "/model/**";
 
     repository.initialize();
   }
@@ -55,7 +54,7 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
   @PostConstruct
   public void loadResources() throws IOException {
     Resource[] projectResources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-        .getResources(resourcePath);
+        .getResources(resourcePath + "/model/**");
 
     if (projectResources.length == 0) {
       LOG.info("No model configuration files found");
