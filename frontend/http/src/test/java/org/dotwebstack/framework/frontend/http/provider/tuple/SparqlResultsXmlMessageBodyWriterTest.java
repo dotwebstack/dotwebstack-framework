@@ -22,7 +22,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class SparqlResultsXmlMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
 
   @Test
-  public void isWritableForSparqlResultsXmlMediaType() {
+  public void isWritable_IsTrue_ForSparqlResultsXmlMediaType() {
     // Arrange
     SparqlResultsXmlMessageBodyWriter provider = new SparqlResultsXmlMessageBodyWriter();
 
@@ -35,7 +35,7 @@ public class SparqlResultsXmlMessageBodyWriterTest extends SparqlResultsMessageB
   }
 
   @Test
-  public void isNotWritableForStringClass() {
+  public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     SparqlResultsXmlMessageBodyWriter provider = new SparqlResultsXmlMessageBodyWriter();
 
@@ -48,7 +48,7 @@ public class SparqlResultsXmlMessageBodyWriterTest extends SparqlResultsMessageB
   }
 
   @Test
-  public void isNotWritableForXmlMediaType() {
+  public void isWritable_IsFalse_ForXmlMediaType() {
     // Arrange
     SparqlResultsXmlMessageBodyWriter provider = new SparqlResultsXmlMessageBodyWriter();
 
@@ -61,7 +61,7 @@ public class SparqlResultsXmlMessageBodyWriterTest extends SparqlResultsMessageB
   }
 
   @Test
-  public void writesSparqlResultXmlFormat() throws IOException {
+  public void writeTo_SparqlResultXmlFormat_ForQueryResult() throws IOException {
     // Arrange
     SparqlResultsXmlMessageBodyWriter provider = new SparqlResultsXmlMessageBodyWriter();
     when(tupleQueryResult.getBindingNames()).thenReturn(Collections.singletonList("beer"));

@@ -33,7 +33,8 @@ public class TupleQueryResultSerializerTest {
   }
 
   @Test
-  public void testEmptyQueryResult() throws IOException, JSONException {
+  public void writeValueAsString_GivesEmptyResult_WhenQueryIsEmpty()
+      throws IOException, JSONException {
     // Arrange
     when(tupleQueryResult.hasNext()).thenReturn(false);
 
@@ -45,7 +46,8 @@ public class TupleQueryResultSerializerTest {
   }
 
   @Test
-  public void testQueryResult() throws IOException, JSONException {
+  public void writeValueAsString_GivesJsonResult_WhenQueryGivesData()
+      throws IOException, JSONException {
     // Arrange
     BindingSet bindingSet = new ListBindingSet(
         ImmutableList.of("identifier", "name", "yearOfFoundation", "craftMember", "fte"),

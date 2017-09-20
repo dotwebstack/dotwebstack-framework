@@ -73,7 +73,7 @@ public class StageResourceProviderTest {
   }
 
   @Test
-  public void loadStage() {
+  public void loadResources_LoadStage_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
@@ -92,7 +92,7 @@ public class StageResourceProviderTest {
   }
 
   @Test
-  public void loadMultipleStages() {
+  public void loadResources_LoadMultipleStages_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
@@ -110,7 +110,7 @@ public class StageResourceProviderTest {
   }
 
   @Test
-  public void expectsSite() {
+  public void loadResources_ThrowsException_WithMissingSite() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE))));

@@ -19,7 +19,7 @@ public class SiteTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void builder() {
+  public void build_CreatesSite_WithValidData() {
     // Act
     Site site =
         new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
@@ -31,7 +31,7 @@ public class SiteTest {
   }
 
   @Test
-  public void builderWithDefaultValues() {
+  public void build_CreatesSiteDefaults_WhenNotProvided() {
     // Act
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
 
@@ -40,7 +40,7 @@ public class SiteTest {
     assertTrue(site.isMatchAllDomain());
   }
 
-  public void builderWithMandatoryNullValues() {
+  public void build_ThrowsException_WithMissingIdentifier() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -48,7 +48,7 @@ public class SiteTest {
     new Site.Builder(null).build();
   }
 
-  public void builderWithOptionalNullValues() {
+  public void domain_ThrowsException_WithMissingValue() {
     thrown.expect(NullPointerException.class);
 
     // Act

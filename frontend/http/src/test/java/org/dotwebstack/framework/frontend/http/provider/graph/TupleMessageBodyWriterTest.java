@@ -39,7 +39,7 @@ public class TupleMessageBodyWriterTest {
   private ArgumentCaptor<byte[]> byteCaptor;
 
   @Test
-  public void isWritableForTurtleMediaType() {
+  public void isWritable_IsTrue_ForTurtleMediaType() {
     // Arrange
     TurtleGraphMessageBodyWriter writer = new TurtleGraphMessageBodyWriter();
 
@@ -52,7 +52,7 @@ public class TupleMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForStringClass() {
+  public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     TurtleGraphMessageBodyWriter writer = new TurtleGraphMessageBodyWriter();
 
@@ -64,7 +64,7 @@ public class TupleMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForXmlMediaType() {
+  public void isWritable_IsFalse_ForXmlMediaType() {
     // Arrange
     TurtleGraphMessageBodyWriter writer = new TurtleGraphMessageBodyWriter();
 
@@ -76,7 +76,7 @@ public class TupleMessageBodyWriterTest {
   }
 
   @Test
-  public void writesTurtleFormat() throws IOException {
+  public void writeTo_TurtleFormat_ForQueryResult() throws IOException {
     // Arrange
     TurtleGraphMessageBodyWriter writer = new TurtleGraphMessageBodyWriter();
     Model model =

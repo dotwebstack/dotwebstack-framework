@@ -1,11 +1,9 @@
 package org.dotwebstack.framework.frontend.http;
 
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -82,14 +80,17 @@ public class SupportedMediaTypesScanner {
       case TUPLE:
         return tupleMediaTypes.toArray(new MediaType[0]);
       default:
-        throw new NotSupportedException(
+        throw new IllegalArgumentException(
             String.format("ResultType %s has no supported media types", type));
     }
   }
 
-  public List<MessageBodyWriter> getSparqlProviders() {
-    return Stream.concat(graphQueryWriters.stream(), tupleQueryWriters.stream()).collect(
-        Collectors.toList());
+  public List<MessageBodyWriter<GraphQueryResult>> getGraphQueryWriters() {
+    return ImmutableList.copyOf(graphQueryWriters);
+  }
+
+  public List<MessageBodyWriter<TupleQueryResult>> getTupleQueryWriters() {
+    return ImmutableList.copyOf(tupleQueryWriters);
   }
 
 }

@@ -22,7 +22,7 @@ public class StageTest {
   Site siteMock;
 
   @Test
-  public void builder() {
+  public void build_CreatesStage_WithValidData() {
     // Act
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
@@ -34,7 +34,7 @@ public class StageTest {
   }
 
   @Test
-  public void builderWithDefaultValues() {
+  public void build_CreatesStageDefaults_WhenNotProvided() {
     // Act
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).build();
 
@@ -44,15 +44,15 @@ public class StageTest {
     assertThat(stage.getBasePath(), equalTo(Stage.DEFAULT_BASE_PATH));
   }
 
-  public void buildWithMandatoryNullValues1() {
+  public void build_ThrowsException_WithMissingIdentifier() {
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Stage.Builder(null, null).build();
+    new Stage.Builder(null, siteMock).build();
   }
 
-  public void buildWithMandatoryNullValues2() {
+  public void build_ThrowsException_WithMissingSite() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -60,7 +60,7 @@ public class StageTest {
     new Stage.Builder(DBEERPEDIA.BREWERIES, null).build();
   }
 
-  public void buildWithOptionalNullValues() {
+  public void basePath_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
 

@@ -112,7 +112,8 @@ public class LdRequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
-    when(supportedMediaTypesScanner.getSparqlProviders()).thenReturn(new ArrayList<>());
+    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(new ArrayList<>());
+    when(supportedMediaTypesScanner.getTupleQueryWriters()).thenReturn(new ArrayList<>());
 
     requestMapper = new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
 

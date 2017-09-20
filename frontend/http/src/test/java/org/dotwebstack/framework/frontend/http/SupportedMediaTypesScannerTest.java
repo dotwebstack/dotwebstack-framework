@@ -19,13 +19,18 @@ import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SupportedMediaTypesScannerTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private MessageBodyWriter<GraphQueryResult> unsupportedGraphWriter;
@@ -34,7 +39,7 @@ public class SupportedMediaTypesScannerTest {
   private MessageBodyWriter<TupleQueryResult> unsupportedTupleWriter;
 
   @Test
-  public void findsSupportedGraphProviders() {
+  public void constructor_FindsSupportedGraphProviders_WhenProvided() {
     // Arrange & Act
     SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(
         Collections.singletonList(new StubGraphMessageBodyWriter()), Collections.emptyList());
@@ -43,11 +48,11 @@ public class SupportedMediaTypesScannerTest {
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.GRAPH)),
         hasItems(MediaTypes.LDJSON_TYPE));
-    assertThat(scanner.getSparqlProviders().size(), equalTo(1));
+    assertThat(scanner.getGraphQueryWriters().size(), equalTo(1));
   }
 
   @Test
-  public void findsSupportedTupleProviders() {
+  public void constructor_FindsSupportedTupleProviders_WhenProvided() {
     // Arrange & Act
     SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(Collections.emptyList(),
         Collections.singletonList(new StubTupleMessageBodyWriter()));
@@ -56,11 +61,11 @@ public class SupportedMediaTypesScannerTest {
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.TUPLE)),
         hasItems(MediaTypes.SPARQL_RESULTS_JSON_TYPE));
-    assertThat(scanner.getSparqlProviders().size(), equalTo(1));
+    assertThat(scanner.getTupleQueryWriters().size(), equalTo(1));
   }
 
   @Test
-  public void ignoresForUnsupportedResultType() {
+  public void constructor_IgnoresUnsupportedProviders_WhenProvided() {
     // Arrange & Act
     SupportedMediaTypesScanner scanner =
         new SupportedMediaTypesScanner(Collections.singletonList(unsupportedGraphWriter),
@@ -69,10 +74,9 @@ public class SupportedMediaTypesScannerTest {
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(0));
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
-    assertThat(scanner.getSparqlProviders().size(), equalTo(0));
+    assertThat(scanner.getGraphQueryWriters().size(), equalTo(0));
+    assertThat(scanner.getTupleQueryWriters().size(), equalTo(0));
   }
-
-
 
   @SparqlProvider(resultType = ResultType.GRAPH)
   @Produces(MediaTypes.LDJSON)
@@ -97,5 +101,4 @@ public class SupportedMediaTypesScannerTest {
       return null;
     }
   }
-
 }
