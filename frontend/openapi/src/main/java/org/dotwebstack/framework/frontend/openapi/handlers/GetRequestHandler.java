@@ -2,9 +2,9 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import io.swagger.models.properties.Property;
 import java.util.Map;
-import java.util.Objects;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.glassfish.jersey.process.Inflector;
@@ -19,9 +19,10 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private Map<String, Property> schemaMap;
 
-  public GetRequestHandler(InformationProduct informationProduct, Map<String, Property> schemaMap) {
-    this.informationProduct = Objects.requireNonNull(informationProduct);
-    this.schemaMap = Objects.requireNonNull(schemaMap);
+  public GetRequestHandler(@NonNull InformationProduct informationProduct,
+      @NonNull Map<String, Property> schemaMap) {
+    this.informationProduct = informationProduct;
+    this.schemaMap = schemaMap;
   }
 
   public InformationProduct getInformationProduct() {

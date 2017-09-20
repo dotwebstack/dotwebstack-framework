@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
-import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
 import org.eclipse.rdf4j.model.IRI;
@@ -43,13 +43,14 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
     private QueryEvaluator queryEvaluator;
 
-    public Builder(IRI identifier, SparqlBackend backend, String query, ResultType resultType,
-        QueryEvaluator queryEvaluator) {
-      this.identifier = Objects.requireNonNull(identifier);
-      this.backend = Objects.requireNonNull(backend);
-      this.query = Objects.requireNonNull(query);
-      this.resultType = Objects.requireNonNull(resultType);
-      this.queryEvaluator = Objects.requireNonNull(queryEvaluator);
+    public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
+        @NonNull ResultType resultType,
+        @NonNull QueryEvaluator queryEvaluator) {
+      this.identifier = identifier;
+      this.backend = backend;
+      this.query = query;
+      this.resultType = resultType;
+      this.queryEvaluator = queryEvaluator;
     }
 
     public Builder label(String label) {

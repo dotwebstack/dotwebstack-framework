@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
-import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -24,8 +24,8 @@ public class SparqlBackendInformationProductFactory {
   private QueryEvaluator queryEvaluator;
 
   @Autowired
-  public SparqlBackendInformationProductFactory(QueryEvaluator queryEvaluator) {
-    this.queryEvaluator = Objects.requireNonNull(queryEvaluator);
+  public SparqlBackendInformationProductFactory(@NonNull QueryEvaluator queryEvaluator) {
+    this.queryEvaluator = queryEvaluator;
   }
 
   public InformationProduct create(IRI identifier, String label, Backend backend,

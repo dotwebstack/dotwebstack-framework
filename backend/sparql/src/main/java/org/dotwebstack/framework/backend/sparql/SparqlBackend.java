@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
-import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
@@ -55,11 +55,11 @@ public class SparqlBackend implements Backend {
 
     private SparqlBackendInformationProductFactory informationProductFactory;
 
-    public Builder(IRI identifier, SPARQLRepository repository,
-        SparqlBackendInformationProductFactory informationProductFactory) {
-      this.identifier = Objects.requireNonNull(identifier);
-      this.repository = Objects.requireNonNull(repository);
-      this.informationProductFactory = Objects.requireNonNull(informationProductFactory);
+    public Builder(@NonNull IRI identifier, @NonNull SPARQLRepository repository,
+        @NonNull SparqlBackendInformationProductFactory informationProductFactory) {
+      this.identifier = identifier;
+      this.repository = repository;
+      this.informationProductFactory = informationProductFactory;
     }
 
     public SparqlBackend build() {
