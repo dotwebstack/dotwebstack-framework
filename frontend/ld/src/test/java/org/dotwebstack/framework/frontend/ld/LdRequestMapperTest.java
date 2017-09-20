@@ -121,7 +121,7 @@ public class LdRequestMapperTest {
   }
 
   @Test
-  public void constructRequestMapperNotNullTest() {
+  public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange/Act
     LdRequestMapper requestMapper =
         new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
@@ -131,7 +131,7 @@ public class LdRequestMapperTest {
   }
 
   @Test
-  public void mapRepresentationTest() {
+  public void loadRepresentations_MapRepresentation_WithValidData() {
     // Arrange
     when(supportedMediaTypesScanner.getMediaTypes(ResultType.GRAPH)).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
@@ -150,7 +150,7 @@ public class LdRequestMapperTest {
   }
 
   @Test
-  public void mapRepresentationWithoutStageTest() {
+  public void loadRepresentations_MapRepresentation_WithoutStage() {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).build();
@@ -166,13 +166,25 @@ public class LdRequestMapperTest {
   }
 
   @Test
-  public void mapRepresentationWithNullStageTest() {
+  public void loadRepresentations_MapRepresentation_WithoutNullStage() {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(null).build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
+
+    // Act
+    requestMapper.loadRepresentations(httpConfiguration);
+
+    // Assert
+    assertThat(httpConfiguration.getResources(), hasSize(0));
+  }
+
+  @Test
+  public void loadRepresentations_MapRepresentation_WithMatchAllDomain() {
+    // Arrange
+    site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
 
     // Act
     requestMapper.loadRepresentations(httpConfiguration);

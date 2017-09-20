@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.frontend.http.site;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -27,7 +25,7 @@ public class SiteTest {
     // Assert
     assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN.stringValue()));
-    assertFalse(site.isMatchAllDomain());
+    assertThat(site.isMatchAllDomain(), equalTo(false));
   }
 
   @Test
@@ -37,7 +35,7 @@ public class SiteTest {
 
     // Assert
     assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-    assertTrue(site.isMatchAllDomain());
+    assertThat(site.isMatchAllDomain(), equalTo(true));
   }
 
   public void build_ThrowsException_WithMissingIdentifier() {

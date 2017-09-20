@@ -82,7 +82,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void noDefinitionFilesFound() throws IOException {
+  public void map_DoesNotRegisterAnything_NoDefinitionFilesFound() throws IOException {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[0]);
@@ -96,7 +96,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void nonExistingFolder() throws IOException {
+  public void map_DoesNotRegisterAnything_NonExistingFolder() throws IOException {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenThrow(
         FileNotFoundException.class);
@@ -110,7 +110,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void errorForDefinitionWithoutHost() throws IOException {
+  public void map_ThrowsExpcetion_ForDefinitionWithoutHost() throws IOException {
     // Arrange
     mockDefinition();
 
@@ -125,7 +125,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void ignoreUnmappedGetPaths() throws IOException {
+  public void map_DoesNotRegisterAnything_UnmappedGetPaths() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
         new Path().get(new Operation()));
@@ -138,7 +138,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void ignoreNonGetPaths() throws IOException {
+  public void map_DoesNotRegisterAnything_NonGetPaths() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
         new Path().put(new Operation()));
@@ -151,7 +151,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpoint() throws IOException {
+  public void map_EndpointsCorrectly_WithValidData() throws IOException {
     // Arrange
     Property schema = mock(Property.class);
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
@@ -209,7 +209,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpointWithoutProduces() throws IOException {
+  public void map_ThrowsException_EndpointWithoutProduces() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
@@ -227,7 +227,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpointWithoutResponses() throws IOException {
+  public void map_ThrowsException_EndpointWithoutResponses() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
@@ -244,7 +244,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpointWithoutOkResponse() throws IOException {
+  public void map_ThrowsException_EndpointWithoutOkResponse() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
@@ -262,7 +262,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpointWithoutOkResponseSchema() throws IOException {
+  public void map_ThrowsException_EndpointWithoutOkResponseSchema() throws IOException {
     // Arrange
     mockDefinition().produces(MediaType.TEXT_PLAIN).host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
@@ -281,7 +281,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void producesPrecedence() throws IOException {
+  public void map_ProducesPrecedence_WithValidData() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.TEXT_PLAIN).path("/breweries",
         new Path().get(new Operation().vendorExtensions(

@@ -17,7 +17,7 @@ public class OpenApiConfigurationTest {
   }
 
   @Test
-  public void testSwaggerParser() {
+  public void openApiParser_ThrowsNoExceptions_WhenParsed() {
     // Act
     SwaggerParser swaggerParser = openApiConfiguration.openApiParser();
 

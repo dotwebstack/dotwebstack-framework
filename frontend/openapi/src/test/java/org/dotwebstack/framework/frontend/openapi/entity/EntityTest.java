@@ -20,7 +20,7 @@ public class EntityTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void testGetSchema() {
+  public void getSchema_GivesSchema_ForJSON() {
     // Arrange
     Property expectedSchema = mock(Property.class);
     Entity entity =
@@ -34,7 +34,7 @@ public class EntityTest {
   }
 
   @Test
-  public void testGetUnknownSchema() {
+  public void getSchema_ThrowsExceptin_ForUnknownMediaType() {
     // Arrange
     Property expectedSchema = mock(Property.class);
     Entity entity =

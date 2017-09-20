@@ -37,7 +37,7 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void returnResponseWithEntityObject() {
+  public void apply_ReturnsResponseWithEntityObject_ForValidData() {
     // Arrange
     Object result = new Object();
     Map<String, Property> schemaMap = ImmutableMap.of();
