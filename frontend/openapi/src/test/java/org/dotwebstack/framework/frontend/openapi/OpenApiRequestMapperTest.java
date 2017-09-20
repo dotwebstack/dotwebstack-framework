@@ -78,8 +78,8 @@ public class OpenApiRequestMapperTest {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
 
-    requestMapper = new OpenApiRequestMapper(informationProductResourceProvider, openApiParser,
-        "file:.");
+    requestMapper =
+        new OpenApiRequestMapper(informationProductResourceProvider, openApiParser, "file:.");
     requestMapper.setResourceLoader(resourceLoader);
   }
 
@@ -157,11 +157,12 @@ public class OpenApiRequestMapperTest {
     // Arrange
     Property schema = mock(Property.class);
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
-        ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(
-            ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
-                DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-            new Response().schema(schema))));
+        ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path(
+            "/breweries",
+            new Path().get(new Operation().vendorExtensions(
+                ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                    DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
+                        new Response().schema(schema))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 
@@ -196,7 +197,7 @@ public class OpenApiRequestMapperTest {
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-            new Response().schema(mock(Property.class)))));
+                    new Response().schema(mock(Property.class)))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 
@@ -216,7 +217,7 @@ public class OpenApiRequestMapperTest {
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-            new Response().schema(mock(Property.class)))));
+                    new Response().schema(mock(Property.class)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -251,7 +252,7 @@ public class OpenApiRequestMapperTest {
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).response(201,
-            new Response().schema(mock(Property.class)))));
+                    new Response().schema(mock(Property.class)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -269,7 +270,7 @@ public class OpenApiRequestMapperTest {
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-            new Response())));
+                    new Response())));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -288,7 +289,7 @@ public class OpenApiRequestMapperTest {
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).produces(MediaType.APPLICATION_JSON).response(
-            Status.OK.getStatusCode(), new Response().schema(mock(Property.class)))));
+                    Status.OK.getStatusCode(), new Response().schema(mock(Property.class)))));
     when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProduct);
 
@@ -305,7 +306,7 @@ public class OpenApiRequestMapperTest {
   private Swagger mockDefinition() throws IOException {
     when(fileResource.getInputStream()).thenReturn(IOUtils.toInputStream("spec", "UTF-8"));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new org.springframework.core.io.Resource[]{fileResource});
+        new org.springframework.core.io.Resource[] {fileResource});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
     when(openApiParser.parse("spec")).thenReturn(swagger);
     return swagger;

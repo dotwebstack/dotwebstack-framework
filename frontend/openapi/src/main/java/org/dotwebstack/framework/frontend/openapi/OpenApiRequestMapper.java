@@ -67,8 +67,8 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
     org.springframework.core.io.Resource[] resources;
 
     try {
-      resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
-          .getResources(resourcePath + "/openapi/*");
+      resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
+          resourcePath + "/openapi/*");
     } catch (FileNotFoundException e) {
       LOG.warn("No openapi resources found in path:" + resourcePath);
       return;

@@ -10,4 +10,4 @@ logging:
 
 dotwebstack:
   config:
-    resourcePath: file:src/test/resources/
+    resourcePath: file:src/test/resources

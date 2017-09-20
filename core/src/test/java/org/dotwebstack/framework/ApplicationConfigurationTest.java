@@ -28,8 +28,8 @@ public class ApplicationConfigurationTest {
   @Test
   public void getConfigurationBackend() {
     // Act
-    ConfigurationBackend backend = applicationConfiguration
-        .configurationBackend(resource, "file:.");
+    ConfigurationBackend backend =
+        applicationConfiguration.configurationBackend(resource, "file:.");
 
     // Assert
     assertThat(backend, instanceOf(FileConfigurationBackend.class));
