@@ -58,7 +58,7 @@ public class LdRequestMapper {
         httpConfiguration.registerResources(resourceBuilder.build());
         LOG.debug("Mapped GET operation for request path {}", absolutePath);
       } else {
-        LOG.error(String.format("Resource <%s> is registered", absolutePath));
+        LOG.error(String.format("Resource <%s> is not registered", absolutePath));
       }
     });
   }
