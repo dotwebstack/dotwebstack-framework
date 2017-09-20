@@ -31,7 +31,8 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private ResourceLoader resourceLoader;
 
-  public FileConfigurationBackend(@NonNull Resource elmoConfiguration, SailRepository repository) {
+  public FileConfigurationBackend(@NonNull Resource elmoConfiguration, SailRepository repository,
+      String resourcePath) {
     this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
     this.resourcePath = resourcePath;
