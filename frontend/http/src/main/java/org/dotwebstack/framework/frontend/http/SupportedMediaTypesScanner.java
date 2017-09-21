@@ -3,9 +3,6 @@ package org.dotwebstack.framework.frontend.http;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -36,10 +33,8 @@ public class SupportedMediaTypesScanner {
   public SupportedMediaTypesScanner(
       @NonNull List<MessageBodyWriter<GraphQueryResult>> graphQueryWriters,
       @NonNull List<MessageBodyWriter<TupleQueryResult>> tupleQueryWriters) {
-    loadSupportedMediaTypes(graphQueryWriters, graphMediaTypes,
-        this.graphQueryWriters);
-    loadSupportedMediaTypes(tupleQueryWriters, tupleMediaTypes,
-        this.tupleQueryWriters);
+    loadSupportedMediaTypes(graphQueryWriters, graphMediaTypes, this.graphQueryWriters);
+    loadSupportedMediaTypes(tupleQueryWriters, tupleMediaTypes, this.tupleQueryWriters);
   }
 
   private <T> void loadSupportedMediaTypes(List<MessageBodyWriter<T>> sparqlProviders,
