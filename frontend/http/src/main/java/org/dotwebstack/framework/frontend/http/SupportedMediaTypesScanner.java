@@ -3,10 +3,13 @@ package org.dotwebstack.framework.frontend.http;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyWriter;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.http.provider.SparqlProvider;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -30,11 +33,12 @@ public class SupportedMediaTypesScanner {
   private List<MessageBodyWriter<TupleQueryResult>> tupleQueryWriters = new ArrayList<>();
 
   @Autowired
-  public SupportedMediaTypesScanner(List<MessageBodyWriter<GraphQueryResult>> graphQueryWriters,
-      List<MessageBodyWriter<TupleQueryResult>> tupleQueryWriters) {
-    loadSupportedMediaTypes(Objects.requireNonNull(graphQueryWriters), graphMediaTypes,
+  public SupportedMediaTypesScanner(
+      @NonNull List<MessageBodyWriter<GraphQueryResult>> graphQueryWriters,
+      @NonNull List<MessageBodyWriter<TupleQueryResult>> tupleQueryWriters) {
+    loadSupportedMediaTypes(graphQueryWriters, graphMediaTypes,
         this.graphQueryWriters);
-    loadSupportedMediaTypes(Objects.requireNonNull(tupleQueryWriters), tupleMediaTypes,
+    loadSupportedMediaTypes(tupleQueryWriters, tupleMediaTypes,
         this.tupleQueryWriters);
   }
 

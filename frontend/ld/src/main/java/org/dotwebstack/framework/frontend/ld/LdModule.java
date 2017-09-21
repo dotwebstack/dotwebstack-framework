@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.ld;
 
-import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.HttpModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +12,12 @@ public class LdModule implements HttpModule {
   private LdRequestMapper requestMapper;
 
   @Autowired
-  public LdModule(LdRequestMapper requestMapper) {
-    this.requestMapper = Objects.requireNonNull(requestMapper);
+  public LdModule(@NonNull LdRequestMapper requestMapper) {
+    this.requestMapper = requestMapper;
   }
 
   @Override
-  public void initialize(HttpConfiguration httpConfiguration) {
-    Objects.requireNonNull(httpConfiguration);
+  public void initialize(@NonNull HttpConfiguration httpConfiguration) {
     requestMapper.loadRepresentations(httpConfiguration);
   }
 }

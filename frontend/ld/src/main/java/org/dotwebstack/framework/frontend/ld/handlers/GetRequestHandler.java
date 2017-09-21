@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
-import java.util.Objects;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
@@ -14,8 +14,8 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
 
   private Representation representation;
 
-  public GetRequestHandler(Representation representation) {
-    this.representation = Objects.requireNonNull(representation);
+  public GetRequestHandler(@NonNull Representation representation) {
+    this.representation = representation;
   }
 
   @Override

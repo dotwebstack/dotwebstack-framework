@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.PostConstruct;
+import lombok.NonNull;
 import org.apache.commons.io.FilenameUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.eclipse.rdf4j.RDF4JException;
@@ -23,21 +23,25 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
 
+  private String resourcePath;
+
   private Resource elmoConfiguration;
 
   private SailRepository repository;
 
   private ResourceLoader resourceLoader;
 
-  public FileConfigurationBackend(Resource elmoConfiguration, SailRepository repository) {
-    this.elmoConfiguration = Objects.requireNonNull(elmoConfiguration);
+  public FileConfigurationBackend(@NonNull Resource elmoConfiguration, SailRepository repository,
+      String resourcePath) {
+    this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
+    this.resourcePath = resourcePath;
     repository.initialize();
   }
 
   @Override
-  public void setResourceLoader(ResourceLoader resourceLoader) {
-    this.resourceLoader = Objects.requireNonNull(resourceLoader);
+  public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
+    this.resourceLoader = resourceLoader;
   }
 
   @Override
@@ -49,10 +53,10 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
   public void loadResources() throws IOException {
     Resource[] projectResources =
         ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-            "classpath:model/**");
+            resourcePath + "/model/**");
 
     if (projectResources.length == 0) {
-      LOG.info("No configuration files found");
+      LOG.info("No model configuration files found");
       return;
     }
 

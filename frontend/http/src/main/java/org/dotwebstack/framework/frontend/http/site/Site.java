@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.http.site;
 
-import java.util.Objects;
+import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
 public class Site {
@@ -33,12 +33,12 @@ public class Site {
     // Default is match all domain
     private String domain = null;
 
-    public Builder(IRI identifier) {
-      this.identifier = Objects.requireNonNull(identifier);
+    public Builder(@NonNull IRI identifier) {
+      this.identifier = identifier;
     }
 
-    public Builder domain(String domain) {
-      this.domain = Objects.requireNonNull(domain);
+    public Builder domain(@NonNull String domain) {
+      this.domain = domain;
       return this;
     }
 

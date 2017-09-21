@@ -9,10 +9,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
+import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -28,6 +28,7 @@ import org.glassfish.jersey.server.model.ResourceMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
@@ -38,6 +39,8 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
+  private String resourcePath;
+
   private ResourceLoader resourceLoader;
 
   private InformationProductResourceProvider informationProductResourceProvider;
@@ -47,15 +50,17 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
-  public OpenApiRequestMapper(InformationProductResourceProvider informationProductLoader,
-      SwaggerParser openApiParser) {
-    this.informationProductResourceProvider = Objects.requireNonNull(informationProductLoader);
-    this.openApiParser = Objects.requireNonNull(openApiParser);
+  public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
+      @NonNull SwaggerParser openApiParser,
+      @Value("${dotwebstack.config.resourcePath: classpath:.}") String resourcePath) {
+    this.informationProductResourceProvider = informationProductLoader;
+    this.openApiParser = openApiParser;
+    this.resourcePath = resourcePath;
   }
 
   @Override
-  public void setResourceLoader(ResourceLoader resourceLoader) {
-    this.resourceLoader = Objects.requireNonNull(resourceLoader);
+  public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
+    this.resourceLoader = resourceLoader;
   }
 
   public void map(HttpConfiguration httpConfiguration) throws IOException {
@@ -63,9 +68,9 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-          "classpath:openapi/*");
+          resourcePath + "/openapi/*");
     } catch (FileNotFoundException e) {
-      LOG.warn("Path 'openapi' does not exist in resources folder.");
+      LOG.warn("No openapi resources found in path:" + resourcePath);
       return;
     }
 

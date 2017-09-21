@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.http;
 
 import java.util.List;
-import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.jackson.ObjectMapperProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -27,8 +27,7 @@ public class HttpConfiguration extends ResourceConfig {
     httpModules.forEach(module -> module.initialize(this));
   }
 
-  public boolean resourceAlreadyRegistered(String absolutePath) {
-    Objects.requireNonNull(absolutePath);
+  public boolean resourceAlreadyRegistered(@NonNull String absolutePath) {
     return super.getResources().stream().map(Resource::getPath).anyMatch(absolutePath::equals);
   }
 
