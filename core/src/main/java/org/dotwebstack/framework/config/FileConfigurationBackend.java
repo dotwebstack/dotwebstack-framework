@@ -14,22 +14,27 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 
-public class FileConfigurationBackend implements ConfigurationBackend, ResourceLoaderAware {
+public class FileConfigurationBackend
+    implements ConfigurationBackend, ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
 
-  private String resourcePath;
+  private final String resourcePath;
 
-  private Resource elmoConfiguration;
+  private final Resource elmoConfiguration;
 
-  private SailRepository repository;
+  private final SailRepository repository;
 
   private ResourceLoader resourceLoader;
+
+  private Environment environment;
 
   public FileConfigurationBackend(@NonNull Resource elmoConfiguration, SailRepository repository,
       String resourcePath) {
@@ -42,6 +47,11 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
   @Override
   public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
     this.resourceLoader = resourceLoader;
+  }
+
+  @Override
+  public void setEnvironment(@NonNull Environment environment) {
+    this.environment = environment;
   }
 
   @Override
@@ -80,8 +90,8 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
         }
 
         repositoryConnection.add(
-            new EnvironmentAwareResource(resource.getInputStream()).getInputStream(), "#",
-            FileFormats.getFormat(extension));
+            new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
+            "#", FileFormats.getFormat(extension));
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
     } catch (RDF4JException e) {

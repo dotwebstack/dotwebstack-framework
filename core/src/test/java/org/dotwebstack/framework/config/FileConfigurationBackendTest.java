@@ -1,12 +1,13 @@
 package org.dotwebstack.framework.config;
 
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -14,12 +15,15 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
-import org.dotwebstack.framework.EnvironmentAwareResource;
+import java.util.stream.Collectors;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
@@ -32,14 +36,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({FileConfigurationBackend.class, EnvironmentAwareResource.class, InputStream.class})
+@RunWith(MockitoJUnitRunner.class)
 public class FileConfigurationBackendTest {
 
   @Rule
@@ -55,7 +58,7 @@ public class FileConfigurationBackendTest {
   private SailRepositoryConnection repositoryConnection;
 
   @Mock
-  private InputStream environmentAwareInputStream;
+  private Environment environment;
 
   private ResourceLoader resourceLoader;
 
@@ -66,6 +69,7 @@ public class FileConfigurationBackendTest {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config");
+
     backend.setResourceLoader(resourceLoader);
     when(repository.getConnection()).thenReturn(repositoryConnection);
   }
@@ -74,9 +78,8 @@ public class FileConfigurationBackendTest {
   public void loadResources_LoadsRepository_WithConfigTrigFile() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
-    EnvironmentAwareResource environmentAwareResource = mock(EnvironmentAwareResource.class);
-    whenNew(EnvironmentAwareResource.class).withAnyArguments().thenReturn(environmentAwareResource);
-    when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareInputStream);
+    when(resource.getInputStream()).thenReturn(
+        new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
@@ -87,8 +90,7 @@ public class FileConfigurationBackendTest {
     // Assert
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
-    verify(repositoryConnection).add(environmentAwareInputStream, "#", RDFFormat.TRIG);
-
+    verify(repositoryConnection).add(any(InputStream.class), eq("#"), eq(RDFFormat.TRIG));
     verify(repositoryConnection).close();
     verifyNoMoreInteractions(repositoryConnection);
   }
@@ -142,14 +144,10 @@ public class FileConfigurationBackendTest {
   public void loadResources_ThrowsException_WhenRdfDataLoadError() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
-    EnvironmentAwareResource environmentAwareResource = mock(EnvironmentAwareResource.class);
-    whenNew(EnvironmentAwareResource.class).withAnyArguments().thenReturn(environmentAwareResource);
-    when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareInputStream);
+    when(resource.getInputStream()).thenThrow(new RDFParseException("message"));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
-    doThrow(RDFParseException.class).when(repositoryConnection).add(environmentAwareInputStream,
-        "#", RDFFormat.TRIG);
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -163,26 +161,14 @@ public class FileConfigurationBackendTest {
   public void loadResources_LoadsDefaultElmoFile_WhenElmoFileIsPresent() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
-    InputStream rawInputStream = mock(InputStream.class);
-    when(resource.getInputStream()).thenReturn(rawInputStream);
-    InputStream environmentAwareInputStream = mock(InputStream.class);
-    EnvironmentAwareResource environmentAwareResource = mock(EnvironmentAwareResource.class);
-    whenNew(EnvironmentAwareResource.class).withArguments(rawInputStream).thenReturn(
-        environmentAwareResource);
-    when(environmentAwareResource.getInputStream()).thenReturn(environmentAwareInputStream);
-
+    when(resource.getInputStream()).thenReturn(
+        new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {resource});
 
-    InputStream rawElmoInputStream = mock(InputStream.class);
-    when(elmoConfigurationResource.getInputStream()).thenReturn(rawElmoInputStream);
-    InputStream environmentAwareElmoInputStream = mock(InputStream.class);
-    EnvironmentAwareResource environmentAwareElmoResource = mock(EnvironmentAwareResource.class);
-    whenNew(EnvironmentAwareResource.class).withArguments(rawElmoInputStream).thenReturn(
-        environmentAwareElmoResource);
-    when(environmentAwareElmoResource.getInputStream()).thenReturn(environmentAwareElmoInputStream);
-
+    when(elmoConfigurationResource.getInputStream()).thenReturn(
+        new ByteArrayInputStream("elmo".getBytes(Charsets.UTF_8)));
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
 
     // Act
@@ -194,7 +180,16 @@ public class FileConfigurationBackendTest {
     verify(repositoryConnection, times(2)).add(captor.capture(), any(), any());
 
     List<InputStream> inputStreams = captor.getAllValues();
-    assertThat(inputStreams,
-        contains(environmentAwareInputStream, environmentAwareElmoInputStream));
+    List<String> fileContents = inputStreams.stream().map(stream -> {
+      try {
+        return CharStreams.toString(new InputStreamReader(stream, Charsets.UTF_8));
+      } catch (IOException e) {
+        fail(e.getMessage());
+        return null;
+      }
+    }).collect(Collectors.toList());
+
+    assertThat(fileContents, hasItems("file", "elmo"));
   }
+
 }
