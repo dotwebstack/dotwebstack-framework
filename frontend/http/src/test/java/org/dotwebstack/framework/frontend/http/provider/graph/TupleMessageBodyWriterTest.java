@@ -69,7 +69,8 @@ public class TupleMessageBodyWriterTest {
     TurtleGraphMessageBodyWriter writer = new TurtleGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(String.class, null, null, MediaType.APPLICATION_XML_TYPE);
+    boolean result =
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, is(false));
