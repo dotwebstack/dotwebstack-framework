@@ -10,17 +10,38 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  @Test
+  public void constructor_ThrowsException_WithMissingMediaType() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new TupleMessageBodyWriter(null) {
+      @Override
+      protected TupleQueryResultWriter createWriter(OutputStream outputStream) {
+        return null;
+      }
+    };
+  }
 
   @Test
   public void isWritable_IsTrue_ForSparqlResultsJsonMediaType() {

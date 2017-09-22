@@ -7,6 +7,7 @@ import java.lang.reflect.Type;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
+import lombok.NonNull;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
@@ -17,7 +18,7 @@ public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQ
 
   private final RDFFormat format;
 
-  protected GraphMessageBodyWriter(RDFFormat format) {
+  protected GraphMessageBodyWriter(@NonNull RDFFormat format) {
     this.format = format;
   }
 

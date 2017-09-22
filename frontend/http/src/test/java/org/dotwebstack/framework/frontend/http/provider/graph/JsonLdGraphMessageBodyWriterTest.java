@@ -19,7 +19,9 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.impl.BackgroundGraphResult;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -28,6 +30,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JsonLdGraphMessageBodyWriterTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private OutputStream outputStream;
@@ -38,6 +43,14 @@ public class JsonLdGraphMessageBodyWriterTest {
   @Captor
   private ArgumentCaptor<byte[]> byteCaptor;
 
+  @Test
+  public void constructor_ThrowsException_WithMissingFormat() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GraphMessageBodyWriter(null) {};
+  }
 
   @Test
   public void isWritable_IsTrue_ForJsonLdMediaType() {

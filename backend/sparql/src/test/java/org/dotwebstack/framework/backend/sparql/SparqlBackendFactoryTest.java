@@ -37,6 +37,15 @@ public class SparqlBackendFactoryTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithInformationProductFactory() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SparqlBackendFactory(null);
+  }
+
+  @Test
   public void create_BackendIsCreated_WithValidData() {
     // Arrange
     Model backendModel =

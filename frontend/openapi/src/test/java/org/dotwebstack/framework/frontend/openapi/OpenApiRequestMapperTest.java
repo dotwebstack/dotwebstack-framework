@@ -43,6 +43,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
@@ -70,6 +71,9 @@ public class OpenApiRequestMapperTest {
   @Mock
   private InformationProduct informationProduct;
 
+  @Mock
+  private Environment environment;
+
   private ResourceLoader resourceLoader;
 
   private OpenApiRequestMapper requestMapper;
@@ -82,6 +86,54 @@ public class OpenApiRequestMapperTest {
     requestMapper =
         new OpenApiRequestMapper(informationProductResourceProvider, openApiParser, "file:config");
     requestMapper.setResourceLoader(resourceLoader);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingInformationProductLoader() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new OpenApiRequestMapper(null, openApiParser, "file:config");
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingOpenApiParser() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new OpenApiRequestMapper(informationProductResourceProvider, null, "file:config");
+  }
+
+  @Test
+  public void setResourceLoader_ThrowsException_WithMissingValue() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    requestMapper.setResourceLoader(null);
+  }
+
+  @Test
+  public void setEnvironment_ThrowsException_WithMissingValue() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    requestMapper.setEnvironment(null);
+  }
+
+  @Test
+  public void setResourceLoader_DoesNotCrash_WithValue() {
+    // Act
+    requestMapper.setResourceLoader(resourceLoader);
+  }
+
+  @Test
+  public void setEnvironment_DoesNotCrash_WithValue() {
+    // Act
+    requestMapper.setEnvironment(environment);
   }
 
   @Test

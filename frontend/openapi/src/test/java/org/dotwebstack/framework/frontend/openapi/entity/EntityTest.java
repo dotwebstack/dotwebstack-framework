@@ -20,6 +20,27 @@ public class EntityTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Test
+  public void constructor_ThrowsException_WithMissingProperties() {
+    // Arrange
+    Property expectedSchema = mock(Property.class);
+
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new Entity(null, ImmutableMap.of(MediaType.APPLICATION_JSON, expectedSchema));
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingSchemaMap() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new Entity(new Object(), null);
+  }
+
+  @Test
   public void getSchema_GivesSchema_ForJSON() {
     // Arrange
     Property expectedSchema = mock(Property.class);

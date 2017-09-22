@@ -28,6 +28,15 @@ public class RepresentationTest {
   private InformationProduct informationProduct;
 
   @Test
+  public void build_ThrowsException_WithMissingIdentifier() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new Representation.Builder(null).build();
+  }
+
+  @Test
   public void build_CreatesRepresentation_WithValidData() {
     // Act
     final Representation representation =
