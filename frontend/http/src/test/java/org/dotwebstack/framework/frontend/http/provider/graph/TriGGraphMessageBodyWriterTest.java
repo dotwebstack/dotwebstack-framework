@@ -68,12 +68,13 @@ public class TriGGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isWritable_IsFalse_ForXmlMediaType() {
+  public void isWritable_IsFalse_ForTxtMediaType() {
     // Arrange
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(String.class, null, null, MediaType.APPLICATION_XML_TYPE);
+    boolean result =
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaType.TEXT_PLAIN_TYPE);
 
     // Assert
     assertThat(result, is(false));
