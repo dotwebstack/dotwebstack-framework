@@ -1,19 +1,22 @@
 package org.dotwebstack.framework.frontend.openapi;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Functions;
+import com.google.common.io.CharStreams;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
-import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -30,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
@@ -39,23 +43,27 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
-  private String resourcePath;
+  private final String resourcePath;
+
+  private final Environment environment;
+
+  private final InformationProductResourceProvider informationProductResourceProvider;
+
+  private final SwaggerParser openApiParser;
 
   private ResourceLoader resourceLoader;
-
-  private InformationProductResourceProvider informationProductResourceProvider;
-
-  private SwaggerParser openApiParser;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
   public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull SwaggerParser openApiParser,
-      @Value("${dotwebstack.config.resourcePath: classpath:.}") String resourcePath) {
+      @Value("${dotwebstack.config.resourcePath: classpath:.}") String resourcePath,
+      @NonNull Environment environment) {
     this.informationProductResourceProvider = informationProductLoader;
     this.openApiParser = openApiParser;
     this.resourcePath = resourcePath;
+    this.environment = environment;
   }
 
   @Override
@@ -63,7 +71,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
     this.resourceLoader = resourceLoader;
   }
 
-  public void map(HttpConfiguration httpConfiguration) throws IOException {
+  void map(HttpConfiguration httpConfiguration) throws IOException {
     org.springframework.core.io.Resource[] resources;
 
     try {
@@ -75,8 +83,11 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
     }
 
     for (org.springframework.core.io.Resource resource : resources) {
-      Swagger swagger = openApiParser.parse(IOUtils.toString(
-          new EnvironmentAwareResource(resource.getInputStream()).getInputStream()));
+      InputStream inputStream =
+          new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
+      String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
+
+      Swagger swagger = openApiParser.parse(result);
       mapSwaggerDefinition(swagger, httpConfiguration);
     }
   }

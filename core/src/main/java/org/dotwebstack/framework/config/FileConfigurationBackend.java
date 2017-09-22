@@ -15,6 +15,7 @@ import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
@@ -23,19 +24,22 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
 
-  private String resourcePath;
+  private final String resourcePath;
 
-  private Resource elmoConfiguration;
+  private final Environment environment;
 
-  private SailRepository repository;
+  private final Resource elmoConfiguration;
+
+  private final SailRepository repository;
 
   private ResourceLoader resourceLoader;
 
   public FileConfigurationBackend(@NonNull Resource elmoConfiguration, SailRepository repository,
-      String resourcePath) {
+      String resourcePath, Environment environment) {
     this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
     this.resourcePath = resourcePath;
+    this.environment = environment;
     repository.initialize();
   }
 
@@ -80,8 +84,8 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
         }
 
         repositoryConnection.add(
-            new EnvironmentAwareResource(resource.getInputStream()).getInputStream(), "#",
-            FileFormats.getFormat(extension));
+            new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
+            "#", FileFormats.getFormat(extension));
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
     } catch (RDF4JException e) {

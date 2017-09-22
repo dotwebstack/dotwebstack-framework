@@ -1,13 +1,16 @@
 package org.dotwebstack.framework;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 
 public class EnvironmentAwareResource {
 
@@ -15,14 +18,17 @@ public class EnvironmentAwareResource {
 
   private static final String REGEX_ENV_VAR = "\\$\\{?([A-Za-z0-9_]+)\\}?";
 
-  private InputStream inputStream;
+  private final InputStream inputStream;
 
-  public EnvironmentAwareResource(InputStream inputStream) {
+  private final Environment environment;
+
+  public EnvironmentAwareResource(InputStream inputStream, Environment environment) {
     this.inputStream = inputStream;
+    this.environment = environment;
   }
 
   public InputStream getInputStream() throws IOException {
-    String result = IOUtils.toString(inputStream, "UTF-8");
+    String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
 
     return new ByteArrayInputStream(parsePattern(result, REGEX_ENV_VAR).getBytes());
   }
@@ -34,7 +40,7 @@ public class EnvironmentAwareResource {
 
     while (matcher.find()) {
       String foundEnvVariables = matcher.group(1);
-      String envValue = System.getenv().get(foundEnvVariables);
+      String envValue = environment.getProperty(foundEnvVariables);
       if (envValue == null) {
         LOG.error("Env variable {} found but not defined", foundEnvVariables);
         continue;
