@@ -43,7 +43,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
@@ -71,9 +70,6 @@ public class OpenApiRequestMapperTest {
   @Mock
   private InformationProduct informationProduct;
 
-  @Mock
-  private Environment environment;
-
   private ResourceLoader resourceLoader;
 
   private OpenApiRequestMapper requestMapper;
@@ -83,8 +79,8 @@ public class OpenApiRequestMapperTest {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
 
-    requestMapper = new OpenApiRequestMapper(informationProductResourceProvider, openApiParser,
-        "file:config", environment);
+    requestMapper =
+        new OpenApiRequestMapper(informationProductResourceProvider, openApiParser, "file:config");
     requestMapper.setResourceLoader(resourceLoader);
   }
 

@@ -7,18 +7,17 @@ import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 
 @Configuration
 public class ApplicationConfiguration {
 
   @Bean
-  public ConfigurationBackend configurationBackend(Environment environment,
+  public ConfigurationBackend configurationBackend(
       @Value("classpath:/model/elmo.trig") Resource elmoConfiguration,
       @Value("${dotwebstack.config.resourcePath: file:src/main/resources}") String resourcePath) {
     return new FileConfigurationBackend(elmoConfiguration, new SailRepository(new MemoryStore()),
-        resourcePath, environment);
+        resourcePath);
   }
 
 }

@@ -14,19 +14,19 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 
-public class FileConfigurationBackend implements ConfigurationBackend, ResourceLoaderAware {
+public class FileConfigurationBackend
+    implements ConfigurationBackend, ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
 
   private final String resourcePath;
-
-  private final Environment environment;
 
   private final Resource elmoConfiguration;
 
@@ -34,18 +34,24 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
 
   private ResourceLoader resourceLoader;
 
+  private Environment environment;
+
   public FileConfigurationBackend(@NonNull Resource elmoConfiguration, SailRepository repository,
-      String resourcePath, Environment environment) {
+      String resourcePath) {
     this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
     this.resourcePath = resourcePath;
-    this.environment = environment;
     repository.initialize();
   }
 
   @Override
   public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
     this.resourceLoader = resourceLoader;
+  }
+
+  @Override
+  public void setEnvironment(@NonNull Environment environment) {
+    this.environment = environment;
   }
 
   @Override

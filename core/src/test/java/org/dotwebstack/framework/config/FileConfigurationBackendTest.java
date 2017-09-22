@@ -68,8 +68,7 @@ public class FileConfigurationBackendTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    backend =
-        new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config", environment);
+    backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config");
 
     backend.setResourceLoader(resourceLoader);
     when(repository.getConnection()).thenReturn(repositoryConnection);

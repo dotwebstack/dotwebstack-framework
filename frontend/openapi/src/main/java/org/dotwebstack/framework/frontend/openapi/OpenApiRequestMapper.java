@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -39,13 +40,11 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OpenApiRequestMapper implements ResourceLoaderAware {
+public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
   private final String resourcePath;
-
-  private final Environment environment;
 
   private final InformationProductResourceProvider informationProductResourceProvider;
 
@@ -53,22 +52,27 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
   private ResourceLoader resourceLoader;
 
+  private Environment environment;
+
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
   public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull SwaggerParser openApiParser,
-      @Value("${dotwebstack.config.resourcePath: file:src/main/resources}") String resourcePath,
-      @NonNull Environment environment) {
+      @Value("${dotwebstack.config.resourcePath: file:src/main/resources}") String resourcePath) {
     this.informationProductResourceProvider = informationProductLoader;
     this.openApiParser = openApiParser;
     this.resourcePath = resourcePath;
-    this.environment = environment;
   }
 
   @Override
   public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
     this.resourceLoader = resourceLoader;
+  }
+
+  @Override
+  public void setEnvironment(@NonNull Environment environment) {
+    this.environment = environment;
   }
 
   void map(HttpConfiguration httpConfiguration) throws IOException {
