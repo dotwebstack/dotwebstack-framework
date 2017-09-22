@@ -33,7 +33,7 @@ public class SparqlBackendInformationProductTest {
   private RepositoryConnection repositoryConnection;
 
   @Test
-  public void builder() {
+  public void build_CreatesInformationProduct_WithCorrectData() {
     // Act
     SparqlBackendInformationProduct result =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
@@ -46,7 +46,7 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
-  public void requiredIdentifier() {
+  public void build_ThrowsException_WithMissingIdentifier() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -56,7 +56,7 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
-  public void setsLabel() {
+  public void build_SetsLabel_WithValidLabel() {
     // Arrange
     SparqlBackendInformationProduct.Builder builder =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
@@ -71,7 +71,7 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
-  public void requiredBackend() {
+  public void build_ThrowsException_WithMissingBackend() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -81,7 +81,7 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
-  public void requiredQuery() {
+  public void build_ThrowsException_WithMissingQuery() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -91,7 +91,7 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
-  public void requiredSparqlQueryType() {
+  public void build_ThrowsException_WithMissingResultType() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -101,7 +101,7 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
-  public void requiredQueryEvaluator() {
+  public void build_ThrowsException_WithMissingQueryEvaluator() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -111,7 +111,7 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
-  public void getResult() {
+  public void getResult_UsesEvaluator_WhenGettingResult() {
     // Arrange
     Object expectedResult = new Object();
     when(backend.getConnection()).thenReturn(repositoryConnection);

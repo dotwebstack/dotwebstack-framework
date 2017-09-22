@@ -46,7 +46,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void evaluateGraphQuery() {
+  public void evaluate_GivesGraphQueryResult_WithGraphQuery() {
     // Arrange
     GraphQuery query = mock(GraphQuery.class);
     GraphQueryResult queryResult = mock(GraphQueryResult.class);
@@ -61,7 +61,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void evaluateTupleQuery() {
+  public void evaluate_GivesTupleQueryResult_WithTupleQuery() {
     // Arrange
     TupleQuery query = mock(TupleQuery.class);
     TupleQueryResult queryResult = mock(TupleQueryResult.class);
@@ -76,7 +76,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void evaluateUnsupportedQueryType() {
+  public void evaluate_ThrowsException_WithUnsupportedQuery() {
     // Arrange
     BooleanQuery query = mock(BooleanQuery.class);
     when(repositoryConnection.prepareQuery(QueryLanguage.SPARQL, BOOLEAN_QUERY)).thenReturn(query);
@@ -90,7 +90,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void evaluateMalformedQuery() {
+  public void evaluate_ThrowsException_WithMalformedQuery() {
     // Arrange
     when(repositoryConnection.prepareQuery(QueryLanguage.SPARQL, TUPLE_QUERY)).thenThrow(
         MalformedQueryException.class);
@@ -104,7 +104,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void evaluateError() {
+  public void evaluate_ThrowsException_WithTupleEvalutationError() {
     // Arrange
     TupleQuery query = mock(TupleQuery.class);
     when(repositoryConnection.prepareQuery(QueryLanguage.SPARQL, TUPLE_QUERY)).thenReturn(query);
@@ -116,6 +116,21 @@ public class QueryEvaluatorTest {
 
     // Act
     queryEvaluator.evaluate(repositoryConnection, TUPLE_QUERY);
+  }
+
+  @Test
+  public void evaluate_ThrowsException_WithGraphEvalutationError() {
+    // Arrange
+    GraphQuery query = mock(GraphQuery.class);
+    when(repositoryConnection.prepareQuery(QueryLanguage.SPARQL, GRAPH_QUERY)).thenReturn(query);
+    when(query.evaluate()).thenThrow(QueryEvaluationException.class);
+
+    // Assert
+    thrown.expect(BackendException.class);
+    thrown.expectMessage(String.format("Query could not be evaluated: %s", GRAPH_QUERY));
+
+    // Act
+    queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY);
   }
 
 }

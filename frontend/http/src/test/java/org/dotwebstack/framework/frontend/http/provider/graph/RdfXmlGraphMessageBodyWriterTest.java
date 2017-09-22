@@ -40,7 +40,7 @@ public class RdfXmlGraphMessageBodyWriterTest {
   private ArgumentCaptor<byte[]> byteCaptor;
 
   @Test
-  public void isWritableForRdfXmlMediaType() {
+  public void isWritable_IsTrue_ForRdfXmlMediaType() {
     // Arrange
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
@@ -53,7 +53,7 @@ public class RdfXmlGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForStringClass() {
+  public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
@@ -65,7 +65,7 @@ public class RdfXmlGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForXmlMediaType() {
+  public void isWritable_IsFalse_ForXmlMediaType() {
     // Arrange
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
@@ -77,7 +77,7 @@ public class RdfXmlGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void writesRdfXmlFormat() throws IOException {
+  public void writeTo_RdfXmlFormat_ForQueryResult() throws IOException {
     // Arrange
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
     Model model =

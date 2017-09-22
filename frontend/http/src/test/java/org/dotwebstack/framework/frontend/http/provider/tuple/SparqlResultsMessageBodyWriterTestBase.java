@@ -25,7 +25,7 @@ class SparqlResultsMessageBodyWriterTestBase {
   @Captor
   ArgumentCaptor<byte[]> byteCaptor;
 
-  BindingSet configureBindingSetWithValue(BindingSet bindingSet, String value) {
+  void configureBindingSetWithValue(BindingSet bindingSet, String value) {
     @SuppressWarnings("unchecked")
     Iterator<Binding> iterator = mock(Iterator.class);
     when(bindingSet.iterator()).thenReturn(iterator);
@@ -37,7 +37,6 @@ class SparqlResultsMessageBodyWriterTestBase {
     when(binding.getName()).thenReturn("beer");
     when(binding.getValue()).thenReturn(factory.createLiteral(value));
 
-    return bindingSet;
   }
 
 }

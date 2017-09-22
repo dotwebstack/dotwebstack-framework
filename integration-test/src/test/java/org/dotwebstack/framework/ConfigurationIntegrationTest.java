@@ -38,7 +38,7 @@ public class ConfigurationIntegrationTest {
   private RepresentationResourceProvider representationResourceProvider;
 
   @Test
-  public void configurationLoaded() {
+  public void resources_ConfigurationLoaded_WhenApplicationStarted() {
     assertThat(siteResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(siteResourceProvider.get(DBEERPEDIA.SITE), notNullValue());
     assertThat(stageResourceProvider.getAll().entrySet(), hasSize(1));

@@ -39,7 +39,7 @@ public class SparqlBackendInformationProductFactoryTest {
   }
 
   @Test
-  public void informationProductIsCreated() {
+  public void create_InformationProductIsCreated_WithValidData() {
     // Arrange
     Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
         DBEERPEDIA.SELECT_ALL_QUERY).build();
@@ -56,7 +56,7 @@ public class SparqlBackendInformationProductFactoryTest {
   }
 
   @Test
-  public void queryIsMissing() {
+  public void create_ThrowsException_WhenQueryIsMissing() {
     // Arrange
     Model statements = new ModelBuilder().build();
 
@@ -72,7 +72,7 @@ public class SparqlBackendInformationProductFactoryTest {
   }
 
   @Test
-  public void determineCorrectQueryTypeForSelect() {
+  public void create_DeterminesTupleQueryType_ForSelectQuery() {
     // Arrange
     Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
         DBEERPEDIA.SELECT_ALL_QUERY).build();
@@ -87,7 +87,7 @@ public class SparqlBackendInformationProductFactoryTest {
   }
 
   @Test
-  public void determineCorrectQueryTypeForGraph() {
+  public void create_DeterminesGraphQueryType_ForConstructQuery() {
     // Arrange
     Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
         DBEERPEDIA.CONSTRUCT_ALL_QUERY).build();
@@ -102,7 +102,7 @@ public class SparqlBackendInformationProductFactoryTest {
   }
 
   @Test
-  public void queryIsNotSupported() {
+  public void create_ThrowsException_ForInvalidQueryType() {
     // Arrange
     Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
         DBEERPEDIA.ASK_ALL_QUERY).build();
@@ -118,7 +118,7 @@ public class SparqlBackendInformationProductFactoryTest {
   }
 
   @Test
-  public void queryIsMalformed() {
+  public void create_ThrowsException_ForMalformedQuery() {
     // Arrange
     Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
         DBEERPEDIA.MALFORMED_QUERY).build();

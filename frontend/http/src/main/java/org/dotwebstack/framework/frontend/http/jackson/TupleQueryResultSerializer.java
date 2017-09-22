@@ -4,10 +4,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import org.dotwebstack.framework.LiteralDataTypes;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.query.Binding;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
 public class TupleQueryResultSerializer extends JsonSerializer<TupleQueryResult> {
@@ -20,13 +21,10 @@ public class TupleQueryResultSerializer extends JsonSerializer<TupleQueryResult>
     while (tupleQueryResult.hasNext()) {
       jsonGenerator.writeStartObject();
 
-      tupleQueryResult.next().forEach(binding -> {
-        try {
-          jsonGenerator.writeObjectField(binding.getName(), serializeValue(binding.getValue()));
-        } catch (IOException e) {
-          throw new UncheckedIOException(e);
-        }
-      });
+      BindingSet bindingSet = tupleQueryResult.next();
+      for (Binding binding : bindingSet) {
+        jsonGenerator.writeObjectField(binding.getName(), serializeValue(binding.getValue()));
+      }
 
       jsonGenerator.writeEndObject();
     }

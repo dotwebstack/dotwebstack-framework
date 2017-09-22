@@ -75,7 +75,7 @@ public class InformationProductResourceProviderTest {
   }
 
   @Test
-  public void loadInformationProduct() {
+  public void loadResources_LoadInformationProduct_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -99,7 +99,7 @@ public class InformationProductResourceProviderTest {
   }
 
   @Test
-  public void loadsSeveralInformationProducts() {
+  public void loadResources_LoadsSeveralInformationProducts_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -120,7 +120,7 @@ public class InformationProductResourceProviderTest {
   }
 
   @Test
-  public void createsInformationProductWithCorrectValues() {
+  public void loadResources_CreatesInformationProduct_WithCorrectValues() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -144,7 +144,7 @@ public class InformationProductResourceProviderTest {
   }
 
   @Test
-  public void expectsBackendParameter() {
+  public void loadResources_ThrowsException_WithMissingBackendParameter() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,

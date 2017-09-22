@@ -23,7 +23,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
 
   @Test
-  public void isWritableForSparqlResultsJsonMediaType() {
+  public void isWritable_IsTrue_ForSparqlResultsJsonMediaType() {
     // Arrange
     SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
 
@@ -36,7 +36,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   }
 
   @Test
-  public void isNotWritableForStringClass() {
+  public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
 
@@ -49,7 +49,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   }
 
   @Test
-  public void isNotWritableForJsonMediaType() {
+  public void isWritable_IsFalse_ForJsonMediaType() {
     // Arrange
     SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
 
@@ -62,7 +62,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   }
 
   @Test
-  public void sizeShouldReturnMinusOne() {
+  public void getSize_MinusOne_Always() {
     // Arrange
     SparqlResultsJsonMessageBodyWriter writer = new SparqlResultsJsonMessageBodyWriter();
 
@@ -75,7 +75,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   }
 
   @Test
-  public void writesSparqlResultJsonFormat() throws IOException {
+  public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException {
     // Arrange
     SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
     when(tupleQueryResult.getBindingNames()).thenReturn(Arrays.asList("beer"));

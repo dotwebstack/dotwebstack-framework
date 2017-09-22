@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.frontend.http.site;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -19,7 +17,7 @@ public class SiteTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void builder() {
+  public void build_CreatesSite_WithValidData() {
     // Act
     Site site =
         new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
@@ -27,20 +25,20 @@ public class SiteTest {
     // Assert
     assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN.stringValue()));
-    assertFalse(site.isMatchAllDomain());
+    assertThat(site.isMatchAllDomain(), equalTo(false));
   }
 
   @Test
-  public void builderWithDefaultValues() {
+  public void build_CreatesSiteDefaults_WhenNotProvided() {
     // Act
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
 
     // Assert
     assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-    assertTrue(site.isMatchAllDomain());
+    assertThat(site.isMatchAllDomain(), equalTo(true));
   }
 
-  public void builderWithMandatoryNullValues() {
+  public void build_ThrowsException_WithMissingIdentifier() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -48,7 +46,7 @@ public class SiteTest {
     new Site.Builder(null).build();
   }
 
-  public void builderWithOptionalNullValues() {
+  public void domain_ThrowsException_WithMissingValue() {
     thrown.expect(NullPointerException.class);
 
     // Act

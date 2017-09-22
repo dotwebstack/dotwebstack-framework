@@ -71,7 +71,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  public void loadTrigFile() throws Exception {
+  public void loadResources_LoadsRepository_WithConfigTrigFile() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
     EnvironmentAwareResource environmentAwareResource = mock(EnvironmentAwareResource.class);
@@ -94,7 +94,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  public void doNothingWhenNoFilesFound() throws IOException {
+  public void loadResources_LoadsNothing_WhenNoFilesFound() throws IOException {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[0]);
@@ -107,7 +107,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  public void ignoreUnknownFileExtension() throws IOException {
+  public void loadResources_LoadsNothing_WithIgnoredUnknownFileExtensions() throws IOException {
     // Arrange
     Resource resource = mock(Resource.class);
     when(resource.getFilename()).thenReturn("not-existing.md");
@@ -123,7 +123,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  public void repositoryConnectionError() throws IOException {
+  public void loadResources_ThrowsException_WhenRepositoryConnectionError() throws IOException {
     // Arrange
     Resource resource = mock(Resource.class);
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
@@ -139,7 +139,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  public void dataLoadError() throws Exception {
+  public void loadResources_ThrowsException_WhenRdfDataLoadError() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
     EnvironmentAwareResource environmentAwareResource = mock(EnvironmentAwareResource.class);
@@ -160,7 +160,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  public void loadsDefaultElmoResource() throws Exception {
+  public void loadResources_LoadsDefaultElmoFile_WhenElmoFileIsPresent() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
     InputStream rawInputStream = mock(InputStream.class);

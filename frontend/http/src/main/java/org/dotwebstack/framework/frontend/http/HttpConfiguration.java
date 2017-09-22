@@ -17,7 +17,8 @@ public class HttpConfiguration extends ResourceConfig {
   public HttpConfiguration(List<HttpModule> httpModules,
       SupportedMediaTypesScanner supportedMediaTypesScanner) {
     super();
-    supportedMediaTypesScanner.getSparqlProviders().forEach(this::register);
+    supportedMediaTypesScanner.getGraphQueryWriters().forEach(this::register);
+    supportedMediaTypesScanner.getTupleQueryWriters().forEach(this::register);
 
     register(ObjectMapperProvider.class);
     register(HostPreMatchingRequestFilter.class);

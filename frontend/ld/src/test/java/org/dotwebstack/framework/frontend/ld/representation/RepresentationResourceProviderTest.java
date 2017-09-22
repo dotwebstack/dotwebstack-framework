@@ -82,7 +82,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void loadRepresentationTest() {
+  public void loadResources_LoadRepresentation_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -110,7 +110,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void loadMultipleRepresentationsTest() {
+  public void loadResources_LoadMultipleRepresentation_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -139,7 +139,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void doesNotExpectInformationProductTest() {
+  public void loadResources_LoadRepresentation_WithMissingInformationProduct() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -159,7 +159,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void doesNotExpectStageTest() {
+  public void loadResources_LoadRepresentation_WithMissingStage() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -177,7 +177,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void doesNotExpectUrlPatternsTest() {
+  public void loadResources_LoadRepresentation_WithMissingUrlPatterns() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -199,12 +199,11 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void simpleRepresentationTest() {
+  public void loadResources_LoadRepresentation_WithSimpleData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
-                ELMO.REPRESENTATION))));
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
+            RDF.TYPE, ELMO.REPRESENTATION))));
     // Act
     representationResourceProvider.loadResources();
 

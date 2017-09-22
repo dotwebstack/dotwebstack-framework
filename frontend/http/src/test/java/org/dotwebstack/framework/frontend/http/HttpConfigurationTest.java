@@ -26,13 +26,13 @@ public class HttpConfigurationTest {
   private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Test
-  public void noErrorsWithoutExtensions() {
+  public void constructor_ThrowsNoExceptions_WithoutExtensions() {
     // Act & assert
     new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
   }
 
   @Test
-  public void modulesInitialized() {
+  public void constructor_ModulesInitialized_WhenGiven() {
     // Act
     HttpConfiguration httpConfiguration =
         new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
@@ -43,7 +43,7 @@ public class HttpConfigurationTest {
   }
 
   @Test
-  public void resourceNotAlreadyRegisteredTest() {
+  public void registerResources_RegisterOnce_WhenAlreadyRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
     HttpConfiguration httpConfiguration =
@@ -60,7 +60,7 @@ public class HttpConfigurationTest {
   }
 
   @Test
-  public void resourceAlreadyRegisteredTest() {
+  public void registerResources_RegisterAlreadyRegisteredTrue_WhenResourceRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
     HttpConfiguration httpConfiguration =
@@ -73,15 +73,14 @@ public class HttpConfigurationTest {
     httpConfiguration.registerResources(resourceBuilder.build());
 
     // Assert
-    assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(true));
   }
 
 
   @Test
-  public void registersSparqlProviders() {
+  public void constructor_RegistersSparqlProviders_WhenProvidedByScanner() {
     // Arrange
-    when(supportedMediaTypesScanner.getSparqlProviders()).thenReturn(
+    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(
         Collections.singletonList(new SupportedMediaTypesScannerTest.StubGraphMessageBodyWriter()));
 
     // Act

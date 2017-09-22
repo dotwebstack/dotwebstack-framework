@@ -40,7 +40,7 @@ public class JsonLdGraphMessageBodyWriterTest {
 
 
   @Test
-  public void isWritableForJsonLdMediaType() {
+  public void isWritable_IsTrue_ForJsonLdMediaType() {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
@@ -53,7 +53,7 @@ public class JsonLdGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForStringClass() {
+  public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
@@ -65,7 +65,7 @@ public class JsonLdGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForXmlMediaType() {
+  public void isWritable_IsFalse_ForXmlMediaType() {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
@@ -77,7 +77,7 @@ public class JsonLdGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void sizeShouldReturnMinusOne() {
+  public void getSize_MinusOne_Always() {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
@@ -90,7 +90,7 @@ public class JsonLdGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void writesJsonLdFormat() throws Exception {
+  public void writeTo_JsonLdFormat_ForQueryResult() throws Exception {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
     Model model =

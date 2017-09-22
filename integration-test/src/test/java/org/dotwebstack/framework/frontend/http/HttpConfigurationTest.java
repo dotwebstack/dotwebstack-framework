@@ -37,7 +37,7 @@ public class HttpConfigurationTest {
   }
 
   @Test
-  public void getStaticAsset() {
+  public void get_GivesValidResponse_ForStaticAsset() {
     // Act
     Response response = target.path("/robots.txt").request().get();
 

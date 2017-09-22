@@ -42,7 +42,7 @@ public class OpenApiIntegrationTest {
 
   @Test
   @Ignore
-  public void getBreweryCollection() {
+  public void get_GetBreweryCollection_ThroughOpenApi() {
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().get();
 
@@ -55,7 +55,7 @@ public class OpenApiIntegrationTest {
 
   @Test
   @Ignore
-  public void getBrewery() {
+  public void get_GetSingleBrewery_ThroughLdApi() {
     // Act
     Response response = target.path(String.format("/dbp/api/v1/breweries/%s",
         DBEERPEDIA.BROUWTOREN.getLocalName())).request().get();
@@ -67,7 +67,7 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
-  public void optionsMethod() {
+  public void get_GetCorrectOptions_ThroughOpenApi() {
     // Act
     Response response =
         target.path("/dbp/api/v1/breweries").request(MediaType.TEXT_PLAIN_TYPE).options();
@@ -81,7 +81,7 @@ public class OpenApiIntegrationTest {
 
   @Test
   @Ignore
-  public void headMethod() {
+  public void get_GetCorrectHead_ThroughOpenApi() {
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().head();
 
@@ -93,7 +93,7 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
-  public void resourceNotFound() {
+  public void get_ResourceNotFound_WhenResourceIsNotDefined() {
     // Act
     Response response = target.path("/dbp/api/v1/foo").request().get();
 
@@ -102,7 +102,7 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
-  public void methodNotAllowed() {
+  public void get_MethodNotAllowed_WhenDelete() {
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().delete();
 
@@ -111,7 +111,7 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
-  public void notAcceptable() {
+  public void get_NotAcceptable_WhenRequestingWrongMediaType() {
     // Act
     Response response =
         target.path("/dbp/api/v1/breweries").request(MediaType.APPLICATION_OCTET_STREAM).get();

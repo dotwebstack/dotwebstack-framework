@@ -61,7 +61,7 @@ public class SiteResourceProviderTest {
   }
 
   @Test
-  public void loadSite() {
+  public void loadResources_LoadsSite_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
@@ -76,7 +76,7 @@ public class SiteResourceProviderTest {
   }
 
   @Test
-  public void loadsSeveralSites() {
+  public void loadResources_LoadsSeveralSite_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
@@ -92,7 +92,7 @@ public class SiteResourceProviderTest {
   }
 
   @Test
-  public void loadCatchAllSite() {
+  public void loadResources_LoadCatchAllSite_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE))));
@@ -106,7 +106,7 @@ public class SiteResourceProviderTest {
   }
 
   @Test
-  public void expectNoSitesWithSimilairDomain() {
+  public void loadResources_ThrowsException_WithSitesWithSimularDomain() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),
@@ -124,7 +124,7 @@ public class SiteResourceProviderTest {
   }
 
   @Test
-  public void expectOnlyOneCatchAllSite() {
+  public void loadResources_ThrowsException_WithMultipleCatchAllDomains() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE),

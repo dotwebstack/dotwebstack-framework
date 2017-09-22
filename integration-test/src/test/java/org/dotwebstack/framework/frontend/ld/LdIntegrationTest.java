@@ -57,7 +57,7 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void getBreweryCollection() {
+  public void get_GetBreweryCollection_ThroughLdApi() {
     // Arrange
     Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
         DBEERPEDIA.BREWERIES_LABEL).build();
@@ -76,7 +76,7 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void optionsMethod() {
+  public void get_GetCorrectOptions_ThroughLdApi() {
     // Act
     Response response =
         target.path("/dbp/ld/v1/breweries").request(MediaType.TEXT_PLAIN_TYPE).options();
@@ -89,7 +89,7 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void headMethod() {
+  public void get_GetCorrectHead_ThroughLdApi() {
     // Arrange
     Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
         DBEERPEDIA.BREWERIES_LABEL).build();
@@ -106,7 +106,7 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void resourceNotFound() {
+  public void get_ResourceNotFound_WhenResourceIsNotDefined() {
     // Act
     Response response = target.path("/dbp/ld/v1/foo").request().get();
 
@@ -115,7 +115,7 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void methodNotAllowed() {
+  public void get_MethodNotAllowed_WhenDelete() {
     // Act
     Response response = target.path("/dbp/ld/v1/breweries").request().delete();
 
@@ -124,7 +124,7 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void notAcceptable() {
+  public void get_NotAcceptable_WhenRequestingWrongMediaType() {
     // Act
     Response response =
         target.path("/dbp/ld/v1/breweries").request(MediaType.APPLICATION_OCTET_STREAM).get();

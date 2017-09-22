@@ -40,7 +40,7 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void alwaysReturnRepresentationInformationProductResult() {
+  public void apply_ReturnRepresentationInformationProductResult_Always() {
     // Arrange
     when(representation.getInformationProduct()).thenReturn(informationProduct);
     when(informationProduct.getResult()).thenReturn(queryResult);
