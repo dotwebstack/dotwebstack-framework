@@ -87,6 +87,24 @@ public class LdRequestMapperTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new LdRequestMapper(null, supportedMediaTypesScanner);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingMediaTypesScanner() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new LdRequestMapper(representationResourceProvider, null);
+  }
+
+  @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
     LdRequestMapper requestMapper =

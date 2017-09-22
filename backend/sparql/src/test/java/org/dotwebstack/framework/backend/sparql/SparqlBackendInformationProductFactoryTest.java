@@ -39,6 +39,15 @@ public class SparqlBackendInformationProductFactoryTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingQueryEvaluator() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SparqlBackendInformationProductFactory(null);
+  }
+
+  @Test
   public void create_InformationProductIsCreated_WithValidData() {
     // Arrange
     Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,

@@ -38,6 +38,7 @@ public class SiteTest {
     assertThat(site.isMatchAllDomain(), equalTo(true));
   }
 
+  @Test
   public void build_ThrowsException_WithMissingIdentifier() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -46,6 +47,7 @@ public class SiteTest {
     new Site.Builder(null).build();
   }
 
+  @Test
   public void domain_ThrowsException_WithMissingValue() {
     thrown.expect(NullPointerException.class);
 

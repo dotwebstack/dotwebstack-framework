@@ -8,13 +8,18 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpConfigurationTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private HttpModule moduleA;
@@ -57,6 +62,19 @@ public class HttpConfigurationTest {
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
+  }
+
+  @Test
+  public void resourceAlreadyRegistered_ThrowException_WithNullValue() {
+    // Arrange
+    HttpConfiguration httpConfiguration =
+        new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
+
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    httpConfiguration.resourceAlreadyRegistered(null);
   }
 
   @Test

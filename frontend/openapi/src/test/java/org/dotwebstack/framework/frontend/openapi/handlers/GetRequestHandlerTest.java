@@ -15,7 +15,9 @@ import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -23,17 +25,38 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class GetRequestHandlerTest {
 
-  @Mock
-  InformationProduct informationProduct;
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  ContainerRequestContext containerRequestContext;
+  private InformationProduct informationProduct;
 
-  GetRequestHandler getRequestHandler;
+  @Mock
+  private ContainerRequestContext containerRequestContext;
+
+  private GetRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
     getRequestHandler = new GetRequestHandler(informationProduct, ImmutableMap.of());
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingInformationProduct() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GetRequestHandler(null, ImmutableMap.of());
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingSchemaMap() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GetRequestHandler(informationProduct, null);
   }
 
   @Test

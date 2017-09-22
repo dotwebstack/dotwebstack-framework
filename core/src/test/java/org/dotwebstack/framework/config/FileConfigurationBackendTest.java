@@ -75,6 +75,63 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingElmoConfiguration() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new FileConfigurationBackend(null, repository, "file:config");
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingRepository() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new FileConfigurationBackend(elmoConfigurationResource, null, "file:config");
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingResourcePath() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new FileConfigurationBackend(elmoConfigurationResource, repository, null);
+  }
+
+  @Test
+  public void setResourceLoader_ThrowsException_WithMissingValue() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    backend.setResourceLoader(null);
+  }
+
+  @Test
+  public void setEnvironment_ThrowsException_WithMissingValue() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    backend.setEnvironment(null);
+  }
+
+  @Test
+  public void setResourceLoader_DoesNotCrash_WithValue() {
+    // Act
+    backend.setResourceLoader(resourceLoader);
+  }
+
+  @Test
+  public void setEnvironment_DoesNotCrash_WithValue() {
+    // Act
+    backend.setEnvironment(environment);
+  }
+
+  @Test
   public void loadResources_LoadsRepository_WithConfigTrigFile() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);

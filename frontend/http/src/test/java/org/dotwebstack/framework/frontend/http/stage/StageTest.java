@@ -19,7 +19,7 @@ public class StageTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  Site siteMock;
+  private Site siteMock;
 
   @Test
   public void build_CreatesStage_WithValidData() {
@@ -44,6 +44,7 @@ public class StageTest {
     assertThat(stage.getBasePath(), equalTo(Stage.DEFAULT_BASE_PATH));
   }
 
+  @Test
   public void build_ThrowsException_WithMissingIdentifier() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -52,6 +53,7 @@ public class StageTest {
     new Stage.Builder(null, siteMock).build();
   }
 
+  @Test
   public void build_ThrowsException_WithMissingSite() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -60,6 +62,7 @@ public class StageTest {
     new Stage.Builder(DBEERPEDIA.BREWERIES, null).build();
   }
 
+  @Test
   public void basePath_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);

@@ -12,13 +12,18 @@ import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GetRequestHandlerTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private Representation representation;
@@ -37,6 +42,15 @@ public class GetRequestHandlerTest {
   @Before
   public void setUp() {
     getRequestHandler = new GetRequestHandler(representation);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingRepresentation() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GetRequestHandler(null);
   }
 
   @Test
