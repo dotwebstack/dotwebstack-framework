@@ -37,7 +37,7 @@ public class SparqlBackendFactoryTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithInformationProductFactory() {
+  public void constructor_ThrowsException_WithMissingInformationProductFactory() {
     // Assert
     thrown.expect(NullPointerException.class);
 

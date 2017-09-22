@@ -93,6 +93,15 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingResourcePath() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new FileConfigurationBackend(elmoConfigurationResource, repository, null);
+  }
+
+  @Test
   public void setResourceLoader_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);

@@ -37,7 +37,7 @@ public class FileConfigurationBackend
   private Environment environment;
 
   public FileConfigurationBackend(@NonNull Resource elmoConfiguration,
-      @NonNull SailRepository repository, String resourcePath) {
+      @NonNull SailRepository repository, @NonNull String resourcePath) {
     this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
     this.resourcePath = resourcePath;
