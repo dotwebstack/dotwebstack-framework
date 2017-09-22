@@ -13,16 +13,21 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.rule.PowerMockRule;
 
 
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 @PrepareForTest({EnvironmentAwareResource.class})
 public class EnvironmentAwareResourceTest {
+
+  @Rule
+  public PowerMockRule rule = new PowerMockRule();
 
   @Before
   public void setUp() throws Exception {
