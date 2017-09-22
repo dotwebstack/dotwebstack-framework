@@ -58,7 +58,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
   @Autowired
   public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull SwaggerParser openApiParser,
-      @Value("${dotwebstack.config.resourcePath: classpath:.}") String resourcePath,
+      @Value("${dotwebstack.config.resourcePath: file:src/main/resources}") String resourcePath,
       @NonNull Environment environment) {
     this.informationProductResourceProvider = informationProductLoader;
     this.openApiParser = openApiParser;
@@ -76,9 +76,9 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
 
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-          resourcePath + "/openapi/*");
+          resourcePath + "/openapi/**");
     } catch (FileNotFoundException e) {
-      LOG.warn("No openapi resources found in path:" + resourcePath);
+      LOG.warn("No Open API resources found in path:{}/openapi", resourcePath);
       return;
     }
 
