@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 public class HttpConfiguration extends ResourceConfig {
 
   @Autowired
-  public HttpConfiguration(List<HttpModule> httpModules,
-      SupportedMediaTypesScanner supportedMediaTypesScanner) {
+  public HttpConfiguration(@NonNull List<HttpModule> httpModules,
+      @NonNull SupportedMediaTypesScanner supportedMediaTypesScanner) {
     super();
     supportedMediaTypesScanner.getGraphQueryWriters().forEach(this::register);
     supportedMediaTypesScanner.getTupleQueryWriters().forEach(this::register);

@@ -31,6 +31,24 @@ public class HttpConfigurationTest {
   private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Test
+  public void constructor_ThrowsException_WithMissingHttpModules() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new HttpConfiguration(null, supportedMediaTypesScanner);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingMediaTypesScanner() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new HttpConfiguration(ImmutableList.of(), null);
+  }
+
+  @Test
   public void constructor_ThrowsNoExceptions_WithoutExtensions() {
     // Act & assert
     new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);

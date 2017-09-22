@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.frontend.ld;
 
+import com.google.common.collect.ImmutableList;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.http.SupportedMediaTypesScanner;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -14,15 +17,18 @@ public class LdModuleTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  @Mock
-  private HttpConfiguration httpConfiguration;
+  private SupportedMediaTypesScanner supportedMediaTypesScanner =
+      new SupportedMediaTypesScanner(ImmutableList.of(), ImmutableList.of());
+
+  private HttpConfiguration httpConfiguration =
+      new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
 
   @Mock
   private LdRequestMapper requestMapper;
 
   private LdModule ldModule;
 
-  @Test
+  @Before
   public void setUp() {
     ldModule = new LdModule(requestMapper);
     ldModule.initialize(httpConfiguration);
@@ -44,6 +50,12 @@ public class LdModuleTest {
 
     // Act
     ldModule.initialize(null);
+  }
+
+  @Test
+  public void initialize_DoesNotThrowException_WithHttpConfiguration() {
+    // Act
+    ldModule.initialize(httpConfiguration);
   }
 
 }
