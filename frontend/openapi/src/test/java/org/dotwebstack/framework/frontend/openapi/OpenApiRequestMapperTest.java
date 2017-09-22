@@ -82,10 +82,10 @@ public class OpenApiRequestMapperTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-
     requestMapper =
         new OpenApiRequestMapper(informationProductResourceProvider, openApiParser, "file:config");
     requestMapper.setResourceLoader(resourceLoader);
+    requestMapper.setEnvironment(environment);
   }
 
   @Test
@@ -137,6 +137,15 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingHttpConfiguration() throws IOException {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    requestMapper.map(null);
+  }
+
+  @Test
   public void map_DoesNotRegisterAnything_NoDefinitionFilesFound() throws IOException {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
@@ -165,7 +174,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void map_ThrowsExpcetion_ForDefinitionWithoutHost() throws IOException {
+  public void map_ThrowsException_ForDefinitionWithoutHost() throws IOException {
     // Arrange
     mockDefinition();
 
@@ -239,8 +248,8 @@ public class OpenApiRequestMapperTest {
     GetRequestHandler requestHandler =
         (GetRequestHandler) resource.getHandlerInstances().iterator().next();
     assertThat(requestHandler.getInformationProduct(), equalTo(informationProduct));
-    assertThat(requestHandler.getSchemaMap(),
-        equalTo(ImmutableMap.of(MediaType.TEXT_PLAIN, schema, MediaType.APPLICATION_JSON, schema)));
+    assertThat(requestHandler.getSchemaMap(), equalTo(ImmutableMap.of(MediaType.TEXT_PLAIN_TYPE,
+        schema, MediaType.APPLICATION_JSON_TYPE, schema)));
   }
 
   @Test

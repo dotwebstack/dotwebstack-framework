@@ -11,9 +11,12 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-import org.dotwebstack.framework.frontend.openapi.entity.Entity;
+import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,23 +63,49 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void apply_ReturnsResponseWithEntityObject_ForValidData() {
+  public void apply_ThrowsException_WithMissingContainerRequestContext() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    getRequestHandler.apply(null);
+  }
+
+  @Test
+  public void apply_ReturnsOkResponseWithEntityObject_ForTupleResult() {
     // Arrange
-    Object result = new Object();
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(uriInfo.getPath()).thenReturn("/");
+    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    TupleQueryResult result = mock(TupleQueryResult.class);
     Map<String, Property> schemaMap = ImmutableMap.of();
     when(informationProduct.getResult()).thenReturn(result);
-    UriInfo uriInfo = mock(UriInfo.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(uriInfo.getPath()).thenReturn("/");
+    when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act
     Response response = getRequestHandler.apply(containerRequestContext);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(200));
-    assertThat(response.getEntity(), instanceOf(Entity.class));
-    assertThat(((Entity) response.getEntity()).getProperties(), equalTo(result));
-    assertThat(((Entity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getEntity(), instanceOf(TupleEntity.class));
+    assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
+    assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
+  }
+
+  @Test
+  public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForGraphResult() {
+    // Arrange
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(uriInfo.getPath()).thenReturn("/");
+    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
+
+    // Act
+    Response response = getRequestHandler.apply(containerRequestContext);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    assertThat(response.getEntity(), equalTo(null));
   }
 
 }
