@@ -37,4 +37,13 @@ public class LdModuleTest {
     new LdModule(null);
   }
 
+  @Test
+  public void initialize_ThrowsException_WithMissingHttpConfiguration() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    ldModule.initialize(null);
+  }
+
 }

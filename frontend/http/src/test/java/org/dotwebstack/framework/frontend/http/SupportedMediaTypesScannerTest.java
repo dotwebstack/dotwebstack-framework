@@ -39,6 +39,24 @@ public class SupportedMediaTypesScannerTest {
   private MessageBodyWriter<TupleQueryResult> unsupportedTupleWriter;
 
   @Test
+  public void constructor_ThrowsException_WithMissingGraphWriters() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SupportedMediaTypesScanner(null, Collections.emptyList());
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingTupleWriters() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SupportedMediaTypesScanner(Collections.emptyList(), null);
+  }
+
+  @Test
   public void constructor_FindsSupportedGraphProviders_WhenProvided() {
     // Arrange & Act
     SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(
@@ -76,6 +94,25 @@ public class SupportedMediaTypesScannerTest {
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
     assertThat(scanner.getGraphQueryWriters().size(), equalTo(0));
     assertThat(scanner.getTupleQueryWriters().size(), equalTo(0));
+  }
+
+  @Test
+  public void constructor_IgnoresProviderWithoutProduce_WhenProvided() {
+    // Arrange & Act
+    SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(
+        Collections.singletonList(new InvalidGraphMessageBodyWriter()), Collections.emptyList());
+
+    // Assert
+    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
+    assertThat(scanner.getGraphQueryWriters().size(), equalTo(0));
+  }
+
+  @SparqlProvider(resultType = ResultType.GRAPH)
+  static class InvalidGraphMessageBodyWriter extends GraphMessageBodyWriter {
+
+    InvalidGraphMessageBodyWriter() {
+      super(RDFFormat.JSONLD);
+    }
   }
 
   @SparqlProvider(resultType = ResultType.GRAPH)

@@ -165,4 +165,56 @@ public class LdRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
 
+  @Test
+  public void loadRepresentations_IgnoreSecondRepresentation_WhenAddedTwice() {
+    // Arrange
+    when(supportedMediaTypesScanner.getMediaTypes(ResultType.GRAPH)).thenReturn(
+        new MediaType[] {MediaType.valueOf("text/turtle")});
+
+    Representation representation =
+        new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
+            informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
+    Representation samePathRepresentation =
+        new Representation.Builder(DBEERPEDIA.BREWERY_LIST_REPRESENTATION).informationProduct(
+            informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
+    Map<IRI, Representation> representationMap = new HashMap<>();
+    representationMap.put(representation.getIdentifier(), representation);
+    representationMap.put(samePathRepresentation.getIdentifier(), samePathRepresentation);
+    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+
+    // Act
+    requestMapper.loadRepresentations(httpConfiguration);
+
+    // Assert
+    assertThat(httpConfiguration.getResources(), hasSize(1));
+  }
+
+  @Test
+  public void loadRepresentations_UsesPathDomainParameter_WithMatchAllDomain() {
+    // Arrange
+    when(supportedMediaTypesScanner.getMediaTypes(ResultType.GRAPH)).thenReturn(
+        new MediaType[] {MediaType.valueOf("text/turtle")});
+
+    Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
+        DBEERPEDIA.BASE_PATH.stringValue()).build();
+    Representation representation =
+        new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
+            informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
+
+    Map<IRI, Representation> representationMap = new HashMap<>();
+    representationMap.put(representation.getIdentifier(), representation);
+    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+
+    // Act
+    requestMapper.loadRepresentations(httpConfiguration);
+
+    // Assert
+    assertThat(httpConfiguration.getResources(), hasSize(1));
+    Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
+    assertThat(resource.getPath(), equalTo(
+        "/{DOMAIN_PARAMETER}" + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.URL_PATTERN_VALUE));
+
+  }
+
 }
