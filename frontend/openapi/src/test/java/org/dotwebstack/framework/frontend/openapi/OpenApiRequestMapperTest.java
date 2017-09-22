@@ -79,7 +79,7 @@ public class OpenApiRequestMapperTest {
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
 
     requestMapper =
-        new OpenApiRequestMapper(informationProductResourceProvider, openApiParser, "file:.");
+        new OpenApiRequestMapper(informationProductResourceProvider, openApiParser, "file:config");
     requestMapper.setResourceLoader(resourceLoader);
   }
 

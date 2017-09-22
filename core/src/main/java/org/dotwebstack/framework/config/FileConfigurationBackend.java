@@ -56,7 +56,7 @@ public class FileConfigurationBackend implements ConfigurationBackend, ResourceL
             resourcePath + "/model/**");
 
     if (projectResources.length == 0) {
-      LOG.info("No model configuration files found");
+      LOG.warn("No model resources found in path:{}/model", resourcePath);
       return;
     }
 
