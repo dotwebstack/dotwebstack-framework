@@ -109,6 +109,7 @@ public class SupportedMediaTypesScannerTest {
 
   @SparqlProvider(resultType = ResultType.GRAPH)
   static class InvalidGraphMessageBodyWriter extends GraphMessageBodyWriter {
+
     InvalidGraphMessageBodyWriter() {
       super(RDFFormat.JSONLD);
     }
