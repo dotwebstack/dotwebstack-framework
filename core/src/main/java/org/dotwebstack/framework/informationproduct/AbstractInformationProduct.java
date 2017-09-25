@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.informationproduct;
 
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -11,10 +12,11 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   protected final ResultType resultType;
 
-  protected AbstractInformationProduct(IRI identifier, String label, ResultType resultType) {
+  protected AbstractInformationProduct(@NonNull IRI identifier, String label,
+      @NonNull ResultType resultType) {
     this.identifier = identifier;
-    this.label = label;
     this.resultType = resultType;
+    this.label = label;
   }
 
   @Override

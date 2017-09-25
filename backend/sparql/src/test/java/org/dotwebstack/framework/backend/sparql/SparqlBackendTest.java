@@ -13,13 +13,18 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SparqlBackendTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private SPARQLRepository repository;
@@ -34,7 +39,34 @@ public class SparqlBackendTest {
   private IRI identifier;
 
   @Test
-  public void builder() {
+  public void constructor_ThrowsException_WithMissingIdentifier() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SparqlBackend.Builder(null, repository, informationProductFactory);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingRepository() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SparqlBackend.Builder(DBEERPEDIA.BACKEND, null, informationProductFactory);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingInformationProductFactory() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, null);
+  }
+
+  @Test
+  public void build_CreatesBackend_WithCorrectData() {
     // Act
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
         informationProductFactory).build();
@@ -45,7 +77,7 @@ public class SparqlBackendTest {
   }
 
   @Test
-  public void reuseConnection() {
+  public void getConnection_ReusesConnection_WhenCalledTwice() {
     // Arrange
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
         informationProductFactory).build();
@@ -62,7 +94,7 @@ public class SparqlBackendTest {
   }
 
   @Test
-  public void createsInformationProduct() {
+  public void createInformationProduct_CreatesInformationProduct_WithValidData() {
     // Arrange
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
         informationProductFactory).build();

@@ -41,7 +41,7 @@ public class TriGGraphMessageBodyWriterTest {
   private ArgumentCaptor<byte[]> byteCaptor;
 
   @Test
-  public void isWritableForTriGMediaType() {
+  public void isWritable_IsTrue_ForTriGMediaType() {
     // Arrange
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
@@ -56,7 +56,7 @@ public class TriGGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForStringClass() {
+  public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
@@ -68,19 +68,20 @@ public class TriGGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForXmlMediaType() {
+  public void isWritable_IsFalse_ForTxtMediaType() {
     // Arrange
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(String.class, null, null, MediaType.APPLICATION_XML_TYPE);
+    boolean result =
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaType.TEXT_PLAIN_TYPE);
 
     // Assert
     assertThat(result, is(false));
   }
 
   @Test
-  public void writesTriGFormat() throws IOException {
+  public void writeTo_TriGFormat_ForQueryResult() throws IOException {
     // Arrange
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
     Model model =

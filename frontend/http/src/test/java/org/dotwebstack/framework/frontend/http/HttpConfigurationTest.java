@@ -8,13 +8,18 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HttpConfigurationTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private HttpModule moduleA;
@@ -26,13 +31,31 @@ public class HttpConfigurationTest {
   private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Test
-  public void noErrorsWithoutExtensions() {
+  public void constructor_ThrowsException_WithMissingHttpModules() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new HttpConfiguration(null, supportedMediaTypesScanner);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingMediaTypesScanner() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new HttpConfiguration(ImmutableList.of(), null);
+  }
+
+  @Test
+  public void constructor_ThrowsNoExceptions_WithoutExtensions() {
     // Act & assert
     new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
   }
 
   @Test
-  public void modulesInitialized() {
+  public void constructor_ModulesInitialized_WhenGiven() {
     // Act
     HttpConfiguration httpConfiguration =
         new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
@@ -43,7 +66,7 @@ public class HttpConfigurationTest {
   }
 
   @Test
-  public void resourceNotAlreadyRegisteredTest() {
+  public void registerResources_RegisterOnce_WhenAlreadyRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
     HttpConfiguration httpConfiguration =
@@ -60,7 +83,20 @@ public class HttpConfigurationTest {
   }
 
   @Test
-  public void resourceAlreadyRegisteredTest() {
+  public void resourceAlreadyRegistered_ThrowException_WithNullValue() {
+    // Arrange
+    HttpConfiguration httpConfiguration =
+        new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
+
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    httpConfiguration.resourceAlreadyRegistered(null);
+  }
+
+  @Test
+  public void registerResources_RegisterAlreadyRegisteredTrue_WhenResourceRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
     HttpConfiguration httpConfiguration =
@@ -73,15 +109,14 @@ public class HttpConfigurationTest {
     httpConfiguration.registerResources(resourceBuilder.build());
 
     // Assert
-    assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(true));
   }
 
 
   @Test
-  public void registersSparqlProviders() {
+  public void constructor_RegistersSparqlProviders_WhenProvidedByScanner() {
     // Arrange
-    when(supportedMediaTypesScanner.getSparqlProviders()).thenReturn(
+    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(
         Collections.singletonList(new SupportedMediaTypesScannerTest.StubGraphMessageBodyWriter()));
 
     // Act

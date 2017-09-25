@@ -40,7 +40,7 @@ public class RdfXmlGraphMessageBodyWriterTest {
   private ArgumentCaptor<byte[]> byteCaptor;
 
   @Test
-  public void isWritableForRdfXmlMediaType() {
+  public void isWritable_IsTrue_ForRdfXmlMediaType() {
     // Arrange
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
@@ -53,7 +53,7 @@ public class RdfXmlGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForStringClass() {
+  public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
@@ -65,19 +65,20 @@ public class RdfXmlGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForXmlMediaType() {
+  public void isWritable_IsFalse_ForTxtMediaType() {
     // Arrange
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(String.class, null, null, MediaType.APPLICATION_XML_TYPE);
+    boolean result =
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaType.TEXT_PLAIN_TYPE);
 
     // Assert
     assertThat(result, is(false));
   }
 
   @Test
-  public void writesRdfXmlFormat() throws IOException {
+  public void writeTo_RdfXmlFormat_ForQueryResult() throws IOException {
     // Arrange
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
     Model model =

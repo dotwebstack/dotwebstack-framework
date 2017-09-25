@@ -34,7 +34,7 @@ public class OpenApiModuleTest {
   }
 
   @Test
-  public void importDefinitions() throws IOException {
+  public void initialize_ImportDefinitions_WithConfiguration() throws IOException {
     // Act
     openApiModule.initialize(httpConfiguration);
 
@@ -43,7 +43,7 @@ public class OpenApiModuleTest {
   }
 
   @Test
-  public void importDefinitionsFailedIO() throws IOException {
+  public void initialize_ThrowsException_WhenImportDefinitionsFailedIO() throws IOException {
     // Arrange
     doThrow(IOException.class).when(requestMapper).map(httpConfiguration);
 
@@ -56,10 +56,10 @@ public class OpenApiModuleTest {
   }
 
   @Test
-  public void importDefinitionsFailedConfiguration() throws IOException {
+  public void initialize_ThrowsException_WhenImportDefinitionsFailedConfiguration()
+      throws IOException {
     // Arrange
-    doThrow(ConfigurationException.class).when(requestMapper).map(
-        httpConfiguration);
+    doThrow(ConfigurationException.class).when(requestMapper).map(httpConfiguration);
 
     // Assert
     thrown.expect(ConfigurationException.class);

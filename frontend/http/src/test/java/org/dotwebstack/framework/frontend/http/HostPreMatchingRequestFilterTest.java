@@ -40,44 +40,43 @@ public class HostPreMatchingRequestFilterTest {
   }
 
   @Test
-  public void prefixPathWithHost() throws Exception {
-
+  public void filter_PrefixPathWithHost_WhenMissingData() throws Exception {
     // Act
     hostPreMatchingRequestFilter.filter(containerRequestContext);
 
     // Assert
-    verify(containerRequestContext).setRequestUri(UriBuilder.fromUri("http://" +
-        DBEERPEDIA.ORG_HOST + "/" + DBEERPEDIA.ORG_HOST + "/beer").build());
+    verify(containerRequestContext).setRequestUri(UriBuilder.fromUri(
+        "http://" + DBEERPEDIA.ORG_HOST + "/" + DBEERPEDIA.ORG_HOST + "/beer").build());
   }
 
   @Test
-  public void prefixPathWithXForwardedHost() throws Exception {
+  public void filter_PrefixPathWithXForwaredHeader_Always() throws Exception {
 
     // Arrange
-    when(containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST))
-        .thenReturn(DBEERPEDIA.NL_HOST);
+    when(containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST)).thenReturn(
+        DBEERPEDIA.NL_HOST);
 
     // Act
     hostPreMatchingRequestFilter.filter(containerRequestContext);
 
     // Assert
-    verify(containerRequestContext).setRequestUri(UriBuilder.fromUri("http://" +
-        DBEERPEDIA.ORG_HOST + "/" + DBEERPEDIA.NL_HOST + "/beer").build());
+    verify(containerRequestContext).setRequestUri(UriBuilder.fromUri(
+        "http://" + DBEERPEDIA.ORG_HOST + "/" + DBEERPEDIA.NL_HOST + "/beer").build());
   }
 
   @Test
-  public void prefixPathWithXForwardedHostButIgnorePort() throws Exception {
+  public void filter_IgnorePort_WhenPortIsGiven() throws Exception {
 
     // Arrange
-    when(containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST)).
-        thenReturn(DBEERPEDIA.NL_HOST + ":8080");
+    when(containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST)).thenReturn(
+        DBEERPEDIA.NL_HOST + ":8080");
 
     // Act
     hostPreMatchingRequestFilter.filter(containerRequestContext);
 
     // Assert
-    verify(containerRequestContext).setRequestUri(UriBuilder.fromUri("http://" +
-        DBEERPEDIA.ORG_HOST + "/" + DBEERPEDIA.NL_HOST + "/beer").build());
+    verify(containerRequestContext).setRequestUri(UriBuilder.fromUri(
+        "http://" + DBEERPEDIA.ORG_HOST + "/" + DBEERPEDIA.NL_HOST + "/beer").build());
   }
 
 }

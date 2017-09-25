@@ -1,19 +1,22 @@
 package org.dotwebstack.framework.frontend.openapi;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Functions;
+import com.google.common.io.CharStreams;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
-import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -29,30 +32,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OpenApiRequestMapper implements ResourceLoaderAware {
+public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
-  private String resourcePath;
+  private final String resourcePath;
+
+  private final InformationProductResourceProvider informationProductResourceProvider;
+
+  private final SwaggerParser openApiParser;
 
   private ResourceLoader resourceLoader;
 
-  private InformationProductResourceProvider informationProductResourceProvider;
-
-  private SwaggerParser openApiParser;
+  private Environment environment;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
   public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull SwaggerParser openApiParser,
-      @Value("${dotwebstack.config.resourcePath: classpath:.}") String resourcePath) {
+      @Value("${dotwebstack.config.resourcePath: file:src/main/resources}") String resourcePath) {
     this.informationProductResourceProvider = informationProductLoader;
     this.openApiParser = openApiParser;
     this.resourcePath = resourcePath;
@@ -63,20 +70,28 @@ public class OpenApiRequestMapper implements ResourceLoaderAware {
     this.resourceLoader = resourceLoader;
   }
 
-  public void map(HttpConfiguration httpConfiguration) throws IOException {
+  @Override
+  public void setEnvironment(@NonNull Environment environment) {
+    this.environment = environment;
+  }
+
+  void map(HttpConfiguration httpConfiguration) throws IOException {
     org.springframework.core.io.Resource[] resources;
 
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-          resourcePath + "/openapi/*");
+          resourcePath + "/openapi/**");
     } catch (FileNotFoundException e) {
-      LOG.warn("No openapi resources found in path:" + resourcePath);
+      LOG.warn("No Open API resources found in path:{}/openapi", resourcePath);
       return;
     }
 
     for (org.springframework.core.io.Resource resource : resources) {
-      Swagger swagger = openApiParser.parse(IOUtils.toString(
-          new EnvironmentAwareResource(resource.getInputStream()).getInputStream()));
+      InputStream inputStream =
+          new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
+      String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
+
+      Swagger swagger = openApiParser.parse(result);
       mapSwaggerDefinition(swagger, httpConfiguration);
     }
   }

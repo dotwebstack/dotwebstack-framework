@@ -18,7 +18,7 @@ public class ApplicationConfigurationTest {
   @Mock
   private Resource resource;
 
-  ApplicationConfiguration applicationConfiguration;
+  private ApplicationConfiguration applicationConfiguration;
 
   @Before
   public void setUp() {
@@ -26,10 +26,10 @@ public class ApplicationConfigurationTest {
   }
 
   @Test
-  public void getConfigurationBackend() {
+  public void configurationBackend_ReturnsBackend_WhenInstantiated() {
     // Act
     ConfigurationBackend backend =
-        applicationConfiguration.configurationBackend(resource, "file:.");
+        applicationConfiguration.configurationBackend(resource, "file:src/main/resources");
 
     // Assert
     assertThat(backend, instanceOf(FileConfigurationBackend.class));

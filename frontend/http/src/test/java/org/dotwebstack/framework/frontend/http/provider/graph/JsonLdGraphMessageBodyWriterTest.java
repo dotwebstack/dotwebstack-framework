@@ -19,7 +19,9 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.impl.BackgroundGraphResult;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -28,6 +30,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JsonLdGraphMessageBodyWriterTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private OutputStream outputStream;
@@ -38,9 +43,17 @@ public class JsonLdGraphMessageBodyWriterTest {
   @Captor
   private ArgumentCaptor<byte[]> byteCaptor;
 
+  @Test
+  public void constructor_ThrowsException_WithMissingFormat() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GraphMessageBodyWriter(null) {};
+  }
 
   @Test
-  public void isWritableForJsonLdMediaType() {
+  public void isWritable_IsTrue_ForJsonLdMediaType() {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
@@ -53,7 +66,7 @@ public class JsonLdGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForStringClass() {
+  public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
@@ -65,19 +78,20 @@ public class JsonLdGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void isNotWritableForXmlMediaType() {
+  public void isWritable_IsFalse_ForTxtMediaType() {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(String.class, null, null, MediaType.APPLICATION_XML_TYPE);
+    boolean result =
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaType.TEXT_PLAIN_TYPE);
 
     // Assert
     assertThat(result, is(false));
   }
 
   @Test
-  public void sizeShouldReturnMinusOne() {
+  public void getSize_MinusOne_Always() {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
@@ -90,7 +104,7 @@ public class JsonLdGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void writesJsonLdFormat() throws Exception {
+  public void writeTo_JsonLdFormat_ForQueryResult() throws Exception {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
     Model model =

@@ -7,18 +7,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsNot.not;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.backend.Backend;
-import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.SupportedMediaTypesScanner;
@@ -28,13 +23,7 @@ import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
-import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.query.GraphQuery;
-import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
@@ -43,21 +32,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-@PrepareForTest(HttpConfiguration.class)
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class LdRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
-
-  @Mock
-  private BackendResourceProvider backendResourceProvider;
-
-  @Mock
-  private Backend backend;
 
   @Mock
   private Stage stage;
@@ -72,9 +53,6 @@ public class LdRequestMapperTest {
   private Representation representation;
 
   @Mock
-  private GraphQuery graphQuery;
-
-  @Mock
   private RepresentationResourceProvider representationResourceProvider;
 
   @Mock
@@ -84,8 +62,6 @@ public class LdRequestMapperTest {
 
   private HttpConfiguration httpConfiguration;
 
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
-
   @Before
   public void setUp() {
     site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
@@ -93,17 +69,7 @@ public class LdRequestMapperTest {
     stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
-    when(backendResourceProvider.get(any())).thenReturn(backend);
-    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
-                ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
-                ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND))));
-
     when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
-    when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
-        any())).thenReturn(informationProduct);
 
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).stage(stage).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).build();
@@ -112,7 +78,8 @@ public class LdRequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
-    when(supportedMediaTypesScanner.getSparqlProviders()).thenReturn(new ArrayList<>());
+    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(new ArrayList<>());
+    when(supportedMediaTypesScanner.getTupleQueryWriters()).thenReturn(new ArrayList<>());
 
     requestMapper = new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
 
@@ -120,8 +87,26 @@ public class LdRequestMapperTest {
   }
 
   @Test
-  public void constructRequestMapperNotNullTest() {
-    // Arrange/Act
+  public void constructor_ThrowsException_WithMissingResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new LdRequestMapper(null, supportedMediaTypesScanner);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingMediaTypesScanner() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new LdRequestMapper(representationResourceProvider, null);
+  }
+
+  @Test
+  public void constructor_DoesNotThrowExceptions_WithValidData() {
+    // Arrange / Act
     LdRequestMapper requestMapper =
         new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
 
@@ -130,7 +115,7 @@ public class LdRequestMapperTest {
   }
 
   @Test
-  public void mapRepresentationTest() {
+  public void loadRepresentations_MapRepresentation_WithValidData() {
     // Arrange
     when(supportedMediaTypesScanner.getMediaTypes(ResultType.GRAPH)).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
@@ -149,7 +134,7 @@ public class LdRequestMapperTest {
   }
 
   @Test
-  public void mapRepresentationWithoutStageTest() {
+  public void loadRepresentations_MapRepresentation_WithoutStage() {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).build();
@@ -165,7 +150,7 @@ public class LdRequestMapperTest {
   }
 
   @Test
-  public void mapRepresentationWithNullStageTest() {
+  public void loadRepresentations_MapRepresentation_WithoutNullStage() {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(null).build();
@@ -178,6 +163,58 @@ public class LdRequestMapperTest {
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
+  }
+
+  @Test
+  public void loadRepresentations_IgnoreSecondRepresentation_WhenAddedTwice() {
+    // Arrange
+    when(supportedMediaTypesScanner.getMediaTypes(ResultType.GRAPH)).thenReturn(
+        new MediaType[] {MediaType.valueOf("text/turtle")});
+
+    Representation representation =
+        new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
+            informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
+    Representation samePathRepresentation =
+        new Representation.Builder(DBEERPEDIA.BREWERY_LIST_REPRESENTATION).informationProduct(
+            informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
+    Map<IRI, Representation> representationMap = new HashMap<>();
+    representationMap.put(representation.getIdentifier(), representation);
+    representationMap.put(samePathRepresentation.getIdentifier(), samePathRepresentation);
+    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+
+    // Act
+    requestMapper.loadRepresentations(httpConfiguration);
+
+    // Assert
+    assertThat(httpConfiguration.getResources(), hasSize(1));
+  }
+
+  @Test
+  public void loadRepresentations_UsesPathDomainParameter_WithMatchAllDomain() {
+    // Arrange
+    when(supportedMediaTypesScanner.getMediaTypes(ResultType.GRAPH)).thenReturn(
+        new MediaType[] {MediaType.valueOf("text/turtle")});
+
+    Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
+        DBEERPEDIA.BASE_PATH.stringValue()).build();
+    Representation representation =
+        new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
+            informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
+
+    Map<IRI, Representation> representationMap = new HashMap<>();
+    representationMap.put(representation.getIdentifier(), representation);
+    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+
+    // Act
+    requestMapper.loadRepresentations(httpConfiguration);
+
+    // Assert
+    assertThat(httpConfiguration.getResources(), hasSize(1));
+    Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
+    assertThat(resource.getPath(), equalTo(
+        "/{DOMAIN_PARAMETER}" + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.URL_PATTERN_VALUE));
+
   }
 
 }

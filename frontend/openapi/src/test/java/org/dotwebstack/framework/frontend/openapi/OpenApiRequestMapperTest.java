@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Info;
@@ -20,11 +21,11 @@ import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
-import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandler;
@@ -42,6 +43,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
@@ -69,6 +71,9 @@ public class OpenApiRequestMapperTest {
   @Mock
   private InformationProduct informationProduct;
 
+  @Mock
+  private Environment environment;
+
   private ResourceLoader resourceLoader;
 
   private OpenApiRequestMapper requestMapper;
@@ -79,12 +84,60 @@ public class OpenApiRequestMapperTest {
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
 
     requestMapper =
-        new OpenApiRequestMapper(informationProductResourceProvider, openApiParser, "file:.");
+        new OpenApiRequestMapper(informationProductResourceProvider, openApiParser, "file:config");
     requestMapper.setResourceLoader(resourceLoader);
   }
 
   @Test
-  public void noDefinitionFilesFound() throws IOException {
+  public void constructor_ThrowsException_WithMissingInformationProductLoader() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new OpenApiRequestMapper(null, openApiParser, "file:config");
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingOpenApiParser() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new OpenApiRequestMapper(informationProductResourceProvider, null, "file:config");
+  }
+
+  @Test
+  public void setResourceLoader_ThrowsException_WithMissingValue() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    requestMapper.setResourceLoader(null);
+  }
+
+  @Test
+  public void setEnvironment_ThrowsException_WithMissingValue() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    requestMapper.setEnvironment(null);
+  }
+
+  @Test
+  public void setResourceLoader_DoesNotCrash_WithValue() {
+    // Act
+    requestMapper.setResourceLoader(resourceLoader);
+  }
+
+  @Test
+  public void setEnvironment_DoesNotCrash_WithValue() {
+    // Act
+    requestMapper.setEnvironment(environment);
+  }
+
+  @Test
+  public void map_DoesNotRegisterAnything_NoDefinitionFilesFound() throws IOException {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[0]);
@@ -98,7 +151,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void nonExistingFolder() throws IOException {
+  public void map_DoesNotRegisterAnything_NonExistingFolder() throws IOException {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenThrow(
         FileNotFoundException.class);
@@ -112,7 +165,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void errorForDefinitionWithoutHost() throws IOException {
+  public void map_ThrowsExpcetion_ForDefinitionWithoutHost() throws IOException {
     // Arrange
     mockDefinition();
 
@@ -127,7 +180,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void ignoreUnmappedGetPaths() throws IOException {
+  public void map_DoesNotRegisterAnything_UnmappedGetPaths() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
         new Path().get(new Operation()));
@@ -140,7 +193,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void ignoreNonGetPaths() throws IOException {
+  public void map_DoesNotRegisterAnything_NonGetPaths() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
         new Path().put(new Operation()));
@@ -153,7 +206,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpoint() throws IOException {
+  public void map_EndpointsCorrectly_WithValidData() throws IOException {
     // Arrange
     Property schema = mock(Property.class);
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
@@ -211,7 +264,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpointWithoutProduces() throws IOException {
+  public void map_ThrowsException_EndpointWithoutProduces() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
@@ -229,7 +282,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpointWithoutResponses() throws IOException {
+  public void map_ThrowsException_EndpointWithoutResponses() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
@@ -246,7 +299,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpointWithoutOkResponse() throws IOException {
+  public void map_ThrowsException_EndpointWithoutOkResponse() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
@@ -264,7 +317,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void mapEndpointWithoutOkResponseSchema() throws IOException {
+  public void map_ThrowsException_EndpointWithoutOkResponseSchema() throws IOException {
     // Arrange
     mockDefinition().produces(MediaType.TEXT_PLAIN).host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
@@ -283,7 +336,7 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void producesPrecedence() throws IOException {
+  public void map_ProducesPrecedence_WithValidData() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.TEXT_PLAIN).path("/breweries",
         new Path().get(new Operation().vendorExtensions(
@@ -304,7 +357,8 @@ public class OpenApiRequestMapperTest {
   }
 
   private Swagger mockDefinition() throws IOException {
-    when(fileResource.getInputStream()).thenReturn(IOUtils.toInputStream("spec", "UTF-8"));
+    byte[] bytes = "spec".getBytes(Charsets.UTF_8);
+    when(fileResource.getInputStream()).thenReturn(new ByteArrayInputStream(bytes));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[] {fileResource});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
