@@ -1,0 +1,7 @@
+${AnsiColor.BRIGHT_BLUE}________      _____${AnsiColor.YELLOW}___       __    ______ ${AnsiColor.BRIGHT_RED}____________             ______
+${AnsiColor.BRIGHT_BLUE}___  __ \_______  /${AnsiColor.YELLOW}__ |     / /_______  /${AnsiColor.BRIGHT_RED}___  ___/_  /______ _________  /__
+${AnsiColor.BRIGHT_BLUE}__  / / /  __ \  __/${AnsiColor.YELLOW}_ | /| / /_  _ \_  __ \${AnsiColor.BRIGHT_RED}____ \_  __/  __ `/  ___/_  //_/
+${AnsiColor.BRIGHT_BLUE}_  /_/ // /_/ / /${AnsiColor.YELLOW}_ __ |/ |/ / /  __/  /_/ /${AnsiColor.BRIGHT_RED}___/ // /_ / /_/ // /__ _  ,<
+${AnsiColor.BRIGHT_BLUE}/_____/ \____/\__/${AnsiColor.YELLOW} ____/|__/  \___//_.___/${AnsiColor.BRIGHT_RED}/____/ \__/ \__,_/ \___/ /_/|_|
+
+${AnsiColor.BLUE}${application.formatted-version} ${AnsiColor.BRIGHT_BLACK}Spring-boot version: ${spring-boot.version}${AnsiStyle.NORMAL}
