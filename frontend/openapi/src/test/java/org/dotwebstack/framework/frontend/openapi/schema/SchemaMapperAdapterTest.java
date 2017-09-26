@@ -42,7 +42,7 @@ public class SchemaMapperAdapterTest {
   }
 
   @Test
-  public void handleTupleValue_ThrowsException_WithMissingSchema() {
+  public void mapTupleValue_ThrowsException_WithMissingSchema() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -51,7 +51,7 @@ public class SchemaMapperAdapterTest {
   }
 
   @Test
-  public void handleTupleValue_ThrowsException_WithMissingValue() {
+  public void mapTupleValue_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -60,7 +60,7 @@ public class SchemaMapperAdapterTest {
   }
 
   @Test
-  public void handleTupleValue_ThrowsException_WhenNoSupportingHandlerFound() {
+  public void mapTupleValue_ThrowsException_WhenNoSupportingHandlerFound() {
     // Arrange
     IntegerProperty schema = new IntegerProperty();
     when(stringSchemaHandler.supports(schema)).thenReturn(false);
@@ -75,7 +75,7 @@ public class SchemaMapperAdapterTest {
   }
 
   @Test
-  public void handleTupleValue_ReturnsHandledValue_WhenSupportingHandlerFound() {
+  public void mapTupleValue_ReturnsHandledValue_WhenSupportingHandlerFound() {
     // Arrange
     StringProperty schema = new StringProperty();
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
