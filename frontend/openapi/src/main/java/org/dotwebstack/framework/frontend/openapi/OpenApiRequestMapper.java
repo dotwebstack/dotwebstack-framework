@@ -40,7 +40,7 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
 
 @Service
-public final class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
+class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
@@ -75,7 +75,7 @@ public final class OpenApiRequestMapper implements ResourceLoaderAware, Environm
     this.environment = environment;
   }
 
-  public void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
+  void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
     org.springframework.core.io.Resource[] resources;
 
     try {

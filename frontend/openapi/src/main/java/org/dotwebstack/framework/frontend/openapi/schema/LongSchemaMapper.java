@@ -23,7 +23,7 @@ class LongSchemaMapper implements SchemaMapper<LongProperty, BigInteger> {
 
   @Override
   public boolean supports(@NonNull Property schema) {
-    return LongProperty.class.isInstance(schema);
+    return schema instanceof LongProperty;
   }
 
 }

@@ -41,7 +41,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     String path = containerRequestContext.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
-    if (informationProduct.getResultType().equals(ResultType.TUPLE)) {
+    if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult();
       TupleEntity entity = new TupleEntity(schemaMap, result);
       return Response.ok(entity).build();

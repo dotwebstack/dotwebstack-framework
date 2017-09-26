@@ -22,7 +22,7 @@ class BooleanSchemaMapper implements SchemaMapper<BooleanProperty, Boolean> {
 
   @Override
   public boolean supports(@NonNull Property schema) {
-    return BooleanProperty.class.isInstance(schema);
+    return schema instanceof BooleanProperty;
   }
 
 }

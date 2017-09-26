@@ -19,12 +19,4 @@ abstract class AbstractEntity<R extends QueryResult<?>> implements Entity<R> {
     return schemaMap;
   }
 
-  public Property getSchema(MediaType mediaType) {
-    if (!schemaMap.containsKey(mediaType)) {
-      throw new NullPointerException();
-    }
-
-    return schemaMap.get(mediaType);
-  }
-
 }

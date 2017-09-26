@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
@@ -248,8 +250,8 @@ public class OpenApiRequestMapperTest {
     GetRequestHandler requestHandler =
         (GetRequestHandler) resource.getHandlerInstances().iterator().next();
     assertThat(requestHandler.getInformationProduct(), equalTo(informationProduct));
-    assertThat(requestHandler.getSchemaMap(), equalTo(ImmutableMap.of(MediaType.TEXT_PLAIN_TYPE,
-        schema, MediaType.APPLICATION_JSON_TYPE, schema)));
+    assertThat(requestHandler.getSchemaMap(), allOf(hasEntry(MediaType.TEXT_PLAIN_TYPE, schema),
+        hasEntry(MediaType.APPLICATION_JSON_TYPE, schema)));
   }
 
   @Test

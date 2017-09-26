@@ -16,7 +16,7 @@ class StringSchemaMapper implements SchemaMapper<StringProperty, String> {
 
   @Override
   public boolean supports(@NonNull Property schema) {
-    return StringProperty.class.isInstance(schema);
+    return schema instanceof StringProperty;
   }
 
 }

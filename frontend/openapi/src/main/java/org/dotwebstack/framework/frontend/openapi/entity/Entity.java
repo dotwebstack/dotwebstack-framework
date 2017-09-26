@@ -11,6 +11,4 @@ public interface Entity<R extends QueryResult<?>> {
 
   Map<MediaType, Property> getSchemaMap();
 
-  Property getSchema(MediaType mediaType);
-
 }

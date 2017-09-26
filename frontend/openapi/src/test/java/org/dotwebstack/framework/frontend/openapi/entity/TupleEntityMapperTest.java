@@ -74,6 +74,21 @@ public class TupleEntityMapperTest {
   }
 
   @Test
+  public void map_ThrowsException_ForUnknownMediaType() {
+    // Arrange
+    TupleEntity entity = new TupleEntity(
+        ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new ObjectProperty()), result);
+
+    // Assert
+    thrown.expect(EntityMapperRuntimeException.class);
+    thrown.expectMessage(String.format("No schema found for media type '%s'.",
+        MediaType.TEXT_PLAIN_TYPE.toString()));
+
+    // Act
+    tupleEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
+  }
+
+  @Test
   public void map_ReturnsEmptyMap_ForNonArraySchema() {
     // Assert
     TupleEntity entity = new TupleEntity(

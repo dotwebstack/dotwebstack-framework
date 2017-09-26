@@ -22,7 +22,7 @@ class IntegerSchemaMapper implements SchemaMapper<IntegerProperty, Integer> {
 
   @Override
   public boolean supports(@NonNull Property schema) {
-    return IntegerProperty.class.isInstance(schema);
+    return schema instanceof IntegerProperty;
   }
 
 }

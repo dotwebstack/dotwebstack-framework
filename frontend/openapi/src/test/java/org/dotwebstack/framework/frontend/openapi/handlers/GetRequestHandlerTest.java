@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -105,7 +106,7 @@ public class GetRequestHandlerTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
-    assertThat(response.getEntity(), equalTo(null));
+    assertThat(response.getEntity(), nullValue());
   }
 
 }

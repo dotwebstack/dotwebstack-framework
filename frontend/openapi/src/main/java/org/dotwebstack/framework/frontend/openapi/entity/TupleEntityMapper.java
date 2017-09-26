@@ -27,9 +27,14 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
 
   @Override
   public Object map(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
-    Property schema = entity.getSchema(mediaType);
+    Property schema = entity.getSchemaMap().get(mediaType);
 
-    if (ArrayProperty.class.isInstance(schema)) {
+    if (schema == null) {
+      throw new EntityMapperRuntimeException(
+          String.format("No schema found for media type '%s'.", mediaType.toString()));
+    }
+
+    if (schema instanceof ArrayProperty) {
       return mapCollection(entity, (ArrayProperty) schema);
     }
 
@@ -43,38 +48,41 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
       throw new EntityMapperRuntimeException("Array schemas must have an 'items' property.");
     }
 
-    if (!ObjectProperty.class.isInstance(itemSchema)) {
+    if (!(itemSchema instanceof ObjectProperty)) {
       throw new EntityMapperRuntimeException(
           "Only array items of type 'object' are supported for now.");
     }
 
-    Map<String, Property> itemProperties = ((ObjectProperty) itemSchema).getProperties();
     TupleQueryResult result = entity.getResult();
 
     ImmutableList.Builder<Map<String, Object>> collectionBuilder = new ImmutableList.Builder<>();
+    Map<String, Property> itemProperties = ((ObjectProperty) itemSchema).getProperties();
 
     while (result.hasNext()) {
-      BindingSet bindingSet = result.next();
-      ImmutableMap.Builder<String, Object> itemBuilder = new ImmutableMap.Builder<>();
-
-      itemProperties.forEach((name, property) -> {
-        if (property.getRequired() && !bindingSet.hasBinding(name)) {
-          throw new EntityMapperRuntimeException(String.format("Property '%s' is required.", name));
-        }
-
-        if (!bindingSet.hasBinding(name)) {
-          itemBuilder.put(name, Optional.absent());
-          return;
-        }
-
-        itemBuilder.put(name,
-            schemaMapperAdapter.mapTupleValue(property, bindingSet.getValue(name)));
-      });
-
-      collectionBuilder.add(itemBuilder.build());
+      collectionBuilder.add(mapBindingSet(result.next(), itemProperties));
     }
 
     return collectionBuilder.build();
+  }
+
+  private ImmutableMap<String, Object> mapBindingSet(BindingSet bindingSet,
+      Map<String, Property> itemProperties) {
+    ImmutableMap.Builder<String, Object> itemBuilder = new ImmutableMap.Builder<>();
+
+    itemProperties.forEach((name, property) -> {
+      if (property.getRequired() && !bindingSet.hasBinding(name)) {
+        throw new EntityMapperRuntimeException(String.format("Property '%s' is required.", name));
+      }
+
+      if (!bindingSet.hasBinding(name)) {
+        itemBuilder.put(name, Optional.absent());
+        return;
+      }
+
+      itemBuilder.put(name, schemaMapperAdapter.mapTupleValue(property, bindingSet.getValue(name)));
+    });
+
+    return itemBuilder.build();
   }
 
 }
