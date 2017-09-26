@@ -8,10 +8,10 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-class IntegerSchemaHandler implements SchemaHandler<IntegerProperty, Integer> {
+class IntegerSchemaMapper implements SchemaMapper<IntegerProperty, Integer> {
 
   @Override
-  public Integer handleTupleValue(@NonNull IntegerProperty schema, @NonNull Value value) {
+  public Integer mapTupleValue(@NonNull IntegerProperty schema, @NonNull Value value) {
     if (!(value instanceof Literal)) {
       throw new SchemaHandlerRuntimeException(
           String.format("Schema '%s' is not a literal value.", schema.getName()));

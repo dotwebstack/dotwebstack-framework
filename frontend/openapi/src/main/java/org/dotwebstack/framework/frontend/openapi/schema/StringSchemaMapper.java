@@ -7,10 +7,10 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-class StringSchemaHandler implements SchemaHandler<StringProperty, String> {
+class StringSchemaMapper implements SchemaMapper<StringProperty, String> {
 
   @Override
-  public String handleTupleValue(@NonNull StringProperty schema, @NonNull Value value) {
+  public String mapTupleValue(@NonNull StringProperty schema, @NonNull Value value) {
     return value.stringValue();
   }
 

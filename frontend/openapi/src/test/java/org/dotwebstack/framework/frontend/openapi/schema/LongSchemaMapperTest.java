@@ -3,8 +3,9 @@ package org.dotwebstack.framework.frontend.openapi.schema;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import io.swagger.models.properties.IntegerProperty;
+import io.swagger.models.properties.LongProperty;
 import io.swagger.models.properties.StringProperty;
+import java.math.BigInteger;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,57 +15,57 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class IntegerSchemaHandlerTest {
+public class LongSchemaMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
-  private IntegerSchemaHandler schemaHandler;
+  private LongSchemaMapper schemaHandler;
 
-  private IntegerProperty schema;
+  private LongProperty schema;
 
   @Before
   public void setUp() {
-    schemaHandler = new IntegerSchemaHandler();
-    schema = new IntegerProperty();
+    schemaHandler = new LongSchemaMapper();
+    schema = new LongProperty();
   }
 
   @Test
-  public void handleTupleValue_ThrowsException_WithMissingSchema() {
+  public void mapTupleValue_ThrowsException_WithMissingSchema() {
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.handleTupleValue(null, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
+    schemaHandler.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
   }
 
   @Test
-  public void handleTupleValue_ThrowsException_WithMissingValue() {
+  public void mapTupleValue_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.handleTupleValue(schema, null);
+    schemaHandler.mapTupleValue(schema, null);
   }
 
   @Test
-  public void handleTupleValue_ThrowsException_ForNonLiterals() {
+  public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
     thrown.expect(SchemaHandlerRuntimeException.class);
     thrown.expectMessage(String.format("Schema '%s' is not a literal value.", schema.getName()));
 
     // Arrange & Act
-    schemaHandler.handleTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
   }
 
   @Test
-  public void handleTupleValue_ReturnValue_ForLiterals() {
+  public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Integer result =
-        schemaHandler.handleTupleValue(schema, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
+    BigInteger result =
+        schemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
 
     // Assert
-    assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue()));
+    assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()));
   }
 
   @Test
@@ -77,7 +78,7 @@ public class IntegerSchemaHandlerTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForIntegerSchema() {
+  public void supports_ReturnsTrue_ForLongSchema() {
     // Arrange & Act
     Boolean supported = schemaHandler.supports(schema);
 
@@ -86,7 +87,7 @@ public class IntegerSchemaHandlerTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonIntegerSchema() {
+  public void supports_ReturnsTrue_ForNonLongSchema() {
     // Arrange & Act
     Boolean supported = schemaHandler.supports(new StringProperty());
 

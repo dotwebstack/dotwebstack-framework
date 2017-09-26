@@ -9,20 +9,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public final class SchemaHandlerAdapter {
+public final class SchemaMapperAdapter {
 
-  private ImmutableList<SchemaHandler<? extends Property, ?>> schemaHandlers;
+  private ImmutableList<SchemaMapper<? extends Property, ?>> schemaHandlers;
 
   @Autowired
-  public SchemaHandlerAdapter(@NonNull List<SchemaHandler<? extends Property, ?>> schemaHandlers) {
+  public SchemaMapperAdapter(@NonNull List<SchemaMapper<? extends Property, ?>> schemaHandlers) {
     this.schemaHandlers = ImmutableList.copyOf(schemaHandlers);
   }
 
   @SuppressWarnings("unchecked")
-  public <S extends Property> Object handleTupleValue(@NonNull S schema, @NonNull Value value) {
-    for (SchemaHandler<? extends Property, ?> handler : schemaHandlers) {
+  public <S extends Property> Object mapTupleValue(@NonNull S schema, @NonNull Value value) {
+    for (SchemaMapper<? extends Property, ?> handler : schemaHandlers) {
       if (handler.supports(schema)) {
-        return ((SchemaHandler<S, ?>) handler).handleTupleValue(schema, value);
+        return ((SchemaMapper<S, ?>) handler).mapTupleValue(schema, value);
       }
     }
 

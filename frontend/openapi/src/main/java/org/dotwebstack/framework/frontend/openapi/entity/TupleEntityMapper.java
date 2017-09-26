@@ -9,7 +9,7 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.schema.SchemaHandlerAdapter;
+import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +18,11 @@ import org.springframework.stereotype.Service;
 @Service
 public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
 
-  private SchemaHandlerAdapter schemaHandler;
+  private SchemaMapperAdapter schemaMapperAdapter;
 
   @Autowired
-  public TupleEntityMapper(@NonNull SchemaHandlerAdapter schemaHandler) {
-    this.schemaHandler = schemaHandler;
+  public TupleEntityMapper(@NonNull SchemaMapperAdapter schemaMapperAdapter) {
+    this.schemaMapperAdapter = schemaMapperAdapter;
   }
 
   @Override
@@ -67,7 +67,8 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
           return;
         }
 
-        itemBuilder.put(name, schemaHandler.handleTupleValue(property, bindingSet.getValue(name)));
+        itemBuilder.put(name,
+            schemaMapperAdapter.mapTupleValue(property, bindingSet.getValue(name)));
       });
 
       collectionBuilder.add(itemBuilder.build());

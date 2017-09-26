@@ -15,7 +15,7 @@ import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.StringProperty;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.openapi.schema.SchemaHandlerAdapter;
+import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.impl.ListBindingSet;
@@ -34,7 +34,7 @@ public class TupleEntityMapperTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private SchemaHandlerAdapter schemaHandler;
+  private SchemaMapperAdapter schemaHandler;
 
   @Mock
   private TupleQueryResult result;
@@ -126,7 +126,7 @@ public class TupleEntityMapperTest {
     when(result.hasNext()).thenReturn(true, false);
     when(result.next()).thenReturn(
         new ListBindingSet(ImmutableList.of("name"), ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME)));
-    when(schemaHandler.handleTupleValue(nameProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
+    when(schemaHandler.mapTupleValue(nameProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
         DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
