@@ -36,7 +36,7 @@ public class LongSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
+    schemaHandler.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
   }
 
   @Test
@@ -61,11 +61,10 @@ public class LongSchemaMapperTest {
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    BigInteger result =
-        schemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
+    BigInteger result = schemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
 
     // Assert
-    assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()));
+    assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR.integerValue()));
   }
 
   @Test
