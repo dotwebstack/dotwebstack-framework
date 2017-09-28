@@ -19,13 +19,13 @@ public class IntegerSchemaMapperTest {
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
-  private IntegerSchemaMapper schemaHandler;
+  private IntegerSchemaMapper schemaMapper;
 
   private IntegerProperty schema;
 
   @Before
   public void setUp() {
-    schemaHandler = new IntegerSchemaMapper();
+    schemaMapper = new IntegerSchemaMapper();
     schema = new IntegerProperty();
   }
 
@@ -35,7 +35,7 @@ public class IntegerSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
+    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
   }
 
   @Test
@@ -44,23 +44,23 @@ public class IntegerSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.mapTupleValue(schema, null);
+    schemaMapper.mapTupleValue(schema, null);
   }
 
   @Test
   public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
-    thrown.expect(SchemaHandlerRuntimeException.class);
-    thrown.expectMessage(String.format("Schema '%s' is not a literal value.", schema.getName()));
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Integer result = schemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
+    Integer result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue()));
@@ -72,13 +72,13 @@ public class IntegerSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.supports(null);
+    schemaMapper.supports(null);
   }
 
   @Test
   public void supports_ReturnsTrue_ForIntegerSchema() {
     // Arrange & Act
-    Boolean supported = schemaHandler.supports(schema);
+    Boolean supported = schemaMapper.supports(schema);
 
     // Assert
     assertThat(supported, equalTo(true));
@@ -87,7 +87,7 @@ public class IntegerSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForNonIntegerSchema() {
     // Arrange & Act
-    Boolean supported = schemaHandler.supports(new StringProperty());
+    Boolean supported = schemaMapper.supports(new StringProperty());
 
     // Assert
     assertThat(supported, equalTo(false));

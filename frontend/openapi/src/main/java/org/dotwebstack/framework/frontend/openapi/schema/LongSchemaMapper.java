@@ -4,7 +4,6 @@ import io.swagger.models.properties.LongProperty;
 import io.swagger.models.properties.Property;
 import java.math.BigInteger;
 import lombok.NonNull;
-import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,12 +12,7 @@ class LongSchemaMapper implements SchemaMapper<LongProperty, BigInteger> {
 
   @Override
   public BigInteger mapTupleValue(@NonNull LongProperty schema, @NonNull Value value) {
-    if (!(value instanceof Literal)) {
-      throw new SchemaHandlerRuntimeException(
-          String.format("Schema '%s' is not a literal value.", schema.getName()));
-    }
-
-    return ((Literal) value).integerValue();
+    return SchemaMapperUtils.castLiteralValue(value).integerValue();
   }
 
   @Override

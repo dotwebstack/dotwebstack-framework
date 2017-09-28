@@ -34,7 +34,7 @@ public class TupleEntityMapperTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private SchemaMapperAdapter schemaHandler;
+  private SchemaMapperAdapter schemaMapper;
 
   @Mock
   private TupleQueryResult result;
@@ -43,7 +43,7 @@ public class TupleEntityMapperTest {
 
   @Before
   public void setUp() {
-    tupleEntityMapper = new TupleEntityMapper(schemaHandler);
+    tupleEntityMapper = new TupleEntityMapper(schemaMapper);
   }
 
   @Test
@@ -141,7 +141,7 @@ public class TupleEntityMapperTest {
     when(result.hasNext()).thenReturn(true, false);
     when(result.next()).thenReturn(
         new ListBindingSet(ImmutableList.of("name"), ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME)));
-    when(schemaHandler.mapTupleValue(nameProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
+    when(schemaMapper.mapTupleValue(nameProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
         DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act

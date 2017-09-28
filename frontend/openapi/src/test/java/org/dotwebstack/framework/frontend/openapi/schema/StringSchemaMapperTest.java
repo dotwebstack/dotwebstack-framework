@@ -19,13 +19,13 @@ public class StringSchemaMapperTest {
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
-  private StringSchemaMapper schemaHandler;
+  private StringSchemaMapper schemaMapper;
 
   private StringProperty schema;
 
   @Before
   public void setUp() {
-    schemaHandler = new StringSchemaMapper();
+    schemaMapper = new StringSchemaMapper();
     schema = new StringProperty();
   }
 
@@ -35,7 +35,7 @@ public class StringSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
+    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
   }
 
   @Test
@@ -44,13 +44,13 @@ public class StringSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.mapTupleValue(schema, null);
+    schemaMapper.mapTupleValue(schema, null);
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    String result = schemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
+    String result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
@@ -62,13 +62,13 @@ public class StringSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.supports(null);
+    schemaMapper.supports(null);
   }
 
   @Test
   public void supports_ReturnsTrue_ForStringSchema() {
     // Arrange & Act
-    Boolean supported = schemaHandler.supports(schema);
+    Boolean supported = schemaMapper.supports(schema);
 
     // Assert
     assertThat(supported, equalTo(true));
@@ -77,7 +77,7 @@ public class StringSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForNonStringSchema() {
     // Arrange & Act
-    Boolean supported = schemaHandler.supports(new IntegerProperty());
+    Boolean supported = schemaMapper.supports(new IntegerProperty());
 
     // Assert
     assertThat(supported, equalTo(false));

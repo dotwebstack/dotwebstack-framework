@@ -23,13 +23,13 @@ public class SchemaMapperAdapterTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private SchemaMapper<StringProperty, String> stringSchemaHandler;
+  private SchemaMapper<StringProperty, String> stringSchemaMapper;
 
-  private SchemaMapperAdapter schemaHandlerAdapter;
+  private SchemaMapperAdapter schemaMapperAdapter;
 
   @Before
   public void setUp() {
-    schemaHandlerAdapter = new SchemaMapperAdapter(ImmutableList.of(stringSchemaHandler));
+    schemaMapperAdapter = new SchemaMapperAdapter(ImmutableList.of(stringSchemaMapper));
   }
 
   @Test
@@ -47,7 +47,7 @@ public class SchemaMapperAdapterTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    schemaHandlerAdapter.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
+    schemaMapperAdapter.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
   }
 
   @Test
@@ -56,22 +56,22 @@ public class SchemaMapperAdapterTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    schemaHandlerAdapter.mapTupleValue(new StringProperty(), null);
+    schemaMapperAdapter.mapTupleValue(new StringProperty(), null);
   }
 
   @Test
   public void mapTupleValue_ThrowsException_WhenNoSupportingHandlerFound() {
     // Arrange
     IntegerProperty schema = new IntegerProperty();
-    when(stringSchemaHandler.supports(schema)).thenReturn(false);
+    when(stringSchemaMapper.supports(schema)).thenReturn(false);
 
     // Assert
-    thrown.expect(SchemaHandlerRuntimeException.class);
+    thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(
         String.format("No schema handler available for '%s'.", schema.getClass().getName()));
 
     // Act
-    schemaHandlerAdapter.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
+    schemaMapperAdapter.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
   }
 
   @Test
@@ -79,12 +79,12 @@ public class SchemaMapperAdapterTest {
     // Arrange
     StringProperty schema = new StringProperty();
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
-    when(stringSchemaHandler.supports(schema)).thenReturn(true);
-    when(stringSchemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
+    when(stringSchemaMapper.supports(schema)).thenReturn(true);
+    when(stringSchemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
         expectedValue);
 
     // Act
-    Object value = schemaHandlerAdapter.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
+    Object value = schemaMapperAdapter.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
 
     // Assert
     assertThat(value, equalTo(expectedValue));

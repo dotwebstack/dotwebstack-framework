@@ -20,13 +20,13 @@ public class LongSchemaMapperTest {
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
-  private LongSchemaMapper schemaHandler;
+  private LongSchemaMapper schemaMapper;
 
   private LongProperty schema;
 
   @Before
   public void setUp() {
-    schemaHandler = new LongSchemaMapper();
+    schemaMapper = new LongSchemaMapper();
     schema = new LongProperty();
   }
 
@@ -36,7 +36,7 @@ public class LongSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
+    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
   }
 
   @Test
@@ -45,23 +45,23 @@ public class LongSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.mapTupleValue(schema, null);
+    schemaMapper.mapTupleValue(schema, null);
   }
 
   @Test
   public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
-    thrown.expect(SchemaHandlerRuntimeException.class);
-    thrown.expectMessage(String.format("Schema '%s' is not a literal value.", schema.getName()));
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    BigInteger result = schemaHandler.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
+    BigInteger result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR.integerValue()));
@@ -73,13 +73,13 @@ public class LongSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaHandler.supports(null);
+    schemaMapper.supports(null);
   }
 
   @Test
   public void supports_ReturnsTrue_ForLongSchema() {
     // Arrange & Act
-    Boolean supported = schemaHandler.supports(schema);
+    Boolean supported = schemaMapper.supports(schema);
 
     // Assert
     assertThat(supported, equalTo(true));
@@ -88,7 +88,7 @@ public class LongSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForNonLongSchema() {
     // Arrange & Act
-    Boolean supported = schemaHandler.supports(new StringProperty());
+    Boolean supported = schemaMapper.supports(new StringProperty());
 
     // Assert
     assertThat(supported, equalTo(false));
