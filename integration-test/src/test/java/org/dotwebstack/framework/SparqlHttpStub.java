@@ -68,7 +68,6 @@ public class SparqlHttpStub {
     instance.graphResult = model;
   }
 
-
   public static void returnTuple(TupleQueryResult result) {
     assertThat(instance, is(not(nullValue())));
     instance.tupleResult = result;
@@ -111,7 +110,7 @@ public class SparqlHttpStub {
 
         if (parent.graphResult != null) {
           Rio.write(parent.graphResult, output, RDFFormat.TURTLE);
-        } else if (parent.tupleResult != null) {
+        } else {
           TupleQueryResultWriter writer = new SPARQLResultsJSONWriter(output);
           QueryResults.report(parent.tupleResult, writer);
         }
@@ -201,7 +200,6 @@ public class SparqlHttpStub {
         return valueFactory.createLiteral((Double) object);
 
       throw new NotSupportedException("Value is not supported: " + object.getClass());
-
     }
   }
 
