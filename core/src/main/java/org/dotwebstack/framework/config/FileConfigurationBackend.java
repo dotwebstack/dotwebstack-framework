@@ -1,9 +1,11 @@
 package org.dotwebstack.framework.config;
 
 import java.io.IOException;
+import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import lombok.NonNull;
 import org.apache.commons.io.FilenameUtils;
@@ -61,6 +63,7 @@ public class FileConfigurationBackend
 
   @PostConstruct
   public void loadResources() throws IOException {
+
     Resource[] projectResources =
         ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
             resourcePath + "/model/**");
@@ -79,6 +82,13 @@ public class FileConfigurationBackend
     }
 
     List<Resource> resources = getCombinedResources(projectResources);
+    Resource prefixesResource;
+    try {
+      prefixesResource = getPrefixesResource(resources);
+    } catch (IndexOutOfBoundsException ex) {
+      LOG.debug("No _prefix file found");
+      prefixesResource = null;
+    }
 
     try {
       for (Resource resource : resources) {
@@ -89,9 +99,17 @@ public class FileConfigurationBackend
           continue;
         }
 
-        repositoryConnection.add(
-            new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
-            "#", FileFormats.getFormat(extension));
+        if (prefixesResource != null) {
+          final SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
+              prefixesResource.getInputStream(), resource.getInputStream());
+          repositoryConnection.add(
+              new EnvironmentAwareResource(resourceSquenceInputStream, environment)
+                  .getInputStream(), "#", FileFormats.getFormat(extension));
+        } else {
+          repositoryConnection.add(
+              new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
+              "#", FileFormats.getFormat(extension));
+        }
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
     } catch (RDF4JException e) {
@@ -105,6 +123,16 @@ public class FileConfigurationBackend
     List<Resource> result = new ArrayList<>(Arrays.asList(projectResources));
     result.add(elmoConfiguration);
     return result;
+  }
+
+  private Resource getPrefixesResource(List<Resource> resources) {
+    return resources.stream()
+        .filter(resource -> resource.getFilename() != null)
+        .filter(resource -> resource.getFilename().startsWith("_"))
+        .filter(
+            resource -> resource.getFilename().split("\\.")[0].equals("_prefixes") && FileFormats
+                .containsExtension(resource.getFilename().split("\\.")[1]))
+        .collect(Collectors.toList()).get(0);
   }
 
 }
