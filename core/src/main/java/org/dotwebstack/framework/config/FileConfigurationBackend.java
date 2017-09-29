@@ -120,14 +120,15 @@ public class FileConfigurationBackend
     return result;
   }
 
-  private Resource getPrefixesResource(List<Resource> resources) {
-    return resources.stream()
-        .filter(resource -> resource.getFilename() != null)
-        .filter(resource -> resource.getFilename().startsWith("_"))
-        .filter(
-            resource -> resource.getFilename().split("\\.")[0].equals("_prefixes") && FileFormats
-                .containsExtension(resource.getFilename().split("\\.")[1]))
-        .collect(Collectors.toList()).get(0);
+  private Optional<Resource> getPrefixesResource(List<Resource> resources) {
+    Optional<List<Resource>> listOptional = Optional.of(resources.stream()
+        .filter(resource -> resource.getFilename() != null && resource.getFilename()
+            .startsWith("_prefixes") && FileFormats
+            .containsExtension(resource.getFilename().split("\\.")[1]))
+        .collect(Collectors.toList()));
+    if (listOptional.isPresent() && listOptional.get().size() > 0) {
+      return Optional.of(listOptional.get().get(0));
+    }
+    return Optional.empty();
   }
-
 }
