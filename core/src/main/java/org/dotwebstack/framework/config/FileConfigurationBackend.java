@@ -83,13 +83,8 @@ public class FileConfigurationBackend
     }
 
     List<Resource> resources = getCombinedResources(projectResources);
-    Resource prefixesResource;
-    try {
-      prefixesResource = getPrefixesResource(resources);
-    } catch (IndexOutOfBoundsException ex) {
-      LOG.debug("No _prefix file found");
-      prefixesResource = null;
-    }
+
+    final Optional<Resource> optionalPrefixesResource = getPrefixesResource(resources);
 
     try {
       for (Resource resource : resources) {
