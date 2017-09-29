@@ -94,17 +94,16 @@ public class FileConfigurationBackend
           LOG.debug("File extension not supported, ignoring file: \"{}\"", resource.getFilename());
           continue;
         }
-
-        if (prefixesResource != null) {
+        if (optionalPrefixesResource.isPresent()) {
           final SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
-              prefixesResource.getInputStream(), resource.getInputStream());
+              optionalPrefixesResource.get().getInputStream(), resource.getInputStream());
           repositoryConnection.add(
               new EnvironmentAwareResource(resourceSquenceInputStream, environment)
                   .getInputStream(), "#", FileFormats.getFormat(extension));
         } else {
           repositoryConnection.add(
-              new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
-              "#", FileFormats.getFormat(extension));
+              new EnvironmentAwareResource(resource.getInputStream(), environment)
+                  .getInputStream(), "#", FileFormats.getFormat(extension));
         }
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
