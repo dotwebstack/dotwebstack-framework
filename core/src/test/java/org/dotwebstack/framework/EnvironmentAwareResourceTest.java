@@ -2,6 +2,7 @@ package org.dotwebstack.framework;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.base.Charsets;
@@ -13,7 +14,9 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -23,6 +26,9 @@ import org.springframework.core.env.Environment;
 @RunWith(MockitoJUnitRunner.class)
 public class EnvironmentAwareResourceTest {
 
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
+
   @Mock
   private Environment environment;
 
@@ -31,6 +37,24 @@ public class EnvironmentAwareResourceTest {
     when(environment.getProperty("NAME")).thenReturn(DBEERPEDIA.BREWERY_DAVO_NAME);
     when(environment.getProperty("ENVIRONMENT_VARIABLE_IS_LONGER_THAN_VALUE")).thenReturn(
         DBEERPEDIA.BREWERY_DAVO_NAME);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingInputStream() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new EnvironmentAwareResource(null, environment);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingEnvironment() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new EnvironmentAwareResource(mock(InputStream.class), null);
   }
 
   @Test

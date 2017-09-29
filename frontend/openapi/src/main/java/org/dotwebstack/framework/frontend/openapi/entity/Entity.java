@@ -1,35 +1,14 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.Property;
 import java.util.Map;
-import lombok.NonNull;
+import javax.ws.rs.core.MediaType;
+import org.eclipse.rdf4j.query.QueryResult;
 
-public final class Entity {
+public interface Entity<R extends QueryResult<?>> {
 
-  private Object properties;
+  R getResult();
 
-  private ImmutableMap<String, Property> schemaMap;
-
-  public Entity(@NonNull Object properties, @NonNull Map<String, Property> schemaMap) {
-    this.properties = properties;
-    this.schemaMap = ImmutableMap.copyOf(schemaMap);
-  }
-
-  public Object getProperties() {
-    return properties;
-  }
-
-  public Map<String, Property> getSchemaMap() {
-    return schemaMap;
-  }
-
-  public Property getSchema(String mediaType) {
-    if (!schemaMap.containsKey(mediaType)) {
-      throw new NullPointerException();
-    }
-
-    return schemaMap.get(mediaType);
-  }
+  Map<MediaType, Property> getSchemaMap();
 
 }

@@ -57,6 +57,8 @@ public final class DBEERPEDIA {
 
   public static final Literal BROUWTOREN_FTE;
 
+  public static final Literal BROUWTOREN_LITERS_PER_YEAR;
+
   public static final IRI PERCENTAGES_INFORMATION_PRODUCT;
 
   public static final IRI ORIGIN_INFORMATION_PRODUCT;
@@ -118,6 +120,7 @@ public final class DBEERPEDIA {
     BROUWTOREN_YEAR_OF_FOUNDATION = valueFactory.createLiteral(2014);
     BROUWTOREN_CRAFT_MEMBER = valueFactory.createLiteral(true);
     BROUWTOREN_FTE = valueFactory.createLiteral(1.8);
+    BROUWTOREN_LITERS_PER_YEAR = valueFactory.createLiteral(Long.MAX_VALUE);
 
     PERCENTAGES_INFORMATION_PRODUCT = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/information/alcohol-percentages");

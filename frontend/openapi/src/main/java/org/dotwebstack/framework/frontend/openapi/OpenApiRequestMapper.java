@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Functions;
 import com.google.common.io.CharStreams;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
@@ -15,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.dotwebstack.framework.EnvironmentAwareResource;
@@ -40,7 +40,7 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
+class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
@@ -75,7 +75,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     this.environment = environment;
   }
 
-  void map(HttpConfiguration httpConfiguration) throws IOException {
+  void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
     org.springframework.core.io.Resource[] resources;
 
     try {
@@ -138,8 +138,8 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
       }
 
       // Will eventually be replaced by OASv3 Content object
-      Map<String, Property> schemaMap =
-          produces.stream().collect(Collectors.toMap(Functions.identity(), mediaType -> schema));
+      Map<MediaType, Property> schemaMap =
+          produces.stream().collect(Collectors.toMap(MediaType::valueOf, mediaType -> schema));
 
       IRI informationProductIdentifier =
           valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
