@@ -204,6 +204,8 @@
             <configuration>
               <configLocation>checkstyle.xml</configLocation>
               <consoleOutput>true</consoleOutput>
+              <failOnViolation>true</failOnViolation>
+              <violationSeverity>warning</violationSeverity>
             </configuration>
             <goals>
               <goal>check</goal>
