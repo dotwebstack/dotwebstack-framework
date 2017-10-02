@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -15,10 +16,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.ws.rs.NotSupportedException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.algebra.evaluation.QueryBindingSet;
+import org.eclipse.rdf4j.query.impl.MutableTupleQueryResult;
+import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
+import org.eclipse.rdf4j.query.resultio.sparqljson.SPARQLResultsJSONWriter;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 
@@ -29,7 +43,9 @@ public class SparqlHttpStub {
 
   private HttpServer server;
 
-  private Model model;
+  private Model graphResult;
+
+  private TupleQueryResult tupleResult;
 
   private SparqlHttpStub() {
     init();
@@ -47,9 +63,14 @@ public class SparqlHttpStub {
     instance = null;
   }
 
-  public static void returnModel(Model model) {
+  public static void returnGraph(Model model) {
     assertThat(instance, is(not(nullValue())));
-    instance.model = model;
+    instance.graphResult = model;
+  }
+
+  public static void returnTuple(TupleQueryResult result) {
+    assertThat(instance, is(not(nullValue())));
+    instance.tupleResult = result;
   }
 
   private void init() {
@@ -83,9 +104,16 @@ public class SparqlHttpStub {
         httpExchange.getResponseHeaders().add("Content-Type", "text/turtle");
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        assertThat(parent.model, is(not(nullValue())));
+        if (parent.graphResult == null && parent.tupleResult == null) {
+          fail("Please specify either a graph or tuple result for your stub.");
+        }
 
-        Rio.write(parent.model, output, RDFFormat.TURTLE);
+        if (parent.graphResult != null) {
+          Rio.write(parent.graphResult, output, RDFFormat.TURTLE);
+        } else {
+          TupleQueryResultWriter writer = new SPARQLResultsJSONWriter(output);
+          QueryResults.report(parent.tupleResult, writer);
+        }
 
         httpExchange.sendResponseHeaders(200, output.size());
         OutputStream responseBody = httpExchange.getResponseBody();
@@ -99,16 +127,80 @@ public class SparqlHttpStub {
   }
 
   public static void main(String[] args) throws IOException {
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
-        DBEERPEDIA.BREWERIES_LABEL).build();
     SparqlHttpStub.start();
-    SparqlHttpStub.returnModel(model);
+
+    // returnGraphExample();
+    returnTupleExample();
 
     System.out.println("Press enter to exit.");
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     br.readLine();
 
     SparqlHttpStub.stop();
+  }
+
+  private static void returnGraphExample() {
+    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
+        DBEERPEDIA.BREWERIES_LABEL).build();
+
+    SparqlHttpStub.returnGraph(model);
+  }
+
+  private static void returnTupleExample() {
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("name", "fte", "year").resultSet(DBEERPEDIA.BROUWTOREN_NAME,
+            DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).resultSet(
+                "Heineken", 80933d, 1864);
+
+    SparqlHttpStub.returnTuple(builder.build());
+  }
+
+  public static class TupleQueryResultBuilder {
+
+    private String[] bindingNames;
+
+    private List<Object[]> values = new ArrayList<>();
+
+    public TupleQueryResultBuilder(String... bindingNames) {
+      this.bindingNames = bindingNames;
+    }
+
+    public TupleQueryResultBuilder resultSet(Object... objects) {
+      assertThat(objects.length, equalTo(bindingNames.length));
+      values.add(objects);
+      return this;
+    }
+
+    public TupleQueryResult build() {
+      MutableTupleQueryResult tupleQueryResult =
+          new MutableTupleQueryResult(Arrays.asList(bindingNames));
+
+      values.forEach(valueSet -> {
+        QueryBindingSet set = new QueryBindingSet();
+        for (int i = 0; i < bindingNames.length; i++) {
+          set.addBinding(bindingNames[i], convertValue(valueSet[i]));
+        }
+        tupleQueryResult.append(set);
+      });
+
+      return tupleQueryResult;
+    }
+
+    public Value convertValue(Object object) {
+      if (object instanceof Value) {
+        return (Value) object;
+      }
+
+      ValueFactory valueFactory = SimpleValueFactory.getInstance();
+      if (object instanceof String)
+        return valueFactory.createLiteral((String) object);
+      if (object instanceof Integer)
+        return valueFactory.createLiteral((Integer) object);
+      if (object instanceof Double)
+        return valueFactory.createLiteral((Double) object);
+
+      throw new NotSupportedException("Value is not supported: " + object.getClass());
+    }
   }
 
 }

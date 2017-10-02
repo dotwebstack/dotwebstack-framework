@@ -61,7 +61,7 @@ public class LdIntegrationTest {
     // Arrange
     Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
         DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnModel(model);
+    SparqlHttpStub.returnGraph(model);
     MediaType mediaType = MediaType.valueOf("text/turtle");
 
     // Act
@@ -93,7 +93,7 @@ public class LdIntegrationTest {
     // Arrange
     Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
         DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnModel(model);
+    SparqlHttpStub.returnGraph(model);
 
     // Act
     Response response = target.path("/dbp/ld/v1/breweries").request("application/ld+json").head();
