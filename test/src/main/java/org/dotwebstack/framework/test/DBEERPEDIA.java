@@ -37,6 +37,10 @@ public final class DBEERPEDIA {
 
   public static final IRI BREWERIES;
 
+  public static final IRI TUPLE_BREWERIES;
+
+  public static final IRI GRAPH_BREWERIES;
+
   public static final Literal BREWERIES_LABEL;
 
   public static final Literal WINERIES_LABEL;
@@ -125,6 +129,8 @@ public final class DBEERPEDIA {
     ENDPOINT = valueFactory.createLiteral("http://localhost:8080/sparql", XMLSchema.ANYURI);
 
     BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Breweries");
+    TUPLE_BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "TupleBreweries");
+    GRAPH_BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "GraphBreweries");
     BREWERIES_LABEL = valueFactory.createLiteral("Beer breweries in The Netherlands");
     WINERIES_LABEL = valueFactory.createLiteral("Wineries in The Netherlands");
     MALFORMED_QUERY = valueFactory.createLiteral("CONSTRUCT ?s ?p ?o WHERE { ?s ?p ?o }");

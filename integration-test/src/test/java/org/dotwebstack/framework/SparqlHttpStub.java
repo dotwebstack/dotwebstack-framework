@@ -66,12 +66,14 @@ public class SparqlHttpStub {
 
   public static void returnGraph(Model model) {
     assertThat(instance, is(not(nullValue())));
+    instance.tupleResultBuilder = null;
     instance.graphResult = model;
   }
 
   public static void returnTuple(TupleQueryResultBuilder builder) {
     assertThat(instance, is(not(nullValue())));
     instance.tupleResultBuilder = builder;
+    instance.graphResult = null;
   }
 
   private void init() {

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -135,14 +134,19 @@ public class OpenApiIntegrationTest {
 
   @Test
   public void get_GetCorrectHead_ThroughOpenApi() {
+    // Arrange
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
+            DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
+            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+    SparqlHttpStub.returnTuple(builder);
+
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().head();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.getLength(), equalTo(31));
-    assertThat(response.readEntity(String.class), isEmptyString());
+    assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
   }
 
   @Test
