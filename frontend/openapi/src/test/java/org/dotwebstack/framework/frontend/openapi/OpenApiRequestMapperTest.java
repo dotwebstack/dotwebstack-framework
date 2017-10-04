@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandler;
@@ -76,6 +77,9 @@ public class OpenApiRequestMapperTest {
   @Mock
   private Environment environment;
 
+  @Mock
+  ApplicationProperties applicationProperties;
+
   private ResourceLoader resourceLoader;
 
   private OpenApiRequestMapper requestMapper;
@@ -84,8 +88,9 @@ public class OpenApiRequestMapperTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    requestMapper =
-        new OpenApiRequestMapper(informationProductResourceProvider, openApiParser, "file:config");
+    when(applicationProperties.getResourcePath()).thenReturn("file:config");
+    requestMapper = new OpenApiRequestMapper(informationProductResourceProvider, openApiParser,
+        applicationProperties);
     requestMapper.setResourceLoader(resourceLoader);
     requestMapper.setEnvironment(environment);
   }
@@ -96,7 +101,7 @@ public class OpenApiRequestMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new OpenApiRequestMapper(null, openApiParser, "file:config");
+    new OpenApiRequestMapper(null, openApiParser, applicationProperties);
   }
 
   @Test
@@ -105,7 +110,7 @@ public class OpenApiRequestMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new OpenApiRequestMapper(informationProductResourceProvider, null, "file:config");
+    new OpenApiRequestMapper(informationProductResourceProvider, null, applicationProperties);
   }
 
   @Test
