@@ -16,9 +16,7 @@ import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -44,16 +42,8 @@ public class OpenApiIntegrationTest {
   public void setUp() throws IOException {
     target = ClientBuilder.newClient(httpConfiguration).target(
         String.format("http://localhost:%d", this.port));
-  }
 
-  @BeforeClass
-  public static void startStub() {
     SparqlHttpStub.start();
-  }
-
-  @AfterClass
-  public static void stopStub() {
-    SparqlHttpStub.stop();
   }
 
   @Test

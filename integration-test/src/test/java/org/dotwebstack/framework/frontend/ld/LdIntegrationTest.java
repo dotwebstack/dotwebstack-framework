@@ -18,9 +18,7 @@ import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,16 +42,8 @@ public class LdIntegrationTest {
   public void setUp() throws IOException {
     target = ClientBuilder.newClient(httpConfiguration).target(
         String.format("http://localhost:%d", this.port));
-  }
 
-  @BeforeClass
-  public static void startStub() {
     SparqlHttpStub.start();
-  }
-
-  @AfterClass
-  public static void stopStub() {
-    SparqlHttpStub.stop();
   }
 
   @Test

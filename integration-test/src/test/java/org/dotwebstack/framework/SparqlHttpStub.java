@@ -55,8 +55,8 @@ public class SparqlHttpStub {
   public static void start() {
     if (instance == null) {
       instance = new SparqlHttpStub();
+      instance.startServer();
     }
-    instance.startServer();
   }
 
   public static void stop() {
