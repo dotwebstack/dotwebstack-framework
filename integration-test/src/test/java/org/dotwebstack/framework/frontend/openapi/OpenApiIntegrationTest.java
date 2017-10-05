@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -10,12 +9,17 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.dotwebstack.framework.SparqlHttpStub;
+import org.dotwebstack.framework.SparqlHttpStub.TupleQueryResultBuilder;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,32 +42,71 @@ public class OpenApiIntegrationTest {
   public void setUp() throws IOException {
     target = ClientBuilder.newClient(httpConfiguration).target(
         String.format("http://localhost:%d", this.port));
+
+    SparqlHttpStub.start();
   }
 
   @Test
-  @Ignore
-  public void get_GetBreweryCollection_ThroughOpenApi() {
+  public void get_GetBreweryCollection_ThroughOpenApi() throws JSONException {
+    // Arrange
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
+            DBEERPEDIA.BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION,
+            DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION,
+            DBEERPEDIA.BROUWTOREN_PLACE).resultSet(DBEERPEDIA.MAXIMUS_NAME,
+                DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
+                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+    SparqlHttpStub.returnTuple(builder);
+
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.getLength(), equalTo(31));
-    assertThat(response.readEntity(String.class), equalTo(DBEERPEDIA.BREWERIES.stringValue()));
+    assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
+
+    JSONArray expected = new JSONArray();
+    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
+        DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
+            DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
+                DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+                    DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
+    expected.put(new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
+        DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue()).put("fte",
+            DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
+                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+                    DBEERPEDIA.MAXIMUS_PLACE.stringValue()));
+
+    String result = response.readEntity(String.class);
+    JSONAssert.assertEquals(expected.toString(), result, true);
   }
 
   @Test
-  @Ignore
-  public void get_GetSingleBrewery_ThroughLdApi() {
+  public void get_GetSingleBrewery_ThroughOpenApi() throws JSONException {
+    // Arrange
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
+            DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
+            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+    SparqlHttpStub.returnTuple(builder);
+
     // Act
     Response response = target.path(String.format("/dbp/api/v1/breweries/%s",
-        DBEERPEDIA.BROUWTOREN.getLocalName())).request().get();
+        DBEERPEDIA.MAXIMUS.getLocalName())).request().get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.readEntity(String.class), equalTo(DBEERPEDIA.BREWERIES.stringValue()));
+    assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
+
+    JSONObject expected =
+        new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
+            DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue()).put("fte",
+                DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
+                    DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+                        DBEERPEDIA.MAXIMUS_PLACE.stringValue());
+
+    String result = response.readEntity(String.class);
+    JSONAssert.assertEquals(expected.toString(), result, true);
   }
 
   @Test
@@ -80,16 +123,20 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void get_GetCorrectHead_ThroughOpenApi() {
+    // Arrange
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
+            DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
+            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+    SparqlHttpStub.returnTuple(builder);
+
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().head();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.getLength(), equalTo(31));
-    assertThat(response.readEntity(String.class), isEmptyString());
+    assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
   }
 
   @Test

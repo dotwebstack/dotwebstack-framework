@@ -6,5 +6,5 @@
 dbeerpedia:BreweryListRepresentation a elmo:Representation;
   elmo:urlPattern "/breweries";
   elmo:stage dbeerpedia:Stage;
-  elmo:informationProduct dbeerpedia:Breweries;
+  elmo:informationProduct dbeerpedia:GraphBreweries;
 .
