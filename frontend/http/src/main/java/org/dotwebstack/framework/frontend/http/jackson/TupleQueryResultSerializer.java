@@ -47,10 +47,11 @@ public class TupleQueryResultSerializer extends JsonSerializer<TupleQueryResult>
       jsonGenerator.writeEndObject();
     }
 
-
-    // jsonGenerator.writeEndArray();
-
-    jsonGenerator.writeEndObject();
+    if (jsonGenerator instanceof ToXmlGenerator) {
+      jsonGenerator.writeEndObject();
+    } else {
+      jsonGenerator.writeEndArray();
+    }
   }
 
   private Object serializeValue(Value value) {

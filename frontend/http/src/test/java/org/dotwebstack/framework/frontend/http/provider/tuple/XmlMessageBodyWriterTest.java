@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Arrays;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -29,7 +28,7 @@ public class XmlMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTest
   public ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void isWritable_IsTrue_ForJsonMediaType() {
+  public void isWritable_IsTrue_ForXmlMediaType() {
     // Arrange
     XmlMessageBodyWriter provider = new XmlMessageBodyWriter();
 
@@ -81,10 +80,9 @@ public class XmlMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTest
   }
 
   @Test
-  public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException, JSONException {
+  public void writeTo_XmlFormat_ForQueryResult() throws IOException, JSONException {
     // Arrange
     XmlMessageBodyWriter provider = new XmlMessageBodyWriter();
-    when(tupleQueryResult.getBindingNames()).thenReturn(Arrays.asList("beer"));
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);
     BindingSet bindingSetAmstel = mock(BindingSet.class);
