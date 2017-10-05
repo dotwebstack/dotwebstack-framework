@@ -3,9 +3,14 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-
-dbeerpedia:Breweries a elmo:InformationProduct;
+dbeerpedia:GraphBreweries a elmo:InformationProduct;
   rdfs:label "Beer breweries in The Netherlands";
   elmo:backend dbeerpedia:Backend;
   elmo:query "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a <http://dbeerpedia.org#Brewery> }";
+.
+
+dbeerpedia:TupleBreweries a elmo:InformationProduct;
+  rdfs:label "Beer breweries in The Netherlands";
+  elmo:backend dbeerpedia:Backend;
+  elmo:query "SELECT ?name WHERE { ?s rdfs:label ?name . ?s a <http://dbeerpedia.org#Brewery> }";
 .
