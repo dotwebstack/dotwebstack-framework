@@ -12,7 +12,8 @@ import org.springframework.stereotype.Service;
 @Service
 @SparqlProvider(resultType = ResultType.TUPLE)
 @Produces(MediaTypes.SPARQL_RESULTS_XML)
-public final class SparqlResultsXmlMessageBodyWriter extends TupleMessageBodyWriter {
+public final class SparqlResultsXmlMessageBodyWriter
+    extends AbstractSparqlResultsMessageBodyWriter {
 
   SparqlResultsXmlMessageBodyWriter() {
     super(MediaTypes.SPARQL_RESULTS_XML_TYPE);

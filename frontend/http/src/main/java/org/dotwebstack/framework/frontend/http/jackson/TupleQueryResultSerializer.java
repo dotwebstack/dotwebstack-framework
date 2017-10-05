@@ -3,7 +3,10 @@ package org.dotwebstack.framework.frontend.http.jackson;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
+import com.fasterxml.jackson.dataformat.xml.util.DefaultXmlPrettyPrinter;
 import java.io.IOException;
+import javax.xml.namespace.QName;
 import org.dotwebstack.framework.LiteralDataTypes;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -13,13 +16,28 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 
 public class TupleQueryResultSerializer extends JsonSerializer<TupleQueryResult> {
 
+  public static final String XML_ROOT = "results";
+  public static final String XML_ITEM = "result";
+
   @Override
   public void serialize(TupleQueryResult tupleQueryResult, JsonGenerator jsonGenerator,
       SerializerProvider serializerProvider) throws IOException {
-    jsonGenerator.writeStartArray();
+
+    if (jsonGenerator instanceof ToXmlGenerator) {
+      ToXmlGenerator xmlGenerator = (ToXmlGenerator) jsonGenerator;
+      xmlGenerator.setPrettyPrinter(new DefaultXmlPrettyPrinter());
+      xmlGenerator.setNextName(new QName(null, XML_ROOT));
+      xmlGenerator.writeStartObject();
+    } else {
+      jsonGenerator.writeStartArray();
+    }
 
     while (tupleQueryResult.hasNext()) {
-      jsonGenerator.writeStartObject();
+      if (jsonGenerator instanceof ToXmlGenerator) {
+        jsonGenerator.writeObjectFieldStart(XML_ITEM);
+      } else {
+        jsonGenerator.writeStartObject();
+      }
 
       BindingSet bindingSet = tupleQueryResult.next();
       for (Binding binding : bindingSet) {
@@ -29,7 +47,10 @@ public class TupleQueryResultSerializer extends JsonSerializer<TupleQueryResult>
       jsonGenerator.writeEndObject();
     }
 
-    jsonGenerator.writeEndArray();
+
+    // jsonGenerator.writeEndArray();
+
+    jsonGenerator.writeEndObject();
   }
 
   private Object serializeValue(Value value) {

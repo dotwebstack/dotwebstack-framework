@@ -53,6 +53,19 @@ public class RdfXmlGraphMessageBodyWriterTest {
   }
 
   @Test
+  public void isWritable_IsTrue_ForXmlMediaType() {
+    // Arrange
+    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
+
+    // Act
+    boolean result =
+        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaType.APPLICATION_XML_TYPE);
+
+    // Assert
+    assertThat(result, is(true));
+  }
+
+  @Test
   public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();

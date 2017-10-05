@@ -12,7 +12,8 @@ import org.springframework.stereotype.Service;
 @Service
 @SparqlProvider(resultType = ResultType.TUPLE)
 @Produces(MediaTypes.SPARQL_RESULTS_JSON)
-public final class SparqlResultsJsonMessageBodyWriter extends TupleMessageBodyWriter {
+public final class SparqlResultsJsonMessageBodyWriter
+    extends AbstractSparqlResultsMessageBodyWriter {
 
   SparqlResultsJsonMessageBodyWriter() {
     super(MediaTypes.SPARQL_RESULTS_JSON_TYPE);
