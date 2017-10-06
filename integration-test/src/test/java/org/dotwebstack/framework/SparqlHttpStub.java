@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.ws.rs.NotSupportedException;
+import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
@@ -45,7 +46,7 @@ public class SparqlHttpStub {
 
   private Model graphResult;
 
-  private TupleQueryResult tupleResult;
+  private TupleQueryResultBuilder tupleResultBuilder;
 
   private SparqlHttpStub() {
     init();
@@ -54,8 +55,8 @@ public class SparqlHttpStub {
   public static void start() {
     if (instance == null) {
       instance = new SparqlHttpStub();
+      instance.startServer();
     }
-    instance.startServer();
   }
 
   public static void stop() {
@@ -65,12 +66,14 @@ public class SparqlHttpStub {
 
   public static void returnGraph(Model model) {
     assertThat(instance, is(not(nullValue())));
+    instance.tupleResultBuilder = null;
     instance.graphResult = model;
   }
 
-  public static void returnTuple(TupleQueryResult result) {
+  public static void returnTuple(TupleQueryResultBuilder builder) {
     assertThat(instance, is(not(nullValue())));
-    instance.tupleResult = result;
+    instance.tupleResultBuilder = builder;
+    instance.graphResult = null;
   }
 
   private void init() {
@@ -101,18 +104,19 @@ public class SparqlHttpStub {
     @Override
     public void handle(HttpExchange httpExchange) {
       try {
-        httpExchange.getResponseHeaders().add("Content-Type", "text/turtle");
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        if (parent.graphResult == null && parent.tupleResult == null) {
+        if (parent.graphResult == null && parent.tupleResultBuilder == null) {
           fail("Please specify either a graph or tuple result for your stub.");
         }
 
         if (parent.graphResult != null) {
+          httpExchange.getResponseHeaders().add("Content-Type", MediaTypes.TURTLE);
           Rio.write(parent.graphResult, output, RDFFormat.TURTLE);
         } else {
+          httpExchange.getResponseHeaders().add("Content-Type", MediaTypes.SPARQL_RESULTS_JSON);
           TupleQueryResultWriter writer = new SPARQLResultsJSONWriter(output);
-          QueryResults.report(parent.tupleResult, writer);
+          QueryResults.report(parent.tupleResultBuilder.build(), writer);
         }
 
         httpExchange.sendResponseHeaders(200, output.size());
@@ -152,7 +156,7 @@ public class SparqlHttpStub {
             DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).resultSet(
                 "Heineken", 80933d, 1864);
 
-    SparqlHttpStub.returnTuple(builder.build());
+    SparqlHttpStub.returnTuple(builder);
   }
 
   public static class TupleQueryResultBuilder {

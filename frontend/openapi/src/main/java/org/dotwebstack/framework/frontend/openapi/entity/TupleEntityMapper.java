@@ -12,11 +12,15 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(TupleEntityMapper.class);
 
   private SchemaMapperAdapter schemaMapperAdapter;
 
@@ -34,11 +38,28 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
           String.format("No schema found for media type '%s'.", mediaType.toString()));
     }
 
+    if (schema instanceof ObjectProperty) {
+      return mapObject(entity, (ObjectProperty) schema);
+    }
     if (schema instanceof ArrayProperty) {
       return mapCollection(entity, (ArrayProperty) schema);
     }
 
     return ImmutableMap.of();
+  }
+
+  private Object mapObject(TupleEntity entity, ObjectProperty schema) {
+    TupleQueryResult result = entity.getResult();
+    if (result.hasNext()) {
+      BindingSet bindingSet = result.next();
+      if (result.hasNext()) {
+        LOG.warn("TupleQueryResult yielded several bindingsets. Only parsing the first.");
+      }
+
+      return mapBindingSet(bindingSet, schema.getProperties());
+    } else {
+      throw new EntityMapperRuntimeException("TupleQueryResult did not yield any values.");
+    }
   }
 
   private Object mapCollection(TupleEntity entity, ArrayProperty schema) {
