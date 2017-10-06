@@ -12,7 +12,8 @@ import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-public abstract class AbstractTupleQueryResultSerializer extends JsonSerializer<TupleQueryResult> {
+public abstract class AbstractTupleQueryResultSerializer extends JsonSerializer<TupleQueryResult>
+    implements TupleQueryResultSerializer {
 
   protected abstract void writeStart(JsonGenerator jsonGenerator) throws IOException;
 

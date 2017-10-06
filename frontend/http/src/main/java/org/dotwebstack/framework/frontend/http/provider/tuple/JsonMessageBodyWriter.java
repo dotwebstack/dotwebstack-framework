@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.frontend.http.jackson.AbstractTupleQueryResultSerializer;
 import org.dotwebstack.framework.frontend.http.jackson.TupleQueryResultJsonSerializer;
+import org.dotwebstack.framework.frontend.http.jackson.TupleQueryResultSerializer;
 import org.dotwebstack.framework.frontend.http.provider.SparqlProvider;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ public class JsonMessageBodyWriter extends AbstractJsonGeneratorMessageBodyWrite
   }
 
   @Override
-  protected AbstractTupleQueryResultSerializer createSerializer() {
+  protected TupleQueryResultSerializer createSerializer() {
     return new TupleQueryResultJsonSerializer();
   }
 
