@@ -5,27 +5,28 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.http.jackson.TupleQueryResultSerializer;
+import lombok.NonNull;
+import org.dotwebstack.framework.frontend.http.jackson.AbstractTupleQueryResultSerializer;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
 public abstract class AbstractJsonGeneratorMessageBodyWriter
     extends AbstractTupleMessageBodyWriter {
 
-  AbstractJsonGeneratorMessageBodyWriter(MediaType mediaType) {
+  AbstractJsonGeneratorMessageBodyWriter(@NonNull MediaType mediaType) {
     super(mediaType);
   }
 
   protected abstract JsonFactory createFactory();
 
+  protected abstract AbstractTupleQueryResultSerializer createSerializer();
+
   @Override
   public void write(TupleQueryResult tupleQueryResult, OutputStream outputStream)
       throws IOException {
-    JsonFactory factory = createFactory();
-    JsonGenerator jsonGenerator = factory.createGenerator(outputStream);
+    JsonGenerator jsonGenerator = createFactory().createGenerator(outputStream);
 
-    TupleQueryResultSerializer serializer = new TupleQueryResultSerializer();
-    serializer.serialize(tupleQueryResult, jsonGenerator, null);
+    createSerializer().serialize(tupleQueryResult, jsonGenerator, null);
 
-    jsonGenerator.close();;
+    jsonGenerator.close();
   }
 }

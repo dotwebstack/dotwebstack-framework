@@ -5,6 +5,8 @@ import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.http.jackson.AbstractTupleQueryResultSerializer;
+import org.dotwebstack.framework.frontend.http.jackson.TupleQueryResultXmlSerializer;
 import org.dotwebstack.framework.frontend.http.provider.SparqlProvider;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +16,17 @@ import org.springframework.stereotype.Service;
 public class XmlMessageBodyWriter extends AbstractJsonGeneratorMessageBodyWriter {
 
   XmlMessageBodyWriter() {
-    super(MediaType.APPLICATION_JSON_TYPE);
+    super(MediaType.APPLICATION_XML_TYPE);
   }
 
   @Override
   protected JsonFactory createFactory() {
     return new XmlFactory();
+  }
+
+  @Override
+  protected AbstractTupleQueryResultSerializer createSerializer() {
+    return new TupleQueryResultXmlSerializer();
   }
 
 }

@@ -20,7 +20,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TupleQueryResultSerializerTest {
+public class TupleQueryResultJsonSerializerTest {
 
   @Mock
   private TupleQueryResult tupleQueryResult;

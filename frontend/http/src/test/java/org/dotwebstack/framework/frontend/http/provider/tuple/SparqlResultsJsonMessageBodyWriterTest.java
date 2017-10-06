@@ -16,17 +16,12 @@ import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void constructor_ThrowsException_WithMissingMediaType() {

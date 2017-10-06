@@ -3,10 +3,8 @@ package org.dotwebstack.framework.frontend.http.jackson;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
-import com.fasterxml.jackson.dataformat.xml.util.DefaultXmlPrettyPrinter;
 import java.io.IOException;
-import javax.xml.namespace.QName;
+import lombok.NonNull;
 import org.dotwebstack.framework.LiteralDataTypes;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -14,44 +12,35 @@ import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-public class TupleQueryResultSerializer extends JsonSerializer<TupleQueryResult> {
+public abstract class AbstractTupleQueryResultSerializer extends JsonSerializer<TupleQueryResult> {
 
-  public static final String XML_ROOT = "results";
-  public static final String XML_ITEM = "result";
+  protected abstract void writeStart(JsonGenerator jsonGenerator) throws IOException;
+
+  protected abstract void writeStartItem(JsonGenerator jsonGenerator) throws IOException;
+
+  protected abstract void writeEnd(JsonGenerator jsonGenerator) throws IOException;
+
+  protected abstract void writeEndItem(JsonGenerator jsonGenerator) throws IOException;
 
   @Override
-  public void serialize(TupleQueryResult tupleQueryResult, JsonGenerator jsonGenerator,
-      SerializerProvider serializerProvider) throws IOException {
+  public void serialize(@NonNull TupleQueryResult tupleQueryResult,
+      @NonNull JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
+      throws IOException {
 
-    if (jsonGenerator instanceof ToXmlGenerator) {
-      ToXmlGenerator xmlGenerator = (ToXmlGenerator) jsonGenerator;
-      xmlGenerator.setPrettyPrinter(new DefaultXmlPrettyPrinter());
-      xmlGenerator.setNextName(new QName(null, XML_ROOT));
-      xmlGenerator.writeStartObject();
-    } else {
-      jsonGenerator.writeStartArray();
-    }
+    writeStart(jsonGenerator);
 
     while (tupleQueryResult.hasNext()) {
-      if (jsonGenerator instanceof ToXmlGenerator) {
-        jsonGenerator.writeObjectFieldStart(XML_ITEM);
-      } else {
-        jsonGenerator.writeStartObject();
-      }
+      writeStartItem(jsonGenerator);
 
       BindingSet bindingSet = tupleQueryResult.next();
       for (Binding binding : bindingSet) {
         jsonGenerator.writeObjectField(binding.getName(), serializeValue(binding.getValue()));
       }
 
-      jsonGenerator.writeEndObject();
+      writeEndItem(jsonGenerator);
     }
 
-    if (jsonGenerator instanceof ToXmlGenerator) {
-      jsonGenerator.writeEndObject();
-    } else {
-      jsonGenerator.writeEndArray();
-    }
+    writeEnd(jsonGenerator);
   }
 
   private Object serializeValue(Value value) {

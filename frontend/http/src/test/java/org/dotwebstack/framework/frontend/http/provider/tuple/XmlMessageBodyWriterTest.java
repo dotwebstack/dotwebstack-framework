@@ -15,17 +15,12 @@ import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.json.JSONException;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class XmlMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void isWritable_IsTrue_ForXmlMediaType() {
@@ -34,7 +29,7 @@ public class XmlMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTest
 
     // Act
     boolean result =
-        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_JSON_TYPE);
+        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -54,13 +49,13 @@ public class XmlMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTest
   }
 
   @Test
-  public void isWritable_IsFalse_ForXmlMediaType() {
+  public void isWritable_IsFalse_ForJsonMediaType() {
     // Arrange
     XmlMessageBodyWriter provider = new XmlMessageBodyWriter();
 
     // Act
     boolean result =
-        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_XML_TYPE);
+        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(result, is(false));

@@ -25,7 +25,7 @@ public class ObjectMapperProvider implements ContextResolver<ObjectMapper> {
 
   private void registerSerializers() {
     SimpleModule module = new SimpleModule();
-    module.addSerializer(TupleQueryResult.class, new TupleQueryResultSerializer());
+    module.addSerializer(TupleQueryResult.class, new TupleQueryResultJsonSerializer());
     objectMapper.registerModule(module);
   }
 
