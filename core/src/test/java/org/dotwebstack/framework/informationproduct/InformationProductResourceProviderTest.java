@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -47,6 +48,9 @@ public class InformationProductResourceProviderTest {
   private ConfigurationBackend configurationBackend;
 
   @Mock
+  private ApplicationProperties applicationProperties;
+
+  @Mock
   private SailRepository configurationRepository;
 
   @Mock
@@ -64,14 +68,16 @@ public class InformationProductResourceProviderTest {
 
   @Before
   public void setUp() {
-    informationProductResourceProvider =
-        new InformationProductResourceProvider(configurationBackend, backendResourceProvider);
+    informationProductResourceProvider = new InformationProductResourceProvider(
+        configurationBackend, backendResourceProvider, applicationProperties);
 
     when(backendResourceProvider.get(any())).thenReturn(backend);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
+
+    when(applicationProperties.getSystemGraphAsIRI()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
   @Test

@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.ld.representation;
 
 import java.util.Optional;
 import org.dotwebstack.framework.AbstractResourceProvider;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -23,8 +24,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
       InformationProductResourceProvider informationProductResourceProvider,
-      StageResourceProvider stageResourceProvider) {
-    super(configurationBackend);
+      StageResourceProvider stageResourceProvider, ApplicationProperties applicationProperties) {
+    super(configurationBackend, applicationProperties);
     this.informationProductResourceProvider = informationProductResourceProvider;
     this.stageResourceProvider = stageResourceProvider;
   }

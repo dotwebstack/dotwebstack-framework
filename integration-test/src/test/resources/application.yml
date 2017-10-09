@@ -11,4 +11,4 @@ logging:
 dotwebstack:
   config:
     resourcePath: file:src/test/resources
-    systemGraph: test
+    systemGraph: http://dbeerpedia.org#Theatre

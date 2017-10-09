@@ -100,6 +100,10 @@ public final class DBEERPEDIA {
 
   public static final String NL_HOST = "dbeerpedia.nl";
 
+  public static final String SYSTEM_GRAPH = "http://dbeerpedia.nl/configuration/Theatre";
+
+  public static final IRI SYSTEM_GRAPH_IRI;
+
   public static final IRI SITE;
 
   public static final IRI SITE_NL;
@@ -112,6 +116,7 @@ public final class DBEERPEDIA {
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
     SITE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Stage");
     SECOND_STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SecondStage");

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -47,6 +48,9 @@ public class BackendResourceProviderTest {
   private SailRepository configurationRepository;
 
   @Mock
+  private ApplicationProperties applicationProperties;
+
+  @Mock
   private SailRepositoryConnection configurationRepositoryConnection;
 
   @Mock
@@ -67,10 +71,15 @@ public class BackendResourceProviderTest {
   @Before
   public void setUp() {
     backendFactories = ImmutableList.of(backendFactory);
-    backendResourceProvider = new BackendResourceProvider(configurationBackend, backendFactories);
+    backendResourceProvider =
+        new BackendResourceProvider(configurationBackend, backendFactories, applicationProperties);
+
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
+
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
+
+    when(applicationProperties.getSystemGraphAsIRI()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
   @Test
