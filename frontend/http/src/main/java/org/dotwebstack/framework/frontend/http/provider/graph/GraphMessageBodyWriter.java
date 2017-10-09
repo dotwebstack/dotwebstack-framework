@@ -1,9 +1,13 @@
 package org.dotwebstack.framework.frontend.http.provider.graph;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -18,15 +22,20 @@ public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQ
 
   private final RDFFormat format;
 
-  protected GraphMessageBodyWriter(@NonNull RDFFormat format) {
+  private final List<MediaType> mediaTypes;
+
+  protected GraphMessageBodyWriter(@NonNull RDFFormat format,
+      @NonNull MediaType... supportedMediaTypes) {
     this.format = format;
+    this.mediaTypes = supportedMediaTypes.length == 0
+        ? format.getMIMETypes().stream().map(MediaType::valueOf).collect(toList())
+        : Arrays.asList(supportedMediaTypes);
   }
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType) {
-    return GraphQueryResult.class.isAssignableFrom(type)
-        && format.getMIMETypes().contains(mediaType.toString());
+    return GraphQueryResult.class.isAssignableFrom(type) && mediaTypes.contains(mediaType);
   }
 
   @Override

@@ -175,7 +175,7 @@ public class LdRequestMapperTest {
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
             informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
     Representation samePathRepresentation =
-        new Representation.Builder(DBEERPEDIA.BREWERY_LIST_REPRESENTATION).informationProduct(
+        new Representation.Builder(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION).informationProduct(
             informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
