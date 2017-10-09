@@ -8,19 +8,19 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import lombok.NonNull;
-import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 
-public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQueryResult> {
+public abstract class AbstractTupleMessageBodyWriter
+    implements MessageBodyWriter<TupleQueryResult> {
 
   private MediaType mediaType;
 
-  protected TupleMessageBodyWriter(@NonNull MediaType mediaType) {
+  protected AbstractTupleMessageBodyWriter(@NonNull MediaType mediaType) {
     this.mediaType = mediaType;
   }
 
-  protected abstract TupleQueryResultWriter createWriter(OutputStream outputStream);
+  protected abstract void write(TupleQueryResult tupleQueryResult, OutputStream outputStream)
+      throws IOException;
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
@@ -39,8 +39,7 @@ public abstract class TupleMessageBodyWriter implements MessageBodyWriter<TupleQ
   public void writeTo(TupleQueryResult tupleQueryResult, Class<?> type, Type genericType,
       Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap,
       OutputStream outputStream) throws IOException {
-    TupleQueryResultWriter writer = createWriter(outputStream);
-    QueryResults.report(tupleQueryResult, writer);
+    write(tupleQueryResult, outputStream);
   }
 
 }

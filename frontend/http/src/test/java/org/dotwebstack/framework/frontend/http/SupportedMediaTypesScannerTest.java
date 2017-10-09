@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.frontend.http;
 
-import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,10 +14,9 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.dotwebstack.framework.frontend.http.provider.SparqlProvider;
 import org.dotwebstack.framework.frontend.http.provider.graph.GraphMessageBodyWriter;
-import org.dotwebstack.framework.frontend.http.provider.tuple.TupleMessageBodyWriter;
+import org.dotwebstack.framework.frontend.http.provider.tuple.AbstractTupleMessageBodyWriter;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.junit.Rule;
 import org.junit.Test;
@@ -126,16 +125,16 @@ public class SupportedMediaTypesScannerTest {
 
   @SparqlProvider(resultType = ResultType.TUPLE)
   @Produces(MediaTypes.SPARQL_RESULTS_JSON)
-  static class StubTupleMessageBodyWriter extends TupleMessageBodyWriter {
+  static class StubTupleMessageBodyWriter extends AbstractTupleMessageBodyWriter {
 
     StubTupleMessageBodyWriter() {
       super(MediaTypes.SPARQL_RESULTS_JSON_TYPE);
     }
 
     @Override
-    protected TupleQueryResultWriter createWriter(OutputStream outputStream) {
-      fail("Stub class should not be used");
-      return null;
+    protected void write(TupleQueryResult tupleQueryResult, OutputStream outputStream)
+        throws IOException {
+
     }
   }
 }

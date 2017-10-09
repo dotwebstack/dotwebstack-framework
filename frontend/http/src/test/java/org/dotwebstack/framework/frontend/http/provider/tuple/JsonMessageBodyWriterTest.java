@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.frontend.http.provider.tuple;
 
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -10,40 +8,52 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import java.io.IOException;
-import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.http.jackson.AbstractTupleQueryResultSerializer;
 import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
+public class JsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
 
   @Test
-  public void constructor_ThrowsException_WithMissingMediaType() {
+  public void constructor_ThrowsException_ForMissingMediaType() {
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Act
-    new AbstractTupleMessageBodyWriter(null) {
+    new AbstractJsonGeneratorMessageBodyWriter(null) {
+
       @Override
-      protected void write(TupleQueryResult tupleQueryResult, OutputStream outputStream)
-          throws IOException {}
+      protected JsonFactory createFactory() {
+        return null;
+      }
+
+      @Override
+      protected AbstractTupleQueryResultSerializer createSerializer() {
+        return null;
+      }
     };
   }
 
   @Test
-  public void isWritable_IsTrue_ForSparqlResultsJsonMediaType() {
+  public void isWritable_IsTrue_ForJsonMediaType() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    JsonMessageBodyWriter provider = new JsonMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(TupleQueryResult.class, null, null,
-        MediaTypes.SPARQL_RESULTS_JSON_TYPE);
+    boolean result =
+        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -52,7 +62,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void isWritable_IsFalse_ForStringClass() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    JsonMessageBodyWriter provider = new JsonMessageBodyWriter();
 
     // Act
     boolean result =
@@ -63,13 +73,13 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   }
 
   @Test
-  public void isWritable_IsFalse_ForJsonMediaType() {
+  public void isWritable_IsFalse_ForXmlMediaType() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    JsonMessageBodyWriter provider = new JsonMessageBodyWriter();
 
     // Act
     boolean result =
-        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_JSON_TYPE);
+        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -78,7 +88,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void getSize_MinusOne_Always() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter writer = new SparqlResultsJsonMessageBodyWriter();
+    JsonMessageBodyWriter writer = new JsonMessageBodyWriter();
 
     // Act
     long result =
@@ -89,10 +99,9 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   }
 
   @Test
-  public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException {
+  public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException, JSONException {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
-    when(tupleQueryResult.getBindingNames()).thenReturn(asList("beer"));
+    JsonMessageBodyWriter provider = new JsonMessageBodyWriter();
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);
     BindingSet bindingSetAmstel = mock(BindingSet.class);
@@ -107,11 +116,10 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
-    assertThat(result, containsString("{\"head\":{\"vars\":[\"beer\"]}"));
-    assertThat(result,
-        containsString(
-            "{\"bindings\":" + "[{\"beer\":{\"type\":\"literal\",\"value\":\"Heineken\"}},"
-                + "{\"beer\":{\"type\":\"literal\",\"value\":\"Amstel\"}}]}}"));
+
+    JSONArray expected = new JSONArray().put(new JSONObject().put("beer", "Heineken")).put(
+        new JSONObject().put("beer", "Amstel"));
+    JSONAssert.assertEquals(expected.toString(), result, true);
   }
 
 }

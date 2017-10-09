@@ -10,11 +10,18 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.Binding;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-class SparqlResultsMessageBodyWriterTestBase {
+public class SparqlResultsMessageBodyWriterTestBase {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   OutputStream outputStream;
@@ -24,6 +31,21 @@ class SparqlResultsMessageBodyWriterTestBase {
 
   @Captor
   ArgumentCaptor<byte[]> byteCaptor;
+
+  @Test
+  public void constructor_ThrowsException_ForMissingMediaType() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new AbstractSparqlResultsMessageBodyWriter(null) {
+
+      @Override
+      protected TupleQueryResultWriter createWriter(OutputStream outputStream) {
+        return null;
+      }
+    };
+  }
 
   void configureBindingSetWithValue(BindingSet bindingSet, String value) {
     @SuppressWarnings("unchecked")
@@ -36,7 +58,6 @@ class SparqlResultsMessageBodyWriterTestBase {
     when(iterator.next()).thenReturn(binding);
     when(binding.getName()).thenReturn("beer");
     when(binding.getValue()).thenReturn(factory.createLiteral(value));
-
   }
 
 }

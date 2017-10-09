@@ -92,14 +92,14 @@ public class RepresentationResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.URL_PATTERN,
-                DBEERPEDIA.URL_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
-                DBEERPEDIA.STAGE))));
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.URL_PATTERN, DBEERPEDIA.URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE))));
 
     // Act
     representationResourceProvider.loadResources();
@@ -107,7 +107,7 @@ public class RepresentationResourceProviderTest {
     // Assert
     assertThat(representationResourceProvider.getAll().entrySet(), hasSize(1));
     Representation representation =
-        representationResourceProvider.get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
+        representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
     assertThat(representation, is(not(nullValue())));
     assertThat(representation.getInformationProduct(), equalTo(informationProduct));
     assertThat(representation.getUrlPatterns().toArray()[0],
@@ -120,14 +120,14 @@ public class RepresentationResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.URL_PATTERN,
-                DBEERPEDIA.URL_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
-                DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.URL_PATTERN, DBEERPEDIA.URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_REPRESENTATION,
@@ -149,18 +149,18 @@ public class RepresentationResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.URL_PATTERN,
-                DBEERPEDIA.URL_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
-                DBEERPEDIA.STAGE))));
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.URL_PATTERN, DBEERPEDIA.URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE))));
     // Act
     representationResourceProvider.loadResources();
 
     // Assert
     Representation representation =
-        representationResourceProvider.get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
+        representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
     assertThat(representation.getInformationProduct(), is(nullValue()));
   }
 
@@ -169,16 +169,16 @@ public class RepresentationResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.URL_PATTERN,
-                DBEERPEDIA.URL_PATTERN))));
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.URL_PATTERN, DBEERPEDIA.URL_PATTERN))));
     // Act
     representationResourceProvider.loadResources();
 
     // Assert
     Representation representation =
-        representationResourceProvider.get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
+        representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
     assertThat(representation.getStage(), is(nullValue()));
   }
 
@@ -187,18 +187,18 @@ public class RepresentationResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION, ELMO.STAGE_PROP,
-                DBEERPEDIA.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT))));
     // Act
     representationResourceProvider.loadResources();
 
     // Assert
     Representation representation =
-        representationResourceProvider.get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
+        representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
     assertThat(representation.getUrlPatterns(), is(nullValue()));
     assertThat(representation.getStage(), not(nullValue()));
     assertThat(representation.getInformationProduct(), not(nullValue()));
@@ -208,14 +208,14 @@ public class RepresentationResourceProviderTest {
   public void loadResources_LoadRepresentation_WithSimpleData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.BREWERY_LIST_REPRESENTATION,
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
             RDF.TYPE, ELMO.REPRESENTATION))));
     // Act
     representationResourceProvider.loadResources();
 
     // Assert
     Representation representation =
-        representationResourceProvider.get(DBEERPEDIA.BREWERY_LIST_REPRESENTATION);
+        representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
     assertThat(representation.getUrlPatterns(), is(nullValue()));
     assertThat(representation.getStage(), is(nullValue()));
     assertThat(representation.getInformationProduct(), is(nullValue()));

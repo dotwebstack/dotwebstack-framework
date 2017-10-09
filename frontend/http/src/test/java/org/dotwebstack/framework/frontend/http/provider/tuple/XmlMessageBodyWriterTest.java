@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.http.provider.tuple;
 
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -11,39 +10,26 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.json.JSONException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
+public class XmlMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
 
   @Test
-  public void constructor_ThrowsException_WithMissingMediaType() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new AbstractTupleMessageBodyWriter(null) {
-      @Override
-      protected void write(TupleQueryResult tupleQueryResult, OutputStream outputStream)
-          throws IOException {}
-    };
-  }
-
-  @Test
-  public void isWritable_IsTrue_ForSparqlResultsJsonMediaType() {
+  public void isWritable_IsTrue_ForXmlMediaType() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    XmlMessageBodyWriter provider = new XmlMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(TupleQueryResult.class, null, null,
-        MediaTypes.SPARQL_RESULTS_JSON_TYPE);
+    boolean result =
+        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -52,7 +38,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void isWritable_IsFalse_ForStringClass() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    XmlMessageBodyWriter provider = new XmlMessageBodyWriter();
 
     // Act
     boolean result =
@@ -65,7 +51,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void isWritable_IsFalse_ForJsonMediaType() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    XmlMessageBodyWriter provider = new XmlMessageBodyWriter();
 
     // Act
     boolean result =
@@ -78,7 +64,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void getSize_MinusOne_Always() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter writer = new SparqlResultsJsonMessageBodyWriter();
+    XmlMessageBodyWriter writer = new XmlMessageBodyWriter();
 
     // Act
     long result =
@@ -89,10 +75,9 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   }
 
   @Test
-  public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException {
+  public void writeTo_XmlFormat_ForQueryResult() throws IOException, JSONException {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
-    when(tupleQueryResult.getBindingNames()).thenReturn(asList("beer"));
+    XmlMessageBodyWriter provider = new XmlMessageBodyWriter();
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);
     BindingSet bindingSetAmstel = mock(BindingSet.class);
@@ -107,11 +92,12 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
-    assertThat(result, containsString("{\"head\":{\"vars\":[\"beer\"]}"));
-    assertThat(result,
-        containsString(
-            "{\"bindings\":" + "[{\"beer\":{\"type\":\"literal\",\"value\":\"Heineken\"}},"
-                + "{\"beer\":{\"type\":\"literal\",\"value\":\"Amstel\"}}]}}"));
+
+    assertThat(result, containsString("<results>"));
+    assertThat(result, containsString("</results>"));
+    assertThat(result, containsString("<result>"));
+    assertThat(result, containsString("<beer>Heineken</beer>"));
+    assertThat(result, containsString("<beer>Amstel</beer>"));
   }
 
 }

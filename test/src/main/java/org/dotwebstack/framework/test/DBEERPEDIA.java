@@ -85,7 +85,9 @@ public final class DBEERPEDIA {
 
   public static final IRI ORIGIN_INFORMATION_PRODUCT;
 
-  public static final IRI BREWERY_LIST_REPRESENTATION;
+  public static final IRI GRAPH_BREWERY_LIST_REPRESENTATION;
+
+  public static final IRI TUPLE_BREWERY_LIST_REPRESENTATION;
 
   public static final IRI BREWERY_REPRESENTATION;
 
@@ -168,8 +170,11 @@ public final class DBEERPEDIA {
     ORIGIN_INFORMATION_PRODUCT =
         valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "brewery/information/origins");
 
-    BREWERY_LIST_REPRESENTATION =
-        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryListRepresentation");
+    GRAPH_BREWERY_LIST_REPRESENTATION =
+        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "GraphBreweryListRepresentation");
+
+    TUPLE_BREWERY_LIST_REPRESENTATION =
+        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "TupleBreweryListRepresentation");
 
     BREWERY_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryRepresentation");
 
