@@ -40,4 +40,5 @@ public class LiteralDataTypesTest {
     // Act
     constructor.newInstance();
   }
+
 }

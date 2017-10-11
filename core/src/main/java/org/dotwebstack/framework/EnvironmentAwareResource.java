@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -22,7 +23,8 @@ public class EnvironmentAwareResource {
 
   private final Environment environment;
 
-  public EnvironmentAwareResource(InputStream inputStream, Environment environment) {
+  public EnvironmentAwareResource(@NonNull InputStream inputStream,
+      @NonNull Environment environment) {
     this.inputStream = inputStream;
     this.environment = environment;
   }

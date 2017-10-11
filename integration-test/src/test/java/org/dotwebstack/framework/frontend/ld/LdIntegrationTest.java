@@ -18,9 +18,7 @@ import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,16 +42,8 @@ public class LdIntegrationTest {
   public void setUp() throws IOException {
     target = ClientBuilder.newClient(httpConfiguration).target(
         String.format("http://localhost:%d", this.port));
-  }
 
-  @BeforeClass
-  public static void startStub() {
     SparqlHttpStub.start();
-  }
-
-  @AfterClass
-  public static void stopStub() {
-    SparqlHttpStub.stop();
   }
 
   @Test
@@ -61,11 +51,11 @@ public class LdIntegrationTest {
     // Arrange
     Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
         DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnModel(model);
+    SparqlHttpStub.returnGraph(model);
     MediaType mediaType = MediaType.valueOf("text/turtle");
 
     // Act
-    Response response = target.path("/dbp/ld/v1/breweries").request().accept(mediaType).get();
+    Response response = target.path("/dbp/ld/v1/graph-breweries").request().accept(mediaType).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -79,7 +69,7 @@ public class LdIntegrationTest {
   public void get_GetCorrectOptions_ThroughLdApi() {
     // Act
     Response response =
-        target.path("/dbp/ld/v1/breweries").request(MediaType.TEXT_PLAIN_TYPE).options();
+        target.path("/dbp/ld/v1/graph-breweries").request(MediaType.TEXT_PLAIN_TYPE).options();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -93,10 +83,11 @@ public class LdIntegrationTest {
     // Arrange
     Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
         DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnModel(model);
+    SparqlHttpStub.returnGraph(model);
 
     // Act
-    Response response = target.path("/dbp/ld/v1/breweries").request("application/ld+json").head();
+    Response response =
+        target.path("/dbp/ld/v1/graph-breweries").request("application/ld+json").head();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -117,7 +108,7 @@ public class LdIntegrationTest {
   @Test
   public void get_MethodNotAllowed_WhenDelete() {
     // Act
-    Response response = target.path("/dbp/ld/v1/breweries").request().delete();
+    Response response = target.path("/dbp/ld/v1/graph-breweries").request().delete();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.METHOD_NOT_ALLOWED.getStatusCode()));
@@ -127,7 +118,7 @@ public class LdIntegrationTest {
   public void get_NotAcceptable_WhenRequestingWrongMediaType() {
     // Act
     Response response =
-        target.path("/dbp/ld/v1/breweries").request(MediaType.APPLICATION_OCTET_STREAM).get();
+        target.path("/dbp/ld/v1/graph-breweries").request(MediaType.APPLICATION_OCTET_STREAM).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));

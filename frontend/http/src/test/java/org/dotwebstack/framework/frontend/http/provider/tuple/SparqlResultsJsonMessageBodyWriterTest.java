@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.http.provider.tuple;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -11,23 +12,16 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void constructor_ThrowsException_WithMissingMediaType() {
@@ -35,11 +29,10 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     thrown.expect(NullPointerException.class);
 
     // Act
-    new TupleMessageBodyWriter(null) {
+    new AbstractTupleMessageBodyWriter(null) {
       @Override
-      protected TupleQueryResultWriter createWriter(OutputStream outputStream) {
-        return null;
-      }
+      protected void write(TupleQueryResult tupleQueryResult, OutputStream outputStream)
+          throws IOException {}
     };
   }
 
@@ -99,7 +92,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException {
     // Arrange
     SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
-    when(tupleQueryResult.getBindingNames()).thenReturn(Arrays.asList("beer"));
+    when(tupleQueryResult.getBindingNames()).thenReturn(asList("beer"));
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);
     BindingSet bindingSetAmstel = mock(BindingSet.class);

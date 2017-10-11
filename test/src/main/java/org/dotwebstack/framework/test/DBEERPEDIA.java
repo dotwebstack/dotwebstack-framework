@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.test;
 
+import java.util.Calendar;
+import java.util.Date;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -35,6 +37,10 @@ public final class DBEERPEDIA {
 
   public static final IRI BREWERIES;
 
+  public static final IRI TUPLE_BREWERIES;
+
+  public static final IRI GRAPH_BREWERIES;
+
   public static final Literal BREWERIES_LABEL;
 
   public static final Literal WINERIES_LABEL;
@@ -53,15 +59,35 @@ public final class DBEERPEDIA {
 
   public static final Literal BROUWTOREN_YEAR_OF_FOUNDATION;
 
+  public static final Literal BROUWTOREN_DATE_OF_FOUNDATION;
+
+  public static final Literal BROUWTOREN_PLACE;
+
   public static final Literal BROUWTOREN_CRAFT_MEMBER;
 
   public static final Literal BROUWTOREN_FTE;
+
+  public static final Literal BROUWTOREN_LITERS_PER_YEAR;
+
+  public static final IRI MAXIMUS;
+
+  public static final Literal MAXIMUS_NAME;
+
+  public static final Literal MAXIMUS_YEAR_OF_FOUNDATION;
+
+  public static final Literal MAXIMUS_DATE_OF_FOUNDATION;
+
+  public static final Literal MAXIMUS_PLACE;
+
+  public static final Literal MAXIMUS_FTE;
 
   public static final IRI PERCENTAGES_INFORMATION_PRODUCT;
 
   public static final IRI ORIGIN_INFORMATION_PRODUCT;
 
-  public static final IRI BREWERY_LIST_REPRESENTATION;
+  public static final IRI GRAPH_BREWERY_LIST_REPRESENTATION;
+
+  public static final IRI TUPLE_BREWERY_LIST_REPRESENTATION;
 
   public static final IRI BREWERY_REPRESENTATION;
 
@@ -105,6 +131,8 @@ public final class DBEERPEDIA {
     ENDPOINT = valueFactory.createLiteral("http://localhost:8080/sparql", XMLSchema.ANYURI);
 
     BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Breweries");
+    TUPLE_BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "TupleBreweries");
+    GRAPH_BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "GraphBreweries");
     BREWERIES_LABEL = valueFactory.createLiteral("Beer breweries in The Netherlands");
     WINERIES_LABEL = valueFactory.createLiteral("Wineries in The Netherlands");
     MALFORMED_QUERY = valueFactory.createLiteral("CONSTRUCT ?s ?p ?o WHERE { ?s ?p ?o }");
@@ -116,16 +144,32 @@ public final class DBEERPEDIA {
         "brewery/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c");
     BROUWTOREN_NAME = valueFactory.createLiteral("Brouwtoren");
     BROUWTOREN_YEAR_OF_FOUNDATION = valueFactory.createLiteral(2014);
+    BROUWTOREN_DATE_OF_FOUNDATION =
+        valueFactory.createLiteral(createDate(2014, Calendar.JANUARY, 1));
     BROUWTOREN_CRAFT_MEMBER = valueFactory.createLiteral(true);
     BROUWTOREN_FTE = valueFactory.createLiteral(1.8);
+    BROUWTOREN_LITERS_PER_YEAR = valueFactory.createLiteral(Long.MAX_VALUE);
+    BROUWTOREN_PLACE = valueFactory.createLiteral("Nijmegen");
+
+    MAXIMUS = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
+        "brewery/0c0d7df2-a830-11e7-abc4-cec278b6b50a");
+    MAXIMUS_NAME = valueFactory.createLiteral("Maximus");
+    MAXIMUS_YEAR_OF_FOUNDATION = valueFactory.createLiteral(2012);
+    MAXIMUS_DATE_OF_FOUNDATION =
+        valueFactory.createLiteral(createDate(2012, Calendar.SEPTEMBER, 27));
+    MAXIMUS_FTE = valueFactory.createLiteral(2.4);
+    MAXIMUS_PLACE = valueFactory.createLiteral("Utrecht");
 
     PERCENTAGES_INFORMATION_PRODUCT = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/information/alcohol-percentages");
     ORIGIN_INFORMATION_PRODUCT =
         valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "brewery/information/origins");
 
-    BREWERY_LIST_REPRESENTATION =
-        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryListRepresentation");
+    GRAPH_BREWERY_LIST_REPRESENTATION =
+        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "GraphBreweryListRepresentation");
+
+    TUPLE_BREWERY_LIST_REPRESENTATION =
+        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "TupleBreweryListRepresentation");
 
     BREWERY_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryRepresentation");
 
@@ -135,6 +179,14 @@ public final class DBEERPEDIA {
   private DBEERPEDIA() {
     throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", DBEERPEDIA.class));
+  }
+
+  private static Date createDate(int year, int month, int day) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.set(Calendar.YEAR, year);
+    calendar.set(Calendar.MONTH, month);
+    calendar.set(Calendar.DAY_OF_MONTH, day);
+    return calendar.getTime();
   }
 
 }

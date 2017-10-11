@@ -66,6 +66,19 @@ public class JsonLdGraphMessageBodyWriterTest {
   }
 
   @Test
+  public void isWritable_IsTrue_ForJsonMediaType() {
+    // Arrange
+    JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
+
+    // Act
+    boolean result = writer.isWriteable(BackgroundGraphResult.class, null, null,
+        MediaType.APPLICATION_JSON_TYPE);
+
+    // Assert
+    assertThat(result, is(true));
+  }
+
+  @Test
   public void isWritable_IsFalse_ForStringClass() {
     // Arrange
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();

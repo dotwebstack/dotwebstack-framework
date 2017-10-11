@@ -1,24 +1,28 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import java.io.IOException;
+import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.HttpModule;
+import org.dotwebstack.framework.frontend.openapi.entity.EntityWriterInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OpenApiModule implements HttpModule {
+public final class OpenApiModule implements HttpModule {
 
   private OpenApiRequestMapper requestMapper;
 
   @Autowired
-  public OpenApiModule(OpenApiRequestMapper requestMapper) {
+  public OpenApiModule(@NonNull OpenApiRequestMapper requestMapper) {
     this.requestMapper = requestMapper;
   }
 
   @Override
-  public void initialize(HttpConfiguration httpConfiguration) {
+  public void initialize(@NonNull HttpConfiguration httpConfiguration) {
+    httpConfiguration.register(EntityWriterInterceptor.class);
+
     try {
       requestMapper.map(httpConfiguration);
     } catch (IOException e) {
