@@ -17,6 +17,7 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -91,8 +92,10 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
           new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
       String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
 
-      Swagger swagger = openApiParser.parse(result);
-      mapSwaggerDefinition(swagger, httpConfiguration);
+      if (!StringUtils.isBlank(result)) {
+        Swagger swagger = openApiParser.parse(result);
+        mapSwaggerDefinition(swagger, httpConfiguration);
+      }
     }
   }
 

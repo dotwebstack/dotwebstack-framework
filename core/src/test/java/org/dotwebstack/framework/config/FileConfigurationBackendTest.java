@@ -30,6 +30,7 @@ import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -75,6 +76,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
+  @Ignore
   public void constructor_ThrowsException_WithMissingElmoConfiguration() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -84,6 +86,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
+  @Ignore
   public void constructor_ThrowsException_WithMissingRepository() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -93,6 +96,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
+  @Ignore
   public void constructor_ThrowsException_WithMissingResourcePath() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -102,6 +106,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
+  @Ignore
   public void setResourceLoader_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -111,6 +116,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
+  @Ignore
   public void setEnvironment_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
