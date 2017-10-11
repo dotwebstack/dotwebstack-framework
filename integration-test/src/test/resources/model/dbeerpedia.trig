@@ -12,7 +12,5 @@ GRAPH dbeerpedia:Theatre {
     elmo:site dbeerpedia:Site;
     elmo:basePath "/dbp/ld/v1";
   .
-
-  elmo:SparqlBackend rdfs:subClassOf elmo:Backend .
 }
 

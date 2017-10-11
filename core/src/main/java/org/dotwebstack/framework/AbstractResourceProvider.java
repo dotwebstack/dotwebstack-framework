@@ -6,6 +6,7 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
@@ -62,6 +63,7 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
 
     SimpleDataset simpleDataset = new SimpleDataset();
     simpleDataset.addDefaultGraph(applicationProperties.getSystemGraphAsIRI());
+    simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
     query.setDataset(simpleDataset);
 
     try {
