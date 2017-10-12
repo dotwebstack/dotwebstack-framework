@@ -123,7 +123,7 @@ public class FileConfigurationBackend
     return resources.stream()
         .filter(resource -> resource.getFilename() != null && resource.getFilename()
             .startsWith("_prefixes") && FileFormats
-            .containsExtension(resource.getFilename().split("\\.")[1]))
+            .containsExtension(FilenameUtils.getExtension(resource.getFilename())))
         .findFirst();
   }
 }
