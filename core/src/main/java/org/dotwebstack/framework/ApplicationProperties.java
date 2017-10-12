@@ -2,7 +2,6 @@ package org.dotwebstack.framework;
 
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -24,13 +23,8 @@ public class ApplicationProperties {
     return resourcePath;
   }
 
-  public String getSystemGraph() {
-    return systemGraph;
-  }
-
-  public IRI getSystemGraphAsIRI() {
-    ValueFactory vf = SimpleValueFactory.getInstance();
-    return vf.createIRI(systemGraph);
+  public IRI getSystemGraph() {
+    return SimpleValueFactory.getInstance().createIRI(systemGraph);
   }
 
 }

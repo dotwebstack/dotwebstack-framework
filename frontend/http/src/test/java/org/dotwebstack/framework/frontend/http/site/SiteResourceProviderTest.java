@@ -63,7 +63,7 @@ public class SiteResourceProviderTest {
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
 
-    when(applicationProperties.getSystemGraphAsIRI()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
+    when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
   @Test

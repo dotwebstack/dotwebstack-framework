@@ -84,7 +84,7 @@ public class RepresentationResourceProviderTest {
     when(informationProductResourceProvider.get(any())).thenReturn(informationProduct);
     when(stageResourceProvider.get(any())).thenReturn(stage);
 
-    when(applicationProperties.getSystemGraphAsIRI()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
+    when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
   @Test

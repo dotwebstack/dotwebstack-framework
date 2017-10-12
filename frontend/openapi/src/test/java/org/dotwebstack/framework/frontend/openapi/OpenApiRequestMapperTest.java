@@ -78,7 +78,7 @@ public class OpenApiRequestMapperTest {
   private Environment environment;
 
   @Mock
-  ApplicationProperties applicationProperties;
+  private ApplicationProperties applicationProperties;
 
   private ResourceLoader resourceLoader;
 

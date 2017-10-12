@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.informationproduct;
 
+import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
@@ -23,8 +24,8 @@ public class InformationProductResourceProvider
   private BackendResourceProvider backendResourceProvider;
 
   @Autowired
-  public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
-      BackendResourceProvider backendResourceProvider,
+  public InformationProductResourceProvider(@NonNull ConfigurationBackend configurationBackend,
+      @NonNull BackendResourceProvider backendResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.backendResourceProvider = backendResourceProvider;

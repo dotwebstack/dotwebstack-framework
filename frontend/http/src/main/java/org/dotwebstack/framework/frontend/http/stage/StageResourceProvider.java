@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.http.stage;
 
+import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -19,8 +20,9 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
   private SiteResourceProvider siteResourceProvider;
 
   @Autowired
-  public StageResourceProvider(ConfigurationBackend configurationBackend,
-      SiteResourceProvider siteResourceProvider, ApplicationProperties applicationProperties) {
+  public StageResourceProvider(@NonNull ConfigurationBackend configurationBackend,
+      @NonNull SiteResourceProvider siteResourceProvider,
+      ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.siteResourceProvider = siteResourceProvider;
   }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
+import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -29,8 +30,8 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
 
   private HashMap<IRI, R> resources = new HashMap<>();
 
-  public AbstractResourceProvider(ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties) {
+  public AbstractResourceProvider(@NonNull ConfigurationBackend configurationBackend,
+      @NonNull ApplicationProperties applicationProperties) {
     this.configurationBackend = configurationBackend;
     this.applicationProperties = applicationProperties;
   }
@@ -62,7 +63,7 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     GraphQuery query = getQueryForResources(repositoryConnection);
 
     SimpleDataset simpleDataset = new SimpleDataset();
-    simpleDataset.addDefaultGraph(applicationProperties.getSystemGraphAsIRI());
+    simpleDataset.addDefaultGraph(applicationProperties.getSystemGraph());
     simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
     query.setDataset(simpleDataset);
 

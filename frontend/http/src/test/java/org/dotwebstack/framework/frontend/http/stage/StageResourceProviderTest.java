@@ -76,7 +76,7 @@ public class StageResourceProviderTest {
 
     when(siteResourceProvider.get(any())).thenReturn(site);
 
-    when(applicationProperties.getSystemGraphAsIRI()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
+    when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
   @Test
