@@ -93,7 +93,6 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  @Ignore
   public void constructor_ThrowsException_WithMissingInformationProductLoader() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -103,7 +102,6 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  @Ignore
   public void constructor_ThrowsException_WithMissingOpenApiParser() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -113,7 +111,6 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  @Ignore
   public void setResourceLoader_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -123,7 +120,6 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  @Ignore
   public void setEnvironment_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);

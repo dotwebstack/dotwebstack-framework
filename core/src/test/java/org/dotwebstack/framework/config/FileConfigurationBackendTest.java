@@ -76,7 +76,6 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  @Ignore
   public void constructor_ThrowsException_WithMissingElmoConfiguration() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -86,7 +85,6 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  @Ignore
   public void constructor_ThrowsException_WithMissingRepository() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -96,7 +94,6 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  @Ignore
   public void constructor_ThrowsException_WithMissingResourcePath() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -106,7 +103,6 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  @Ignore
   public void setResourceLoader_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -116,7 +112,6 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  @Ignore
   public void setEnvironment_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);

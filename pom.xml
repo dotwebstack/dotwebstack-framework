@@ -6,7 +6,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.0.8-SNAPSHOT</version>
+  <version>0.0.8-ihr2.741</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -323,11 +323,11 @@
   </profiles>
 
   <distributionManagement>
-    <snapshotRepository>
+    <repository>
       <id>snapshots-repo</id>
       <name>Artifactory-snapshots</name>
       <url>http://ota-portal.so.kadaster.nl:80/artifactory/mvn-thirdparty-local</url>
-    </snapshotRepository>
+    </repository>
   </distributionManagement>
 
 </project>

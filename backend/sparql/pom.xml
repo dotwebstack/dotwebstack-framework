@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-backend</artifactId>
-    <version>0.0.8-SNAPSHOT</version>
+    <version>0.0.8-ihr2.741</version>
   </parent>
 
   <artifactId>dotwebstack-backend-sparql</artifactId>
