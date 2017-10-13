@@ -6,6 +6,8 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public final class ELMO {
 
+  public static final IRI CONFIG_GRAPHNAME;
+
   public static final String NAMESPACE = "http://dotwebstack.org/def/elmo#";
 
   public static final IRI INFORMATION_PRODUCT;
@@ -40,6 +42,8 @@ public final class ELMO {
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
+    CONFIG_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Config");
 
     // Classes
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");

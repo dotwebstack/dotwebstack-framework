@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -47,6 +48,9 @@ public class InformationProductResourceProviderTest {
   private ConfigurationBackend configurationBackend;
 
   @Mock
+  private ApplicationProperties applicationProperties;
+
+  @Mock
   private SailRepository configurationRepository;
 
   @Mock
@@ -64,14 +68,43 @@ public class InformationProductResourceProviderTest {
 
   @Before
   public void setUp() {
-    informationProductResourceProvider =
-        new InformationProductResourceProvider(configurationBackend, backendResourceProvider);
+    informationProductResourceProvider = new InformationProductResourceProvider(
+        configurationBackend, backendResourceProvider, applicationProperties);
 
     when(backendResourceProvider.get(any())).thenReturn(backend);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
+
+    when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new InformationProductResourceProvider(null, backendResourceProvider, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingBackendResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new InformationProductResourceProvider(configurationBackend, null, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingApplicationProperties() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new InformationProductResourceProvider(configurationBackend, backendResourceProvider, null);
   }
 
   @Test

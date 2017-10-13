@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
 import java.util.Optional;
+import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -21,10 +23,11 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   private StageResourceProvider stageResourceProvider;
 
   @Autowired
-  public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
-      InformationProductResourceProvider informationProductResourceProvider,
-      StageResourceProvider stageResourceProvider) {
-    super(configurationBackend);
+  public RepresentationResourceProvider(@NonNull ConfigurationBackend configurationBackend,
+      @NonNull InformationProductResourceProvider informationProductResourceProvider,
+      @NonNull StageResourceProvider stageResourceProvider,
+      @NonNull ApplicationProperties applicationProperties) {
+    super(configurationBackend, applicationProperties);
     this.informationProductResourceProvider = informationProductResourceProvider;
     this.stageResourceProvider = stageResourceProvider;
   }
