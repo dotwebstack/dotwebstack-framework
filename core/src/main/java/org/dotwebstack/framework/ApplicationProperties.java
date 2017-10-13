@@ -4,14 +4,11 @@ import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-@ConfigurationProperties(prefix = "dotwebstack.config")
 @Configuration
 public class ApplicationProperties {
 
-  // TODO configurationproperties is not working, why not?
   @Value("${dotwebstack.config.resourcePath}")
   private String resourcePath = "file:src/main/resources";
 
