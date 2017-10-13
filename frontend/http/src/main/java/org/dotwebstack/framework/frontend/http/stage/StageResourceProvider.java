@@ -20,9 +20,9 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
   private SiteResourceProvider siteResourceProvider;
 
   @Autowired
-  public StageResourceProvider(@NonNull ConfigurationBackend configurationBackend,
+  public StageResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull SiteResourceProvider siteResourceProvider,
-      @NonNull ApplicationProperties applicationProperties) {
+      ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.siteResourceProvider = siteResourceProvider;
   }

@@ -166,17 +166,12 @@ public class SiteResourceProviderTest {
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.SITE, RDF.TYPE, ELMO.SITE,
                 DBEERPEDIA.SYSTEM_GRAPH_IRI),
-            valueFactory.createStatement(DBEERPEDIA.SITE, ELMO.DOMAIN, DBEERPEDIA.DOMAIN,
-                DBEERPEDIA.SYSTEM_GRAPH_IRI),
             valueFactory.createStatement(DBEERPEDIA.SITE_NL, RDF.TYPE, ELMO.SITE,
-                DBEERPEDIA.SYSTEM_GRAPH_IRI),
-            valueFactory.createStatement(DBEERPEDIA.SITE_NL, ELMO.DOMAIN, DBEERPEDIA.DOMAIN,
                 DBEERPEDIA.SYSTEM_GRAPH_IRI))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(
-        String.format("Domain <%s> found for multiple sites.", DBEERPEDIA.DOMAIN.stringValue()));
+    thrown.expectMessage(String.format("Catch all domain found for multiple sites"));
 
     // Act
     siteResourceProvider.loadResources();

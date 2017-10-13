@@ -5,14 +5,13 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
-import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.jackson.TupleQueryResultSerializer;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
 public abstract class AbstractJsonGeneratorMessageBodyWriter
     extends AbstractTupleMessageBodyWriter {
 
-  AbstractJsonGeneratorMessageBodyWriter(@NonNull MediaType mediaType) {
+  AbstractJsonGeneratorMessageBodyWriter(MediaType mediaType) {
     super(mediaType);
   }
 

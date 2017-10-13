@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.http.site;
 
 import java.util.Optional;
-import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -18,8 +17,8 @@ import org.springframework.stereotype.Service;
 public class SiteResourceProvider extends AbstractResourceProvider<Site> {
 
   @Autowired
-  public SiteResourceProvider(@NonNull ConfigurationBackend configurationBackend,
-      @NonNull ApplicationProperties applicationProperties) {
+  public SiteResourceProvider(ConfigurationBackend configurationBackend,
+      ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
   }
 

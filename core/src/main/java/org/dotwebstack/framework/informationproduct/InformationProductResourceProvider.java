@@ -24,7 +24,7 @@ public class InformationProductResourceProvider
   private BackendResourceProvider backendResourceProvider;
 
   @Autowired
-  public InformationProductResourceProvider(@NonNull ConfigurationBackend configurationBackend,
+  public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull BackendResourceProvider backendResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
