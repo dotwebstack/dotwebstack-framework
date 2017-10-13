@@ -81,6 +81,33 @@ public class InformationProductResourceProviderTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new InformationProductResourceProvider(null, backendResourceProvider, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingBackendResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new InformationProductResourceProvider(configurationBackend, null, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingApplicationProperties() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new InformationProductResourceProvider(configurationBackend, backendResourceProvider, null);
+  }
+
+  @Test
   public void loadResources_LoadInformationProduct_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),

@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend;
 
 import java.util.List;
+import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -21,7 +22,7 @@ public class BackendResourceProvider extends AbstractResourceProvider<Backend> {
 
   @Autowired
   public BackendResourceProvider(ConfigurationBackend configurationBackend,
-      List<BackendFactory> backendFactories, ApplicationProperties applicationProperties) {
+      @NonNull List<BackendFactory> backendFactories, ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.backendFactories = backendFactories;
   }

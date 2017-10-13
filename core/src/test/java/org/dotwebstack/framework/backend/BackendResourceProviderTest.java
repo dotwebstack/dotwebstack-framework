@@ -83,6 +83,33 @@ public class BackendResourceProviderTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new BackendResourceProvider(null, backendFactories, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingBackendFactoriesProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new BackendResourceProvider(configurationBackend, null, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingApplicationProperties() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new BackendResourceProvider(configurationBackend, backendFactories, null);
+  }
+
+  @Test
   public void get_ThrowsExcception_BackendNotFound() {
     // Assert
     thrown.expect(IllegalArgumentException.class);

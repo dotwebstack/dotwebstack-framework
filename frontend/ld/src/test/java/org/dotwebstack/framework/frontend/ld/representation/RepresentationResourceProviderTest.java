@@ -88,6 +88,45 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new RepresentationResourceProvider(null, informationProductResourceProvider,
+        stageResourceProvider, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingInformationProductResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new RepresentationResourceProvider(configurationBackend, null, null, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingStageResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
+        null, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingApplicationProperties() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
+        stageResourceProvider, null);
+  }
+
+  @Test
   public void loadResources_LoadRepresentation_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
