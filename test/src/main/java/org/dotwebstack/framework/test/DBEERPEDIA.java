@@ -104,6 +104,8 @@ public final class DBEERPEDIA {
 
   public static final String SYSTEM_GRAPH = "http://dbeerpedia.nl/configuration/Theatre";
 
+  public static final String RESOURCE_PATH = "file:./config";
+
   public static final IRI SYSTEM_GRAPH_IRI;
 
   public static final IRI SITE;
