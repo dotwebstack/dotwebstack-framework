@@ -28,6 +28,7 @@ public class FileConfigurationBackendIntegrationTest {
 
   private Resource elmoConfiguration;
 
+  @Autowired
   private SailRepository sailRepository;
 
   @Autowired
