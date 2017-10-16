@@ -89,6 +89,9 @@ public class FileConfigurationBackend
     List<Resource> resources = getCombinedResources(projectResources);
 
     final Optional<Resource> optionalPrefixesResource = getPrefixesResource(resources);
+    if (optionalPrefixesResource.isPresent()) {
+      checkPrefixesResource(optionalPrefixesResource.get());
+    }
 
     try {
       for (Resource resource : resources) {
