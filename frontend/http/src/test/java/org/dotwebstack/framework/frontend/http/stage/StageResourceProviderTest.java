@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.site.Site;
@@ -40,6 +41,9 @@ public class StageResourceProviderTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
+  private ApplicationProperties applicationProperties;
+
+  @Mock
   private SiteResourceProvider siteResourceProvider;
 
   @Mock
@@ -63,13 +67,43 @@ public class StageResourceProviderTest {
 
   @Before
   public void setUp() {
-    stageResourceProvider = new StageResourceProvider(configurationBackend, siteResourceProvider);
+    stageResourceProvider = new StageResourceProvider(configurationBackend, siteResourceProvider,
+        applicationProperties);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
 
     when(siteResourceProvider.get(any())).thenReturn(site);
+
+    when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new StageResourceProvider(null, siteResourceProvider, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingSiteResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new StageResourceProvider(configurationBackend, null, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingApplicationProperties() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new StageResourceProvider(configurationBackend, siteResourceProvider, null);
   }
 
   @Test

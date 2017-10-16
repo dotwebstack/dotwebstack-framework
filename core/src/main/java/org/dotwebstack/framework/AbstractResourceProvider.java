@@ -4,14 +4,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
+import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.query.impl.SimpleDataset;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.slf4j.Logger;
@@ -23,10 +26,14 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
 
   private ConfigurationBackend configurationBackend;
 
+  private ApplicationProperties applicationProperties;
+
   private HashMap<IRI, R> resources = new HashMap<>();
 
-  public AbstractResourceProvider(ConfigurationBackend configurationBackend) {
+  public AbstractResourceProvider(@NonNull ConfigurationBackend configurationBackend,
+      @NonNull ApplicationProperties applicationProperties) {
     this.configurationBackend = configurationBackend;
+    this.applicationProperties = applicationProperties;
   }
 
   @Override
@@ -54,6 +61,11 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     }
 
     GraphQuery query = getQueryForResources(repositoryConnection);
+
+    SimpleDataset simpleDataset = new SimpleDataset();
+    simpleDataset.addDefaultGraph(applicationProperties.getSystemGraph());
+    simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
+    query.setDataset(simpleDataset);
 
     try {
       Model model = QueryResults.asModel(query.evaluate());

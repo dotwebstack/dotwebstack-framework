@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
@@ -39,6 +40,9 @@ public class RepresentationResourceProviderTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
+
+  @Mock
+  private ApplicationProperties applicationProperties;
 
   @Mock
   private InformationProductResourceProvider informationProductResourceProvider;
@@ -71,7 +75,7 @@ public class RepresentationResourceProviderTest {
   @Before
   public void setUp() {
     representationResourceProvider = new RepresentationResourceProvider(configurationBackend,
-        informationProductResourceProvider, stageResourceProvider);
+        informationProductResourceProvider, stageResourceProvider, applicationProperties);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -79,6 +83,47 @@ public class RepresentationResourceProviderTest {
 
     when(informationProductResourceProvider.get(any())).thenReturn(informationProduct);
     when(stageResourceProvider.get(any())).thenReturn(stage);
+
+    when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new RepresentationResourceProvider(null, informationProductResourceProvider,
+        stageResourceProvider, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingInformationProductResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new RepresentationResourceProvider(configurationBackend, null, null, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingStageResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
+        null, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingApplicationProperties() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
+        stageResourceProvider, null);
   }
 
   @Test

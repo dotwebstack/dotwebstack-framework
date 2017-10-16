@@ -10,8 +10,7 @@ public final class TupleEntity extends AbstractEntity<TupleQueryResult> {
 
   private TupleQueryResult result;
 
-  public TupleEntity(@NonNull Map<MediaType, Property> schemaMap,
-      @NonNull TupleQueryResult result) {
+  public TupleEntity(Map<MediaType, Property> schemaMap, @NonNull TupleQueryResult result) {
     super(schemaMap);
     this.result = result;
   }
