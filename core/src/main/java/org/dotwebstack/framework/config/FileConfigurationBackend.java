@@ -134,4 +134,31 @@ public class FileConfigurationBackend
             .containsExtension(FilenameUtils.getExtension(resource.getFilename())))
         .findFirst();
   }
+
+  private void checkPrefixesResource(Resource prefixes) {
+    Map<String, String> prefixesMap = new HashMap<>();
+    try (BufferedReader bufferedReader = new BufferedReader(
+        new InputStreamReader(new FileInputStream(prefixes.getFile())))) {
+      String line;
+      int lineNumber = 0;
+      while ((line = bufferedReader.readLine()) != null) {
+        lineNumber++;
+        String[] parts = line.split(":");
+        if (parts.length != 3) {
+          throw new ConfigurationException(
+              String.format("Found unknown prefix format <%s> at line <%s>", line, lineNumber));
+        } else {
+          if (!prefixesMap.containsKey(parts[0])) {
+            prefixesMap.put(parts[0], parts[1] + ":" + parts[2]);
+          } else {
+            throw new ConfigurationException(
+                String.format("Found multiple declaration <%s> at line <%s>", line, lineNumber));
+          }
+        }
+      }
+    } catch (IOException ex) {
+      LOG.error("Get error while reading _prefixes.trig --> " + ex.toString());
+    }
+  }
+
 }
