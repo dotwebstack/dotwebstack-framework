@@ -18,6 +18,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -32,7 +33,6 @@ import org.glassfish.jersey.server.model.ResourceMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.env.Environment;
@@ -45,7 +45,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
-  private final String resourcePath;
+  private ApplicationProperties applicationProperties;
 
   private final InformationProductResourceProvider informationProductResourceProvider;
 
@@ -59,11 +59,10 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   @Autowired
   public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
-      @NonNull SwaggerParser openApiParser,
-      @Value("${dotwebstack.config.resourcePath: file:src/main/resources}") String resourcePath) {
+      @NonNull SwaggerParser openApiParser, @NonNull ApplicationProperties applicationProperties) {
     this.informationProductResourceProvider = informationProductLoader;
     this.openApiParser = openApiParser;
-    this.resourcePath = resourcePath;
+    this.applicationProperties = applicationProperties;
   }
 
   @Override
@@ -81,9 +80,10 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-          resourcePath + "/openapi/**");
+          applicationProperties.getResourcePath() + "/openapi/**");
     } catch (FileNotFoundException e) {
-      LOG.warn("No Open API resources found in path:{}/openapi", resourcePath);
+      LOG.warn("No Open API resources found in path:{}/openapi",
+          applicationProperties.getResourcePath());
       return;
     }
 
