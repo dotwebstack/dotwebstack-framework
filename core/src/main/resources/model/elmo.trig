@@ -1,4 +1,6 @@
 @prefix elmo: <http://dotwebstack.org/def/elmo#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
-elmo:SparqlBackend rdfs:subClassOf elmo:Backend .
+GRAPH elmo:Config {
+  elmo:SparqlBackend rdfs:subClassOf elmo:Backend .
+}

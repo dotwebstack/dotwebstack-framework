@@ -15,7 +15,7 @@ public class ApplicationConfiguration {
   @Bean
   public ConfigurationBackend configurationBackend(
       @Value("classpath:/model/elmo.trig") Resource elmoConfiguration,
-      @Value("${dotwebstack.config.resourcePath: file:src/main/resources}") String resourcePath) {
+      @Value("#{applicationProperties.resourcePath}") String resourcePath) {
     return new FileConfigurationBackend(elmoConfiguration, new SailRepository(new MemoryStore()),
         resourcePath);
   }
