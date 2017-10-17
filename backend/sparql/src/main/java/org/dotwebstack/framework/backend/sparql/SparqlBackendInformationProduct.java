@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
+import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
@@ -26,6 +27,20 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
   @Override
   public Object getResult() {
+
+    // Parameters als map meekrijgen
+    Map<String, Object> parameters;
+
+    // Inhoud:
+    // id = NL.IMRO...
+    //
+
+    // Gebruik filter om query te manipuleren met parameters:
+    
+    // Object value = parameters.get(filter.getName());
+    //
+    // query = query.replaceAll(filter.getName(), value);
+
     return queryEvaluator.evaluate(backend.getConnection(), query);
   }
 
@@ -44,8 +59,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
     private QueryEvaluator queryEvaluator;
 
     public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
-        @NonNull ResultType resultType,
-        @NonNull QueryEvaluator queryEvaluator) {
+        @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;
