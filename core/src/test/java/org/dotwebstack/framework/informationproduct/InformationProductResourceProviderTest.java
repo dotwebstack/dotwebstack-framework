@@ -19,6 +19,7 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -150,6 +151,36 @@ public class InformationProductResourceProviderTest {
 
     // Assert
     assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(2));
+  }
+
+  @Test
+  public void get_ThrowsException_ResourceNotFound_WithMultipleOtherInformationProducts() {
+    IRI unknownResource = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "foo");
+
+    // Assert
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage(
+        String.format("Resource <%s> not found. Available resources: [<%s>, <%s>]", unknownResource,
+            DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT));
+    thrown.expectMessage(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT.toString());
+    thrown.expectMessage(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT.toString());
+
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+                ELMO.INFORMATION_PRODUCT),
+            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
+                ELMO.INFORMATION_PRODUCT),
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+                ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND),
+            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
+                DBEERPEDIA.BACKEND))));
+
+    informationProductResourceProvider.loadResources();
+
+    // Act
+    informationProductResourceProvider.get(unknownResource);
   }
 
   @Test
