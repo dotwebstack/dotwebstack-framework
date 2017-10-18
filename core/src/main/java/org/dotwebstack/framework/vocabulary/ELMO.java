@@ -40,6 +40,12 @@ public final class ELMO {
 
   public static final IRI URL_PATTERN;
 
+  public static final IRI PARAMETER;
+
+  public static final IRI PARAMETER_PROP;
+
+  public static final IRI NAME_PROP;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
@@ -66,6 +72,10 @@ public final class ELMO {
     URL_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "urlPattern");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
+
+    PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
+    PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "parameter");
+    NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
   }
 
   private ELMO() {
