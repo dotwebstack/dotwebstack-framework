@@ -43,6 +43,7 @@ public class FileConfigurationBackendPrefixesIntegrationTest {
   @Test
   public void configrateBackend_WithoutPrefixesInBackendfile_throwConfigurationException()
       throws Exception {
+    // Arrange
     fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
         "invalidPrefixConfig");
 
@@ -51,6 +52,7 @@ public class FileConfigurationBackendPrefixesIntegrationTest {
     thrown.expectMessage(
         "Found multiple declaration <@prefix rdfs: <http://www.have-a-nice-day.com/rdf-schema#> .> at line <5>");
 
+    // Act
     fileConfigurationBackend.setEnvironment(environment);
     fileConfigurationBackend.loadResources();
   }

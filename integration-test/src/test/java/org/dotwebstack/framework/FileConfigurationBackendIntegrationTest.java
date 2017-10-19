@@ -43,6 +43,7 @@ public class FileConfigurationBackendIntegrationTest {
   @Test
   public void configrateBackend_WithoutPrefixesInBackendfile_throwConfigurationException()
       throws Exception {
+    // Arrange
     fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
         "invalidConfig");
 
@@ -50,6 +51,7 @@ public class FileConfigurationBackendIntegrationTest {
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Error while loading RDF data.");
 
+    // Act
     fileConfigurationBackend.setEnvironment(environment);
     fileConfigurationBackend.loadResources();
   }
