@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.config;
 
-import java.io.BufferedReader;
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
@@ -134,24 +135,32 @@ public class FileConfigurationBackend
         .findFirst();
   }
 
+  private String[] getPrefixesOfResource(Resource inputResource) throws IOException {
+    String result = CharStreams
+        .toString(new InputStreamReader(inputResource.getInputStream(), Charsets.UTF_8));
+    return result.split("\n");
+  }
+
+
   private void checkMultiplePrefixesDeclaration(Resource prefixes) {
     Map<String, String> prefixesMap = new HashMap<>();
-    try (BufferedReader bufferedReader = new BufferedReader(
-        new InputStreamReader(prefixes.getInputStream()))) {
+
+    try {
+      final String[] allPrefixes = getPrefixesOfResource(prefixes);
       String line;
       int lineNumber = 0;
-      while ((line = bufferedReader.readLine()) != null) {
+      for (String prefix : allPrefixes) {
         lineNumber++;
-        String[] parts = line.split(":");
+        String[] parts = prefix.split(":");
         if (parts.length != 3) {
           throw new ConfigurationException(
-              String.format("Found unknown prefix format <%s> at line <%s>", line, lineNumber));
+              String.format("Found unknown prefix format <%s> at line <%s>", prefix, lineNumber));
         } else {
           if (!prefixesMap.containsKey(parts[0])) {
             prefixesMap.put(parts[0], parts[1] + ":" + parts[2]);
           } else {
             throw new ConfigurationException(
-                String.format("Found multiple declaration <%s> at line <%s>", line, lineNumber));
+                String.format("Found multiple declaration <%s> at line <%s>", prefix, lineNumber));
           }
         }
       }
