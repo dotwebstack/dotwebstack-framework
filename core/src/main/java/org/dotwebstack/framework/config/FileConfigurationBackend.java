@@ -102,11 +102,12 @@ public class FileConfigurationBackend
           continue;
         }
         if (optionalPrefixesResource.isPresent()) {
-          final SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
-              optionalPrefixesResource.get().getInputStream(), resource.getInputStream());
-          repositoryConnection.add(
-              new EnvironmentAwareResource(resourceSquenceInputStream, environment)
-                  .getInputStream(), "#", FileFormats.getFormat(extension));
+          try (SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
+              optionalPrefixesResource.get().getInputStream(), resource.getInputStream())) {
+            repositoryConnection.add(
+                new EnvironmentAwareResource(resourceSquenceInputStream, environment)
+                    .getInputStream(), "#", FileFormats.getFormat(extension));
+          }
         } else {
           repositoryConnection.add(
               new EnvironmentAwareResource(resource.getInputStream(), environment)
@@ -147,7 +148,6 @@ public class FileConfigurationBackend
 
     try {
       final String[] allPrefixes = getPrefixesOfResource(prefixes);
-      String line;
       int lineNumber = 0;
       for (String prefix : allPrefixes) {
         lineNumber++;
