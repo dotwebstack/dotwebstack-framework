@@ -1,0 +1,10 @@
+GRAPH dbeerpedia:Theatre {
+  dbeerpedia:Site a elmo:Site;
+    elmo:domain "localhost";
+  .
+
+  dbeerpedia:Stage a elmo:Stage;
+    elmo:site dbeerpedia:Site;
+    elmo:basePath "/dbp/ld/v1";
+  .
+}

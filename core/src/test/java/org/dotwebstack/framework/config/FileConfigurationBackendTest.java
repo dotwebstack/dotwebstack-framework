@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.config;
 
-import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -248,5 +248,4 @@ public class FileConfigurationBackendTest {
 
     assertThat(fileContents, hasItems("file", "elmo"));
   }
-
 }

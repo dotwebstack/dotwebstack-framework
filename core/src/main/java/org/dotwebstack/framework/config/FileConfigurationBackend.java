@@ -1,9 +1,16 @@
 package org.dotwebstack.framework.config;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import javax.annotation.PostConstruct;
 import lombok.NonNull;
 import org.apache.commons.io.FilenameUtils;
@@ -61,6 +68,7 @@ public class FileConfigurationBackend
 
   @PostConstruct
   public void loadResources() throws IOException {
+
     Resource[] projectResources =
         ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
             resourcePath + "/model/**");
@@ -80,6 +88,11 @@ public class FileConfigurationBackend
 
     List<Resource> resources = getCombinedResources(projectResources);
 
+    final Optional<Resource> optionalPrefixesResource = getPrefixesResource(resources);
+    if (optionalPrefixesResource.isPresent()) {
+      checkMultiplePrefixesDeclaration(optionalPrefixesResource.get());
+    }
+
     try {
       for (Resource resource : resources) {
         String extension = FilenameUtils.getExtension(resource.getFilename());
@@ -88,10 +101,17 @@ public class FileConfigurationBackend
           LOG.debug("File extension not supported, ignoring file: \"{}\"", resource.getFilename());
           continue;
         }
-
-        repositoryConnection.add(
-            new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
-            "#", FileFormats.getFormat(extension));
+        if (optionalPrefixesResource.isPresent()) {
+          final SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
+              optionalPrefixesResource.get().getInputStream(), resource.getInputStream());
+          repositoryConnection.add(
+              new EnvironmentAwareResource(resourceSquenceInputStream, environment)
+                  .getInputStream(), "#", FileFormats.getFormat(extension));
+        } else {
+          repositoryConnection.add(
+              new EnvironmentAwareResource(resource.getInputStream(), environment)
+                  .getInputStream(), "#", FileFormats.getFormat(extension));
+        }
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
     } catch (RDF4JException e) {
@@ -105,6 +125,49 @@ public class FileConfigurationBackend
     List<Resource> result = new ArrayList<>(Arrays.asList(projectResources));
     result.add(elmoConfiguration);
     return result;
+  }
+
+  private Optional<Resource> getPrefixesResource(List<Resource> resources) {
+    return resources.stream()
+        .filter(resource -> resource.getFilename() != null && resource.getFilename()
+            .startsWith("_prefixes") && FileFormats
+            .containsExtension(FilenameUtils.getExtension(resource.getFilename())))
+        .findFirst();
+  }
+
+  private String[] getPrefixesOfResource(Resource inputResource) throws IOException {
+    String result = CharStreams
+        .toString(new InputStreamReader(inputResource.getInputStream(), Charsets.UTF_8));
+    return result.split("\n");
+  }
+
+
+  private void checkMultiplePrefixesDeclaration(Resource prefixes) {
+    Map<String, String> prefixesMap = new HashMap<>();
+
+    try {
+      final String[] allPrefixes = getPrefixesOfResource(prefixes);
+      String line;
+      int lineNumber = 0;
+      for (String prefix : allPrefixes) {
+        lineNumber++;
+        String[] parts = prefix.split(":");
+        if (parts.length != 3) {
+          throw new ConfigurationException(
+              String.format("Found unknown prefix format <%s> at line <%s>", prefix, lineNumber));
+        } else {
+          if (!prefixesMap.containsKey(parts[0])) {
+            prefixesMap.put(parts[0], parts[1] + ":" + parts[2]);
+          } else {
+            throw new ConfigurationException(
+                String.format("Found multiple declaration <%s> at line <%s>", prefix, lineNumber));
+          }
+        }
+      }
+    } catch (IOException ex) {
+      LOG.error("Get error while reading _prefixes.trig --> " + ex.toString());
+      throw new ConfigurationException("Get error while reading _prefixes.trig");
+    }
   }
 
 }
