@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.config;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
@@ -138,7 +137,7 @@ public class FileConfigurationBackend
   private void checkMultiplePrefixesDeclaration(Resource prefixes) {
     Map<String, String> prefixesMap = new HashMap<>();
     try (BufferedReader bufferedReader = new BufferedReader(
-        new InputStreamReader(new FileInputStream(prefixes.getFile())))) {
+        new InputStreamReader(prefixes.getInputStream()))) {
       String line;
       int lineNumber = 0;
       while ((line = bufferedReader.readLine()) != null) {
