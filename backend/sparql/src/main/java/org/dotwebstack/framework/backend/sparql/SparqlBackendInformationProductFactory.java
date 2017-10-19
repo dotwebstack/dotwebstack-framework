@@ -38,7 +38,7 @@ public class SparqlBackendInformationProductFactory {
     ResultType resultType = getQueryType(query);
 
     return new SparqlBackendInformationProduct.Builder(identifier, (SparqlBackend) backend, query,
-        resultType, queryEvaluator).label(label).build();
+        resultType, queryEvaluator, null).label(label).build();
   }
 
   private ResultType getQueryType(String query) {

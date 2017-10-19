@@ -50,11 +50,11 @@ public class InformationProductTest {
   public class TestInformationProduct extends AbstractInformationProduct {
 
     protected TestInformationProduct(IRI identifier, String label, ResultType resultType) {
-      super(identifier, label, resultType);
+      super(identifier, label, resultType,null);
     }
 
     @Override
-    public Object getResult() {
+    public Object getResult(String value) {
       return null;
     }
   }

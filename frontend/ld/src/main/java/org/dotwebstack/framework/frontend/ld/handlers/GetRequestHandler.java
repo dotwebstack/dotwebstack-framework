@@ -23,7 +23,7 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
     String path = containerRequestContext.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
-    Object result = representation.getInformationProduct().getResult();
+    Object result = representation.getInformationProduct().getResult(null);
     return Response.ok(result).build();
   }
 }

@@ -37,7 +37,7 @@ public class SparqlBackendInformationProductTest {
     // Act
     SparqlBackendInformationProduct result =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
-            GRAPH_QUERY, ResultType.GRAPH, queryEvaluator).build();
+            GRAPH_QUERY, ResultType.GRAPH, queryEvaluator, null).build();
 
     // Assert
     assertThat(result.getQuery(), equalTo(GRAPH_QUERY));
@@ -52,7 +52,7 @@ public class SparqlBackendInformationProductTest {
 
     // Act
     new SparqlBackendInformationProduct.Builder(null, backend, GRAPH_QUERY, ResultType.GRAPH,
-        queryEvaluator).build();
+        queryEvaluator,null).build();
   }
 
   @Test
@@ -60,7 +60,7 @@ public class SparqlBackendInformationProductTest {
     // Arrange
     SparqlBackendInformationProduct.Builder builder =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
-            GRAPH_QUERY, ResultType.GRAPH, queryEvaluator);
+            GRAPH_QUERY, ResultType.GRAPH, queryEvaluator,null);
     builder.label(DBEERPEDIA.BREWERIES_LABEL.stringValue());
 
     // Act
@@ -77,7 +77,7 @@ public class SparqlBackendInformationProductTest {
 
     // Act
     new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, null,
-        GRAPH_QUERY, ResultType.GRAPH, queryEvaluator).build();
+        GRAPH_QUERY, ResultType.GRAPH, queryEvaluator,null).build();
   }
 
   @Test
@@ -87,7 +87,7 @@ public class SparqlBackendInformationProductTest {
 
     // Act
     new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
-        null, ResultType.GRAPH, queryEvaluator).build();
+        null, ResultType.GRAPH, queryEvaluator,null).build();
   }
 
   @Test
@@ -97,7 +97,7 @@ public class SparqlBackendInformationProductTest {
 
     // Act
     new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
-        GRAPH_QUERY, null, queryEvaluator).build();
+        GRAPH_QUERY, null, queryEvaluator,null).build();
   }
 
   @Test
@@ -107,7 +107,7 @@ public class SparqlBackendInformationProductTest {
 
     // Act
     new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
-        GRAPH_QUERY, ResultType.GRAPH, null).build();
+        GRAPH_QUERY, ResultType.GRAPH, null,null).build();
   }
 
   @Test
@@ -118,10 +118,10 @@ public class SparqlBackendInformationProductTest {
     when(queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY)).thenReturn(expectedResult);
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
-            GRAPH_QUERY, ResultType.GRAPH, queryEvaluator).build();
+            GRAPH_QUERY, ResultType.GRAPH, queryEvaluator,null).build();
 
     // Act
-    Object result = source.getResult();
+    Object result = source.getResult(null);
 
     // Assert
     assertThat(result, equalTo(expectedResult));

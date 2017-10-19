@@ -27,11 +27,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
   @Override
   public Object getResult(String value) {
-
     String modifiedQuery = getFilter().filter(value, this.query);
-
-
-
     return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery);
   }
 

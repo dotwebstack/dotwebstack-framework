@@ -80,7 +80,7 @@ public class GetRequestHandlerTest {
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
     Map<String, Property> schemaMap = ImmutableMap.of();
-    when(informationProduct.getResult()).thenReturn(result);
+    when(informationProduct.getResult(null)).thenReturn(result);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act
