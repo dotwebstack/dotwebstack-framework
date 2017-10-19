@@ -90,7 +90,7 @@ public class FileConfigurationBackend
 
     final Optional<Resource> optionalPrefixesResource = getPrefixesResource(resources);
     if (optionalPrefixesResource.isPresent()) {
-      checkPrefixesResource(optionalPrefixesResource.get());
+      checkMultiplePrefixesDeclaration(optionalPrefixesResource.get());
     }
 
     try {
@@ -135,7 +135,7 @@ public class FileConfigurationBackend
         .findFirst();
   }
 
-  private void checkPrefixesResource(Resource prefixes) {
+  private void checkMultiplePrefixesDeclaration(Resource prefixes) {
     Map<String, String> prefixesMap = new HashMap<>();
     try (BufferedReader bufferedReader = new BufferedReader(
         new InputStreamReader(new FileInputStream(prefixes.getFile())))) {
