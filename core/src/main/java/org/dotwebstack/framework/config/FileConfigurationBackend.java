@@ -157,6 +157,7 @@ public class FileConfigurationBackend
       }
     } catch (IOException ex) {
       LOG.error("Get error while reading _prefixes.trig --> " + ex.toString());
+      throw new ConfigurationException("Get error while reading _prefixes.trig");
     }
   }
 
