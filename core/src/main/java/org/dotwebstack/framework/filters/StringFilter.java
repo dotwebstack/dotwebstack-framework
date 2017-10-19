@@ -11,9 +11,12 @@ public class StringFilter implements Filter {
 
   @Override
   public String filter(String value, String query) {
-
-
     // Modify query
-    return query;
+    return query.replaceAll("",value);
+  }
+
+  @Override
+  public String getPlaceHolder() {
+    return name;
   }
 }

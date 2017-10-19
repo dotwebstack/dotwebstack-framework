@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.backend.sparql;
 
-import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.filters.Filter;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -15,7 +15,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   private QueryEvaluator queryEvaluator;
 
   public SparqlBackendInformationProduct(Builder builder) {
-    super(builder.identifier, builder.label, builder.resultType);
+    super(builder.identifier, builder.label, builder.resultType, builder.filter);
     this.backend = builder.backend;
     this.query = builder.query;
     this.queryEvaluator = builder.queryEvaluator;
@@ -26,22 +26,13 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   }
 
   @Override
-  public Object getResult() {
+  public Object getResult(String value) {
 
-    // Parameters als map meekrijgen
-    Map<String, Object> parameters;
+    String modifiedQuery = getFilter().filter(value, this.query);
 
-    // Inhoud:
-    // id = NL.IMRO...
-    //
 
-    // Gebruik filter om query te manipuleren met parameters:
-    
-    // Object value = parameters.get(filter.getName());
-    //
-    // query = query.replaceAll(filter.getName(), value);
 
-    return queryEvaluator.evaluate(backend.getConnection(), query);
+    return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery);
   }
 
   public static class Builder {
@@ -58,13 +49,16 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
     private QueryEvaluator queryEvaluator;
 
+    private Filter filter;
+
     public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
-        @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator) {
+        @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator, Filter filter) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;
       this.resultType = resultType;
       this.queryEvaluator = queryEvaluator;
+      this.filter = filter;
     }
 
     public Builder label(String label) {

@@ -7,6 +7,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.extractor.RequestExtractor;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -42,12 +43,11 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     LOG.debug("Handling GET request for path {}", path);
 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-      
-      // Extract parameter map from request, i.e.:
-      // id=NL.IMRO.0005.BPZW13BEHE1-OW01
-      // Reuse code in grid-api
-      
-      TupleQueryResult result = (TupleQueryResult) informationProduct.getResult();
+      final String placeHolder = informationProduct.getFilter().getPlaceHolder();
+      final RequestExtractor requestExtractor = new RequestExtractor();
+      final String parameterValue = requestExtractor.extract(containerRequestContext, placeHolder);
+      TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValue);
+
       TupleEntity entity = new TupleEntity(schemaMap, result);
       return Response.ok(entity).build();
     }
