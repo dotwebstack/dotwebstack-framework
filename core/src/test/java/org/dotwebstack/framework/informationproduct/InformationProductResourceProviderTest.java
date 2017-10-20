@@ -128,7 +128,7 @@ public class InformationProductResourceProviderTest {
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
-        eq(null), any())).thenReturn(informationProduct);
+        eq(ImmutableList.of()), any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
@@ -205,7 +205,7 @@ public class InformationProductResourceProviderTest {
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(null), any())).thenReturn(
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(ImmutableList.of()), any())).thenReturn(
             informationProduct);
 
     // Act
@@ -213,7 +213,7 @@ public class InformationProductResourceProviderTest {
 
     // Assert
     verify(backend).createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(null), any());
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(ImmutableList.of()), any());
   }
 
   @Test

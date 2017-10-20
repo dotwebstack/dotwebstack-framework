@@ -68,7 +68,8 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
       // TODO What if parameter does not have the vendor extension?
       // TODO What if vendor extension does not equal filter ID?
 
-      String filterId = informationProduct.getFilter().getIdentifier().toString();
+      String filterId =
+          informationProduct.getFilters().iterator().next().getIdentifier().toString();
 
       if (parameter.getVendorExtensions().get(OpenApiSpecificationExtensions.FILTER_INPUT).equals(
           filterId)) {

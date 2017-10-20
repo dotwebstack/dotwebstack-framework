@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.informationproduct;
 
+import java.util.Collection;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.filter.Filter;
@@ -13,14 +14,14 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   protected final ResultType resultType;
 
-  private final Filter filter;
+  protected final Collection<Filter> filters;
 
   protected AbstractInformationProduct(@NonNull IRI identifier, String label,
-      @NonNull ResultType resultType, Filter filter) {
+      @NonNull ResultType resultType, @NonNull Collection<Filter> filters) {
     this.identifier = identifier;
     this.resultType = resultType;
     this.label = label;
-    this.filter = filter;
+    this.filters = filters;
   }
 
   @Override
@@ -39,7 +40,8 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   }
 
   @Override
-  public Filter getFilter() {
-    return filter;
+  public Collection<Filter> getFilters() {
+    return filters;
   }
+
 }

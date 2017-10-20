@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
+import java.util.Collection;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.filter.Filter;
@@ -15,7 +16,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   private final QueryEvaluator queryEvaluator;
 
   public SparqlBackendInformationProduct(Builder builder) {
-    super(builder.identifier, builder.label, builder.resultType, builder.filter);
+    super(builder.identifier, builder.label, builder.resultType, builder.filters);
     this.backend = builder.backend;
     this.query = builder.query;
     this.queryEvaluator = builder.queryEvaluator;
@@ -29,8 +30,8 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   public Object getResult(String value) {
     String modifiedQuery = query;
 
-    if (getFilter() != null) {
-      modifiedQuery = getFilter().filter(value, modifiedQuery);
+    for (Filter filter : filters) {
+      modifiedQuery = filter.filter(value, modifiedQuery);
     }
 
     return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery);
@@ -38,28 +39,29 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
   public static class Builder {
 
-    private IRI identifier;
+    private final IRI identifier;
+
+    private final SparqlBackend backend;
+
+    private final String query;
+
+    private final ResultType resultType;
+
+    private final QueryEvaluator queryEvaluator;
+
+    private final Collection<Filter> filters;
 
     private String label;
 
-    private SparqlBackend backend;
-
-    private String query;
-
-    private ResultType resultType;
-
-    private QueryEvaluator queryEvaluator;
-
-    private Filter filter;
-
     public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
-        @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator, Filter filter) {
+        @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator,
+        @NonNull Collection<Filter> filters) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;
       this.resultType = resultType;
       this.queryEvaluator = queryEvaluator;
-      this.filter = filter;
+      this.filters = filters;
     }
 
     public Builder label(String label) {

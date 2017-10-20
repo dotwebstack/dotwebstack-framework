@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
+import java.util.Collection;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.ResultType;
@@ -29,8 +30,8 @@ public class SparqlBackendInformationProductFactory {
     this.queryEvaluator = queryEvaluator;
   }
 
-  public InformationProduct create(IRI identifier, String label, Backend backend, Filter filter,
-      Model statements) {
+  public InformationProduct create(IRI identifier, String label, Backend backend,
+      Collection<Filter> filters, Model statements) {
     String query = Models.objectString(statements.filter(identifier, ELMO.QUERY, null)).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> statement has been found for a SPARQL information product <%s>.",
@@ -39,7 +40,7 @@ public class SparqlBackendInformationProductFactory {
     ResultType resultType = getQueryType(query);
 
     return new SparqlBackendInformationProduct.Builder(identifier, (SparqlBackend) backend, query,
-        resultType, queryEvaluator, filter).label(label).build();
+        resultType, queryEvaluator, filters).label(label).build();
   }
 
   private ResultType getQueryType(String query) {

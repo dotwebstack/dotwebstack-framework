@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.sparql;
 
+import java.util.Collection;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.filter.Filter;
@@ -31,9 +32,9 @@ public class SparqlBackend implements Backend {
   }
 
   @Override
-  public InformationProduct createInformationProduct(IRI identifier, String label, Filter filter,
-      Model statements) {
-    return informationProductFactory.create(identifier, label, this, filter, statements);
+  public InformationProduct createInformationProduct(IRI identifier, String label,
+      Collection<Filter> filters, Model statements) {
+    return informationProductFactory.create(identifier, label, this, filters, statements);
   }
 
   public SPARQLRepository getRepository() {
