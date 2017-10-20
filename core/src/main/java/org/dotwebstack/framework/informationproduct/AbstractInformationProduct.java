@@ -2,7 +2,7 @@ package org.dotwebstack.framework.informationproduct;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.filters.Filter;
+import org.dotwebstack.framework.filter.Filter;
 import org.eclipse.rdf4j.model.IRI;
 
 public abstract class AbstractInformationProduct implements InformationProduct {

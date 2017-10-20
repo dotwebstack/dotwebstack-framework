@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Operation;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -33,6 +34,9 @@ public class GetRequestHandlerTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
+  private Operation operationMock;
+
+  @Mock
   private InformationProduct informationProduct;
 
   @Mock
@@ -42,7 +46,7 @@ public class GetRequestHandlerTest {
 
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(informationProduct, ImmutableMap.of());
+    getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of());
   }
 
   @Test
@@ -51,7 +55,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(null, ImmutableMap.of());
+    new GetRequestHandler(operationMock, null, ImmutableMap.of());
   }
 
   @Test
@@ -60,7 +64,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(informationProduct, null);
+    new GetRequestHandler(operationMock, informationProduct, null);
   }
 
   @Test

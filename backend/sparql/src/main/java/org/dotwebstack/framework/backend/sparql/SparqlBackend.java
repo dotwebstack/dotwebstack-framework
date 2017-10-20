@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.sparql;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
+import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -30,9 +31,9 @@ public class SparqlBackend implements Backend {
   }
 
   @Override
-  public InformationProduct createInformationProduct(IRI identifier, String label,
+  public InformationProduct createInformationProduct(IRI identifier, String label, Filter filter,
       Model statements) {
-    return informationProductFactory.create(identifier, label, this, statements);
+    return informationProductFactory.create(identifier, label, this, filter, statements);
   }
 
   public SPARQLRepository getRepository() {

@@ -7,6 +7,8 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.filter.Filter;
+import org.dotwebstack.framework.filter.FilterResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -21,14 +23,19 @@ import org.springframework.stereotype.Service;
 public class InformationProductResourceProvider
     extends AbstractResourceProvider<InformationProduct> {
 
-  private BackendResourceProvider backendResourceProvider;
+  private final BackendResourceProvider backendResourceProvider;
+
+  private final FilterResourceProvider filterResourceProvider;
 
   @Autowired
   public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull BackendResourceProvider backendResourceProvider,
+      @NonNull FilterResourceProvider filterResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
+
     this.backendResourceProvider = backendResourceProvider;
+    this.filterResourceProvider = filterResourceProvider;
   }
 
   @Override
@@ -46,15 +53,19 @@ public class InformationProductResourceProvider
             () -> new ConfigurationException(
                 String.format("No <%s> statement has been found for information product <%s>.",
                     ELMO.BACKEND_PROP, identifier)));
+    IRI filterIRI =
+        Models.objectIRI(model.filter(identifier, ELMO.PARAMETER_PROP, null)).orElse(null);
 
     String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
-    return create(backendIRI, identifier, label, model);
+    return create(backendIRI, filterIRI, identifier, label, model);
   }
 
-  private InformationProduct create(IRI backendIdentifier, IRI identifier, String label,
-      Model statements) {
+  private InformationProduct create(IRI backendIdentifier, IRI filterIdentifier, IRI identifier,
+      String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
-    return backend.createInformationProduct(identifier, label, statements);
+    Filter filter = filterIdentifier != null ? filterResourceProvider.get(filterIdentifier) : null;
+
+    return backend.createInformationProduct(identifier, label, filter, statements);
   }
 
 }

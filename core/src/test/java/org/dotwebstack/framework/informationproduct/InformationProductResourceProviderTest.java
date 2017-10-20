@@ -17,6 +17,7 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.filter.FilterResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -46,6 +47,9 @@ public class InformationProductResourceProviderTest {
   private BackendResourceProvider backendResourceProvider;
 
   @Mock
+  private FilterResourceProvider filterResourceProviderMock;
+
+  @Mock
   private ConfigurationBackend configurationBackend;
 
   @Mock
@@ -69,8 +73,9 @@ public class InformationProductResourceProviderTest {
 
   @Before
   public void setUp() {
-    informationProductResourceProvider = new InformationProductResourceProvider(
-        configurationBackend, backendResourceProvider, applicationProperties);
+    informationProductResourceProvider =
+        new InformationProductResourceProvider(configurationBackend, backendResourceProvider,
+            filterResourceProviderMock, applicationProperties);
 
     when(backendResourceProvider.get(any())).thenReturn(backend);
 
@@ -87,7 +92,8 @@ public class InformationProductResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new InformationProductResourceProvider(null, backendResourceProvider, applicationProperties);
+    new InformationProductResourceProvider(null, backendResourceProvider,
+        filterResourceProviderMock, applicationProperties);
   }
 
   @Test
@@ -96,7 +102,8 @@ public class InformationProductResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new InformationProductResourceProvider(configurationBackend, null, applicationProperties);
+    new InformationProductResourceProvider(configurationBackend, null, filterResourceProviderMock,
+        applicationProperties);
   }
 
   @Test
@@ -105,7 +112,8 @@ public class InformationProductResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new InformationProductResourceProvider(configurationBackend, backendResourceProvider, null);
+    new InformationProductResourceProvider(configurationBackend, backendResourceProvider,
+        filterResourceProviderMock, null);
   }
 
   @Test
@@ -120,7 +128,7 @@ public class InformationProductResourceProviderTest {
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
-        any())).thenReturn(informationProduct);
+        eq(null), any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
@@ -197,14 +205,15 @@ public class InformationProductResourceProviderTest {
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), any())).thenReturn(informationProduct);
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(null), any())).thenReturn(
+            informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
 
     // Assert
     verify(backend).createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), any());
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(null), any());
   }
 
   @Test

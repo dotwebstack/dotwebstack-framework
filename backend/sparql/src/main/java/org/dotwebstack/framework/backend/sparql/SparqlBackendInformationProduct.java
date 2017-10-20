@@ -2,17 +2,17 @@ package org.dotwebstack.framework.backend.sparql;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.filters.Filter;
+import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 
 public class SparqlBackendInformationProduct extends AbstractInformationProduct {
 
-  private SparqlBackend backend;
+  private final SparqlBackend backend;
 
-  private String query;
+  private final String query;
 
-  private QueryEvaluator queryEvaluator;
+  private final QueryEvaluator queryEvaluator;
 
   public SparqlBackendInformationProduct(Builder builder) {
     super(builder.identifier, builder.label, builder.resultType, builder.filter);
@@ -27,7 +27,12 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
   @Override
   public Object getResult(String value) {
-    String modifiedQuery = getFilter().filter(value, this.query);
+    String modifiedQuery = query;
+
+    if (getFilter() != null) {
+      modifiedQuery = getFilter().filter(value, modifiedQuery);
+    }
+
     return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery);
   }
 

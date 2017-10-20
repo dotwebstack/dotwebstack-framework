@@ -101,11 +101,11 @@ public class SparqlBackendTest {
 
     InformationProduct informationProductMock = mock(InformationProduct.class);
     when(informationProductFactory.create(identifier, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
-        backend, model)).thenReturn(informationProductMock);
+        backend, null, model)).thenReturn(informationProductMock);
 
     // Act
     InformationProduct result = backend.createInformationProduct(identifier,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), model);
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), null, model);
 
     // Assert
     assertThat(result, equalTo(informationProductMock));

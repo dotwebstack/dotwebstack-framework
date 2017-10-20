@@ -56,7 +56,7 @@ public class SparqlBackendInformationProductFactoryTest {
     // Act
     InformationProduct result =
         informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
 
     // Assert
     assertThat(result, instanceOf(SparqlBackendInformationProduct.class));
@@ -77,7 +77,7 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Act
     informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
   }
 
   @Test
@@ -89,7 +89,7 @@ public class SparqlBackendInformationProductFactoryTest {
     // Act
     InformationProduct result =
         informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.TUPLE));
@@ -104,7 +104,7 @@ public class SparqlBackendInformationProductFactoryTest {
     // Act
     InformationProduct result =
         informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
@@ -123,7 +123,7 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Act
     informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
   }
 
   @Test
@@ -141,6 +141,6 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Act
     informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, statements);
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
   }
 }
