@@ -143,30 +143,25 @@ public class FileConfigurationBackend
   }
 
 
-  private void checkMultiplePrefixesDeclaration(Resource prefixes) {
+  private void checkMultiplePrefixesDeclaration(Resource prefixes) throws IOException {
     Map<String, String> prefixesMap = new HashMap<>();
 
-    try {
-      final String[] allPrefixes = getPrefixesOfResource(prefixes);
-      int lineNumber = 0;
-      for (String prefix : allPrefixes) {
-        lineNumber++;
-        String[] parts = prefix.split(":");
-        if (parts.length != 3) {
-          throw new ConfigurationException(
-              String.format("Found unknown prefix format <%s> at line <%s>", prefix, lineNumber));
+    final String[] allPrefixes = getPrefixesOfResource(prefixes);
+    int lineNumber = 0;
+    for (String prefix : allPrefixes) {
+      lineNumber++;
+      String[] parts = prefix.split(":");
+      if (parts.length != 3) {
+        throw new ConfigurationException(
+            String.format("Found unknown prefix format <%s> at line <%s>", prefix, lineNumber));
+      } else {
+        if (!prefixesMap.containsKey(parts[0])) {
+          prefixesMap.put(parts[0], parts[1] + ":" + parts[2]);
         } else {
-          if (!prefixesMap.containsKey(parts[0])) {
-            prefixesMap.put(parts[0], parts[1] + ":" + parts[2]);
-          } else {
-            throw new ConfigurationException(
-                String.format("Found multiple declaration <%s> at line <%s>", prefix, lineNumber));
-          }
+          throw new ConfigurationException(
+              String.format("Found multiple declaration <%s> at line <%s>", prefix, lineNumber));
         }
       }
-    } catch (IOException ex) {
-      LOG.error("Get error while reading _prefixes.trig --> " + ex.toString());
-      throw new ConfigurationException("Get error while reading _prefixes.trig");
     }
   }
 
