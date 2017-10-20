@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.config;
 
-import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -136,7 +136,7 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource resource = mock(Resource.class);
     when(resource.getInputStream()).thenReturn(
-        new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
+        new ByteArrayInputStream("file" .getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
@@ -219,13 +219,13 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource resource = mock(Resource.class);
     when(resource.getInputStream()).thenReturn(
-        new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
+        new ByteArrayInputStream("file" .getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {resource});
 
     when(elmoConfigurationResource.getInputStream()).thenReturn(
-        new ByteArrayInputStream("elmo".getBytes(Charsets.UTF_8)));
+        new ByteArrayInputStream("elmo" .getBytes(Charsets.UTF_8)));
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
 
     // Act
@@ -249,4 +249,96 @@ public class FileConfigurationBackendTest {
     assertThat(fileContents, hasItems("file", "elmo"));
   }
 
+  @Test
+  public void loadPrefixes_ThrowConfigurationException_FoundMultiplePrefixesDeclaration()
+      throws Exception {
+    // Arrange
+    Resource resource = mock(Resource.class);
+    when(resource.getInputStream()).thenReturn(
+        new ByteArrayInputStream(new String("@prefix dbeerpedia: <http://dbeerpedia.org#> .\n"
+            + "@prefix elmo: <http://dotwebstack.org/def/elmo#> .\n"
+            + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
+            + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n"
+            + "@prefix rdfs: <http://www.have-a-nice-day.com/rdf-schema#> .")
+            .getBytes(Charsets.UTF_8)));
+    when(resource.getFilename()).thenReturn("_prefixes.trig");
+    when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
+        new Resource[] {resource});
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(
+        "Found multiple declaration <@prefix rdfs: <http://www.have-a-nice-day.com/rdf-schema#> .> at line <5>");
+
+    // Act
+    backend.loadResources();
+  }
+
+  @Test
+  public void loadPrefixes_ThrowConfigurationException_FoundUnknownPrefix() throws Exception {
+    // Arrange
+    Resource resource = mock(Resource.class);
+    when(resource.getInputStream()).thenReturn(
+        new ByteArrayInputStream(new String("@prefix dbeerpedia: <http://dbeerpedia.org#> .\n"
+            + "@prefix elmo: <http://dotwebstack.org/def/elmo#> .\n"
+            + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
+            + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n"
+            + "this is not a valid prefix")
+            .getBytes(Charsets.UTF_8)));
+    when(resource.getFilename()).thenReturn("_prefixes.trig");
+    when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
+        new Resource[] {resource});
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(
+        "Found unknown prefix format <this is not a valid prefix> at line <5>");
+
+    // Act
+    backend.loadResources();
+  }
+
+  @Test
+  public void loadPrefixes_ThrowIOException_WhenReadPrefixesFile() throws Exception {
+    // Arrange
+    Resource resource = mock(Resource.class);
+    when(resource.getInputStream()).thenThrow(new IOException());
+    when(resource.getFilename()).thenReturn("_prefixes.trig");
+    when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
+        new Resource[] {resource});
+
+    // Assert
+    thrown.expect(IOException.class);
+
+    // Act
+    backend.loadResources();
+  }
+
+  @Test
+  public void loadPrefixes_CombinePrefixesWithConfiguration_WhenLoadResources()
+      throws Exception {
+    // Arrange
+    Resource prefixesResource = mock(Resource.class);
+    Resource backendResource = mock(Resource.class);
+    when(prefixesResource.getInputStream()).thenReturn(
+        new ByteArrayInputStream(new String("@prefix dbeerpedia: <http://dbeerpedia.org#> .\n"
+            + "@prefix elmo: <http://dotwebstack.org/def/elmo#> .\n"
+            + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
+            + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n")
+            .getBytes(Charsets.UTF_8)));
+    when(prefixesResource.getFilename()).thenReturn("_prefixes.trig");
+    when(backendResource.getInputStream()).thenReturn(
+        new ByteArrayInputStream(new String("GRAPH dbeerpedia:Theatre {\n"
+            + "  dbeerpedia:Backend a elmo:SparqlBackend;\n"
+            + "    elmo:endpoint \"http://localhost:8900/sparql\"^^xsd:anyURI;\n"
+            + "  .\n"
+            + "}")
+            .getBytes(Charsets.UTF_8)));
+    when(backendResource.getFilename()).thenReturn("backend.trig");
+    when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
+        new Resource[] {prefixesResource, backendResource});
+
+    // Act / Assert
+    backend.loadResources();
+  }
 }
