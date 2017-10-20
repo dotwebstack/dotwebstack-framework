@@ -297,4 +297,20 @@ public class FileConfigurationBackendTest {
     // Act
     backend.loadResources();
   }
+
+  @Test
+  public void loadPrefixes_ThrowIOException_WhenReadPrefixesFile() throws Exception {
+    // Arrange
+    Resource resource = mock(Resource.class);
+    when(resource.getInputStream()).thenThrow(new IOException());
+    when(resource.getFilename()).thenReturn("_prefixes.trig");
+    when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
+        new Resource[] {resource});
+
+    // Assert
+    thrown.expect(IOException.class);
+
+    // Act
+    backend.loadResources();
+  }
 }
