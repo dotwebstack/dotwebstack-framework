@@ -313,4 +313,32 @@ public class FileConfigurationBackendTest {
     // Act
     backend.loadResources();
   }
+
+  @Test
+  public void loadPrefixes_CombinePrefixesWithConfiguration_WhenLoadResources()
+      throws Exception {
+    // Arrange
+    Resource prefixesResource = mock(Resource.class);
+    Resource backendResource = mock(Resource.class);
+    when(prefixesResource.getInputStream()).thenReturn(
+        new ByteArrayInputStream(new String("@prefix dbeerpedia: <http://dbeerpedia.org#> .\n"
+            + "@prefix elmo: <http://dotwebstack.org/def/elmo#> .\n"
+            + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
+            + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n")
+            .getBytes(Charsets.UTF_8)));
+    when(prefixesResource.getFilename()).thenReturn("_prefixes.trig");
+    when(backendResource.getInputStream()).thenReturn(
+        new ByteArrayInputStream(new String("GRAPH dbeerpedia:Theatre {\n"
+            + "  dbeerpedia:Backend a elmo:SparqlBackend;\n"
+            + "    elmo:endpoint \"http://localhost:8900/sparql\"^^xsd:anyURI;\n"
+            + "  .\n"
+            + "}")
+            .getBytes(Charsets.UTF_8)));
+    when(backendResource.getFilename()).thenReturn("backend.trig");
+    when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
+        new Resource[] {prefixesResource, backendResource});
+
+    // Act
+    backend.loadResources();
+  }
 }
