@@ -136,7 +136,7 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource resource = mock(Resource.class);
     when(resource.getInputStream()).thenReturn(
-        new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
+        new ByteArrayInputStream("file" .getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
@@ -219,13 +219,13 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource resource = mock(Resource.class);
     when(resource.getInputStream()).thenReturn(
-        new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
+        new ByteArrayInputStream("file" .getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {resource});
 
     when(elmoConfigurationResource.getInputStream()).thenReturn(
-        new ByteArrayInputStream("elmo".getBytes(Charsets.UTF_8)));
+        new ByteArrayInputStream("elmo" .getBytes(Charsets.UTF_8)));
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
 
     // Act
@@ -338,7 +338,7 @@ public class FileConfigurationBackendTest {
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {prefixesResource, backendResource});
 
-    // Act
+    // Act / Assert
     backend.loadResources();
   }
 }
