@@ -145,7 +145,7 @@ public class FileConfigurationBackend
 
   private void checkMultiplePrefixesDeclaration(Resource prefixes) throws IOException {
     Map<String, String> prefixesMap = new HashMap<>();
-
+    
     final String[] allPrefixes = getPrefixesOfResource(prefixes);
     int lineNumber = 0;
     for (String prefix : allPrefixes) {
