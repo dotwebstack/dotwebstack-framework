@@ -180,6 +180,48 @@ public class EnvironmentAwareResourceTest {
     assertThat(output, is(DBEERPEDIA.BREWERY_DAVO_NAME));
   }
 
+  @Test
+  public void getInputStream_VariableIsReplaced_WithFollowedBySpace() throws IOException {
+    // Arrange
+    String input = "$ENVIRO NMENT_VARIABLE_IS_LONGER_THAN_VALUE";
+    InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+
+    // Act
+    String output =
+        getString(new EnvironmentAwareResource(inputStream, environment).getInputStream());
+
+    // Assert
+    assertThat(output, is(DBEERPEDIA.BREWERY_DAVO_NAME));
+  }
+
+  @Test
+  public void getInputStream_VariableIsReplaced_WithFollowedByScore() throws IOException {
+    // Arrange
+    String input = "$ENVIRO-NMENT_VARIABLE_IS_LONGER_THAN_VALUE";
+    InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+
+    // Act
+    String output =
+        getString(new EnvironmentAwareResource(inputStream, environment).getInputStream());
+
+    // Assert
+    assertThat(output, is(DBEERPEDIA.BREWERY_DAVO_NAME));
+  }
+
+  @Test
+  public void getInputStream_VariableIsReplaced_WithFollowedByDot() throws IOException {
+    // Arrange
+    String input = "$ENVIRO.NMENT_VARIABLE_IS_LONGER_THAN_VALUE";
+    InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+
+    // Act
+    String output =
+        getString(new EnvironmentAwareResource(inputStream, environment).getInputStream());
+
+    // Assert
+    assertThat(output, is(DBEERPEDIA.BREWERY_DAVO_NAME));
+  }
+
   private String getString(InputStream stream) throws IOException {
     return CharStreams.toString(new InputStreamReader(stream, Charsets.UTF_8));
   }
