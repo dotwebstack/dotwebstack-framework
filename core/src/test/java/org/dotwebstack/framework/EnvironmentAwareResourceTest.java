@@ -37,6 +37,12 @@ public class EnvironmentAwareResourceTest {
     when(environment.getProperty("NAME")).thenReturn(DBEERPEDIA.BREWERY_DAVO_NAME);
     when(environment.getProperty("ENVIRONMENT_VARIABLE_IS_LONGER_THAN_VALUE")).thenReturn(
         DBEERPEDIA.BREWERY_DAVO_NAME);
+    when(environment.getProperty("ENVIRO NMENT_VARIABLE_IS_LONGER_THAN_VALUE")).thenReturn(
+        DBEERPEDIA.BREWERY_DAVO_NAME);
+    when(environment.getProperty("ENVIRO-NMENT_VARIABLE_IS_LONGER_THAN_VALUE")).thenReturn(
+        DBEERPEDIA.BREWERY_DAVO_NAME);
+    when(environment.getProperty("ENVIRO.NMENT_VARIABLE_IS_LONGER_THAN_VALUE")).thenReturn(
+        DBEERPEDIA.BREWERY_DAVO_NAME);
   }
 
   @Test
