@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Map;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
@@ -55,9 +56,10 @@ public class InformationProductTest {
     }
 
     @Override
-    public Object getResult(String value) {
+    public Object getResult(Map<String, String> values) {
       return null;
     }
+
   }
 
 }

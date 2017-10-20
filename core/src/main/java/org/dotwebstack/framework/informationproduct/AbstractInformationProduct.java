@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.informationproduct;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
@@ -21,7 +22,7 @@ public abstract class AbstractInformationProduct implements InformationProduct {
     this.identifier = identifier;
     this.resultType = resultType;
     this.label = label;
-    this.filters = filters;
+    this.filters = ImmutableList.copyOf(filters);
   }
 
   @Override
