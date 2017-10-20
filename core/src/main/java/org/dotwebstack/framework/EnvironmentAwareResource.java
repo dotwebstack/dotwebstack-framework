@@ -17,7 +17,7 @@ public class EnvironmentAwareResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(EnvironmentAwareResource.class);
 
-  private static final String REGEX_ENV_VAR = "\\$\\{?([A-Za-z0-9_.-]+)\\}?";
+  private static final String REGEX_ENV_VAR = "\\$\\{?([A-Za-z0-9_. -]+)\\}?";
 
   private final InputStream inputStream;
 
