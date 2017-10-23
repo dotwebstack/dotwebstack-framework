@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.sparql;
 import java.util.Collection;
 import java.util.Map;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
@@ -28,15 +29,14 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   }
 
   @Override
-  public Object getResult(Map<String, String> values) {
+  public Object getResult(@NonNull Map<String, String> values) {
     String modifiedQuery = query;
 
     for (Filter filter : filters) {
       String value = values.get(filter.getName());
 
       if (value == null) {
-        // TODO What exception to throw here?
-        throw new RuntimeException(String.format(
+        throw new BackendException(String.format(
             "No value found for filter '%s'. Available values: %s", filter.getName(), values));
       }
 

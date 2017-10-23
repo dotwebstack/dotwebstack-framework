@@ -59,7 +59,7 @@ class FilterNameToParameterValueMapper {
     return result;
   }
 
-  private Filter getFilter(InformationProduct product, IRI iri) {
+  private static Filter getFilter(InformationProduct product, IRI iri) {
     for (Filter filter : product.getFilters()) {
       if (filter.getIdentifier().equals(iri)) {
         return filter;

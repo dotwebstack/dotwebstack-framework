@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -122,7 +123,7 @@ public class SparqlBackendInformationProductTest {
             GRAPH_QUERY, ResultType.GRAPH, queryEvaluator, ImmutableList.of()).build();
 
     // Act
-    Object result = source.getResult(null);
+    Object result = source.getResult(ImmutableMap.of());
 
     // Assert
     assertThat(result, equalTo(expectedResult));
