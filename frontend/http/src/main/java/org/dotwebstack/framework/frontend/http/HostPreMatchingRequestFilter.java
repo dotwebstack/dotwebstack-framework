@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.http;
 
 import com.google.common.net.HttpHeaders;
 import java.io.IOException;
+import java.net.URI;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -18,24 +19,23 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
   private static final Logger LOG = LoggerFactory.getLogger(HostPreMatchingRequestFilter.class);
 
   @Override
-  public void filter(ContainerRequestContext requestContext)
-      throws IOException {
+  public void filter(ContainerRequestContext requestContext) throws IOException {
 
     UriInfo uriInfo = requestContext.getUriInfo();
-    UriBuilder hostUriBuilder = uriInfo.getBaseUriBuilder();
+    UriBuilder hostUriBuilder = uriInfo.getRequestUriBuilder();
 
     // get host from header forwarded host if set
     String host = requestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
+    URI builtRequestUri = hostUriBuilder.build();
+    String replacementUri = builtRequestUri.getHost() + builtRequestUri.getPath();
     if (host != null) {
-      hostUriBuilder.uri("http://" + host);
+      replacementUri = host + builtRequestUri.getPath();
     }
+    hostUriBuilder.replacePath(replacementUri);
 
-    UriBuilder uriBuilder = UriBuilder.fromUri(
-        uriInfo.getBaseUri() + hostUriBuilder.build().getHost() + "/" + uriInfo.getPath());
+    LOG.debug("Set new request path to {} (was {})", hostUriBuilder, uriInfo.getAbsolutePath());
 
-    LOG.debug("Set new request path to {} (was {})", uriBuilder, uriInfo.getAbsolutePath());
-
-    requestContext.setRequestUri(uriBuilder.build());
+    requestContext.setRequestUri(hostUriBuilder.build());
   }
 
 }
