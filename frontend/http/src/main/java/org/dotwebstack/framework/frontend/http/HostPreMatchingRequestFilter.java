@@ -25,11 +25,12 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
     UriBuilder hostUriBuilder = uriInfo.getRequestUriBuilder();
 
     // get host from header forwarded host if set
-    String host = requestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
+    String forwardedHost = requestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
     URI builtRequestUri = hostUriBuilder.build();
     String replacementUri = builtRequestUri.getHost() + builtRequestUri.getPath();
-    if (host != null) {
-      replacementUri = host + builtRequestUri.getPath();
+    if (forwardedHost != null) {
+      UriBuilder forwardedHostUriBuilder = UriBuilder.fromUri("http://" + forwardedHost);
+      replacementUri = forwardedHostUriBuilder.build().getHost() + builtRequestUri.getPath();
     }
     hostUriBuilder.replacePath(replacementUri);
 
