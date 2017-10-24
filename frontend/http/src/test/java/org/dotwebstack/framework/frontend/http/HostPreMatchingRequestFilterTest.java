@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.frontend.http;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -82,11 +80,12 @@ public class HostPreMatchingRequestFilterTest {
   }
 
   @Test
-  public void filter_QueryParametersPassing_WhenRequestUrlContainsQueryParameters() throws Exception {
+  public void filter_QueryParametersPassing_WhenRequestUrlContainsQueryParameters()
+      throws Exception {
 
     // Arrange
     String queryPart = "test=123";
-    URI uri = URI.create("http://" + DBEERPEDIA.ORG_HOST + "/beer?"+queryPart);
+    URI uri = URI.create("http://" + DBEERPEDIA.ORG_HOST + "/beer?" + queryPart);
     when(uriInfo.getRequestUriBuilder()).thenReturn(UriBuilder.fromUri(uri));
 
     // Act
@@ -96,6 +95,6 @@ public class HostPreMatchingRequestFilterTest {
     ArgumentCaptor<URI> capture = ArgumentCaptor.forClass(URI.class);
     verify(containerRequestContext).setRequestUri(capture.capture());
 
-    assertEquals( queryPart,capture.getValue().getQuery());
+    assertEquals(queryPart, capture.getValue().getQuery());
   }
 }
