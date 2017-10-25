@@ -2,11 +2,14 @@ package org.dotwebstack.framework.backend.sparql;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Collection;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -55,14 +58,16 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
+    Collection<Filter> filters = ImmutableList.of();
     InformationProduct result =
         informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, ImmutableList.of(), statements);
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, filters, statements);
 
     // Assert
     assertThat(result, instanceOf(SparqlBackendInformationProduct.class));
     assertThat(((SparqlBackendInformationProduct) result).getQuery(),
         equalTo(DBEERPEDIA.SELECT_ALL_QUERY.stringValue()));
+    assertThat(((SparqlBackendInformationProduct) result).getFilters(), sameInstance(filters));
   }
 
   @Test
@@ -136,7 +141,8 @@ public class SparqlBackendInformationProductFactoryTest {
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format(
-        "Type of query <%s> could not be determined. Query is a malformed query and cannot be processed: "
+        "Type of query <%s> could not be determined. "
+            + "Query is a malformed query and cannot be processed: "
             + "Encountered \" <VAR1> \"?s \"\" at line 1, column 11.",
         DBEERPEDIA.MALFORMED_QUERY.stringValue()));
 
@@ -144,4 +150,5 @@ public class SparqlBackendInformationProductFactoryTest {
     informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
   }
+
 }

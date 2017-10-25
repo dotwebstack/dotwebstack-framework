@@ -7,17 +7,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.filter.FilterResourceProvider;
+import org.dotwebstack.framework.filter.StringFilter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -128,7 +129,7 @@ public class InformationProductResourceProviderTest {
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
-        eq(ImmutableList.of()), any())).thenReturn(informationProduct);
+        eq(ImmutableSet.of()), any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
@@ -193,6 +194,9 @@ public class InformationProductResourceProviderTest {
 
   @Test
   public void loadResources_CreatesInformationProduct_WithCorrectValues() {
+    IRI parameter1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "parameter1");
+    IRI parameter2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "parameter2");
+
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -201,19 +205,24 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
-                DBEERPEDIA.BREWERIES_LABEL))));
+                DBEERPEDIA.BREWERIES_LABEL),
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+                ELMO.PARAMETER_PROP, parameter1Id),
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+                ELMO.PARAMETER_PROP, parameter2Id))));
+
+    StringFilter filter1 = new StringFilter(parameter1Id, "param1");
+    when(filterResourceProviderMock.get(parameter1Id)).thenReturn(filter1);
+    StringFilter filter2 = new StringFilter(parameter2Id, "param2");
+    when(filterResourceProviderMock.get(parameter2Id)).thenReturn(filter2);
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(ImmutableList.of()), any())).thenReturn(
-            informationProduct);
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(ImmutableSet.of(filter1, filter2)),
+        any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
-
-    // Assert
-    verify(backend).createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(ImmutableList.of()), any());
   }
 
   @Test

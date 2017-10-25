@@ -37,7 +37,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
       if (value == null) {
         throw new BackendException(String.format(
-            "No value found for filter '%s'. Available values: %s", filter.getName(), values));
+            "No value found for filter '%s'. Supplied values: %s", filter.getName(), values));
       }
 
       modifiedQuery = filter.filter(value, modifiedQuery);

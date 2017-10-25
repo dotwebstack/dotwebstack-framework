@@ -66,7 +66,7 @@ public class InformationProductResourceProvider
       IRI identifier, String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
     Collection<Filter> filters =
-        filterIdentifiers.stream().map(filterResourceProvider::get).collect(Collectors.toList());
+        filterIdentifiers.stream().map(filterResourceProvider::get).collect(Collectors.toSet());
 
     return backend.createInformationProduct(identifier, label, filters, statements);
   }

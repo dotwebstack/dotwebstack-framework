@@ -116,6 +116,10 @@ public final class DBEERPEDIA {
 
   public static final IRI SECOND_STAGE;
 
+  public static final IRI FILTER;
+
+  public static final Literal FILTER_NAME_VALUE;
+
   public static final String URL_PATTERN_VALUE = "/holyBeer";
 
   static {
@@ -126,6 +130,9 @@ public final class DBEERPEDIA {
     SECOND_STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SecondStage");
     DOMAIN = valueFactory.createLiteral("dbeerpedia.org");
     BASE_PATH = valueFactory.createLiteral("/special");
+
+    FILTER = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "nameFilter");
+    FILTER_NAME_VALUE = valueFactory.createLiteral("naam");
 
     NAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Name");
     BREWERY_DAVO = valueFactory.createLiteral(BREWERY_DAVO_NAME);

@@ -3,30 +3,15 @@ package org.dotwebstack.framework.filter;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
-public class StringFilter implements Filter {
+public class StringFilter extends AbstractFilter {
 
-  private final IRI identifier;
-
-  private final String name;
-
-  public StringFilter(@NonNull IRI identifier, @NonNull String name) {
-    this.identifier = identifier;
-    this.name = name;
-  }
-
-  @Override
-  public IRI getIdentifier() {
-    return identifier;
-  }
-
-  @Override
-  public String getName() {
-    return name;
+  public StringFilter(IRI identifier, String name) {
+    super(identifier, name);
   }
 
   @Override
   public String filter(String value, @NonNull String query) {
-    return query.replaceAll(String.format("\\$\\{%s}", name), value);
+    return query.replaceAll(String.format("\\$\\{%s}", getName()), value);
   }
 
 }
