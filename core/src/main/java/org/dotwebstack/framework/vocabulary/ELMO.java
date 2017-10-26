@@ -77,8 +77,8 @@ public final class ELMO {
 
     PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
 
-    OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParamerer");
-    REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParamerer");
+    OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
+    REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
 
     NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
   }
