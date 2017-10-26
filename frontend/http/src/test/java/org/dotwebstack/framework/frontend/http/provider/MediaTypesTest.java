@@ -33,8 +33,9 @@ public class MediaTypesTest {
 
     // Assert
     thrown.expect(InvocationTargetException.class);
-    thrown.expectCause(hasProperty("message", equalTo(
-        "class org.dotwebstack.framework.frontend.http.provider.MediaTypes is not meant to be instantiated.")));
+    thrown.expectCause(hasProperty("message",
+        equalTo("class org.dotwebstack.framework.frontend.http.provider.MediaTypes "
+            + "is not meant to be instantiated.")));
 
     // Act
     constructor.newInstance();

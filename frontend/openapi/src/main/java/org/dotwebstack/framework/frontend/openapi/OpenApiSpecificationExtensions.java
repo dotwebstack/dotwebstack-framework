@@ -6,7 +6,7 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String INFORMATION_PRODUCT = DOTWEBSTACK_PREFIX.concat("information-product");
 
-  public static final String FILTER_INPUT = DOTWEBSTACK_PREFIX.concat("filter-input");
+  public static final String PARAMETER_INPUT = DOTWEBSTACK_PREFIX.concat("parameter-input");
 
   private OpenApiSpecificationExtensions() {
     throw new IllegalStateException(

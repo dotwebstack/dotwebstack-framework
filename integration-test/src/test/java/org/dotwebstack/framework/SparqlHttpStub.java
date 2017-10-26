@@ -26,8 +26,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.util.ModelBuilder;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.algebra.evaluation.QueryBindingSet;
@@ -141,13 +139,6 @@ public class SparqlHttpStub {
     br.readLine();
 
     SparqlHttpStub.stop();
-  }
-
-  private static void returnGraphExample() {
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
-        DBEERPEDIA.BREWERIES_LABEL).build();
-
-    SparqlHttpStub.returnGraph(model);
   }
 
   private static void returnTupleExample() {

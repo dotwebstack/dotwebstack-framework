@@ -22,7 +22,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandler;
+import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.eclipse.rdf4j.model.IRI;
@@ -51,6 +51,8 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private final SwaggerParser openApiParser;
 
+  private final GetRequestHandlerFactory getRequestHandlerFactory;
+
   private ResourceLoader resourceLoader;
 
   private Environment environment;
@@ -59,10 +61,12 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   @Autowired
   public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
-      @NonNull SwaggerParser openApiParser, @NonNull ApplicationProperties applicationProperties) {
+      @NonNull SwaggerParser openApiParser, @NonNull ApplicationProperties applicationProperties,
+      @NonNull GetRequestHandlerFactory getRequestHandlerFactory) {
     this.informationProductResourceProvider = informationProductLoader;
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
+    this.getRequestHandlerFactory = getRequestHandlerFactory;
   }
 
   @Override
@@ -80,7 +84,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-          applicationProperties.getResourcePath() + "/openapi/**");
+          applicationProperties.getResourcePath() + "/openapi/**.y*ml");
     } catch (FileNotFoundException e) {
       LOG.warn("No Open API resources found in path:{}/openapi",
           applicationProperties.getResourcePath());
@@ -154,7 +158,8 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
       ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          new GetRequestHandler(getOperation, informationProduct, schemaMap));
+          getRequestHandlerFactory.newGetRequestHandler(getOperation, informationProduct,
+              schemaMap));
 
       produces.forEach(methodBuilder::produces);
 

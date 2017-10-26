@@ -1,15 +1,15 @@
-package org.dotwebstack.framework.filter;
+package org.dotwebstack.framework.param;
 
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
-public class StringFilter implements Filter {
+public abstract class AbstractParameter implements Parameter {
 
   private final IRI identifier;
 
   private final String name;
 
-  StringFilter(@NonNull IRI identifier, @NonNull String name) {
+  protected AbstractParameter(@NonNull IRI identifier, @NonNull String name) {
     this.identifier = identifier;
     this.name = name;
   }
@@ -22,11 +22,6 @@ public class StringFilter implements Filter {
   @Override
   public String getName() {
     return name;
-  }
-
-  @Override
-  public String filter(String value, @NonNull String query) {
-    return query.replaceAll(String.format("\\$\\{\\Q%s\\E\\}", name), value);
   }
 
 }

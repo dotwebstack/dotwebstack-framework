@@ -42,11 +42,15 @@ public class GetRequestHandlerTest {
   @Mock
   private ContainerRequestContext containerRequestContext;
 
+  @Mock
+  private ParameterNameToSwaggerParameterValueMapper parameterNameToSwaggerParameterValueMapperMock;
+
   private GetRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of());
+    getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of(),
+        parameterNameToSwaggerParameterValueMapperMock);
   }
 
   @Test
@@ -55,7 +59,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, null, ImmutableMap.of());
+    new GetRequestHandler(operationMock, null, ImmutableMap.of(),
+        parameterNameToSwaggerParameterValueMapperMock);
   }
 
   @Test
@@ -64,7 +69,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, informationProduct, null);
+    new GetRequestHandler(operationMock, informationProduct, null,
+        parameterNameToSwaggerParameterValueMapperMock);
   }
 
   @Test

@@ -1,15 +1,14 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.param.Parameter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -18,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-class FilterNameToParameterValueMapper {
+class ParameterNameToSwaggerParameterValueMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
@@ -28,48 +27,48 @@ class FilterNameToParameterValueMapper {
       @NonNull ContainerRequestContext context) {
     Map<String, String> result = new HashMap<>();
 
-    for (Parameter parameter : operation.getParameters()) {
-      Map<String, Object> vendorExtensions = parameter.getVendorExtensions();
+    for (io.swagger.models.parameters.Parameter swaggerParameter : operation.getParameters()) {
+      Map<String, Object> vendorExtensions = swaggerParameter.getVendorExtensions();
 
-      LOG.debug("Vendor extensions for parameter '{}': {}", parameter.getName(), vendorExtensions);
+      LOG.debug("Vendor extensions for parameter '{}': {}", swaggerParameter.getName(),
+          vendorExtensions);
 
-      Object filterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.FILTER_INPUT);
+      Object parameterIdString =
+          vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER_INPUT);
 
-      if (filterIdString == null) {
-        // Vendor extension x-dotwebstack-filter-input not found for parameter
+      if (parameterIdString == null) {
+        // Vendor extension x-dotwebstack-parameter-input not found for parameter
         continue;
       }
 
-      IRI filterId = valueFactory.createIRI((String) filterIdString);
-      Filter filter = getFilter(product, filterId);
+      IRI parameterId = valueFactory.createIRI((String) parameterIdString);
+      Parameter parameter = getParameter(product, parameterId);
 
-      if (filter == null) {
-        throw new ConfigurationException(
-            String.format("No filter found for vendor extension value: '%s'", filterIdString));
+      if (parameter == null) {
+        throw new ConfigurationException(String.format(
+            "No parameter found for vendor extension value: '%s'", parameterIdString));
       }
 
-      LOG.debug("Filter for parameter '{}': <{}>", parameter.getName(), filter.getIdentifier());
+      String value = getSwaggerParameterValue(context, swaggerParameter);
 
-      String value = getParameterValue(context, parameter);
-      LOG.debug("Value for parameter '{}': <{}>", parameter.getName(), value);
-
-      result.put(filter.getName(), value);
+      result.put(parameter.getName(), value);
     }
 
     return result;
   }
 
-  private static Filter getFilter(InformationProduct product, IRI iri) {
-    for (Filter filter : product.getFilters()) {
-      if (filter.getIdentifier().equals(iri)) {
-        return filter;
+  private static Parameter getParameter(InformationProduct product, IRI iri) {
+    for (Parameter parameter : product.getParameters()) {
+      if (parameter.getIdentifier().equals(iri)) {
+        return parameter;
       }
     }
 
     return null;
   }
 
-  private static String getParameterValue(ContainerRequestContext context, Parameter parameter) {
+  private static String getSwaggerParameterValue(ContainerRequestContext context,
+      io.swagger.models.parameters.Parameter parameter) {
     switch (parameter.getIn()) {
       case "header":
         return context.getHeaders().getFirst(parameter.getName());

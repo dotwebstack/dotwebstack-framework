@@ -45,9 +45,11 @@ public final class ELMO {
 
   public static final IRI URL_PATTERN;
 
-  public static final IRI PARAMETER;
+  public static final IRI TERM_FILTER;
 
-  public static final IRI PARAMETER_PROP;
+  public static final IRI OPTIONAL_PARAMETER_PROP;
+
+  public static final IRI REQUIRED_PARAMETER_PROP;
 
   public static final IRI NAME_PROP;
 
@@ -86,8 +88,11 @@ public final class ELMO {
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
 
-    PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
-    PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "parameter");
+    TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
+
+    OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
+    REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
+
     NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
   }
 

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.filter;
+package org.dotwebstack.framework.param;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
@@ -14,10 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class FilterResourceProvider extends AbstractResourceProvider<Filter> {
+public class ParameterResourceProvider extends AbstractResourceProvider<Parameter> {
 
   @Autowired
-  public FilterResourceProvider(ConfigurationBackend configurationBackend,
+  public ParameterResourceProvider(ConfigurationBackend configurationBackend,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
   }
@@ -27,17 +27,17 @@ public class FilterResourceProvider extends AbstractResourceProvider<Filter> {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
 
-    graphQuery.setBinding("type", ELMO.PARAMETER);
+    graphQuery.setBinding("type", ELMO.TERM_FILTER);
 
     return graphQuery;
   }
 
   @Override
-  protected Filter createResource(@NonNull Model model, @NonNull IRI identifier) {
+  protected Parameter createResource(@NonNull Model model, @NonNull IRI identifier) {
     String name = getObjectString(model, identifier, ELMO.NAME_PROP).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
-                identifier, ELMO.PARAMETER)));
+                identifier, ELMO.TERM_FILTER)));
 
     return new StringFilter(identifier, name);
   }
