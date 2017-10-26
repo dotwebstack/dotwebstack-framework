@@ -27,7 +27,7 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
 
-    graphQuery.setBinding("type", ELMO.PARAMETER);
+    graphQuery.setBinding("type", ELMO.TERM_FILTER);
 
     return graphQuery;
   }
@@ -37,7 +37,7 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
     String name = getObjectString(model, identifier, ELMO.NAME_PROP).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
-                identifier, ELMO.PARAMETER)));
+                identifier, ELMO.TERM_FILTER)));
 
     return new StringFilter(identifier, name);
   }

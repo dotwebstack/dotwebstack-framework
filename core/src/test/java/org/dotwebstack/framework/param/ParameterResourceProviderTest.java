@@ -64,7 +64,7 @@ public class ParameterResourceProviderTest {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.PARAMETER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.TERM_FILTER),
             VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, ELMO.NAME_PROP,
                 DBEERPEDIA.PARAMETER_NAME_VALUE))));
 
@@ -85,12 +85,12 @@ public class ParameterResourceProviderTest {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(
         new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.PARAMETER))));
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.TERM_FILTER))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("No <%s> property found for <%s> of type <%s>",
-        ELMO.NAME_PROP, DBEERPEDIA.PARAMETER, ELMO.PARAMETER));
+        ELMO.NAME_PROP, DBEERPEDIA.PARAMETER, ELMO.TERM_FILTER));
 
     // Act
     provider.loadResources();
