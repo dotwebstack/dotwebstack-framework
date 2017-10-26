@@ -9,7 +9,7 @@ public class StringFilter implements Filter {
 
   private final String name;
 
-  public StringFilter(@NonNull IRI identifier, @NonNull String name) {
+  StringFilter(@NonNull IRI identifier, @NonNull String name) {
     this.identifier = identifier;
     this.name = name;
   }
@@ -26,7 +26,7 @@ public class StringFilter implements Filter {
 
   @Override
   public String filter(String value, @NonNull String query) {
-    return query.replaceAll(String.format("\\$\\{%s}", name), value);
+    return query.replaceAll(String.format("\\$\\{\\Q%s\\E\\}", name), value);
   }
 
 }

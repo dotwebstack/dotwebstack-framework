@@ -2,11 +2,14 @@
 @prefix elmo: <http://dotwebstack.org/def/elmo#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix elmo-resulttype: <http://dotwebstack.org/def/elmo/resultType/> .
 
 GRAPH dbeerpedia:Theatre {
+
   dbeerpedia:TupleBreweries a elmo:InformationProduct;
     rdfs:label "Beer breweries in The Netherlands";
     elmo:backend dbeerpedia:Backend;
+    elmo:resultType elmo-resulttype:Tuple;
     elmo:query "SELECT ?name WHERE { ?s rdfs:label ?name . ?s a <http://dbeerpedia.org#Brewery> }";
   .
   dbeerpedia:GraphBreweries a elmo:InformationProduct;
