@@ -25,15 +25,15 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private final Map<MediaType, Property> schemaMap;
 
-  private final FilterNameToParameterValueMapper filterNameToParameterValueMapper;
+  private final ParameterNameToSwaggerParameterValueMapper mapper;
 
   GetRequestHandler(@NonNull Operation operation, @NonNull InformationProduct informationProduct,
       @NonNull Map<MediaType, Property> schemaMap,
-      @NonNull FilterNameToParameterValueMapper filterNameToParameterValueMapper) {
+      @NonNull ParameterNameToSwaggerParameterValueMapper mapper) {
     this.operation = operation;
     this.informationProduct = informationProduct;
     this.schemaMap = schemaMap;
-    this.filterNameToParameterValueMapper = filterNameToParameterValueMapper;
+    this.mapper = mapper;
   }
 
   public InformationProduct getInformationProduct() {
@@ -50,8 +50,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     LOG.debug("Handling GET request for path {}", path);
 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-      Map<String, String> values =
-          filterNameToParameterValueMapper.map(operation, informationProduct, context);
+      Map<String, String> values = mapper.map(operation, informationProduct, context);
 
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(values);
       TupleEntity entity = new TupleEntity(schemaMap, result);

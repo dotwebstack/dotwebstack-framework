@@ -10,8 +10,8 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.junit.Rule;
@@ -39,16 +39,16 @@ public class SparqlBackendInformationProductTest {
   private RepositoryConnection repositoryConnection;
 
   @Mock
-  private Filter requiredFilter1Mock;
+  private Parameter requiredParameter1Mock;
 
   @Mock
-  private Filter requiredFilter2Mock;
+  private Parameter requiredParameter2Mock;
 
   @Mock
-  private Filter optionalFilter3Mock;
+  private Parameter optionalParameter3Mock;
 
   @Mock
-  private Filter optionalFilter4Mock;
+  private Parameter optionalParameter4Mock;
 
   @Test
   public void build_CreatesInformationProduct_WithCorrectData() {
@@ -56,15 +56,15 @@ public class SparqlBackendInformationProductTest {
     SparqlBackendInformationProduct result =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
             GRAPH_QUERY, ResultType.GRAPH, queryEvaluator,
-            ImmutableList.of(requiredFilter1Mock, requiredFilter2Mock),
-            ImmutableList.of(optionalFilter3Mock, optionalFilter4Mock)).build();
+            ImmutableList.of(requiredParameter1Mock, requiredParameter2Mock),
+            ImmutableList.of(optionalParameter3Mock, optionalParameter4Mock)).build();
 
     // Assert
     assertThat(result.getQuery(), equalTo(GRAPH_QUERY));
     assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
     assertThat(result.getIdentifier(), equalTo(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT));
-    assertThat(result.getFilters(), contains(requiredFilter1Mock, requiredFilter2Mock,
-        optionalFilter3Mock, optionalFilter4Mock));
+    assertThat(result.getParameters(), contains(requiredParameter1Mock, requiredParameter2Mock,
+        optionalParameter3Mock, optionalParameter4Mock));
   }
 
   @Test
@@ -152,38 +152,41 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
-  public void getResult_UsesFilter_WhenGettingResult() {
+  public void getResult_UsesParameter_WhenGettingResult() {
     // Arrange
     Map<String, String> values = ImmutableMap.of("name1", "value1", "name2", "value2");
 
     String originalQuery = "CONSTRUCT { ?s ?p ?o } WHERE { ${name1} ${name2} ${name3}}";
-    String queryAfterFilter1 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 ${name2} ${name3}}";
-    String queryAfterFilter2 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 value2 ${name3}}";
-    String queryAfterFilter3 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 value2 null}";
+    String queryAfterParameter1 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 ${name2} ${name3}}";
+    String queryAfterParameter2 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 value2 ${name3}}";
+    String queryAfterParameter3 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 value2 null}";
 
-    when(requiredFilter1Mock.getName()).thenReturn("name1");
-    when(requiredFilter1Mock.filter("value1", originalQuery)).thenReturn(queryAfterFilter1);
+    when(requiredParameter1Mock.getName()).thenReturn("name1");
+    when(requiredParameter1Mock.handle("value1", originalQuery)).thenReturn(queryAfterParameter1);
 
-    when(requiredFilter2Mock.getName()).thenReturn("name2");
-    when(requiredFilter2Mock.filter("value2", queryAfterFilter1)).thenReturn(queryAfterFilter2);
+    when(requiredParameter2Mock.getName()).thenReturn("name2");
+    when(requiredParameter2Mock.handle("value2", queryAfterParameter1)).thenReturn(
+        queryAfterParameter2);
 
-    when(optionalFilter3Mock.getName()).thenReturn("name3");
-    when(optionalFilter3Mock.filter(null, queryAfterFilter2)).thenReturn(queryAfterFilter3);
+    when(optionalParameter3Mock.getName()).thenReturn("name3");
+    when(optionalParameter3Mock.handle(null, queryAfterParameter2)).thenReturn(
+        queryAfterParameter3);
 
-    when(optionalFilter4Mock.getName()).thenReturn("name4");
-    when(optionalFilter4Mock.filter(null, queryAfterFilter3)).thenReturn(queryAfterFilter3);
+    when(optionalParameter4Mock.getName()).thenReturn("name4");
+    when(optionalParameter4Mock.handle(null, queryAfterParameter3)).thenReturn(
+        queryAfterParameter3);
 
     Object expectedResult = new Object();
 
     when(backend.getConnection()).thenReturn(repositoryConnection);
-    when(queryEvaluator.evaluate(repositoryConnection, queryAfterFilter3)).thenReturn(
+    when(queryEvaluator.evaluate(repositoryConnection, queryAfterParameter3)).thenReturn(
         expectedResult);
 
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
             originalQuery, ResultType.GRAPH, queryEvaluator,
-            ImmutableList.of(requiredFilter1Mock, requiredFilter2Mock),
-            ImmutableList.of(optionalFilter3Mock, optionalFilter4Mock)).build();
+            ImmutableList.of(requiredParameter1Mock, requiredParameter2Mock),
+            ImmutableList.of(optionalParameter3Mock, optionalParameter4Mock)).build();
 
     // Act
     Object result = source.getResult(values);
@@ -193,23 +196,23 @@ public class SparqlBackendInformationProductTest {
   }
 
   @Test
-  public void getResult_ThrowsException_WhenUnknownFilterNameIsSupplied() {
+  public void getResult_ThrowsException_WhenUnknownParameterNameIsSupplied() {
     // Assert
     thrown.expect(BackendException.class);
-    thrown.expectMessage("No value found for required filter 'name1'. Supplied values:");
+    thrown.expectMessage("No value found for required parameter 'name1'. Supplied values:");
 
     // Arrange
     Map<String, String> values = ImmutableMap.of("foo", "value1", "name2", "value2");
 
     String originalQuery = "CONSTRUCT { ?s ?p ?o } WHERE { ${name1} ${name2} ?o}";
 
-    when(requiredFilter1Mock.getName()).thenReturn("name1");
+    when(requiredParameter1Mock.getName()).thenReturn("name1");
 
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
             originalQuery, ResultType.GRAPH, queryEvaluator,
-            ImmutableList.of(requiredFilter1Mock, requiredFilter2Mock),
-            ImmutableList.of(optionalFilter3Mock, optionalFilter4Mock)).build();
+            ImmutableList.of(requiredParameter1Mock, requiredParameter2Mock),
+            ImmutableList.of(optionalParameter3Mock, optionalParameter4Mock)).build();
 
     // Act
     source.getResult(values);

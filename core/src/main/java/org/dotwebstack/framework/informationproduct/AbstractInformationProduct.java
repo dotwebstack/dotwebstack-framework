@@ -8,7 +8,7 @@ import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.filter.Filter;
+import org.dotwebstack.framework.param.Parameter;
 import org.eclipse.rdf4j.model.IRI;
 
 public abstract class AbstractInformationProduct implements InformationProduct {
@@ -19,18 +19,18 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   protected final ResultType resultType;
 
-  protected final Collection<Filter> requiredFilters;
+  protected final Collection<Parameter> requiredParameters;
 
-  protected final Collection<Filter> optionalFilters;
+  protected final Collection<Parameter> optionalParameters;
 
   protected AbstractInformationProduct(@NonNull IRI identifier, String label,
-      @NonNull ResultType resultType, @NonNull Collection<Filter> requiredFilters,
-      @NonNull Collection<Filter> optionalFilters) {
+      @NonNull ResultType resultType, @NonNull Collection<Parameter> requiredParameters,
+      @NonNull Collection<Parameter> optionalParameters) {
     this.identifier = identifier;
     this.resultType = resultType;
     this.label = label;
-    this.requiredFilters = ImmutableList.copyOf(requiredFilters);
-    this.optionalFilters = ImmutableList.copyOf(optionalFilters);
+    this.requiredParameters = ImmutableList.copyOf(requiredParameters);
+    this.optionalParameters = ImmutableList.copyOf(optionalParameters);
   }
 
   @Override
@@ -49,21 +49,21 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   }
 
   @Override
-  public Collection<Filter> getFilters() {
-    List<Filter> result = new ArrayList<>(requiredFilters);
+  public Collection<Parameter> getParameters() {
+    List<Parameter> result = new ArrayList<>(requiredParameters);
 
-    result.addAll(optionalFilters);
+    result.addAll(optionalParameters);
 
     return result;
   }
 
   @Override
   public Object getResult(@NonNull Map<String, String> values) {
-    for (Filter filter : requiredFilters) {
-      if (values.get(filter.getName()) == null) {
+    for (Parameter parameter : requiredParameters) {
+      if (values.get(parameter.getName()) == null) {
         throw new BackendException(
-            String.format("No value found for required filter '%s'. Supplied values: %s",
-                filter.getName(), values));
+            String.format("No value found for required parameter '%s'. Supplied values: %s",
+                parameter.getName(), values));
       }
     }
 

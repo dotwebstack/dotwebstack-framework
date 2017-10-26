@@ -1,15 +1,15 @@
-package org.dotwebstack.framework.filter;
+package org.dotwebstack.framework.param;
 
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
-public abstract class AbstractFilter implements Filter {
+public abstract class AbstractParameter implements Parameter {
 
   private final IRI identifier;
 
   private final String name;
 
-  protected AbstractFilter(@NonNull IRI identifier, @NonNull String name) {
+  protected AbstractParameter(@NonNull IRI identifier, @NonNull String name) {
     this.identifier = identifier;
     this.name = name;
   }

@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
+import org.dotwebstack.framework.param.Parameter;
 import org.eclipse.rdf4j.model.IRI;
 
 public class SparqlBackendInformationProduct extends AbstractInformationProduct {
@@ -17,8 +17,8 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   private final QueryEvaluator queryEvaluator;
 
   public SparqlBackendInformationProduct(Builder builder) {
-    super(builder.identifier, builder.label, builder.resultType, builder.requiredFilters,
-        builder.optionalFilters);
+    super(builder.identifier, builder.label, builder.resultType, builder.requiredParameters,
+        builder.optionalParameters);
     this.backend = builder.backend;
     this.query = builder.query;
     this.queryEvaluator = builder.queryEvaluator;
@@ -32,10 +32,10 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   protected Object getInnerResult(Map<String, String> values) {
     String modifiedQuery = query;
 
-    for (Filter filter : getFilters()) {
-      String value = values.get(filter.getName());
+    for (Parameter parameter : getParameters()) {
+      String value = values.get(parameter.getName());
 
-      modifiedQuery = filter.filter(value, modifiedQuery);
+      modifiedQuery = parameter.handle(value, modifiedQuery);
     }
 
     return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery);
@@ -53,22 +53,23 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
     private final QueryEvaluator queryEvaluator;
 
-    private final Collection<Filter> requiredFilters;
+    private final Collection<Parameter> requiredParameters;
 
-    private final Collection<Filter> optionalFilters;
+    private final Collection<Parameter> optionalParameters;
 
     private String label;
 
     public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
         @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator,
-        @NonNull Collection<Filter> requiredFilters, @NonNull Collection<Filter> optionalFilters) {
+        @NonNull Collection<Parameter> requiredParameters,
+        @NonNull Collection<Parameter> optionalParameters) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;
       this.resultType = resultType;
       this.queryEvaluator = queryEvaluator;
-      this.requiredFilters = requiredFilters;
-      this.optionalFilters = optionalFilters;
+      this.requiredParameters = requiredParameters;
+      this.optionalParameters = optionalParameters;
     }
 
     public Builder label(String label) {

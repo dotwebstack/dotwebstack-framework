@@ -3,8 +3,8 @@ package org.dotwebstack.framework.backend.sparql;
 import java.util.Collection;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
-import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.param.Parameter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -33,9 +33,10 @@ public class SparqlBackend implements Backend {
 
   @Override
   public InformationProduct createInformationProduct(IRI identifier, String label,
-      Collection<Filter> requiredFilters, Collection<Filter> optionalFilters, Model statements) {
-    return informationProductFactory.create(identifier, label, this, requiredFilters,
-        optionalFilters, statements);
+      Collection<Parameter> requiredParameters, Collection<Parameter> optionalParameters,
+      Model statements) {
+    return informationProductFactory.create(identifier, label, this, requiredParameters,
+        optionalParameters, statements);
   }
 
   public SPARQLRepository getRepository() {

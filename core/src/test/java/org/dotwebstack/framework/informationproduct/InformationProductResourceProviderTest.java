@@ -16,9 +16,9 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.filter.Filter;
-import org.dotwebstack.framework.filter.FilterResourceProvider;
-import org.dotwebstack.framework.filter.StringFilter;
+import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.ParameterResourceProvider;
+import org.dotwebstack.framework.param.StringFilter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -48,7 +48,7 @@ public class InformationProductResourceProviderTest {
   private BackendResourceProvider backendResourceProvider;
 
   @Mock
-  private FilterResourceProvider filterResourceProviderMock;
+  private ParameterResourceProvider parameterResourceProviderMock;
 
   @Mock
   private ConfigurationBackend configurationBackend;
@@ -76,7 +76,7 @@ public class InformationProductResourceProviderTest {
   public void setUp() {
     informationProductResourceProvider =
         new InformationProductResourceProvider(configurationBackend, backendResourceProvider,
-            filterResourceProviderMock, applicationProperties);
+            parameterResourceProviderMock, applicationProperties);
 
     when(backendResourceProvider.get(any())).thenReturn(backend);
 
@@ -94,7 +94,7 @@ public class InformationProductResourceProviderTest {
 
     // Act
     new InformationProductResourceProvider(null, backendResourceProvider,
-        filterResourceProviderMock, applicationProperties);
+        parameterResourceProviderMock, applicationProperties);
   }
 
   @Test
@@ -103,8 +103,8 @@ public class InformationProductResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new InformationProductResourceProvider(configurationBackend, null, filterResourceProviderMock,
-        applicationProperties);
+    new InformationProductResourceProvider(configurationBackend, null,
+        parameterResourceProviderMock, applicationProperties);
   }
 
   @Test
@@ -114,7 +114,7 @@ public class InformationProductResourceProviderTest {
 
     // Act
     new InformationProductResourceProvider(configurationBackend, backendResourceProvider,
-        filterResourceProviderMock, null);
+        parameterResourceProviderMock, null);
   }
 
   @Test
@@ -217,23 +217,23 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.OPTIONAL_PARAMETER_PROP, param4Id))));
 
-    Filter requiredFilter1 = new StringFilter(param1Id, "param1");
-    when(filterResourceProviderMock.get(param1Id)).thenReturn(requiredFilter1);
+    Parameter requiredParameter1 = new StringFilter(param1Id, "param1");
+    when(parameterResourceProviderMock.get(param1Id)).thenReturn(requiredParameter1);
 
-    Filter requiredFilter2 = new StringFilter(param2Id, "param2");
-    when(filterResourceProviderMock.get(param2Id)).thenReturn(requiredFilter2);
+    Parameter requiredParameter2 = new StringFilter(param2Id, "param2");
+    when(parameterResourceProviderMock.get(param2Id)).thenReturn(requiredParameter2);
 
-    Filter optionalFilter3 = new StringFilter(param3Id, "param3");
-    when(filterResourceProviderMock.get(param3Id)).thenReturn(optionalFilter3);
+    Parameter optionalParameter3 = new StringFilter(param3Id, "param3");
+    when(parameterResourceProviderMock.get(param3Id)).thenReturn(optionalParameter3);
 
-    Filter optionalFilter4 = new StringFilter(param4Id, "param4");
-    when(filterResourceProviderMock.get(param4Id)).thenReturn(optionalFilter4);
+    Parameter optionalParameter4 = new StringFilter(param4Id, "param4");
+    when(parameterResourceProviderMock.get(param4Id)).thenReturn(optionalParameter4);
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
         eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()),
-        eq(ImmutableList.of(requiredFilter1, requiredFilter2)),
-        eq(ImmutableList.of(optionalFilter3, optionalFilter4)), any())).thenReturn(
+        eq(ImmutableList.of(requiredParameter1, requiredParameter2)),
+        eq(ImmutableList.of(optionalParameter3, optionalParameter4)), any())).thenReturn(
             informationProduct);
 
     // Act

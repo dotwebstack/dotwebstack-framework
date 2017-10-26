@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.filter;
+package org.dotwebstack.framework.param;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -13,46 +13,46 @@ public class StringFilterTest {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
-  private Filter filter;
+  private Parameter parameter;
 
   @Before
   public void setUp() {
     IRI id = VALUE_FACTORY.createIRI("http://foo#", "bar");
 
-    filter = new StringFilter(id, "variable");
+    parameter = new StringFilter(id, "variable");
   }
 
   @Test
-  public void filter_ModifiesQuery_WithSingleVariable() {
-    String result = filter.filter("value", "SELECT ${variable}");
+  public void handle_ModifiesQuery_WithSingleVariable() {
+    String result = parameter.handle("value", "SELECT ${variable}");
 
     assertThat(result, is("SELECT value"));
   }
 
   @Test
-  public void filter_ModifiesQuery_WithMultipleVariables() {
-    String result = filter.filter("value", "SELECT ${variable} WHERE ${variable}");
+  public void handle_ModifiesQuery_WithMultipleVariables() {
+    String result = parameter.handle("value", "SELECT ${variable} WHERE ${variable}");
 
     assertThat(result, is("SELECT value WHERE value"));
   }
 
   @Test
-  public void filter_ModifiesQuery_WithNullVariable() {
-    String result = filter.filter("null", "SELECT ${variable}");
+  public void handle_ModifiesQuery_WithNullVariable() {
+    String result = parameter.handle("null", "SELECT ${variable}");
 
     assertThat(result, is("SELECT null"));
   }
 
   @Test
-  public void filter_DoesNotModifyQuery_WithoutVariable() {
-    String result = filter.filter("value", "SELECT ?noVariable");
+  public void handle_DoesNotModifyQuery_WithoutVariable() {
+    String result = parameter.handle("value", "SELECT ?noVariable");
 
     assertThat(result, is("SELECT ?noVariable"));
   }
 
   @Test
-  public void filter_DoesNotModifyQuery_WithoutMatchingVariable() {
-    String result = filter.filter("value", "SELECT ${noMatchingVariable}");
+  public void handle_DoesNotModifyQuery_WithoutMatchingVariable() {
+    String result = parameter.handle("value", "SELECT ${noMatchingVariable}");
 
     assertThat(result, is("SELECT ${noMatchingVariable}"));
   }

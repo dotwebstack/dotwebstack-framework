@@ -18,9 +18,9 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
@@ -32,7 +32,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FilterNameToParameterValueMapperTest {
+public class ParameterNameToSwaggerParameterValueMapperTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -42,24 +42,25 @@ public class FilterNameToParameterValueMapperTest {
 
   private InformationProduct product;
 
-  private Filter filter;
+  private Parameter parameter;
 
-  private Filter filter2;
+  private Parameter parameter2;
 
-  private FilterNameToParameterValueMapper mapper;
+  private ParameterNameToSwaggerParameterValueMapper mapper;
 
   @Before
   public void setUp() {
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    filter = new TestFilter(valueFactory.createIRI("http://filter-iri"), "filter-name");
-    filter2 = new TestFilter(valueFactory.createIRI("http://filter2-iri"), "filter2-name");
+    parameter = new TestParameter(valueFactory.createIRI("http://parameter-iri"), "parameter-name");
+    parameter2 =
+        new TestParameter(valueFactory.createIRI("http://parameter2-iri"), "parameter2-name");
 
     product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
-        ImmutableList.of(filter, filter2), ImmutableList.of());
+        ImmutableList.of(parameter, parameter2), ImmutableList.of());
 
-    mapper = new FilterNameToParameterValueMapper();
+    mapper = new ParameterNameToSwaggerParameterValueMapper();
   }
 
   @Test
@@ -72,13 +73,13 @@ public class FilterNameToParameterValueMapperTest {
   }
 
   @Test
-  public void map_ReturnsEmptyMap_WhenParameterHasNoFilterInputVendorExtension() {
+  public void map_ReturnsEmptyMap_WhenParameterHasNoParameterInputVendorExtension() {
     Operation operation = new Operation();
-    PathParameter parameter = new PathParameter();
+    PathParameter pathParameter = new PathParameter();
 
-    parameter.setVendorExtension("x-dotwebstack-another-vendor-extension",
-        filter.getIdentifier().stringValue());
-    operation.setParameters(ImmutableList.of(parameter));
+    pathParameter.setVendorExtension("x-dotwebstack-another-vendor-extension",
+        parameter.getIdentifier().stringValue());
+    operation.setParameters(ImmutableList.of(pathParameter));
 
     Map<String, String> result = mapper.map(operation, product, contextMock);
 
@@ -86,14 +87,14 @@ public class FilterNameToParameterValueMapperTest {
   }
 
   @Test
-  public void map_ThrowsException_ForUnknownFilterName() {
+  public void map_ThrowsException_ForUnknownParameterName() {
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage("No filter found for vendor extension value:");
+    thrown.expectMessage("No parameter found for vendor extension value:");
 
     Operation operation = new Operation();
     PathParameter parameter = new PathParameter();
 
-    parameter.setVendorExtension(OpenApiSpecificationExtensions.FILTER_INPUT, "http://unknown");
+    parameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT, "http://unknown");
     operation.setParameters(ImmutableList.of(parameter));
 
     mapper.map(operation, product, contextMock);
@@ -105,41 +106,41 @@ public class FilterNameToParameterValueMapperTest {
     thrown.expectMessage("Unknown parameter location:");
 
     Operation operation = new Operation();
-    PathParameter parameter = new PathParameter();
+    PathParameter pathParameter = new PathParameter();
 
-    parameter.setIn("unknown");
-    parameter.setVendorExtension(OpenApiSpecificationExtensions.FILTER_INPUT,
-        filter.getIdentifier().stringValue());
+    pathParameter.setIn("unknown");
+    pathParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+        parameter.getIdentifier().stringValue());
 
-    operation.setParameters(ImmutableList.of(parameter));
+    operation.setParameters(ImmutableList.of(pathParameter));
 
     mapper.map(operation, product, contextMock);
   }
 
   @Test
-  public void map_ReturnsCorrectFilterName_ForPathParameters() {
-    PathParameter parameter = new PathParameter();
+  public void map_ReturnsCorrectParameterName_ForPathParameters() {
+    PathParameter pathParameter = new PathParameter();
 
-    parameter.setName("param");
-    parameter.setIn("path");
+    pathParameter.setName("param");
+    pathParameter.setIn("path");
 
     // Note this parameter has multiple vendor extensions
-    parameter.setVendorExtension(OpenApiSpecificationExtensions.FILTER_INPUT,
-        filter.getIdentifier().stringValue());
-    parameter.setVendorExtension("x-dotwebstack-another-vendor-extension", "foo");
+    pathParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+        parameter.getIdentifier().stringValue());
+    pathParameter.setVendorExtension("x-dotwebstack-another-vendor-extension", "foo");
 
     // Note this operation has multiple parameters
     Operation operation = new Operation();
-    operation.addParameter(parameter);
+    operation.addParameter(pathParameter);
 
-    PathParameter parameter2 = new PathParameter();
+    PathParameter pathParameter2 = new PathParameter();
 
-    parameter2.setName("param2");
-    parameter2.setIn("path");
-    parameter2.setVendorExtension(OpenApiSpecificationExtensions.FILTER_INPUT,
-        filter2.getIdentifier().stringValue());
+    pathParameter2.setName("param2");
+    pathParameter2.setIn("path");
+    pathParameter2.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+        parameter2.getIdentifier().stringValue());
 
-    operation.addParameter(parameter2);
+    operation.addParameter(pathParameter2);
 
     UriInfo uriInfoMock = mock(UriInfo.class);
     when(contextMock.getUriInfo()).thenReturn(uriInfoMock);
@@ -147,66 +148,66 @@ public class FilterNameToParameterValueMapperTest {
     MultivaluedMap<String, String> pathParameters = new MultivaluedHashMap<>();
 
     // Note there are multiple values for this parameter, to test that the first value is used only
-    pathParameters.put(parameter.getName(), ImmutableList.of("value", "valueB"));
-    pathParameters.put(parameter2.getName(), ImmutableList.of("value2"));
+    pathParameters.put(pathParameter.getName(), ImmutableList.of("value", "valueB"));
+    pathParameters.put(pathParameter2.getName(), ImmutableList.of("value2"));
 
     when(uriInfoMock.getPathParameters()).thenReturn(pathParameters);
 
     Map<String, String> result = mapper.map(operation, product, contextMock);
 
     assertThat(result.size(), is(2));
-    assertThat(result, hasEntry(filter.getName(), "value"));
-    assertThat(result, hasEntry(filter2.getName(), "value2"));
+    assertThat(result, hasEntry(parameter.getName(), "value"));
+    assertThat(result, hasEntry(parameter2.getName(), "value2"));
   }
 
   @Test
-  public void map_ReturnsCorrectFilterName_ForQueryParameter() {
-    QueryParameter parameter = new QueryParameter();
+  public void map_ReturnsCorrectParameterName_ForQueryParameter() {
+    QueryParameter queryParameter = new QueryParameter();
 
-    parameter.setName("param1");
-    parameter.setIn("query");
-    parameter.setVendorExtension(OpenApiSpecificationExtensions.FILTER_INPUT,
-        filter.getIdentifier().stringValue());
+    queryParameter.setName("param1");
+    queryParameter.setIn("query");
+    queryParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+        parameter.getIdentifier().stringValue());
 
     Operation operation = new Operation();
-    operation.addParameter(parameter);
+    operation.addParameter(queryParameter);
 
     UriInfo uriInfoMock = mock(UriInfo.class);
 
     when(contextMock.getUriInfo()).thenReturn(uriInfoMock);
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
-    queryParameters.put(parameter.getName(), ImmutableList.of("value", "valueB"));
+    queryParameters.put(queryParameter.getName(), ImmutableList.of("value", "valueB"));
 
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     Map<String, String> result = mapper.map(operation, product, contextMock);
 
     assertThat(result.size(), is(1));
-    assertThat(result, hasEntry(filter.getName(), "value"));
+    assertThat(result, hasEntry(parameter.getName(), "value"));
   }
 
   @Test
-  public void map_ReturnsCorrectFilterName_ForHeaderParameter() {
-    HeaderParameter parameter = new HeaderParameter();
+  public void map_ReturnsCorrectParameterName_ForHeaderParameter() {
+    HeaderParameter headerParameter = new HeaderParameter();
 
-    parameter.setName("param1");
-    parameter.setIn("header");
-    parameter.setVendorExtension(OpenApiSpecificationExtensions.FILTER_INPUT,
-        filter.getIdentifier().stringValue());
+    headerParameter.setName("param1");
+    headerParameter.setIn("header");
+    headerParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+        parameter.getIdentifier().stringValue());
 
     Operation operation = new Operation();
-    operation.addParameter(parameter);
+    operation.addParameter(headerParameter);
 
     MultivaluedMap<String, String> headerParameters = new MultivaluedHashMap<>();
-    headerParameters.put(parameter.getName(), ImmutableList.of("value", "valueB"));
+    headerParameters.put(headerParameter.getName(), ImmutableList.of("value", "valueB"));
 
     when(contextMock.getHeaders()).thenReturn(headerParameters);
 
     Map<String, String> result = mapper.map(operation, product, contextMock);
 
     assertThat(result.size(), is(1));
-    assertThat(result, hasEntry(filter.getName(), "value"));
+    assertThat(result, hasEntry(parameter.getName(), "value"));
   }
 
 }

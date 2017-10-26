@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.filter;
+package org.dotwebstack.framework.param;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -30,7 +30,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FilterResourceProviderTest {
+public class ParameterResourceProviderTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -40,14 +40,14 @@ public class FilterResourceProviderTest {
   @Mock
   private GraphQuery graphQueryMock;
 
-  private FilterResourceProvider provider;
+  private ParameterResourceProvider provider;
 
   @Before
   public void setUp() {
     ConfigurationBackend configurationBackendMock = mock(ConfigurationBackend.class);
     ApplicationProperties applicationPropertiesMock = mock(ApplicationProperties.class);
 
-    provider = new FilterResourceProvider(configurationBackendMock, applicationPropertiesMock);
+    provider = new ParameterResourceProvider(configurationBackendMock, applicationPropertiesMock);
 
     SailRepository sailRepositoryMock = mock(SailRepository.class);
     when(configurationBackendMock.getRepository()).thenReturn(sailRepositoryMock);
@@ -63,9 +63,10 @@ public class FilterResourceProviderTest {
   public void loadResources_GetResources_WithValidData() {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(VALUE_FACTORY.createStatement(DBEERPEDIA.FILTER, RDF.TYPE, ELMO.PARAMETER),
-            VALUE_FACTORY.createStatement(DBEERPEDIA.FILTER, ELMO.NAME_PROP,
-                DBEERPEDIA.FILTER_NAME_VALUE))));
+        ImmutableList.of(
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.PARAMETER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, ELMO.NAME_PROP,
+                DBEERPEDIA.PARAMETER_NAME_VALUE))));
 
     // Act
     provider.loadResources();
@@ -73,10 +74,10 @@ public class FilterResourceProviderTest {
     // Assert
     assertThat(provider.getAll().entrySet(), hasSize(1));
 
-    Filter result = provider.get(DBEERPEDIA.FILTER);
+    Parameter result = provider.get(DBEERPEDIA.PARAMETER);
 
-    assertThat(result.getIdentifier(), is(DBEERPEDIA.FILTER));
-    assertThat(result.getName(), is(DBEERPEDIA.FILTER_NAME_VALUE.stringValue()));
+    assertThat(result.getIdentifier(), is(DBEERPEDIA.PARAMETER));
+    assertThat(result.getName(), is(DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue()));
   }
 
   @Test
@@ -84,12 +85,12 @@ public class FilterResourceProviderTest {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(
         new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.FILTER, RDF.TYPE, ELMO.PARAMETER))));
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.PARAMETER))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("No <%s> property found for <%s> of type <%s>",
-        ELMO.NAME_PROP, DBEERPEDIA.FILTER, ELMO.PARAMETER));
+        ELMO.NAME_PROP, DBEERPEDIA.PARAMETER, ELMO.PARAMETER));
 
     // Act
     provider.loadResources();

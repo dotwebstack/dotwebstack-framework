@@ -10,8 +10,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Model;
@@ -59,24 +59,24 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
-    Filter filter1 = mock(Filter.class);
-    Filter filter2 = mock(Filter.class);
-    Filter filter3 = mock(Filter.class);
+    Parameter parameter1 = mock(Parameter.class);
+    Parameter parameter2 = mock(Parameter.class);
+    Parameter parameter3 = mock(Parameter.class);
 
-    Collection<Filter> requiredFilters = ImmutableList.of(filter1, filter2);
-    Collection<Filter> optionalFilters = ImmutableList.of(filter3);
+    Collection<Parameter> requiredParameters = ImmutableList.of(parameter1, parameter2);
+    Collection<Parameter> optionalParameters = ImmutableList.of(parameter3);
 
     InformationProduct result = informationProductFactory.create(
         DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend,
-        requiredFilters, optionalFilters, statements);
+        requiredParameters, optionalParameters, statements);
 
     // Assert
     assertThat(result, instanceOf(SparqlBackendInformationProduct.class));
     assertThat(((SparqlBackendInformationProduct) result).getQuery(),
         equalTo(DBEERPEDIA.SELECT_ALL_QUERY.stringValue()));
 
-    assertThat(((SparqlBackendInformationProduct) result).getFilters(),
-        contains(filter1, filter2, filter3));
+    assertThat(((SparqlBackendInformationProduct) result).getParameters(),
+        contains(parameter1, parameter2, parameter3));
   }
 
   @Test

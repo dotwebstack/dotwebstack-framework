@@ -5,8 +5,8 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -31,7 +31,8 @@ public class SparqlBackendInformationProductFactory {
   }
 
   public InformationProduct create(IRI identifier, String label, Backend backend,
-      Collection<Filter> requiredFilters, Collection<Filter> optionalFilters, Model statements) {
+      Collection<Parameter> requiredParameters, Collection<Parameter> optionalParameters,
+      Model statements) {
     String query = Models.objectString(statements.filter(identifier, ELMO.QUERY, null)).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> statement has been found for a SPARQL information product <%s>.",
@@ -40,7 +41,7 @@ public class SparqlBackendInformationProductFactory {
     ResultType resultType = getQueryType(query);
 
     return new SparqlBackendInformationProduct.Builder(identifier, (SparqlBackend) backend, query,
-        resultType, queryEvaluator, requiredFilters, optionalFilters).label(label).build();
+        resultType, queryEvaluator, requiredParameters, optionalParameters).label(label).build();
   }
 
   private ResultType getQueryType(String query) {
