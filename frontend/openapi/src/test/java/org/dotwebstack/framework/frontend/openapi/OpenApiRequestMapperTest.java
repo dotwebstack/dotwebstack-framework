@@ -1,9 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi;
 
-import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -32,6 +31,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandler;
+import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -45,6 +45,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
@@ -61,25 +62,31 @@ public class OpenApiRequestMapperTest {
   private ArgumentCaptor<Resource> resourceCaptor;
 
   @Mock
-  private InformationProductResourceProvider informationProductResourceProvider;
+  private InformationProductResourceProvider informationProductResourceProviderMock;
 
   @Mock
-  private HttpConfiguration httpConfiguration;
+  private HttpConfiguration httpConfigurationMock;
 
   @Mock
-  private SwaggerParser openApiParser;
+  private SwaggerParser openApiParserMock;
 
   @Mock
-  private org.springframework.core.io.Resource fileResource;
+  private org.springframework.core.io.Resource fileResourceMock;
 
   @Mock
-  private InformationProduct informationProduct;
+  private InformationProduct informationProductMock;
 
   @Mock
-  private Environment environment;
+  private Environment environmentMock;
 
   @Mock
-  private ApplicationProperties applicationProperties;
+  private ApplicationProperties applicationPropertiesMock;
+
+  @Mock
+  private GetRequestHandlerFactory getRequestHandlerFactoryMock;
+
+  @Mock
+  private GetRequestHandler getRequestHandlerMock;
 
   private ResourceLoader resourceLoader;
 
@@ -89,11 +96,14 @@ public class OpenApiRequestMapperTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    when(applicationProperties.getResourcePath()).thenReturn("file:config");
-    requestMapper = new OpenApiRequestMapper(informationProductResourceProvider, openApiParser,
-        applicationProperties);
+    when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
+    requestMapper = new OpenApiRequestMapper(informationProductResourceProviderMock,
+        openApiParserMock, applicationPropertiesMock, getRequestHandlerFactoryMock);
     requestMapper.setResourceLoader(resourceLoader);
-    requestMapper.setEnvironment(environment);
+    requestMapper.setEnvironment(environmentMock);
+
+    when(getRequestHandlerFactoryMock.newGetRequestHandler(Mockito.any(), Mockito.any(),
+        Mockito.any())).thenReturn(getRequestHandlerMock);
   }
 
   @Test
@@ -102,7 +112,8 @@ public class OpenApiRequestMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new OpenApiRequestMapper(null, openApiParser, applicationProperties);
+    new OpenApiRequestMapper(null, openApiParserMock, applicationPropertiesMock,
+        getRequestHandlerFactoryMock);
   }
 
   @Test
@@ -111,7 +122,8 @@ public class OpenApiRequestMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new OpenApiRequestMapper(informationProductResourceProvider, null, applicationProperties);
+    new OpenApiRequestMapper(informationProductResourceProviderMock, null,
+        applicationPropertiesMock, getRequestHandlerFactoryMock);
   }
 
   @Test
@@ -141,7 +153,7 @@ public class OpenApiRequestMapperTest {
   @Test
   public void setEnvironment_DoesNotCrash_WithValue() {
     // Act
-    requestMapper.setEnvironment(environment);
+    requestMapper.setEnvironment(environmentMock);
   }
 
   @Test
@@ -160,11 +172,11 @@ public class OpenApiRequestMapperTest {
         new org.springframework.core.io.Resource[0]);
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verifyZeroInteractions(informationProductResourceProvider);
-    verifyZeroInteractions(httpConfiguration);
+    verifyZeroInteractions(informationProductResourceProviderMock);
+    verifyZeroInteractions(httpConfigurationMock);
   }
 
   @Test
@@ -174,11 +186,11 @@ public class OpenApiRequestMapperTest {
         new org.springframework.core.io.Resource[] {new ByteArrayResource(new byte[0])});
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verifyZeroInteractions(informationProductResourceProvider);
-    verifyZeroInteractions(httpConfiguration);
+    verifyZeroInteractions(informationProductResourceProviderMock);
+    verifyZeroInteractions(httpConfigurationMock);
   }
 
   @Test
@@ -188,11 +200,11 @@ public class OpenApiRequestMapperTest {
         FileNotFoundException.class);
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verifyZeroInteractions(informationProductResourceProvider);
-    verifyZeroInteractions(httpConfiguration);
+    verifyZeroInteractions(informationProductResourceProviderMock);
+    verifyZeroInteractions(httpConfigurationMock);
   }
 
   @Test
@@ -207,7 +219,7 @@ public class OpenApiRequestMapperTest {
             DBEERPEDIA.OPENAPI_DESCRIPTION));
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -217,10 +229,10 @@ public class OpenApiRequestMapperTest {
         new Path().get(new Operation()));
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verifyZeroInteractions(httpConfiguration);
+    verifyZeroInteractions(httpConfigurationMock);
   }
 
   @Test
@@ -230,10 +242,10 @@ public class OpenApiRequestMapperTest {
         new Path().put(new Operation()));
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verifyZeroInteractions(httpConfiguration);
+    verifyZeroInteractions(httpConfigurationMock);
   }
 
   @Test
@@ -247,14 +259,14 @@ public class OpenApiRequestMapperTest {
                 ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                     DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
                         new Response().schema(schema))));
-    when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
-        informationProduct);
+    when(informationProductResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
+        informationProductMock);
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfiguration).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
 
     Resource resource = resourceCaptor.getValue();
     assertThat(resourceCaptor.getAllValues(), hasSize(1));
@@ -269,9 +281,7 @@ public class OpenApiRequestMapperTest {
 
     GetRequestHandler requestHandler =
         (GetRequestHandler) resource.getHandlerInstances().iterator().next();
-    assertThat(requestHandler.getInformationProduct(), equalTo(informationProduct));
-    assertThat(requestHandler.getSchemaMap(), allOf(hasEntry(MediaType.TEXT_PLAIN_TYPE, schema),
-        hasEntry(MediaType.APPLICATION_JSON_TYPE, schema)));
+    assertThat(requestHandler, sameInstance(getRequestHandlerMock));
   }
 
   @Test
@@ -282,14 +292,14 @@ public class OpenApiRequestMapperTest {
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
                     new Response().schema(mock(Property.class)))));
-    when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
-        informationProduct);
+    when(informationProductResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
+        informationProductMock);
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfiguration).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
     Resource resource = resourceCaptor.getValue();
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
   }
@@ -309,7 +319,7 @@ public class OpenApiRequestMapperTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -326,7 +336,7 @@ public class OpenApiRequestMapperTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -344,7 +354,7 @@ public class OpenApiRequestMapperTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -363,7 +373,7 @@ public class OpenApiRequestMapperTest {
             "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -374,14 +384,14 @@ public class OpenApiRequestMapperTest {
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).produces(MediaType.APPLICATION_JSON).response(
                     Status.OK.getStatusCode(), new Response().schema(mock(Property.class)))));
-    when(informationProductResourceProvider.get(DBEERPEDIA.BREWERIES)).thenReturn(
-        informationProduct);
+    when(informationProductResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
+        informationProductMock);
 
     // Act
-    requestMapper.map(httpConfiguration);
+    requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfiguration).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
     ResourceMethod method = resourceCaptor.getValue().getResourceMethods().get(0);
     assertThat(method.getProducedTypes(), hasSize(1));
     assertThat(method.getProducedTypes().get(0), equalTo(MediaType.APPLICATION_JSON_TYPE));
@@ -389,11 +399,11 @@ public class OpenApiRequestMapperTest {
 
   private Swagger mockDefinition() throws IOException {
     byte[] bytes = "spec".getBytes(Charsets.UTF_8);
-    when(fileResource.getInputStream()).thenReturn(new ByteArrayInputStream(bytes));
+    when(fileResourceMock.getInputStream()).thenReturn(new ByteArrayInputStream(bytes));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new org.springframework.core.io.Resource[] {fileResource});
+        new org.springframework.core.io.Resource[] {fileResourceMock});
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
-    when(openApiParser.parse("spec")).thenReturn(swagger);
+    when(openApiParserMock.parse("spec")).thenReturn(swagger);
     return swagger;
   }
 
