@@ -194,8 +194,10 @@ public class InformationProductResourceProviderTest {
 
   @Test
   public void loadResources_CreatesInformationProduct_WithCorrectValues() {
-    IRI parameter1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "parameter1");
-    IRI parameter2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "parameter2");
+    IRI param1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "param1");
+    IRI param2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "param2");
+    IRI param3Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "param3");
+    IRI param4Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "param4");
 
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
@@ -207,20 +209,32 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
-                ELMO.REQUIRED_PARAMETER_PROP, parameter1Id),
+                ELMO.REQUIRED_PARAMETER_PROP, param1Id),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
-                ELMO.REQUIRED_PARAMETER_PROP, parameter2Id))));
+                ELMO.REQUIRED_PARAMETER_PROP, param2Id),
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+                ELMO.OPTIONAL_PARAMETER_PROP, param3Id),
+            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+                ELMO.OPTIONAL_PARAMETER_PROP, param4Id))));
 
-    Filter filter1 = new StringFilter(parameter1Id, "param1");
-    when(filterResourceProviderMock.get(parameter1Id)).thenReturn(filter1);
+    Filter requiredFilter1 = new StringFilter(param1Id, "param1");
+    when(filterResourceProviderMock.get(param1Id)).thenReturn(requiredFilter1);
 
-    Filter filter2 = new StringFilter(parameter2Id, "param2");
-    when(filterResourceProviderMock.get(parameter2Id)).thenReturn(filter2);
+    Filter requiredFilter2 = new StringFilter(param2Id, "param2");
+    when(filterResourceProviderMock.get(param2Id)).thenReturn(requiredFilter2);
+
+    Filter optionalFilter3 = new StringFilter(param3Id, "param3");
+    when(filterResourceProviderMock.get(param3Id)).thenReturn(optionalFilter3);
+
+    Filter optionalFilter4 = new StringFilter(param4Id, "param4");
+    when(filterResourceProviderMock.get(param4Id)).thenReturn(optionalFilter4);
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(ImmutableList.of(filter1, filter2)),
-        eq(ImmutableList.of()), any())).thenReturn(informationProduct);
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()),
+        eq(ImmutableList.of(requiredFilter1, requiredFilter2)),
+        eq(ImmutableList.of(optionalFilter3, optionalFilter4)), any())).thenReturn(
+            informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();

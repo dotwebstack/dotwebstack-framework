@@ -156,9 +156,10 @@ public class SparqlBackendInformationProductTest {
     // Arrange
     Map<String, String> values = ImmutableMap.of("name1", "value1", "name2", "value2");
 
-    String originalQuery = "CONSTRUCT { ?s ?p ?o } WHERE { ${name1} ${name2} ?o}";
-    String queryAfterFilter1 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 ${name2} ?o}";
-    String queryAfterFilter2 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 value2 ?o}";
+    String originalQuery = "CONSTRUCT { ?s ?p ?o } WHERE { ${name1} ${name2} ${name3}}";
+    String queryAfterFilter1 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 ${name2} ${name3}}";
+    String queryAfterFilter2 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 value2 ${name3}}";
+    String queryAfterFilter3 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 value2 null}";
 
     when(requiredFilter1Mock.getName()).thenReturn("name1");
     when(requiredFilter1Mock.filter("value1", originalQuery)).thenReturn(queryAfterFilter1);
@@ -167,15 +168,15 @@ public class SparqlBackendInformationProductTest {
     when(requiredFilter2Mock.filter("value2", queryAfterFilter1)).thenReturn(queryAfterFilter2);
 
     when(optionalFilter3Mock.getName()).thenReturn("name3");
-    when(optionalFilter3Mock.filter(null, queryAfterFilter2)).thenReturn(queryAfterFilter2);
+    when(optionalFilter3Mock.filter(null, queryAfterFilter2)).thenReturn(queryAfterFilter3);
 
     when(optionalFilter4Mock.getName()).thenReturn("name4");
-    when(optionalFilter4Mock.filter(null, queryAfterFilter2)).thenReturn(queryAfterFilter2);
+    when(optionalFilter4Mock.filter(null, queryAfterFilter3)).thenReturn(queryAfterFilter3);
 
     Object expectedResult = new Object();
 
     when(backend.getConnection()).thenReturn(repositoryConnection);
-    when(queryEvaluator.evaluate(repositoryConnection, queryAfterFilter2)).thenReturn(
+    when(queryEvaluator.evaluate(repositoryConnection, queryAfterFilter3)).thenReturn(
         expectedResult);
 
     SparqlBackendInformationProduct source =

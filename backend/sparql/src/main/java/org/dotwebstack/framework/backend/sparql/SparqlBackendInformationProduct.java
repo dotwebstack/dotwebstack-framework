@@ -29,7 +29,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   }
 
   @Override
-  protected Object getInnerResult(@NonNull Map<String, String> values) {
+  protected Object getInnerResult(Map<String, String> values) {
     String modifiedQuery = query;
 
     for (Filter filter : getFilters()) {

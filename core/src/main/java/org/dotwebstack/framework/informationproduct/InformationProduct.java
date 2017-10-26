@@ -15,7 +15,7 @@ public interface InformationProduct {
 
   /**
    * @param values Mapping of filter name to value.
-   * @throws BackendException If no value of a required filter has been supplied.
+   * @throws BackendException If no value of for required filter has been supplied.
    */
   // TODO Mapping of Filter to value? (instead of filter String name to value)
   Object getResult(Map<String, String> values);
