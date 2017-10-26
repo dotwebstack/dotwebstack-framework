@@ -14,17 +14,19 @@ public class StringFilterTest {
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   private Parameter parameter;
+  private IRI id = VALUE_FACTORY.createIRI("http://foo#", "bar");
 
   @Before
   public void setUp() {
-    IRI id = VALUE_FACTORY.createIRI("http://foo#", "bar");
 
     parameter = new StringFilter(id, "variable");
   }
 
+
   @Test
-  public void handle_ModifiesQuery_WithSingleVariable() {
-    String result = parameter.handle("value", "SELECT ${variable}");
+  public void handle_ModifiesQuery_WithDotsInVariable() {
+    parameter = new StringFilter(id, "vari.able");
+    String result = parameter.handle("value", "SELECT ${vari.able}");
 
     assertThat(result, is("SELECT value"));
   }

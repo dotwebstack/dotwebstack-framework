@@ -11,7 +11,7 @@ public class StringFilter extends AbstractParameter {
 
   @Override
   public String handle(String value, @NonNull String query) {
-    return query.replaceAll(String.format("\\$\\{%s}", getName()), value);
+    return query.replaceAll(String.format("\\$\\{\\Q%s\\E\\}", getName()), value);
   }
 
 }

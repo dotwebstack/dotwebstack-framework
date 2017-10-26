@@ -14,7 +14,6 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
@@ -103,7 +102,8 @@ public class SparqlBackendInformationProductFactoryTest {
     // Arrange
     Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
         DBEERPEDIA.SELECT_ALL_QUERY).add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.RESULT_TYPE,
-            SimpleValueFactory.getInstance().createIRI(ELMO.RESULT_TYPE.getNamespace(),ResultType.TUPLE.name())).build();
+            SimpleValueFactory.getInstance().createIRI(ELMO.RESULT_TYPE.getNamespace(),
+                ResultType.TUPLE.name())).build();
 
     // Act
     InformationProduct result = informationProductFactory.create(
@@ -127,39 +127,5 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
-  }
-
-  @Test
-  public void create_ThrowsException_ForInvalidQueryType() {
-    // Arrange
-    Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
-        DBEERPEDIA.ASK_ALL_QUERY).build();
-
-    // Assert
-    thrown.expect(ConfigurationException.class);
-    thrown.expectMessage("Type of query <ASK WHERE { ?s ?p ?o }> could not be determined. "
-        + "Only SELECT and CONSTRUCT are supported.");
-
-    // Act
-    informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, ImmutableList.of(), statements);
-  }
-
-  @Test
-  public void create_ThrowsException_ForMalformedQuery() {
-    // Arrange
-    Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
-        DBEERPEDIA.MALFORMED_QUERY).build();
-
-    // Assert
-    thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format(
-        "Type of query <%s> could not be determined. Query is a malformed query and cannot be processed: "
-            + "Encountered \" <VAR1> \"?s \"\" at line 1, column 11.",
-        DBEERPEDIA.MALFORMED_QUERY.stringValue()));
-
-    // Act
-    informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
   }
 }
