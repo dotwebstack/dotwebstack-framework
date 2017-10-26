@@ -57,7 +57,7 @@ public class FilterNameToParameterValueMapperTest {
 
     product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
-        ImmutableList.of(filter, filter2));
+        ImmutableList.of(filter, filter2), ImmutableList.of());
 
     mapper = new FilterNameToParameterValueMapper();
   }

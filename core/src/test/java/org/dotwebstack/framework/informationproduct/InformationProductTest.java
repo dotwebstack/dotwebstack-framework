@@ -52,11 +52,11 @@ public class InformationProductTest {
   public class TestInformationProduct extends AbstractInformationProduct {
 
     protected TestInformationProduct(IRI identifier, String label, ResultType resultType) {
-      super(identifier, label, resultType, ImmutableList.of());
+      super(identifier, label, resultType, ImmutableList.of(), ImmutableList.of());
     }
 
     @Override
-    public Object getResult(Map<String, String> values) {
+    protected Object getInnerResult(Map<String, String> values) {
       return null;
     }
 

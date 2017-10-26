@@ -31,7 +31,7 @@ public class SparqlBackendInformationProductFactory {
   }
 
   public InformationProduct create(IRI identifier, String label, Backend backend,
-      Collection<Filter> filters, Model statements) {
+      Collection<Filter> requiredFilters, Collection<Filter> optionalFilters, Model statements) {
     String query = Models.objectString(statements.filter(identifier, ELMO.QUERY, null)).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> statement has been found for a SPARQL information product <%s>.",
@@ -40,7 +40,7 @@ public class SparqlBackendInformationProductFactory {
     ResultType resultType = getQueryType(query);
 
     return new SparqlBackendInformationProduct.Builder(identifier, (SparqlBackend) backend, query,
-        resultType, queryEvaluator, filters).label(label).build();
+        resultType, queryEvaluator, requiredFilters, optionalFilters).label(label).build();
   }
 
   private ResultType getQueryType(String query) {

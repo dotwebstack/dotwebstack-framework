@@ -11,12 +11,12 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.filter.FilterResourceProvider;
 import org.dotwebstack.framework.filter.StringFilter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -129,7 +129,7 @@ public class InformationProductResourceProviderTest {
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
-        eq(ImmutableSet.of()), any())).thenReturn(informationProduct);
+        eq(ImmutableList.of()), eq(ImmutableList.of()), any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
@@ -207,19 +207,20 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
-                ELMO.PARAMETER_PROP, parameter1Id),
+                ELMO.REQUIRED_PARAMETER_PROP, parameter1Id),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
-                ELMO.PARAMETER_PROP, parameter2Id))));
+                ELMO.REQUIRED_PARAMETER_PROP, parameter2Id))));
 
-    StringFilter filter1 = new StringFilter(parameter1Id, "param1");
+    Filter filter1 = new StringFilter(parameter1Id, "param1");
     when(filterResourceProviderMock.get(parameter1Id)).thenReturn(filter1);
-    StringFilter filter2 = new StringFilter(parameter2Id, "param2");
+
+    Filter filter2 = new StringFilter(parameter2Id, "param2");
     when(filterResourceProviderMock.get(parameter2Id)).thenReturn(filter2);
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(ImmutableSet.of(filter1, filter2)),
-        any())).thenReturn(informationProduct);
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), eq(ImmutableList.of(filter1, filter2)),
+        eq(ImmutableList.of()), any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();

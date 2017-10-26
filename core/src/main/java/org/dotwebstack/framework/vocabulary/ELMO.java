@@ -42,7 +42,9 @@ public final class ELMO {
 
   public static final IRI PARAMETER;
 
-  public static final IRI PARAMETER_PROP;
+  public static final IRI OPTIONAL_PARAMETER_PROP;
+
+  public static final IRI REQUIRED_PARAMETER_PROP;
 
   public static final IRI NAME_PROP;
 
@@ -74,7 +76,10 @@ public final class ELMO {
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
 
     PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
-    PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "parameter");
+
+    OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParamerer");
+    REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParamerer");
+
     NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
   }
 

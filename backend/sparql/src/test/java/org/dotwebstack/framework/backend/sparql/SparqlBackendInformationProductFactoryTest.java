@@ -2,8 +2,9 @@ package org.dotwebstack.framework.backend.sparql;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
@@ -58,16 +59,24 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
-    Collection<Filter> filters = ImmutableList.of();
-    InformationProduct result =
-        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, filters, statements);
+    Filter filter1 = mock(Filter.class);
+    Filter filter2 = mock(Filter.class);
+    Filter filter3 = mock(Filter.class);
+
+    Collection<Filter> requiredFilters = ImmutableList.of(filter1, filter2);
+    Collection<Filter> optionalFilters = ImmutableList.of(filter3);
+
+    InformationProduct result = informationProductFactory.create(
+        DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend,
+        requiredFilters, optionalFilters, statements);
 
     // Assert
     assertThat(result, instanceOf(SparqlBackendInformationProduct.class));
     assertThat(((SparqlBackendInformationProduct) result).getQuery(),
         equalTo(DBEERPEDIA.SELECT_ALL_QUERY.stringValue()));
-    assertThat(((SparqlBackendInformationProduct) result).getFilters(), sameInstance(filters));
+
+    assertThat(((SparqlBackendInformationProduct) result).getFilters(),
+        contains(filter1, filter2, filter3));
   }
 
   @Test
@@ -83,7 +92,8 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Act
     informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, ImmutableList.of(), ImmutableList.of(),
+        statements);
   }
 
   @Test
@@ -93,9 +103,9 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
-    InformationProduct result =
-        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, ImmutableList.of(), statements);
+    InformationProduct result = informationProductFactory.create(
+        DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend,
+        ImmutableList.of(), ImmutableList.of(), statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.TUPLE));
@@ -108,9 +118,9 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.CONSTRUCT_ALL_QUERY).build();
 
     // Act
-    InformationProduct result =
-        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, ImmutableList.of(), statements);
+    InformationProduct result = informationProductFactory.create(
+        DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend,
+        ImmutableList.of(), ImmutableList.of(), statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
@@ -129,7 +139,8 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Act
     informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, ImmutableList.of(), statements);
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, ImmutableList.of(), ImmutableList.of(),
+        statements);
   }
 
   @Test
@@ -148,7 +159,8 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Act
     informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, null, statements);
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend, ImmutableList.of(), ImmutableList.of(),
+        statements);
   }
 
 }

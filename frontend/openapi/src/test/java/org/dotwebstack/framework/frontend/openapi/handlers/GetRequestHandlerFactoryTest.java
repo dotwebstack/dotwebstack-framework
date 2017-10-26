@@ -36,7 +36,8 @@ public class GetRequestHandlerFactoryTest {
   public void newGetRequestHandler_createsGetRequestHandler_WithValidData() {
     Operation operation = new Operation();
     InformationProduct product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH, ImmutableList.of());
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH, ImmutableList.of(),
+        ImmutableList.of());
     Map<MediaType, Property> schemaMap = ImmutableMap.of();
 
     GetRequestHandler result =

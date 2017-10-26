@@ -10,14 +10,14 @@ import org.eclipse.rdf4j.model.IRI;
 public final class TestInformationProduct extends AbstractInformationProduct {
 
   public TestInformationProduct(IRI identifier, String label, ResultType resultType,
-      Collection<Filter> filters) {
-    super(identifier, label, resultType, filters);
+      Collection<Filter> requiredFilters, Collection<Filter> optionalFilters) {
+    super(identifier, label, resultType, requiredFilters, optionalFilters);
   }
 
   @Override
-  public Object getResult(Map<String, String> values) {
+  public Object getInnerResult(Map<String, String> values) {
     throw new UnsupportedOperationException(
-        "getResult() method unsupported, mock the InformationProduct interface instead");
+        "getInnerResult() method unsupported, mock the InformationProduct interface instead");
   }
 
 }

@@ -102,14 +102,18 @@ public class SparqlBackendTest {
         informationProductFactory).build();
 
     InformationProduct informationProductMock = mock(InformationProduct.class);
-    Filter filterMock = mock(Filter.class);
+
+    Filter requiredFilterMock = mock(Filter.class);
+    Filter optionalFilterMock = mock(Filter.class);
 
     when(informationProductFactory.create(identifier, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
-        backend, ImmutableList.of(filterMock), model)).thenReturn(informationProductMock);
+        backend, ImmutableList.of(requiredFilterMock), ImmutableList.of(optionalFilterMock),
+        model)).thenReturn(informationProductMock);
 
     // Act
-    InformationProduct result = backend.createInformationProduct(identifier,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), ImmutableList.of(filterMock), model);
+    InformationProduct result =
+        backend.createInformationProduct(identifier, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
+            ImmutableList.of(requiredFilterMock), ImmutableList.of(optionalFilterMock), model);
 
     // Assert
     assertThat(result, equalTo(informationProductMock));

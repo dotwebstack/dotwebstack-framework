@@ -11,6 +11,6 @@ public interface Backend {
   IRI getIdentifier();
 
   InformationProduct createInformationProduct(IRI identifier, String label,
-      Collection<Filter> filters, Model statements);
+      Collection<Filter> requiredFilters, Collection<Filter> optionalFilters, Model statements);
 
 }

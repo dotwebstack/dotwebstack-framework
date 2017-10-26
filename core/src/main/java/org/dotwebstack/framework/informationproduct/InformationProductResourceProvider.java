@@ -56,19 +56,27 @@ public class InformationProductResourceProvider
             () -> new ConfigurationException(
                 String.format("No <%s> statement has been found for information product <%s>.",
                     ELMO.BACKEND_PROP, identifier)));
-    Set<IRI> filterIris = Models.objectIRIs(model.filter(identifier, ELMO.PARAMETER_PROP, null));
+    Set<IRI> requiredFilterIds =
+        Models.objectIRIs(model.filter(identifier, ELMO.REQUIRED_PARAMETER_PROP, null));
+    Set<IRI> optionalFilterIds =
+        Models.objectIRIs(model.filter(identifier, ELMO.OPTIONAL_PARAMETER_PROP, null));
+
     String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
 
-    return create(backendIRI, filterIris, identifier, label, model);
+    return create(backendIRI, requiredFilterIds, optionalFilterIds, identifier, label, model);
   }
 
-  private InformationProduct create(IRI backendIdentifier, Set<IRI> filterIdentifiers,
-      IRI identifier, String label, Model statements) {
+  private InformationProduct create(IRI backendIdentifier, Set<IRI> requiredFilterIds,
+      Set<IRI> optionalFilterIds, IRI identifier, String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
-    Collection<Filter> filters =
-        filterIdentifiers.stream().map(filterResourceProvider::get).collect(Collectors.toSet());
 
-    return backend.createInformationProduct(identifier, label, filters, statements);
+    Collection<Filter> requiredFilters =
+        requiredFilterIds.stream().map(filterResourceProvider::get).collect(Collectors.toList());
+    Collection<Filter> optionalFilters =
+        optionalFilterIds.stream().map(filterResourceProvider::get).collect(Collectors.toList());
+
+    return backend.createInformationProduct(identifier, label, requiredFilters, optionalFilters,
+        statements);
   }
 
 }

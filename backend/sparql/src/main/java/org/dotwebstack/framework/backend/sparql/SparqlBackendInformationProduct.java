@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.sparql;
 import java.util.Collection;
 import java.util.Map;
 import lombok.NonNull;
-import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.filter.Filter;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
@@ -18,7 +17,8 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   private final QueryEvaluator queryEvaluator;
 
   public SparqlBackendInformationProduct(Builder builder) {
-    super(builder.identifier, builder.label, builder.resultType, builder.filters);
+    super(builder.identifier, builder.label, builder.resultType, builder.requiredFilters,
+        builder.optionalFilters);
     this.backend = builder.backend;
     this.query = builder.query;
     this.queryEvaluator = builder.queryEvaluator;
@@ -29,16 +29,11 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   }
 
   @Override
-  public Object getResult(@NonNull Map<String, String> values) {
+  protected Object getInnerResult(@NonNull Map<String, String> values) {
     String modifiedQuery = query;
 
-    for (Filter filter : filters) {
+    for (Filter filter : getFilters()) {
       String value = values.get(filter.getName());
-
-      if (value == null) {
-        throw new BackendException(String.format(
-            "No value found for filter '%s'. Supplied values: %s", filter.getName(), values));
-      }
 
       modifiedQuery = filter.filter(value, modifiedQuery);
     }
@@ -58,19 +53,22 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
     private final QueryEvaluator queryEvaluator;
 
-    private final Collection<Filter> filters;
+    private final Collection<Filter> requiredFilters;
+
+    private final Collection<Filter> optionalFilters;
 
     private String label;
 
     public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
         @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator,
-        @NonNull Collection<Filter> filters) {
+        @NonNull Collection<Filter> requiredFilters, @NonNull Collection<Filter> optionalFilters) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;
       this.resultType = resultType;
       this.queryEvaluator = queryEvaluator;
-      this.filters = filters;
+      this.requiredFilters = requiredFilters;
+      this.optionalFilters = optionalFilters;
     }
 
     public Builder label(String label) {
