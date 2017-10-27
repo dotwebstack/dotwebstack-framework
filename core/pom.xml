@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
-    <version>0.0.8-grid.1937-SNAPSHOT</version>
+    <version>0.0.8-SNAPSHOT</version>
   </parent>
 
   <artifactId>dotwebstack-core</artifactId>
@@ -73,11 +73,6 @@
       <artifactId>slf4j-nop</artifactId>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>javax.ws.rs</groupId>
-          <artifactId>javax.ws.rs-api</artifactId>
-          <version>RELEASE</version>
-      </dependency>
   </dependencies>
 
 </project>
