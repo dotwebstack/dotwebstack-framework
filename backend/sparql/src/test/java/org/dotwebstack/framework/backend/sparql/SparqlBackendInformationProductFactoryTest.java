@@ -53,8 +53,6 @@ public class SparqlBackendInformationProductFactoryTest {
     new SparqlBackendInformationProductFactory(null);
   }
 
-  // XXX (PvH) Waar test je waar het ResultType is gezet?
-  // XXX (PvH) Ik mis een test voor de default ResultType
   @Test
   public void create_InformationProductIsCreated_WithValidData() {
     // Arrange
@@ -115,6 +113,22 @@ public class SparqlBackendInformationProductFactoryTest {
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.TUPLE));
   }
+
+  @Test
+  public void create_DeterminesDefaultQueryType_ForSelectQuery() {
+    // Arrange
+    Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
+            DBEERPEDIA.SELECT_ALL_QUERY).build();
+
+    // Act
+    InformationProduct result = informationProductFactory.create(
+            DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend,
+            ImmutableList.of(), ImmutableList.of(), statements);
+
+    // Assert
+    assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
+  }
+
 
   @Test
   public void create_DeterminesGraphQueryType_ForConstructQuery() {
