@@ -52,7 +52,7 @@ public class SparqlBackendInformationProductFactory {
       return ResultType.valueOf(resultTypeIri.getLocalName().toUpperCase());
     } catch (IllegalArgumentException illegalArgumentException) {
       throw new ConfigurationException(
-          String.format("No resulttype found for <%s>.", resultTypeIri));
+          String.format("No resulttype found for <%s>.", resultTypeIri), illegalArgumentException);
     }
   }
 

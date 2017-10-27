@@ -118,12 +118,12 @@ public class SparqlBackendInformationProductFactoryTest {
   public void create_DeterminesDefaultQueryType_ForSelectQuery() {
     // Arrange
     Model statements = new ModelBuilder().add(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.QUERY,
-            DBEERPEDIA.SELECT_ALL_QUERY).build();
+        DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
     InformationProduct result = informationProductFactory.create(
-            DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend,
-            ImmutableList.of(), ImmutableList.of(), statements);
+        DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(), backend,
+        ImmutableList.of(), ImmutableList.of(), statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
