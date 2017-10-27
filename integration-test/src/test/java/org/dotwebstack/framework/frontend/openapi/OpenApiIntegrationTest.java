@@ -82,7 +82,7 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
-  public void get_GetSingleBrewery_ThroughOpenApi() throws JSONException {
+  public void get_GetSingleBreweryWithId_ThroughOpenApi() throws JSONException {
     // Arrange
     TupleQueryResultBuilder builder =
         new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
