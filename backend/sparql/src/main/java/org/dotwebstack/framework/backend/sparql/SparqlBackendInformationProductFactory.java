@@ -48,8 +48,12 @@ public class SparqlBackendInformationProductFactory {
     IRI resultTypeIri =
         Models.objectIRI(statements.filter(identifier, ELMO.RESULT_TYPE, null)).orElse(
             RESULT_TYPE_DEFAULT);
-    // XXX (PvH) Wat als ResultType niet bestaat?
-    return ResultType.valueOf(resultTypeIri.getLocalName().toUpperCase());
+    try {
+      return ResultType.valueOf(resultTypeIri.getLocalName().toUpperCase());
+    } catch (IllegalArgumentException illegalArgumentException) {
+      throw new ConfigurationException(
+          String.format("No resulttype found for <%s>.", resultTypeIri));
+    }
   }
 
 }
