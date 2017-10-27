@@ -41,7 +41,14 @@ paths:
                   format: string
   /breweries/{id}:
     get:
-      x-dotwebstack-information-product: "http://dbeerpedia.org#TupleBreweries"
+      x-dotwebstack-information-product: "http://dbeerpedia.org#TupleBrewery"
+      parameters:
+      - name: id
+        in: path
+        description: Identifier
+        required: true
+        type: string
+        x-dotwebstack-parameter-input: "http://dbeerpedia.org#IdFilter"
       responses:
         200:
           description: OK
