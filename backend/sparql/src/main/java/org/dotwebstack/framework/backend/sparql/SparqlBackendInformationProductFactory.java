@@ -45,10 +45,11 @@ public class SparqlBackendInformationProductFactory {
   }
 
   private ResultType getResultType(IRI identifier, Model statements) {
-    IRI resulttypeIri =
+    IRI resultTypeIri =
         Models.objectIRI(statements.filter(identifier, ELMO.RESULT_TYPE, null)).orElse(
             RESULT_TYPE_DEFAULT);
-    return ResultType.valueOf(resulttypeIri.getLocalName().toUpperCase());
+    // XXX (PvH) Wat als ResultType niet bestaat?
+    return ResultType.valueOf(resultTypeIri.getLocalName().toUpperCase());
   }
 
 }

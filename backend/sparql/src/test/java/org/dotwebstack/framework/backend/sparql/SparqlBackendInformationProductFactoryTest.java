@@ -53,6 +53,8 @@ public class SparqlBackendInformationProductFactoryTest {
     new SparqlBackendInformationProductFactory(null);
   }
 
+  // XXX (PvH) Waar test je waar het ResultType is gezet?
+  // XXX (PvH) Ik mis een test voor de default ResultType
   @Test
   public void create_InformationProductIsCreated_WithValidData() {
     // Arrange
