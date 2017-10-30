@@ -18,7 +18,6 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.ParameterResourceProvider;
-import org.dotwebstack.framework.param.StringFilter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -217,16 +216,16 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.OPTIONAL_PARAMETER_PROP, param4Id))));
 
-    Parameter requiredParameter1 = new StringFilter(param1Id, "param1");
+    Parameter requiredParameter1 = mock(Parameter.class);
     when(parameterResourceProviderMock.get(param1Id)).thenReturn(requiredParameter1);
 
-    Parameter requiredParameter2 = new StringFilter(param2Id, "param2");
+    Parameter requiredParameter2 = mock(Parameter.class);
     when(parameterResourceProviderMock.get(param2Id)).thenReturn(requiredParameter2);
 
-    Parameter optionalParameter3 = new StringFilter(param3Id, "param3");
+    Parameter optionalParameter3 = mock(Parameter.class);
     when(parameterResourceProviderMock.get(param3Id)).thenReturn(optionalParameter3);
 
-    Parameter optionalParameter4 = new StringFilter(param4Id, "param4");
+    Parameter optionalParameter4 = mock(Parameter.class);
     when(parameterResourceProviderMock.get(param4Id)).thenReturn(optionalParameter4);
 
     InformationProduct informationProduct = mock(InformationProduct.class);

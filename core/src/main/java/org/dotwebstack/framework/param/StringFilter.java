@@ -1,17 +1,22 @@
 package org.dotwebstack.framework.param;
 
+import java.util.Collections;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
-public class StringFilter extends AbstractParameter {
+class StringFilter extends AbstractParameter {
 
-  public StringFilter(IRI identifier, String name) {
+  private final TemplateProcessor templateProcessor;
+
+  StringFilter(IRI identifier, String name, @NonNull TemplateProcessor templateProcessor) {
     super(identifier, name);
+
+    this.templateProcessor = templateProcessor;
   }
 
   @Override
   public String handle(String value, @NonNull String query) {
-    return query.replaceAll(String.format("\\$\\{\\Q%s\\E\\}", getName()), value);
+    return templateProcessor.processString(query, Collections.singletonMap(getName(), value));
   }
 
 }
