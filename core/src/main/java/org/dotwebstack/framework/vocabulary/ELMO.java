@@ -13,7 +13,7 @@ public final class ELMO {
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
 
-  private static final String NAMESPACE_EXTENSION_RESULTTYPE = NAMESPACE_BASE + "/resultType/";
+  private static final String NAMESPACE_EXTENSION_RESULTTYPE = NAMESPACE_BASE + "/resulttype/";
 
   public static final IRI INFORMATION_PRODUCT;
 
@@ -79,7 +79,7 @@ public final class ELMO {
 
     ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "endpoint");
     QUERY = valueFactory.createIRI(ELMO.NAMESPACE, "query");
-    RESULT_TYPE = valueFactory.createIRI(ELMO.NAMESPACE, "resulttype");
+    RESULT_TYPE = valueFactory.createIRI(ELMO.NAMESPACE, "resultType");
     RESULT_TYPE_DEFAULT =
         valueFactory.createIRI(ELMO.NAMESPACE_EXTENSION_RESULTTYPE, ResultType.GRAPH.name());
 
