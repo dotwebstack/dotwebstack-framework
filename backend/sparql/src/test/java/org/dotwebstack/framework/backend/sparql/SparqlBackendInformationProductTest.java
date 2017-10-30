@@ -200,7 +200,7 @@ public class SparqlBackendInformationProductTest {
     // Assert
     thrown.expect(BackendException.class);
     thrown.expectMessage(
-        "No value found for required parameter 'name1'. Supplied parameterValues:");
+        "No xvalue found for required parameter 'name1'. Supplied parameterValues:");
 
     // Arrange
     Map<String, String> parameterValues = ImmutableMap.of("foo", "value1", "name2", "value2");

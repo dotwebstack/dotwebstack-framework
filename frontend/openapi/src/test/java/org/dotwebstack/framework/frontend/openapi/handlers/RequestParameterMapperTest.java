@@ -65,15 +65,19 @@ public class RequestParameterMapperTest {
 
   @Test
   public void map_ReturnsEmptyMap_WhenOperationHasNoParameter() {
+    // Arrange
     Operation operation = new Operation();
 
+    // Act
     Map<String, String> result = mapper.map(operation, product, contextMock);
 
+    // Assert
     assertThat(result.isEmpty(), is(true));
   }
 
   @Test
   public void map_ReturnsEmptyMap_WhenParameterHasNoParameterInputVendorExtension() {
+    // Arrange
     Operation operation = new Operation();
     PathParameter pathParameter = new PathParameter();
 
@@ -81,13 +85,16 @@ public class RequestParameterMapperTest {
         parameter.getIdentifier().stringValue());
     operation.setParameters(ImmutableList.of(pathParameter));
 
+    // Act
     Map<String, String> result = mapper.map(operation, product, contextMock);
 
+    // Assert
     assertThat(result.isEmpty(), is(true));
   }
 
   @Test
   public void map_ThrowsException_ForUnknownParameterName() {
+    // Arrange
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("No parameter found for vendor extension value:");
 
@@ -97,11 +104,13 @@ public class RequestParameterMapperTest {
     parameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER, "http://unknown");
     operation.setParameters(ImmutableList.of(parameter));
 
+    // Act
     mapper.map(operation, product, contextMock);
   }
 
   @Test
   public void map_ThrowsException_ForUnknownParameterLocation() {
+    // Arrange
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Unknown parameter location:");
 
@@ -114,11 +123,13 @@ public class RequestParameterMapperTest {
 
     operation.setParameters(ImmutableList.of(pathParameter));
 
+    // Act
     mapper.map(operation, product, contextMock);
   }
 
   @Test
   public void map_ReturnsCorrectParameterName_ForPathParameters() {
+    // Arrange
     PathParameter pathParameter = new PathParameter();
 
     pathParameter.setName("param");
@@ -153,8 +164,10 @@ public class RequestParameterMapperTest {
 
     when(uriInfoMock.getPathParameters()).thenReturn(pathParameters);
 
+    // Act
     Map<String, String> result = mapper.map(operation, product, contextMock);
 
+    // Assert
     assertThat(result.size(), is(2));
     assertThat(result, hasEntry(parameter.getName(), "value"));
     assertThat(result, hasEntry(parameter2.getName(), "value2"));
@@ -162,6 +175,7 @@ public class RequestParameterMapperTest {
 
   @Test
   public void map_ReturnsCorrectParameterName_ForQueryParameter() {
+    // Arrange
     QueryParameter queryParameter = new QueryParameter();
 
     queryParameter.setName("param1");
@@ -181,14 +195,17 @@ public class RequestParameterMapperTest {
 
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
+    // Act
     Map<String, String> result = mapper.map(operation, product, contextMock);
 
+    // Assert
     assertThat(result.size(), is(1));
     assertThat(result, hasEntry(parameter.getName(), "value"));
   }
 
   @Test
   public void map_ReturnsCorrectParameterName_ForHeaderParameter() {
+    // Arrange
     HeaderParameter headerParameter = new HeaderParameter();
 
     headerParameter.setName("param1");
@@ -204,8 +221,10 @@ public class RequestParameterMapperTest {
 
     when(contextMock.getHeaders()).thenReturn(headerParameters);
 
+    // Act
     Map<String, String> result = mapper.map(operation, product, contextMock);
 
+    // Assert
     assertThat(result.size(), is(1));
     assertThat(result, hasEntry(parameter.getName(), "value"));
   }
