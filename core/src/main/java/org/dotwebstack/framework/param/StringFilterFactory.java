@@ -2,6 +2,7 @@ package org.dotwebstack.framework.param;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.dotwebstack.framework.param.template.TemplateProcessor;
 import org.eclipse.rdf4j.model.IRI;
 import org.springframework.stereotype.Component;
 

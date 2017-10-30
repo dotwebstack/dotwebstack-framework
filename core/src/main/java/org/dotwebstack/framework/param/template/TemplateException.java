@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param;
+package org.dotwebstack.framework.param.template;
 
 public final class TemplateException extends RuntimeException {
 

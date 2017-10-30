@@ -2,6 +2,7 @@ package org.dotwebstack.framework.param;
 
 import java.util.Collections;
 import lombok.NonNull;
+import org.dotwebstack.framework.param.template.TemplateProcessor;
 import org.eclipse.rdf4j.model.IRI;
 
 class StringFilter extends AbstractParameter {

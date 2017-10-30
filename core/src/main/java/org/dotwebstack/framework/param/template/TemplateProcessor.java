@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param;
+package org.dotwebstack.framework.param.template;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
