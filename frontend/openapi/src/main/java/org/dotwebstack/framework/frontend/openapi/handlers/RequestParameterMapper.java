@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-class ParameterNameToSwaggerParameterValueMapper {
+class RequestParameterMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
@@ -27,17 +27,16 @@ class ParameterNameToSwaggerParameterValueMapper {
       @NonNull ContainerRequestContext context) {
     Map<String, String> result = new HashMap<>();
 
-    for (io.swagger.models.parameters.Parameter swaggerParameter : operation.getParameters()) {
-      Map<String, Object> vendorExtensions = swaggerParameter.getVendorExtensions();
+    for (io.swagger.models.parameters.Parameter openApiParameter : operation.getParameters()) {
+      Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
 
-      LOG.debug("Vendor extensions for parameter '{}': {}", swaggerParameter.getName(),
+      LOG.debug("Vendor extensions for parameter '{}': {}", openApiParameter.getName(),
           vendorExtensions);
 
-      Object parameterIdString =
-          vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER_INPUT);
+      Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
 
       if (parameterIdString == null) {
-        // Vendor extension x-dotwebstack-parameter-input not found for parameter
+        // Vendor extension x-dotwebstack-parameter not found for parameter
         continue;
       }
 
@@ -49,7 +48,7 @@ class ParameterNameToSwaggerParameterValueMapper {
             "No parameter found for vendor extension value: '%s'", parameterIdString));
       }
 
-      String value = getSwaggerParameterValue(context, swaggerParameter);
+      String value = getOpenApiParameterValue(context, openApiParameter);
 
       result.put(parameter.getName(), value);
     }
@@ -67,18 +66,18 @@ class ParameterNameToSwaggerParameterValueMapper {
     return null;
   }
 
-  private static String getSwaggerParameterValue(ContainerRequestContext context,
-      io.swagger.models.parameters.Parameter parameter) {
-    switch (parameter.getIn()) {
+  private static String getOpenApiParameterValue(ContainerRequestContext context,
+      io.swagger.models.parameters.Parameter openApiParameter) {
+    switch (openApiParameter.getIn()) {
       case "header":
-        return context.getHeaders().getFirst(parameter.getName());
+        return context.getHeaders().getFirst(openApiParameter.getName());
       case "path":
-        return context.getUriInfo().getPathParameters().getFirst(parameter.getName());
+        return context.getUriInfo().getPathParameters().getFirst(openApiParameter.getName());
       case "query":
-        return context.getUriInfo().getQueryParameters().getFirst(parameter.getName());
+        return context.getUriInfo().getQueryParameters().getFirst(openApiParameter.getName());
       default:
         throw new ConfigurationException(
-            String.format("Unknown parameter location: '%s'", parameter.getIn()));
+            String.format("Unknown parameter location: '%s'", openApiParameter.getIn()));
     }
   }
 

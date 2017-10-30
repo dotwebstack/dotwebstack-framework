@@ -23,14 +23,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class GetRequestHandlerFactoryTest {
 
   @Mock
-  private ParameterNameToSwaggerParameterValueMapper parameterNameToSwaggerParameterValueMapperMock;
+  private RequestParameterMapper requestParameterMapperMock;
 
   private GetRequestHandlerFactory getRequestHandlerFactory;
 
   @Before
   public void setUp() {
     getRequestHandlerFactory =
-        new GetRequestHandlerFactory(parameterNameToSwaggerParameterValueMapperMock);
+        new GetRequestHandlerFactory(requestParameterMapperMock);
   }
 
   @Test

@@ -2,7 +2,7 @@
 @prefix elmo: <http://dotwebstack.org/def/elmo#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix elmo-resulttype: <http://dotwebstack.org/def/elmo/resultType/> .
+@prefix elmo-resulttype: <http://dotwebstack.org/def/elmo/resulttype/> .
 
 GRAPH dbeerpedia:Theatre {
   dbeerpedia:IdFilter a elmo:TermFilter;

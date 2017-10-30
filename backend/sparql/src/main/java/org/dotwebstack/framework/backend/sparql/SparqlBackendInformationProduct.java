@@ -29,11 +29,11 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   }
 
   @Override
-  protected Object getInnerResult(Map<String, String> values) {
+  protected Object getInnerResult(Map<String, String> parameterValues) {
     String modifiedQuery = query;
 
     for (Parameter parameter : getParameters()) {
-      String value = values.get(parameter.getName());
+      String value = parameterValues.get(parameter.getName());
 
       modifiedQuery = parameter.handle(value, modifiedQuery);
     }

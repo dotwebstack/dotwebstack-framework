@@ -154,7 +154,7 @@ public class SparqlBackendInformationProductTest {
   @Test
   public void getResult_UsesParameter_WhenGettingResult() {
     // Arrange
-    Map<String, String> values = ImmutableMap.of("name1", "value1", "name2", "value2");
+    Map<String, String> parameterValues = ImmutableMap.of("name1", "value1", "name2", "value2");
 
     String originalQuery = "CONSTRUCT { ?s ?p ?o } WHERE { ${name1} ${name2} ${name3}}";
     String queryAfterParameter1 = "CONSTRUCT { ?s ?p ?o } WHERE { value1 ${name2} ${name3}}";
@@ -189,7 +189,7 @@ public class SparqlBackendInformationProductTest {
             ImmutableList.of(optionalParameter3Mock, optionalParameter4Mock)).build();
 
     // Act
-    Object result = source.getResult(values);
+    Object result = source.getResult(parameterValues);
 
     // Assert
     assertThat(result, equalTo(expectedResult));
@@ -202,7 +202,7 @@ public class SparqlBackendInformationProductTest {
     thrown.expectMessage("No value found for required parameter 'name1'. Supplied values:");
 
     // Arrange
-    Map<String, String> values = ImmutableMap.of("foo", "value1", "name2", "value2");
+    Map<String, String> parameterValues = ImmutableMap.of("foo", "value1", "name2", "value2");
 
     String originalQuery = "CONSTRUCT { ?s ?p ?o } WHERE { ${name1} ${name2} ?o}";
 
@@ -215,7 +215,7 @@ public class SparqlBackendInformationProductTest {
             ImmutableList.of(optionalParameter3Mock, optionalParameter4Mock)).build();
 
     // Act
-    source.getResult(values);
+    source.getResult(parameterValues);
   }
 
 }

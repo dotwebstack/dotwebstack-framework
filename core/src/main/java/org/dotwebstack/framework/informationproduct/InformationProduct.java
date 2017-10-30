@@ -14,11 +14,11 @@ public interface InformationProduct {
   String getLabel();
 
   /**
-   * @param values Mapping of parameter name to value.
+   * @param parameterValues Mapping of parameter name to value.
    * @throws BackendException If no value of for required parameter has been supplied.
    */
   // TODO Mapping of Parameter instance to value? (instead of parameter String name to value)
-  Object getResult(Map<String, String> values);
+  Object getResult(Map<String, String> parameterValues);
 
   ResultType getResultType();
 

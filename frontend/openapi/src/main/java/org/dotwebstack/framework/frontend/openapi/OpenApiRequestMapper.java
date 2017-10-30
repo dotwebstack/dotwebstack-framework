@@ -98,12 +98,12 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
       if (!StringUtils.isBlank(result)) {
         Swagger swagger = openApiParser.parse(result);
-        mapSwaggerDefinition(swagger, httpConfiguration);
+        mapOpenApiDefinition(swagger, httpConfiguration);
       }
     }
   }
 
-  private void mapSwaggerDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
+  private void mapOpenApiDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {

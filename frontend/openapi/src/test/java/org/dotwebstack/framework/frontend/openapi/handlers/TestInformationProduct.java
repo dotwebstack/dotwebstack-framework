@@ -15,7 +15,7 @@ public final class TestInformationProduct extends AbstractInformationProduct {
   }
 
   @Override
-  public Object getInnerResult(Map<String, String> values) {
+  public Object getInnerResult(Map<String, String> parameterValues) {
     throw new UnsupportedOperationException(
         "getInnerResult() method unsupported, mock the InformationProduct interface instead");
   }

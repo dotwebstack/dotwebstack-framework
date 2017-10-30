@@ -48,7 +48,7 @@ paths:
         description: Identifier
         required: true
         type: string
-        x-dotwebstack-parameter-input: "http://dbeerpedia.org#IdFilter"
+        x-dotwebstack-parameter: "http://dbeerpedia.org#IdFilter"
       responses:
         200:
           description: OK

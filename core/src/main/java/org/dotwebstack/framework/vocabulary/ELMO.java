@@ -79,7 +79,7 @@ public final class ELMO {
 
     ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "endpoint");
     QUERY = valueFactory.createIRI(ELMO.NAMESPACE, "query");
-    RESULT_TYPE = valueFactory.createIRI(ELMO.NAMESPACE, "resultType");
+    RESULT_TYPE = valueFactory.createIRI(ELMO.NAMESPACE, "resulttype");
     RESULT_TYPE_DEFAULT =
         valueFactory.createIRI(ELMO.NAMESPACE_EXTENSION_RESULTTYPE, ResultType.GRAPH.name());
 

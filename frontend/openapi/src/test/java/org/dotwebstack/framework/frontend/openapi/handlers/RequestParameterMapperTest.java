@@ -32,7 +32,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ParameterNameToSwaggerParameterValueMapperTest {
+public class RequestParameterMapperTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -46,7 +46,7 @@ public class ParameterNameToSwaggerParameterValueMapperTest {
 
   private Parameter parameter2;
 
-  private ParameterNameToSwaggerParameterValueMapper mapper;
+  private RequestParameterMapper mapper;
 
   @Before
   public void setUp() {
@@ -60,7 +60,7 @@ public class ParameterNameToSwaggerParameterValueMapperTest {
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
         ImmutableList.of(parameter, parameter2), ImmutableList.of());
 
-    mapper = new ParameterNameToSwaggerParameterValueMapper();
+    mapper = new RequestParameterMapper();
   }
 
   @Test
@@ -94,7 +94,7 @@ public class ParameterNameToSwaggerParameterValueMapperTest {
     Operation operation = new Operation();
     PathParameter parameter = new PathParameter();
 
-    parameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT, "http://unknown");
+    parameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER, "http://unknown");
     operation.setParameters(ImmutableList.of(parameter));
 
     mapper.map(operation, product, contextMock);
@@ -109,7 +109,7 @@ public class ParameterNameToSwaggerParameterValueMapperTest {
     PathParameter pathParameter = new PathParameter();
 
     pathParameter.setIn("unknown");
-    pathParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+    pathParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter.getIdentifier().stringValue());
 
     operation.setParameters(ImmutableList.of(pathParameter));
@@ -125,7 +125,7 @@ public class ParameterNameToSwaggerParameterValueMapperTest {
     pathParameter.setIn("path");
 
     // Note this parameter has multiple vendor extensions
-    pathParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+    pathParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter.getIdentifier().stringValue());
     pathParameter.setVendorExtension("x-dotwebstack-another-vendor-extension", "foo");
 
@@ -137,7 +137,7 @@ public class ParameterNameToSwaggerParameterValueMapperTest {
 
     pathParameter2.setName("param2");
     pathParameter2.setIn("path");
-    pathParameter2.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+    pathParameter2.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter2.getIdentifier().stringValue());
 
     operation.addParameter(pathParameter2);
@@ -166,7 +166,7 @@ public class ParameterNameToSwaggerParameterValueMapperTest {
 
     queryParameter.setName("param1");
     queryParameter.setIn("query");
-    queryParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+    queryParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter.getIdentifier().stringValue());
 
     Operation operation = new Operation();
@@ -193,7 +193,7 @@ public class ParameterNameToSwaggerParameterValueMapperTest {
 
     headerParameter.setName("param1");
     headerParameter.setIn("header");
-    headerParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER_INPUT,
+    headerParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter.getIdentifier().stringValue());
 
     Operation operation = new Operation();

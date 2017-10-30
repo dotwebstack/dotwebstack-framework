@@ -11,16 +11,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class GetRequestHandlerFactory {
 
-  private final ParameterNameToSwaggerParameterValueMapper mapper;
+  private final RequestParameterMapper requestParameterMapper;
 
-  public GetRequestHandlerFactory(@NonNull ParameterNameToSwaggerParameterValueMapper mapper) {
-    this.mapper = mapper;
+  public GetRequestHandlerFactory(@NonNull RequestParameterMapper requestParameterMapper) {
+    this.requestParameterMapper = requestParameterMapper;
 
   }
 
   public GetRequestHandler newGetRequestHandler(@NonNull Operation operation,
       @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap) {
-    return new GetRequestHandler(operation, informationProduct, schemaMap, mapper);
+    return new GetRequestHandler(operation, informationProduct, schemaMap, requestParameterMapper);
   }
 
 }

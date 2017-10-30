@@ -58,18 +58,18 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   }
 
   @Override
-  public Object getResult(@NonNull Map<String, String> values) {
+  public Object getResult(@NonNull Map<String, String> parameterValues) {
     for (Parameter parameter : requiredParameters) {
-      if (values.get(parameter.getName()) == null) {
-        throw new BackendException(
-            String.format("No value found for required parameter '%s'. Supplied values: %s",
-                parameter.getName(), values));
+      if (parameterValues.get(parameter.getName()) == null) {
+        throw new BackendException(String.format(
+            "No value found for required parameter '%s'. Supplied parameterValues: %s",
+            parameter.getName(), parameterValues));
       }
     }
 
-    return getInnerResult(values);
+    return getInnerResult(parameterValues);
   }
 
-  protected abstract Object getInnerResult(@NonNull Map<String, String> values);
+  protected abstract Object getInnerResult(@NonNull Map<String, String> parameterValues);
 
 }

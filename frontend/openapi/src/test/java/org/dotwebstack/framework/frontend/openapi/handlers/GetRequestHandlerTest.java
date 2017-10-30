@@ -43,14 +43,14 @@ public class GetRequestHandlerTest {
   private ContainerRequestContext containerRequestContext;
 
   @Mock
-  private ParameterNameToSwaggerParameterValueMapper parameterNameToSwaggerParameterValueMapperMock;
+  private RequestParameterMapper requestParameterMapperMock;
 
   private GetRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
     getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of(),
-        parameterNameToSwaggerParameterValueMapperMock);
+        requestParameterMapperMock);
   }
 
   @Test
@@ -60,7 +60,7 @@ public class GetRequestHandlerTest {
 
     // Act
     new GetRequestHandler(operationMock, null, ImmutableMap.of(),
-        parameterNameToSwaggerParameterValueMapperMock);
+        requestParameterMapperMock);
   }
 
   @Test
@@ -70,7 +70,7 @@ public class GetRequestHandlerTest {
 
     // Act
     new GetRequestHandler(operationMock, informationProduct, null,
-        parameterNameToSwaggerParameterValueMapperMock);
+        requestParameterMapperMock);
   }
 
   @Test
