@@ -28,7 +28,6 @@ public class ApplicationProperties {
 
   public IRI getSystemGraph() {
     if (systemGraph == null) {
-      // TODO Move the ConfigurationException one package level higher?
       throw new ConfigurationException("No systemGraph defined in the application configuration. "
           + "Please add the following property: dotwebstack.config.systemGraph");
     }
