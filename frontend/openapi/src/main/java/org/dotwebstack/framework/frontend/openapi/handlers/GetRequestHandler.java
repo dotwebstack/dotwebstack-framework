@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import io.swagger.models.Operation;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -18,14 +19,21 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
-  private InformationProduct informationProduct;
+  private final Operation operation;
 
-  private Map<MediaType, Property> schemaMap;
+  private final InformationProduct informationProduct;
 
-  public GetRequestHandler(@NonNull InformationProduct informationProduct,
-      @NonNull Map<MediaType, Property> schemaMap) {
+  private final Map<MediaType, Property> schemaMap;
+
+  private final RequestParameterMapper requestParameterMapper;
+
+  GetRequestHandler(@NonNull Operation operation, @NonNull InformationProduct informationProduct,
+      @NonNull Map<MediaType, Property> schemaMap,
+      @NonNull RequestParameterMapper requestParameterMapper) {
+    this.operation = operation;
     this.informationProduct = informationProduct;
     this.schemaMap = schemaMap;
+    this.requestParameterMapper = requestParameterMapper;
   }
 
   public InformationProduct getInformationProduct() {
@@ -37,13 +45,17 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
   }
 
   @Override
-  public Response apply(@NonNull ContainerRequestContext containerRequestContext) {
-    String path = containerRequestContext.getUriInfo().getPath();
+  public Response apply(@NonNull ContainerRequestContext context) {
+    String path = context.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-      TupleQueryResult result = (TupleQueryResult) informationProduct.getResult();
+      Map<String, String> parameterValues =
+          requestParameterMapper.map(operation, informationProduct, context);
+
+      TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
       TupleEntity entity = new TupleEntity(schemaMap, result);
+
       return Response.ok(entity).build();
     }
 
@@ -51,3 +63,4 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
   }
 
 }
+

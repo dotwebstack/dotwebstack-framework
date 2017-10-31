@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -57,7 +58,7 @@ public class GetRequestHandlerTest {
   public void apply_ReturnRepresentationInformationProductResult_Always() {
     // Arrange
     when(representation.getInformationProduct()).thenReturn(informationProduct);
-    when(informationProduct.getResult()).thenReturn(queryResult);
+    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
 
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);

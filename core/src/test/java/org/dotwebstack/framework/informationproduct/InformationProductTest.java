@@ -3,6 +3,8 @@ package org.dotwebstack.framework.informationproduct;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import com.google.common.collect.ImmutableList;
+import java.util.Map;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
@@ -50,13 +52,14 @@ public class InformationProductTest {
   public class TestInformationProduct extends AbstractInformationProduct {
 
     protected TestInformationProduct(IRI identifier, String label, ResultType resultType) {
-      super(identifier, label, resultType);
+      super(identifier, label, resultType, ImmutableList.of(), ImmutableList.of());
     }
 
     @Override
-    public Object getResult() {
+    protected Object getInnerResult(Map<String, String> parameterValues) {
       return null;
     }
+
   }
 
 }

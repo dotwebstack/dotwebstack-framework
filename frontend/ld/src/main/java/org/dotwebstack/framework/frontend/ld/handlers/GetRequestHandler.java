@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
+import com.google.common.collect.ImmutableMap;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
@@ -23,7 +24,7 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
     String path = containerRequestContext.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
-    Object result = representation.getInformationProduct().getResult();
+    Object result = representation.getInformationProduct().getResult(ImmutableMap.of());
     return Response.ok(result).build();
   }
 }

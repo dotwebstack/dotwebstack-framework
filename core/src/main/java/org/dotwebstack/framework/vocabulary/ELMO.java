@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.vocabulary;
 
+import org.dotwebstack.framework.backend.ResultType;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -8,7 +9,11 @@ public final class ELMO {
 
   public static final IRI CONFIG_GRAPHNAME;
 
-  public static final String NAMESPACE = "http://dotwebstack.org/def/elmo#";
+  private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
+
+  private static final String NAMESPACE = NAMESPACE_BASE + "#";
+
+  private static final String NAMESPACE_EXTENSION_RESULTTYPE = NAMESPACE_BASE + "/resulttype/";
 
   public static final IRI INFORMATION_PRODUCT;
 
@@ -40,6 +45,18 @@ public final class ELMO {
 
   public static final IRI URL_PATTERN;
 
+  public static final IRI TERM_FILTER;
+
+  public static final IRI OPTIONAL_PARAMETER_PROP;
+
+  public static final IRI REQUIRED_PARAMETER_PROP;
+
+  public static final IRI NAME_PROP;
+
+  public static final IRI RESULT_TYPE;
+
+  public static final IRI RESULT_TYPE_DEFAULT;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
@@ -62,10 +79,21 @@ public final class ELMO {
 
     ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "endpoint");
     QUERY = valueFactory.createIRI(ELMO.NAMESPACE, "query");
+    RESULT_TYPE = valueFactory.createIRI(ELMO.NAMESPACE, "resultType");
+    RESULT_TYPE_DEFAULT =
+        valueFactory.createIRI(ELMO.NAMESPACE_EXTENSION_RESULTTYPE, ResultType.GRAPH.name());
+
     INFORMATION_PRODUCT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "informationProduct");
     URL_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "urlPattern");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
+
+    TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
+
+    OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
+    REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
+
+    NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
   }
 
   private ELMO() {
