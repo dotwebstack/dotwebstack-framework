@@ -38,6 +38,10 @@ public final class ELMO {
 
   public static final IRI REPRESENTATION;
 
+  public static final IRI REDIRECTION;
+
+  public static final IRI REDIRECTION_TEMPLATE;
+
   public static final IRI URL_PATTERN;
 
   static {
@@ -54,6 +58,7 @@ public final class ELMO {
     BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "Backend");
     SPARQL_BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "SparqlBackend");
     REPRESENTATION = valueFactory.createIRI(ELMO.NAMESPACE, "Representation");
+    REDIRECTION = valueFactory.createIRI(ELMO.NAMESPACE, "Redirection");
 
     // Properties
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
@@ -66,6 +71,7 @@ public final class ELMO {
     URL_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "urlPattern");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
+    REDIRECTION_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectionTemplate");
   }
 
   private ELMO() {

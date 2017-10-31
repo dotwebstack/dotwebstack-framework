@@ -91,6 +91,12 @@ public final class DBEERPEDIA {
 
   public static final IRI BREWERY_REPRESENTATION;
 
+  public static final IRI ID2DOC_REDIRECTION;
+
+  public static final Literal ID2DOC_URL_PATTERN;
+
+  public static final Literal ID2DOC_REDIRECTION_TEMPLATE;
+
   public static final String OPENAPI_DESCRIPTION = "DBeerpedia API";
 
   public static final String OPENAPI_HOST = "dbpeerpedia.org";
@@ -179,6 +185,12 @@ public final class DBEERPEDIA {
         valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "TupleBreweryListRepresentation");
 
     BREWERY_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryRepresentation");
+
+    ID2DOC_REDIRECTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Id2doc");
+
+    ID2DOC_URL_PATTERN = valueFactory.createLiteral("^(.+)\\/id\\/(.+)$");
+
+    ID2DOC_REDIRECTION_TEMPLATE = valueFactory.createLiteral("$1\\/doc\\/$2");
 
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
   }
