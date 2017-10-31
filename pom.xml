@@ -206,6 +206,7 @@
               <consoleOutput>true</consoleOutput>
               <failOnViolation>true</failOnViolation>
               <violationSeverity>warning</violationSeverity>
+              <includeTestSourceDirectory>true</includeTestSourceDirectory>
             </configuration>
             <goals>
               <goal>check</goal>
