@@ -53,6 +53,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
       Map<String, String> parameterValues =
           requestParameterMapper.map(operation, informationProduct, context);
 
+      // TODO Abstract to QueryResult
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
       TupleEntity entity = new TupleEntity(schemaMap, result);
 

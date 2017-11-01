@@ -22,6 +22,9 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
       Object mappedEntity = tupleEntityMapper.map(entity, context.getMediaType());
       context.setEntity(mappedEntity);
     }
+    
+    // TODO if instanceof GraphEntity
+    // Object == json Map
 
     context.proceed();
   }
