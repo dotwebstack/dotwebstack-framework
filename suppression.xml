@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
-  <suppress>
-    <notes><![CDATA[
-      file name: lombok-1.16.16.jar
-      Lombok has a false positive;
-      see https://github.com/jeremylong/DependencyCheck/issues/871
 
-      This will be fixed in 3.0.0;
-      ]]></notes>
-    <gav regex="true">^org\.projectlombok:lombok:.*$</gav>
-    <cpe>cpe:/a:spice_project:spice</cpe>
-  </suppress>
 </suppressions>
