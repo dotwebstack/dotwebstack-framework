@@ -66,7 +66,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableIsReplaced_WithBrackets() throws IOException {
     // Arrange
-    String input = "${NAME}";
+    String input = "%{NAME}";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -80,7 +80,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableIsReplaced_WithoutBrackets() throws IOException {
     // Arrange
-    String input = "$NAME";
+    String input = "%NAME";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -94,7 +94,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariablAreIsReplaced_WithMultipleValues() throws IOException {
     // Arrange
-    String input = "$NAME${NAME}$NAME";
+    String input = "%NAME%{NAME}%NAME";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -109,7 +109,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableIsReplaced_WithSpecialChars() throws IOException {
     // Arrange
-    String input = "$$NAME:${NAME}-$NAME$$NAME4$NAME";
+    String input = "%%NAME:%{NAME}-%NAME%%NAME4%NAME";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -118,7 +118,7 @@ public class EnvironmentAwareResourceTest {
 
     // Assert
     assertThat(output,
-        is(String.format("$%s:%s-%s$%s4%s", DBEERPEDIA.BREWERY_DAVO_NAME,
+        is(String.format("%%%s:%s-%s%%%s4%s", DBEERPEDIA.BREWERY_DAVO_NAME,
             DBEERPEDIA.BREWERY_DAVO_NAME, DBEERPEDIA.BREWERY_DAVO_NAME,
             DBEERPEDIA.BREWERY_DAVO_NAME, DBEERPEDIA.BREWERY_DAVO_NAME)));
   }
@@ -126,7 +126,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableIsReplaced_WithNewLines() throws IOException {
     // Arrange
-    String input = "$NAME\n${NAME}\n\r$NAME\r";
+    String input = "%NAME\n%{NAME}\n\r%NAME\r";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -141,7 +141,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableNotReplaced_WithFollowedByLetter() throws IOException {
     // Arrange
-    String input = "$NAMES";
+    String input = "%NAMES";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -155,7 +155,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableNotReplaced_WithFollowedByUnderscore() throws IOException {
     // Arrange
-    String input = "$NAME_";
+    String input = "%NAME_";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -169,7 +169,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableIsReplaced_LongName() throws IOException {
     // Arrange
-    String input = "$ENVIRONMENT_VARIABLE_IS_LONGER_THAN_VALUE";
+    String input = "%ENVIRONMENT_VARIABLE_IS_LONGER_THAN_VALUE";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -183,7 +183,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableIsReplaced_WithFollowedBySpace() throws IOException {
     // Arrange
-    String input = "$ENVIRO NMENT_VARIABLE_IS_LONGER_THAN_VALUE";
+    String input = "%ENVIRO NMENT_VARIABLE_IS_LONGER_THAN_VALUE";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -197,7 +197,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableIsReplaced_WithFollowedByScore() throws IOException {
     // Arrange
-    String input = "$ENVIRO-NMENT_VARIABLE_IS_LONGER_THAN_VALUE";
+    String input = "%ENVIRO-NMENT_VARIABLE_IS_LONGER_THAN_VALUE";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
@@ -211,7 +211,7 @@ public class EnvironmentAwareResourceTest {
   @Test
   public void getInputStream_VariableIsReplaced_WithFollowedByDot() throws IOException {
     // Arrange
-    String input = "$ENVIRO.NMENT_VARIABLE_IS_LONGER_THAN_VALUE";
+    String input = "%ENVIRO.NMENT_VARIABLE_IS_LONGER_THAN_VALUE";
     InputStream inputStream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
 
     // Act
