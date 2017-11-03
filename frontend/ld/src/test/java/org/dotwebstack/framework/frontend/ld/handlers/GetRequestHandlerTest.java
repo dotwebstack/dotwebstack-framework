@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -9,9 +10,12 @@ import com.google.common.collect.ImmutableMap;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,9 +39,6 @@ public class GetRequestHandlerTest {
   @Mock
   private InformationProduct informationProduct;
 
-  @Mock
-  private GraphQueryResult queryResult;
-
   private GetRequestHandler getRequestHandler;
 
   @Before
@@ -55,9 +56,10 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void apply_ReturnRepresentationInformationProductResult_Always() {
+  public void apply_ReturnQueryRepresentation_WhenGraphQueryResult() {
     // Arrange
     when(representation.getInformationProduct()).thenReturn(informationProduct);
+    GraphQueryResult queryResult = mock(GraphQueryResult.class);
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
 
     UriInfo uriInfo = mock(UriInfo.class);
@@ -69,6 +71,31 @@ public class GetRequestHandlerTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(200));
-    assertThat(response.getEntity(), equalTo(queryResult));
+    assertThat(response.getEntity(), instanceOf(GraphEntity.class));
+    GraphEntity entity = (GraphEntity) response.getEntity();
+    assertThat(entity.getQueryResult(), equalTo(queryResult));
+    assertThat(entity.getRepresentation(), equalTo(representation));
+  }
+
+  @Test
+  public void apply_ReturnQueryRepresentation_WhenTupleQueryResult() {
+    // Arrange
+    when(representation.getInformationProduct()).thenReturn(informationProduct);
+    TupleQueryResult queryResult = mock(TupleQueryResult.class);
+    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
+
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(uriInfo.getPath()).thenReturn("/");
+
+    // Act
+    Response response = getRequestHandler.apply(containerRequestContext);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(200));
+    assertThat(response.getEntity(), instanceOf(TupleEntity.class));
+    TupleEntity entity = (TupleEntity) response.getEntity();
+    assertThat(entity.getQueryResult(), equalTo(queryResult));
+    assertThat(entity.getRepresentation(), equalTo(representation));
   }
 }

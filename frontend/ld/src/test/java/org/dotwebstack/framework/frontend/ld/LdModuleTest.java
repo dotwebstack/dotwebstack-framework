@@ -1,8 +1,12 @@
 package org.dotwebstack.framework.frontend.ld;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ImmutableList;
+import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.http.SupportedMediaTypesScanner;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,20 +21,19 @@ public class LdModuleTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private SupportedMediaTypesScanner supportedMediaTypesScanner =
-      new SupportedMediaTypesScanner(ImmutableList.of(), ImmutableList.of());
-
-  private HttpConfiguration httpConfiguration =
-      new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
+  private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
 
   @Mock
   private LdRequestMapper requestMapper;
+
+  @Mock
+  private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   private LdModule ldModule;
 
   @Before
   public void setUp() {
-    ldModule = new LdModule(requestMapper);
+    ldModule = new LdModule(requestMapper, supportedMediaTypesScanner);
     ldModule.initialize(httpConfiguration);
   }
 
@@ -40,7 +43,16 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(null);
+    new LdModule(null, supportedMediaTypesScanner);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingMediaTypesScanner() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new LdModule(requestMapper, null);
   }
 
   @Test
@@ -56,6 +68,19 @@ public class LdModuleTest {
   public void initialize_DoesNotThrowException_WithHttpConfiguration() {
     // Act
     ldModule.initialize(httpConfiguration);
+  }
+
+  @Test
+  public void constructor_RegistersSparqlProviders_WhenProvidedByScanner() {
+    // Arrange
+    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(
+        Collections.singletonList(new SupportedMediaTypesScannerTest.StubGraphMessageBodyWriter()));
+
+    // Act
+    ldModule.initialize(httpConfiguration);
+
+    // Assert
+    assertThat(httpConfiguration.getInstances(), hasSize(1));
   }
 
 }

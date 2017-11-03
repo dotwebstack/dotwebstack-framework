@@ -16,7 +16,6 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.http.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -83,7 +82,7 @@ public class LdRequestMapperTest {
 
     requestMapper = new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
 
-    httpConfiguration = new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
+    httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
