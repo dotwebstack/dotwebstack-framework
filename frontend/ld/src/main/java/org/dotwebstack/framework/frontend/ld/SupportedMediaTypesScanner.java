@@ -10,7 +10,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
-import org.dotwebstack.framework.frontend.ld.provider.SparqlProvider;
+import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public class SupportedMediaTypesScanner {
 
     sparqlProviders.forEach(writer -> {
       Class<?> sparqlProviderClass = writer.getClass();
-      SparqlProvider providerAnnotation = sparqlProviderClass.getAnnotation(SparqlProvider.class);
+      EntityWriter providerAnnotation = sparqlProviderClass.getAnnotation(EntityWriter.class);
       Produces produceAnnotation = sparqlProviderClass.getAnnotation(Produces.class);
 
       if (providerAnnotation == null) {
@@ -61,7 +61,7 @@ public class SupportedMediaTypesScanner {
 
       addMediaTypes(list, produceAnnotation);
       resultingList.add(writer);
-      LOG.info(String.format("Registered %s provider for results.", writer.getClass()));
+      LOG.info(String.format("Registered %s writer for results.", writer.getClass()));
     });
   }
 

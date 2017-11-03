@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.provider.tuple;
+package org.dotwebstack.framework.frontend.ld.writer.tuple;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,7 +19,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-public class SparqlResultsMessageBodyWriterTestBase {
+public class SparqlResultsTupleEntityWriterTestBase {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -42,7 +42,7 @@ public class SparqlResultsMessageBodyWriterTestBase {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new AbstractSparqlResultsMessageBodyWriter(null) {
+    new AbstractSparqlResultsTupleEntityWriter(null) {
 
       @Override
       protected TupleQueryResultWriter createWriter(OutputStream outputStream) {

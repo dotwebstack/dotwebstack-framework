@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScannerTest.StubGraphEntityWriter;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,7 +75,7 @@ public class LdModuleTest {
   public void constructor_RegistersSparqlProviders_WhenProvidedByScanner() {
     // Arrange
     when(supportedMediaTypesScanner.getGraphEntityWriters()).thenReturn(
-        Collections.singletonList(new SupportedMediaTypesScannerTest.StubGraphMessageBodyWriter()));
+        Collections.singletonList(new StubGraphEntityWriter()));
 
     // Act
     ldModule.initialize(httpConfiguration);

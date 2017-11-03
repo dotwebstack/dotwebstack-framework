@@ -1,21 +1,21 @@
-package org.dotwebstack.framework.frontend.ld.provider.tuple;
+package org.dotwebstack.framework.frontend.ld.writer.tuple;
 
 import java.io.OutputStream;
 import javax.ws.rs.Produces;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
-import org.dotwebstack.framework.frontend.ld.provider.SparqlProvider;
+import org.dotwebstack.framework.frontend.ld.MediaTypes;
+import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
 import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 import org.eclipse.rdf4j.query.resultio.sparqlxml.SPARQLResultsXMLWriter;
 import org.springframework.stereotype.Service;
 
 @Service
-@SparqlProvider(resultType = ResultType.TUPLE)
+@EntityWriter(resultType = ResultType.TUPLE)
 @Produces(MediaTypes.SPARQL_RESULTS_XML)
-public final class SparqlResultsXmlMessageBodyWriter
-    extends AbstractSparqlResultsMessageBodyWriter {
+public final class SparqlResultsXmlTupleEntityWriter
+    extends AbstractSparqlResultsTupleEntityWriter {
 
-  SparqlResultsXmlMessageBodyWriter() {
+  SparqlResultsXmlTupleEntityWriter() {
     super(MediaTypes.SPARQL_RESULTS_XML_TYPE);
   }
 

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.provider.tuple;
+package org.dotwebstack.framework.frontend.ld.writer.tuple;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -8,10 +8,9 @@ import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.jackson.TupleQueryResultSerializer;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-public abstract class AbstractJsonGeneratorMessageBodyWriter
-    extends AbstractTupleMessageBodyWriter {
+public abstract class AbstractJsonGeneratorTupleEntityWriter extends AbstractTupleEntityWriter {
 
-  AbstractJsonGeneratorMessageBodyWriter(MediaType mediaType) {
+  AbstractJsonGeneratorTupleEntityWriter(MediaType mediaType) {
     super(mediaType);
   }
 

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.provider.tuple;
+package org.dotwebstack.framework.frontend.ld.writer.tuple;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,8 +13,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.ld.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
-import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Test;
@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
+public class SparqlResultsJsonTupleEntityWriterTest extends SparqlResultsTupleEntityWriterTestBase {
 
   @Test
   public void constructor_ThrowsException_WithMissingMediaType() {
@@ -30,7 +30,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     thrown.expect(NullPointerException.class);
 
     // Act
-    new AbstractTupleMessageBodyWriter(null) {
+    new AbstractTupleEntityWriter(null) {
       @Override
       protected void write(TupleQueryResult tupleQueryResult, OutputStream outputStream)
           throws IOException {}
@@ -40,7 +40,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void isWritable_IsTrue_ForSparqlResultsJsonMediaType() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    SparqlResultsJsonTupleEntityWriter provider = new SparqlResultsJsonTupleEntityWriter();
 
     // Act
     boolean result =
@@ -53,7 +53,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void isWritable_IsFalse_ForStringClass() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    SparqlResultsJsonTupleEntityWriter provider = new SparqlResultsJsonTupleEntityWriter();
 
     // Act
     boolean result =
@@ -66,7 +66,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void isWritable_IsFalse_ForJsonMediaType() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    SparqlResultsJsonTupleEntityWriter provider = new SparqlResultsJsonTupleEntityWriter();
 
     // Act
     boolean result =
@@ -79,7 +79,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void getSize_MinusOne_Always() {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter writer = new SparqlResultsJsonMessageBodyWriter();
+    SparqlResultsJsonTupleEntityWriter writer = new SparqlResultsJsonTupleEntityWriter();
 
     // Act
     long result = writer.getSize(tupleEntity, null, null, null, MediaType.APPLICATION_XML_TYPE);
@@ -91,7 +91,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   @Test
   public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException {
     // Arrange
-    SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    SparqlResultsJsonTupleEntityWriter provider = new SparqlResultsJsonTupleEntityWriter();
     when(tupleEntity.getQueryResult()).thenReturn(tupleQueryResult);
     when(tupleQueryResult.getBindingNames()).thenReturn(asList("beer"));
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);

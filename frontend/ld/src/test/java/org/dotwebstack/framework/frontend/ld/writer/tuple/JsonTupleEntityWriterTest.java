@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.provider.tuple;
+package org.dotwebstack.framework.frontend.ld.writer.tuple;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -12,8 +12,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.jackson.AbstractTupleQueryResultSerializer;
+import org.dotwebstack.framework.frontend.ld.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
-import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +24,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 @RunWith(MockitoJUnitRunner.class)
-public class JsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTestBase {
+public class JsonTupleEntityWriterTest extends SparqlResultsTupleEntityWriterTestBase {
 
   @Test
   public void constructor_ThrowsException_ForMissingMediaType() {
@@ -32,7 +32,7 @@ public class JsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTes
     thrown.expect(NullPointerException.class);
 
     // Act
-    new AbstractJsonGeneratorMessageBodyWriter(null) {
+    new AbstractJsonGeneratorTupleEntityWriter(null) {
 
       @Override
       protected JsonFactory createFactory() {
@@ -49,7 +49,7 @@ public class JsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTes
   @Test
   public void isWritable_IsTrue_ForJsonMediaType() {
     // Arrange
-    JsonMessageBodyWriter provider = new JsonMessageBodyWriter();
+    JsonTupleEntityWriter provider = new JsonTupleEntityWriter();
 
     // Act
     boolean result =
@@ -62,7 +62,7 @@ public class JsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTes
   @Test
   public void isWritable_IsFalse_ForStringClass() {
     // Arrange
-    JsonMessageBodyWriter provider = new JsonMessageBodyWriter();
+    JsonTupleEntityWriter provider = new JsonTupleEntityWriter();
 
     // Act
     boolean result =
@@ -75,7 +75,7 @@ public class JsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTes
   @Test
   public void isWritable_IsFalse_ForXmlMediaType() {
     // Arrange
-    JsonMessageBodyWriter provider = new JsonMessageBodyWriter();
+    JsonTupleEntityWriter provider = new JsonTupleEntityWriter();
 
     // Act
     boolean result =
@@ -88,7 +88,7 @@ public class JsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTes
   @Test
   public void getSize_MinusOne_Always() {
     // Arrange
-    JsonMessageBodyWriter writer = new JsonMessageBodyWriter();
+    JsonTupleEntityWriter writer = new JsonTupleEntityWriter();
 
     // Act
     long result = writer.getSize(tupleEntity, null, null, null, MediaType.APPLICATION_XML_TYPE);
@@ -100,7 +100,7 @@ public class JsonMessageBodyWriterTest extends SparqlResultsMessageBodyWriterTes
   @Test
   public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException, JSONException {
     // Arrange
-    JsonMessageBodyWriter provider = new JsonMessageBodyWriter();
+    JsonTupleEntityWriter provider = new JsonTupleEntityWriter();
     when(tupleEntity.getQueryResult()).thenReturn(tupleQueryResult);
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);

@@ -31,7 +31,8 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
     Object result = representation.getInformationProduct().getResult(ImmutableMap.of());
     if (result instanceof GraphQueryResult) {
       return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
-    } else if (result instanceof TupleQueryResult) {
+    }
+    if (result instanceof TupleQueryResult) {
       return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
     }
     throw new IllegalStateException("Received a query result that was not supported: " + result);

@@ -98,4 +98,23 @@ public class GetRequestHandlerTest {
     assertThat(entity.getQueryResult(), equalTo(queryResult));
     assertThat(entity.getRepresentation(), equalTo(representation));
   }
+
+  @Test
+  public void apply_ThrowsException_WhenQueryResultIsUnexpected() {
+    // Arrange
+    when(representation.getInformationProduct()).thenReturn(informationProduct);
+    Object queryResult = new Object();
+    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
+
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(uriInfo.getPath()).thenReturn("/");
+
+    // Assert
+    thrown.expect(IllegalStateException.class);
+    thrown.expectMessage("Received a query result that was not supported");
+
+    // Act
+    getRequestHandler.apply(containerRequestContext);
+  }
 }

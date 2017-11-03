@@ -1,17 +1,17 @@
-package org.dotwebstack.framework.frontend.ld.provider.graph;
+package org.dotwebstack.framework.frontend.ld.writer.graph;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.ld.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
-import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -19,7 +19,9 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -27,27 +29,52 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TupleMessageBodyWriterTest {
+public class JsonLdGraphEntityWriterTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private OutputStream outputStream;
 
   @Mock
-  private GraphEntity graphEntity;
+  private GraphQueryResult graphQueryResult;
 
   @Mock
-  private GraphQueryResult graphQueryResult;
+  private GraphEntity graphEntity;
 
   @Captor
   private ArgumentCaptor<byte[]> byteCaptor;
 
   @Test
-  public void isWritable_IsTrue_ForTurtleMediaType() {
-    // Arrange
-    TurtleGraphMessageBodyWriter writer = new TurtleGraphMessageBodyWriter();
+  public void constructor_ThrowsException_WithMissingFormat() {
+    // Assert
+    thrown.expect(NullPointerException.class);
 
     // Act
-    boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaTypes.TURTLE_TYPE);
+    new GraphEntityWriter(null) {};
+  }
+
+  @Test
+  public void isWritable_IsTrue_ForJsonLdMediaType() {
+    // Arrange
+    JsonLdGraphEntityWriter writer = new JsonLdGraphEntityWriter();
+
+    // Act
+    boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaTypes.LDJSON_TYPE);
+
+    // Assert
+    assertThat(result, is(true));
+  }
+
+  @Test
+  public void isWritable_IsTrue_ForJsonMediaType() {
+    // Arrange
+    JsonLdGraphEntityWriter writer = new JsonLdGraphEntityWriter();
+
+    // Act
+    boolean result =
+        writer.isWriteable(GraphEntity.class, null, null, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -56,10 +83,10 @@ public class TupleMessageBodyWriterTest {
   @Test
   public void isWritable_IsFalse_ForStringClass() {
     // Arrange
-    TurtleGraphMessageBodyWriter writer = new TurtleGraphMessageBodyWriter();
+    JsonLdGraphEntityWriter writer = new JsonLdGraphEntityWriter();
 
     // Act
-    boolean result = writer.isWriteable(String.class, null, null, MediaTypes.TURTLE_TYPE);
+    boolean result = writer.isWriteable(String.class, null, null, MediaTypes.LDJSON_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -68,7 +95,7 @@ public class TupleMessageBodyWriterTest {
   @Test
   public void isWritable_IsFalse_ForTxtMediaType() {
     // Arrange
-    TurtleGraphMessageBodyWriter writer = new TurtleGraphMessageBodyWriter();
+    JsonLdGraphEntityWriter writer = new JsonLdGraphEntityWriter();
 
     // Act
     boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaType.TEXT_PLAIN_TYPE);
@@ -78,9 +105,21 @@ public class TupleMessageBodyWriterTest {
   }
 
   @Test
-  public void writeTo_TurtleFormat_ForQueryResult() throws IOException {
+  public void getSize_MinusOne_Always() {
     // Arrange
-    TurtleGraphMessageBodyWriter writer = new TurtleGraphMessageBodyWriter();
+    JsonLdGraphEntityWriter writer = new JsonLdGraphEntityWriter();
+
+    // Act
+    long result = writer.getSize(graphEntity, null, null, null, MediaType.APPLICATION_XML_TYPE);
+
+    // Assert
+    assertThat(result, equalTo(-1L));
+  }
+
+  @Test
+  public void writeTo_JsonLdFormat_ForQueryResult() throws Exception {
+    // Arrange
+    JsonLdGraphEntityWriter writer = new JsonLdGraphEntityWriter();
     Model model =
         new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDF.TYPE, DBEERPEDIA.BACKEND).add(
             RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL).build();
@@ -96,10 +135,10 @@ public class TupleMessageBodyWriterTest {
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
-    assertThat(result,
-        containsString("<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend> ;"));
     assertThat(result, containsString(
-        "<http://www.w3.org/2000/01/rdf-schema#label> \"Beer breweries in The Netherlands\""));
+        "[{\"@id\":\"http://dbeerpedia.org#Breweries\",\"@type\":[\"http://dbeerpedia.org#Backend\"]"));
+    assertThat(result, containsString(
+        "http://www.w3.org/2000/01/rdf-schema#label\":[{\"@value\":\"Beer breweries in The Netherlands\"}]}]"));
   }
 
 }

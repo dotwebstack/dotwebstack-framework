@@ -12,10 +12,9 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
-import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
-import org.dotwebstack.framework.frontend.ld.provider.SparqlProvider;
-import org.dotwebstack.framework.frontend.ld.provider.graph.GraphMessageBodyWriter;
-import org.dotwebstack.framework.frontend.ld.provider.tuple.AbstractTupleMessageBodyWriter;
+import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
+import org.dotwebstack.framework.frontend.ld.writer.graph.GraphEntityWriter;
+import org.dotwebstack.framework.frontend.ld.writer.tuple.AbstractTupleEntityWriter;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.hamcrest.core.IsCollectionContaining;
@@ -60,7 +59,7 @@ public class SupportedMediaTypesScannerTest {
   public void constructor_FindsSupportedGraphProviders_WhenProvided() {
     // Arrange & Act
     SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(
-        Collections.singletonList(new StubGraphMessageBodyWriter()), Collections.emptyList());
+        Collections.singletonList(new StubGraphEntityWriter()), Collections.emptyList());
 
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
@@ -100,33 +99,33 @@ public class SupportedMediaTypesScannerTest {
   public void constructor_IgnoresProviderWithoutProduce_WhenProvided() {
     // Arrange & Act
     SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(
-        Collections.singletonList(new InvalidGraphMessageBodyWriter()), Collections.emptyList());
+        Collections.singletonList(new InvalidGraphEntityWriter()), Collections.emptyList());
 
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
     assertThat(scanner.getGraphEntityWriters().size(), equalTo(0));
   }
 
-  @SparqlProvider(resultType = ResultType.GRAPH)
-  static class InvalidGraphMessageBodyWriter extends GraphMessageBodyWriter {
+  @EntityWriter(resultType = ResultType.GRAPH)
+  static class InvalidGraphEntityWriter extends GraphEntityWriter {
 
-    InvalidGraphMessageBodyWriter() {
+    InvalidGraphEntityWriter() {
       super(RDFFormat.JSONLD);
     }
   }
 
-  @SparqlProvider(resultType = ResultType.GRAPH)
+  @EntityWriter(resultType = ResultType.GRAPH)
   @Produces(MediaTypes.LDJSON)
-  static class StubGraphMessageBodyWriter extends GraphMessageBodyWriter {
+  static class StubGraphEntityWriter extends GraphEntityWriter {
 
-    StubGraphMessageBodyWriter() {
+    StubGraphEntityWriter() {
       super(RDFFormat.JSONLD);
     }
   }
 
-  @SparqlProvider(resultType = ResultType.TUPLE)
+  @EntityWriter(resultType = ResultType.TUPLE)
   @Produces(MediaTypes.SPARQL_RESULTS_JSON)
-  static class StubTupleMessageBodyWriter extends AbstractTupleMessageBodyWriter {
+  static class StubTupleMessageBodyWriter extends AbstractTupleEntityWriter {
 
     StubTupleMessageBodyWriter() {
       super(MediaTypes.SPARQL_RESULTS_JSON_TYPE);

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.provider.tuple;
+package org.dotwebstack.framework.frontend.ld.writer.tuple;
 
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
@@ -6,10 +6,9 @@ import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.resultio.TupleQueryResultWriter;
 
-public abstract class AbstractSparqlResultsMessageBodyWriter
-    extends AbstractTupleMessageBodyWriter {
+public abstract class AbstractSparqlResultsTupleEntityWriter extends AbstractTupleEntityWriter {
 
-  AbstractSparqlResultsMessageBodyWriter(MediaType mediaType) {
+  AbstractSparqlResultsTupleEntityWriter(MediaType mediaType) {
     super(mediaType);
   }
 

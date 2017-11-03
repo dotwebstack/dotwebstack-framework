@@ -1,18 +1,19 @@
-package org.dotwebstack.framework.frontend.ld.provider.graph;
-
+package org.dotwebstack.framework.frontend.ld.writer.graph;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.ld.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
-import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
@@ -28,7 +29,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RdfXmlGraphMessageBodyWriterTest {
+public class TriGGraphEntityWriterTest {
 
   @Mock
   private OutputStream outputStream;
@@ -43,25 +44,14 @@ public class RdfXmlGraphMessageBodyWriterTest {
   private ArgumentCaptor<byte[]> byteCaptor;
 
   @Test
-  public void isWritable_IsTrue_ForRdfXmlMediaType() {
+  public void isWritable_IsTrue_ForTriGMediaType() {
     // Arrange
-    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
+    TriGGraphEntityWriter writer = new TriGGraphEntityWriter();
 
     // Act
-    boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaTypes.RDFXML_TYPE);
+    boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaTypes.TRIG_TYPE);
 
-    // Assert
-    assertThat(result, is(true));
-  }
 
-  @Test
-  public void isWritable_IsTrue_ForXmlMediaType() {
-    // Arrange
-    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
-
-    // Act
-    boolean result =
-        writer.isWriteable(GraphEntity.class, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -70,10 +60,10 @@ public class RdfXmlGraphMessageBodyWriterTest {
   @Test
   public void isWritable_IsFalse_ForStringClass() {
     // Arrange
-    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
+    TriGGraphEntityWriter writer = new TriGGraphEntityWriter();
 
     // Act
-    boolean result = writer.isWriteable(String.class, null, null, MediaTypes.RDFXML_TYPE);
+    boolean result = writer.isWriteable(String.class, null, null, MediaTypes.TRIG_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -82,7 +72,7 @@ public class RdfXmlGraphMessageBodyWriterTest {
   @Test
   public void isWritable_IsFalse_ForTxtMediaType() {
     // Arrange
-    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
+    TriGGraphEntityWriter writer = new TriGGraphEntityWriter();
 
     // Act
     boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaType.TEXT_PLAIN_TYPE);
@@ -92,9 +82,9 @@ public class RdfXmlGraphMessageBodyWriterTest {
   }
 
   @Test
-  public void writeTo_RdfXmlFormat_ForQueryResult() throws IOException {
+  public void writeTo_TriGFormat_ForQueryResult() throws IOException {
     // Arrange
-    RdfXmlGraphMessageBodyWriter writer = new RdfXmlGraphMessageBodyWriter();
+    TriGGraphEntityWriter writer = new TriGGraphEntityWriter();
     Model model =
         new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDF.TYPE, DBEERPEDIA.BACKEND).add(
             RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL).build();
@@ -108,15 +98,21 @@ public class RdfXmlGraphMessageBodyWriterTest {
     writer.writeTo(graphEntity, null, null, null, null, null, outputStream);
 
     // Assert
-    verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
-    String result = new String(byteCaptor.getValue());
-    assertThat(result, containsString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
-    assertThat(result,
-        containsString("<rdf:Description rdf:about=\"http://dbeerpedia.org#Breweries\">"));
-    assertThat(result,
-        containsString("<rdf:type rdf:resource=\"http://dbeerpedia.org#Backend\"/>"));
-    assertThat(result, containsString(
-        "<label xmlns=\"http://www.w3.org/2000/01/rdf-schema#\">Beer breweries in The Netherlands</label>"));
+    // 2 times? feels like weird behaviour of the TriG parser
+    verify(outputStream, times(2)).write(byteCaptor.capture(), anyInt(), anyInt());
+    List<byte[]> values = byteCaptor.getAllValues();
+    String result1 = new String(values.get(0));
+    String result2 = new String(values.get(1));
+
+    assertThat(result1,
+        containsString("<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend> ;"));
+    assertThat(result1, containsString(
+        "<http://www.w3.org/2000/01/rdf-schema#label> \"Beer breweries in The Netherlands\""));
+
+    assertThat(result2,
+        containsString("<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend> ;"));
+    assertThat(result2, containsString(
+        "<http://www.w3.org/2000/01/rdf-schema#label> \"Beer breweries in The Netherlands\""));
   }
 
 }

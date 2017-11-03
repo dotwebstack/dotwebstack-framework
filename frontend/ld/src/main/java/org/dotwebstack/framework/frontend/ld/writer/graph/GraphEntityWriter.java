@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.provider.graph;
+package org.dotwebstack.framework.frontend.ld.writer.graph;
 
 import static java.util.stream.Collectors.toList;
 
@@ -18,13 +18,13 @@ import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 
-public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphEntity> {
+public abstract class GraphEntityWriter implements MessageBodyWriter<GraphEntity> {
 
   private final RDFFormat format;
 
   private final List<MediaType> mediaTypes;
 
-  protected GraphMessageBodyWriter(@NonNull RDFFormat format,
+  protected GraphEntityWriter(@NonNull RDFFormat format,
       @NonNull MediaType... supportedMediaTypes) {
     this.format = format;
     this.mediaTypes = supportedMediaTypes.length == 0

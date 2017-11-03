@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.provider.tuple;
+package org.dotwebstack.framework.frontend.ld.writer.tuple;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,11 +11,11 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-public abstract class AbstractTupleMessageBodyWriter implements MessageBodyWriter<TupleEntity> {
+public abstract class AbstractTupleEntityWriter implements MessageBodyWriter<TupleEntity> {
 
   private MediaType mediaType;
 
-  protected AbstractTupleMessageBodyWriter(@NonNull MediaType mediaType) {
+  protected AbstractTupleEntityWriter(@NonNull MediaType mediaType) {
     this.mediaType = mediaType;
   }
 

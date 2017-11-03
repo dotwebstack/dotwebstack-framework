@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.provider;
+package org.dotwebstack.framework.frontend.ld.writer;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,7 +8,7 @@ import org.dotwebstack.framework.backend.ResultType;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SparqlProvider {
+public @interface EntityWriter {
 
   ResultType resultType();
 

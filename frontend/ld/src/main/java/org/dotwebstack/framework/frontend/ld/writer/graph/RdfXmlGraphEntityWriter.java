@@ -1,19 +1,19 @@
-package org.dotwebstack.framework.frontend.ld.provider.graph;
+package org.dotwebstack.framework.frontend.ld.writer.graph;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
-import org.dotwebstack.framework.frontend.ld.provider.SparqlProvider;
+import org.dotwebstack.framework.frontend.ld.MediaTypes;
+import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.springframework.stereotype.Service;
 
 @Service
-@SparqlProvider(resultType = ResultType.GRAPH)
+@EntityWriter(resultType = ResultType.GRAPH)
 @Produces({MediaTypes.RDFXML, MediaType.APPLICATION_XML})
-public class RdfXmlGraphMessageBodyWriter extends GraphMessageBodyWriter {
+public class RdfXmlGraphEntityWriter extends GraphEntityWriter {
 
-  RdfXmlGraphMessageBodyWriter() {
+  RdfXmlGraphEntityWriter() {
     super(RDFFormat.RDFXML, MediaTypes.RDFXML_TYPE, MediaType.APPLICATION_XML_TYPE);
   }
 

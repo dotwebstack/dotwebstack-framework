@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.provider;
+package org.dotwebstack.framework.frontend.ld;
 
 import javax.ws.rs.core.MediaType;
 
