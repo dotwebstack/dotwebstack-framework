@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptorContext;
+import org.dotwebstack.framework.frontend.openapi.entity.mapper.GraphEntityMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,6 +32,10 @@ public class EntityWriterInterceptorTest {
   @Mock
   private WriterInterceptorContext context;
 
+
+  @Mock
+  private GraphEntityMapper graphEntityMapper;
+
   @Mock
   private TupleEntityMapper tupleEntityMapper;
 
@@ -41,7 +46,7 @@ public class EntityWriterInterceptorTest {
 
   @Before
   public void setUp() {
-    entityWriterInterceptor = new EntityWriterInterceptor(tupleEntityMapper);
+    entityWriterInterceptor = new EntityWriterInterceptor(tupleEntityMapper, graphEntityMapper);
   }
 
   @Test
@@ -50,7 +55,7 @@ public class EntityWriterInterceptorTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new EntityWriterInterceptor(null);
+    new EntityWriterInterceptor(null,null);
   }
 
   @Test
