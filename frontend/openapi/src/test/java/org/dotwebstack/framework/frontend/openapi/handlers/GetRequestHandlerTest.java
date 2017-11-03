@@ -16,8 +16,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
 import org.junit.Rule;
@@ -59,8 +61,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, null, ImmutableMap.of(),
-        requestParameterMapperMock);
+    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock);
   }
 
   @Test
@@ -69,8 +70,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, informationProduct, null,
-        requestParameterMapperMock);
+    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock);
   }
 
   @Test
@@ -104,12 +104,31 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForGraphResult() {
+  public void apply_ReturnsResponseWithoutEntityObject_ForGraphResult() {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
+    GraphQueryResult result = mock(GraphQueryResult.class);
+    Map<String, Property> schemaMap = ImmutableMap.of();
+    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
+
+    // Act
+    Response response = getRequestHandler.apply(containerRequestContext);
+
+    // Assert
+    assertThat(response.getEntity(), instanceOf(GraphEntity.class));
+    assertThat(((GraphEntity) response.getEntity()).getResult(), equalTo(result));
+    assertThat(((GraphEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
+  }
+
+  @Test
+  public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForOtherResult() {
+    // Arrange
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(uriInfo.getPath()).thenReturn("/");
+    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
 
     // Act
     Response response = getRequestHandler.apply(containerRequestContext);
@@ -118,5 +137,4 @@ public class GetRequestHandlerTest {
     assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
     assertThat(response.getEntity(), nullValue());
   }
-
 }
