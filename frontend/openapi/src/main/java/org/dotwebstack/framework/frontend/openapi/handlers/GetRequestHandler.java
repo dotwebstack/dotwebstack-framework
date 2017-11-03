@@ -8,8 +8,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.openapi.entity.Entity;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.QueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
@@ -49,14 +53,17 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     String path = context.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
+    Map<String, String> parameterValues =
+        requestParameterMapper.map(operation, informationProduct, context);
+    QueryResult result = (QueryResult) informationProduct.getResult(parameterValues);
+    Entity entity = null;
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-      Map<String, String> parameterValues =
-          requestParameterMapper.map(operation, informationProduct, context);
-
-      // TODO Abstract to QueryResult
-      TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
-      TupleEntity entity = new TupleEntity(schemaMap, result);
-
+      entity = new TupleEntity(schemaMap, (TupleQueryResult) result);
+    }
+    if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
+      entity = new GraphEntity(schemaMap, (GraphQueryResult) result);
+    }
+    if (entity != null) {
       return Response.ok(entity).build();
     }
 
