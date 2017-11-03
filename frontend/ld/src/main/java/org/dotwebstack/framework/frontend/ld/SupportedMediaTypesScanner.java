@@ -30,25 +30,25 @@ public class SupportedMediaTypesScanner {
   private List<MessageBodyWriter<TupleEntity>> tupleEntityWriters = new ArrayList<>();
 
   @Autowired
-  public SupportedMediaTypesScanner(@NonNull List<MessageBodyWriter<GraphEntity>> graphQueryWriters,
-      @NonNull List<MessageBodyWriter<TupleEntity>> tupleQueryWriters) {
-    loadSupportedMediaTypes(graphQueryWriters, graphMediaTypes, graphEntityWriters);
-    loadSupportedMediaTypes(tupleQueryWriters, tupleMediaTypes, tupleEntityWriters);
+  public SupportedMediaTypesScanner(
+      @NonNull List<MessageBodyWriter<GraphEntity>> graphEntityWriters,
+      @NonNull List<MessageBodyWriter<TupleEntity>> tupleEntityWriters) {
+    loadSupportedMediaTypes(graphEntityWriters, graphMediaTypes, this.graphEntityWriters);
+    loadSupportedMediaTypes(tupleEntityWriters, tupleMediaTypes, this.tupleEntityWriters);
   }
 
-  private <T> void loadSupportedMediaTypes(List<MessageBodyWriter<T>> sparqlProviders,
+  private <T> void loadSupportedMediaTypes(List<MessageBodyWriter<T>> entityWriters,
       List<MediaType> list, List<MessageBodyWriter<T>> resultingList) {
 
-    sparqlProviders.forEach(writer -> {
-      Class<?> sparqlProviderClass = writer.getClass();
-      EntityWriter providerAnnotation = sparqlProviderClass.getAnnotation(EntityWriter.class);
-      Produces produceAnnotation = sparqlProviderClass.getAnnotation(Produces.class);
+    entityWriters.forEach(writer -> {
+      Class<?> entityWriterClass = writer.getClass();
+      EntityWriter providerAnnotation = entityWriterClass.getAnnotation(EntityWriter.class);
+      Produces produceAnnotation = entityWriterClass.getAnnotation(Produces.class);
 
       if (providerAnnotation == null) {
-        LOG.warn(String.format(
-            "Found writer that did not specify the SparqlProvider annotation correctly."
-                + " Skipping %s",
-            writer.getClass()));
+        LOG.warn(
+            String.format("Found writer that did not specify the EntityWriter annotation correctly."
+                + " Skipping %s", writer.getClass()));
         return;
       }
 
