@@ -10,13 +10,11 @@ import static org.hamcrest.core.IsNot.not;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.http.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -78,12 +76,9 @@ public class LdRequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
-    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(new ArrayList<>());
-    when(supportedMediaTypesScanner.getTupleQueryWriters()).thenReturn(new ArrayList<>());
-
     requestMapper = new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
 
-    httpConfiguration = new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
+    httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
