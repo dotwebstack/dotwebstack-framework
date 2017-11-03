@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
@@ -20,7 +21,6 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQueryResult;
-import org.eclipse.rdf4j.query.impl.BackgroundGraphResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -35,6 +35,9 @@ public class TriGGraphMessageBodyWriterTest {
   private OutputStream outputStream;
 
   @Mock
+  private GraphEntity graphEntity;
+
+  @Mock
   private GraphQueryResult graphQueryResult;
 
   @Captor
@@ -46,8 +49,7 @@ public class TriGGraphMessageBodyWriterTest {
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result =
-        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaTypes.TRIG_TYPE);
+    boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaTypes.TRIG_TYPE);
 
 
 
@@ -73,8 +75,7 @@ public class TriGGraphMessageBodyWriterTest {
     TriGGraphMessageBodyWriter writer = new TriGGraphMessageBodyWriter();
 
     // Act
-    boolean result =
-        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaType.TEXT_PLAIN_TYPE);
+    boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaType.TEXT_PLAIN_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -88,12 +89,13 @@ public class TriGGraphMessageBodyWriterTest {
         new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDF.TYPE, DBEERPEDIA.BACKEND).add(
             RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL).build();
 
+    when(graphEntity.getQueryResult()).thenReturn(graphQueryResult);
     when(graphQueryResult.hasNext()).thenReturn(true, true, true, false);
     when(graphQueryResult.next()).thenReturn(model.stream().findFirst().get(),
         model.stream().skip(1).toArray(Statement[]::new));
 
     // Act
-    writer.writeTo(graphQueryResult, null, null, null, null, null, outputStream);
+    writer.writeTo(graphEntity, null, null, null, null, null, outputStream);
 
     // Assert
     // 2 times? feels like weird behaviour of the TriG parser

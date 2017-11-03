@@ -10,11 +10,12 @@ import java.util.Collections;
 import javax.ws.rs.Produces;
 import javax.ws.rs.ext.MessageBodyWriter;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.provider.SparqlProvider;
 import org.dotwebstack.framework.frontend.ld.provider.graph.GraphMessageBodyWriter;
 import org.dotwebstack.framework.frontend.ld.provider.tuple.AbstractTupleMessageBodyWriter;
-import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.hamcrest.core.IsCollectionContaining;
@@ -32,10 +33,10 @@ public class SupportedMediaTypesScannerTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private MessageBodyWriter<GraphQueryResult> unsupportedGraphWriter;
+  private MessageBodyWriter<GraphEntity> unsupportedGraphWriter;
 
   @Mock
-  private MessageBodyWriter<TupleQueryResult> unsupportedTupleWriter;
+  private MessageBodyWriter<TupleEntity> unsupportedTupleWriter;
 
   @Test
   public void constructor_ThrowsException_WithMissingGraphWriters() {
@@ -65,7 +66,7 @@ public class SupportedMediaTypesScannerTest {
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.GRAPH)),
         IsCollectionContaining.hasItems(MediaTypes.LDJSON_TYPE));
-    assertThat(scanner.getGraphQueryWriters().size(), equalTo(1));
+    assertThat(scanner.getGraphEntityWriters().size(), equalTo(1));
   }
 
   @Test
@@ -78,7 +79,7 @@ public class SupportedMediaTypesScannerTest {
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.TUPLE)),
         IsCollectionContaining.hasItems(MediaTypes.SPARQL_RESULTS_JSON_TYPE));
-    assertThat(scanner.getTupleQueryWriters().size(), equalTo(1));
+    assertThat(scanner.getTupleEntityWriters().size(), equalTo(1));
   }
 
   @Test
@@ -91,8 +92,8 @@ public class SupportedMediaTypesScannerTest {
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(0));
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
-    assertThat(scanner.getGraphQueryWriters().size(), equalTo(0));
-    assertThat(scanner.getTupleQueryWriters().size(), equalTo(0));
+    assertThat(scanner.getGraphEntityWriters().size(), equalTo(0));
+    assertThat(scanner.getTupleEntityWriters().size(), equalTo(0));
   }
 
   @Test
@@ -103,7 +104,7 @@ public class SupportedMediaTypesScannerTest {
 
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
-    assertThat(scanner.getGraphQueryWriters().size(), equalTo(0));
+    assertThat(scanner.getGraphEntityWriters().size(), equalTo(0));
   }
 
   @SparqlProvider(resultType = ResultType.GRAPH)

@@ -12,13 +12,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 
-public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQueryResult> {
+public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphEntity> {
 
   private final RDFFormat format;
 
@@ -35,21 +35,21 @@ public abstract class GraphMessageBodyWriter implements MessageBodyWriter<GraphQ
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType) {
-    return GraphQueryResult.class.isAssignableFrom(type) && mediaTypes.contains(mediaType);
+    return GraphEntity.class.isAssignableFrom(type) && mediaTypes.contains(mediaType);
   }
 
   @Override
-  public long getSize(GraphQueryResult model, Class<?> type, Type genericType,
+  public long getSize(GraphEntity graphEntity, Class<?> type, Type genericType,
       Annotation[] annotations, MediaType mediaType) {
     // deprecated by JAX-RS 2.0 and ignored by Jersey runtime
     return -1;
   }
 
   @Override
-  public void writeTo(GraphQueryResult queryResult, Class<?> type, Type genericType,
+  public void writeTo(GraphEntity graphEntity, Class<?> type, Type genericType,
       Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap,
       OutputStream outputStream) throws IOException {
-    Model model = QueryResults.asModel(queryResult);
+    Model model = QueryResults.asModel(graphEntity.getQueryResult());
     Rio.write(model, outputStream, format);
   }
 

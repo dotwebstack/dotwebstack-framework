@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -42,8 +43,8 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(TupleQueryResult.class, null, null,
-        MediaTypes.SPARQL_RESULTS_JSON_TYPE);
+    boolean result =
+        provider.isWriteable(TupleEntity.class, null, null, MediaTypes.SPARQL_RESULTS_JSON_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -69,7 +70,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
 
     // Act
     boolean result =
-        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_JSON_TYPE);
+        provider.isWriteable(TupleEntity.class, null, null, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -81,8 +82,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     SparqlResultsJsonMessageBodyWriter writer = new SparqlResultsJsonMessageBodyWriter();
 
     // Act
-    long result =
-        writer.getSize(tupleQueryResult, null, null, null, MediaType.APPLICATION_XML_TYPE);
+    long result = writer.getSize(tupleEntity, null, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, equalTo(-1L));
@@ -92,6 +92,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
   public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException {
     // Arrange
     SparqlResultsJsonMessageBodyWriter provider = new SparqlResultsJsonMessageBodyWriter();
+    when(tupleEntity.getQueryResult()).thenReturn(tupleQueryResult);
     when(tupleQueryResult.getBindingNames()).thenReturn(asList("beer"));
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);
@@ -102,7 +103,7 @@ public class SparqlResultsJsonMessageBodyWriterTest extends SparqlResultsMessage
     configureBindingSetWithValue(bindingSetAmstel, "Amstel");
 
     // Act
-    provider.writeTo(tupleQueryResult, null, null, null, null, null, outputStream);
+    provider.writeTo(tupleEntity, null, null, null, null, null, outputStream);
 
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());

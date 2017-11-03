@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.OutputStream;
 import java.util.Iterator;
+import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.Binding;
@@ -25,6 +26,9 @@ public class SparqlResultsMessageBodyWriterTestBase {
 
   @Mock
   OutputStream outputStream;
+
+  @Mock
+  TupleEntity tupleEntity;
 
   @Mock
   TupleQueryResult tupleQueryResult;

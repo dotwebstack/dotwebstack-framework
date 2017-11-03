@@ -8,9 +8,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyWriter;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.provider.SparqlProvider;
-import org.eclipse.rdf4j.query.GraphQueryResult;
-import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,16 +25,15 @@ public class SupportedMediaTypesScanner {
 
   private List<MediaType> tupleMediaTypes = new ArrayList<>();
 
-  private List<MessageBodyWriter<GraphQueryResult>> graphQueryWriters = new ArrayList<>();
+  private List<MessageBodyWriter<GraphEntity>> graphEntityWriters = new ArrayList<>();
 
-  private List<MessageBodyWriter<TupleQueryResult>> tupleQueryWriters = new ArrayList<>();
+  private List<MessageBodyWriter<TupleEntity>> tupleEntityWriters = new ArrayList<>();
 
   @Autowired
-  public SupportedMediaTypesScanner(
-      @NonNull List<MessageBodyWriter<GraphQueryResult>> graphQueryWriters,
-      @NonNull List<MessageBodyWriter<TupleQueryResult>> tupleQueryWriters) {
-    loadSupportedMediaTypes(graphQueryWriters, graphMediaTypes, this.graphQueryWriters);
-    loadSupportedMediaTypes(tupleQueryWriters, tupleMediaTypes, this.tupleQueryWriters);
+  public SupportedMediaTypesScanner(@NonNull List<MessageBodyWriter<GraphEntity>> graphQueryWriters,
+      @NonNull List<MessageBodyWriter<TupleEntity>> tupleQueryWriters) {
+    loadSupportedMediaTypes(graphQueryWriters, graphMediaTypes, graphEntityWriters);
+    loadSupportedMediaTypes(tupleQueryWriters, tupleMediaTypes, tupleEntityWriters);
   }
 
   private <T> void loadSupportedMediaTypes(List<MessageBodyWriter<T>> sparqlProviders,
@@ -72,7 +71,7 @@ public class SupportedMediaTypesScanner {
     }
   }
 
-  public MediaType[] getMediaTypes(ResultType type) {
+  MediaType[] getMediaTypes(ResultType type) {
     switch (type) {
       case GRAPH:
         return graphMediaTypes.toArray(new MediaType[0]);
@@ -84,12 +83,12 @@ public class SupportedMediaTypesScanner {
     }
   }
 
-  public List<MessageBodyWriter<GraphQueryResult>> getGraphQueryWriters() {
-    return ImmutableList.copyOf(graphQueryWriters);
+  List<MessageBodyWriter<GraphEntity>> getGraphEntityWriters() {
+    return ImmutableList.copyOf(graphEntityWriters);
   }
 
-  public List<MessageBodyWriter<TupleQueryResult>> getTupleQueryWriters() {
-    return ImmutableList.copyOf(tupleQueryWriters);
+  List<MessageBodyWriter<TupleEntity>> getTupleEntityWriters() {
+    return ImmutableList.copyOf(tupleEntityWriters);
   }
 
 }

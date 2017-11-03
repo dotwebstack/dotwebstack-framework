@@ -11,9 +11,9 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Collections;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -27,8 +27,8 @@ public class SparqlResultsXmlMessageBodyWriterTest extends SparqlResultsMessageB
     SparqlResultsXmlMessageBodyWriter provider = new SparqlResultsXmlMessageBodyWriter();
 
     // Act
-    boolean result = provider.isWriteable(TupleQueryResult.class, null, null,
-        MediaTypes.SPARQL_RESULTS_XML_TYPE);
+    boolean result =
+        provider.isWriteable(TupleEntity.class, null, null, MediaTypes.SPARQL_RESULTS_XML_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -54,7 +54,7 @@ public class SparqlResultsXmlMessageBodyWriterTest extends SparqlResultsMessageB
 
     // Act
     boolean result =
-        provider.isWriteable(TupleQueryResult.class, null, null, MediaType.APPLICATION_XML_TYPE);
+        provider.isWriteable(TupleEntity.class, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -64,6 +64,7 @@ public class SparqlResultsXmlMessageBodyWriterTest extends SparqlResultsMessageB
   public void writeTo_SparqlResultXmlFormat_ForQueryResult() throws IOException {
     // Arrange
     SparqlResultsXmlMessageBodyWriter provider = new SparqlResultsXmlMessageBodyWriter();
+    when(tupleEntity.getQueryResult()).thenReturn(tupleQueryResult);
     when(tupleQueryResult.getBindingNames()).thenReturn(Collections.singletonList("beer"));
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);
@@ -74,7 +75,7 @@ public class SparqlResultsXmlMessageBodyWriterTest extends SparqlResultsMessageB
     configureBindingSetWithValue(bindingSetAmstel, "Amstel");
 
     // Act
-    provider.writeTo(tupleQueryResult, null, null, null, null, null, outputStream);
+    provider.writeTo(tupleEntity, null, null, null, null, null, outputStream);
 
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());

@@ -10,7 +10,6 @@ import static org.hamcrest.core.IsNot.not;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
@@ -76,9 +75,6 @@ public class LdRequestMapperTest {
     representationMap.put(representation.getIdentifier(), representation);
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
-
-    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(new ArrayList<>());
-    when(supportedMediaTypesScanner.getTupleQueryWriters()).thenReturn(new ArrayList<>());
 
     requestMapper = new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
 

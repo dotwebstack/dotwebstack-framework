@@ -73,7 +73,7 @@ public class LdModuleTest {
   @Test
   public void constructor_RegistersSparqlProviders_WhenProvidedByScanner() {
     // Arrange
-    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(
+    when(supportedMediaTypesScanner.getGraphEntityWriters()).thenReturn(
         Collections.singletonList(new SupportedMediaTypesScannerTest.StubGraphMessageBodyWriter()));
 
     // Act

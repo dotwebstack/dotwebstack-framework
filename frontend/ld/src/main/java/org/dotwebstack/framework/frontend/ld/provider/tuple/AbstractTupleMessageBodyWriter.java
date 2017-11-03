@@ -8,10 +8,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-public abstract class AbstractTupleMessageBodyWriter
-    implements MessageBodyWriter<TupleQueryResult> {
+public abstract class AbstractTupleMessageBodyWriter implements MessageBodyWriter<TupleEntity> {
 
   private MediaType mediaType;
 
@@ -25,21 +25,21 @@ public abstract class AbstractTupleMessageBodyWriter
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType) {
-    return TupleQueryResult.class.isAssignableFrom(type) && this.mediaType.equals(mediaType);
+    return TupleEntity.class.isAssignableFrom(type) && this.mediaType.equals(mediaType);
   }
 
   @Override
-  public long getSize(TupleQueryResult tupleQueryResult, Class<?> type, Type genericType,
+  public long getSize(TupleEntity tupleEntity, Class<?> type, Type genericType,
       Annotation[] annotations, MediaType mediaType) {
     // deprecated by JAX-RS 2.0 and ignored by Jersey runtime
     return -1;
   }
 
   @Override
-  public void writeTo(TupleQueryResult tupleQueryResult, Class<?> type, Type genericType,
+  public void writeTo(TupleEntity tupleEntity, Class<?> type, Type genericType,
       Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap,
       OutputStream outputStream) throws IOException {
-    write(tupleQueryResult, outputStream);
+    write(tupleEntity.getQueryResult(), outputStream);
   }
 
 }

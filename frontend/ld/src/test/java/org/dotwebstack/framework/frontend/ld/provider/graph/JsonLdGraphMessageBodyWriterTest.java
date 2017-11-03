@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.provider.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
@@ -18,7 +19,6 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQueryResult;
-import org.eclipse.rdf4j.query.impl.BackgroundGraphResult;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,6 +40,9 @@ public class JsonLdGraphMessageBodyWriterTest {
   @Mock
   private GraphQueryResult graphQueryResult;
 
+  @Mock
+  private GraphEntity graphEntity;
+
   @Captor
   private ArgumentCaptor<byte[]> byteCaptor;
 
@@ -58,8 +61,7 @@ public class JsonLdGraphMessageBodyWriterTest {
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    boolean result =
-        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaTypes.LDJSON_TYPE);
+    boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaTypes.LDJSON_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -71,8 +73,8 @@ public class JsonLdGraphMessageBodyWriterTest {
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    boolean result = writer.isWriteable(BackgroundGraphResult.class, null, null,
-        MediaType.APPLICATION_JSON_TYPE);
+    boolean result =
+        writer.isWriteable(GraphEntity.class, null, null, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(result, is(true));
@@ -96,8 +98,7 @@ public class JsonLdGraphMessageBodyWriterTest {
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    boolean result =
-        writer.isWriteable(BackgroundGraphResult.class, null, null, MediaType.TEXT_PLAIN_TYPE);
+    boolean result = writer.isWriteable(GraphEntity.class, null, null, MediaType.TEXT_PLAIN_TYPE);
 
     // Assert
     assertThat(result, is(false));
@@ -109,8 +110,7 @@ public class JsonLdGraphMessageBodyWriterTest {
     JsonLdGraphMessageBodyWriter writer = new JsonLdGraphMessageBodyWriter();
 
     // Act
-    long result =
-        writer.getSize(graphQueryResult, null, null, null, MediaType.APPLICATION_XML_TYPE);
+    long result = writer.getSize(graphEntity, null, null, null, MediaType.APPLICATION_XML_TYPE);
 
     // Assert
     assertThat(result, equalTo(-1L));
@@ -124,12 +124,13 @@ public class JsonLdGraphMessageBodyWriterTest {
         new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDF.TYPE, DBEERPEDIA.BACKEND).add(
             RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL).build();
 
+    when(graphEntity.getQueryResult()).thenReturn(graphQueryResult);
     when(graphQueryResult.hasNext()).thenReturn(true, true, true, false);
     when(graphQueryResult.next()).thenReturn(model.stream().findFirst().get(),
         model.stream().skip(1).toArray(Statement[]::new));
 
     // Act
-    writer.writeTo(graphQueryResult, null, null, null, null, null, outputStream);
+    writer.writeTo(graphEntity, null, null, null, null, null, outputStream);
 
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());

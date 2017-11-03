@@ -24,7 +24,7 @@ public class LdModule implements HttpModule {
   public void initialize(@NonNull HttpConfiguration httpConfiguration) {
     requestMapper.loadRepresentations(httpConfiguration);
 
-    supportedMediaTypesScanner.getGraphQueryWriters().forEach(httpConfiguration::register);
-    supportedMediaTypesScanner.getTupleQueryWriters().forEach(httpConfiguration::register);
+    supportedMediaTypesScanner.getGraphEntityWriters().forEach(httpConfiguration::register);
+    supportedMediaTypesScanner.getTupleEntityWriters().forEach(httpConfiguration::register);
   }
 }
