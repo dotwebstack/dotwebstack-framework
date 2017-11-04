@@ -17,6 +17,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
+import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -49,6 +50,9 @@ public class RepresentationResourceProviderTest {
   private InformationProductResourceProvider informationProductResourceProvider;
 
   @Mock
+  private AppearanceResourceProvider appearanceResourceProvider;
+
+  @Mock
   private StageResourceProvider stageResourceProvider;
 
   @Mock
@@ -76,7 +80,7 @@ public class RepresentationResourceProviderTest {
   @Before
   public void setUp() {
     representationResourceProvider = new RepresentationResourceProvider(configurationBackend,
-        informationProductResourceProvider, stageResourceProvider, applicationProperties);
+        informationProductResourceProvider, appearanceResourceProvider, stageResourceProvider, applicationProperties);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -95,7 +99,7 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(null, informationProductResourceProvider,
-        stageResourceProvider, applicationProperties);
+        appearanceResourceProvider, stageResourceProvider, applicationProperties);
   }
 
   @Test
@@ -104,7 +108,17 @@ public class RepresentationResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new RepresentationResourceProvider(configurationBackend, null, null, applicationProperties);
+    new RepresentationResourceProvider(configurationBackend, null, null, null, applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingAppearanceResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
+        null, stageResourceProvider, applicationProperties);
   }
 
   @Test
@@ -114,7 +128,7 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        null, applicationProperties);
+        appearanceResourceProvider, null, applicationProperties);
   }
 
   @Test
@@ -124,7 +138,7 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        stageResourceProvider, null);
+        appearanceResourceProvider, stageResourceProvider, null);
   }
 
   @Test

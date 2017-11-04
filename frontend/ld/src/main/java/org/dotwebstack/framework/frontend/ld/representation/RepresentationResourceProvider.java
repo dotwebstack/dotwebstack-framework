@@ -6,6 +6,8 @@ import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
+import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
+import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -20,15 +22,19 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   private InformationProductResourceProvider informationProductResourceProvider;
 
+  private AppearanceResourceProvider appearanceResourceProvider;
+
   private StageResourceProvider stageResourceProvider;
 
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull InformationProductResourceProvider informationProductResourceProvider,
+      @NonNull AppearanceResourceProvider appearanceResourceProvider,
       @NonNull StageResourceProvider stageResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.informationProductResourceProvider = informationProductResourceProvider;
+    this.appearanceResourceProvider = appearanceResourceProvider;
     this.stageResourceProvider = stageResourceProvider;
   }
 
@@ -42,18 +48,26 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Override
   protected Representation createResource(Model model, IRI identifier) {
-    Optional<IRI> informationProductIri =
+    final Optional<IRI> informationProductIri =
         getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP);
 
-    Optional<IRI> stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP);
+    final Optional<IRI> appearanceIri =
+        getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP);
 
-    Optional<String> urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN);
+    final Optional<IRI> stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP);
+
+    final Optional<String> urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN);
 
     Representation.Builder builder = new Representation.Builder(identifier);
 
     urlPattern.ifPresent(builder::urlPatterns);
     informationProductIri.ifPresent(
         iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
+    appearanceIri.ifPresent(
+        iri -> builder.appearance(appearanceResourceProvider.get(iri)));
+    if (!appearanceIri.isPresent()) {
+      builder.appearance(new Appearance());
+    }
     stageIri.ifPresent(iri -> builder.stage(stageResourceProvider.get(iri)));
 
     return builder.build();
