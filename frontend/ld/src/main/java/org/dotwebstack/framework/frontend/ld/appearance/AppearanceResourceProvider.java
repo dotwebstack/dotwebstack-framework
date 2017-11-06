@@ -22,16 +22,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class AppearanceResourceProvider extends AbstractResourceProvider<Appearance> {
 
-  //Might be nicer when the properties of AbstractResourceProvider are protected instead of private
-  private ConfigurationBackend configurationBackend;
-  private ApplicationProperties applicationProperties;
-
   @Autowired
   public AppearanceResourceProvider(ConfigurationBackend configurationBackend,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
-    this.configurationBackend = configurationBackend;
-    this.applicationProperties = applicationProperties;
   }
 
   @Override
