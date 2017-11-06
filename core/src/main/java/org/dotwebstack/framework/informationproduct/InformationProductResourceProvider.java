@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.informationproduct;
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -7,6 +10,8 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.ParameterResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -21,14 +26,19 @@ import org.springframework.stereotype.Service;
 public class InformationProductResourceProvider
     extends AbstractResourceProvider<InformationProduct> {
 
-  private BackendResourceProvider backendResourceProvider;
+  private final BackendResourceProvider backendResourceProvider;
+
+  private final ParameterResourceProvider parameterResourceProvider;
 
   @Autowired
   public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull BackendResourceProvider backendResourceProvider,
+      @NonNull ParameterResourceProvider parameterResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
+
     this.backendResourceProvider = backendResourceProvider;
+    this.parameterResourceProvider = parameterResourceProvider;
   }
 
   @Override
@@ -46,15 +56,29 @@ public class InformationProductResourceProvider
             () -> new ConfigurationException(
                 String.format("No <%s> statement has been found for information product <%s>.",
                     ELMO.BACKEND_PROP, identifier)));
+    Set<IRI> requiredParameterIds =
+        Models.objectIRIs(model.filter(identifier, ELMO.REQUIRED_PARAMETER_PROP, null));
+    Set<IRI> optionalParameterIds =
+        Models.objectIRIs(model.filter(identifier, ELMO.OPTIONAL_PARAMETER_PROP, null));
 
     String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
-    return create(backendIRI, identifier, label, model);
+
+    return create(backendIRI, requiredParameterIds, optionalParameterIds, identifier, label, model);
   }
 
-  private InformationProduct create(IRI backendIdentifier, IRI identifier, String label,
-      Model statements) {
+  private InformationProduct create(IRI backendIdentifier, Set<IRI> requiredParameterIds,
+      Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
-    return backend.createInformationProduct(identifier, label, statements);
+
+    Collection<Parameter> requiredParameters =
+        requiredParameterIds.stream().map(parameterResourceProvider::get).collect(
+            Collectors.toList());
+    Collection<Parameter> optionalParameters =
+        optionalParameterIds.stream().map(parameterResourceProvider::get).collect(
+            Collectors.toList());
+
+    return backend.createInformationProduct(identifier, label, requiredParameters,
+        optionalParameters, statements);
   }
 
 }

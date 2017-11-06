@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Operation;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -33,16 +34,23 @@ public class GetRequestHandlerTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
+  private Operation operationMock;
+
+  @Mock
   private InformationProduct informationProduct;
 
   @Mock
   private ContainerRequestContext containerRequestContext;
 
+  @Mock
+  private RequestParameterMapper requestParameterMapperMock;
+
   private GetRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(informationProduct, ImmutableMap.of());
+    getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of(),
+        requestParameterMapperMock);
   }
 
   @Test
@@ -51,7 +59,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(null, ImmutableMap.of());
+    new GetRequestHandler(operationMock, null, ImmutableMap.of(),
+        requestParameterMapperMock);
   }
 
   @Test
@@ -60,7 +69,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(informationProduct, null);
+    new GetRequestHandler(operationMock, informationProduct, null,
+        requestParameterMapperMock);
   }
 
   @Test
@@ -80,7 +90,7 @@ public class GetRequestHandlerTest {
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
     Map<String, Property> schemaMap = ImmutableMap.of();
-    when(informationProduct.getResult()).thenReturn(result);
+    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act

@@ -3,7 +3,7 @@ package org.dotwebstack.framework.frontend.ld.mappers;
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.http.SupportedMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.GetRepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;

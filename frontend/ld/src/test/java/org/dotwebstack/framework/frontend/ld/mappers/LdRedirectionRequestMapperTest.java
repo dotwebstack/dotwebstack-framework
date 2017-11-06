@@ -10,13 +10,12 @@ import static org.hamcrest.core.IsNot.not;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.http.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
+import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.redirection.Redirection;
 import org.dotwebstack.framework.frontend.ld.redirection.RedirectionResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -72,12 +71,9 @@ public class LdRedirectionRequestMapperTest {
 
     when(redirectionResourceProvider.getAll()).thenReturn(redirectionMap);
 
-    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(new ArrayList<>());
-    when(supportedMediaTypesScanner.getTupleQueryWriters()).thenReturn(new ArrayList<>());
-
     ldRedirectionRequestMapper = new LdRedirectionRequestMapper(redirectionResourceProvider);
 
-    httpConfiguration = new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
+    httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
