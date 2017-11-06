@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -18,6 +19,7 @@ import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.glassfish.jersey.client.ClientProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +43,8 @@ public class LdIntegrationTest {
   @Before
   public void setUp() throws IOException {
     target = ClientBuilder.newClient(httpConfiguration).target(
-        String.format("http://localhost:%d", this.port));
+        String.format("http://localhost:%d", this.port)).property(ClientProperties.FOLLOW_REDIRECTS,
+            Boolean.FALSE);
 
     SparqlHttpStub.start();
   }
@@ -93,6 +96,17 @@ public class LdIntegrationTest {
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.valueOf("application/ld+json")));
     assertThat(response.getLength(), greaterThan(0));
+    assertThat(response.readEntity(String.class), isEmptyString());
+  }
+
+  @Test
+  public void get_GetRedirection_ThroughLdApi() throws URISyntaxException {
+    // Act
+    Response response = target.path("/dbp/ld/v1/id/breweries").request().get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
+    assertThat(response.getLocation().getPath(), equalTo("/localhost/dbp/ld/v1/doc/breweries"));
     assertThat(response.readEntity(String.class), isEmptyString());
   }
 

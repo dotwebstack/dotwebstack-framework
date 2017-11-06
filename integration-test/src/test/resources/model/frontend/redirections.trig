@@ -1,0 +1,7 @@
+GRAPH dbeerpedia:Theatre {
+  dbeerpedia:id2doc a elmo:Redirection;
+      elmo:stage dbeerpedia:Stage;
+  		elmo:urlPattern "^\\/id\\/(.+)$";
+  		elmo:redirectionTemplate "\\/doc\\/$1"
+  .
+}

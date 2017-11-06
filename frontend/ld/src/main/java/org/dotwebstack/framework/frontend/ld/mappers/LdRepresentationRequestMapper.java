@@ -1,10 +1,10 @@
-package org.dotwebstack.framework.frontend.ld;
+package org.dotwebstack.framework.frontend.ld.mappers;
 
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.SupportedMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.handlers.GetRequestHandler;
+import org.dotwebstack.framework.frontend.ld.handlers.GetRepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.glassfish.jersey.server.model.Resource;
@@ -14,18 +14,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LdRequestMapper {
+public class LdRepresentationRequestMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LdRequestMapper.class);
-
-  private static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
+  private static final Logger LOG = LoggerFactory.getLogger(LdRepresentationRequestMapper.class);
 
   private final RepresentationResourceProvider representationResourceProvider;
 
   private final SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Autowired
-  public LdRequestMapper(@NonNull RepresentationResourceProvider representationResourceProvider,
+  public LdRepresentationRequestMapper(
+      @NonNull RepresentationResourceProvider representationResourceProvider,
       @NonNull SupportedMediaTypesScanner supportedMediaTypesScanner) {
     this.representationResourceProvider = representationResourceProvider;
     this.supportedMediaTypesScanner = supportedMediaTypesScanner;
@@ -43,14 +42,14 @@ public class LdRequestMapper {
 
   private void mapRepresentation(Representation representation,
       HttpConfiguration httpConfiguration) {
-    String basePath = createBasePath(representation);
+    String basePath = representation.getStage().getFullPath();
 
     representation.getUrlPatterns().forEach(path -> {
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          new GetRequestHandler(representation)).produces(
+          new GetRepresentationRequestHandler(representation)).produces(
               supportedMediaTypesScanner.getMediaTypes(
                   representation.getInformationProduct().getResultType()));
 
@@ -63,11 +62,4 @@ public class LdRequestMapper {
     });
   }
 
-  private String createBasePath(Representation representation) {
-    if (representation.getStage().getSite().isMatchAllDomain()) {
-      return "/" + PATH_DOMAIN_PARAMETER + representation.getStage().getBasePath();
-    }
-    return "/" + representation.getStage().getSite().getDomain()
-        + representation.getStage().getBasePath();
-  }
 }

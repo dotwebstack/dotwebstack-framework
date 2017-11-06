@@ -8,13 +8,14 @@ import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GetRequestHandler implements Inflector<ContainerRequestContext, Response> {
+public class GetRepresentationRequestHandler
+    implements Inflector<ContainerRequestContext, Response> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(GetRepresentationRequestHandler.class);
 
   private Representation representation;
 
-  public GetRequestHandler(@NonNull Representation representation) {
+  public GetRepresentationRequestHandler(@NonNull Representation representation) {
     this.representation = representation;
   }
 
@@ -26,4 +27,5 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
     Object result = representation.getInformationProduct().getResult();
     return Response.ok(result).build();
   }
+
 }
