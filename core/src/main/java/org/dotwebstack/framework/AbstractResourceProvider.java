@@ -3,6 +3,7 @@ package org.dotwebstack.framework;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -39,7 +40,11 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
   @Override
   public R get(IRI identifier) {
     if (!resources.containsKey(identifier)) {
-      throw new IllegalArgumentException(String.format("Resource <%s> not found.", identifier));
+      String availableResources = resources.keySet().stream().map(i -> "<" + i + ">").collect(
+          Collectors.toSet()).toString();
+
+      throw new IllegalArgumentException(String.format(
+          "Resource <%s> not found. Available resources: %s", identifier, availableResources));
     }
 
     return resources.get(identifier);

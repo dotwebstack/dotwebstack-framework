@@ -1,5 +1,6 @@
 package org.dotwebstack.framework;
 
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -26,6 +27,11 @@ public class ApplicationProperties {
   }
 
   public IRI getSystemGraph() {
+    if (systemGraph == null) {
+      throw new ConfigurationException("No systemGraph defined in the application configuration. "
+          + "Please add the following property: dotwebstack.config.systemGraph");
+    }
+
     return SimpleValueFactory.getInstance().createIRI(systemGraph);
   }
 

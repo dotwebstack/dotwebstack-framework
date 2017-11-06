@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.http;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +13,7 @@ import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -33,10 +35,8 @@ public class HostPreMatchingRequestFilterTest {
     // Arrange
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
 
-    URI uri = URI.create("http://" + DBEERPEDIA.ORG_HOST + "/");
-    when(uriInfo.getBaseUri()).thenReturn(uri);
-    when(uriInfo.getBaseUriBuilder()).thenReturn(UriBuilder.fromUri(uri));
-    when(uriInfo.getPath()).thenReturn("beer");
+    URI uri = URI.create("http://" + DBEERPEDIA.ORG_HOST + "/beer");
+    when(uriInfo.getRequestUriBuilder()).thenReturn(UriBuilder.fromUri(uri));
   }
 
   @Test
@@ -79,4 +79,22 @@ public class HostPreMatchingRequestFilterTest {
         "http://" + DBEERPEDIA.ORG_HOST + "/" + DBEERPEDIA.NL_HOST + "/beer").build());
   }
 
+  @Test
+  public void filter_QueryParametersPassing_WhenRequestUrlContainsQueryParameters()
+      throws Exception {
+
+    // Arrange
+    String queryPart = "test=123";
+    URI uri = URI.create("http://" + DBEERPEDIA.ORG_HOST + "/beer?" + queryPart);
+    when(uriInfo.getRequestUriBuilder()).thenReturn(UriBuilder.fromUri(uri));
+
+    // Act
+    hostPreMatchingRequestFilter.filter(containerRequestContext);
+
+    // Assert
+    ArgumentCaptor<URI> capture = ArgumentCaptor.forClass(URI.class);
+    verify(containerRequestContext).setRequestUri(capture.capture());
+
+    assertEquals(queryPart, capture.getValue().getQuery());
+  }
 }

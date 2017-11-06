@@ -110,7 +110,7 @@ public class BackendResourceProviderTest {
   }
 
   @Test
-  public void get_ThrowsExcception_BackendNotFound() {
+  public void get_ThrowsException_BackendNotFound() {
     // Assert
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage(String.format("Resource <%s> not found.", DBEERPEDIA.BACKEND));

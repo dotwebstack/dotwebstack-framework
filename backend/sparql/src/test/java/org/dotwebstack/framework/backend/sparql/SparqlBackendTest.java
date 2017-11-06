@@ -7,7 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -100,12 +102,18 @@ public class SparqlBackendTest {
         informationProductFactory).build();
 
     InformationProduct informationProductMock = mock(InformationProduct.class);
+
+    Parameter requiredParameterMock = mock(Parameter.class);
+    Parameter optionalParameterMock = mock(Parameter.class);
+
     when(informationProductFactory.create(identifier, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
-        backend, model)).thenReturn(informationProductMock);
+        backend, ImmutableList.of(requiredParameterMock), ImmutableList.of(optionalParameterMock),
+        model)).thenReturn(informationProductMock);
 
     // Act
     InformationProduct result = backend.createInformationProduct(identifier,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), model);
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), ImmutableList.of(requiredParameterMock),
+        ImmutableList.of(optionalParameterMock), model);
 
     // Assert
     assertThat(result, equalTo(informationProductMock));

@@ -17,11 +17,12 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandler;
+import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.eclipse.rdf4j.model.IRI;
@@ -50,6 +51,8 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private final SwaggerParser openApiParser;
 
+  private final GetRequestHandlerFactory getRequestHandlerFactory;
+
   private ResourceLoader resourceLoader;
 
   private Environment environment;
@@ -58,10 +61,12 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   @Autowired
   public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
-      @NonNull SwaggerParser openApiParser, @NonNull ApplicationProperties applicationProperties) {
+      @NonNull SwaggerParser openApiParser, @NonNull ApplicationProperties applicationProperties,
+      @NonNull GetRequestHandlerFactory getRequestHandlerFactory) {
     this.informationProductResourceProvider = informationProductLoader;
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
+    this.getRequestHandlerFactory = getRequestHandlerFactory;
   }
 
   @Override
@@ -91,12 +96,14 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
           new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
       String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
 
-      Swagger swagger = openApiParser.parse(result);
-      mapSwaggerDefinition(swagger, httpConfiguration);
+      if (!StringUtils.isBlank(result)) {
+        Swagger swagger = openApiParser.parse(result);
+        mapOpenApiDefinition(swagger, httpConfiguration);
+      }
     }
   }
 
-  private void mapSwaggerDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
+  private void mapOpenApiDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
@@ -151,7 +158,8 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
       ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          new GetRequestHandler(informationProduct, schemaMap));
+          getRequestHandlerFactory.newGetRequestHandler(getOperation, informationProduct,
+              schemaMap));
 
       produces.forEach(methodBuilder::produces);
 
