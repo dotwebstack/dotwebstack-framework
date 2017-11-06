@@ -299,7 +299,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  public void loadPrefixes_ThrowIOException_WhenReadPrefixesFile() throws Exception {
+  public void loadPrefixes_ThrowIoException_WhenReadPrefixesFile() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
     when(resource.getInputStream()).thenThrow(new IOException());

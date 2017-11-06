@@ -100,7 +100,6 @@ public class JsonTupleEntityWriterTest extends SparqlResultsTupleEntityWriterTes
   @Test
   public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException, JSONException {
     // Arrange
-    JsonTupleEntityWriter provider = new JsonTupleEntityWriter();
     when(tupleEntity.getQueryResult()).thenReturn(tupleQueryResult);
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);
@@ -111,6 +110,7 @@ public class JsonTupleEntityWriterTest extends SparqlResultsTupleEntityWriterTes
     configureBindingSetWithValue(bindingSetAmstel, "Amstel");
 
     // Act
+    JsonTupleEntityWriter provider = new JsonTupleEntityWriter();
     provider.writeTo(tupleEntity, null, null, null, null, null, outputStream);
 
     // Assert

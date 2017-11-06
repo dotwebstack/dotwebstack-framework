@@ -182,18 +182,18 @@ public class TupleEntityMapperTest {
   @SuppressWarnings("unchecked")
   public void map_MapsToObjectProperty_ForSingleResult() {
     // Arrange
-    StringProperty stringProperty = new StringProperty();
-    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-        new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
-        result);
     when(result.hasNext()).thenReturn(true, false);
     QueryBindingSet bindingSet = new QueryBindingSet();
     bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
     when(result.next()).thenReturn(bindingSet);
+    StringProperty stringProperty = new StringProperty();
     when(schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
         DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
+    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
+        result);
     Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
@@ -207,18 +207,18 @@ public class TupleEntityMapperTest {
   @SuppressWarnings("unchecked")
   public void map_ForObjectPropertyOnlyMapsFirstResult_ForMultipleResults() {
     // Arrange
-    StringProperty stringProperty = new StringProperty();
-    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-        new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
-        result);
     when(result.hasNext()).thenReturn(true, true, false);
     QueryBindingSet bindingSet = new QueryBindingSet();
     bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
     when(result.next()).thenReturn(bindingSet, bindingSet);
+    StringProperty stringProperty = new StringProperty();
     when(schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
         "firstName").thenReturn("secondName");
 
     // Act
+    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
+        result);
     Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
@@ -231,10 +231,6 @@ public class TupleEntityMapperTest {
   @Test
   public void map_ThrowsException_ForSingleResultWithSingleObject() {
     // Arrange
-    StringProperty stringProperty = new StringProperty();
-    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-        new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
-        result);
     when(result.hasNext()).thenReturn(false);
 
     // Assert
@@ -242,6 +238,10 @@ public class TupleEntityMapperTest {
     thrown.expectMessage("TupleQueryResult did not yield any values.");
 
     // Act
+    StringProperty stringProperty = new StringProperty();
+    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
+        result);
     tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
   }
 
@@ -249,10 +249,6 @@ public class TupleEntityMapperTest {
   @Test
   public void map_ThrowException_ForRequiredPropertyWithAbsentBinding() {
     // Assert
-    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-        new ArrayProperty().items(new ObjectProperty().properties(
-            ImmutableMap.of("name", new StringProperty().required(true))))),
-        result);
     when(result.hasNext()).thenReturn(true, false);
     when(result.next()).thenReturn(new ListBindingSet(ImmutableList.of(), ImmutableList.of()));
 
@@ -261,6 +257,10 @@ public class TupleEntityMapperTest {
     thrown.expectMessage("Property 'name' is required.");
 
     // Act
+    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ArrayProperty().items(new ObjectProperty().properties(
+            ImmutableMap.of("name", new StringProperty().required(true))))),
+        result);
     tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
   }
 

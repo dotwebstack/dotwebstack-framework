@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.ld.writer.graph;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -94,7 +93,6 @@ public class RdfXmlGraphEntityWriterTest {
   @Test
   public void writeTo_RdfXmlFormat_ForQueryResult() throws IOException {
     // Arrange
-    RdfXmlGraphEntityWriter writer = new RdfXmlGraphEntityWriter();
     Model model =
         new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDF.TYPE, DBEERPEDIA.BACKEND).add(
             RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL).build();
@@ -105,6 +103,7 @@ public class RdfXmlGraphEntityWriterTest {
         model.stream().skip(1).toArray(Statement[]::new));
 
     // Act
+    RdfXmlGraphEntityWriter writer = new RdfXmlGraphEntityWriter();
     writer.writeTo(graphEntity, null, null, null, null, null, outputStream);
 
     // Assert

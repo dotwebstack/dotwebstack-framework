@@ -63,7 +63,6 @@ public class SparqlResultsXmlTupleEntityWriterTest extends SparqlResultsTupleEnt
   @Test
   public void writeTo_SparqlResultXmlFormat_ForQueryResult() throws IOException {
     // Arrange
-    SparqlResultsXmlTupleEntityWriter provider = new SparqlResultsXmlTupleEntityWriter();
     when(tupleEntity.getQueryResult()).thenReturn(tupleQueryResult);
     when(tupleQueryResult.getBindingNames()).thenReturn(Collections.singletonList("beer"));
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
@@ -75,6 +74,7 @@ public class SparqlResultsXmlTupleEntityWriterTest extends SparqlResultsTupleEnt
     configureBindingSetWithValue(bindingSetAmstel, "Amstel");
 
     // Act
+    SparqlResultsXmlTupleEntityWriter provider = new SparqlResultsXmlTupleEntityWriter();
     provider.writeTo(tupleEntity, null, null, null, null, null, outputStream);
 
     // Assert
