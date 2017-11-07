@@ -78,6 +78,7 @@
     <module>frontend</module>
     <module>test</module>
     <module>integration-test</module>
+    <module>jacoco-report-aggregate</module>
   </modules>
 
   <dependencyManagement>
@@ -115,6 +116,11 @@
       <dependency>
         <groupId>org.dotwebstack.framework</groupId>
         <artifactId>dotwebstack-test</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dotwebstack.framework</groupId>
+        <artifactId>dotwebstack-integration-test</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
