@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.ws.rs.NotSupportedException;
-import org.dotwebstack.framework.frontend.http.provider.MediaTypes;
+import org.dotwebstack.framework.frontend.ld.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
