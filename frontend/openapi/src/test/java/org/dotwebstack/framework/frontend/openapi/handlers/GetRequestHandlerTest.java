@@ -59,8 +59,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, null, ImmutableMap.of(),
-        requestParameterMapperMock);
+    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock);
   }
 
   @Test
@@ -69,8 +68,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, informationProduct, null,
-        requestParameterMapperMock);
+    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock);
   }
 
   @Test
@@ -89,7 +87,7 @@ public class GetRequestHandlerTest {
     when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
-    Map<String, Property> schemaMap = ImmutableMap.of();
+    final Map<String, Property> schemaMap = ImmutableMap.of();
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 

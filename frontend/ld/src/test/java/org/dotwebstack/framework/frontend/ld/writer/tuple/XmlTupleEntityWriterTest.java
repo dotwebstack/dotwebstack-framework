@@ -76,7 +76,7 @@ public class XmlTupleEntityWriterTest extends SparqlResultsTupleEntityWriterTest
   @Test
   public void writeTo_XmlFormat_ForQueryResult() throws IOException, JSONException {
     // Arrange
-    XmlTupleEntityWriter provider = new XmlTupleEntityWriter();
+    final XmlTupleEntityWriter provider = new XmlTupleEntityWriter();
     when(tupleEntity.getQueryResult()).thenReturn(tupleQueryResult);
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
     BindingSet bindingSetHeineken = mock(BindingSet.class);

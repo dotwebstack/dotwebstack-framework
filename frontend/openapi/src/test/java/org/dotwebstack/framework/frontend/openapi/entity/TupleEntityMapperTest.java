@@ -183,7 +183,7 @@ public class TupleEntityMapperTest {
   public void map_MapsToObjectProperty_ForSingleResult() {
     // Arrange
     StringProperty stringProperty = new StringProperty();
-    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+    final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
         new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
         result);
     when(result.hasNext()).thenReturn(true, false);
@@ -208,7 +208,7 @@ public class TupleEntityMapperTest {
   public void map_ForObjectPropertyOnlyMapsFirstResult_ForMultipleResults() {
     // Arrange
     StringProperty stringProperty = new StringProperty();
-    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+    final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
         new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
         result);
     when(result.hasNext()).thenReturn(true, true, false);
@@ -232,7 +232,7 @@ public class TupleEntityMapperTest {
   public void map_ThrowsException_ForSingleResultWithSingleObject() {
     // Arrange
     StringProperty stringProperty = new StringProperty();
-    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+    final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
         new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
         result);
     when(result.hasNext()).thenReturn(false);
@@ -249,7 +249,7 @@ public class TupleEntityMapperTest {
   @Test
   public void map_ThrowException_ForRequiredPropertyWithAbsentBinding() {
     // Assert
-    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+    final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
         new ArrayProperty().items(new ObjectProperty().properties(
             ImmutableMap.of("name", new StringProperty().required(true))))),
         result);
