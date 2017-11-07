@@ -45,9 +45,9 @@ public class GetRedirectionRequestHandler implements Inflector<ContainerRequestC
   }
 
   private String incrementRegexObjects(String input) {
-    Pattern digitPattern = Pattern.compile("(\\$\\d+)");
+    Pattern regexObjectPattern = Pattern.compile("(\\$\\d+)");
 
-    Matcher matcher = digitPattern.matcher(input);
+    Matcher matcher = regexObjectPattern.matcher(input);
     StringBuffer result = new StringBuffer();
     while (matcher.find()) {
       matcher.appendReplacement(result,
