@@ -2,6 +2,8 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
@@ -29,11 +31,7 @@ public class GetRedirectionRequestHandler implements Inflector<ContainerRequestC
     String urlPattern = redirection.getUrlPattern().replaceAll("\\^", "(.*)");
 
     String redirectionTemplate = redirection.getRedirectionTemplate();
-    redirectionTemplate = "$1"
-        + redirectionTemplate.replaceAll("\\$9", "\\$10").replaceAll("\\$8", "\\$9").replaceAll(
-            "\\$7", "\\$8").replaceAll("\\$6", "\\$7").replaceAll("\\$5", "\\$6").replaceAll("\\$4",
-                "\\$5").replaceAll("\\$3", "\\$4").replaceAll("\\$2", "\\$3").replaceAll("\\$1",
-                    "\\$2");
+    redirectionTemplate = "$1" + incrementRegexObjects(redirectionTemplate);
 
     String redirectPath = path.replaceAll(urlPattern, redirectionTemplate);
 
@@ -44,5 +42,19 @@ public class GetRedirectionRequestHandler implements Inflector<ContainerRequestC
     } catch (URISyntaxException e) {
       return Response.serverError().entity(e.getMessage()).build();
     }
+  }
+
+  private String incrementRegexObjects(String input) {
+    Pattern digitPattern = Pattern.compile("(\\$\\d+)");
+
+    Matcher matcher = digitPattern.matcher(input);
+    StringBuffer result = new StringBuffer();
+    while (matcher.find()) {
+      matcher.appendReplacement(result,
+          "\\$" + String.valueOf(Integer.parseInt(matcher.group(1).substring(1)) + 1));
+    }
+    matcher.appendTail(result);
+
+    return result.toString();
   }
 }
