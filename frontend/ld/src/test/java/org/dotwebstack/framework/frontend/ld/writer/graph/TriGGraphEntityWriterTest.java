@@ -84,6 +84,7 @@ public class TriGGraphEntityWriterTest {
   @Test
   public void writeTo_TriGFormat_ForQueryResult() throws IOException {
     // Arrange
+    final TriGGraphEntityWriter writer = new TriGGraphEntityWriter();
     Model model =
         new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDF.TYPE, DBEERPEDIA.BACKEND).add(
             RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL).build();
@@ -94,7 +95,6 @@ public class TriGGraphEntityWriterTest {
         model.stream().skip(1).toArray(Statement[]::new));
 
     // Act
-    TriGGraphEntityWriter writer = new TriGGraphEntityWriter();
     writer.writeTo(graphEntity, null, null, null, null, null, outputStream);
 
     // Assert

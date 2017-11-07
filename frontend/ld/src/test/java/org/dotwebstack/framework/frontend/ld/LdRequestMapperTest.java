@@ -119,12 +119,11 @@ public class LdRequestMapperTest {
 
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
+    final ResourceMethod method = resource.getResourceMethods().get(0);
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.URL_PATTERN_VALUE));
     assertThat(resource.getResourceMethods(), hasSize(1));
-
-    ResourceMethod method = resource.getResourceMethods().get(0);
     assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
   }
 

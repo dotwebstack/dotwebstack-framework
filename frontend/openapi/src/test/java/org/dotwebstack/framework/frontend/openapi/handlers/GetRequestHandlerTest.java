@@ -87,6 +87,7 @@ public class GetRequestHandlerTest {
     when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
+    final Map<String, Property> schemaMap = ImmutableMap.of();
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
@@ -97,8 +98,6 @@ public class GetRequestHandlerTest {
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
-
-    Map<String, Property> schemaMap = ImmutableMap.of();
     assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
   }
 
