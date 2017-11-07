@@ -46,7 +46,7 @@ public class EntityWriterInterceptorTest {
 
   @Before
   public void setUp() {
-    entityWriterInterceptor = new EntityWriterInterceptor(tupleEntityMapper, graphEntityMapper);
+    entityWriterInterceptor = new EntityWriterInterceptor(tupleEntityMapper, graphEntityMapper,null,null);
   }
 
   @Test
@@ -55,7 +55,7 @@ public class EntityWriterInterceptorTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new EntityWriterInterceptor(null,null);
+    new EntityWriterInterceptor(null,null,null,null);
   }
 
   @Test

@@ -4,19 +4,21 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParameters;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-public final class TupleEntity extends AbstractEntity<TupleQueryResult> {
+public final class TupleEntity extends AbstractEntity {
 
-  private TupleQueryResult result;
 
-  public TupleEntity(Map<MediaType, Property> schemaMap, @NonNull TupleQueryResult result) {
-    super(schemaMap);
-    this.result = result;
-  }
+  public TupleEntity(Map<MediaType, Property> schemaMap,
+      Property schemaProperty, RequestParameters requestParameters,
+      QueryResult queryResult, String baseUri, String endpoint) {
+    super(schemaMap, schemaProperty, requestParameters,
+        queryResult, baseUri, endpoint);
 
-  public TupleQueryResult getResult() {
-    return result;
+
+
   }
 
 }

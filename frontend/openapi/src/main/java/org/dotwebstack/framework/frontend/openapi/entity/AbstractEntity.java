@@ -5,18 +5,59 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
-import org.eclipse.rdf4j.query.QueryResult;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParameters;
 
-abstract class AbstractEntity<R extends QueryResult<?>> implements Entity<R> {
+abstract class AbstractEntity implements Entity {
 
+  private final RequestParameters requestParameters;
+  private QueryResult queryResult;
   protected ImmutableMap<MediaType, Property> schemaMap;
 
-  protected AbstractEntity(@NonNull Map<MediaType, Property> schemaMap) {
+  private Property schemaProperty;
+
+  private String baseUri;
+
+  private String endpoint;
+
+  protected AbstractEntity(@NonNull Map<MediaType, Property> schemaMap, Property schemaProperty,
+      RequestParameters requestParameters, QueryResult queryResult, String baseUri,
+      String endpoint) {
     this.schemaMap = ImmutableMap.copyOf(schemaMap);
+    this.schemaProperty = schemaProperty;
+    this.requestParameters = requestParameters;
+    this.queryResult = queryResult;
+    this.baseUri = baseUri;
+    this.endpoint = endpoint;
   }
 
   public Map<MediaType, Property> getSchemaMap() {
     return schemaMap;
   }
 
+  @Override
+  public Property getSchemaProperty() {
+    return schemaProperty;
+  }
+
+  @Override
+  public RequestParameters getRequestParameters() {
+    return requestParameters;
+  }
+
+
+  @Override
+  public QueryResult getQueryResult() {
+    return queryResult;
+  }
+
+  @Override
+  public String getEndpoint() {
+    return endpoint;
+  }
+
+  @Override
+  public String getBaseUri() {
+    return baseUri;
+  }
 }
