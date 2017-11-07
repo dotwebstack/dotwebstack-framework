@@ -19,20 +19,20 @@ public class Appearance {
 
   private IRI identifier;
 
-  private IRI appearanceType;
+  private IRI type;
   
-  private Model appearanceModel;
+  private Model model;
   
   private Appearance(Builder builder) {
     identifier = builder.identifier;
-    appearanceType = builder.appearanceType;
-    appearanceModel = builder.appearanceModel;
+    type = builder.appearanceType;
+    model = builder.appearanceModel;
   }
 
   public Appearance() {
     identifier = ELMO.APPEARANCE;
-    appearanceType = ELMO.APPEARANCE;
-    appearanceModel = new LinkedHashModel();
+    type = ELMO.APPEARANCE;
+    model = new LinkedHashModel();
   }
   
   public IRI getIdentifier() {
@@ -40,13 +40,13 @@ public class Appearance {
   }
 
   public IRI getAppearanceType() {
-    return appearanceType;
+    return type;
   }
   
-  public void writeAppearanceConfig(OutputStream outputStream) {
-    Rio.write(appearanceModel, outputStream, RDFFormat.RDFXML);
+  public Model getModel() {
+    return model;
   }
-
+  
   public static class Builder {
 
     private IRI identifier;

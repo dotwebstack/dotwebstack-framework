@@ -30,7 +30,7 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
 
   @Override
   protected GraphQuery getQueryForResources(@NonNull RepositoryConnection conn) {
-    String query = "CONSTRUCT { ?s?p?o } WHERE { ?s?p?o. ?rep ?appearance ?s. }";
+    String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o. ?rep ?appearance ?s. }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
 
     graphQuery.setBinding("appearance", ELMO.APPEARANCE_PROP);
@@ -48,7 +48,8 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
 
-    String query = "CONSTRUCT { ?app?p?o.?o?op?oo } WHERE { ?app?p?o.OPTIONAL{?o?op?oo}}";
+    String query = "CONSTRUCT { ?app ?p ?o. ?o ?op ?oo } "
+        + "WHERE { ?app ?p ?o. OPTIONAL { ?o ?op ?oo } }";
     GraphQuery graphQuery = repositoryConnection.prepareGraphQuery(query);
     graphQuery.setBinding("app", identifier);
 
@@ -64,8 +65,8 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
     } finally {
       repositoryConnection.close();
     }
-    return model;
 
+    return model;
   }
 
   @Override
