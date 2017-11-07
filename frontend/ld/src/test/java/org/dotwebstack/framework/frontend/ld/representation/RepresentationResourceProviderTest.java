@@ -80,7 +80,8 @@ public class RepresentationResourceProviderTest {
   @Before
   public void setUp() {
     representationResourceProvider = new RepresentationResourceProvider(configurationBackend,
-        informationProductResourceProvider, appearanceResourceProvider, stageResourceProvider, applicationProperties);
+        informationProductResourceProvider, appearanceResourceProvider,
+        stageResourceProvider, applicationProperties);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -108,7 +109,8 @@ public class RepresentationResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new RepresentationResourceProvider(configurationBackend, null, null, null, applicationProperties);
+    new RepresentationResourceProvider(configurationBackend, null, null, null,
+        applicationProperties);
   }
 
   @Test
