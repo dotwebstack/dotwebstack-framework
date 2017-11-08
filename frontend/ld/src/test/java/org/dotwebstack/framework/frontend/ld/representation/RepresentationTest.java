@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -58,7 +59,7 @@ public class RepresentationTest {
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), equalTo(null));
     assertThat(representation.getStage(), equalTo(null));
-    assertThat(representation.getUrlPatterns(), equalTo(null));
+    assertThat(representation.getUrlPatterns(), equalTo(Collections.EMPTY_LIST));
   }
 
   @Test
