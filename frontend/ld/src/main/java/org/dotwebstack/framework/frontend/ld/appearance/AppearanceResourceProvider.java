@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.ld.appearance;
 
-import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -32,7 +31,6 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
   protected GraphQuery getQueryForResources(@NonNull RepositoryConnection conn) {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o. ?rep ?appearance ?s. }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
-
     graphQuery.setBinding("appearance", ELMO.APPEARANCE_PROP);
 
     return graphQuery;

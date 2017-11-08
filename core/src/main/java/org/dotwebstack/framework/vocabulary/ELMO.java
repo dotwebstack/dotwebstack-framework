@@ -49,10 +49,6 @@ public final class ELMO {
 
   public static final IRI APPEARANCE;
 
-  public static final IRI RESOURCE_APPEARANCE;
-
-  public static final IRI TABLE_APPEARANCE;
-
   public static final IRI APPEARANCE_PROP;
 
   public static final IRI URL_PATTERN;
@@ -85,10 +81,7 @@ public final class ELMO {
 
     REPRESENTATION = valueFactory.createIRI(ELMO.NAMESPACE, "Representation");
     REDIRECTION = valueFactory.createIRI(ELMO.NAMESPACE, "Redirection");
-
     APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "Appearance");
-    RESOURCE_APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "ResourceAppearance");
-    TABLE_APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "TableAppearance");
 
     // Properties
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
