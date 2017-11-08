@@ -49,18 +49,10 @@ public class Appearance {
 
     private Model model;
 
-    public Builder(@NonNull IRI identifier) {
+    public Builder(@NonNull IRI identifier, @NonNull IRI type, @NonNull Model model) {
       this.identifier = identifier;
-    }
-
-    public Builder type(@NonNull IRI type) {
       this.type = type;
-      return this;
-    }
-
-    public Builder model(@NonNull Model model) {
       this.model = model;
-      return this;
     }
 
     public Appearance build() {

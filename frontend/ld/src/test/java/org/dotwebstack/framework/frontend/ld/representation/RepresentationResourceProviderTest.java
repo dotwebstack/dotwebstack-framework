@@ -219,6 +219,7 @@ public class RepresentationResourceProviderTest {
                 ELMO.URL_PATTERN, DBEERPEDIA.URL_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE))));
+
     // Act
     representationResourceProvider.loadResources();
 
@@ -237,6 +238,7 @@ public class RepresentationResourceProviderTest {
                 ELMO.REPRESENTATION),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.URL_PATTERN, DBEERPEDIA.URL_PATTERN))));
+
     // Act
     representationResourceProvider.loadResources();
 
@@ -258,6 +260,7 @@ public class RepresentationResourceProviderTest {
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT))));
+
     // Act
     representationResourceProvider.loadResources();
 
@@ -275,6 +278,7 @@ public class RepresentationResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
             RDF.TYPE, ELMO.REPRESENTATION))));
+
     // Act
     representationResourceProvider.loadResources();
 

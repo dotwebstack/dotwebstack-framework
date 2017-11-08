@@ -38,12 +38,12 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
 
   @Override
   protected Appearance createResource(@NonNull Model model, @NonNull IRI identifier) {
-    final Appearance.Builder builder = new Appearance.Builder(identifier);
+    IRI type =
+        getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(() -> new ConfigurationException(
+            String.format("No <%s> statement has been found for appearance <%s>.",
+                RDF.TYPE, identifier)));
 
-    getObjectIRI(model, identifier, RDF.TYPE).ifPresent(builder::type);
-    builder.model(getModel(identifier));
-
-    return builder.build();
+    return new Appearance.Builder(identifier, type, getModel(identifier)).build();
   }
 
   private Model getModel(IRI identifier) {

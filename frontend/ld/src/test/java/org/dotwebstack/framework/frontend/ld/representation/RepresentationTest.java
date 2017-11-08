@@ -10,6 +10,8 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -61,12 +63,8 @@ public class RepresentationTest {
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), equalTo(null));
     assertThat(representation.getStage(), equalTo(null));
-<<<<<<< HEAD
     assertThat(representation.getUrlPatterns(), equalTo(Collections.EMPTY_LIST));
-=======
     assertThat(representation.getAppearance(), equalTo(null));
-    assertThat(representation.getUrlPatterns(), equalTo(null));
->>>>>>> Adapted representation unit tests
   }
 
   @Test
@@ -103,7 +101,8 @@ public class RepresentationTest {
     final Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
-    final Appearance appearance = new Appearance.Builder(DBEERPEDIA.BREWERY_APPEARANCE).build();
+    final Appearance appearance = new Appearance.Builder(DBEERPEDIA.BREWERY_APPEARANCE,
+        ELMO.RESOURCE_APPEARANCE, new LinkedHashModel()).build();
 
     final Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
