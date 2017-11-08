@@ -1,0 +1,347 @@
+# Vocabulary for ELMO version 2.0: Extendable Lightweight Model Ontology. A vocabulary for the dotwebstack framework configuration
+#
+# The vocabulary consists of three separate parts:
+# - The system configuration of the framework
+# - The configuration for the backend and core layers of the framework
+# - The configuration for the frontend of the framework
+#
+#
+# This vocabulary file contains the ontology description
+# A complementary file contains the shape graph that should be used when creating statements using this vocabulary.
+#
+
+@prefix elmo: <http://dotwebstack.org/def/elmo#>.
+@prefix elmo-sp: <http://dotwebstack.org/def/elmo/storage-protocol/>.
+
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+
+# =========
+# Imports
+#
+xsd:string a rdfs:Datatype.
+xsd:integer a rdfs:Datatype.
+
+# =========
+# Ontology spec
+#
+elmo: a owl:Ontology;
+	rdfs:label "The Extendable Lightweight Model Ontology (ELMO)"@en;
+	rdfs:comment "A vocabulary for the dotwebstack framework configuration."@en;
+	sh:declare [
+		sh:prefix "elmo";
+		sh:namespace "http://dotwebstack.org/def/elmo#"
+	];
+	sh:suggestedShapesGraph <http://dotwebstack.org/def/elmo-shacl#>
+.
+
+# =========
+# System configuration vocabulary
+#
+elmo:Theatre a owl:Class;
+	rdfs:label "Theatre"@en;
+	rdfs:comment "The class of executable instances for the dotwebstack framework. The system configuration graph should contain exactly one theatre instance. If no theatre instance is present, a default version is created. All sites in the same system configuration graph are considered part of the particular theatre instance."@en;
+.
+elmo:Site a owl:Class;
+	rdfs:label "Site"@en;
+	rdfs:comment "The class of sites that host the dotwebstack framework. A site is identified by a domain name. If no site is present in the system configuration graph, a default version is created, identified by 'localhost'";
+.
+elmo:Stage a owl:Class;
+	rdfs:label "Stage"@en;
+	rdfs:comment "The class of stages at a site. A stage is identified by its site and a base path, the first part of the path after the domain name, typically up to the next slash. If no stage is present, a default version is created, the 'main stage', identified by an empty path.";
+.
+elmo:Layout a owl:Class;
+	rdfs:label "Layout"@en;
+	rdfs:comment "The layout that is used for a particular stage, site or theatre. The theatre layout is inherited by all sites (unless stated otherwise), and a site layout is inherited by all stages for that site (unless stated otherwise). A default layout is used if no layout is specified"@en;
+.
+
+elmo:domain a owl:DatatypeProperty;
+	rdfs:label "domain"@en;
+	rdfs:comment "States the domain for a particular site"@en;
+	rdfs:domain elmo:Site;
+	rdfs:range xsd:string;
+.
+elmo:site a owl:ObjectProperty;
+	rdfs:label "site"@en;
+	rdfs:comment "States the site to which a particular stage belongs"@en;
+	rdfs:domain elmo:Stage;
+	rdfs:range elmo:Site;
+.
+elmo:basePath a owl:DatatypeProperty;
+	rdfs:label "base path"@en;
+	rdfs:comment "States the base path of a stage, the first part of the path after the domain name, typically up to the next slash. A base path may include slashes";
+.
+elmo:layout a owl:DatatypeProperty;
+	rdfs:label "layout"@en;
+	rdfs:comment "States the layout for a particular theatre, site or stage"@en;
+	rdfs:range elmo:Layout
+	# No rdfs:domain -> domain could be theatre, site or stage
+.
+
+# =========
+# Backstage and core layers vocabulary
+#
+elmo:InformationProduct a owl:Class;
+	rdfs:label "Information product"@en;
+	rdfs:comment "The class of information product specifications. An information product retrieves some data according to a specific information request, and returns a set of one or more graphs OR a binding set. It should not be possible to use an information product to manipulate data."@en;
+.
+elmo:Transaction a owl:Class;
+	rdfs:label "Transaction"@en;
+	rdfs:comment "The class of transaction specifications. A transaction creates or deletes data according to a specific transaction request. A transaction is defined as a sequence of tasks."@en;
+.
+elmo:Query a owl:Class;
+	rdfs:label "Query"@en;
+	rdfs:comment "Reification of the query. This makes it possible to reuse a query, or to add metadata to the query";
+.
+
+elmo:Parameter a owl:Class;
+	rdfs:label "Parameter"@en;
+	rdfs:comment "The class of parameters. A parameter is used as input for an information product. Its value(s) are merged with the query according to a template specification.";
+.
+elmo:TermFilter a owl:Class;
+	rdfs:subClassOf elmo:Parameter;
+	rdfs:label "Term filter"@en;
+	rdfs:comment "The class of term filters. A term filter is a parameter that can hold one value and can be used to filter the results of an information product. The value might be a URI or a literal with any datatype."
+.
+
+elmo:StorageProtocol a owl:Class;
+	rdfs:label "StorageProtocol"@en;
+	rdfs:comment "The class of storage protocols. Instances of this class define how a transactionresult is stored within the persistancy layer";
+.
+elmo:Transformer a owl:Class;
+	rdfs:label "Transformer"@en;
+	rdfs:comment "The class of transformers.";
+.
+elmo:RMLTransformer a owl:Class;
+	rdfs:label "RMLTransformer"@en;
+	rdfs:subClassOf elmo:Transformer;
+	rdfs:comment "The class of RML transformers.";
+.
+elmo:XSLTransformer a owl:Class;
+	rdfs:label "XSLTransformer"@en;
+	rdfs:subClassOf elmo:Transformer;
+	rdfs:comment "The class of XSL transformers.";
+.
+
+elmo:Backend a owl:Class;
+	rdfs:label "Backend"@en;
+	rdfs:comment "The class of backend specifications. A backend specification specifies the data store that can be accessed to retrieve data or to manipulate the data in the store"@en;
+.
+elmo:SparqlBackend a owl:Class;
+	rdfs:subClassOf elmo:Backend;
+	rdfs:label "Sparql backend"@en;
+	rdfs:comment "The class of sparql backends. A sparql backend implements the sparql 1.1 protocol: http://www.w3.org/TR/sparql11-protocol"@en;
+.
+elmo:ElasticSearchBackend a owl:Class;
+	rdfs:subClassOf elmo:Backend;
+	rdfs:label "Elastic search backend"@en;
+	rdfs:comment "The class of elastic search backends. An Elastic search backend retrieves Linked Data documents from an elastic search server."@en;
+.
+elmo:FileBackend a owl:Class;
+	rdfs:subClassOf elmo:Backend;
+	rdfs:label "File backend"@en;
+	rdfs:comment "The class of file backends. A file backend retrieves Linked Data documents from a file system."@en;
+.
+
+elmo:backend a owl:ObjectProperty;
+	rdfs:label "backend"@en;
+	rdfs:comment "States the backend for a particular information product"@en;
+	rdfs:range elmo:Backend;
+	# No rdfs:domain -> domain could be information product or transaction, and we may introduce 'source' as a class between information product and backend
+.
+elmo:endpoint a owl:DatatypeProperty;
+	rdfs:label "endpoint"@en;
+	rdfs:comment "States the (http) endpoint that should be accessed for this particular backend. Note: this property is only relevant for backends that respond to http requests"@en;
+	rdfs:domain elmo:Backend;
+	rdfs:range xsd:anyURI;
+.
+elmo:query a owl:DatatypeProperty;
+	rdfs:label "query"@en;
+	rdfs:comment "States the query that specifies the information request. Note: the syntax for a query may differ between backends (for example: a SPARQL query for a Sparql backend, a JSON query for an Elastic search backend)."@en;
+	rdfs:domain elmo:InformationProduct;
+	rdfs:range xsd:string;
+.
+
+elmo:targetGraph a owl:ObjectProperty;
+	rdfs:label "targetGraph"@en;
+	rdfs:comment "States the named graph that is affected by the transaction. If no target graph is mentioned, and the storageProtocol needs one, the value of the subject parameter is used";
+	rdfs:domain elmo:Transaction;
+	rdfs:range rdfs:Resource;
+.
+elmo:storageProtocol a owl:ObjectProperty;
+	rdfs:label "storageProtocol"@en;
+	rdfs:comment "Defines the way that the result of a transaction is stored within the persistancy layer";
+	rdfs:domain elmo:Transaction;
+	rdfs:range elmo:StorageProtocol;
+.
+elmo:transformer a owl:ObjectProperty;
+	rdfs:label "transformer"@en;
+	rdfs:comment "States the transformer that is used to transform the input data into RDF to store in the in memory transaction dataset";
+	rdfs:domain elmo:Transaction;
+	rdfs:range elmo:Transformer;
+.
+elmo:uriTemplate a owl:DatatypeProperty;
+	rdfs:label "uriTemplate"@en;
+	rdfs:comment "Specifies the template that is used for minting a URI during a transaction.";
+.
+elmo:optionalParameter a owl:ObjectProperty;
+	rdfs:label "optional parameter";
+	rdfs:comment "States the optional parameter(s) for an information product, transaction or query";
+	rdfs:range elmo:Parameter;
+.
+elmo:requiredParameter a owl:ObjectProperty;
+	rdfs:label "required parameter";
+	rdfs:comment "States the optional parameter(s) for an information product, transaction or query";
+	rdfs:range elmo:Parameter;
+.
+
+# =========
+# Storage protocols
+#
+# Used terminology in the description of the storage protocols:
+# - subject parameter: the parameter that identifies the subject of the transaction. In REST API's this will be similar to the URL
+# - target graph: the URI of an explicitly specified target graph (as part of the transaction configuration), or the value of the subject parameter in case no target graph is specified
+# - transaction dataset: the in memory dataset that is loaded from the http request body (and may be changed by an pre-query)
+#
+elmo-sp:DeleteGraph a elmo:StorageProtocol;
+	rdfs:label "Clear graph";
+	rdfs:comment "Clears the content of the target graph";
+.
+elmo-sp:ReplaceGraph a elmo:StorageProtocol;
+	rdfs:label "Replace graph";
+	rdfs:comment "Replaces the content of the target graph with the content of the transaction dataset";
+.
+elmo-sp:InsertIntoGraph a elmo:StorageProtocol;
+	rdfs:label "Insert into graph";
+	rdfs:comment "Inserts the content of the transaction dataset in the target graph, without deleting any triples in the target graph";
+.
+elmo-sp:InsertOrReplaceResourceInGraph a elmo:StorageProtocol;
+	rdfs:label "Insert or replace resource in graph";
+	rdfs:comment "Insert the content of the transaction dataset in the target graph, and deletes any triples <s,p,o> for any s that is present in the transaction dataset";
+.
+elmo-sp:DeleteResourceFromGraph a elmo:StorageProtocol;
+	rdfs:label "Delete resource from graph";
+	rdfs:comment "Deletes any triples <s,p,o> from the target graph where s is equal to the value of the subject parameter";
+.
+elmo-sp:CreateResourceInGraph a elmo:StorageProtocol;
+	rdfs:label "Create resource in graph";
+	rdfs:comment "mints URIs for any resource in the transaction dataset (as defined by elmo:uriTemplate), and inserts the transaction dataset into the target graph.";
+.
+elmo-sp:InsertIntoVersionGraph a elmo:StorageProtocol;
+	rdfs:label "Insert into version graph";
+	rdfs:comment "inserts the content of the transaction dataset into a newly created versioned target graph.";
+.
+elmo-sp:InvalidateVersionGraph a elmo:StorageProtocol;
+	rdfs:label "Invalidate version graph";
+	rdfs:comment "invalidates the current version (this created a new version that states that the previous version is invalid)";
+.
+elmo-sp:DeleteVersionGraph a elmo:StorageProtocol;
+	rdfs:label "Delete version graph";
+	rdfs:comment "deletes a particular version graph.";
+.
+elmo-sp:CreateResourceInVersionGraph a elmo:StorageProtocol;
+	rdfs:label "Create resource in version graph";
+	rdfs:comment "mints URIs for any resource in the transaction dataset (as defined by elmo:uriTemplate), and inserts the content of the transaction dataset into a newly created versioned target graph.";
+.
+
+# =========
+# Frontend vocabulary
+#
+elmo:Redirection a owl:Class;
+	rdfs:label "Redirection"@en;
+	rdfs:comment "The class of redirections. A redirection redirects a http request to another URL via the http 303 response"@en;
+.
+
+elmo:Representation a owl:Class;
+	rdfs:label "Representation"@en;
+	rdfs:comment "The class of representations. A representation links a http request to the corresponding information product."@en;
+.
+elmo:name a owl:DatatypeProperty;
+	rdfs:label "name"@en;
+	rdfs:comment "The unique name of a resource, within a certain context";
+	# No rdfs:domain, name can be used in a lot of situations;
+	rdfs:range xsd:string;
+.
+elmo:urlPattern a owl:DatatypeProperty;
+	rdfs:label "URL pattern"@en;
+	rdfs:comment "Specifies the URL pattern for which this representation should be used. The URL pattern is matched to the part of the http request after removing the domain name of the site and the base path of the stage."@en;
+	# No rdfs:domain, a urlPattern can be used with elmo:Representation and elmo:Redirection
+	rdfs:range xsd:string;
+.
+elmo:uriPattern a owl:DatatypeProperty;
+	rdfs:label "URI pattern"@en;
+	rdfs:comment "Specifies the URI pattern of the subject resource for which this representation should be used. The subject is equal to a dereferenceable URI or the value of the 'subject' or URL parameter if present. In all other cases, no match will be made."@en;
+	rdfs:domain elmo:Representation;
+	rdfs:range xsd:string;
+.
+elmo:appliesTo a owl:ObjectProperty;
+	rdfs:label "applies to"@en;
+	rdfs:comment "Specifies the resource profile for which this representation should be used. A resource profile is a set of triples ([]?p?o). A particular resource ?s matches a resource profile if and only if all triples ?s?p?o exist. For example: the resource profile [rdf:type skos:Concept] whould match any resource that is of type skos:Concept."@en;
+	# no rdfs:domain: it could be elmo:Representation, but also elmo:Fragment;
+	rdfs:range rdfs:Resource;
+.
+elmo:targetUrl a owl:DatatypeProperty;
+	rdfs:label "target URL"@en;
+	rdfs:comment "Specifies the template for the URL to redirect to. The template conforms to the 'replacement' parameter of the string.replaceAll(regex,replacement) method, the elmo:urlPattern will be used as the 'regex' parameter."
+.
+elmo:fragment a owl:ObjectProperty;
+	rdfs:label "fragment"@en;
+	rdfs:comment "Links a particular fragment definition to a representation";
+	rdfs:domain elmo:Representation;
+	rdfs:range elmo:Fragment;
+.
+elmo:informationProduct a owl:ObjectProperty;
+	rdfs:label "information product"@en;
+	rdfs:comment "States the information product of a particular representation"@en;
+	rdfs:domain elmo:Representation;
+	rdfs:range elmo:InformationProduct;
+.
+elmo:putTransaction a owl:ObjectProperty;
+	rdfs:label "transaction"@en;
+	rdfs:comment "States the transaction that is executed for a particular representation, in case of a PUT http request"@en;
+	rdfs:domain elmo:Representation;
+	rdfs:range elmo:Transaction;
+.
+elmo:postTransaction a owl:ObjectProperty;
+	rdfs:label "transaction"@en;
+	rdfs:comment "States the transaction that is executed for a particular representation, in case of a POST http request"@en;
+	rdfs:domain elmo:Representation;
+	rdfs:range elmo:Transaction;
+.
+elmo:deleteTransaction a owl:ObjectProperty;
+	rdfs:label "transaction"@en;
+	rdfs:comment "States the transaction that is executed for a particular representation, in case of a DELETE http request"@en;
+	rdfs:domain elmo:Representation;
+	rdfs:range elmo:Transaction;
+.
+elmo:data a owl:ObjectProperty;
+	rdfs:label "data"@en;
+	rdfs:comment "Links the representation with some particular resource that is used as static data"@en;
+	rdfs:domain elmo:Representation;
+	rdfs:range rdfs:Resource;
+.
+elmo:contains a owl:ObjectProperty;
+	rdfs:label "contains"@en;
+	rdfs:comment "States that a certain top level representation contains child representations. These child representations are only used to give extra information for humans. For non-html serializations, only the information product that is directly linked to the top level representation is used as the data source. The contains-relationship might be used for link headers."@en;
+	rdfs:domain elmo:Representation;
+	rdfs:range elmo:Representation;
+.
+elmo:template a owl:DatatypeProperty;
+	rdfs:label "template"@en;
+	rdfs:comment "Specifies an optional JSX template for the representation. This template replaces a default generated template from the configuration";
+	rdfs:domain elmo:Representation;
+	rdfs:range xsd:string;
+.
+
+elmo:Fragment a owl:Class;
+	rdfs:label "Fragment"@en;
+	rdfs:comment "The class of fragments";
+.
+
+elmo:Appearance a owl:Class;
+	rdfs:label "Appearance"@en;
+	rdfs:comment "The class of appearances";
+.

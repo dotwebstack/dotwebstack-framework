@@ -5,6 +5,6 @@
 
 GRAPH dbeerpedia:Theatre {
   dbeerpedia:Backend a elmo:SparqlBackend;
-    elmo:endpoint "http://localhost:8900/sparql"^^xsd:anyURI;
+    elmo:endpoint "http://localhost:8890/sparql"^^xsd:anyURI;
   .
 }
