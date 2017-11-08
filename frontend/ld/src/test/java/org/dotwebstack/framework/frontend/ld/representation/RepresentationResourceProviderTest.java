@@ -17,6 +17,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
+import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
 import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -62,6 +63,9 @@ public class RepresentationResourceProviderTest {
   private Stage stage;
 
   @Mock
+  private Appearance appearance;
+
+  @Mock
   private ConfigurationBackend configurationBackend;
 
   @Mock
@@ -89,6 +93,7 @@ public class RepresentationResourceProviderTest {
 
     when(informationProductResourceProvider.get(any())).thenReturn(informationProduct);
     when(stageResourceProvider.get(any())).thenReturn(stage);
+    when(appearanceResourceProvider.get(any())).thenReturn(appearance);
 
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
@@ -155,7 +160,9 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.URL_PATTERN, DBEERPEDIA.URL_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
-                ELMO.STAGE_PROP, DBEERPEDIA.STAGE))));
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.APPEARANCE_PROP, DBEERPEDIA.BREWERY_APPEARANCE))));
 
     // Act
     representationResourceProvider.loadResources();
@@ -169,6 +176,7 @@ public class RepresentationResourceProviderTest {
     assertThat(representation.getUrlPatterns().toArray()[0],
         equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
     assertThat(representation.getStage(), equalTo(stage));
+    assertThat(representation.getAppearance(), equalTo(appearance));
   }
 
   @Test
@@ -221,7 +229,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void loadResources_LoadRepresentation_WithMissingStage() {
+  public void loadResources_LoadRepresentation_WithMissingStageAndAppearance() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -236,6 +244,7 @@ public class RepresentationResourceProviderTest {
     Representation representation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
     assertThat(representation.getStage(), is(nullValue()));
+    assertThat(representation.getAppearance(), is(nullValue()));
   }
 
   @Test
