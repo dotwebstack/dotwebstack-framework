@@ -2,3 +2,9 @@
 @prefix elmo: <http://dotwebstack.org/def/elmo#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix elmo-sp: <http://dotwebstack.org/def/elmo/storage-protocol/>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix elmo-resulttype: <http://dotwebstack.org/def/elmo/result-type/> .
+@prefix config: <http://dotwebstack.org/configuration/>.
