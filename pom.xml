@@ -78,6 +78,7 @@
     <module>frontend</module>
     <module>test</module>
     <module>integration-test</module>
+    <module>jacoco-report-aggregate</module>
   </modules>
 
   <dependencyManagement>
@@ -115,6 +116,11 @@
       <dependency>
         <groupId>org.dotwebstack.framework</groupId>
         <artifactId>dotwebstack-test</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.dotwebstack.framework</groupId>
+        <artifactId>dotwebstack-integration-test</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -204,6 +210,7 @@
               <consoleOutput>true</consoleOutput>
               <failOnViolation>true</failOnViolation>
               <violationSeverity>warning</violationSeverity>
+              <includeTestSourceDirectory>true</includeTestSourceDirectory>
             </configuration>
             <goals>
               <goal>check</goal>
@@ -217,21 +224,6 @@
             <version>8.0</version>
           </dependency>
         </dependencies>
-      </plugin>
-      <plugin>
-        <groupId>org.owasp</groupId>
-        <artifactId>dependency-check-maven</artifactId>
-        <version>3.0.1</version>
-        <configuration>
-          <failBuildOnCVSS>8</failBuildOnCVSS>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
@@ -328,6 +320,21 @@
                     </rule>
                   </rules>
                 </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <version>3.0.1</version>
+            <configuration>
+              <failBuildOnCVSS>8</failBuildOnCVSS>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>check</goal>
+                </goals>
               </execution>
             </executions>
           </plugin>

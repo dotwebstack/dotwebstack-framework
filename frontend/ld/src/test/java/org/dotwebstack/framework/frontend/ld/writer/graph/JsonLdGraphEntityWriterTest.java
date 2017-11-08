@@ -119,7 +119,7 @@ public class JsonLdGraphEntityWriterTest {
   @Test
   public void writeTo_JsonLdFormat_ForQueryResult() throws Exception {
     // Arrange
-    JsonLdGraphEntityWriter writer = new JsonLdGraphEntityWriter();
+    final JsonLdGraphEntityWriter writer = new JsonLdGraphEntityWriter();
     Model model =
         new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDF.TYPE, DBEERPEDIA.BACKEND).add(
             RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL).build();

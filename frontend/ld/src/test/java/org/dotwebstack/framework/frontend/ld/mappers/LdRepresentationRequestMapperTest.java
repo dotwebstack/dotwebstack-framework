@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.frontend.ld.mappers;
 
-
-import static javax.ws.rs.HttpMethod.GET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
@@ -12,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -122,12 +121,12 @@ public class LdRepresentationRequestMapperTest {
 
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
-    ResourceMethod method = resource.getResourceMethods().get(0);
+    final ResourceMethod method = resource.getResourceMethods().get(0);
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.URL_PATTERN_VALUE));
     assertThat(resource.getResourceMethods(), hasSize(1));
-    assertThat(method.getHttpMethod(), equalTo(GET));
+    assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
   }
 
   @Test
