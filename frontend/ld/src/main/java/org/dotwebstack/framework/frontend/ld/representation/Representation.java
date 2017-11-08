@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -47,7 +48,7 @@ public class Representation {
 
     private InformationProduct informationProduct;
 
-    private List<String> urlPatterns;
+    private List<String> urlPatterns = new ArrayList<>();
 
     private Stage stage;
 
