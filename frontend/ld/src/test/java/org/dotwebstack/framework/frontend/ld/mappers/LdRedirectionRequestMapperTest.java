@@ -95,7 +95,7 @@ public class LdRedirectionRequestMapperTest {
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
     ResourceMethod method = resource.getResourceMethods().get(0);
     assertThat(httpConfiguration.getResources(), hasSize(1));
-    assertThat(resource.getPath(), equalTo("{any: dbeerpedia.org\\/special\\/id\\/(.+)$}"));
+    assertThat(resource.getPath(), equalTo("/dbeerpedia.org/special{any: \\/id\\/(.+)$}"));
     assertThat(resource.getResourceMethods(), hasSize(1));
     assertThat(method.getHttpMethod(), equalTo(GET));
   }

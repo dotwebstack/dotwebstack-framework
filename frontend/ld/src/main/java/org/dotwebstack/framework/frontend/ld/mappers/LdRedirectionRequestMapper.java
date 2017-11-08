@@ -37,11 +37,9 @@ public class LdRedirectionRequestMapper {
 
   private void mapRedirection(Redirection redirection, HttpConfiguration httpConfiguration) {
     String basePath = redirection.getStage().getFullPath();
-    basePath = basePath.replaceAll("^\\/", "");
-    basePath = basePath.replaceAll("\\/", "\\\\/");
 
     String urlPattern = redirection.getUrlPattern().replaceAll("^\\^", "");
-    String absolutePathRegex = String.format("{any: %s%s}", basePath, urlPattern);
+    String absolutePathRegex = String.format("%s{any: %s}", basePath, urlPattern);
 
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePathRegex);
     resourceBuilder.addMethod(HttpMethod.GET).handledBy(
