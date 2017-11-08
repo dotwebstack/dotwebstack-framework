@@ -47,7 +47,7 @@ public class LdRedirectionRequestMapper {
 
     if (!httpConfiguration.resourceAlreadyRegistered(absolutePathRegex)) {
       httpConfiguration.registerResources(resourceBuilder.build());
-      LOG.debug("Mapped GET operation for request path {}", absolutePathRegex);
+      LOG.debug("Mapped GET redirection for request path {}", absolutePathRegex);
     } else {
       LOG.error(String.format("Resource <%s> is not registered", absolutePathRegex));
     }
