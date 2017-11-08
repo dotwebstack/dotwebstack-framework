@@ -29,6 +29,8 @@ public class FileConfigurationBackendIntegrationTest {
 
   private Resource elmoConfiguration;
 
+  private Resource elmoShapes;
+
   private SailRepository sailRepository;
 
   @Autowired
@@ -37,6 +39,7 @@ public class FileConfigurationBackendIntegrationTest {
   @Before
   public void initVars() {
     elmoConfiguration = new ClassPathResource("/elmo.trig");
+    elmoShapes = new ClassPathResource("/elmo-shapes.trig");
     sailRepository = new SailRepository(new MemoryStore());
   }
 
@@ -45,7 +48,7 @@ public class FileConfigurationBackendIntegrationTest {
       throws Exception {
     // Arrange
     fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
-        "invalidConfig");
+        "invalidConfig", elmoShapes);
 
     // Assert
     thrown.expect(ConfigurationException.class);

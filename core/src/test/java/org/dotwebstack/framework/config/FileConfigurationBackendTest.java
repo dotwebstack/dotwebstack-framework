@@ -55,6 +55,9 @@ public class FileConfigurationBackendTest {
   private Resource elmoConfigurationResource;
 
   @Mock
+  private Resource elmoShapesResource;
+
+  @Mock
   private SailRepositoryConnection repositoryConnection;
 
   @Mock
@@ -68,7 +71,8 @@ public class FileConfigurationBackendTest {
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config");
+    backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config",
+        elmoShapesResource);
     backend.setResourceLoader(resourceLoader);
     backend.setEnvironment(environment);
     when(repository.getConnection()).thenReturn(repositoryConnection);
@@ -80,7 +84,7 @@ public class FileConfigurationBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new FileConfigurationBackend(null, repository, "file:config");
+    new FileConfigurationBackend(null, repository, "file:config", elmoShapesResource);
   }
 
   @Test
@@ -89,7 +93,8 @@ public class FileConfigurationBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new FileConfigurationBackend(elmoConfigurationResource, null, "file:config");
+    new FileConfigurationBackend(elmoConfigurationResource, null, "file:config",
+        elmoShapesResource);
   }
 
   @Test
@@ -98,8 +103,10 @@ public class FileConfigurationBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new FileConfigurationBackend(elmoConfigurationResource, repository, null);
+    new FileConfigurationBackend(elmoConfigurationResource, repository, null, elmoShapesResource);
   }
+
+  // [todo] add test for null elmoShapesResource
 
   @Test
   public void setResourceLoader_ThrowsException_WithMissingValue() {
@@ -136,7 +143,7 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource resource = mock(Resource.class);
     when(resource.getInputStream()).thenReturn(
-        new ByteArrayInputStream("file" .getBytes(Charsets.UTF_8)));
+        new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
@@ -219,13 +226,13 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource resource = mock(Resource.class);
     when(resource.getInputStream()).thenReturn(
-        new ByteArrayInputStream("file" .getBytes(Charsets.UTF_8)));
+        new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {resource});
 
     when(elmoConfigurationResource.getInputStream()).thenReturn(
-        new ByteArrayInputStream("elmo" .getBytes(Charsets.UTF_8)));
+        new ByteArrayInputStream("elmo".getBytes(Charsets.UTF_8)));
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
 
     // Act

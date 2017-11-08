@@ -29,6 +29,8 @@ public class FileConfigurationBackendPrefixesIntegrationTest {
 
   private Resource elmoConfiguration;
 
+  private Resource elmoShapes;
+
   private SailRepository sailRepository;
 
   @Autowired
@@ -37,6 +39,7 @@ public class FileConfigurationBackendPrefixesIntegrationTest {
   @Before
   public void initVars() {
     elmoConfiguration = new ClassPathResource("/elmo.trig");
+    elmoShapes = new ClassPathResource("/elmo-shapes.trig");
     sailRepository = new SailRepository(new MemoryStore());
   }
 
@@ -45,7 +48,7 @@ public class FileConfigurationBackendPrefixesIntegrationTest {
       throws Exception {
     // Arrange
     fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
-        "invalidPrefixConfig");
+        "invalidPrefixConfig", elmoShapes);
 
     // Assert
     thrown.expect(ConfigurationException.class);

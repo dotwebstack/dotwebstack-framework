@@ -18,6 +18,9 @@ public class ApplicationConfigurationTest {
   @Mock
   private Resource resource;
 
+  @Mock
+  private Resource elmoShapesResource;
+
   private ApplicationConfiguration applicationConfiguration;
 
   @Before
@@ -29,7 +32,8 @@ public class ApplicationConfigurationTest {
   public void configurationBackend_ReturnsBackend_WhenInstantiated() {
     // Act
     ConfigurationBackend backend =
-        applicationConfiguration.configurationBackend(resource, "file:src/main/resources");
+        applicationConfiguration
+            .configurationBackend(resource, "file:src/main/resources", elmoShapesResource);
 
     // Assert
     assertThat(backend, instanceOf(FileConfigurationBackend.class));

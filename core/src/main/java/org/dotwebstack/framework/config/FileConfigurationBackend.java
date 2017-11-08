@@ -37,6 +37,8 @@ public class FileConfigurationBackend
 
   private final Resource elmoConfiguration;
 
+  private final Resource elmoShapes;
+
   private final SailRepository repository;
 
   private ResourceLoader resourceLoader;
@@ -44,10 +46,12 @@ public class FileConfigurationBackend
   private Environment environment;
 
   public FileConfigurationBackend(@NonNull Resource elmoConfiguration,
-      @NonNull SailRepository repository, @NonNull String resourcePath) {
+      @NonNull SailRepository repository, @NonNull String resourcePath,
+      @NonNull Resource elmoShapes) {
     this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
     this.resourcePath = resourcePath;
+    this.elmoShapes = elmoShapes;
     repository.initialize();
   }
 
@@ -145,7 +149,7 @@ public class FileConfigurationBackend
 
   private void checkMultiplePrefixesDeclaration(Resource prefixes) throws IOException {
     Map<String, String> prefixesMap = new HashMap<>();
-    
+
     final String[] allPrefixes = getPrefixesOfResource(prefixes);
     int lineNumber = 0;
     for (String prefix : allPrefixes) {
