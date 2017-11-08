@@ -3,10 +3,12 @@ package org.dotwebstack.framework.config;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,9 @@ import javax.annotation.PostConstruct;
 import lombok.NonNull;
 import org.apache.commons.io.FilenameUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
+import org.dotwebstack.framework.validate.ShaclValidationException;
+import org.dotwebstack.framework.validate.ShaclValidator;
+import org.dotwebstack.framework.validate.Validator;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -45,6 +50,8 @@ public class FileConfigurationBackend
 
   private Environment environment;
 
+  private Validator shaclValidator;
+
   public FileConfigurationBackend(@NonNull Resource elmoConfiguration,
       @NonNull SailRepository repository, @NonNull String resourcePath,
       @NonNull Resource elmoShapes) {
@@ -52,6 +59,7 @@ public class FileConfigurationBackend
     this.repository = repository;
     this.resourcePath = resourcePath;
     this.elmoShapes = elmoShapes;
+    this.shaclValidator = new ShaclValidator();
     repository.initialize();
   }
 
@@ -93,10 +101,13 @@ public class FileConfigurationBackend
     List<Resource> resources = getCombinedResources(projectResources);
 
     final Optional<Resource> optionalPrefixesResource = getPrefixesResource(resources);
+    Resource prefixesResource = null;
     if (optionalPrefixesResource.isPresent()) {
-      checkMultiplePrefixesDeclaration(optionalPrefixesResource.get());
+      prefixesResource = optionalPrefixesResource.get();
+      checkMultiplePrefixesDeclaration(prefixesResource);
     }
 
+    List<InputStream> configurationStreams = new ArrayList<>();
     try {
       for (Resource resource : resources) {
         String extension = FilenameUtils.getExtension(resource.getFilename());
@@ -105,9 +116,11 @@ public class FileConfigurationBackend
           LOG.debug("File extension not supported, ignoring file: \"{}\"", resource.getFilename());
           continue;
         }
+        configurationStreams.add(resource.getInputStream());
         if (optionalPrefixesResource.isPresent()) {
           try (SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
               optionalPrefixesResource.get().getInputStream(), resource.getInputStream())) {
+
             repositoryConnection.add(
                 new EnvironmentAwareResource(resourceSquenceInputStream, environment)
                     .getInputStream(), "#", FileFormats.getFormat(extension));
@@ -119,7 +132,16 @@ public class FileConfigurationBackend
         }
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
-    } catch (RDF4JException e) {
+      if (configurationStreams.size() > 1) {
+        try (InputStream stream = new SequenceInputStream(
+            Collections.enumeration(configurationStreams))) {
+          if (stream == null) {
+            System.out.println("this stream is null");
+          }
+          shaclValidator.validate(stream, elmoShapes);
+        }
+      }
+    } catch (RDF4JException | ShaclValidationException e) {
       throw new ConfigurationException("Error while loading RDF data.", e);
     } finally {
       repositoryConnection.close();
