@@ -38,9 +38,19 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
     return graphQuery;
   }
 
-  private Model getModel(IRI identifier) throws ConfigurationException {
-    RepositoryConnection repositoryConnection;
-    Model model;
+  @Override
+  protected Appearance createResource(@NonNull Model model, @NonNull IRI identifier) {
+    final Appearance.Builder builder = new Appearance.Builder(identifier);
+
+    getObjectIRI(model, identifier, RDF.TYPE).ifPresent(builder::type);
+    builder.model(getModel(identifier));
+
+    return builder.build();
+  }
+
+  private Model getModel(IRI identifier) {
+    final RepositoryConnection repositoryConnection;
+    final Model model;
 
     try {
       repositoryConnection = configurationBackend.getRepository().getConnection();
@@ -67,19 +77,6 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
     }
 
     return model;
-  }
-
-  @Override
-  protected Appearance createResource(@NonNull Model model, @NonNull IRI identifier) {
-    Optional<IRI> appearanceType = getObjectIRI(model, identifier, RDF.TYPE);
-
-    Appearance.Builder builder = new Appearance.Builder(identifier);
-
-    appearanceType.ifPresent(builder::appearanceType);
-
-    builder.appearanceModel(getModel(identifier));
-
-    return builder.build();
   }
 
 }

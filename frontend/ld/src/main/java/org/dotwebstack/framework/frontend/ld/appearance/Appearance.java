@@ -25,21 +25,15 @@ public class Appearance {
   
   private Appearance(Builder builder) {
     identifier = builder.identifier;
-    type = builder.appearanceType;
-    model = builder.appearanceModel;
-  }
-
-  public Appearance() {
-    identifier = ELMO.APPEARANCE;
-    type = ELMO.APPEARANCE;
-    model = new LinkedHashModel();
+    type = builder.type;
+    model = builder.model;
   }
   
   public IRI getIdentifier() {
     return identifier;
   }
 
-  public IRI getAppearanceType() {
+  public IRI getType() {
     return type;
   }
   
@@ -51,29 +45,28 @@ public class Appearance {
 
     private IRI identifier;
 
-    private IRI appearanceType;
+    private IRI type;
 
-    private Model appearanceModel;
+    private Model model;
 
     public Builder(@NonNull IRI identifier) {
       this.identifier = identifier;
     }
 
-    public Builder appearanceType(
-        IRI appearanceType) {
-      this.appearanceType = appearanceType;
+    public Builder type(@NonNull IRI type) {
+      this.type = type;
       return this;
     }
 
-    public Builder appearanceModel(
-        Model appearanceModel) {
-      this.appearanceModel = appearanceModel;
+    public Builder model(@NonNull Model model) {
+      this.model = model;
       return this;
     }
 
     public Appearance build() {
       return new Appearance(this);
     }
+
   }
 
 }
