@@ -1,36 +1,30 @@
-@prefix dbeerpedia: <http://dbeerpedia.org#> .
-@prefix elmo: <http://dotwebstack.org/def/elmo#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix elmo-resulttype: <http://dotwebstack.org/def/elmo/resulttype/> .
-
 GRAPH dbeerpedia:Theatre {
+
+  dbeerpedia:Backend a elmo:SparqlBackend;
+     elmo:endpoint "http://localhost:8890/sparql"^^xsd:anyURI;
+  .
+
   dbeerpedia:IdFilter a elmo:TermFilter;
     elmo:name "id";
+    elmo:shape [
+      sh:datatype xsd:string;
+      sh:minLength 2;
+    ];
   .
 
   dbeerpedia:TupleBreweries a elmo:InformationProduct;
-    rdfs:label "Beer breweries in The Netherlands";
-    elmo:backend dbeerpedia:Backend;
-    elmo:resultType elmo-resulttype:Tuple;
-    elmo:query "SELECT ?name WHERE { ?s rdfs:label ?name . ?s a <http://dbeerpedia.org#Brewery> }";
+      rdfs:label "Beer breweries in The Netherlands";
+     elmo:backend dbeerpedia:Backend;
+     elmo:resultType elmo-resulttype:Tuple;
+      elmo:query "SELECT ?name WHERE { ?s rdfs:label ?name . ?s a <http://dbeerpedia.org#Brewery> }";
   .
-  
+
   dbeerpedia:TupleBrewery a elmo:InformationProduct;
     rdfs:label "A single beer brewery in The Netherlands with a name equal to the supplied name";
     elmo:backend dbeerpedia:Backend;
     elmo:resultType elmo-resulttype:Tuple;
     elmo:requiredParameter dbeerpedia:IdFilter;
-    elmo:query   
-      "SELECT ?naam ?sinds ?fte ?oprichting ?plaats
-       WHERE { 
-         BIND(<http://dbeerpedia.org/id/brewery/${id}> as ?s)
-         ?s dbeerpedia:name ?naam ;
-            dbeerpedia:yearOfFoundation ?sinds ;
-            dbeerpedia:fte ?fte ;
-            dbeerpedia:dateOfFoundation ?oprichting ;
-            dbeerpedia:place ?plaats .
-       }";
+    elmo:query "SELECT ?naam ?sinds ?fte ?oprichting ?plaats WHERE {BIND(<http://dbeerpedia.org/id/brewery/${id}> as ?s) ?s dbeerpedia:name ?naam ; dbeerpedia:yearOfFoundation ?sinds ; dbeerpedia:fte ?fte ; dbeerpedia:dateOfFoundation ?oprichting ; dbeerpedia:place ?plaats .}";
   .
 
   dbeerpedia:GraphBreweries a elmo:InformationProduct;
