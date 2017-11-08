@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.ld.mappers;
 
-
 import static javax.ws.rs.HttpMethod.GET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -87,17 +86,17 @@ public class LdRedirectionRequestMapperTest {
   }
 
   @Test
-  public void loadRepresentations_MapRepresentation_WithValidData() {
+  public void loadRedirections_MapRedirection_WithValidData() {
     // Act
     ldRedirectionRequestMapper.loadRedirections(httpConfiguration);
 
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
     ResourceMethod method = resource.getResourceMethods().get(0);
+    assertThat(method.getHttpMethod(), equalTo(GET));
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(resource.getPath(), equalTo("/dbeerpedia.org/special{any: \\/id\\/(.+)$}"));
     assertThat(resource.getResourceMethods(), hasSize(1));
-    assertThat(method.getHttpMethod(), equalTo(GET));
   }
 
 }
