@@ -50,7 +50,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     LOG.debug("Handling GET request for path {}", path);
 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-      Map<String, String> parameterValues =
+      Map<String, Object> parameterValues =
           requestParameterMapper.map(operation, informationProduct, context);
 
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);

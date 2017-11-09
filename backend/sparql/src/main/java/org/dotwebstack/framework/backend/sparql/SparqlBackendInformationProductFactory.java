@@ -9,6 +9,7 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.template.TemplateProcessor;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -19,11 +20,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class SparqlBackendInformationProductFactory {
 
-  private QueryEvaluator queryEvaluator;
+  private final QueryEvaluator queryEvaluator;
+
+  private final TemplateProcessor templateProcessor;
 
   @Autowired
-  public SparqlBackendInformationProductFactory(@NonNull QueryEvaluator queryEvaluator) {
+  public SparqlBackendInformationProductFactory(@NonNull QueryEvaluator queryEvaluator,
+      @NonNull TemplateProcessor templateProcessor) {
     this.queryEvaluator = queryEvaluator;
+    this.templateProcessor = templateProcessor;
   }
 
   public InformationProduct create(IRI identifier, String label, Backend backend,
@@ -34,7 +39,8 @@ public class SparqlBackendInformationProductFactory {
     ResultType resultType = getResultType(identifier, statements);
 
     return new SparqlBackendInformationProduct.Builder(identifier, (SparqlBackend) backend, query,
-        resultType, queryEvaluator, requiredParameters, optionalParameters).label(label).build();
+        resultType, queryEvaluator, templateProcessor, requiredParameters,
+        optionalParameters).label(label).build();
   }
 
   private String getQuery(IRI identifier, Model statements) {

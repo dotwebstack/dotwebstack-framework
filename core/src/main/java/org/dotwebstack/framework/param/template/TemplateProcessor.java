@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
+// TODO Move the informationproduct package
 @Component
 public class TemplateProcessor implements InitializingBean {
 

@@ -12,6 +12,7 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.template.TemplateProcessor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Model;
@@ -32,7 +33,10 @@ public class SparqlBackendInformationProductFactoryTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private QueryEvaluator queryEvaluator;
+  private QueryEvaluator queryEvaluatorMock;
+
+  @Mock
+  private TemplateProcessor templateProcessorMock;
 
   @Mock
   private SparqlBackend backend;
@@ -41,7 +45,8 @@ public class SparqlBackendInformationProductFactoryTest {
 
   @Before
   public void setUp() {
-    informationProductFactory = new SparqlBackendInformationProductFactory(queryEvaluator);
+    informationProductFactory =
+        new SparqlBackendInformationProductFactory(queryEvaluatorMock, templateProcessorMock);
   }
 
   @Test
@@ -50,7 +55,7 @@ public class SparqlBackendInformationProductFactoryTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendInformationProductFactory(null);
+    new SparqlBackendInformationProductFactory(null, templateProcessorMock);
   }
 
   @Test

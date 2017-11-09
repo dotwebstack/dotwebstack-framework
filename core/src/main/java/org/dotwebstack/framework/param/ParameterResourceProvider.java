@@ -16,15 +16,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class ParameterResourceProvider extends AbstractResourceProvider<Parameter> {
 
-  private final StringFilterFactory stringFilterFactory;
-
   @Autowired
   public ParameterResourceProvider(ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties,
-      @NonNull StringFilterFactory stringFilterFactory) {
+      ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
-
-    this.stringFilterFactory = stringFilterFactory;
   }
 
   @Override
@@ -44,7 +39,7 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
                 identifier, ELMO.TERM_FILTER)));
 
-    return stringFilterFactory.newStringFilter(identifier, name);
+    return new StringFilter(identifier, name);
   }
 
 }

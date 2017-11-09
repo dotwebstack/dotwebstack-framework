@@ -58,7 +58,7 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   }
 
   @Override
-  public Object getResult(@NonNull Map<String, String> parameterValues) {
+  public Object getResult(@NonNull Map<String, Object> parameterValues) {
     for (Parameter parameter : requiredParameters) {
       if (parameterValues.get(parameter.getName()) == null) {
         throw new BackendException(String.format(
@@ -67,9 +67,11 @@ public abstract class AbstractInformationProduct implements InformationProduct {
       }
     }
 
-    return getInnerResult(parameterValues);
+    return
+
+    getInnerResult(parameterValues);
   }
 
-  protected abstract Object getInnerResult(@NonNull Map<String, String> parameterValues);
+  protected abstract Object getInnerResult(@NonNull Map<String, Object> parameterValues);
 
 }

@@ -69,7 +69,7 @@ public class RequestParameterMapperTest {
     Operation operation = new Operation();
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -86,7 +86,7 @@ public class RequestParameterMapperTest {
     operation.setParameters(ImmutableList.of(pathParameter));
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -165,7 +165,7 @@ public class RequestParameterMapperTest {
     when(uriInfoMock.getPathParameters()).thenReturn(pathParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.size(), is(2));
@@ -196,7 +196,7 @@ public class RequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -222,7 +222,7 @@ public class RequestParameterMapperTest {
     when(contextMock.getHeaders()).thenReturn(headerParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));

@@ -1,130 +1,55 @@
 package org.dotwebstack.framework.param;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
-import org.dotwebstack.framework.param.template.TemplateProcessor;
+import java.util.Map;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
- 
+
 @RunWith(MockitoJUnitRunner.class)
 public class StringFilterTest {
 
   private static final IRI ID = SimpleValueFactory.getInstance().createIRI("http://foo#", "bar");
 
-  @Mock
-  private TemplateProcessor templateProcessorMock;
+  private static final String NAME = "name";
 
   private StringFilter filter;
 
   @Before
   public void setUp() {
-    filter = new StringFilter(ID, "variable", templateProcessorMock);
+    filter = new StringFilter(ID, NAME);
   }
 
   @Test
-  public void handle_ModifiesQuery_WithSingleVariable() {
+  public void handle_ReturnsValueForRequiredFilter() {
     // Arrange
-    String query = "SELECT ${variable}";
-    String modifiedQuery = "SELECT value";
-
-    when(templateProcessorMock.processString(query,
-        ImmutableMap.of("variable", "value"))).thenReturn(modifiedQuery);
+    Map<String, Object> parameterValues = ImmutableMap.of(NAME, "value");
 
     // Act
-    String result = filter.handle("value", query);
+    Object result = filter.handle(parameterValues);
 
     // Assert
-    assertThat(result, is(modifiedQuery));
+    assertThat(result, is("value"));
   }
 
   @Test
-  public void handle_ModifiesQuery_WithDotsInVariable() {
+  public void handle_ReturnsNullForOptionalFilter() {
     // Arrange
-    String query = "SELECT ${vari.able}";
-    String modifiedQuery = "SELECT value";
-
-    when(templateProcessorMock.processString(query,
-        ImmutableMap.of("vari.able", "value"))).thenReturn(modifiedQuery);
+    Map<String, Object> parameterValues = Collections.singletonMap(NAME, null);
 
     // Act
-    StringFilter filter = new StringFilter(ID, "vari.able", templateProcessorMock);
-    String result = filter.handle("value", query);
+    Object result = filter.handle(parameterValues);
 
     // Assert
-    assertThat(result, is(modifiedQuery));
-  }
-
-  @Test
-  public void handle_ModifiesQuery_WithMultipleVariables() {
-    // Arrange
-    String query = "SELECT ${variable} WHERE ${variable}";
-    String modifiedQuery = "SELECT value WHERE value";
-
-    when(templateProcessorMock.processString(query,
-        ImmutableMap.of("variable", "value"))).thenReturn(modifiedQuery);
-
-    // Act
-    String result = filter.handle("value", query);
-
-    // Assert
-    assertThat(result, is(modifiedQuery));
-  }
-
-  @Test
-  public void handle_ModifiesQuery_WithNullVariable() {
-    // Arrange
-    String query = "SELECT ${variable}";
-    String modifiedQuery = "SELECT null";
-
-    when(templateProcessorMock.processString(query,
-        Collections.singletonMap("variable", null))).thenReturn(modifiedQuery);
-
-    // Act
-    String result = filter.handle(null, query);
-
-    // Assert
-    assertThat(result, is(modifiedQuery));
-  }
-
-  @Test
-  public void handle_DoesNotModifyQuery_WithoutVariable() {
-    // Arrange
-    String query = "SELECT ?noVariable";
-    String unmodifiedQuery = "SELECT ?noVariable";
-
-    when(templateProcessorMock.processString(query,
-        Collections.singletonMap("variable", "value"))).thenReturn(unmodifiedQuery);
-
-    // Act
-    String result = filter.handle("value", query);
-
-    // Assert
-    assertThat(result, is(unmodifiedQuery));
-  }
-
-  @Test
-  public void handle_DoesNotModifyQuery_WithoutMatchingVariable() {
-    // Arrange
-    String query = "SELECT ${noMatchingVariable}";
-    String unmodifiedQuery = "SELECT ${noMatchingVariable}";
-
-    when(templateProcessorMock.processString(query,
-        Collections.singletonMap("variable", "value"))).thenReturn(unmodifiedQuery);
-
-    // Act
-    String result = filter.handle("value", query);
-
-    // Assert
-    assertThat(result, is(unmodifiedQuery));
+    assertThat(result, nullValue());
   }
 
 }

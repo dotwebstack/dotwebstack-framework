@@ -1,7 +1,8 @@
 package org.dotwebstack.framework.param;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -40,9 +41,6 @@ public class ParameterResourceProviderTest {
   @Mock
   private GraphQuery graphQueryMock;
 
-  @Mock
-  private StringFilterFactory stringFilterFactoryMock;
-
   private ParameterResourceProvider provider;
 
   @Before
@@ -50,8 +48,7 @@ public class ParameterResourceProviderTest {
     ConfigurationBackend configurationBackendMock = mock(ConfigurationBackend.class);
     ApplicationProperties applicationPropertiesMock = mock(ApplicationProperties.class);
 
-    provider = new ParameterResourceProvider(configurationBackendMock, applicationPropertiesMock,
-        stringFilterFactoryMock);
+    provider = new ParameterResourceProvider(configurationBackendMock, applicationPropertiesMock);
 
     SailRepository sailRepositoryMock = mock(SailRepository.class);
     when(configurationBackendMock.getRepository()).thenReturn(sailRepositoryMock);
@@ -72,10 +69,6 @@ public class ParameterResourceProviderTest {
             VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, ELMO.NAME_PROP,
                 DBEERPEDIA.PARAMETER_NAME_VALUE))));
 
-    StringFilter stringFilterMock = mock(StringFilter.class);
-    when(stringFilterFactoryMock.newStringFilter(DBEERPEDIA.PARAMETER,
-        DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue())).thenReturn(stringFilterMock);
-
     // Act
     provider.loadResources();
 
@@ -84,7 +77,9 @@ public class ParameterResourceProviderTest {
 
     Parameter result = provider.get(DBEERPEDIA.PARAMETER);
 
-    assertThat(result, sameInstance(stringFilterMock));
+    assertThat(result, instanceOf(StringFilter.class));
+    assertThat(result.getIdentifier(), is(DBEERPEDIA.PARAMETER));
+    assertThat(result.getName(), is(DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue()));
   }
 
   @Test

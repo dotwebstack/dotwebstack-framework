@@ -19,7 +19,7 @@ public interface InformationProduct {
    */
   // NOTE Consider a mapping of Parameter instance to value (instead of parameter String name to
   // value), when the need arises
-  Object getResult(Map<String, String> parameterValues);
+  Object getResult(Map<String, Object> parameterValues);
 
   ResultType getResultType();
 
