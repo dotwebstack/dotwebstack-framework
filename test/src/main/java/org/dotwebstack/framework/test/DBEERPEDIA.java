@@ -101,6 +101,10 @@ public final class DBEERPEDIA {
 
   public static final String BREWERY_DOC_PATH = "/doc/brewery";
 
+  public static final IRI BREWERY_APPEARANCE;
+
+  public static final IRI CUSTOM_APPEARANCE_PROP;
+
   public static final String OPENAPI_DESCRIPTION = "DBeerpedia API";
 
   public static final String OPENAPI_HOST = "dbpeerpedia.org";
@@ -202,6 +206,9 @@ public final class DBEERPEDIA {
     ID2DOC_URL_PATTERN = valueFactory.createLiteral("^\\/id\\/(.+)$");
 
     ID2DOC_TARGET_URL = valueFactory.createLiteral("\\/doc\\/$1");
+
+    BREWERY_APPEARANCE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryAppearance");
+    CUSTOM_APPEARANCE_PROP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "customAppearanceProp");
 
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
   }

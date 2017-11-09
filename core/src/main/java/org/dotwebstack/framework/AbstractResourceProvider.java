@@ -25,9 +25,9 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractResourceProvider.class);
 
-  private ConfigurationBackend configurationBackend;
+  protected ConfigurationBackend configurationBackend;
 
-  private ApplicationProperties applicationProperties;
+  protected ApplicationProperties applicationProperties;
 
   private HashMap<IRI, R> resources = new HashMap<>();
 

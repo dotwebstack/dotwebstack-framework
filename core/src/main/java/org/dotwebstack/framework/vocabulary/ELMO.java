@@ -47,6 +47,14 @@ public final class ELMO {
 
   public static final IRI TARGET_URL;
 
+  public static final IRI APPEARANCE;
+
+  public static final IRI RESOURCE_APPEARANCE;
+
+  public static final IRI TABLE_APPEARANCE;
+
+  public static final IRI APPEARANCE_PROP;
+
   public static final IRI URL_PATTERN;
 
   public static final IRI TERM_FILTER;
@@ -74,8 +82,13 @@ public final class ELMO {
 
     BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "Backend");
     SPARQL_BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "SparqlBackend");
+
     REPRESENTATION = valueFactory.createIRI(ELMO.NAMESPACE, "Representation");
     REDIRECTION = valueFactory.createIRI(ELMO.NAMESPACE, "Redirection");
+
+    APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "Appearance");
+    RESOURCE_APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "ResourceAppearance");
+    TABLE_APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "TableAppearance");
 
     // Properties
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
@@ -101,6 +114,7 @@ public final class ELMO {
     REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
 
     NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
+    APPEARANCE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "appearance");
   }
 
   private ELMO() {
