@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
@@ -238,7 +239,7 @@ public class RepresentationResourceProviderTest {
     // Assert
     Representation representation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
-    assertThat(representation.getUrlPatterns(), is(nullValue()));
+    assertThat(representation.getUrlPatterns(), is(Collections.EMPTY_LIST));
     assertThat(representation.getStage(), not(nullValue()));
     assertThat(representation.getInformationProduct(), not(nullValue()));
   }
@@ -255,7 +256,7 @@ public class RepresentationResourceProviderTest {
     // Assert
     Representation representation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
-    assertThat(representation.getUrlPatterns(), is(nullValue()));
+    assertThat(representation.getUrlPatterns(), is(Collections.EMPTY_LIST));
     assertThat(representation.getStage(), is(nullValue()));
     assertThat(representation.getInformationProduct(), is(nullValue()));
   }
