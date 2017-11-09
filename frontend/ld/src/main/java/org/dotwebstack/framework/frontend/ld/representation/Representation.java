@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -47,7 +48,7 @@ public class Representation {
 
     private InformationProduct informationProduct;
 
-    private List<String> urlPatterns;
+    private List<String> urlPatterns = ImmutableList.of();
 
     private Stage stage;
 
@@ -55,8 +56,7 @@ public class Representation {
       this.identifier = identifier;
     }
 
-    public Builder informationProduct(
-        InformationProduct informationProduct) {
+    public Builder informationProduct(InformationProduct informationProduct) {
       this.informationProduct = informationProduct;
       return this;
     }

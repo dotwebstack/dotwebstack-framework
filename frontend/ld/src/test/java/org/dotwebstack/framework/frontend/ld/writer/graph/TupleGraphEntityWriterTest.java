@@ -80,7 +80,7 @@ public class TupleGraphEntityWriterTest {
   @Test
   public void writeTo_TurtleFormat_ForQueryResult() throws IOException {
     // Arrange
-    TurtleGraphEntityWriter writer = new TurtleGraphEntityWriter();
+    final TurtleGraphEntityWriter writer = new TurtleGraphEntityWriter();
     Model model =
         new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDF.TYPE, DBEERPEDIA.BACKEND).add(
             RDFS.LABEL, DBEERPEDIA.BREWERIES_LABEL).build();

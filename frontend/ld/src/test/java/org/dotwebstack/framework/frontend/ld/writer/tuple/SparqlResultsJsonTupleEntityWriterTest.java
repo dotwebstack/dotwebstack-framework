@@ -91,7 +91,7 @@ public class SparqlResultsJsonTupleEntityWriterTest extends SparqlResultsTupleEn
   @Test
   public void writeTo_SparqlResultJsonFormat_ForQueryResult() throws IOException {
     // Arrange
-    SparqlResultsJsonTupleEntityWriter provider = new SparqlResultsJsonTupleEntityWriter();
+    final SparqlResultsJsonTupleEntityWriter provider = new SparqlResultsJsonTupleEntityWriter();
     when(tupleEntity.getQueryResult()).thenReturn(tupleQueryResult);
     when(tupleQueryResult.getBindingNames()).thenReturn(asList("beer"));
     when(tupleQueryResult.hasNext()).thenReturn(true, true, false);
