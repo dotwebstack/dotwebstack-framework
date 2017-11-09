@@ -125,7 +125,14 @@ public class FileConfigurationBackendTest {
     new FileConfigurationBackend(elmoConfigurationResource, repository, null, elmoShapesResource);
   }
 
-  // [todo] add test for null elmoShapesResource
+  @Test
+  public void constructor_ThrowsException_WithMissingShapesResource() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config", null);
+  }
 
   @Test
   public void setResourceLoader_ThrowsException_WithMissingValue() {
