@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
