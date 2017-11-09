@@ -12,13 +12,13 @@ import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GetRedirectionRequestHandler implements Inflector<ContainerRequestContext, Response> {
+public class RedirectionRequestHandler implements Inflector<ContainerRequestContext, Response> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GetRedirectionRequestHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RedirectionRequestHandler.class);
 
   private Redirection redirection;
 
-  public GetRedirectionRequestHandler(@NonNull Redirection redirection) {
+  public RedirectionRequestHandler(@NonNull Redirection redirection) {
     this.redirection = redirection;
   }
 
@@ -30,10 +30,10 @@ public class GetRedirectionRequestHandler implements Inflector<ContainerRequestC
 
     String urlPattern = redirection.getUrlPattern().replaceAll("\\^", "(.*)");
 
-    String redirectionTemplate = redirection.getRedirectionTemplate();
-    redirectionTemplate = "$1" + incrementRegexObjects(redirectionTemplate);
+    String targetUrl = redirection.getTargetUrl();
+    targetUrl = "$1" + incrementRegexObjects(targetUrl);
 
-    String redirectPath = path.replaceAll(urlPattern, redirectionTemplate);
+    String redirectPath = path.replaceAll(urlPattern, targetUrl);
 
     try {
       URI redirectUri = new URI(redirectPath);

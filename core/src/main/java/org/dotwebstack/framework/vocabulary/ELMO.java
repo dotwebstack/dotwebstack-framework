@@ -45,7 +45,7 @@ public final class ELMO {
 
   public static final IRI REDIRECTION;
 
-  public static final IRI REDIRECTION_TEMPLATE;
+  public static final IRI TARGET_URL;
 
   public static final IRI URL_PATTERN;
 
@@ -93,7 +93,7 @@ public final class ELMO {
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
 
-    REDIRECTION_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectionTemplate");
+    TARGET_URL = valueFactory.createIRI(ELMO.NAMESPACE, "targetUrl");
 
     TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
 

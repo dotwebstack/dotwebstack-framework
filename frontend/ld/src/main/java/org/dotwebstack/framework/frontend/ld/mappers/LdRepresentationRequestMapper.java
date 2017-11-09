@@ -4,7 +4,7 @@ import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.handlers.GetRepresentationRequestHandler;
+import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.glassfish.jersey.server.model.Resource;
@@ -49,7 +49,7 @@ public class LdRepresentationRequestMapper {
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          new GetRepresentationRequestHandler(representation)).produces(
+          new RepresentationRequestHandler(representation)).produces(
               supportedMediaTypesScanner.getMediaTypes(
                   representation.getInformationProduct().getResultType()));
 

@@ -22,7 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GetRedirectionRequestHandlerTest {
+public class RedirectionRequestHandlerTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -33,16 +33,15 @@ public class GetRedirectionRequestHandlerTest {
   @Mock
   private ContainerRequestContext containerRequestContext;
 
-  private GetRedirectionRequestHandler getRedirectionRequestHandler;
+  private RedirectionRequestHandler redirectionRequestHandler;
 
   @Before
   public void setUp() {
-    getRedirectionRequestHandler = new GetRedirectionRequestHandler(redirection);
+    redirectionRequestHandler = new RedirectionRequestHandler(redirection);
 
     // Arrange
     when(redirection.getUrlPattern()).thenReturn(DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue());
-    when(redirection.getRedirectionTemplate()).thenReturn(
-        DBEERPEDIA.ID2DOC_REDIRECTION_TEMPLATE.stringValue());
+    when(redirection.getTargetUrl()).thenReturn(DBEERPEDIA.ID2DOC_TARGET_URL.stringValue());
   }
 
   @Test
@@ -53,7 +52,7 @@ public class GetRedirectionRequestHandlerTest {
     when(uriInfo.getPath()).thenReturn(DBEERPEDIA.BREWERY_ID_PATH);
 
     // Act
-    Response response = getRedirectionRequestHandler.apply(containerRequestContext);
+    Response response = redirectionRequestHandler.apply(containerRequestContext);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
@@ -68,7 +67,7 @@ public class GetRedirectionRequestHandlerTest {
     when(uriInfo.getPath()).thenReturn(DBEERPEDIA.URL_PATTERN_VALUE);
 
     // Act
-    Response response = getRedirectionRequestHandler.apply(containerRequestContext);
+    Response response = redirectionRequestHandler.apply(containerRequestContext);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));

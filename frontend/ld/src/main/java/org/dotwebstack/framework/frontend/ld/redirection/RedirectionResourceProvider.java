@@ -47,14 +47,13 @@ public class RedirectionResourceProvider extends AbstractResourceProvider<Redire
             String.format("No <%s> statement has been found for redirection <%s>.",
                 ELMO.URL_PATTERN, identifier)));
 
-    String redirectionTemplate =
-        getObjectString(model, identifier, ELMO.REDIRECTION_TEMPLATE).orElseThrow(
-            () -> new ConfigurationException(
-                String.format("No <%s> statement has been found for redirection <%s>.",
-                    ELMO.REDIRECTION_TEMPLATE, identifier)));
+    String targetUrl = getObjectString(model, identifier, ELMO.TARGET_URL).orElseThrow(
+        () -> new ConfigurationException(
+            String.format("No <%s> statement has been found for redirection <%s>.", ELMO.TARGET_URL,
+                identifier)));
 
     Redirection.Builder builder = new Redirection.Builder(identifier,
-        stageResourceProvider.get(stageIri), urlPattern, redirectionTemplate);
+        stageResourceProvider.get(stageIri), urlPattern, targetUrl);
 
     return builder.build();
   }

@@ -119,8 +119,8 @@ public class RedirectionResourceProviderTest {
                 DBEERPEDIA.ID2DOC_URL_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.REDIRECTION_TEMPLATE,
-                DBEERPEDIA.ID2DOC_REDIRECTION_TEMPLATE))));
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.TARGET_URL,
+                DBEERPEDIA.ID2DOC_TARGET_URL))));
 
     // Act
     redirectionResourceProvider.loadResources();
@@ -131,8 +131,7 @@ public class RedirectionResourceProviderTest {
     assertThat(redirection, is(not(nullValue())));
     assertThat(redirection.getUrlPattern(), equalTo(DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue()));
     assertThat(redirection.getStage(), equalTo(stage));
-    assertThat(redirection.getRedirectionTemplate(),
-        equalTo(DBEERPEDIA.ID2DOC_REDIRECTION_TEMPLATE.stringValue()));
+    assertThat(redirection.getTargetUrl(), equalTo(DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()));
   }
 
 }

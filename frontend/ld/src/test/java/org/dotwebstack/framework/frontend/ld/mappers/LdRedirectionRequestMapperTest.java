@@ -63,7 +63,7 @@ public class LdRedirectionRequestMapperTest {
 
     Redirection redirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, stage,
         DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
-        DBEERPEDIA.ID2DOC_REDIRECTION_TEMPLATE.stringValue()).build();
+        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
 
     Map<IRI, Redirection> redirectionMap = new HashMap<>();
     redirectionMap.put(redirection.getIdentifier(), redirection);

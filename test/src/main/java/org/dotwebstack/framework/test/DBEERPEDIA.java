@@ -95,7 +95,7 @@ public final class DBEERPEDIA {
 
   public static final Literal ID2DOC_URL_PATTERN;
 
-  public static final Literal ID2DOC_REDIRECTION_TEMPLATE;
+  public static final Literal ID2DOC_TARGET_URL;
 
   public static final String BREWERY_ID_PATH = "/id/brewery";
 
@@ -201,7 +201,7 @@ public final class DBEERPEDIA {
 
     ID2DOC_URL_PATTERN = valueFactory.createLiteral("^\\/id\\/(.+)$");
 
-    ID2DOC_REDIRECTION_TEMPLATE = valueFactory.createLiteral("\\/doc\\/$1");
+    ID2DOC_TARGET_URL = valueFactory.createLiteral("\\/doc\\/$1");
 
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
   }
