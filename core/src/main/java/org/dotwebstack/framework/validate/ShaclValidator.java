@@ -102,8 +102,6 @@ public class ShaclValidator implements Validator<Resource, Model, InputStream> {
 
       getValidationReport(report.getModel());
     } catch (IOException e) {
-      LOG.error("File could not read during the validation process");
-      LOG.error(e.toString());
       throw new ShaclValidationException("File could not read during the validation process", e);
     }
   }
@@ -122,8 +120,6 @@ public class ShaclValidator implements Validator<Resource, Model, InputStream> {
 
       getValidationReport(report.getModel());
     } catch (IOException e) {
-      LOG.error("File could not read during the validation process");
-      LOG.error(e.toString());
       throw new ShaclValidationException("File could not read during the validation process", e);
     }
   }

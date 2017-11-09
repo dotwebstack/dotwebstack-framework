@@ -135,9 +135,6 @@ public class FileConfigurationBackend
       if (configurationStreams.size() > 1) {
         try (InputStream stream = new SequenceInputStream(
             Collections.enumeration(configurationStreams))) {
-          if (stream == null) {
-            System.out.println("this stream is null");
-          }
           shaclValidator.validate(stream, elmoShapes);
         }
       }
