@@ -39,7 +39,7 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
                 identifier, ELMO.TERM_FILTER)));
 
-    return new StringFilter(identifier, name);
+    return new TermParameter(identifier, name);
   }
 
 }

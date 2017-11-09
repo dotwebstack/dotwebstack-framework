@@ -15,17 +15,17 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class StringFilterTest {
+public class TermParameterTest {
 
   private static final IRI ID = SimpleValueFactory.getInstance().createIRI("http://foo#", "bar");
 
   private static final String NAME = "name";
 
-  private StringFilter filter;
+  private TermParameter parameter;
 
   @Before
   public void setUp() {
-    filter = new StringFilter(ID, NAME);
+    parameter = new TermParameter(ID, NAME);
   }
 
   @Test
@@ -34,7 +34,7 @@ public class StringFilterTest {
     Map<String, Object> parameterValues = ImmutableMap.of(NAME, "value");
 
     // Act
-    Object result = filter.handle(parameterValues);
+    Object result = parameter.handle(parameterValues);
 
     // Assert
     assertThat(result, is("value"));
@@ -46,7 +46,7 @@ public class StringFilterTest {
     Map<String, Object> parameterValues = Collections.singletonMap(NAME, null);
 
     // Act
-    Object result = filter.handle(parameterValues);
+    Object result = parameter.handle(parameterValues);
 
     // Assert
     assertThat(result, nullValue());

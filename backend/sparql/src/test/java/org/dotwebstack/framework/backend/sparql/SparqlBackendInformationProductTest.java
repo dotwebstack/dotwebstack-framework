@@ -15,7 +15,7 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
-import org.dotwebstack.framework.param.StringFilter;
+import org.dotwebstack.framework.param.TermParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -60,13 +60,13 @@ public class SparqlBackendInformationProductTest {
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     requiredParameter1 =
-        new StringFilter(valueFactory.createIRI("http://foo#", "required1"), "nameOfRequired1");
+        new TermParameter(valueFactory.createIRI("http://foo#", "required1"), "nameOfRequired1");
     requiredParameter2 =
-        new StringFilter(valueFactory.createIRI("http://foo#", "required2"), "nameOfRequired2");
+        new TermParameter(valueFactory.createIRI("http://foo#", "required2"), "nameOfRequired2");
     optionalParameter1 =
-        new StringFilter(valueFactory.createIRI("http://foo#", "optional1"), "nameOfOptional1");
+        new TermParameter(valueFactory.createIRI("http://foo#", "optional1"), "nameOfOptional1");
     optionalParameter2 =
-        new StringFilter(valueFactory.createIRI("http://foo#", "optional2"), "nameOfOptional2");
+        new TermParameter(valueFactory.createIRI("http://foo#", "optional2"), "nameOfOptional2");
   }
 
   @Test

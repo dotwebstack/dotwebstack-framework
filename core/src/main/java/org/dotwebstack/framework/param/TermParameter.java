@@ -4,9 +4,9 @@ import java.util.Map;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
-public class StringFilter extends AbstractParameter {
+public class TermParameter extends AbstractParameter {
 
-  public StringFilter(IRI identifier, String name) {
+  public TermParameter(IRI identifier, String name) {
     super(identifier, name);
   }
 
