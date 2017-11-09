@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param.template;
+package org.dotwebstack.framework.informationproduct.template;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
-// TODO Move the informationproduct package
 @Component
 public class TemplateProcessor implements InitializingBean {
 

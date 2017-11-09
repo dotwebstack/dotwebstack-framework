@@ -1,9 +1,11 @@
-package org.dotwebstack.framework.param.template;
+package org.dotwebstack.framework.informationproduct.template;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import org.dotwebstack.framework.informationproduct.template.TemplateException;
+import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

@@ -20,6 +20,7 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -40,6 +41,9 @@ public class RequestParameterMapperTest {
   @Mock
   private ContainerRequestContext contextMock;
 
+  @Mock
+  private TemplateProcessor templateProcessorMock;
+
   private InformationProduct product;
 
   private Parameter parameter;
@@ -58,7 +62,7 @@ public class RequestParameterMapperTest {
 
     product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
-        ImmutableList.of(parameter, parameter2), ImmutableList.of());
+        ImmutableList.of(parameter, parameter2), ImmutableList.of(), templateProcessorMock);
 
     mapper = new RequestParameterMapper();
   }

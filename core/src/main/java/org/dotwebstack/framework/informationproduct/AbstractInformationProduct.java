@@ -8,6 +8,7 @@ import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -23,14 +24,18 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   protected final Collection<Parameter> optionalParameters;
 
+  protected final TemplateProcessor templateProcessor;
+
   protected AbstractInformationProduct(@NonNull IRI identifier, String label,
       @NonNull ResultType resultType, @NonNull Collection<Parameter> requiredParameters,
-      @NonNull Collection<Parameter> optionalParameters) {
+      @NonNull Collection<Parameter> optionalParameters,
+      @NonNull TemplateProcessor templateProcessor) {
     this.identifier = identifier;
     this.resultType = resultType;
     this.label = label;
     this.requiredParameters = ImmutableList.copyOf(requiredParameters);
     this.optionalParameters = ImmutableList.copyOf(optionalParameters);
+    this.templateProcessor = templateProcessor;
   }
 
   @Override

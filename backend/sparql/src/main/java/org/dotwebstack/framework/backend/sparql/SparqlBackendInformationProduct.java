@@ -6,8 +6,8 @@ import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
+import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
-import org.dotwebstack.framework.param.template.TemplateProcessor;
 import org.eclipse.rdf4j.model.IRI;
 
 public class SparqlBackendInformationProduct extends AbstractInformationProduct {
@@ -18,15 +18,12 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
   private final QueryEvaluator queryEvaluator;
 
-  private final TemplateProcessor templateProcessor;
-
   public SparqlBackendInformationProduct(Builder builder) {
     super(builder.identifier, builder.label, builder.resultType, builder.requiredParameters,
-        builder.optionalParameters);
+        builder.optionalParameters, builder.templateProcessor);
     this.backend = builder.backend;
     this.query = builder.query;
     this.queryEvaluator = builder.queryEvaluator;
-    this.templateProcessor = builder.templateProcessor;
   }
 
   public String getQuery() {
