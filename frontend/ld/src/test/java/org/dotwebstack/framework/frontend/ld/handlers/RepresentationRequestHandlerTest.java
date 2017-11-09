@@ -25,7 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GetRequestHandlerTest {
+public class RepresentationRequestHandlerTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -39,11 +39,11 @@ public class GetRequestHandlerTest {
   @Mock
   private InformationProduct informationProduct;
 
-  private GetRequestHandler getRequestHandler;
+  private RepresentationRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(representation);
+    getRequestHandler = new RepresentationRequestHandler(representation);
   }
 
   @Test
@@ -52,7 +52,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(null);
+    new RepresentationRequestHandler(null);
   }
 
   @Test
@@ -117,4 +117,5 @@ public class GetRequestHandlerTest {
     // Act
     getRequestHandler.apply(containerRequestContext);
   }
+
 }

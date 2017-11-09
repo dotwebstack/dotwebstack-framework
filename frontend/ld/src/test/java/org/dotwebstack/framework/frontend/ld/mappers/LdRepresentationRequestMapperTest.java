@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld;
+package org.dotwebstack.framework.frontend.ld.mappers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,6 +16,7 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
+import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -32,7 +33,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class LdRequestMapperTest {
+public class LdRepresentationRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -55,7 +56,7 @@ public class LdRequestMapperTest {
   @Mock
   private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
-  private LdRequestMapper requestMapper;
+  private LdRepresentationRequestMapper requestMapper;
 
   private HttpConfiguration httpConfiguration;
 
@@ -75,18 +76,19 @@ public class LdRequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
-    requestMapper = new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
+    requestMapper = new LdRepresentationRequestMapper(representationResourceProvider,
+        supportedMediaTypesScanner);
 
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingResourceProvider() {
+  public void constructor_ThrowsException_WithMissingRepresentationResourceProvider() {
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdRequestMapper(null, supportedMediaTypesScanner);
+    new LdRepresentationRequestMapper(null, supportedMediaTypesScanner);
   }
 
   @Test
@@ -95,14 +97,14 @@ public class LdRequestMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdRequestMapper(representationResourceProvider, null);
+    new LdRepresentationRequestMapper(representationResourceProvider, null);
   }
 
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    LdRequestMapper requestMapper =
-        new LdRequestMapper(representationResourceProvider, supportedMediaTypesScanner);
+    LdRepresentationRequestMapper requestMapper = new LdRepresentationRequestMapper(
+        representationResourceProvider, supportedMediaTypesScanner);
 
     // Assert
     assertThat(requestMapper, not(nullValue()));
