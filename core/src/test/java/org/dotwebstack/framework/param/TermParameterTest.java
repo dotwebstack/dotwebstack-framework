@@ -7,8 +7,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
 import java.util.Map;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,15 +16,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class TermParameterTest {
 
-  private static final IRI ID = SimpleValueFactory.getInstance().createIRI("http://foo#", "bar");
-
-  private static final String NAME = "name";
+  private static final String NAME = DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue();
 
   private TermParameter parameter;
 
   @Before
   public void setUp() {
-    parameter = new TermParameter(ID, NAME);
+    parameter = new TermParameter(DBEERPEDIA.PARAMETER, NAME);
   }
 
   @Test

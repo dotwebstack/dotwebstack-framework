@@ -131,7 +131,7 @@ public final class DBEERPEDIA {
     DOMAIN = valueFactory.createLiteral("dbeerpedia.org");
     BASE_PATH = valueFactory.createLiteral("/special");
 
-    PARAMETER = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "nameFilter");
+    PARAMETER = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "nameParameter");
     PARAMETER_NAME_VALUE = valueFactory.createLiteral("naam");
 
     NAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Name");
