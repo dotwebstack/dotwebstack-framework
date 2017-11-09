@@ -1,17 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.entity.builder;
 
-import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
-import io.swagger.models.properties.RefProperty;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRegistry;
 import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRuntimeException;
-import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
@@ -41,50 +35,17 @@ public class EntityBuilder {
     if (schemaProperty instanceof ObjectProperty) {
       return processResourceEndpoint(schemaProperty, entityBuilderContext, registry);
     }
-
-//    if (schemaProperty instanceof ObjectProperty) {
-//
-//      //validateCollectionEndpointSchema((ObjectProperty) schemaProperty);
-//
-//      return buildResource(schemaProperty, entityBuilderContext, registry, null);
-//
-//    }
-    if (schemaProperty instanceof ArrayProperty) {
-      return buildArray(schemaProperty, entityBuilderContext, registry,entityBuilderContext.getQueryResult().getSubjects().get(0));
-
-    }
-
     throw new PropertyHandlerRuntimeException(
         String.format("Property type '%s' is not supported.", schemaProperty.getClass().getName()));
   }
 
-  private Map<String, Object> buildArray(Property schemaProperty, EntityBuilderContext entityBuilderContext, PropertyHandlerRegistry registry, Resource resource) {
-    ImmutableList itmes= (ImmutableList) registry.handle(schemaProperty, entityBuilderContext,
-            resource);
-    return null;
-  }
+
 
   private Map<String, Object> processResourceEndpoint(Property schemaProperty,
       EntityBuilderContext entityBuilderContext, PropertyHandlerRegistry registry) {
-    LinkedHashMap subjectFilter= (LinkedHashMap) schemaProperty.getVendorExtensions().get(0);
-    LinkedHashMap predicateObjects= (LinkedHashMap) subjectFilter.get("x-dotwebstack-subject-filter");
-    String predicate = (String) predicateObjects.get("predicate");
-    String object = (String) predicateObjects.get("object");
 
-    ImmutableList<Resource> subjects = entityBuilderContext.getQueryResult().getSubjects();
-    int size = subjects.size();
 
-    if (size == 0) {
-      throw new NotFoundException(
-          String.format("Resource '%s' was not found.", entityBuilderContext.getEndpoint()));
-    }
-
-//    if (size > 1) {
-//      throw new InternalServerErrorException(String.format(
-//          "There has to be exactly one query result for instance resources. Got: %s", size));
-//    }
-
-    return buildResource(schemaProperty, entityBuilderContext, registry, subjects.get(0));
+    return buildResource(schemaProperty, entityBuilderContext, registry, null);
   }
 
   private void validateCollectionEndpointSchema(ObjectProperty schemaProperty) {

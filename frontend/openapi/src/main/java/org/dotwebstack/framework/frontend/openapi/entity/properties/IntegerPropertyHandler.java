@@ -6,6 +6,7 @@ import io.swagger.models.properties.BaseIntegerProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
+import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.OasVendorExtensions;
 import org.eclipse.rdf4j.model.IRI;
@@ -35,7 +36,7 @@ public class IntegerPropertyHandler extends AbstractPropertyHandler<BaseIntegerP
     }
 
     if (ldPathQuery == null) {
-      throw new RuntimeException(String.format("Property '%s' must have a '%s' attribute.",
+      throw new PropertyHandlerRuntimeException(String.format("Property '%s' must have a '%s' attribute.",
           property.getName(), OasVendorExtensions.LDPATH));
     }
     LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();

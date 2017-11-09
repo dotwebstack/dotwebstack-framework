@@ -6,7 +6,7 @@ import io.swagger.models.Model;
 import io.swagger.models.Swagger;
 import java.util.Collections;
 import java.util.Map;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 
 public class EntityBuilderContext {
 
@@ -65,7 +65,7 @@ public class EntityBuilderContext {
     private QueryResult queryResult;
     private String baseUri;
     private final String endpoint;
-    private final RequestParameters requestParameters = new RequestParameters();
+    private RequestParameters requestParameters;
 
     public Builder(String endpoint) {
 

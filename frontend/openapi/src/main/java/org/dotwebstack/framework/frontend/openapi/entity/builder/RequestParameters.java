@@ -1,13 +1,19 @@
 package org.dotwebstack.framework.frontend.openapi.entity.builder;
 
 import com.google.common.collect.Maps;
-import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.ws.rs.core.MultivaluedMap;
 
 public class RequestParameters {
 
-  private final Map<String, Object> parameters = Maps.newHashMap();
+  private Map<String, Object> parameters = Maps.newHashMap();
+
+
+  public RequestParameters(Map<String, Object> parameters) {
+    this.parameters = parameters;
+  }
 
   public void putAll(MultivaluedMap<String, String> sourceParams) {
     for (String key : sourceParams.keySet()) {
@@ -25,51 +31,6 @@ public class RequestParameters {
     return this;
   }
 
-  void putIfAbsent(String paramName, Object value) {
-    this.parameters.putIfAbsent(paramName, value);
-  }
-
-  public String asString(String paramName) {
-    Object param = this.parameters.get(paramName);
-    return param != null ? param.toString() : null;
-  }
-
-  public Integer asInt(String paramName, Integer defaultValue) {
-    Object param = this.parameters.get(paramName);
-    return param != null ? Integer.valueOf(param.toString()) : defaultValue;
-  }
-
-  public Integer asInt(String paramName) {
-    return asInt(paramName, null);
-  }
-
-  public boolean asBoolean(String paramName) {
-    Object paramValue = this.parameters.get(paramName);
-    if (paramValue == null) {
-      return false;
-    }
-
-    return Boolean.valueOf(paramValue.toString());
-  }
-
-  Map<String, Object> asMap() {
-    return Collections.unmodifiableMap(this.parameters);
-  }
-
-  public void put(String paramName, Object value) {
-    this.parameters.put(paramName, value);
-  }
-
-  void cleanParameters(String... paramNames) {
-    if (paramNames == null || paramNames.length == 0) {
-      return;
-    }
-
-    for (String paramName : paramNames) {
-      this.parameters.remove(paramName);
-    }
-  }
-
   @Override
   public String toString() {
     return parameters.toString();
@@ -78,4 +39,39 @@ public class RequestParameters {
   public Object get(String key) {
     return this.parameters.get(key);
   }
+
+
+  public static RequestParameters.Builder builder() {
+    return new RequestParameters.Builder();
+  }
+
+
+  public static class Builder {
+
+    private Map<String, Object> requestParameters = Maps.newHashMap();
+
+    public Builder() {
+
+    }
+
+    public Builder requestStringParameters(Map<String, String> requestParameters) {
+      Map<String,String> newMap = requestParameters.entrySet().stream()
+              .collect(Collectors.toMap(Map.Entry::getKey, e -> (String)e.getValue()));
+
+      this.requestParameters.putAll(newMap);
+      return this;
+    }
+
+
+
+    public Builder requestObjectParameters(Map<String, Object> requestParameters) {
+      this.requestParameters.putAll(requestParameters);
+      return this;
+    }
+
+    public RequestParameters build() {
+      return new RequestParameters(this.requestParameters);
+    }
+  }
+
 }

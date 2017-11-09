@@ -6,6 +6,7 @@ import io.swagger.models.properties.DateProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
+import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.OasVendorExtensions;
 import org.eclipse.rdf4j.model.IRI;
