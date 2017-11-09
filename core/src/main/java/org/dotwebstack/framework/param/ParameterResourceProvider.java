@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ParameterResourceProvider extends AbstractResourceProvider<Parameter> {
+public class ParameterResourceProvider extends AbstractResourceProvider<Parameter<?>> {
 
   @Autowired
   public ParameterResourceProvider(ConfigurationBackend configurationBackend,
@@ -33,7 +33,7 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
   }
 
   @Override
-  protected Parameter createResource(@NonNull Model model, @NonNull IRI identifier) {
+  protected Parameter<?> createResource(@NonNull Model model, @NonNull IRI identifier) {
     String name = getObjectString(model, identifier, ELMO.NAME_PROP).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,

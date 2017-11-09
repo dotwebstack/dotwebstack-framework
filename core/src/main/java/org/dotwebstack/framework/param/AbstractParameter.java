@@ -3,7 +3,7 @@ package org.dotwebstack.framework.param;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
-public abstract class AbstractParameter implements Parameter {
+public abstract class AbstractParameter<T> implements Parameter<T> {
 
   private final IRI identifier;
 

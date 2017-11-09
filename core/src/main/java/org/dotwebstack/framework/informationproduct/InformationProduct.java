@@ -23,6 +23,6 @@ public interface InformationProduct {
 
   ResultType getResultType();
 
-  Collection<Parameter> getParameters();
+  Collection<Parameter<?>> getParameters();
 
 }

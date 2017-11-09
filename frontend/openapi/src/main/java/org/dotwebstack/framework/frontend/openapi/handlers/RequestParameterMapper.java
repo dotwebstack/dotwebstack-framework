@@ -41,7 +41,7 @@ class RequestParameterMapper {
       }
 
       IRI parameterId = valueFactory.createIRI((String) parameterIdString);
-      Parameter parameter = getParameter(product, parameterId);
+      Parameter<?> parameter = getParameter(product, parameterId);
 
       if (parameter == null) {
         throw new ConfigurationException(String.format(
@@ -56,8 +56,8 @@ class RequestParameterMapper {
     return result;
   }
 
-  private static Parameter getParameter(InformationProduct product, IRI iri) {
-    for (Parameter parameter : product.getParameters()) {
+  private static Parameter<?> getParameter(InformationProduct product, IRI iri) {
+    for (Parameter<?> parameter : product.getParameters()) {
       if (parameter.getIdentifier().equals(iri)) {
         return parameter;
       }

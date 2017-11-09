@@ -70,10 +70,10 @@ public class InformationProductResourceProvider
       Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
 
-    Collection<Parameter> requiredParameters =
+    Collection<Parameter<?>> requiredParameters =
         requiredParameterIds.stream().map(parameterResourceProvider::get).collect(
             Collectors.toList());
-    Collection<Parameter> optionalParameters =
+    Collection<Parameter<?>> optionalParameters =
         optionalParameterIds.stream().map(parameterResourceProvider::get).collect(
             Collectors.toList());
 

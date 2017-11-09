@@ -47,13 +47,13 @@ public class SparqlBackendInformationProductTest {
   @Mock
   private RepositoryConnection repositoryConnection;
 
-  private Parameter requiredParameter1;
+  private Parameter<?> requiredParameter1;
 
-  private Parameter requiredParameter2;
+  private Parameter<?> requiredParameter2;
 
-  private Parameter optionalParameter1;
+  private Parameter<?> optionalParameter1;
 
-  private Parameter optionalParameter2;
+  private Parameter<?> optionalParameter2;
 
   @Before
   public void setUp() {
@@ -69,6 +69,7 @@ public class SparqlBackendInformationProductTest {
         new TermParameter(valueFactory.createIRI("http://foo#", "optional2"), "nameOfOptional2");
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void build_CreatesInformationProduct_WithCorrectData() {
     // Act

@@ -58,6 +58,7 @@ public class SparqlBackendInformationProductFactoryTest {
     new SparqlBackendInformationProductFactory(null, templateProcessorMock);
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void create_InformationProductIsCreated_WithValidData() {
     // Arrange
@@ -65,12 +66,12 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
-    Parameter parameter1 = mock(Parameter.class);
-    Parameter parameter2 = mock(Parameter.class);
-    Parameter parameter3 = mock(Parameter.class);
+    Parameter<?> parameter1 = mock(Parameter.class);
+    Parameter<?> parameter2 = mock(Parameter.class);
+    Parameter<?> parameter3 = mock(Parameter.class);
 
-    Collection<Parameter> requiredParameters = ImmutableList.of(parameter1, parameter2);
-    Collection<Parameter> optionalParameters = ImmutableList.of(parameter3);
+    Collection<Parameter<?>> requiredParameters = ImmutableList.of(parameter1, parameter2);
+    Collection<Parameter<?>> optionalParameters = ImmutableList.of(parameter3);
 
     InformationProduct result = informationProductFactory.create(
         DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(),

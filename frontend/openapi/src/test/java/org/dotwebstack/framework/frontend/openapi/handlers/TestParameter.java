@@ -4,7 +4,7 @@ import java.util.Map;
 import org.dotwebstack.framework.param.AbstractParameter;
 import org.eclipse.rdf4j.model.IRI;
 
-public final class TestParameter extends AbstractParameter {
+public final class TestParameter extends AbstractParameter<Object> {
 
   public TestParameter(IRI identifier, String name) {
     super(identifier, name);

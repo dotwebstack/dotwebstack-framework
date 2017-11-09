@@ -191,6 +191,7 @@ public class InformationProductResourceProviderTest {
     informationProductResourceProvider.get(unknownResource);
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @Test
   public void loadResources_CreatesInformationProduct_WithCorrectValues() {
     IRI param1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "param1");

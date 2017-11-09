@@ -75,7 +75,7 @@ public class ParameterResourceProviderTest {
     // Assert
     assertThat(provider.getAll().entrySet(), hasSize(1));
 
-    Parameter result = provider.get(DBEERPEDIA.PARAMETER);
+    Parameter<?> result = provider.get(DBEERPEDIA.PARAMETER);
 
     assertThat(result, instanceOf(TermParameter.class));
     assertThat(result.getIdentifier(), is(DBEERPEDIA.PARAMETER));

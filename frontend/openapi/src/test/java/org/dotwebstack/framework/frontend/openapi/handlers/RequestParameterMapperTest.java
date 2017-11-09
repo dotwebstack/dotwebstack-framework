@@ -46,9 +46,9 @@ public class RequestParameterMapperTest {
 
   private InformationProduct product;
 
-  private Parameter parameter;
+  private Parameter<?> parameter;
 
-  private Parameter parameter2;
+  private Parameter<?> parameter2;
 
   private RequestParameterMapper mapper;
 

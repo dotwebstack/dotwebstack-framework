@@ -34,7 +34,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   protected Object getInnerResult(Map<String, Object> parameterValues) {
     Map<String, Object> templateParameters = new HashMap<>();
 
-    for (Parameter parameter : getParameters()) {
+    for (Parameter<?> parameter : getParameters()) {
       templateParameters.put(parameter.getName(), parameter.handle(parameterValues));
     }
 
@@ -57,17 +57,17 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
     private final TemplateProcessor templateProcessor;
 
-    private final Collection<Parameter> requiredParameters;
+    private final Collection<Parameter<?>> requiredParameters;
 
-    private final Collection<Parameter> optionalParameters;
+    private final Collection<Parameter<?>> optionalParameters;
 
     private String label;
 
     public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
         @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator,
         @NonNull TemplateProcessor templateProcessor,
-        @NonNull Collection<Parameter> requiredParameters,
-        @NonNull Collection<Parameter> optionalParameters) {
+        @NonNull Collection<Parameter<?>> requiredParameters,
+        @NonNull Collection<Parameter<?>> optionalParameters) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;

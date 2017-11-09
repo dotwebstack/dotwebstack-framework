@@ -20,15 +20,15 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   protected final ResultType resultType;
 
-  protected final Collection<Parameter> requiredParameters;
+  protected final Collection<Parameter<?>> requiredParameters;
 
-  protected final Collection<Parameter> optionalParameters;
+  protected final Collection<Parameter<?>> optionalParameters;
 
   protected final TemplateProcessor templateProcessor;
 
   protected AbstractInformationProduct(@NonNull IRI identifier, String label,
-      @NonNull ResultType resultType, @NonNull Collection<Parameter> requiredParameters,
-      @NonNull Collection<Parameter> optionalParameters,
+      @NonNull ResultType resultType, @NonNull Collection<Parameter<?>> requiredParameters,
+      @NonNull Collection<Parameter<?>> optionalParameters,
       @NonNull TemplateProcessor templateProcessor) {
     this.identifier = identifier;
     this.resultType = resultType;
@@ -54,8 +54,8 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   }
 
   @Override
-  public Collection<Parameter> getParameters() {
-    List<Parameter> result = new ArrayList<>(requiredParameters);
+  public Collection<Parameter<?>> getParameters() {
+    List<Parameter<?>> result = new ArrayList<>(requiredParameters);
 
     result.addAll(optionalParameters);
 
@@ -64,7 +64,7 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   @Override
   public Object getResult(@NonNull Map<String, Object> parameterValues) {
-    for (Parameter parameter : requiredParameters) {
+    for (Parameter<?> parameter : requiredParameters) {
       if (parameterValues.get(parameter.getName()) == null) {
         throw new BackendException(String.format(
             "No value found for required parameter '%s'. Supplied parameterValues: %s",
