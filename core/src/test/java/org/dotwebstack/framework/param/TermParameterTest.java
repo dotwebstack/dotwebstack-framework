@@ -27,17 +27,17 @@ public class TermParameterTest {
 
   @Before
   public void setUp() {
-    requiredParameter = TermParameter.requiredTermParameter(DBEERPEDIA.PARAMETER_NAME,
-        DBEERPEDIA.PARAMETER_NAME_NAME_LITERAL_STRING);
-    optionalParameter = TermParameter.optionalTermParameter(DBEERPEDIA.PARAMETER_PLACE,
-        DBEERPEDIA.PARAMETER_PLACE_NAME_LITERAL_STRING);
+    requiredParameter = TermParameter.requiredTermParameter(DBEERPEDIA.NAME_PARAMETER_ID,
+        DBEERPEDIA.NAME_PARAMETER_VALUE_STRING);
+    optionalParameter = TermParameter.optionalTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
+        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING);
   }
 
   @Test
   public void handle_ReturnsValueForRequiredFilter() {
     // Arrange
     Map<String, Object> parameterValues =
-        ImmutableMap.of(DBEERPEDIA.PARAMETER_NAME_NAME_LITERAL_STRING, "value");
+        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
 
     // Act
     Object result = requiredParameter.handle(parameterValues);
@@ -50,7 +50,7 @@ public class TermParameterTest {
   public void handle_ReturnsNullForOptionalFilter() {
     // Arrange
     Map<String, Object> parameterValues =
-        Collections.singletonMap(DBEERPEDIA.PARAMETER_PLACE_NAME_LITERAL_STRING, null);
+        Collections.singletonMap(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, null);
 
     // Act
     Object result = optionalParameter.handle(parameterValues);
@@ -65,7 +65,7 @@ public class TermParameterTest {
     thrown.expect(BackendException.class);
     thrown.expectMessage(
         String.format("No value found for required parameter '%s'. Supplied parameterValues:",
-            DBEERPEDIA.PARAMETER_NAME));
+            DBEERPEDIA.NAME_PARAMETER_ID));
 
     // Act
     requiredParameter.validate(ImmutableMap.of());
@@ -74,7 +74,7 @@ public class TermParameterTest {
   @Test
   public void validate_AcceptsNonNullValue_ForRequiredParameter() {
     // Act
-    requiredParameter.validate(ImmutableMap.of(DBEERPEDIA.PARAMETER_NAME_NAME_LITERAL_STRING,
+    requiredParameter.validate(ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING,
         DBEERPEDIA.BREWERY_DAVO_NAME));
   }
 
@@ -89,11 +89,11 @@ public class TermParameterTest {
     // Assert
     thrown.expect(BackendException.class);
     thrown.expectMessage(
-        String.format("Value for parameter '%s' not a String:", DBEERPEDIA.PARAMETER_NAME));
+        String.format("Value for parameter '%s' not a String:", DBEERPEDIA.NAME_PARAMETER_ID));
 
     // Act
     requiredParameter.validate(
-        ImmutableMap.of(DBEERPEDIA.PARAMETER_NAME_NAME_LITERAL_STRING, new Object()));
+        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, new Object()));
   }
 
 }

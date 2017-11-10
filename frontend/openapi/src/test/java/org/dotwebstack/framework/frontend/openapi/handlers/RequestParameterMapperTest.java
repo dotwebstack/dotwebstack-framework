@@ -22,6 +22,7 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.TermParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
@@ -56,9 +57,9 @@ public class RequestParameterMapperTest {
   public void setUp() {
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    parameter = TestParameter.requiredTermParameter(valueFactory.createIRI("http://parameter-iri"),
+    parameter = TermParameter.requiredTermParameter(valueFactory.createIRI("http://parameter-iri"),
         "parameter-name");
-    parameter2 = TestParameter.requiredTermParameter(
+    parameter2 = TermParameter.requiredTermParameter(
         valueFactory.createIRI("http://parameter2-iri"), "parameter2-name");
 
     product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
