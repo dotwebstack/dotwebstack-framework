@@ -42,7 +42,7 @@ public class GetRequestHandlerFactoryTest {
     Operation operation = new Operation();
     InformationProduct product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH, ImmutableList.of(),
-        ImmutableList.of(), templateProcessorMock);
+        templateProcessorMock);
     Map<MediaType, Property> schemaMap = ImmutableMap.of();
 
     // Act

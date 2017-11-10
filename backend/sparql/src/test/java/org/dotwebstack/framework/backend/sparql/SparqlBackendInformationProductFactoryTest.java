@@ -70,12 +70,12 @@ public class SparqlBackendInformationProductFactoryTest {
     Parameter<?> parameter2Mock = mock(Parameter.class);
     Parameter<?> parameter3Mock = mock(Parameter.class);
 
-    Collection<Parameter<?>> requiredParameters = ImmutableList.of(parameter1Mock, parameter2Mock);
-    Collection<Parameter<?>> optionalParameters = ImmutableList.of(parameter3Mock);
+    Collection<Parameter<?>> parameters =
+        ImmutableList.of(parameter1Mock, parameter2Mock, parameter3Mock);
 
-    InformationProduct result = informationProductFactory.create(
-        DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
-        backendMock, requiredParameters, optionalParameters, statements);
+    InformationProduct result =
+        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backendMock, parameters, statements);
 
     // Assert
     assertThat(result, instanceOf(SparqlBackendInformationProduct.class));
@@ -99,8 +99,7 @@ public class SparqlBackendInformationProductFactoryTest {
 
     // Act
     informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backendMock, ImmutableList.of(),
-        ImmutableList.of(), statements);
+        DBEERPEDIA.BREWERIES_LABEL.stringValue(), backendMock, ImmutableList.of(), statements);
   }
 
   @Test
@@ -112,9 +111,9 @@ public class SparqlBackendInformationProductFactoryTest {
                 ResultType.TUPLE.name())).build();
 
     // Act
-    InformationProduct result = informationProductFactory.create(
-        DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
-        backendMock, ImmutableList.of(), ImmutableList.of(), statements);
+    InformationProduct result =
+        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backendMock, ImmutableList.of(), statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.TUPLE));
@@ -127,9 +126,9 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
-    InformationProduct result = informationProductFactory.create(
-        DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
-        backendMock, ImmutableList.of(), ImmutableList.of(), statements);
+    InformationProduct result =
+        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backendMock, ImmutableList.of(), statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.GRAPH));
@@ -143,9 +142,9 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.CONSTRUCT_ALL_QUERY).build();
 
     // Act
-    InformationProduct result = informationProductFactory.create(
-        DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
-        backendMock, ImmutableList.of(), ImmutableList.of(), statements);
+    InformationProduct result =
+        informationProductFactory.create(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
+            DBEERPEDIA.BREWERIES_LABEL.stringValue(), backendMock, ImmutableList.of(), statements);
 
     // Assert
     assertThat(result.getResultType(), equalTo(ResultType.GRAPH));

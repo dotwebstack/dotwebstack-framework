@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.test.DBEERPEDIA;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -16,19 +15,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class TermParameterTest {
 
-  private static final String NAME = DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue();
-
-  private TermParameter parameter;
-
-  @Before
-  public void setUp() {
-    parameter = new TermParameter(DBEERPEDIA.PARAMETER_NAME, NAME);
-  }
 
   @Test
   public void handle_ReturnsValueForRequiredFilter() {
     // Arrange
-    Map<String, Object> parameterValues = ImmutableMap.of(NAME, "value");
+    TermParameter parameter = TermParameter.requiredTermParameter(DBEERPEDIA.PARAMETER_NAME,
+        DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue());
+    Map<String, Object> parameterValues =
+        ImmutableMap.of(DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue(), "value");
 
     // Act
     Object result = parameter.handle(parameterValues);
@@ -40,7 +34,10 @@ public class TermParameterTest {
   @Test
   public void handle_ReturnsNullForOptionalFilter() {
     // Arrange
-    Map<String, Object> parameterValues = Collections.singletonMap(NAME, null);
+    TermParameter parameter = TermParameter.optionalTermParameter(DBEERPEDIA.PARAMETER_PLACE,
+        DBEERPEDIA.PARAMETER_PLACE_VALUE.stringValue());
+    Map<String, Object> parameterValues =
+        Collections.singletonMap(DBEERPEDIA.PARAMETER_PLACE_VALUE.stringValue(), null);
 
     // Act
     Object result = parameter.handle(parameterValues);

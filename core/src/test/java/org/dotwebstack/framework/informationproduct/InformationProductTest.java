@@ -60,8 +60,7 @@ public class InformationProductTest {
   public class TestInformationProduct extends AbstractInformationProduct {
 
     protected TestInformationProduct(IRI identifier, String label, ResultType resultType) {
-      super(identifier, label, resultType, ImmutableList.of(), ImmutableList.of(),
-          templateProcessorMock);
+      super(identifier, label, resultType, ImmutableList.of(), templateProcessorMock);
     }
 
     @Override

@@ -9,6 +9,8 @@ public interface Parameter<T> {
 
   String getName();
 
+  boolean isRequired();
+
   T handle(Map<String, Object> parameterValues);
 
 }

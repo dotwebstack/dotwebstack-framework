@@ -1,8 +1,7 @@
 package org.dotwebstack.framework.informationproduct;
 
-import java.util.Collection;
+import com.google.common.collect.ImmutableList;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -71,15 +70,17 @@ public class InformationProductResourceProvider
       Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
 
-    Collection<Parameter<?>> requiredParameters =
-        requiredParameterIds.stream().map(parameterResourceProvider::get).map(
-            d -> new TermParameter(d.getIdentifier(), d.getName())).collect(Collectors.toList());
-    Collection<Parameter<?>> optionalParameters =
-        optionalParameterIds.stream().map(parameterResourceProvider::get).map(
-            d -> new TermParameter(d.getIdentifier(), d.getName())).collect(Collectors.toList());
+    ImmutableList.Builder<Parameter<?>> builder = ImmutableList.builder();
 
-    return backend.createInformationProduct(identifier, label, requiredParameters,
-        optionalParameters, statements);
+    requiredParameterIds.stream().map(parameterResourceProvider::get).map(
+        d -> TermParameter.requiredTermParameter(d.getIdentifier(), d.getName())).forEach(
+            builder::add);
+
+    optionalParameterIds.stream().map(parameterResourceProvider::get).map(
+        d -> TermParameter.optionalTermParameter(d.getIdentifier(), d.getName())).forEach(
+            builder::add);
+
+    return backend.createInformationProduct(identifier, label, builder.build(), statements);
   }
 
 }

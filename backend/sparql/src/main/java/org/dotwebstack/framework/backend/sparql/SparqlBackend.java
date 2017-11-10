@@ -33,10 +33,8 @@ public class SparqlBackend implements Backend {
 
   @Override
   public InformationProduct createInformationProduct(IRI identifier, String label,
-      Collection<Parameter<?>> requiredParameters, Collection<Parameter<?>> optionalParameters,
-      Model statements) {
-    return informationProductFactory.create(identifier, label, this, requiredParameters,
-        optionalParameters, statements);
+      Collection<Parameter<?>> parameters, Model statements) {
+    return informationProductFactory.create(identifier, label, this, parameters, statements);
   }
 
   public SPARQLRepository getRepository() {

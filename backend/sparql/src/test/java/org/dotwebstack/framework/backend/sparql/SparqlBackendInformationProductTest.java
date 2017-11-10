@@ -59,14 +59,14 @@ public class SparqlBackendInformationProductTest {
   public void setUp() {
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    requiredParameter1 =
-        new TermParameter(valueFactory.createIRI("http://foo#", "required1"), "nameOfRequired1");
-    requiredParameter2 =
-        new TermParameter(valueFactory.createIRI("http://foo#", "required2"), "nameOfRequired2");
-    optionalParameter1 =
-        new TermParameter(valueFactory.createIRI("http://foo#", "optional1"), "nameOfOptional1");
-    optionalParameter2 =
-        new TermParameter(valueFactory.createIRI("http://foo#", "optional2"), "nameOfOptional2");
+    requiredParameter1 = TermParameter.requiredTermParameter(
+        valueFactory.createIRI("http://foo#", "required1"), "nameOfRequired1");
+    requiredParameter2 = TermParameter.requiredTermParameter(
+        valueFactory.createIRI("http://foo#", "required2"), "nameOfRequired2");
+    optionalParameter1 = TermParameter.optionalTermParameter(
+        valueFactory.createIRI("http://foo#", "optional1"), "nameOfOptional1");
+    optionalParameter2 = TermParameter.optionalTermParameter(
+        valueFactory.createIRI("http://foo#", "optional2"), "nameOfOptional2");
   }
 
   @SuppressWarnings("unchecked")
@@ -76,8 +76,8 @@ public class SparqlBackendInformationProductTest {
     SparqlBackendInformationProduct result =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
             GRAPH_QUERY, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
-            ImmutableList.of(requiredParameter1, requiredParameter2),
-            ImmutableList.of(optionalParameter1, optionalParameter2)).build();
+            ImmutableList.of(requiredParameter1, requiredParameter2, optionalParameter1,
+                optionalParameter2)).build();
 
     // Assert
     assertThat(result.getQuery(), equalTo(GRAPH_QUERY));
@@ -94,7 +94,7 @@ public class SparqlBackendInformationProductTest {
 
     // Act
     new SparqlBackendInformationProduct.Builder(null, backend, GRAPH_QUERY, ResultType.GRAPH,
-        queryEvaluatorMock, templateProcessorMock, ImmutableList.of(), ImmutableList.of()).build();
+        queryEvaluatorMock, templateProcessorMock, ImmutableList.of()).build();
   }
 
   @Test
@@ -102,7 +102,7 @@ public class SparqlBackendInformationProductTest {
     // Arrange
     SparqlBackendInformationProduct.Builder builder = new SparqlBackendInformationProduct.Builder(
         DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend, GRAPH_QUERY, ResultType.GRAPH,
-        queryEvaluatorMock, templateProcessorMock, ImmutableList.of(), ImmutableList.of());
+        queryEvaluatorMock, templateProcessorMock, ImmutableList.of());
     builder.label(DBEERPEDIA.BREWERIES_LABEL.stringValue());
 
     // Act
@@ -120,7 +120,7 @@ public class SparqlBackendInformationProductTest {
     // Act
     new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, null,
         GRAPH_QUERY, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
-        ImmutableList.of(), ImmutableList.of()).build();
+        ImmutableList.of()).build();
   }
 
   @Test
@@ -130,7 +130,7 @@ public class SparqlBackendInformationProductTest {
 
     // Act
     new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
-        null, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock, ImmutableList.of(),
+        null, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
         ImmutableList.of()).build();
   }
 
@@ -141,8 +141,7 @@ public class SparqlBackendInformationProductTest {
 
     // Act
     new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
-        GRAPH_QUERY, null, queryEvaluatorMock, templateProcessorMock, ImmutableList.of(),
-        ImmutableList.of()).build();
+        GRAPH_QUERY, null, queryEvaluatorMock, templateProcessorMock, ImmutableList.of()).build();
   }
 
   @Test
@@ -152,8 +151,7 @@ public class SparqlBackendInformationProductTest {
 
     // Act
     new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
-        GRAPH_QUERY, ResultType.GRAPH, null, templateProcessorMock, ImmutableList.of(),
-        ImmutableList.of()).build();
+        GRAPH_QUERY, ResultType.GRAPH, null, templateProcessorMock, ImmutableList.of()).build();
   }
 
   @Test
@@ -175,7 +173,7 @@ public class SparqlBackendInformationProductTest {
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
             originalQuery, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
-            ImmutableList.of(requiredParameter1), ImmutableList.of()).build();
+            ImmutableList.of(requiredParameter1)).build();
 
     Map<String, Object> parameterValues = ImmutableMap.of("nameOfRequired1", "value1");
 
@@ -207,8 +205,8 @@ public class SparqlBackendInformationProductTest {
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
             originalQuery, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
-            ImmutableList.of(requiredParameter1, requiredParameter2),
-            ImmutableList.of(optionalParameter1, optionalParameter2)).build();
+            ImmutableList.of(requiredParameter1, requiredParameter2, optionalParameter1,
+                optionalParameter2)).build();
 
     Map<String, Object> parameterValues =
         ImmutableMap.of("nameOfRequired1", "value1", "nameOfRequired2", "value2");
@@ -239,7 +237,7 @@ public class SparqlBackendInformationProductTest {
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
             originalQuery, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
-            ImmutableList.of(), ImmutableList.of(requiredParameter1)).build();
+            ImmutableList.of(requiredParameter1)).build();
 
     Map<String, Object> parameterValues = ImmutableMap.of("nameOfRequired1", "value1");
 
@@ -275,8 +273,8 @@ public class SparqlBackendInformationProductTest {
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
             originalQuery, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
-            ImmutableList.of(requiredParameter1, requiredParameter2),
-            ImmutableList.of(optionalParameter1, optionalParameter2)).build();
+            ImmutableList.of(requiredParameter1, requiredParameter2, optionalParameter1,
+                optionalParameter2)).build();
     Map<String, Object> parameterValues =
         ImmutableMap.of("foo", "value1", "nameOfRequired2", "value2");
 

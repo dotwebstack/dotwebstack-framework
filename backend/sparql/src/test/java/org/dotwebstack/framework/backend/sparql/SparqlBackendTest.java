@@ -107,13 +107,13 @@ public class SparqlBackendTest {
     Parameter<?> optionalParameterMock = mock(Parameter.class);
 
     when(informationProductFactory.create(identifier, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
-        backend, ImmutableList.of(requiredParameterMock), ImmutableList.of(optionalParameterMock),
-        model)).thenReturn(informationProductMock);
+        backend, ImmutableList.of(requiredParameterMock, optionalParameterMock), model)).thenReturn(
+            informationProductMock);
 
     // Act
-    InformationProduct result = backend.createInformationProduct(identifier,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), ImmutableList.of(requiredParameterMock),
-        ImmutableList.of(optionalParameterMock), model);
+    InformationProduct result =
+        backend.createInformationProduct(identifier, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
+            ImmutableList.of(requiredParameterMock, optionalParameterMock), model);
 
     // Assert
     assertThat(result, equalTo(informationProductMock));

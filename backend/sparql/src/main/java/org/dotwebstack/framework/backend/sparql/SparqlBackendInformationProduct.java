@@ -19,8 +19,8 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   private final QueryEvaluator queryEvaluator;
 
   public SparqlBackendInformationProduct(Builder builder) {
-    super(builder.identifier, builder.label, builder.resultType, builder.requiredParameters,
-        builder.optionalParameters, builder.templateProcessor);
+    super(builder.identifier, builder.label, builder.resultType, builder.parameters,
+        builder.templateProcessor);
     this.backend = builder.backend;
     this.query = builder.query;
     this.queryEvaluator = builder.queryEvaluator;
@@ -57,25 +57,21 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
     private final TemplateProcessor templateProcessor;
 
-    private final Collection<Parameter<?>> requiredParameters;
-
-    private final Collection<Parameter<?>> optionalParameters;
+    private final Collection<Parameter<?>> parameters;
 
     private String label;
 
     public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
         @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator,
         @NonNull TemplateProcessor templateProcessor,
-        @NonNull Collection<Parameter<?>> requiredParameters,
-        @NonNull Collection<Parameter<?>> optionalParameters) {
+        @NonNull Collection<Parameter<?>> parameters) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;
       this.resultType = resultType;
       this.queryEvaluator = queryEvaluator;
       this.templateProcessor = templateProcessor;
-      this.requiredParameters = requiredParameters;
-      this.optionalParameters = optionalParameters;
+      this.parameters = parameters;
     }
 
     public Builder label(String label) {

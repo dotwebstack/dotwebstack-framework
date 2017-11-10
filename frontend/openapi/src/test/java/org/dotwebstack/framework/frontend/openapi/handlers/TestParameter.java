@@ -6,8 +6,16 @@ import org.eclipse.rdf4j.model.IRI;
 
 public final class TestParameter extends AbstractParameter<Object> {
 
-  public TestParameter(IRI identifier, String name) {
-    super(identifier, name);
+  private TestParameter(IRI identifier, String name, boolean required) {
+    super(identifier, name, required);
+  }
+
+  public static TestParameter requiredTermParameter(IRI identifier, String name) {
+    return new TestParameter(identifier, name, true);
+  }
+
+  public static TestParameter optionalTermParameter(IRI identifier, String name) {
+    return new TestParameter(identifier, name, false);
   }
 
   @Override

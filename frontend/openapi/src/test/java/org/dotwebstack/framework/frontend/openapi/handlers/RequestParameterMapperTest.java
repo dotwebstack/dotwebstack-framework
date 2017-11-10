@@ -56,13 +56,14 @@ public class RequestParameterMapperTest {
   public void setUp() {
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    parameter = new TestParameter(valueFactory.createIRI("http://parameter-iri"), "parameter-name");
-    parameter2 =
-        new TestParameter(valueFactory.createIRI("http://parameter2-iri"), "parameter2-name");
+    parameter = TestParameter.requiredTermParameter(valueFactory.createIRI("http://parameter-iri"),
+        "parameter-name");
+    parameter2 = TestParameter.requiredTermParameter(
+        valueFactory.createIRI("http://parameter2-iri"), "parameter2-name");
 
     product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
-        ImmutableList.of(parameter, parameter2), ImmutableList.of(), templateProcessorMock);
+        ImmutableList.of(parameter, parameter2), templateProcessorMock);
 
     mapper = new RequestParameterMapper();
   }

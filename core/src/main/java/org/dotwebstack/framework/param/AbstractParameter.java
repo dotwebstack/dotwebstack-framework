@@ -9,9 +9,12 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
 
   private final String name;
 
-  protected AbstractParameter(@NonNull IRI identifier, @NonNull String name) {
+  private final boolean required;
+
+  protected AbstractParameter(@NonNull IRI identifier, @NonNull String name, boolean required) {
     this.identifier = identifier;
     this.name = name;
+    this.required = required;
   }
 
   @Override
@@ -24,4 +27,8 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
     return name;
   }
 
+  @Override
+  public boolean isRequired() {
+    return required;
+  }
 }

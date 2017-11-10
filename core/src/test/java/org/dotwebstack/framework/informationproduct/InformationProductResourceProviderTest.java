@@ -134,7 +134,7 @@ public class InformationProductResourceProviderTest {
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
-        eq(ImmutableList.of()), eq(ImmutableList.of()), any())).thenReturn(informationProduct);
+        eq(ImmutableList.of()), any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
@@ -236,24 +236,21 @@ public class InformationProductResourceProviderTest {
     ParameterDefinition optParam2Def = new ParameterDefinition(optParam2Id, "optParam2Name");
     when(parameterResourceProviderMock.get(optParam2Id)).thenReturn(optParam2Def);
 
-    ArgumentCaptor<List<Parameter<?>>> captureRequiredParameters =
-        ArgumentCaptor.forClass(List.class);
-    ArgumentCaptor<List<Parameter<?>>> captureOptionalParameters =
-        ArgumentCaptor.forClass(List.class);
+    ArgumentCaptor<List<Parameter<?>>> captureParameters = ArgumentCaptor.forClass(List.class);
     InformationProduct informationProduct = mock(InformationProduct.class);
+
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), captureRequiredParameters.capture(),
-        captureOptionalParameters.capture(), any())).thenReturn(informationProduct);
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), captureParameters.capture(),
+        any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
 
     // Assert
-    assertThat(captureRequiredParameters.getValue(),
+    assertThat(captureParameters.getValue(),
         containsInAnyOrder(equalToParameter(reqParam1Id, "reqParam1Name"),
-            equalToParameter(reqParam2Id, "reqParam2Name")));
-    assertThat(captureOptionalParameters.getValue(),
-        containsInAnyOrder(equalToParameter(optParam1Id, "optParam1Name"),
+            equalToParameter(reqParam2Id, "reqParam2Name"),
+            equalToParameter(optParam1Id, "optParam1Name"),
             equalToParameter(optParam2Id, "optParam2Name")));
   }
 
