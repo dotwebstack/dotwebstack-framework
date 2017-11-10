@@ -13,13 +13,13 @@ import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GetRequestHandler implements Inflector<ContainerRequestContext, Response> {
+public class RepresentationRequestHandler implements Inflector<ContainerRequestContext, Response> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RepresentationRequestHandler.class);
 
   private Representation representation;
 
-  public GetRequestHandler(@NonNull Representation representation) {
+  public RepresentationRequestHandler(@NonNull Representation representation) {
     this.representation = representation;
   }
 
@@ -37,4 +37,5 @@ public class GetRequestHandler implements Inflector<ContainerRequestContext, Res
     }
     throw new IllegalStateException("Received a query result that was not supported: " + result);
   }
+
 }

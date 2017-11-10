@@ -71,7 +71,7 @@ public class SupportedMediaTypesScanner {
     }
   }
 
-  MediaType[] getMediaTypes(ResultType type) {
+  public MediaType[] getMediaTypes(ResultType type) {
     switch (type) {
       case GRAPH:
         return graphMediaTypes.toArray(new MediaType[0]);

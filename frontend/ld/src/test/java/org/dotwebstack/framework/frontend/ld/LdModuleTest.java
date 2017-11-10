@@ -8,6 +8,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScannerTest.StubGraphEntityWriter;
+import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
+import org.dotwebstack.framework.frontend.ld.mappers.LdRepresentationRequestMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,7 +27,10 @@ public class LdModuleTest {
   private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
 
   @Mock
-  private LdRequestMapper requestMapper;
+  private LdRepresentationRequestMapper ldRepresentationRequestMapper;
+
+  @Mock
+  private LdRedirectionRequestMapper ldRedirectionRequestMapper;
 
   @Mock
   private SupportedMediaTypesScanner supportedMediaTypesScanner;
@@ -34,17 +39,27 @@ public class LdModuleTest {
 
   @Before
   public void setUp() {
-    ldModule = new LdModule(requestMapper, supportedMediaTypesScanner);
+    ldModule = new LdModule(ldRepresentationRequestMapper, ldRedirectionRequestMapper,
+        supportedMediaTypesScanner);
     ldModule.initialize(httpConfiguration);
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingRequestMapper() {
+  public void constructor_ThrowsException_WithMissingRepresentationRequestMapper() {
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(null, supportedMediaTypesScanner);
+    new LdModule(null, ldRedirectionRequestMapper, supportedMediaTypesScanner);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingRedirectionRequestMapper() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new LdModule(ldRepresentationRequestMapper, null, supportedMediaTypesScanner);
   }
 
   @Test
@@ -53,7 +68,7 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(requestMapper, null);
+    new LdModule(ldRepresentationRequestMapper, ldRedirectionRequestMapper, null);
   }
 
   @Test

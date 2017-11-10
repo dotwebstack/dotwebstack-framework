@@ -8,6 +8,8 @@ public class Stage {
 
   public static final String DEFAULT_BASE_PATH = "/";
 
+  private static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
+
   private IRI identifier;
 
   private Site site;
@@ -30,6 +32,14 @@ public class Stage {
 
   public String getBasePath() {
     return basePath;
+  }
+
+  public String getFullPath() {
+    if (getSite().isMatchAllDomain()) {
+      return "/" + PATH_DOMAIN_PARAMETER + getBasePath();
+    }
+
+    return "/" + getSite().getDomain() + getBasePath();
   }
 
   public static class Builder {
