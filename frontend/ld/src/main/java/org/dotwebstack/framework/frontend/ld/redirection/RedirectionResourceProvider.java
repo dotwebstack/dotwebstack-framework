@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class RedirectionResourceProvider extends AbstractResourceProvider<Redirection> {
 
+  private static final String NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION =
+      "No <%s> statement has been found for redirection <%s>.";
+
   private StageResourceProvider stageResourceProvider;
 
   @Autowired
@@ -38,19 +41,16 @@ public class RedirectionResourceProvider extends AbstractResourceProvider<Redire
   @Override
   protected Redirection createResource(Model model, IRI identifier) {
     IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP).orElseThrow(
-        () -> new ConfigurationException(
-            String.format("No <%s> statement has been found for redirection <%s>.", ELMO.STAGE_PROP,
-                identifier)));
+        () -> new ConfigurationException(String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION,
+            ELMO.STAGE_PROP, identifier)));
 
     String urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN).orElseThrow(
-        () -> new ConfigurationException(
-            String.format("No <%s> statement has been found for redirection <%s>.",
-                ELMO.URL_PATTERN, identifier)));
+        () -> new ConfigurationException(String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION,
+            ELMO.URL_PATTERN, identifier)));
 
     String targetUrl = getObjectString(model, identifier, ELMO.TARGET_URL).orElseThrow(
-        () -> new ConfigurationException(
-            String.format("No <%s> statement has been found for redirection <%s>.", ELMO.TARGET_URL,
-                identifier)));
+        () -> new ConfigurationException(String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION,
+            ELMO.TARGET_URL, identifier)));
 
     Redirection.Builder builder = new Redirection.Builder(identifier,
         stageResourceProvider.get(stageIri), urlPattern, targetUrl);
