@@ -264,7 +264,8 @@ public class SparqlBackendInformationProductTest {
     // Assert
     thrown.expect(BackendException.class);
     thrown.expectMessage(
-        "No value found for required parameter 'nameOfRequired1'. Supplied parameterValues:");
+        String.format("No value found for required parameter '%s'. Supplied parameterValues:",
+            requiredParameter1.getIdentifier()));
 
     // Arrange
     String originalQuery =

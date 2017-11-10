@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import java.util.Map;
 import lombok.NonNull;
-import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
@@ -54,13 +53,7 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   @Override
   public Object getResult(@NonNull Map<String, Object> parameterValues) {
-    for (Parameter<?> parameter : parameters) {
-      if (parameter.isRequired() && parameterValues.get(parameter.getName()) == null) {
-        throw new BackendException(String.format(
-            "No value found for required parameter '%s'. Supplied parameterValues: %s",
-            parameter.getName(), parameterValues));
-      }
-    }
+    parameters.forEach(p -> p.validate(parameterValues));
 
     return getInnerResult(parameterValues);
   }

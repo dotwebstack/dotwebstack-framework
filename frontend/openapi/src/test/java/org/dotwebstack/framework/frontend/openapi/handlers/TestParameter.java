@@ -24,4 +24,10 @@ public final class TestParameter extends AbstractParameter<Object> {
         "handle() method unsupported, mock the Parameter interface instead");
   }
 
+  @Override
+  protected void validateRequired(Map<String, Object> parameterValues) {
+    throw new UnsupportedOperationException(
+        "validateRequired() method unsupported, mock the Parameter interface instead");
+  }
+
 }
