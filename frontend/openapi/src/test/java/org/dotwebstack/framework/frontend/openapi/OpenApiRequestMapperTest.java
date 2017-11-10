@@ -102,7 +102,9 @@ public class OpenApiRequestMapperTest {
     requestMapper.setResourceLoader(resourceLoader);
     requestMapper.setEnvironment(environmentMock);
 
-    when(getRequestHandlerFactoryMock.newGetRequestHandler(Mockito.any(), Mockito.any())).thenReturn(getRequestHandlerMock);
+    when(
+        getRequestHandlerFactoryMock.newGetRequestHandler(Mockito.any(), Mockito.any())).thenReturn(
+            getRequestHandlerMock);
   }
 
   @Test

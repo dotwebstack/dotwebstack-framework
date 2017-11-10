@@ -3,19 +3,16 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.theInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
-import io.swagger.models.properties.Property;
+import io.swagger.models.Response;
 import java.net.URI;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
-
-import io.swagger.models.Response;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -62,8 +59,8 @@ public class GetRequestHandlerTest {
     Map<String, Response> response = ImmutableMap.of("200", mockResponse);
 
     when(operationMock.getResponses()).thenReturn(response);
-    getRequestHandler = new GetRequestHandler(operationMock, informationProduct,
-        requestParameterMapperMock);
+    getRequestHandler =
+        new GetRequestHandler(operationMock, informationProduct, requestParameterMapperMock);
   }
 
   @Test
@@ -72,7 +69,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, null,  requestParameterMapperMock);
+    new GetRequestHandler(operationMock, null, requestParameterMapperMock);
   }
 
   @Test
@@ -133,7 +130,8 @@ public class GetRequestHandlerTest {
     javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContext);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    assertThat(response.getStatus(),
+        equalTo(javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
     assertThat(response.getEntity(), nullValue());
   }
 }

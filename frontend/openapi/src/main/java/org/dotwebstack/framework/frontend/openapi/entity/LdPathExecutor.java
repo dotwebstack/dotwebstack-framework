@@ -23,7 +23,7 @@ public class LdPathExecutor {
   private LDPath<Value> ldpath;
   private final ImmutableMap<String, String> ldpathNamespaces;
 
-  public LdPathExecutor(EntityBuilderContext context) {
+  public LdPathExecutor(final EntityBuilderContext context) {
     this.ldpathNamespaces = extractLdpathNamespaces(context.getSwagger());
     this.ldpath = createLdpath(context.getQueryResult());
 
