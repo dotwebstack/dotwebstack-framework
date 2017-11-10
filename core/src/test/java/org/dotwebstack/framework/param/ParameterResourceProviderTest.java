@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.param;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -75,9 +74,8 @@ public class ParameterResourceProviderTest {
     // Assert
     assertThat(provider.getAll().entrySet(), hasSize(1));
 
-    Parameter<?> result = provider.get(DBEERPEDIA.PARAMETER);
+    ParameterDefinition result = provider.get(DBEERPEDIA.PARAMETER);
 
-    assertThat(result, instanceOf(TermParameter.class));
     assertThat(result.getIdentifier(), is(DBEERPEDIA.PARAMETER));
     assertThat(result.getName(), is(DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue()));
   }

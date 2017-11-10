@@ -12,6 +12,7 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.ParameterResourceProvider;
+import org.dotwebstack.framework.param.TermParameter;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -71,11 +72,11 @@ public class InformationProductResourceProvider
     Backend backend = backendResourceProvider.get(backendIdentifier);
 
     Collection<Parameter<?>> requiredParameters =
-        requiredParameterIds.stream().map(parameterResourceProvider::get).collect(
-            Collectors.toList());
+        requiredParameterIds.stream().map(parameterResourceProvider::get).map(
+            d -> new TermParameter(d.getIdentifier(), d.getName())).collect(Collectors.toList());
     Collection<Parameter<?>> optionalParameters =
-        optionalParameterIds.stream().map(parameterResourceProvider::get).collect(
-            Collectors.toList());
+        optionalParameterIds.stream().map(parameterResourceProvider::get).map(
+            d -> new TermParameter(d.getIdentifier(), d.getName())).collect(Collectors.toList());
 
     return backend.createInformationProduct(identifier, label, requiredParameters,
         optionalParameters, statements);
