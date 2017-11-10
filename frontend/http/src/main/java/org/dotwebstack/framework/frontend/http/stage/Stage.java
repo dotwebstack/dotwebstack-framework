@@ -8,7 +8,7 @@ public class Stage {
 
   public static final String DEFAULT_BASE_PATH = "/";
 
-  private static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
+  public static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
 
   private IRI identifier;
 

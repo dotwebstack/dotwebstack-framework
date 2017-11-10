@@ -99,4 +99,40 @@ public class LdRedirectionRequestMapperTest {
     assertThat(resource.getResourceMethods(), hasSize(1));
   }
 
+  @Test
+  public void loadRedirction_IgnoreSecondRedirection_WhenAddedTwice() {
+    // Arrange
+    stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
+        DBEERPEDIA.BASE_PATH.stringValue()).build();
+
+    Redirection redirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, stage,
+        DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+
+    Map<IRI, Redirection> redirectionMap = new HashMap<>();
+    redirectionMap.put(redirection.getIdentifier(), redirection);
+
+    Redirection sameSecondRedirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION,
+        stage, DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+    redirectionMap.put(redirection.getIdentifier(), sameSecondRedirection);
+
+    // Act
+    ldRedirectionRequestMapper.loadRedirections(httpConfiguration);
+
+    // Assert
+    assertThat(httpConfiguration.getResources(), hasSize(1));
+  }
+
+  @Test
+  public void loadRedirection_DoesThrowException_WhenStageIsNull() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Arrange
+    new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, null,
+        DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+  }
+
 }
