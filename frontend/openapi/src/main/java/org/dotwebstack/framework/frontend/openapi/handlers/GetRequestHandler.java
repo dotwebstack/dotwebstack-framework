@@ -55,13 +55,13 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
       org.eclipse.rdf4j.query.TupleQueryResult result =
           (org.eclipse.rdf4j.query.TupleQueryResult) informationProduct.getResult(parameterValues);
 
-      TupleEntity entity = (TupleEntity) TupleEntity.builder().withSchemaProperty(
+      TupleEntity entity = (TupleEntity) (TupleEntity.builder().withSchemaProperty(
           schemaProperty).withRequestParameters(
               RequestParameters.builder().requestStringParameters(
                   parameterValues).build()).withQueryResult(
                       QueryResult.builder().withQueryResultDb(result).build()).withBaseUri(
                           context.getUriInfo().getBaseUri().toString()).withPath(
-                              context.getUriInfo().getPath()).build();
+                              context.getUriInfo().getPath())).build();
       responseOk = responseOk(entity);
     }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {

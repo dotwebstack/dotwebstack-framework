@@ -4,18 +4,15 @@ import io.swagger.models.properties.Property;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParameters;
 
-public class QueryEntity extends AbstractEntity {
+public abstract class QueryEntity extends AbstractEntity {
 
   QueryEntity(Property schemaProperty, RequestParameters requestParameters, QueryResult queryResult,
       String baseUri, String endpoint) {
     super(schemaProperty, requestParameters, queryResult, baseUri, endpoint);
   }
 
-  public static Builder builder() {
-    return new Builder();
-  }
 
-  public static class Builder {
+  public abstract static class Builder {
     Property schemaProperty;
     RequestParameters requestParameters;
     QueryResult queryResult;
@@ -28,9 +25,6 @@ public class QueryEntity extends AbstractEntity {
     }
 
 
-    public Entity build() {
-      return new QueryEntity(schemaProperty, requestParameters, queryResult, baseUri, endpoint);
-    }
 
     public Builder withSchemaProperty(Property schemaProperty) {
       this.schemaProperty = schemaProperty;
@@ -51,6 +45,8 @@ public class QueryEntity extends AbstractEntity {
       this.endpoint = path;
       return this;
     }
+
+    public abstract Entity build();
   }
 
 

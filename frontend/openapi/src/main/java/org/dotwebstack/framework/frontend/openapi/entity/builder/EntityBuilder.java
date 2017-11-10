@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.builder;
 
+import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import java.util.Map;
@@ -30,6 +31,9 @@ public class EntityBuilder {
       EntityBuilderContext entityBuilderContext) {
 
     if (schemaProperty instanceof ObjectProperty) {
+      return processResourceEndpoint(schemaProperty, entityBuilderContext, registry);
+    }
+    if (schemaProperty instanceof ArrayProperty) {
       return processResourceEndpoint(schemaProperty, entityBuilderContext, registry);
     }
     throw new PropertyHandlerRuntimeException(

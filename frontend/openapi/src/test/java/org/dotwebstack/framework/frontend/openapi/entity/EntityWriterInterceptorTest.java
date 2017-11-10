@@ -10,10 +10,12 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.properties.Property;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilder;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParameters;
 import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRegistry;
 import org.junit.Before;
@@ -74,10 +76,15 @@ public class EntityWriterInterceptorTest {
   @Test
   public void aroundWriteTo_MapsEntity_ForTupleEntity() throws IOException {
     // Arrange
-    TupleEntity entity = mock(TupleEntity.class);
     RequestParameters requestParameters =
         RequestParameters.builder().requestStringParameters(ImmutableMap.of()).build();
-    when(entity.getRequestParameters()).thenReturn(requestParameters);
+
+    Property schemaProperty = mock(Property.class);
+    QueryResult queryResult = mock(QueryResult.class);
+    TupleEntity entity = (TupleEntity) TupleEntity.builder().withRequestParameters(
+        requestParameters).withSchemaProperty(schemaProperty).withBaseUri("").withPath(
+            "").withQueryResult(queryResult).build();
+
     Object mappedEntity = ImmutableList.of();
     when(context.getEntity()).thenReturn(entity);
     when(context.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);

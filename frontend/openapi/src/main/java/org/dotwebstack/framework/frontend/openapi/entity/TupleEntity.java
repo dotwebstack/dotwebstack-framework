@@ -6,7 +6,6 @@ import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParamete
 
 public final class TupleEntity extends QueryEntity {
 
-
   TupleEntity(Property schemaProperty, RequestParameters requestParameters, QueryResult queryResult,
       String baseUri, String endpoint) {
     super(schemaProperty, requestParameters, queryResult, baseUri, endpoint);
