@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class QueryEvaluator {
 
-  // TODO add BindableParameters
   public Object evaluate(RepositoryConnection repositoryConnection, String query) {
     Query preparedQuery;
 
