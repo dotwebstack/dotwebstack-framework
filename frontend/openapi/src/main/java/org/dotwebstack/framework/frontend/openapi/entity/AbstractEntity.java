@@ -1,9 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.Property;
-import java.util.Map;
-import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParameters;
@@ -12,7 +9,6 @@ abstract class AbstractEntity implements Entity {
 
   private final RequestParameters requestParameters;
   private QueryResult queryResult;
-  protected ImmutableMap<MediaType, Property> schemaMap;
 
   private Property schemaProperty;
 
@@ -20,19 +16,15 @@ abstract class AbstractEntity implements Entity {
 
   private String endpoint;
 
-  protected AbstractEntity(@NonNull Map<MediaType, Property> schemaMap, Property schemaProperty,
-      RequestParameters requestParameters, QueryResult queryResult, String baseUri,
-      String endpoint) {
-    this.schemaMap = ImmutableMap.copyOf(schemaMap);
+  protected AbstractEntity(@NonNull Property schemaProperty,
+      @NonNull RequestParameters requestParameters, @NonNull QueryResult queryResult,
+      String baseUri, String endpoint) {
+
     this.schemaProperty = schemaProperty;
     this.requestParameters = requestParameters;
     this.queryResult = queryResult;
     this.baseUri = baseUri;
     this.endpoint = endpoint;
-  }
-
-  public Map<MediaType, Property> getSchemaMap() {
-    return schemaMap;
   }
 
   @Override

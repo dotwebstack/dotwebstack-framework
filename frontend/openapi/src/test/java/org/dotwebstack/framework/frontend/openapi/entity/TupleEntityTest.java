@@ -25,7 +25,7 @@ public class TupleEntityTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new TupleEntity(null, null,null,null,null,null);
+    new TupleEntity(null,null,null,null,null);
   }
 
   @Test
@@ -34,7 +34,7 @@ public class TupleEntityTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, mock(Property.class)), null,null,null,null,null);
+    new TupleEntity( null,null,null,null,null);
   }
 
 }

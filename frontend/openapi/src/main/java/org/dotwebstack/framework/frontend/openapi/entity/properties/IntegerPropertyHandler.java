@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.properties;
 
-
 import com.google.common.collect.ImmutableSet;
+
 import io.swagger.models.properties.BaseIntegerProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
@@ -36,8 +36,9 @@ public class IntegerPropertyHandler extends AbstractPropertyHandler<BaseIntegerP
     }
 
     if (ldPathQuery == null) {
-      throw new PropertyHandlerRuntimeException(String.format("Property '%s' must have a '%s' attribute.",
-          property.getName(), OasVendorExtensions.LDPATH));
+      throw new PropertyHandlerRuntimeException(
+          String.format("Property '%s' must have a '%s' attribute.", property.getName(),
+              OasVendorExtensions.LDPATH));
     }
     LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
     Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context, ldPathQuery);

@@ -9,9 +9,6 @@ import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParamete
 
 public interface Entity {
 
-
-  Map<MediaType, Property> getSchemaMap();
-
   Property getSchemaProperty();
 
   RequestParameters getRequestParameters();

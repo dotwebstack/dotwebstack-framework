@@ -4,7 +4,6 @@ import io.swagger.models.Operation;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
@@ -26,26 +25,20 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private final InformationProduct informationProduct;
 
-  private final Map<MediaType, Property> schemaMap;
-
   private final RequestParameterMapper requestParameterMapper;
 
   GetRequestHandler(@NonNull Operation operation, @NonNull InformationProduct informationProduct,
-      @NonNull Map<MediaType, Property> schemaMap,
+
       @NonNull RequestParameterMapper requestParameterMapper) {
     this.operation = operation;
     this.informationProduct = informationProduct;
-    this.schemaMap = schemaMap;
     this.requestParameterMapper = requestParameterMapper;
   }
 
-  public InformationProduct getInformationProduct() {
+  InformationProduct getInformationProduct() {
     return informationProduct;
   }
 
-  public Map<MediaType, Property> getSchemaMap() {
-    return schemaMap;
-  }
 
   @Override
   public Response apply(@NonNull ContainerRequestContext context) {
@@ -62,42 +55,22 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
       org.eclipse.rdf4j.query.TupleQueryResult result =
           (org.eclipse.rdf4j.query.TupleQueryResult) informationProduct.getResult(parameterValues);
 
-//      entity = new TupleEntity(schemaMap, schemaProperty,
-//          RequestParameters.builder().requestStringParameters(parameterValues).build(),
-//          QueryResult.builder().withQueryResultDb(result).build(),
-//          context.getUriInfo().getBaseUri().toString(), context.getUriInfo().getPath());
-      entity = TupleEntity.builder()
-              .withSchemaMap(schemaMap)
-              .withSchemaProperty(schemaProperty)
-              .withRequestParameters(
-                      RequestParameters.builder()
-                              .requestStringParameters(parameterValues)
-                              .build())
-              .withQueryResult(
-                      QueryResult.builder()
-                              .withQueryResultDb(result)
-                              .build())
-              .withBaseUri(context.getUriInfo().getBaseUri().toString())
-              .withPath(context.getUriInfo().getPath())
-              .build();
+      entity = TupleEntity.builder().withSchemaProperty(schemaProperty).withRequestParameters(
+          RequestParameters.builder().requestStringParameters(
+              parameterValues).build()).withQueryResult(
+                  QueryResult.builder().withQueryResultDb(result).build()).withBaseUri(
+                      context.getUriInfo().getBaseUri().toString()).withPath(
+                          context.getUriInfo().getPath()).build();
     }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
       org.eclipse.rdf4j.query.GraphQueryResult result =
           (org.eclipse.rdf4j.query.GraphQueryResult) informationProduct.getResult(parameterValues);
-      entity = GraphEntity.builder()
-              .withSchemaMap(schemaMap)
-              .withSchemaProperty(schemaProperty)
-              .withRequestParameters(
-                  RequestParameters.builder()
-                          .requestStringParameters(parameterValues)
-                          .build())
-              .withQueryResult(
-                      QueryResult.builder()
-                              .withQueryResultDb(result)
-                              .build())
-              .withBaseUri(context.getUriInfo().getBaseUri().toString())
-              .withPath(context.getUriInfo().getPath())
-              .build();
+      entity = GraphEntity.builder().withSchemaProperty(schemaProperty).withRequestParameters(
+          RequestParameters.builder().requestStringParameters(
+              parameterValues).build()).withQueryResult(
+                  QueryResult.builder().withQueryResultDb(result).build()).withBaseUri(
+                      context.getUriInfo().getBaseUri().toString()).withPath(
+                          context.getUriInfo().getPath()).build();
     }
 
     if (entity != null) {

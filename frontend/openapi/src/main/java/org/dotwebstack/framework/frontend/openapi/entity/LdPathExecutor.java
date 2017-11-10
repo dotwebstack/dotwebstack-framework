@@ -31,17 +31,13 @@ public class LdPathExecutor {
 
   private ImmutableMap<String, String> getDefaultNamespaces() {
 
-    ImmutableMap<String, String> vendorExtensions =
-
-        ImmutableMap.<String, String>builder().put("nen3610",
-            "http://data.informatiehuisruimte.nl/def/nen3610#").put("skos",
-                "http://www.w3.org/2004/02/skos/core#").put("dcterms",
-                    "http://purl.org/dc/terms/").put("ro",
-                        "http://data.informatiehuisruimte.nl/def/ro#").put("pdok",
-                            "http://data.pdok.nl/def/pdok#").put("geo",
-                                "http://www.opengis.net/ont/geosparql#").put("ro_beg",
-                                    "http://data.informatiehuisruimte.nl/ro/id/begrip").build();
-    return vendorExtensions;
+    return ImmutableMap.<String, String>builder().put("nen3610",
+        "http://data.informatiehuisruimte.nl/def/nen3610#").put("skos",
+            "http://www.w3.org/2004/02/skos/core#").put("dcterms", "http://purl.org/dc/terms/").put(
+                "ro", "http://data.informatiehuisruimte.nl/def/ro#").put("pdok",
+                    "http://data.pdok.nl/def/pdok#").put("geo",
+                        "http://www.opengis.net/ont/geosparql#").put("ro_beg",
+                            "http://data.informatiehuisruimte.nl/ro/id/begrip").build();
 
   }
 
@@ -85,14 +81,7 @@ public class LdPathExecutor {
       throw new PropertyHandlerRuntimeException("Unable to initialize RDF4JRepository.", re);
     }
 
-    LDPath<Value> ldPath = new LDPath<>(repositoryBackend);
-
-    // ldPath.registerFunction(new KeepAfterLastFunction<>());
-    // ldPath.registerFunction(new TrimFunction<>());
-    // ldPath.registerFunction(new JoinFunction<>());
-    // ldPath.registerFunction(new SortByPropertyFunction<>(ldpathNamespaces));
-
-    return ldPath;
+    return new LDPath<>(repositoryBackend);
   }
 
   public Collection<Value> ldPathQuery(Value context, String query) {

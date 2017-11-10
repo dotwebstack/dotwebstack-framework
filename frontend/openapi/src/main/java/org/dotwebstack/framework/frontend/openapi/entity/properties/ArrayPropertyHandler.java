@@ -1,12 +1,12 @@
 package org.dotwebstack.framework.frontend.openapi.entity.properties;
 
+import com.google.common.collect.ImmutableList;
 
+import io.swagger.models.properties.ArrayProperty;
+import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
-import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.Property;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.OasVendorExtensions;
@@ -34,17 +34,16 @@ public class ArrayPropertyHandler extends AbstractPropertyHandler<ArrayProperty>
     } else if (property.getVendorExtensions().containsKey(OasVendorExtensions.LDPATH)) {
 
       LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
-      Collection<Value> queryResult = ldPathExecutor.ldPathQuery(
-          context, (String) property.getVendorExtensions().get(OasVendorExtensions.LDPATH));
+      Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context,
+          (String) property.getVendorExtensions().get(OasVendorExtensions.LDPATH));
 
 
       queryResult.forEach(value -> builder.add(
           Optional.ofNullable(registry.handle(itemProperty, entityBuilderContext, value))));
 
     } else {
-      throw new PropertyHandlerRuntimeException(
-          String.format("ArrayProperty must have either a '%s' attribute.",
-              OasVendorExtensions.LDPATH));
+      throw new PropertyHandlerRuntimeException(String.format(
+          "ArrayProperty must have either a '%s' attribute.", OasVendorExtensions.LDPATH));
     }
 
     return builder.build();

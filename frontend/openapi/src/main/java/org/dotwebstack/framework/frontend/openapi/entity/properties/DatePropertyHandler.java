@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.properties;
 
-
 import com.google.common.collect.ImmutableSet;
+
 import io.swagger.models.properties.DateProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;

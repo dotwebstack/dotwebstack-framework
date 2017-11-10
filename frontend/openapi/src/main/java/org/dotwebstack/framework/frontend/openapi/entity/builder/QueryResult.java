@@ -14,16 +14,9 @@ public class QueryResult {
   private final Model model;
   private final ImmutableList<Resource> subjects;
 
-  private final org.eclipse.rdf4j.query.QueryResult queryResultDb;
-  private Set<Statement> statements = new HashSet<>();
-
-
-  private QueryResult(Model model, ImmutableList<Resource> subjects,
-      org.eclipse.rdf4j.query.QueryResult queryResultDb, Set<Statement> statements) {
+  private QueryResult(Model model, ImmutableList<Resource> subjects) {
     this.model = model;
     this.subjects = subjects;
-    this.queryResultDb = queryResultDb;
-    this.statements = statements;
   }
 
   public Model getModel() {
@@ -42,26 +35,14 @@ public class QueryResult {
   public static class Builder {
 
     private Model model;
-    private final ImmutableList.Builder<Resource> contextsBuilder;
     private org.eclipse.rdf4j.query.QueryResult queryResultDb;
 
     public Builder() {
       model = new LinkedHashModel();
-      contextsBuilder = new ImmutableList.Builder<>();
     }
 
-    public Builder add(Model model) {
-      this.model.addAll(model);
-      return this;
-    }
-
-    public Builder add(Resource resource) {
-      contextsBuilder.add(resource);
-      return this;
-    }
 
     public Builder withQueryResultDb(org.eclipse.rdf4j.query.QueryResult queryResultDb) {
-
       this.model = QueryResults.asModel(queryResultDb);
       this.queryResultDb = queryResultDb;
       return this;
@@ -83,7 +64,7 @@ public class QueryResult {
 
 
 
-      return new QueryResult(model, listBuilder.build(), this.queryResultDb, statements);
+      return new QueryResult(model, listBuilder.build());
     }
   }
 

@@ -34,28 +34,12 @@ public class EntityBuilderContext {
     return this.ldPathExecutor;
   }
 
-  public String getEndpoint() {
-    return this.endpoint;
-  }
-
   public Swagger getSwagger() {
     return swagger;
   }
 
-  public Map<String, Model> getSwaggerDefinitions() {
-    return Collections.unmodifiableMap(swaggerDefinitions);
-  }
-
   public QueryResult getQueryResult() {
     return queryResult;
-  }
-
-  public String getBaseUri() {
-    return baseUri;
-  }
-
-  public RequestParameters getRequestParameters() {
-    return this.requestParameters;
   }
 
   public static class Builder {
@@ -65,7 +49,7 @@ public class EntityBuilderContext {
     private QueryResult queryResult;
     private String baseUri;
     private final String endpoint;
-    private RequestParameters requestParameters;
+    private RequestParameters requestParameters = RequestParameters.builder().build();
 
     public Builder(String endpoint) {
 

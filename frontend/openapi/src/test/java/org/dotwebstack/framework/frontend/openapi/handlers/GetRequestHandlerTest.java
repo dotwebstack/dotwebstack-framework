@@ -10,10 +10,11 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
 import io.swagger.models.properties.Property;
+import java.net.URI;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+
+import io.swagger.models.Response;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -49,9 +50,14 @@ public class GetRequestHandlerTest {
 
   private GetRequestHandler getRequestHandler;
 
+  @Mock
+  private io.swagger.models.Response mockResponse;
+
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of(),
+    Map<String, Response> response = ImmutableMap.of("200", mockResponse);
+    when(operationMock.getResponses()).thenReturn(response);
+    getRequestHandler = new GetRequestHandler(operationMock, informationProduct,
         requestParameterMapperMock);
   }
 
@@ -61,7 +67,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock);
+    new GetRequestHandler(operationMock, null,  requestParameterMapperMock);
   }
 
   @Test
@@ -70,7 +76,7 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock);
+    new GetRequestHandler(operationMock, informationProduct, requestParameterMapperMock);
   }
 
   @Test
@@ -87,20 +93,18 @@ public class GetRequestHandlerTest {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
+    when(uriInfo.getBaseUri()).thenReturn(URI.create("http://"));
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
-    Map<String, Property> schemaMap = ImmutableMap.of();
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContext);
+    javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContext);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(javax.ws.rs.core.Response.Status.OK.getStatusCode()));
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
-    //assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
-    assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
   }
 
   @Test
@@ -111,16 +115,14 @@ public class GetRequestHandlerTest {
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
     GraphQueryResult result = mock(GraphQueryResult.class);
-    Map<String, Property> schemaMap = ImmutableMap.of();
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContext);
+    javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContext);
 
     // Assert
     assertThat(response.getEntity(), instanceOf(GraphEntity.class));
-    //assertThat(((GraphEntity) response.getEntity()).getResult(), equalTo(result));
-    assertThat(((GraphEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
+
   }
 
   @Test
@@ -131,10 +133,10 @@ public class GetRequestHandlerTest {
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContext);
+    javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContext);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
     assertThat(response.getEntity(), nullValue());
   }
 }

@@ -39,15 +39,13 @@ public class GetRequestHandlerFactoryTest {
     InformationProduct product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH, ImmutableList.of(),
         ImmutableList.of());
-    Map<MediaType, Property> schemaMap = ImmutableMap.of();
 
     // Act
     GetRequestHandler result =
-        getRequestHandlerFactory.newGetRequestHandler(operation, product, schemaMap);
+        getRequestHandlerFactory.newGetRequestHandler(operation, product);
 
     // Assert
     assertThat(result.getInformationProduct(), sameInstance(product));
-    assertThat(result.getSchemaMap(), is(schemaMap));
   }
 
 }

@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.properties;
 
-
 import com.google.common.collect.ImmutableMap;
+
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
@@ -102,13 +102,6 @@ public class ObjectPropertyHandler extends AbstractPropertyHandler<ObjectPropert
       if (propertyResult instanceof Map<?, ?> && ((Map<?, ?>) propertyResult).size() == 0) {
         return;
       }
-
-
-      // if (excludeEmptyAndNullValueProperties && (propValue instanceof ArrayProperty)
-      // && ((List<?>) propertyResult).isEmpty()) {
-      // return;
-      // }
-
       builder.put(propKey, Optional.ofNullable(propertyResult));
     });
     return builder.build();

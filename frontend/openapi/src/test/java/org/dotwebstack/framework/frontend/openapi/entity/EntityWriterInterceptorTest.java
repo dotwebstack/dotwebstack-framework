@@ -12,7 +12,10 @@ import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptorContext;
-import org.dotwebstack.framework.frontend.openapi.entity.mapper.GraphEntityMapper;
+import io.swagger.models.properties.Property;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilder;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
+import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRegistry;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,10 +37,10 @@ public class EntityWriterInterceptorTest {
 
 
   @Mock
-  private GraphEntityMapper graphEntityMapper;
+  private EntityBuilder entityBuilder;
 
   @Mock
-  private TupleEntityMapper tupleEntityMapper;
+  private PropertyHandlerRegistry propertyHandlerRegistry;
 
   @Captor
   private ArgumentCaptor<Object> entityCaptor;
@@ -46,7 +49,8 @@ public class EntityWriterInterceptorTest {
 
   @Before
   public void setUp() {
-    entityWriterInterceptor = new EntityWriterInterceptor(tupleEntityMapper, graphEntityMapper,null,null);
+    entityWriterInterceptor =
+        new EntityWriterInterceptor( entityBuilder, propertyHandlerRegistry);
   }
 
   @Test
@@ -55,7 +59,7 @@ public class EntityWriterInterceptorTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new EntityWriterInterceptor(null,null,null,null);
+    new EntityWriterInterceptor( null, null);
   }
 
   @Test
@@ -75,7 +79,7 @@ public class EntityWriterInterceptorTest {
     Object mappedEntity = ImmutableList.of();
     when(context.getEntity()).thenReturn(entity);
     when(context.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
-    when(tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE)).thenReturn(mappedEntity);
+   // when(entityBuilder.build(any(Property.class),any(PropertyHandlerRegistry.class),any(EntityBuilderContext.class))).thenReturn(mappedEntity);
 
     // Act
     entityWriterInterceptor.aroundWriteTo(context);

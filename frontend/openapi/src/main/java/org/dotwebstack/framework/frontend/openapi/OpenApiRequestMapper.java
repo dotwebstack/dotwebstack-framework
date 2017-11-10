@@ -144,10 +144,6 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
                 absolutePath, okStatusCode));
       }
 
-      // Will eventually be replaced by OASv3 Content object
-      Map<MediaType, Property> schemaMap =
-          produces.stream().collect(Collectors.toMap(MediaType::valueOf, mediaType -> schema));
-
       IRI informationProductIdentifier =
           valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
               OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
@@ -158,8 +154,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
       ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          getRequestHandlerFactory.newGetRequestHandler(getOperation, informationProduct,
-              schemaMap));
+          getRequestHandlerFactory.newGetRequestHandler(getOperation, informationProduct));
 
       produces.forEach(methodBuilder::produces);
 
