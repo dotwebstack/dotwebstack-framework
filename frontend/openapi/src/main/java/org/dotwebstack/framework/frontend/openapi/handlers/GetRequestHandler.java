@@ -50,34 +50,43 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     io.swagger.models.Response response = operation.getResponses().get("200");
     Property schemaProperty = response.getSchema();
 
-    Entity entity = null;
+    Response responseOk = null;
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
       org.eclipse.rdf4j.query.TupleQueryResult result =
           (org.eclipse.rdf4j.query.TupleQueryResult) informationProduct.getResult(parameterValues);
 
-      entity = TupleEntity.builder().withSchemaProperty(schemaProperty).withRequestParameters(
-          RequestParameters.builder().requestStringParameters(
-              parameterValues).build()).withQueryResult(
-                  QueryResult.builder().withQueryResultDb(result).build()).withBaseUri(
-                      context.getUriInfo().getBaseUri().toString()).withPath(
-                          context.getUriInfo().getPath()).build();
+      TupleEntity entity = (TupleEntity) TupleEntity.builder().withSchemaProperty(
+          schemaProperty).withRequestParameters(
+              RequestParameters.builder().requestStringParameters(
+                  parameterValues).build()).withQueryResult(
+                      QueryResult.builder().withQueryResultDb(result).build()).withBaseUri(
+                          context.getUriInfo().getBaseUri().toString()).withPath(
+                              context.getUriInfo().getPath()).build();
+      responseOk = responseOk(entity);
     }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
       org.eclipse.rdf4j.query.GraphQueryResult result =
           (org.eclipse.rdf4j.query.GraphQueryResult) informationProduct.getResult(parameterValues);
-      entity = GraphEntity.builder().withSchemaProperty(schemaProperty).withRequestParameters(
-          RequestParameters.builder().requestStringParameters(
-              parameterValues).build()).withQueryResult(
-                  QueryResult.builder().withQueryResultDb(result).build()).withBaseUri(
-                      context.getUriInfo().getBaseUri().toString()).withPath(
-                          context.getUriInfo().getPath()).build();
+      GraphEntity entity = (GraphEntity) GraphEntity.builder().withSchemaProperty(
+          schemaProperty).withRequestParameters(
+              RequestParameters.builder().requestStringParameters(
+                  parameterValues).build()).withQueryResult(
+                      QueryResult.builder().withQueryResultDb(result).build()).withBaseUri(
+                          context.getUriInfo().getBaseUri().toString()).withPath(
+                              context.getUriInfo().getPath()).build();
+      responseOk = responseOk(entity);
     }
+    if (responseOk != null) {
+      return responseOk;
+    }
+    return Response.serverError().build();
+  }
 
+  private Response responseOk(Entity entity) {
     if (entity != null) {
       return Response.ok(entity).build();
     }
-
-    return Response.serverError().build();
+    return null;
   }
 
 }

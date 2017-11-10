@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.theInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,10 +53,14 @@ public class GetRequestHandlerTest {
 
   @Mock
   private io.swagger.models.Response mockResponse;
+  @Mock
+  private io.swagger.models.properties.Property property;
 
   @Before
   public void setUp() {
+    when(mockResponse.getSchema()).thenReturn(property);
     Map<String, Response> response = ImmutableMap.of("200", mockResponse);
+
     when(operationMock.getResponses()).thenReturn(response);
     getRequestHandler = new GetRequestHandler(operationMock, informationProduct,
         requestParameterMapperMock);
@@ -93,7 +98,7 @@ public class GetRequestHandlerTest {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
-    when(uriInfo.getBaseUri()).thenReturn(URI.create("http://"));
+    when(uriInfo.getBaseUri()).thenReturn(URI.create("http://www.test.nl"));
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
@@ -104,7 +109,7 @@ public class GetRequestHandlerTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(javax.ws.rs.core.Response.Status.OK.getStatusCode()));
-    assertThat(response.getEntity(), instanceOf(TupleEntity.class));
+    assertThat(response.getEntity(), theInstance(TupleEntity.class));
   }
 
   @Test

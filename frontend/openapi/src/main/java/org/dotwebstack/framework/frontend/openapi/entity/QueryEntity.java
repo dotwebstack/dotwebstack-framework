@@ -28,7 +28,7 @@ public class QueryEntity extends AbstractEntity {
     }
 
 
-    public QueryEntity build() {
+    public Entity build() {
       return new QueryEntity(schemaProperty, requestParameters, queryResult, baseUri, endpoint);
     }
 

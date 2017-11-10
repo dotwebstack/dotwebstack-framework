@@ -26,18 +26,21 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
 
   @Override
   public void aroundWriteTo(@NonNull WriterInterceptorContext context) throws IOException {
-    Entity entity = (Entity) context.getEntity();
-    Property schemaProperty = entity.getSchemaProperty();
-    RequestParameters requestParameters = entity.getRequestParameters();
-    String baseUri = entity.getBaseUri();
-    String endpoint = entity.getEndpoint();
+    if (context.getEntity() instanceof Entity) {
+      Entity entity = (Entity) context.getEntity();
+      Property schemaProperty = entity.getSchemaProperty();
+      RequestParameters requestParameters = entity.getRequestParameters();
+      String baseUri = entity.getBaseUri();
+      String endpoint = entity.getEndpoint();
 
-    QueryResult result = entity.getQueryResult();
-    EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(endpoint).queryResult(result).baseUri(
-            baseUri).requestParameters(requestParameters).build();
-    Object entityRaw = entityBuilder.build(schemaProperty, propertyHandlerRegistry, builderContext);
-    context.setEntity(entityRaw);
+      QueryResult result = entity.getQueryResult();
+      EntityBuilderContext builderContext =
+          new EntityBuilderContext.Builder(endpoint).queryResult(result).baseUri(
+              baseUri).requestParameters(requestParameters).build();
+      Object entityRaw =
+          entityBuilder.build(schemaProperty, propertyHandlerRegistry, builderContext);
+      context.setEntity(entityRaw);
+    }
     context.proceed();
   }
 

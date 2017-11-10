@@ -9,12 +9,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptorContext;
-import io.swagger.models.properties.Property;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilder;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParameters;
 import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRegistry;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,8 +49,7 @@ public class EntityWriterInterceptorTest {
 
   @Before
   public void setUp() {
-    entityWriterInterceptor =
-        new EntityWriterInterceptor( entityBuilder, propertyHandlerRegistry);
+    entityWriterInterceptor = new EntityWriterInterceptor(entityBuilder, propertyHandlerRegistry);
   }
 
   @Test
@@ -59,7 +58,7 @@ public class EntityWriterInterceptorTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new EntityWriterInterceptor( null, null);
+    new EntityWriterInterceptor(null, null);
   }
 
   @Test
@@ -76,10 +75,14 @@ public class EntityWriterInterceptorTest {
   public void aroundWriteTo_MapsEntity_ForTupleEntity() throws IOException {
     // Arrange
     TupleEntity entity = mock(TupleEntity.class);
+    RequestParameters requestParameters =
+        RequestParameters.builder().requestStringParameters(ImmutableMap.of()).build();
+    when(entity.getRequestParameters()).thenReturn(requestParameters);
     Object mappedEntity = ImmutableList.of();
     when(context.getEntity()).thenReturn(entity);
     when(context.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
-   // when(entityBuilder.build(any(Property.class),any(PropertyHandlerRegistry.class),any(EntityBuilderContext.class))).thenReturn(mappedEntity);
+
+    // when(entityBuilder.build(any(Property.class),any(PropertyHandlerRegistry.class),any(EntityBuilderContext.class))).thenReturn(mappedEntity);
 
     // Act
     entityWriterInterceptor.aroundWriteTo(context);
