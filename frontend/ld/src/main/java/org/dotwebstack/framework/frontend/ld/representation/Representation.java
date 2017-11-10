@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -23,12 +22,15 @@ public class Representation {
 
   private Stage stage;
 
+  private Representation subRepresentation;
+
   private Representation(Builder builder) {
     identifier = builder.identifier;
     urlPatterns = builder.urlPatterns;
     stage = builder.stage;
     informationProduct = builder.informationProduct;
     appearance = builder.appearance;
+    subRepresentation = builder.subRepresentation;
   }
 
   public IRI getIdentifier() {
@@ -51,6 +53,10 @@ public class Representation {
     return stage;
   }
 
+  public Representation getSubRepresentation() {
+    return subRepresentation;
+  }
+
   public static class Builder {
 
     private IRI identifier;
@@ -62,6 +68,8 @@ public class Representation {
     private List<String> urlPatterns = ImmutableList.of();
 
     private Stage stage;
+
+    private Representation subRepresentation;
 
     public Builder(@NonNull IRI identifier) {
       this.identifier = identifier;
@@ -86,6 +94,11 @@ public class Representation {
 
     public Builder urlPatterns(String... urlPatterns) {
       this.urlPatterns = Arrays.asList(urlPatterns);
+      return this;
+    }
+
+    public Builder subRepresentation(Representation subRespresentation) {
+      this.subRepresentation = subRespresentation;
       return this;
     }
 

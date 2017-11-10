@@ -61,7 +61,10 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(iri ->
         builder.stage(stageResourceProvider.get(iri)));
 
+    getObjectIRI(model, identifier, ELMO.CONTAINS_PROP).ifPresent(iri ->
+        builder.subRepresentation(this.get(iri)));
+
     return builder.build();
   }
-  
+
 }
