@@ -66,12 +66,12 @@ public class SparqlBackendInformationProductFactoryTest {
         DBEERPEDIA.SELECT_ALL_QUERY).build();
 
     // Act
-    Parameter<?> parameter1 = mock(Parameter.class);
-    Parameter<?> parameter2 = mock(Parameter.class);
-    Parameter<?> parameter3 = mock(Parameter.class);
+    Parameter<?> parameter1Mock = mock(Parameter.class);
+    Parameter<?> parameter2Mock = mock(Parameter.class);
+    Parameter<?> parameter3Mock = mock(Parameter.class);
 
-    Collection<Parameter<?>> requiredParameters = ImmutableList.of(parameter1, parameter2);
-    Collection<Parameter<?>> optionalParameters = ImmutableList.of(parameter3);
+    Collection<Parameter<?>> requiredParameters = ImmutableList.of(parameter1Mock, parameter2Mock);
+    Collection<Parameter<?>> optionalParameters = ImmutableList.of(parameter3Mock);
 
     InformationProduct result = informationProductFactory.create(
         DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, DBEERPEDIA.BREWERIES_LABEL.stringValue(),
@@ -83,7 +83,7 @@ public class SparqlBackendInformationProductFactoryTest {
         equalTo(DBEERPEDIA.SELECT_ALL_QUERY.stringValue()));
 
     assertThat(((SparqlBackendInformationProduct) result).getParameters(),
-        contains(parameter1, parameter2, parameter3));
+        contains(parameter1Mock, parameter2Mock, parameter3Mock));
   }
 
   @Test

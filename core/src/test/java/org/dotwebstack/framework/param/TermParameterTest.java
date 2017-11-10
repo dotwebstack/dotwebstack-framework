@@ -22,7 +22,7 @@ public class TermParameterTest {
 
   @Before
   public void setUp() {
-    parameter = new TermParameter(DBEERPEDIA.PARAMETER, NAME);
+    parameter = new TermParameter(DBEERPEDIA.PARAMETER_NAME, NAME);
   }
 
   @Test

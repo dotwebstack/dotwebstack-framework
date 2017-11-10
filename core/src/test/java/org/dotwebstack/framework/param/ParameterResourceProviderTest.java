@@ -64,20 +64,28 @@ public class ParameterResourceProviderTest {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.TERM_FILTER),
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, ELMO.NAME_PROP,
-                DBEERPEDIA.PARAMETER_NAME_VALUE))));
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER_NAME, RDF.TYPE, ELMO.TERM_FILTER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER_NAME, ELMO.NAME_PROP,
+                DBEERPEDIA.PARAMETER_NAME_VALUE),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER_PLACE, RDF.TYPE, ELMO.TERM_FILTER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER_PLACE, ELMO.NAME_PROP,
+                DBEERPEDIA.PARAMETER_PLACE_VALUE))));
 
     // Act
     provider.loadResources();
 
     // Assert
-    assertThat(provider.getAll().entrySet(), hasSize(1));
+    assertThat(provider.getAll().entrySet(), hasSize(2));
 
-    ParameterDefinition result = provider.get(DBEERPEDIA.PARAMETER);
+    ParameterDefinition nameParamDef = provider.get(DBEERPEDIA.PARAMETER_NAME);
 
-    assertThat(result.getIdentifier(), is(DBEERPEDIA.PARAMETER));
-    assertThat(result.getName(), is(DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue()));
+    assertThat(nameParamDef.getIdentifier(), is(DBEERPEDIA.PARAMETER_NAME));
+    assertThat(nameParamDef.getName(), is(DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue()));
+
+    ParameterDefinition placeParamDef = provider.get(DBEERPEDIA.PARAMETER_PLACE);
+
+    assertThat(placeParamDef.getIdentifier(), is(DBEERPEDIA.PARAMETER_PLACE));
+    assertThat(placeParamDef.getName(), is(DBEERPEDIA.PARAMETER_PLACE_VALUE.stringValue()));
   }
 
   @Test
@@ -85,12 +93,12 @@ public class ParameterResourceProviderTest {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(
         new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.TERM_FILTER))));
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER_NAME, RDF.TYPE, ELMO.TERM_FILTER))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("No <%s> property found for <%s> of type <%s>",
-        ELMO.NAME_PROP, DBEERPEDIA.PARAMETER, ELMO.TERM_FILTER));
+        ELMO.NAME_PROP, DBEERPEDIA.PARAMETER_NAME, ELMO.TERM_FILTER));
 
     // Act
     provider.loadResources();
