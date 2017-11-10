@@ -289,4 +289,44 @@ public class RepresentationResourceProviderTest {
     assertThat(representation.getStage(), is(nullValue()));
     assertThat(representation.getInformationProduct(), is(nullValue()));
   }
+
+  @Test
+  public void loadResources_LoadRepresentation_WithSubRepresenatation() {
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+
+            valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+            valueFactory
+                .createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, ELMO.CONTAINS_PROP,
+                    DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION))));
+
+    // Act
+    representationResourceProvider.loadResources();
+
+    // Assert
+    Representation graphBreweryRepresentation =
+        representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
+    assertThat(graphBreweryRepresentation.getUrlPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(graphBreweryRepresentation.getStage(), not(nullValue()));
+    assertThat(graphBreweryRepresentation.getInformationProduct(), not(nullValue()));
+
+    Representation tupleBreweryRepresentation =
+        representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION);
+    assertThat(tupleBreweryRepresentation.getUrlPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(tupleBreweryRepresentation.getStage(), not(nullValue()));
+    assertThat(tupleBreweryRepresentation.getInformationProduct(), not(nullValue()));
+    assertThat(tupleBreweryRepresentation.getSubRepresentation(), is(graphBreweryRepresentation));
+  }
 }

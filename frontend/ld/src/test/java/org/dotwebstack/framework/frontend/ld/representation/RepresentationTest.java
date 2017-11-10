@@ -31,6 +31,9 @@ public class RepresentationTest {
   @Mock
   private InformationProduct informationProduct;
 
+  @Mock
+  private Representation subRepresentation;
+
   @Test
   public void build_ThrowsException_WithMissingIdentifier() {
     // Assert
@@ -116,6 +119,7 @@ public class RepresentationTest {
     assertThat(representation.getAppearance(), equalTo(appearance));
     assertThat(representation.getUrlPatterns().toArray()[0], equalTo(DBEERPEDIA.URL_PATTERN_VALUE));
     assertThat(representation.getUrlPatterns().size(), equalTo(1));
+    assertThat(representation.getSubRepresentation(), equalTo(subRepresentation));
   }
 
 }
