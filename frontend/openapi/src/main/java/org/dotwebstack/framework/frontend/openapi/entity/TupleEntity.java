@@ -12,4 +12,14 @@ public final class TupleEntity extends QueryEntity {
     super(schemaProperty, requestParameters, queryResult, baseUri, endpoint);
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder extends QueryEntity.Builder {
+
+    public Entity build() {
+      return new TupleEntity(schemaProperty, requestParameters, queryResult, baseUri, endpoint);
+    }
+  }
 }

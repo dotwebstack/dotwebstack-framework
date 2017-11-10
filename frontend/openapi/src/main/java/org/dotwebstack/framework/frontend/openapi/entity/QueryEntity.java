@@ -16,11 +16,11 @@ public class QueryEntity extends AbstractEntity {
   }
 
   public static class Builder {
-    private Property schemaProperty;
-    private RequestParameters requestParameters;
-    private QueryResult queryResult;
-    private String baseUri;
-    private String endpoint;
+    Property schemaProperty;
+    RequestParameters requestParameters;
+    QueryResult queryResult;
+    String baseUri;
+    String endpoint;
 
     public Builder withQueryResult(QueryResult queryResult) {
       this.queryResult = queryResult;

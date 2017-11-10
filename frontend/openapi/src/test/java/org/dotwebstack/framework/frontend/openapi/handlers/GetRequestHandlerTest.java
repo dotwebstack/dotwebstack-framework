@@ -76,15 +76,6 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingSchemaMap() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GetRequestHandler(operationMock, informationProduct, requestParameterMapperMock);
-  }
-
-  @Test
   public void apply_ThrowsException_WithMissingContainerRequestContext() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -109,7 +100,7 @@ public class GetRequestHandlerTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(javax.ws.rs.core.Response.Status.OK.getStatusCode()));
-    assertThat(response.getEntity(), theInstance(TupleEntity.class));
+    assertThat(response.getEntity(), instanceOf(TupleEntity.class));
   }
 
   @Test
@@ -117,6 +108,7 @@ public class GetRequestHandlerTest {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
+    when(uriInfo.getBaseUri()).thenReturn(URI.create("http://www.test.nl"));
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
     GraphQueryResult result = mock(GraphQueryResult.class);
