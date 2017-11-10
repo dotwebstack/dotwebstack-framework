@@ -1,10 +1,13 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
+import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
+import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -13,6 +16,8 @@ public class Representation {
   private IRI identifier;
 
   private InformationProduct informationProduct;
+
+  private Appearance appearance;
 
   private List<String> urlPatterns;
 
@@ -23,6 +28,7 @@ public class Representation {
     urlPatterns = builder.urlPatterns;
     stage = builder.stage;
     informationProduct = builder.informationProduct;
+    appearance = builder.appearance;
   }
 
   public IRI getIdentifier() {
@@ -31,6 +37,10 @@ public class Representation {
 
   public InformationProduct getInformationProduct() {
     return informationProduct;
+  }
+
+  public Appearance getAppearance() {
+    return appearance;
   }
 
   public Collection<String> getUrlPatterns() {
@@ -47,7 +57,9 @@ public class Representation {
 
     private InformationProduct informationProduct;
 
-    private List<String> urlPatterns;
+    private Appearance appearance;
+
+    private List<String> urlPatterns = ImmutableList.of();
 
     private Stage stage;
 
@@ -58,6 +70,12 @@ public class Representation {
     public Builder informationProduct(
         InformationProduct informationProduct) {
       this.informationProduct = informationProduct;
+      return this;
+    }
+
+    public Builder appearance(
+        Appearance appearance) {
+      this.appearance = appearance;
       return this;
     }
 

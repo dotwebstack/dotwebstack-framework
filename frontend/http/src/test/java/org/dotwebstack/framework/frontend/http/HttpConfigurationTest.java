@@ -4,10 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -27,8 +25,6 @@ public class HttpConfigurationTest {
   @Mock
   private HttpModule moduleB;
 
-  @Mock
-  private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Test
   public void constructor_ThrowsException_WithMissingHttpModules() {
@@ -36,29 +32,19 @@ public class HttpConfigurationTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new HttpConfiguration(null, supportedMediaTypesScanner);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingMediaTypesScanner() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new HttpConfiguration(ImmutableList.of(), null);
+    new HttpConfiguration(null);
   }
 
   @Test
   public void constructor_ThrowsNoExceptions_WithoutExtensions() {
     // Act & assert
-    new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
+    new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
   public void constructor_ModulesInitialized_WhenGiven() {
     // Act
-    HttpConfiguration httpConfiguration =
-        new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
 
     // Assert
     verify(moduleA).initialize(httpConfiguration);
@@ -69,8 +55,7 @@ public class HttpConfigurationTest {
   public void registerResources_RegisterOnce_WhenAlreadyRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    HttpConfiguration httpConfiguration =
-        new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
     org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
         org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
@@ -85,8 +70,7 @@ public class HttpConfigurationTest {
   @Test
   public void resourceAlreadyRegistered_ThrowException_WithNullValue() {
     // Arrange
-    HttpConfiguration httpConfiguration =
-        new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
 
     // Assert
     thrown.expect(NullPointerException.class);
@@ -99,8 +83,7 @@ public class HttpConfigurationTest {
   public void registerResources_RegisterAlreadyRegisteredTrue_WhenResourceRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    HttpConfiguration httpConfiguration =
-        new HttpConfiguration(ImmutableList.of(moduleA, moduleB), supportedMediaTypesScanner);
+    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
     org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
         org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
@@ -112,18 +95,4 @@ public class HttpConfigurationTest {
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(true));
   }
 
-
-  @Test
-  public void constructor_RegistersSparqlProviders_WhenProvidedByScanner() {
-    // Arrange
-    when(supportedMediaTypesScanner.getGraphQueryWriters()).thenReturn(
-        Collections.singletonList(new SupportedMediaTypesScannerTest.StubGraphMessageBodyWriter()));
-
-    // Act
-    HttpConfiguration httpConfiguration =
-        new HttpConfiguration(ImmutableList.of(), supportedMediaTypesScanner);
-
-    // Assert
-    assertThat(httpConfiguration.getInstances(), hasSize(1));
-  }
 }

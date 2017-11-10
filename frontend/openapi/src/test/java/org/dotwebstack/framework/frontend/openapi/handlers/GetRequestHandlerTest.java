@@ -113,7 +113,7 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void apply_ReturnsResponseWithoutEntityObject_ForGraphResult() {
+  public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForGraphResult() {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");

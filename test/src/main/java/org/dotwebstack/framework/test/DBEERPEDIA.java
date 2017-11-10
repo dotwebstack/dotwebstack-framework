@@ -91,6 +91,20 @@ public final class DBEERPEDIA {
 
   public static final IRI BREWERY_REPRESENTATION;
 
+  public static final IRI ID2DOC_REDIRECTION;
+
+  public static final Literal ID2DOC_URL_PATTERN;
+
+  public static final Literal ID2DOC_TARGET_URL;
+
+  public static final String BREWERY_ID_PATH = "/id/brewery";
+
+  public static final String BREWERY_DOC_PATH = "/doc/brewery";
+
+  public static final IRI BREWERY_APPEARANCE;
+
+  public static final IRI CUSTOM_APPEARANCE_PROP;
+
   public static final String OPENAPI_DESCRIPTION = "DBeerpedia API";
 
   public static final String OPENAPI_HOST = "dbpeerpedia.org";
@@ -186,6 +200,15 @@ public final class DBEERPEDIA {
         valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "TupleBreweryListRepresentation");
 
     BREWERY_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryRepresentation");
+
+    ID2DOC_REDIRECTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Id2doc");
+
+    ID2DOC_URL_PATTERN = valueFactory.createLiteral("^\\/id\\/(.+)$");
+
+    ID2DOC_TARGET_URL = valueFactory.createLiteral("\\/doc\\/$1");
+
+    BREWERY_APPEARANCE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryAppearance");
+    CUSTOM_APPEARANCE_PROP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "customAppearanceProp");
 
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
   }

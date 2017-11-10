@@ -61,7 +61,7 @@ public class OpenApiModuleTest {
   }
 
   @Test
-  public void initialize_ThrowsException_WhenImportDefinitionsFailedIO() throws IOException {
+  public void initialize_ThrowsException_WhenImportDefinitionsFailedIo() throws IOException {
     // Arrange
     doThrow(IOException.class).when(requestMapper).map(httpConfiguration);
 
