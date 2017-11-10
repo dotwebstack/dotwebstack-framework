@@ -117,6 +117,8 @@ public final class ELMO {
 
     NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
     APPEARANCE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "appearance");
+
+    CONTAINS_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "contains");
   }
 
   private ELMO() {
