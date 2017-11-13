@@ -20,5 +20,5 @@ public final class OasVendorExtensions {
 
   }
 
-  public static final String RESULT_REF = "ref";
+  public static final String RESULT_REF = "x-result-ref";
 }

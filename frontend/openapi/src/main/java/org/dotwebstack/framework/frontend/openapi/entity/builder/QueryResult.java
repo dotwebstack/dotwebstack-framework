@@ -55,6 +55,9 @@ public class QueryResult {
       return this;
     }
 
+    public QueryResult build(ImmutableList subjects) {
+      return new QueryResult(model,subjects);
+    }
     public QueryResult build() {
 
       ImmutableList.Builder<Resource> listBuilder = ImmutableList.builder();
