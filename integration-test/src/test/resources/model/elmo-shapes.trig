@@ -572,6 +572,15 @@ elmo-shape:Redirection a sh:NodeShape;
 	rdfs:label "Redirection shape"@en;
 	sh:name "elmo:Redirection";
 	sh:property [
+		sh:path rdf:type;
+		sh:hasValue elmo:Redirection;
+		sh:minCount 1;
+		sh:maxCount 1;
+	];
+	sh:property [
+		sh:path elmo:stage; #This is INCORRECT, but necessary because a bug exists in the current configuration loader
+	];
+	sh:property [
 		sh:name "rdfs:label";
 		sh:path rdfs:label;
 		sh:datatype xsd:string;
