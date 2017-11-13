@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.properties;
 
 import com.google.common.collect.ImmutableSet;
-
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
 import java.util.Collection;
@@ -30,6 +29,7 @@ public class StringPropertyHandler extends AbstractPropertyHandler<StringPropert
       PropertyHandlerRegistry registry, Value context) {
 
     validateVendorExtensions(property);
+
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
 
@@ -71,7 +71,7 @@ public class StringPropertyHandler extends AbstractPropertyHandler<StringPropert
   private void validateVendorExtensions(StringProperty property) {
 
     ImmutableSet<String> supportedVendorExtensions =
-        ImmutableSet.of(OasVendorExtensions.LDPATH, OasVendorExtensions.CONSTANT_VALUE);
+        ImmutableSet.of(OasVendorExtensions.LDPATH, OasVendorExtensions.RELATIVE_LINK,OasVendorExtensions.CONSTANT_VALUE);
 
     long nrOfSupportedVendorExtentionsPresent =
         property.getVendorExtensions().keySet().stream().filter(
@@ -80,7 +80,8 @@ public class StringPropertyHandler extends AbstractPropertyHandler<StringPropert
       throw new PropertyHandlerRuntimeException(String.format(
           "A string object must have either no, a '%s', '%s' or '%s' property. "
               + "A string object cannot have a combination of these.",
-          OasVendorExtensions.LDPATH, OasVendorExtensions.CONSTANT_VALUE));
+          OasVendorExtensions.LDPATH, OasVendorExtensions.RELATIVE_LINK,
+          OasVendorExtensions.CONSTANT_VALUE));
     }
   }
 

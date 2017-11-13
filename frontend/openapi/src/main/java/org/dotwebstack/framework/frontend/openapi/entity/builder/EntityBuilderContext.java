@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.swagger.models.Model;
 import io.swagger.models.Swagger;
-import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 
@@ -64,7 +63,7 @@ public class EntityBuilderContext {
     }
 
     private static Map<String, Model> extractSwaggerDefinitions(Swagger swagger) {
-      if (swagger.getDefinitions() != null) {
+      if (swagger != null && swagger.getDefinitions() != null) {
         return ImmutableMap.copyOf(swagger.getDefinitions());
       }
       return ImmutableMap.of();

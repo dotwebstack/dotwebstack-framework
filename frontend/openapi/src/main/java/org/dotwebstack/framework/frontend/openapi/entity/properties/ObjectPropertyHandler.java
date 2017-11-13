@@ -34,9 +34,9 @@ public class ObjectPropertyHandler extends AbstractPropertyHandler<ObjectPropert
       String object = (String) subjectFilter.get(OasVendorExtensions.SUBJECT_FILTER_OBJECT);
 
       ValueFactory vf = SimpleValueFactory.getInstance();
-      String ns = "http://data.informatiehuisruimte.nl/";
-      final IRI predicateIri = vf.createIRI(ns, predicate);
-      final IRI objectLiteral = vf.createIRI(ns, object);
+
+      final IRI predicateIri = vf.createIRI( predicate);
+      final IRI objectLiteral = vf.createIRI(object);
 
       Model filteredModel = entityBuilderContext.getQueryResult().getModel().filter(null,
           predicateIri, objectLiteral);

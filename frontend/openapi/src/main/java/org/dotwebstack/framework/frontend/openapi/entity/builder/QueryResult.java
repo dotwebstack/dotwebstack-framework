@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.builder;
 
 import com.google.common.collect.ImmutableList;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -39,6 +38,7 @@ public class QueryResult {
 
     private Model model;
     private org.eclipse.rdf4j.query.QueryResult queryResultDb;
+    private ImmutableList<Resource> subjects;
 
     public Builder() {
       model = new LinkedHashModel();
@@ -56,25 +56,33 @@ public class QueryResult {
     }
 
     public QueryResult build(ImmutableList subjects) {
-      return new QueryResult(model,subjects);
+      return new QueryResult(model, subjects);
     }
+
     public QueryResult build() {
+      if (this.subjects != null && this.subjects.isEmpty()) {
+        ImmutableList.Builder<Resource> listBuilder = ImmutableList.builder();
+        try {
+          while (this.queryResultDb.hasNext()) {
 
-      ImmutableList.Builder<Resource> listBuilder = ImmutableList.builder();
-      try {
-        while (this.queryResultDb.hasNext()) {
-
-          if (this.queryResultDb.next() instanceof Statement) {
-            Statement queryStatement = (Statement) this.queryResultDb.next();
-            listBuilder.add(queryStatement.getSubject());
+            if (this.queryResultDb.next() instanceof Statement) {
+              Statement queryStatement = (Statement) this.queryResultDb.next();
+              listBuilder.add(queryStatement.getSubject());
+            }
           }
+        } catch (Exception e) {
+          LOG.error("Could not get subjects from queryresult.", e);
         }
-      } catch (Exception e) {
-        LOG.error("Could not get subjects from queryresult.", e);
+        this.subjects = listBuilder.build();
       }
-      return new QueryResult(model, listBuilder.build());
+      return new QueryResult(model, this.subjects);
     }
 
+    public Builder withModel(Model model, ImmutableList<Resource> resources) {
+      this.model = model;
+      this.subjects = resources;
+      return this;
+    }
   }
 
 }

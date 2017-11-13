@@ -15,6 +15,7 @@ public final class OasVendorExtensions {
   public static final String SUBJECT_FILTER_PREDICATE = "predicate";
 
   public static final String SUBJECT_FILTER_OBJECT = "object";
+  public static final String RELATIVE_LINK = "x-relative-link";
 
   private OasVendorExtensions() {
 
