@@ -1,5 +1,6 @@
 package org.dotwebstack.framework;
 
+import java.io.IOException;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -37,9 +38,10 @@ public class FileConfigurationBackendIntegrationTest {
   private Environment environment;
 
   @Before
-  public void initVars() {
+  public void initVars() throws IOException {
     elmoConfiguration = new ClassPathResource("/model/elmo.trig");
     elmoShapes = new ClassPathResource("/model/elmo-shapes.trig");
+    System.out.println("****\n" + elmoShapes.getFile().getAbsolutePath());
     sailRepository = new SailRepository(new MemoryStore());
   }
 

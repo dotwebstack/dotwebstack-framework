@@ -24,6 +24,7 @@ public class ShaclValidatorIntegrationTest {
     // Arrange
     shaclValidator = new ShaclValidator();
     elmoShapesResource = new ClassPathResource("/model/elmo-shapes.trig");
+    System.out.println("****\n" + elmoShapesResource.getFile().getAbsolutePath());
     representationConfigResource = new ClassPathResource(
         "/model/frontend/representations.trig");
 
