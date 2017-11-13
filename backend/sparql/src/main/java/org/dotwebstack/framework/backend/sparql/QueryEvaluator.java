@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.backend.sparql;
 
+import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.RDF4JException;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.Query;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -13,7 +15,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class QueryEvaluator {
 
-  public Object evaluate(RepositoryConnection repositoryConnection, String query) {
+  public Object evaluate(RepositoryConnection repositoryConnection, String query,
+      Map<String, Value> bindings) {
     Query preparedQuery;
 
     try {
@@ -21,6 +24,8 @@ public class QueryEvaluator {
     } catch (RDF4JException e) {
       throw new BackendException(String.format("Query could not be prepared: %s", query), e);
     }
+
+    bindings.forEach(preparedQuery::setBinding);
 
     if (preparedQuery instanceof GraphQuery) {
       try {

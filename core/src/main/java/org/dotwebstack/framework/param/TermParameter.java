@@ -4,8 +4,10 @@ import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public class TermParameter extends AbstractParameter<String> {
+public class TermParameter extends AbstractParameter<String> implements BindableParameter<String> {
 
   private TermParameter(IRI identifier, String name, boolean required) {
     super(identifier, name, required);
@@ -22,6 +24,11 @@ public class TermParameter extends AbstractParameter<String> {
   @Override
   public String handle(@NonNull Map<String, Object> parameterValues) {
     return (String) getValue(parameterValues);
+  }
+
+  @Override
+  public Literal getLiteral(String value) {
+    return SimpleValueFactory.getInstance().createLiteral(value);
   }
 
   @Override

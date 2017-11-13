@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
@@ -17,6 +16,7 @@ import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.TermParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.junit.Before;
@@ -167,8 +167,10 @@ public class SparqlBackendInformationProductTest {
         modifiedQuery);
 
     Object expectedResult = new Object();
-    when(queryEvaluatorMock.evaluate(repositoryConnection, modifiedQuery)).thenReturn(
-        expectedResult);
+    Literal literalValue1 = SimpleValueFactory.getInstance().createLiteral("value1");
+
+    when(queryEvaluatorMock.evaluate(repositoryConnection, modifiedQuery,
+        ImmutableMap.of("nameOfRequired1", literalValue1))).thenReturn(expectedResult);
 
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
@@ -191,16 +193,20 @@ public class SparqlBackendInformationProductTest {
 
     String originalQuery =
         "CONSTRUCT { ?s ?p ?o } WHERE { ${nameOfRequired1} ${nameOfRequired2} ${nameOfOptional1}}";
-    Map<String, Object> templateValues = mapOf("nameOfRequired1", "value1", "nameOfRequired2",
-        "value2", "nameOfOptional1", null, "nameOfOptional2", null);
+    Map<String, Object> templateValues =
+        ImmutableMap.of("nameOfRequired1", "value1", "nameOfRequired2", "value2");
     String modifiedQuery = "CONSTRUCT { ?s ?p ?o } WHERE { value1 value2 null}";
 
     when(templateProcessorMock.processString(originalQuery, templateValues)).thenReturn(
         modifiedQuery);
 
+    Literal literalValue1 = SimpleValueFactory.getInstance().createLiteral("value1");
+    Literal literalValue2 = SimpleValueFactory.getInstance().createLiteral("value2");
     Object expectedResult = new Object();
-    when(queryEvaluatorMock.evaluate(repositoryConnection, modifiedQuery)).thenReturn(
-        expectedResult);
+
+    when(queryEvaluatorMock.evaluate(repositoryConnection, modifiedQuery, ImmutableMap.of(
+        "nameOfRequired1", literalValue1, "nameOfRequired2", literalValue2))).thenReturn(
+            expectedResult);
 
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
@@ -230,9 +236,10 @@ public class SparqlBackendInformationProductTest {
     when(templateProcessorMock.processString(originalQuery, templateValues)).thenReturn(
         unmodifiedQuery);
 
+    Literal literalValue1 = SimpleValueFactory.getInstance().createLiteral("value1");
     Object expectedResult = new Object();
-    when(queryEvaluatorMock.evaluate(repositoryConnection, unmodifiedQuery)).thenReturn(
-        expectedResult);
+    when(queryEvaluatorMock.evaluate(repositoryConnection, unmodifiedQuery,
+        ImmutableMap.of("nameOfRequired1", literalValue1))).thenReturn(expectedResult);
 
     SparqlBackendInformationProduct source =
         new SparqlBackendInformationProduct.Builder(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, backend,
@@ -246,17 +253,6 @@ public class SparqlBackendInformationProductTest {
 
     // Assert
     assertThat(result, equalTo(expectedResult));
-  }
-
-  private static final <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
-    Map<K, V> result = new HashMap<>();
-
-    result.put(k1, v1);
-    result.put(k2, v2);
-    result.put(k3, v3);
-    result.put(k4, v4);
-
-    return result;
   }
 
   @Test

@@ -7,8 +7,10 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
+import org.dotwebstack.framework.param.BindableParameter;
 import org.dotwebstack.framework.param.Parameter;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
 
 public class SparqlBackendInformationProduct extends AbstractInformationProduct {
 
@@ -30,17 +32,28 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
     return query;
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   protected Object getInnerResult(Map<String, Object> parameterValues) {
     Map<String, Object> templateParameters = new HashMap<>();
+    Map<String, Value> bindings = new HashMap<>();
 
     for (Parameter<?> parameter : getParameters()) {
-      templateParameters.put(parameter.getName(), parameter.handle(parameterValues));
+      String name = parameter.getName();
+      Object value = parameter.handle(parameterValues);
+
+      if (value != null) {
+        templateParameters.put(name, value);
+
+        if (parameter instanceof BindableParameter) {
+          bindings.put(name, ((BindableParameter) parameter).getLiteral(value));
+        }
+      }
     }
 
     String modifiedQuery = templateProcessor.processString(query, templateParameters);
 
-    return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery);
+    return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery, bindings);
   }
 
   public static class Builder {

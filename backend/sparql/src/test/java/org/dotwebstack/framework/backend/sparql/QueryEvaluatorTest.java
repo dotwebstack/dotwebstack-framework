@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQuery;
@@ -54,7 +55,7 @@ public class QueryEvaluatorTest {
     when(query.evaluate()).thenReturn(queryResult);
 
     // Act
-    Object result = queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY);
+    Object result = queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY, ImmutableMap.of());
 
     // Assert
     assertThat(result, instanceOf(GraphQueryResult.class));
@@ -69,7 +70,7 @@ public class QueryEvaluatorTest {
     when(query.evaluate()).thenReturn(queryResult);
 
     // Act
-    Object result = queryEvaluator.evaluate(repositoryConnection, TUPLE_QUERY);
+    Object result = queryEvaluator.evaluate(repositoryConnection, TUPLE_QUERY, ImmutableMap.of());
 
     // Assert
     assertThat(result, instanceOf(TupleQueryResult.class));
@@ -86,7 +87,7 @@ public class QueryEvaluatorTest {
     thrown.expectMessage(String.format("Query type '%s' not supported.", query.getClass()));
 
     // Act
-    queryEvaluator.evaluate(repositoryConnection, BOOLEAN_QUERY);
+    queryEvaluator.evaluate(repositoryConnection, BOOLEAN_QUERY, ImmutableMap.of());
   }
 
   @Test
@@ -100,7 +101,7 @@ public class QueryEvaluatorTest {
     thrown.expectMessage(String.format("Query could not be prepared: %s", TUPLE_QUERY));
 
     // Act
-    queryEvaluator.evaluate(repositoryConnection, TUPLE_QUERY);
+    queryEvaluator.evaluate(repositoryConnection, TUPLE_QUERY, ImmutableMap.of());
   }
 
   @Test
@@ -115,7 +116,7 @@ public class QueryEvaluatorTest {
     thrown.expectMessage(String.format("Query could not be evaluated: %s", TUPLE_QUERY));
 
     // Act
-    queryEvaluator.evaluate(repositoryConnection, TUPLE_QUERY);
+    queryEvaluator.evaluate(repositoryConnection, TUPLE_QUERY, ImmutableMap.of());
   }
 
   @Test
@@ -130,7 +131,7 @@ public class QueryEvaluatorTest {
     thrown.expectMessage(String.format("Query could not be evaluated: %s", GRAPH_QUERY));
 
     // Act
-    queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY);
+    queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY, ImmutableMap.of());
   }
 
 }
