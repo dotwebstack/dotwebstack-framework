@@ -57,6 +57,9 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
       TupleEntity entity = new TupleEntity(schemaMap, result);
 
       return Response.ok(entity).build();
+    } else {
+      LOG.error("Result type {} not supported for information product {}",
+          informationProduct.getResultType(), informationProduct.getIdentifier());
     }
 
     return Response.serverError().build();
