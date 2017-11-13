@@ -17,12 +17,12 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   protected final ResultType resultType;
 
-  protected final Collection<Parameter<?>> parameters;
+  protected final Collection<Parameter> parameters;
 
   protected final TemplateProcessor templateProcessor;
 
   protected AbstractInformationProduct(@NonNull IRI identifier, String label,
-      @NonNull ResultType resultType, @NonNull Collection<Parameter<?>> parameters,
+      @NonNull ResultType resultType, @NonNull Collection<Parameter> parameters,
       @NonNull TemplateProcessor templateProcessor) {
     this.identifier = identifier;
     this.resultType = resultType;
@@ -47,7 +47,7 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   }
 
   @Override
-  public Collection<Parameter<?>> getParameters() {
+  public Collection<Parameter> getParameters() {
     return parameters;
   }
 

@@ -70,7 +70,7 @@ public class SparqlBackendInformationProductFactoryTest {
     Parameter<?> parameter2Mock = mock(Parameter.class);
     Parameter<?> parameter3Mock = mock(Parameter.class);
 
-    Collection<Parameter<?>> parameters =
+    Collection<Parameter> parameters =
         ImmutableList.of(parameter1Mock, parameter2Mock, parameter3Mock);
 
     InformationProduct result =

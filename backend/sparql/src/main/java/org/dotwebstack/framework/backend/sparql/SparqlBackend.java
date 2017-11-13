@@ -33,7 +33,7 @@ public class SparqlBackend implements Backend {
 
   @Override
   public InformationProduct createInformationProduct(IRI identifier, String label,
-      Collection<Parameter<?>> parameters, Model statements) {
+      Collection<Parameter> parameters, Model statements) {
     return informationProductFactory.create(identifier, label, this, parameters, statements);
   }
 
