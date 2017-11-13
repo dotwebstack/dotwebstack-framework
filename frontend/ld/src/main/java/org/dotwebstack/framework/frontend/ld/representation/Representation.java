@@ -71,8 +71,7 @@ public class Representation {
       return this;
     }
 
-    public Builder appearance(
-        Appearance appearance) {
+    public Builder appearance(Appearance appearance) {
       this.appearance = appearance;
       return this;
     }

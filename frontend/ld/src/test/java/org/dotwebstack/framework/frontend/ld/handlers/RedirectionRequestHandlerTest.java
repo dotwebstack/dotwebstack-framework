@@ -74,4 +74,18 @@ public class RedirectionRequestHandlerTest {
     assertThat(response.getLocation(), equalTo(new URI(DBEERPEDIA.URL_PATTERN_VALUE)));
   }
 
+  @Test
+  public void apply_ReturnServerError_WithInvalidPath() {
+    // Arrange
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(uriInfo.getPath()).thenReturn("htt://\\some invalid uri pattern");
+
+    // Act
+    Response response = redirectionRequestHandler.apply(containerRequestContext);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo((Status.INTERNAL_SERVER_ERROR.getStatusCode())));
+  }
+
 }

@@ -146,7 +146,7 @@ public class LdRepresentationRequestMapperTest {
   }
 
   @Test
-  public void loadRepresentations_MapRepresentation_WithoutNullStage() {
+  public void loadRepresentations_MapRepresentation_WithNullStage() {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(null).build();
@@ -208,8 +208,8 @@ public class LdRepresentationRequestMapperTest {
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
-    assertThat(resource.getPath(), equalTo(
-        "/{DOMAIN_PARAMETER}" + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.URL_PATTERN_VALUE));
+    assertThat(resource.getPath(), equalTo("/" + Stage.PATH_DOMAIN_PARAMETER
+        + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.URL_PATTERN_VALUE));
 
   }
 

@@ -97,8 +97,10 @@ public final class DBEERPEDIA {
 
   public static final Literal ID2DOC_TARGET_URL;
 
+  @java.lang.SuppressWarnings("squid:S1075")
   public static final String BREWERY_ID_PATH = "/id/brewery";
 
+  @java.lang.SuppressWarnings("squid:S1075")
   public static final String BREWERY_DOC_PATH = "/doc/brewery";
 
   public static final IRI BREWERY_APPEARANCE;
