@@ -41,7 +41,6 @@ public class FileConfigurationBackendIntegrationTest {
   public void initVars() throws IOException {
     elmoConfiguration = new ClassPathResource("/model/elmo.trig");
     elmoShapes = new ClassPathResource("/model/elmo-shapes.trig");
-    System.out.println("****\n" + elmoShapes.getFile().getAbsolutePath());
     sailRepository = new SailRepository(new MemoryStore());
   }
 
