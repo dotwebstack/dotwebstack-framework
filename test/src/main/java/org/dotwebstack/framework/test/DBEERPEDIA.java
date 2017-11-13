@@ -132,9 +132,17 @@ public final class DBEERPEDIA {
 
   public static final IRI SECOND_STAGE;
 
-  public static final IRI PARAMETER;
+  public static final IRI NAME_PARAMETER_ID;
 
-  public static final Literal PARAMETER_NAME_VALUE;
+  public static final Literal NAME_PARAMETER_VALUE;
+
+  public static final String NAME_PARAMETER_VALUE_STRING;
+
+  public static final IRI PLACE_PARAMETER_ID;
+
+  public static final Literal PLACE_PARAMETER_VALUE;
+
+  public static final String PLACE_PARAMETER_VALUE_STRING;
 
   public static final String URL_PATTERN_VALUE = "/holyBeer";
 
@@ -147,8 +155,13 @@ public final class DBEERPEDIA {
     DOMAIN = valueFactory.createLiteral("dbeerpedia.org");
     BASE_PATH = valueFactory.createLiteral("/special");
 
-    PARAMETER = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "nameFilter");
-    PARAMETER_NAME_VALUE = valueFactory.createLiteral("naam");
+    NAME_PARAMETER_ID = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "nameParameter");
+    NAME_PARAMETER_VALUE_STRING = "name";
+    NAME_PARAMETER_VALUE = valueFactory.createLiteral(NAME_PARAMETER_VALUE_STRING);
+
+    PLACE_PARAMETER_ID = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "placeParameter");
+    PLACE_PARAMETER_VALUE_STRING = "place";
+    PLACE_PARAMETER_VALUE = valueFactory.createLiteral(PLACE_PARAMETER_VALUE_STRING);
 
     NAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Name");
     BREWERY_DAVO = valueFactory.createLiteral(BREWERY_DAVO_NAME);

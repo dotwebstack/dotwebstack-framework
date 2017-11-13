@@ -23,9 +23,9 @@ class RequestParameterMapper {
 
   private static ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-  Map<String, String> map(@NonNull Operation operation, @NonNull InformationProduct product,
+  Map<String, Object> map(@NonNull Operation operation, @NonNull InformationProduct product,
       @NonNull ContainerRequestContext context) {
-    Map<String, String> result = new HashMap<>();
+    Map<String, Object> result = new HashMap<>();
 
     for (io.swagger.models.parameters.Parameter openApiParameter : operation.getParameters()) {
       Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
@@ -41,7 +41,7 @@ class RequestParameterMapper {
       }
 
       IRI parameterId = valueFactory.createIRI((String) parameterIdString);
-      Parameter parameter = getParameter(product, parameterId);
+      Parameter<?> parameter = getParameter(product, parameterId);
 
       if (parameter == null) {
         throw new ConfigurationException(String.format(
@@ -56,8 +56,8 @@ class RequestParameterMapper {
     return result;
   }
 
-  private static Parameter getParameter(InformationProduct product, IRI iri) {
-    for (Parameter parameter : product.getParameters()) {
+  private static Parameter<?> getParameter(InformationProduct product, IRI iri) {
+    for (Parameter<?> parameter : product.getParameters()) {
       if (parameter.getIdentifier().equals(iri)) {
         return parameter;
       }

@@ -58,7 +58,7 @@ public class RedirectionTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    Redirection redirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, stage,
+    new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, stage,
         DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(), null).build();
   }
 

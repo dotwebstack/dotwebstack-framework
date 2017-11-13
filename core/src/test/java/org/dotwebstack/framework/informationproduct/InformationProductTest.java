@@ -6,16 +6,24 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import com.google.common.collect.ImmutableList;
 import java.util.Map;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class InformationProductTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+
+  @Mock
+  private TemplateProcessor templateProcessorMock;
 
   @Test
   public void constructor_ThrowsException_IdentifierMissing() {
@@ -52,11 +60,11 @@ public class InformationProductTest {
   public class TestInformationProduct extends AbstractInformationProduct {
 
     protected TestInformationProduct(IRI identifier, String label, ResultType resultType) {
-      super(identifier, label, resultType, ImmutableList.of(), ImmutableList.of());
+      super(identifier, label, resultType, ImmutableList.of(), templateProcessorMock);
     }
 
     @Override
-    protected Object getInnerResult(Map<String, String> parameterValues) {
+    protected Object getInnerResult(Map<String, Object> parameterValues) {
       return null;
     }
 

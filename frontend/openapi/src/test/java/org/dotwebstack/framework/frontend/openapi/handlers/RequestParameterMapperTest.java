@@ -20,7 +20,9 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.TermParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
@@ -40,11 +42,14 @@ public class RequestParameterMapperTest {
   @Mock
   private ContainerRequestContext contextMock;
 
+  @Mock
+  private TemplateProcessor templateProcessorMock;
+
   private InformationProduct product;
 
-  private Parameter parameter;
+  private Parameter<?> parameter;
 
-  private Parameter parameter2;
+  private Parameter<?> parameter2;
 
   private RequestParameterMapper mapper;
 
@@ -52,13 +57,14 @@ public class RequestParameterMapperTest {
   public void setUp() {
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    parameter = new TestParameter(valueFactory.createIRI("http://parameter-iri"), "parameter-name");
-    parameter2 =
-        new TestParameter(valueFactory.createIRI("http://parameter2-iri"), "parameter2-name");
+    parameter = TermParameter.requiredTermParameter(valueFactory.createIRI("http://parameter-iri"),
+        "parameter-name");
+    parameter2 = TermParameter.requiredTermParameter(
+        valueFactory.createIRI("http://parameter2-iri"), "parameter2-name");
 
     product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
-        ImmutableList.of(parameter, parameter2), ImmutableList.of());
+        ImmutableList.of(parameter, parameter2), templateProcessorMock);
 
     mapper = new RequestParameterMapper();
   }
@@ -69,7 +75,7 @@ public class RequestParameterMapperTest {
     Operation operation = new Operation();
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -86,7 +92,7 @@ public class RequestParameterMapperTest {
     operation.setParameters(ImmutableList.of(pathParameter));
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -165,7 +171,7 @@ public class RequestParameterMapperTest {
     when(uriInfoMock.getPathParameters()).thenReturn(pathParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.size(), is(2));
@@ -196,7 +202,7 @@ public class RequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -222,7 +228,7 @@ public class RequestParameterMapperTest {
     when(contextMock.getHeaders()).thenReturn(headerParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, contextMock);
+    Map<String, Object> result = mapper.map(operation, product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));
