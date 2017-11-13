@@ -77,8 +77,8 @@ public class EntityBuilderTest {
     initializePropertyHandlerRegistry();
     entityBuilder = new EntityBuilder();
 
-    swaggerValidConfig =
-        new SwaggerParser().read("/org/dotwebstack/framework/frontend/openapi/entity/personsOasspec.yml");
+    swaggerValidConfig = new SwaggerParser().read(
+        "/org/dotwebstack/framework/frontend/openapi/entity/personsOasspec.yml");
 
     queryResultZeroItems = new QueryResult.Builder().withModel(MODEL, ImmutableList.of()).build();
 
@@ -95,7 +95,7 @@ public class EntityBuilderTest {
     List<PropertyHandler<? extends Property>> propertyHandlers = new ArrayList<>();
 
     propertyHandlers.add(new StringPropertyHandler());
-    //propertyHandlers.add(new RefPropertyHandler());
+    // propertyHandlers.add(new RefPropertyHandler());
     propertyHandlers.add(new ObjectPropertyHandler());
     propertyHandlers.add(new ArrayPropertyHandler());
 
@@ -107,8 +107,8 @@ public class EntityBuilderTest {
 
     String path = "/persons/{name}";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(swaggerValidConfig).queryResult(
-            queryResultOneItem).build();
+        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+            swaggerValidConfig).queryResult(queryResultOneItem).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
 
@@ -130,8 +130,8 @@ public class EntityBuilderTest {
 
     String path = "/persons";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(swaggerValidConfig).queryResult(
-            queryResultZeroItems).build();
+        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+            swaggerValidConfig).queryResult(queryResultZeroItems).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
 
@@ -150,8 +150,8 @@ public class EntityBuilderTest {
 
     String path = "/persons";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(swaggerValidConfig).queryResult(
-            queryResultOneItem).build();
+        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+            swaggerValidConfig).queryResult(queryResultOneItem).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
 
@@ -175,8 +175,8 @@ public class EntityBuilderTest {
 
     String path = "/persons";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(swaggerValidConfig).queryResult(
-            queryResultThreeItems).build();
+        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+            swaggerValidConfig).queryResult(queryResultThreeItems).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
 
@@ -214,8 +214,8 @@ public class EntityBuilderTest {
 
     String path = "/persons/{name}";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(swaggerValidConfig).queryResult(
-            queryResultThreeItems).build();
+        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+            swaggerValidConfig).queryResult(queryResultThreeItems).build();
     entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
   }
 
@@ -231,8 +231,8 @@ public class EntityBuilderTest {
 
     String path = "/persons";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(swaggerValidConfig).queryResult(
-            queryResultThreeItems).build();
+        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+            swaggerValidConfig).queryResult(queryResultThreeItems).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
 
@@ -251,8 +251,8 @@ public class EntityBuilderTest {
 
     String path = "/persons/{name}";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(swaggerValidConfig).queryResult(
-            queryResultOneItem).build();
+        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+            swaggerValidConfig).queryResult(queryResultOneItem).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
 
@@ -265,13 +265,13 @@ public class EntityBuilderTest {
     JSONAssert.assertEquals(expectedJson, actualJson, JSONCompareMode.STRICT);
   }
 
-//  @Test
-//  public void testEmptySwaggerDefinitions() {
-//    EntityBuilderContext.Builder builder = new EntityBuilderContext.Builder("");
-//
-//    QueryResult queryResult = QueryResult.builder().withModel(MODEL,ImmutableList.of()).build();
-//    EntityBuilderContext ctx =
-//        builder.swagger(new Swagger()).queryResult(queryResult).baseUri("").build();
-//    assertThat("Swagger definitions are not empty", ctx.getSwagger().size(), is(0));
-//  }
+  // @Test
+  // public void testEmptySwaggerDefinitions() {
+  // EntityBuilderContext.Builder builder = new EntityBuilderContext.Builder("");
+  //
+  // QueryResult queryResult = QueryResult.builder().withModel(MODEL,ImmutableList.of()).build();
+  // EntityBuilderContext ctx =
+  // builder.swagger(new Swagger()).queryResult(queryResult).baseUri("").build();
+  // assertThat("Swagger definitions are not empty", ctx.getSwagger().size(), is(0));
+  // }
 }

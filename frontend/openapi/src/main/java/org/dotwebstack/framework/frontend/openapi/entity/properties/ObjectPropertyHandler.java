@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.properties;
 
 import com.google.common.collect.ImmutableMap;
-
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
@@ -35,7 +34,7 @@ public class ObjectPropertyHandler extends AbstractPropertyHandler<ObjectPropert
 
       ValueFactory vf = SimpleValueFactory.getInstance();
 
-      final IRI predicateIri = vf.createIRI( predicate);
+      final IRI predicateIri = vf.createIRI(predicate);
       final IRI objectLiteral = vf.createIRI(object);
 
       Model filteredModel = entityBuilderContext.getQueryResult().getModel().filter(null,

@@ -70,8 +70,8 @@ public class StringPropertyHandler extends AbstractPropertyHandler<StringPropert
    */
   private void validateVendorExtensions(StringProperty property) {
 
-    ImmutableSet<String> supportedVendorExtensions =
-        ImmutableSet.of(OasVendorExtensions.LDPATH, OasVendorExtensions.RELATIVE_LINK,OasVendorExtensions.CONSTANT_VALUE);
+    ImmutableSet<String> supportedVendorExtensions = ImmutableSet.of(OasVendorExtensions.LDPATH,
+        OasVendorExtensions.RELATIVE_LINK, OasVendorExtensions.CONSTANT_VALUE);
 
     long nrOfSupportedVendorExtentionsPresent =
         property.getVendorExtensions().keySet().stream().filter(
