@@ -19,7 +19,6 @@ import static org.mockito.Mockito.withSettings;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,8 +48,6 @@ public class FileConfigurationBackendTest {
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
-  private final String dummyPath = "/dummy/path";
-
   @Mock
   private SailRepository repository;
 
@@ -67,9 +64,6 @@ public class FileConfigurationBackendTest {
   private Environment environment;
 
   @Mock
-  private File dummyFile;
-
-  @Mock
   private Resource prefixesResource;
 
   private ResourceLoader resourceLoader;
@@ -80,15 +74,10 @@ public class FileConfigurationBackendTest {
   public void setUp() throws IOException {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    dummyFile = mock(File.class);
     elmoConfigurationResource = mock(Resource.class);
     elmoShapesResource = mock(Resource.class);
-    when(elmoConfigurationResource.getFile()).thenReturn(dummyFile);
-    when(elmoConfigurationResource.getFile().getAbsolutePath()).thenReturn(dummyPath);
     when(elmoConfigurationResource.getInputStream())
         .thenReturn(new ByteArrayInputStream("".getBytes()));
-    when(elmoShapesResource.getFile()).thenReturn(dummyFile);
-    when(elmoShapesResource.getFile().getAbsolutePath()).thenReturn(dummyPath);
     when(elmoShapesResource.getInputStream()).thenReturn(new ByteArrayInputStream("".getBytes()));
     backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config",
         elmoShapesResource);
@@ -353,8 +342,6 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource backendResource = mock(Resource.class);
     Resource resource = mock(Resource.class);
-    when(resource.getFile()).thenReturn(dummyFile);
-    when(resource.getFile().getAbsolutePath()).thenReturn(dummyPath);
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(resource.getInputStream()).thenReturn(
         new ByteArrayInputStream(new String("@prefix dbeerpedia: <http://dbeerpedia.org#> .\n"
