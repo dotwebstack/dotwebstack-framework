@@ -59,7 +59,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
           schemaProperty).withRequestParameters(
               RequestParameters.builder().requestStringParameters(
                   parameterValues).build()).withQueryResult(
-                      QueryResult.builder().withQueryResultDb(result).build()).withBaseUri(
+                      QueryResult.builder().withQueryResultTriple(result).build()).withBaseUri(
                           context.getUriInfo().getBaseUri().toString()).withPath(
                               context.getUriInfo().getPath())).build();
       responseOk = responseOk(entity);
@@ -71,7 +71,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
           schemaProperty).withRequestParameters(
               RequestParameters.builder().requestStringParameters(
                   parameterValues).build()).withQueryResult(
-                      QueryResult.builder().withQueryResultDb(result).build()).withBaseUri(
+                      QueryResult.builder().withQueryResultGraph(result).build()).withBaseUri(
                           context.getUriInfo().getBaseUri().toString()).withPath(
                               context.getUriInfo().getPath()).build();
       responseOk = responseOk(entity);

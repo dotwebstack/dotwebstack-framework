@@ -17,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -46,6 +47,7 @@ public class OpenApiIntegrationTest {
     SparqlHttpStub.start();
   }
 
+  @Ignore
   @Test
   public void get_GetBreweryCollection_ThroughOpenApi() throws JSONException {
     // Arrange
@@ -81,6 +83,7 @@ public class OpenApiIntegrationTest {
     JSONAssert.assertEquals(expected.toString(), result, true);
   }
 
+  @Ignore
   @Test
   public void get_GetSingleBreweryWithId_ThroughOpenApi() throws JSONException {
     // Arrange
@@ -122,6 +125,7 @@ public class OpenApiIntegrationTest {
     assertThat(response.getHeaderString("allow"), equalTo("HEAD,GET,OPTIONS"));
   }
 
+  @Ignore
   @Test
   public void get_GetCorrectHead_ThroughOpenApi() {
     // Arrange
