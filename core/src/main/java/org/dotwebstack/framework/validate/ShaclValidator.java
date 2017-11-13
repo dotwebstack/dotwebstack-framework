@@ -38,7 +38,7 @@ public class ShaclValidator implements Validator<Resource, Model, InputStream> {
     if (trigFile instanceof InputStreamResource) {
       trigParser.parse(trigFileInputStream, "/");
     } else {
-      trigParser.parse(trigFileInputStream, trigFile.getFile().getAbsolutePath());
+      trigParser.parse(trigFileInputStream, "");
     }
 
     Model model = JenaUtil.createMemoryModel();
