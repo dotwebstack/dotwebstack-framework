@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -67,14 +66,12 @@ public class Representation {
       this.identifier = identifier;
     }
 
-    public Builder informationProduct(
-        InformationProduct informationProduct) {
+    public Builder informationProduct(InformationProduct informationProduct) {
       this.informationProduct = informationProduct;
       return this;
     }
 
-    public Builder appearance(
-        Appearance appearance) {
+    public Builder appearance(Appearance appearance) {
       this.appearance = appearance;
       return this;
     }
