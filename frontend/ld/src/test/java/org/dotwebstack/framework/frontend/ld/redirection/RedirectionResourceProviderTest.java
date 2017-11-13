@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -132,6 +133,60 @@ public class RedirectionResourceProviderTest {
     assertThat(redirection.getUrlPattern(), equalTo(DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue()));
     assertThat(redirection.getStage(), equalTo(stage));
     assertThat(redirection.getTargetUrl(), equalTo(DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()));
+  }
+
+  @Test
+  public void loadResources_ThrowsException_WithMissingUrlPattern() {
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, RDF.TYPE, ELMO.REDIRECTION),
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.STAGE_PROP,
+                DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.TARGET_URL,
+                DBEERPEDIA.ID2DOC_TARGET_URL))));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+
+    // Act
+    redirectionResourceProvider.loadResources();
+  }
+
+  @Test
+  public void loadResources_ThrowsException_WithMissingStageProp() {
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, RDF.TYPE, ELMO.REDIRECTION),
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.URL_PATTERN,
+                DBEERPEDIA.ID2DOC_URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.TARGET_URL,
+                DBEERPEDIA.ID2DOC_TARGET_URL))));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+
+    // Act
+    redirectionResourceProvider.loadResources();
+  }
+
+  @Test
+  public void loadResources_ThrowsException_WithMissingTargetUrl() {
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, RDF.TYPE, ELMO.REDIRECTION),
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.URL_PATTERN,
+                DBEERPEDIA.ID2DOC_URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.STAGE_PROP,
+                DBEERPEDIA.STAGE))));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+
+    // Act
+    redirectionResourceProvider.loadResources();
   }
 
 }

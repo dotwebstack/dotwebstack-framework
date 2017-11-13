@@ -66,14 +66,12 @@ public class Representation {
       this.identifier = identifier;
     }
 
-    public Builder informationProduct(
-        InformationProduct informationProduct) {
+    public Builder informationProduct(InformationProduct informationProduct) {
       this.informationProduct = informationProduct;
       return this;
     }
 
-    public Builder appearance(
-        Appearance appearance) {
+    public Builder appearance(Appearance appearance) {
       this.appearance = appearance;
       return this;
     }

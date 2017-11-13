@@ -51,7 +51,7 @@ public class RedirectionRequestHandler implements Inflector<ContainerRequestCont
     StringBuffer result = new StringBuffer();
     while (matcher.find()) {
       matcher.appendReplacement(result,
-          "\\$" + String.valueOf(Integer.parseInt(matcher.group(1).substring(1)) + 1));
+          "\\$" + (Integer.parseInt(matcher.group(1).substring(1)) + 1));
     }
     matcher.appendTail(result);
 
