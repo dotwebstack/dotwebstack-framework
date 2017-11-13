@@ -38,8 +38,8 @@ public class FileConfigurationBackendIntegrationTest {
 
   @Before
   public void initVars() {
-    elmoConfiguration = new ClassPathResource("/elmo.trig");
-    elmoShapes = new ClassPathResource("/elmo-shapes.trig");
+    elmoConfiguration = new ClassPathResource("/model/elmo.trig");
+    elmoShapes = new ClassPathResource("/model/elmo-shapes.trig");
     sailRepository = new SailRepository(new MemoryStore());
   }
 
