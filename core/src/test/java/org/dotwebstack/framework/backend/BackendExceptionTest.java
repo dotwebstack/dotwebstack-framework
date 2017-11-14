@@ -13,7 +13,6 @@ public class BackendExceptionTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Test
-  @SuppressWarnings("ThrowableNotThrown")
   public void constructor_Initiates_WithMessage() {
     // Arrange & Act
     BackendException exception = new BackendException("myMessage");
@@ -23,7 +22,6 @@ public class BackendExceptionTest {
   }
 
   @Test
-  @SuppressWarnings("ThrowableNotThrown")
   public void constructor_Initiates_WithMessageAndCause() {
     // Arrange
     NullPointerException cause = new NullPointerException();
