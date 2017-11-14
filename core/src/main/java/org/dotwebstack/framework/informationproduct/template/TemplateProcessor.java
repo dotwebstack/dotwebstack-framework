@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param.template;
+package org.dotwebstack.framework.informationproduct.template;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -20,8 +20,7 @@ public class TemplateProcessor implements InitializingBean {
 
   private Configuration config;
 
-  public String processString(@NonNull String templateString, Map<String, Object> parameters)
-      throws TemplateException {
+  public String processString(@NonNull String templateString, Map<String, Object> parameters) {
     LOG.debug("Processing template string with parameters: {}", parameters);
 
     try {
@@ -36,7 +35,7 @@ public class TemplateProcessor implements InitializingBean {
     }
   }
 
-  private static Configuration prepareConfiguration() throws IOException {
+  private static Configuration prepareConfiguration() {
     Configuration result = new Configuration(Configuration.VERSION_2_3_26);
 
     result.setNumberFormat("computer");

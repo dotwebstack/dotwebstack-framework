@@ -28,14 +28,13 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
   private final RequestParameterMapper requestParameterMapper;
 
   GetRequestHandler(@NonNull Operation operation, @NonNull InformationProduct informationProduct,
-
       @NonNull RequestParameterMapper requestParameterMapper) {
     this.operation = operation;
     this.informationProduct = informationProduct;
     this.requestParameterMapper = requestParameterMapper;
   }
 
-  InformationProduct getInformationProduct() {
+  public InformationProduct getInformationProduct() {
     return informationProduct;
   }
 
@@ -45,7 +44,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     String path = context.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
-    Map<String, String> parameterValues =
+    Map<String, Object> parameterValues =
         requestParameterMapper.map(operation, informationProduct, context);
     io.swagger.models.Response response = operation.getResponses().get("200");
     Property schemaProperty = response.getSchema();

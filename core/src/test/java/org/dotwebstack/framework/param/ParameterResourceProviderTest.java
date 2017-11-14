@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.param;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -40,9 +40,6 @@ public class ParameterResourceProviderTest {
   @Mock
   private GraphQuery graphQueryMock;
 
-  @Mock
-  private StringFilterFactory stringFilterFactoryMock;
-
   private ParameterResourceProvider provider;
 
   @Before
@@ -50,8 +47,7 @@ public class ParameterResourceProviderTest {
     ConfigurationBackend configurationBackendMock = mock(ConfigurationBackend.class);
     ApplicationProperties applicationPropertiesMock = mock(ApplicationProperties.class);
 
-    provider = new ParameterResourceProvider(configurationBackendMock, applicationPropertiesMock,
-        stringFilterFactoryMock);
+    provider = new ParameterResourceProvider(configurationBackendMock, applicationPropertiesMock);
 
     SailRepository sailRepositoryMock = mock(SailRepository.class);
     when(configurationBackendMock.getRepository()).thenReturn(sailRepositoryMock);
@@ -68,36 +64,42 @@ public class ParameterResourceProviderTest {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.TERM_FILTER),
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, ELMO.NAME_PROP,
-                DBEERPEDIA.PARAMETER_NAME_VALUE))));
-
-    StringFilter stringFilterMock = mock(StringFilter.class);
-    when(stringFilterFactoryMock.newStringFilter(DBEERPEDIA.PARAMETER,
-        DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue())).thenReturn(stringFilterMock);
+            VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP,
+                DBEERPEDIA.NAME_PARAMETER_VALUE),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PLACE_PARAMETER_ID, RDF.TYPE,
+                ELMO.TERM_FILTER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PLACE_PARAMETER_ID, ELMO.NAME_PROP,
+                DBEERPEDIA.PLACE_PARAMETER_VALUE))));
 
     // Act
     provider.loadResources();
 
     // Assert
-    assertThat(provider.getAll().entrySet(), hasSize(1));
+    assertThat(provider.getAll().entrySet(), hasSize(2));
 
-    Parameter result = provider.get(DBEERPEDIA.PARAMETER);
+    ParameterDefinition nameParamDef = provider.get(DBEERPEDIA.NAME_PARAMETER_ID);
 
-    assertThat(result, sameInstance(stringFilterMock));
+    assertThat(nameParamDef.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
+    assertThat(nameParamDef.getName(), is(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING));
+
+    ParameterDefinition placeParamDef = provider.get(DBEERPEDIA.PLACE_PARAMETER_ID);
+
+    assertThat(placeParamDef.getIdentifier(), is(DBEERPEDIA.PLACE_PARAMETER_ID));
+    assertThat(placeParamDef.getName(), is(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING));
   }
 
   @Test
   public void loadResources_ThrowsException_TypeStatementMissing() {
     // Arrange
-    when(graphQueryMock.evaluate()).thenReturn(
-        new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.TERM_FILTER))));
+    when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE,
+            ELMO.TERM_FILTER))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("No <%s> property found for <%s> of type <%s>",
-        ELMO.NAME_PROP, DBEERPEDIA.PARAMETER, ELMO.TERM_FILTER));
+        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_ID, ELMO.TERM_FILTER));
 
     // Act
     provider.loadResources();

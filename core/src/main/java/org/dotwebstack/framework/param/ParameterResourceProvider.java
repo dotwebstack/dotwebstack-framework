@@ -14,17 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ParameterResourceProvider extends AbstractResourceProvider<Parameter> {
-
-  private final StringFilterFactory stringFilterFactory;
+public class ParameterResourceProvider extends AbstractResourceProvider<ParameterDefinition> {
 
   @Autowired
   public ParameterResourceProvider(ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties,
-      @NonNull StringFilterFactory stringFilterFactory) {
+      ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
-
-    this.stringFilterFactory = stringFilterFactory;
   }
 
   @Override
@@ -38,13 +33,13 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
   }
 
   @Override
-  protected Parameter createResource(@NonNull Model model, @NonNull IRI identifier) {
+  protected ParameterDefinition createResource(@NonNull Model model, @NonNull IRI identifier) {
     String name = getObjectString(model, identifier, ELMO.NAME_PROP).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
                 identifier, ELMO.TERM_FILTER)));
 
-    return stringFilterFactory.newStringFilter(identifier, name);
+    return new ParameterDefinition(identifier, name);
   }
 
 }

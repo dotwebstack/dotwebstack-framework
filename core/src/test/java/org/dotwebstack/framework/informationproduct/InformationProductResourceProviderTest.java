@@ -2,6 +2,7 @@ package org.dotwebstack.framework.informationproduct;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -11,12 +12,14 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -29,11 +32,14 @@ import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -128,7 +134,7 @@ public class InformationProductResourceProviderTest {
 
     InformationProduct informationProduct = mock(InformationProduct.class);
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
-        eq(ImmutableList.of()), eq(ImmutableList.of()), any())).thenReturn(informationProduct);
+        eq(ImmutableList.of()), any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
@@ -191,14 +197,16 @@ public class InformationProductResourceProviderTest {
     informationProductResourceProvider.get(unknownResource);
   }
 
+  @SuppressWarnings({"unchecked"})
   @Test
   public void loadResources_CreatesInformationProduct_WithCorrectValues() {
-    IRI param1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "param1");
-    IRI param2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "param2");
-    IRI param3Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "param3");
-    IRI param4Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "param4");
 
     // Arrange
+    IRI reqParam1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "required1");
+    IRI reqParam2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "required2");
+    IRI optParam1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "optional1");
+    IRI optParam2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "optional2");
+
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
@@ -208,35 +216,42 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
-                ELMO.REQUIRED_PARAMETER_PROP, param1Id),
+                ELMO.REQUIRED_PARAMETER_PROP, reqParam1Id),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
-                ELMO.REQUIRED_PARAMETER_PROP, param2Id),
+                ELMO.REQUIRED_PARAMETER_PROP, reqParam2Id),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
-                ELMO.OPTIONAL_PARAMETER_PROP, param3Id),
+                ELMO.OPTIONAL_PARAMETER_PROP, optParam1Id),
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
-                ELMO.OPTIONAL_PARAMETER_PROP, param4Id))));
+                ELMO.OPTIONAL_PARAMETER_PROP, optParam2Id))));
 
-    Parameter requiredParameter1 = mock(Parameter.class);
-    when(parameterResourceProviderMock.get(param1Id)).thenReturn(requiredParameter1);
+    ParameterDefinition reqParam1Def = new ParameterDefinition(reqParam1Id, "reqParam1Name");
+    when(parameterResourceProviderMock.get(reqParam1Id)).thenReturn(reqParam1Def);
 
-    Parameter requiredParameter2 = mock(Parameter.class);
-    when(parameterResourceProviderMock.get(param2Id)).thenReturn(requiredParameter2);
+    ParameterDefinition reqParam2Def = new ParameterDefinition(reqParam2Id, "reqParam2Name");
+    when(parameterResourceProviderMock.get(reqParam2Id)).thenReturn(reqParam2Def);
 
-    Parameter optionalParameter3 = mock(Parameter.class);
-    when(parameterResourceProviderMock.get(param3Id)).thenReturn(optionalParameter3);
+    ParameterDefinition optParam1Def = new ParameterDefinition(optParam1Id, "optParam1Name");
+    when(parameterResourceProviderMock.get(optParam1Id)).thenReturn(optParam1Def);
 
-    Parameter optionalParameter4 = mock(Parameter.class);
-    when(parameterResourceProviderMock.get(param4Id)).thenReturn(optionalParameter4);
+    ParameterDefinition optParam2Def = new ParameterDefinition(optParam2Id, "optParam2Name");
+    when(parameterResourceProviderMock.get(optParam2Id)).thenReturn(optParam2Def);
 
+    ArgumentCaptor<List<Parameter<?>>> captureParameters = ArgumentCaptor.forClass(List.class);
     InformationProduct informationProduct = mock(InformationProduct.class);
+
     when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()),
-        eq(ImmutableList.of(requiredParameter1, requiredParameter2)),
-        eq(ImmutableList.of(optionalParameter3, optionalParameter4)), any())).thenReturn(
-            informationProduct);
+        eq(DBEERPEDIA.BREWERIES_LABEL.stringValue()), captureParameters.capture(),
+        any())).thenReturn(informationProduct);
 
     // Act
     informationProductResourceProvider.loadResources();
+
+    // Assert
+    assertThat(captureParameters.getValue(),
+        containsInAnyOrder(equalToParameter(reqParam1Id, "reqParam1Name"),
+            equalToParameter(reqParam2Id, "reqParam2Name"),
+            equalToParameter(optParam1Id, "optParam1Name"),
+            equalToParameter(optParam2Id, "optParam2Name")));
   }
 
   @Test
@@ -254,6 +269,34 @@ public class InformationProductResourceProviderTest {
 
     // Act
     informationProductResourceProvider.loadResources();
+  }
+
+  private static ParameterMatcher equalToParameter(IRI identifier, String name) {
+    return new ParameterMatcher(identifier, name);
+  }
+
+  private static final class ParameterMatcher extends TypeSafeMatcher<Parameter<?>> {
+
+    private final IRI identifier;
+
+    private final String name;
+
+    private ParameterMatcher(IRI identifier, String name) {
+      this.identifier = identifier;
+      this.name = name;
+    }
+
+    @Override
+    protected boolean matchesSafely(Parameter<?> parameter) {
+      return parameter.getIdentifier().equals(identifier) && parameter.getName().equals(name);
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(String.format("%s[identifier: '%s', name: '%s']",
+          Parameter.class.getSimpleName(), identifier, name));
+    }
+
   }
 
 }

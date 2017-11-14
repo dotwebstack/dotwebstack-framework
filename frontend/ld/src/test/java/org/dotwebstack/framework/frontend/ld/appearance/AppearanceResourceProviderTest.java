@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -14,8 +13,6 @@ import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.frontend.ld.representation.Representation;
-import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -117,9 +114,8 @@ public class AppearanceResourceProviderTest {
   public void loadResources_ThrowsException_WithMissingTypeStatement() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.BREWERY_APPEARANCE,
-                DBEERPEDIA.CUSTOM_APPEARANCE_PROP, valueFactory.createLiteral(true)))));
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.BREWERY_APPEARANCE,
+            DBEERPEDIA.CUSTOM_APPEARANCE_PROP, valueFactory.createLiteral(true)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);

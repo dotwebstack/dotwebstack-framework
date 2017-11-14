@@ -36,11 +36,8 @@ public class RequestParameters {
 
     private Map<String, Object> requestParameters = Maps.newHashMap();
 
-    public Builder requestStringParameters(Map<String, String> requestParameters) {
-      Map<String, String> newMap = requestParameters.entrySet().stream().collect(
-          Collectors.toMap(Map.Entry::getKey, e -> (String) e.getValue()));
-
-      this.requestParameters.putAll(newMap);
+    public Builder requestStringParameters(Map<String, Object> requestParameters) {
+      this.requestParameters.putAll(requestParameters);
       return this;
     }
 
