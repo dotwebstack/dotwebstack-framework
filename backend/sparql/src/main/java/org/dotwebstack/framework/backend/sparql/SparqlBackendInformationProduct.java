@@ -32,7 +32,6 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
     return query;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   protected Object getInnerResult(Map<String, Object> parameterValues) {
     Map<String, Object> templateParameters = new HashMap<>();

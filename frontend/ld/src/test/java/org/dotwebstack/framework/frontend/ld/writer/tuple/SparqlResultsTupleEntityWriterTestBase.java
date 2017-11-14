@@ -52,7 +52,6 @@ public class SparqlResultsTupleEntityWriterTestBase {
   }
 
   void configureBindingSetWithValue(BindingSet bindingSet, String value) {
-    @SuppressWarnings("unchecked")
     Iterator<Binding> iterator = mock(Iterator.class);
     when(bindingSet.iterator()).thenReturn(iterator);
 

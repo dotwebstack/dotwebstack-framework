@@ -69,7 +69,6 @@ public class SparqlBackendInformationProductTest {
         valueFactory.createIRI("http://foo#", "optional2"), "nameOfOptional2");
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void build_CreatesInformationProduct_WithCorrectData() {
     // Act
