@@ -1,40 +1,28 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import io.swagger.models.properties.Property;
+import java.util.Map;
+import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParameters;
 
-public abstract class QueryEntity extends AbstractEntity {
+public abstract class QueryEntity<Q extends org.eclipse.rdf4j.query.QueryResult<?>>
+    extends AbstractEntity<Q> {
 
-  QueryEntity(Property schemaProperty, RequestParameters requestParameters, QueryResult queryResult,
-      String baseUri, String endpoint) {
-    super(schemaProperty, requestParameters, queryResult, baseUri, endpoint);
+  QueryEntity(Property schemaProperty, QueryResult queryResult, String baseUri, String endpoint) {
+    super(schemaProperty, queryResult, baseUri, endpoint);
+  }
+
+  QueryEntity(Map<MediaType, Property> schemaProperty, Q queryResult) {
+    super(schemaProperty, queryResult);
   }
 
 
   public abstract static class Builder {
     Property schemaProperty;
-    RequestParameters requestParameters;
     QueryResult queryResult;
     String baseUri;
     String endpoint;
 
-    public Builder withQueryResult(QueryResult queryResult) {
-      this.queryResult = queryResult;
-      return this;
-    }
-
-
-
-    public Builder withSchemaProperty(Property schemaProperty) {
-      this.schemaProperty = schemaProperty;
-      return this;
-    }
-
-    public Builder withRequestParameters(RequestParameters requestParameters) {
-      this.requestParameters = requestParameters;
-      return this;
-    }
 
     public Builder withBaseUri(String baseUri) {
       this.baseUri = baseUri;
@@ -47,6 +35,8 @@ public abstract class QueryEntity extends AbstractEntity {
     }
 
     public abstract Entity build();
+
+
   }
 
 

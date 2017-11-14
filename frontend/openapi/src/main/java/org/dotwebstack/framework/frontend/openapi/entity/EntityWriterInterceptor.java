@@ -1,45 +1,37 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import io.swagger.models.properties.Property;
 import java.io.IOException;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilder;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParameters;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public final class EntityWriterInterceptor implements WriterInterceptor {
 
-  private final EntityBuilder entityBuilder;
-  private final PropertyHandlerRegistry propertyHandlerRegistry;
+  private TupleEntityMapper tupleEntityMapper;
+
+  private GraphEntityMapper graphEntityMapper;
 
   @Autowired
-  public EntityWriterInterceptor(@NonNull EntityBuilder entityBuilder,
-      @NonNull PropertyHandlerRegistry handlersRegistry) {
-    this.entityBuilder = entityBuilder;
-    this.propertyHandlerRegistry = handlersRegistry;
+  public EntityWriterInterceptor(@NonNull GraphEntityMapper graphEntityMapper,
+      @NonNull TupleEntityMapper tupleEntityMapper) {
+    this.graphEntityMapper = graphEntityMapper;
+    this.tupleEntityMapper = tupleEntityMapper;
   }
 
   @Override
   public void aroundWriteTo(@NonNull WriterInterceptorContext context) throws IOException {
     if (context.getEntity() instanceof Entity) {
-      Entity entity = (Entity) context.getEntity();
-      Property schemaProperty = entity.getSchemaProperty();
-      RequestParameters requestParameters = entity.getRequestParameters();
-      String baseUri = entity.getBaseUri();
-      String endpoint = entity.getEndpoint();
-
-      QueryResult result = entity.getQueryResult();
-      EntityBuilderContext builderContext =
-          new EntityBuilderContext.Builder(endpoint).queryResult(result).baseUri(
-              baseUri).requestParameters(requestParameters).build();
-      Object entityRaw =
-          entityBuilder.build(schemaProperty, propertyHandlerRegistry, builderContext);
-      context.setEntity(entityRaw);
+      if (context.getEntity() instanceof TupleEntity) {
+        TupleEntity entity = (TupleEntity) context.getEntity();
+        Object mappedEntity = tupleEntityMapper.map(entity, context.getMediaType());
+        context.setEntity(mappedEntity);
+      }
+      if (context.getEntity() instanceof GraphEntity) {
+        GraphEntity entity = (GraphEntity) context.getEntity();
+        Object mappedEntity = graphEntityMapper.map(entity, context.getMediaType());
+        context.setEntity(mappedEntity);
+      }
     }
     context.proceed();
   }

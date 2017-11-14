@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.entity.properties;
+package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
 
 
 public class PropertyHandlerRuntimeException extends RuntimeException {

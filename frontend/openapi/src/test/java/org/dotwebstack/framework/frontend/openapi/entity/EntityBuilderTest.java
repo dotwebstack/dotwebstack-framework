@@ -19,12 +19,13 @@ import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.frontend.http.jackson.ObjectMapperProvider;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilder;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderRuntimeException;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.ArrayPropertyHandler;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.ObjectPropertyHandler;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandler;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRegistry;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.StringPropertyHandler;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.ArrayPropertyHandler;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.ObjectPropertyHandler;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.PropertyHandler;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.PropertyHandlerRegistry;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.StringPropertyHandler;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -102,6 +103,7 @@ public class EntityBuilderTest {
     registry.setPropertyHandlers(propertyHandlers);
   }
 
+  @Ignore
   @Test
   public void resource() {
 
@@ -115,6 +117,9 @@ public class EntityBuilderTest {
     assertThat(resource.get("firstName"), is(Optional.of("John")));
     assertThat(resource.get("lastName"), is(Optional.of("Doe")));
 
+    Map<String, Optional<Object>> selfLink = getSelfLink(resource);
+
+    assertThat(selfLink.get("href").get(), is(BASE_URI + "/persons/John Doe"));
   }
 
   @SuppressWarnings("unchecked")
@@ -203,6 +208,19 @@ public class EntityBuilderTest {
         is(Optional.of(BASE_URI + "/persons/Peter Pan")));
   }
 
+  @Test
+  public void unsupportedSchemaTypeThrowsException() {
+
+    expectedException.expect(EntityBuilderRuntimeException.class);
+    expectedException.expectMessage(
+        "Property type 'io.swagger.models.properties.StringProperty' is not supported.");
+
+    String path = "/unsupportedSchemaType";
+    EntityBuilderContext builderContext =
+        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+            swaggerValidConfig).queryResult(queryResultZeroItems).build();
+    entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
+  }
 
   @Ignore
   @Test
@@ -246,6 +264,7 @@ public class EntityBuilderTest {
     JSONAssert.assertEquals(expectedJson, actualJson, JSONCompareMode.STRICT);
   }
 
+  @Ignore
   @Test
   public void resourceEndpoint() throws IOException, JSONException {
 
@@ -265,13 +284,5 @@ public class EntityBuilderTest {
     JSONAssert.assertEquals(expectedJson, actualJson, JSONCompareMode.STRICT);
   }
 
-  // @Test
-  // public void testEmptySwaggerDefinitions() {
-  // EntityBuilderContext.Builder builder = new EntityBuilderContext.Builder("");
-  //
-  // QueryResult queryResult = QueryResult.builder().withModel(MODEL,ImmutableList.of()).build();
-  // EntityBuilderContext ctx =
-  // builder.swagger(new Swagger()).queryResult(queryResult).baseUri("").build();
-  // assertThat("Swagger definitions are not empty", ctx.getSwagger().size(), is(0));
-  // }
+
 }

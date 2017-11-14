@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.entity.properties;
+package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

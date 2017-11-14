@@ -1,5 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
+import static org.mockito.Mockito.mock;
+
+import com.google.common.collect.ImmutableMap;
+import io.swagger.models.properties.Property;
+import javax.ws.rs.core.MediaType;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,7 +24,7 @@ public class TupleEntityTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new TupleEntity(null, null, null, null, null);
+    new TupleEntity(null, mock(TupleQueryResult.class));
   }
 
   @Test
@@ -27,7 +33,7 @@ public class TupleEntityTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new TupleEntity(null, null, null, null, null);
+    new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, mock(Property.class)), null);
   }
 
 }

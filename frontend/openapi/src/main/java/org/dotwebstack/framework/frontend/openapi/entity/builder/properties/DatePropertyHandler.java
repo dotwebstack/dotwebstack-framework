@@ -1,8 +1,8 @@
-package org.dotwebstack.framework.frontend.openapi.entity.properties;
+package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
 
 import com.google.common.collect.ImmutableSet;
 
-import io.swagger.models.properties.BaseIntegerProperty;
+import io.swagger.models.properties.DateProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
@@ -16,9 +16,9 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-public class IntegerPropertyHandler extends AbstractPropertyHandler<BaseIntegerProperty> {
+public class DatePropertyHandler extends AbstractPropertyHandler<DateProperty> {
 
-  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
+  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
   @Override
   protected Set<IRI> getSupportedDataTypes() {
@@ -26,13 +26,13 @@ public class IntegerPropertyHandler extends AbstractPropertyHandler<BaseIntegerP
   }
 
   @Override
-  public Object handle(BaseIntegerProperty property, EntityBuilderContext entityBuilderContext,
+  public Object handle(DateProperty property, EntityBuilderContext entityBuilderContext,
       PropertyHandlerRegistry registry, Value context) {
 
     String ldPathQuery = (String) property.getVendorExtensions().get(OasVendorExtensions.LDPATH);
 
     if (ldPathQuery == null && isLiteral(context)) {
-      return ((Literal) context).integerValue();
+      return ((Literal) context).calendarValue();
     }
 
     if (ldPathQuery == null) {
@@ -40,6 +40,7 @@ public class IntegerPropertyHandler extends AbstractPropertyHandler<BaseIntegerP
           String.format("Property '%s' must have a '%s' attribute.", property.getName(),
               OasVendorExtensions.LDPATH));
     }
+
     LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
     Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context, ldPathQuery);
 
@@ -47,20 +48,20 @@ public class IntegerPropertyHandler extends AbstractPropertyHandler<BaseIntegerP
       return null;
     }
 
-    Value integerValue = getSingleStatement(queryResult, ldPathQuery);
+    Value dateValue = getSingleStatement(queryResult, ldPathQuery);
 
-    if (!isLiteral(integerValue)) {
+    if (!isLiteral(dateValue)) {
       throw new PropertyHandlerRuntimeException(String.format(
           "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>.",
           ldPathQuery, dataTypesAsString()));
     }
 
-    return ((Literal) integerValue).integerValue();
+    return ((Literal) dateValue).calendarValue();
   }
 
   @Override
   public boolean supports(Property property) {
-    return BaseIntegerProperty.class.isInstance(property);
+    return DateProperty.class.isInstance(property);
   }
 
 }

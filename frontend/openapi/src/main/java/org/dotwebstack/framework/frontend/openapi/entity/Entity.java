@@ -4,14 +4,14 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.RequestParameters;
 
+public interface Entity<R extends org.eclipse.rdf4j.query.QueryResult<?>> {
 
-public interface Entity {
+  R getResult();
+
+  Map<MediaType, Property> getSchemaMap();
 
   Property getSchemaProperty();
-
-  RequestParameters getRequestParameters();
 
   QueryResult getQueryResult();
 

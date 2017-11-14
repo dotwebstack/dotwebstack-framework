@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
 import io.swagger.models.Response;
+import io.swagger.models.properties.Property;
 import java.net.URI;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -59,8 +60,8 @@ public class GetRequestHandlerTest {
     Map<String, Response> response = ImmutableMap.of("200", mockResponse);
 
     when(operationMock.getResponses()).thenReturn(response);
-    getRequestHandler =
-        new GetRequestHandler(operationMock, informationProduct, requestParameterMapperMock);
+    getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of(),
+        requestParameterMapperMock);
   }
 
   @Test
@@ -69,7 +70,16 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, null, requestParameterMapperMock);
+    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingSchemaMap() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock);
   }
 
   @Test
@@ -86,9 +96,9 @@ public class GetRequestHandlerTest {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
-    when(uriInfo.getBaseUri()).thenReturn(URI.create("http://www.test.nl"));
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
+    final Map<String, Property> schemaMap = ImmutableMap.of();
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
@@ -98,6 +108,8 @@ public class GetRequestHandlerTest {
     // Assert
     assertThat(response.getStatus(), equalTo(javax.ws.rs.core.Response.Status.OK.getStatusCode()));
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
+    assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
+    assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
   }
 
   @Test

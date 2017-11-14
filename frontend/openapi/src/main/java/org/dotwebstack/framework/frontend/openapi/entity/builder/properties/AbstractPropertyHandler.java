@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.entity.properties;
+package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
 
 import com.google.common.base.Joiner;
 import io.swagger.models.properties.Property;

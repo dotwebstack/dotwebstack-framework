@@ -19,8 +19,8 @@ public class GetRequestHandlerFactory {
   }
 
   public GetRequestHandler newGetRequestHandler(@NonNull Operation operation,
-      @NonNull InformationProduct informationProduct) {
-    return new GetRequestHandler(operation, informationProduct, requestParameterMapper);
+      @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap) {
+    return new GetRequestHandler(operation, informationProduct, schemaMap, requestParameterMapper);
   }
 
 }

@@ -10,7 +10,7 @@ import org.dotwebstack.framework.frontend.openapi.entity.backend.Rdf4jRepository
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.OasVendorExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRuntimeException;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.PropertyHandlerRuntimeException;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;

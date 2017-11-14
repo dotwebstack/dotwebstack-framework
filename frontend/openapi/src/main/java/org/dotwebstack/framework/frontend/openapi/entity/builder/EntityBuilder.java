@@ -4,8 +4,8 @@ import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import java.util.Map;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRegistry;
-import org.dotwebstack.framework.frontend.openapi.entity.properties.PropertyHandlerRuntimeException;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.PropertyHandlerRegistry;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.PropertyHandlerRuntimeException;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +36,7 @@ public class EntityBuilder {
     if (schemaProperty instanceof ArrayProperty) {
       return processResourceEndpoint(schemaProperty, entityBuilderContext, registry);
     }
-    throw new PropertyHandlerRuntimeException(
+    throw new EntityBuilderRuntimeException(
         String.format("Property type '%s' is not supported.", schemaProperty.getClass().getName()));
   }
 

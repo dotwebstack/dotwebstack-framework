@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.entity.properties;
+package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
 
 import io.swagger.models.properties.Property;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
