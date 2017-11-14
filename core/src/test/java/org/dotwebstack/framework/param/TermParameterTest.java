@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +42,7 @@ public class TermParameterTest {
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
 
     // Act
-    Object result = requiredParameter.handle(parameterValues);
+    String result = requiredParameter.handle(parameterValues);
 
     // Assert
     assertThat(result, is("value"));
@@ -53,7 +55,7 @@ public class TermParameterTest {
         Collections.singletonMap(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, null);
 
     // Act
-    Object result = optionalParameter.handle(parameterValues);
+    String result = optionalParameter.handle(parameterValues);
 
     // Assert
     assertThat(result, nullValue());
@@ -74,8 +76,8 @@ public class TermParameterTest {
   @Test
   public void validate_AcceptsNonNullValue_ForRequiredParameter() {
     // Act
-    requiredParameter.validate(ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING,
-        DBEERPEDIA.BREWERY_DAVO_NAME));
+    requiredParameter.validate(
+        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, DBEERPEDIA.BREWERY_DAVO_NAME));
   }
 
   @Test
@@ -94,6 +96,20 @@ public class TermParameterTest {
     // Act
     requiredParameter.validate(
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, new Object()));
+  }
+
+  @Test
+  public void getLiteral_ReturnsLiteral_ForValue() {
+    // Arrange
+    Map<String, Object> parameterValues =
+        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
+
+    // Act
+    String value = requiredParameter.handle(parameterValues);
+    Literal result = requiredParameter.getLiteral(value);
+
+    // Assert
+    assertThat(result, is(SimpleValueFactory.getInstance().createLiteral("value")));
   }
 
 }

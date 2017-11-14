@@ -3,10 +3,13 @@ package org.dotwebstack.framework.backend.sparql;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.backend.BackendException;
+import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -74,6 +77,27 @@ public class QueryEvaluatorTest {
 
     // Assert
     assertThat(result, instanceOf(TupleQueryResult.class));
+  }
+
+  @Test
+  public void evaluate_SetsBindings() {
+    // Arrange
+    GraphQuery query = mock(GraphQuery.class);
+    GraphQueryResult queryResult = mock(GraphQueryResult.class);
+    when(repositoryConnection.prepareQuery(QueryLanguage.SPARQL, GRAPH_QUERY)).thenReturn(query);
+    when(query.evaluate()).thenReturn(queryResult);
+
+    ImmutableMap<String, Value> bindings = ImmutableMap.of("dateOfFoundation",
+        DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION, "fte", DBEERPEDIA.BROUWTOREN_FTE);
+
+    // Act
+    Object result = queryEvaluator.evaluate(repositoryConnection, GRAPH_QUERY, bindings);
+
+    // Assert
+    assertThat(result, instanceOf(GraphQueryResult.class));
+
+    verify(query).setBinding("dateOfFoundation", DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION);
+    verify(query).setBinding("fte", DBEERPEDIA.BROUWTOREN_FTE);
   }
 
   @Test

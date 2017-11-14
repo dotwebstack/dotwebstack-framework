@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.param;
 
 import java.util.Map;
-import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -22,7 +21,7 @@ public class TermParameter extends AbstractParameter<String> implements Bindable
   }
 
   @Override
-  public String handle(@NonNull Map<String, Object> parameterValues) {
+  public String handle(Map<String, Object> parameterValues) {
     return (String) getValue(parameterValues);
   }
 

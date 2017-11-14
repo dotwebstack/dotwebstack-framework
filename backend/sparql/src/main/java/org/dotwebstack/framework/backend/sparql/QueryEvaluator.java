@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.sparql;
 
 import java.util.Map;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.Value;
@@ -15,8 +16,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class QueryEvaluator {
 
-  public Object evaluate(RepositoryConnection repositoryConnection, String query,
-      Map<String, Value> bindings) {
+  public Object evaluate(@NonNull RepositoryConnection repositoryConnection, @NonNull String query,
+      @NonNull Map<String, Value> bindings) {
     Query preparedQuery;
 
     try {

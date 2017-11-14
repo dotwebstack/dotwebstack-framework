@@ -41,7 +41,7 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
    * @throws BackendException If a supplied value is invalid.
    */
   @Override
-  public void validate(@NonNull Map<String, Object> parameterValues) {
+  public void validate(Map<String, Object> parameterValues) {
     if (required) {
       validateRequired(parameterValues);
     }
