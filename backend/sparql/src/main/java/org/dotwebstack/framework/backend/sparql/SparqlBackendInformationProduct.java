@@ -70,14 +70,13 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
     private final TemplateProcessor templateProcessor;
 
-    private final Collection<Parameter<?>> parameters;
+    private final Collection<Parameter> parameters;
 
     private String label;
 
     public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
         @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator,
-        @NonNull TemplateProcessor templateProcessor,
-        @NonNull Collection<Parameter<?>> parameters) {
+        @NonNull TemplateProcessor templateProcessor, @NonNull Collection<Parameter> parameters) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;

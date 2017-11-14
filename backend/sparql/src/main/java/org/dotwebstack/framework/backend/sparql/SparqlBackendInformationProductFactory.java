@@ -32,7 +32,7 @@ public class SparqlBackendInformationProductFactory {
   }
 
   public InformationProduct create(IRI identifier, String label, Backend backend,
-      Collection<Parameter<?>> parameters, Model statements) {
+      Collection<Parameter> parameters, Model statements) {
     String query = getQuery(identifier, statements);
 
     ResultType resultType = getResultType(identifier, statements);

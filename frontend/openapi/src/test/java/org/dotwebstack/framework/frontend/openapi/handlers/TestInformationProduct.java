@@ -11,7 +11,7 @@ import org.eclipse.rdf4j.model.IRI;
 public final class TestInformationProduct extends AbstractInformationProduct {
 
   public TestInformationProduct(IRI identifier, String label, ResultType resultType,
-      Collection<Parameter<?>> parameters, TemplateProcessor templateProcessor) {
+      Collection<Parameter> parameters, TemplateProcessor templateProcessor) {
     super(identifier, label, resultType, parameters, templateProcessor);
   }
 
