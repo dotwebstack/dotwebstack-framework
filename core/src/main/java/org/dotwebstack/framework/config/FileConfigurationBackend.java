@@ -132,7 +132,7 @@ public class FileConfigurationBackend
         }
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
-      if (configurationStreams.size() > 1) {
+      if (configurationStreams.size() > 0) {
         try (InputStream stream = new SequenceInputStream(
             Collections.enumeration(configurationStreams))) {
           shaclValidator.validate(stream, elmoShapes);
