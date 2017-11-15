@@ -152,7 +152,7 @@ public final class DBEERPEDIA {
     SITE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Stage");
     SECOND_STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SecondStage");
-    DOMAIN = valueFactory.createLiteral("dbeerpedia.org");
+    DOMAIN = valueFactory.createLiteral(ORG_HOST);
     BASE_PATH = valueFactory.createLiteral("/special");
 
     NAME_PARAMETER_ID = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "nameParameter");
@@ -167,7 +167,7 @@ public final class DBEERPEDIA {
     BREWERY_DAVO = valueFactory.createLiteral(BREWERY_DAVO_NAME);
 
     SITE_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SiteNL");
-    DOMAIN_NL = valueFactory.createLiteral("dbeerpedia.nl");
+    DOMAIN_NL = valueFactory.createLiteral(NL_HOST);
 
     BACKEND = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Backend");
     SECOND_BACKEND = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SecondBackend");
