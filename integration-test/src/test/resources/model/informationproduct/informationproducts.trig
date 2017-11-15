@@ -24,8 +24,17 @@ GRAPH dbeerpedia:Theatre {
     elmo:backend dbeerpedia:Backend;
     elmo:resultType elmo-resulttype:Tuple;
     elmo:requiredParameter dbeerpedia:IdFilter;
-    elmo:query "SELECT ?naam ?sinds ?fte ?oprichting ?plaats WHERE {BIND(<http://dbeerpedia.org/id/brewery/${id}> as ?s) ?s dbeerpedia:name ?naam ; dbeerpedia:yearOfFoundation ?sinds ; dbeerpedia:fte ?fte ; dbeerpedia:dateOfFoundation ?oprichting ; dbeerpedia:place ?plaats .}";
-  .
+     elmo:query
+          """SELECT ?naam ?sinds ?fte ?oprichting ?plaats
+           WHERE {
+             BIND(<http://dbeerpedia.org/id/brewery/${id}> as ?s)
+             ?s dbeerpedia:name ?naam ;
+                dbeerpedia:yearOfFoundation ?sinds ;
+                dbeerpedia:fte ?fte ;
+                dbeerpedia:dateOfFoundation ?oprichting ;
+                dbeerpedia:place ?plaats .
+           }""";
+    .
 
   dbeerpedia:GraphBreweries a elmo:InformationProduct;
     rdfs:label "Beer breweries in The Netherlands";
