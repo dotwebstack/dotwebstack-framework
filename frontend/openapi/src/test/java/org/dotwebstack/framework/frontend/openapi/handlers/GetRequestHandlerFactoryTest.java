@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +25,9 @@ public class GetRequestHandlerFactoryTest {
 
   @Mock
   private RequestParameterMapper requestParameterMapperMock;
+
+  @Mock
+  private TemplateProcessor templateProcessorMock;
 
   private GetRequestHandlerFactory getRequestHandlerFactory;
 
@@ -38,7 +42,7 @@ public class GetRequestHandlerFactoryTest {
     Operation operation = new Operation();
     InformationProduct product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH, ImmutableList.of(),
-        ImmutableList.of());
+        templateProcessorMock);
     Map<MediaType, Property> schemaMap = ImmutableMap.of();
 
     // Act

@@ -1,12 +1,16 @@
 package org.dotwebstack.framework.backend.sparql;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
+import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
+import org.dotwebstack.framework.param.BindableParameter;
 import org.dotwebstack.framework.param.Parameter;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
 
 public class SparqlBackendInformationProduct extends AbstractInformationProduct {
 
@@ -17,8 +21,8 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   private final QueryEvaluator queryEvaluator;
 
   public SparqlBackendInformationProduct(Builder builder) {
-    super(builder.identifier, builder.label, builder.resultType, builder.requiredParameters,
-        builder.optionalParameters);
+    super(builder.identifier, builder.label, builder.resultType, builder.parameters,
+        builder.templateProcessor);
     this.backend = builder.backend;
     this.query = builder.query;
     this.queryEvaluator = builder.queryEvaluator;
@@ -29,16 +33,26 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   }
 
   @Override
-  protected Object getInnerResult(Map<String, String> parameterValues) {
-    String modifiedQuery = query;
+  protected Object getInnerResult(Map<String, Object> parameterValues) {
+    Map<String, Object> templateParameters = new HashMap<>();
+    Map<String, Value> bindings = new HashMap<>();
 
-    for (Parameter parameter : getParameters()) {
-      String value = parameterValues.get(parameter.getName());
+    for (Parameter<?> parameter : getParameters()) {
+      String name = parameter.getName();
+      Object value = parameter.handle(parameterValues);
 
-      modifiedQuery = parameter.handle(value, modifiedQuery);
+      if (value != null) {
+        templateParameters.put(name, value);
+
+        if (parameter instanceof BindableParameter) {
+          bindings.put(name, ((BindableParameter) parameter).getValue(value));
+        }
+      }
     }
 
-    return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery);
+    String modifiedQuery = templateProcessor.processString(query, templateParameters);
+
+    return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery, bindings);
   }
 
   public static class Builder {
@@ -53,23 +67,22 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
     private final QueryEvaluator queryEvaluator;
 
-    private final Collection<Parameter> requiredParameters;
+    private final TemplateProcessor templateProcessor;
 
-    private final Collection<Parameter> optionalParameters;
+    private final Collection<Parameter> parameters;
 
     private String label;
 
     public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
         @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator,
-        @NonNull Collection<Parameter> requiredParameters,
-        @NonNull Collection<Parameter> optionalParameters) {
+        @NonNull TemplateProcessor templateProcessor, @NonNull Collection<Parameter> parameters) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;
       this.resultType = resultType;
       this.queryEvaluator = queryEvaluator;
-      this.requiredParameters = requiredParameters;
-      this.optionalParameters = optionalParameters;
+      this.templateProcessor = templateProcessor;
+      this.parameters = parameters;
     }
 
     public Builder label(String label) {

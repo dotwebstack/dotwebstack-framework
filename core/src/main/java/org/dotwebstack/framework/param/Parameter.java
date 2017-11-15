@@ -1,13 +1,25 @@
 package org.dotwebstack.framework.param;
 
+import java.util.Map;
+import lombok.NonNull;
+import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
 
-public interface Parameter {
+public interface Parameter<T> {
 
   IRI getIdentifier();
 
   String getName();
 
-  String handle(String value, String query);
+  boolean isRequired();
+
+  /**
+   * Validates the supplied values.
+   * 
+   * @throws BackendException If a supplied value is invalid.
+   */
+  void validate(@NonNull Map<String, Object> parameterValues);
+
+  T handle(@NonNull Map<String, Object> parameterValues);
 
 }

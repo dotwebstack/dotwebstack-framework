@@ -20,7 +20,7 @@ GRAPH dbeerpedia:Theatre {
   .
 
   dbeerpedia:TupleBrewery a elmo:InformationProduct;
-    rdfs:label "A single beer brewery in The Netherlands with a name equal to the supplied name";
+    rdfs:label "A single beer brewery in The Netherlands with an ID equal to the supplied ID";
     elmo:backend dbeerpedia:Backend;
     elmo:resultType elmo-resulttype:Tuple;
     elmo:requiredParameter dbeerpedia:IdFilter;
