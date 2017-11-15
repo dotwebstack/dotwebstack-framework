@@ -12,8 +12,6 @@ public class EntityBuilderContext {
   private final Swagger swagger;
   private final Map<String, Model> swaggerDefinitions;
   private final QueryResult queryResult;
-  private final String baseUri;
-  private String endpoint;
   private final LdPathExecutor ldPathExecutor;
 
   private EntityBuilderContext(Swagger swagger, Map<String, Model> swaggerDefinitions,
@@ -21,8 +19,6 @@ public class EntityBuilderContext {
     this.swagger = swagger;
     this.swaggerDefinitions = Maps.newHashMap(swaggerDefinitions);
     this.queryResult = queryResult;
-    this.baseUri = baseUri;
-    this.endpoint = endpoint;
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 

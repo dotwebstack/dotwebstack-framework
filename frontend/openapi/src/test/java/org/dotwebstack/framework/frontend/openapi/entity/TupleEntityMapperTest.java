@@ -33,235 +33,235 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class TupleEntityMapperTest {
 
-    @Rule
-    public final ExpectedException thrown = ExpectedException.none();
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
-    @Mock
-    private SchemaMapperAdapter schemaMapper;
+  @Mock
+  private SchemaMapperAdapter schemaMapper;
 
-    @Mock
-    private TupleQueryResult result;
+  @Mock
+  private TupleQueryResult result;
 
-    private TupleEntityMapper tupleEntityMapper;
+  private TupleEntityMapper tupleEntityMapper;
 
-    @Before
-    public void setUp() {
-        tupleEntityMapper = new TupleEntityMapper(schemaMapper);
-    }
+  @Before
+  public void setUp() {
+    tupleEntityMapper = new TupleEntityMapper(schemaMapper);
+  }
 
-    @Test
-    public void constructor_ThrowsException_WithMissingSchemaHandlerAdapter() {
-        // Assert
-        thrown.expect(NullPointerException.class);
+  @Test
+  public void constructor_ThrowsException_WithMissingSchemaHandlerAdapter() {
+    // Assert
+    thrown.expect(NullPointerException.class);
 
-        // Act
-        new TupleEntityMapper(null);
-    }
+    // Act
+    new TupleEntityMapper(null);
+  }
 
-    @Test
-    public void map_ThrowsException_WithMissingTupleEntity() {
-        // Assert
-        thrown.expect(NullPointerException.class);
+  @Test
+  public void map_ThrowsException_WithMissingTupleEntity() {
+    // Assert
+    thrown.expect(NullPointerException.class);
 
-        // Act
-        tupleEntityMapper.map(null, MediaType.APPLICATION_JSON_TYPE);
-    }
+    // Act
+    tupleEntityMapper.map(null, MediaType.APPLICATION_JSON_TYPE);
+  }
 
-    @Test
-    public void map_ThrowsException_WithMissingMediaType() {
-        // Assert
-        thrown.expect(NullPointerException.class);
+  @Test
+  public void map_ThrowsException_WithMissingMediaType() {
+    // Assert
+    thrown.expect(NullPointerException.class);
 
-        // Act
-        tupleEntityMapper.map(mock(TupleEntity.class), null);
-    }
+    // Act
+    tupleEntityMapper.map(mock(TupleEntity.class), null);
+  }
 
-    @Test
-    public void map_ThrowsException_ForUnknownMediaType() {
-        // Arrange
-        TupleEntity entity = new TupleEntity(
-                ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new ObjectProperty()), result);
+  @Test
+  public void map_ThrowsException_ForUnknownMediaType() {
+    // Arrange
+    TupleEntity entity = new TupleEntity(
+        ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new ObjectProperty()), result);
 
-        // Assert
-        thrown.expect(EntityMapperRuntimeException.class);
-        thrown.expectMessage(String.format("No schema found for media type '%s'.",
-                MediaType.TEXT_PLAIN_TYPE.toString()));
+    // Assert
+    thrown.expect(EntityMapperRuntimeException.class);
+    thrown.expectMessage(String.format("No schema found for media type '%s'.",
+        MediaType.TEXT_PLAIN_TYPE.toString()));
 
-        // Act
-        tupleEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
-    }
+    // Act
+    tupleEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
+  }
 
-    @Test
-    public void map_ReturnsEmptyMap_ForNonArraySchema() {
-        // Assert
-        TupleEntity entity = new TupleEntity(
-                ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new DoubleProperty()), result);
+  @Test
+  public void map_ReturnsEmptyMap_ForNonArraySchema() {
+    // Assert
+    TupleEntity entity = new TupleEntity(
+        ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new DoubleProperty()), result);
 
-        // Act
-        Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+    // Act
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        // Assert
-        assertThat(mappedEntity, equalTo(ImmutableMap.of()));
-    }
+    // Assert
+    assertThat(mappedEntity, equalTo(ImmutableMap.of()));
+  }
 
-    @Test
-    public void map_ThrowsError_ForArraySchemaWithMissingItemsProperty() {
-        // Assert
-        TupleEntity entity = new TupleEntity(
-                ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new ArrayProperty()), result);
+  @Test
+  public void map_ThrowsError_ForArraySchemaWithMissingItemsProperty() {
+    // Assert
+    TupleEntity entity = new TupleEntity(
+        ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new ArrayProperty()), result);
 
-        // Assert
-        thrown.expect(EntityMapperRuntimeException.class);
-        thrown.expectMessage("Array schemas must have an 'items' property.");
+    // Assert
+    thrown.expect(EntityMapperRuntimeException.class);
+    thrown.expectMessage("Array schemas must have an 'items' property.");
 
-        // Act
-        tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
-    }
+    // Act
+    tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+  }
 
-    @Test
-    public void map_ThrowsError_ForArraySchemaWithNonObjectItemSchema() {
-        // Assert
-        TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-                new ArrayProperty().items(new StringProperty())), mock(TupleQueryResult.class));
+  @Test
+  public void map_ThrowsError_ForArraySchemaWithNonObjectItemSchema() {
+    // Assert
+    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ArrayProperty().items(new StringProperty())), mock(TupleQueryResult.class));
 
-        // Assert
-        thrown.expect(EntityMapperRuntimeException.class);
-        thrown.expectMessage("Only array items of type 'object' are supported for now.");
+    // Assert
+    thrown.expect(EntityMapperRuntimeException.class);
+    thrown.expectMessage("Only array items of type 'object' are supported for now.");
 
-        // Act
-        tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
-    }
+    // Act
+    tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+  }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void map_MapsToHandlerResult_ForRequiredPropertyWithPresentBinding() {
-        // Assert
-        StringProperty nameProperty = new StringProperty().required(true);
-        TupleEntity entity = new TupleEntity(
-                ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new ArrayProperty().items(
-                        new ObjectProperty().required(true).properties(ImmutableMap.of("name", nameProperty)))),
-                result);
-        when(result.hasNext()).thenReturn(true, false);
-        when(result.next()).thenReturn(
-                new ListBindingSet(ImmutableList.of("name"), ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME)));
-        when(schemaMapper.mapTupleValue(nameProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
-                DBEERPEDIA.BROUWTOREN_NAME.stringValue());
+  @Test
+  @SuppressWarnings("unchecked")
+  public void map_MapsToHandlerResult_ForRequiredPropertyWithPresentBinding() {
+    // Assert
+    StringProperty nameProperty = new StringProperty().required(true);
+    TupleEntity entity = new TupleEntity(
+        ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new ArrayProperty().items(
+            new ObjectProperty().required(true).properties(ImmutableMap.of("name", nameProperty)))),
+        result);
+    when(result.hasNext()).thenReturn(true, false);
+    when(result.next()).thenReturn(
+        new ListBindingSet(ImmutableList.of("name"), ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME)));
+    when(schemaMapper.mapTupleValue(nameProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
+        DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
-        // Act
-        Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+    // Act
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        // Assert
-        assertThat(mappedEntity, instanceOf(ImmutableList.class));
-        assertThat((ImmutableList<Object>) mappedEntity, hasSize(1));
-        assertThat((ImmutableList<Object>) mappedEntity,
-                contains(ImmutableMap.of("name", DBEERPEDIA.BROUWTOREN_NAME.stringValue())));
-    }
+    // Assert
+    assertThat(mappedEntity, instanceOf(ImmutableList.class));
+    assertThat((ImmutableList<Object>) mappedEntity, hasSize(1));
+    assertThat((ImmutableList<Object>) mappedEntity,
+        contains(ImmutableMap.of("name", DBEERPEDIA.BROUWTOREN_NAME.stringValue())));
+  }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void map_MapsToAbsentOptionalValue_ForOptionalPropertyWithAbsentBinding() {
-        // Arrange
-        TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-                new ArrayProperty().items(new ObjectProperty().properties(
-                        ImmutableMap.of("name", new StringProperty().required(false))))),
-                result);
-        when(result.hasNext()).thenReturn(true, false);
-        when(result.next()).thenReturn(new ListBindingSet(ImmutableList.of(), ImmutableList.of()));
+  @Test
+  @SuppressWarnings("unchecked")
+  public void map_MapsToAbsentOptionalValue_ForOptionalPropertyWithAbsentBinding() {
+    // Arrange
+    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ArrayProperty().items(new ObjectProperty().properties(
+            ImmutableMap.of("name", new StringProperty().required(false))))),
+        result);
+    when(result.hasNext()).thenReturn(true, false);
+    when(result.next()).thenReturn(new ListBindingSet(ImmutableList.of(), ImmutableList.of()));
 
-        // Act
-        Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+    // Act
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        // Assert
-        assertThat(mappedEntity, instanceOf(ImmutableList.class));
-        assertThat((ImmutableList<Object>) mappedEntity, hasSize(1));
-        assertThat((ImmutableList<Object>) mappedEntity,
-                contains(ImmutableMap.of("name", Optional.absent())));
-    }
+    // Assert
+    assertThat(mappedEntity, instanceOf(ImmutableList.class));
+    assertThat((ImmutableList<Object>) mappedEntity, hasSize(1));
+    assertThat((ImmutableList<Object>) mappedEntity,
+        contains(ImmutableMap.of("name", Optional.absent())));
+  }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void map_MapsToObjectProperty_ForSingleResult() {
-        // Arrange
-        StringProperty stringProperty = new StringProperty();
-        final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-                new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
-                result);
-        when(result.hasNext()).thenReturn(true, false);
-        QueryBindingSet bindingSet = new QueryBindingSet();
-        bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
-        when(result.next()).thenReturn(bindingSet);
-        when(schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
-                DBEERPEDIA.BROUWTOREN_NAME.stringValue());
+  @Test
+  @SuppressWarnings("unchecked")
+  public void map_MapsToObjectProperty_ForSingleResult() {
+    // Arrange
+    StringProperty stringProperty = new StringProperty();
+    final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
+        result);
+    when(result.hasNext()).thenReturn(true, false);
+    QueryBindingSet bindingSet = new QueryBindingSet();
+    bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
+    when(result.next()).thenReturn(bindingSet);
+    when(schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
+        DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
-        // Act
-        Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+    // Act
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        // Assert
-        assertThat(mappedEntity, instanceOf(ImmutableMap.class));
-        Map<String, Object> map = (Map<String, Object>) mappedEntity;
-        assertThat(map.values(), hasSize(1));
-        assertThat(map.get("name"), equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
-    }
+    // Assert
+    assertThat(mappedEntity, instanceOf(ImmutableMap.class));
+    Map<String, Object> map = (Map<String, Object>) mappedEntity;
+    assertThat(map.values(), hasSize(1));
+    assertThat(map.get("name"), equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
+  }
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void map_ForObjectPropertyOnlyMapsFirstResult_ForMultipleResults() {
-        // Arrange
-        StringProperty stringProperty = new StringProperty();
-        final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-                new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
-                result);
-        when(result.hasNext()).thenReturn(true, true, false);
-        QueryBindingSet bindingSet = new QueryBindingSet();
-        bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
-        when(result.next()).thenReturn(bindingSet, bindingSet);
-        when(schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
-                "firstName").thenReturn("secondName");
+  @Test
+  @SuppressWarnings("unchecked")
+  public void map_ForObjectPropertyOnlyMapsFirstResult_ForMultipleResults() {
+    // Arrange
+    StringProperty stringProperty = new StringProperty();
+    final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
+        result);
+    when(result.hasNext()).thenReturn(true, true, false);
+    QueryBindingSet bindingSet = new QueryBindingSet();
+    bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
+    when(result.next()).thenReturn(bindingSet, bindingSet);
+    when(schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
+        "firstName").thenReturn("secondName");
 
-        // Act
-        Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+    // Act
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
-        // Assert
-        assertThat(mappedEntity, instanceOf(ImmutableMap.class));
-        Map<String, Object> map = (Map<String, Object>) mappedEntity;
-        assertThat(map.values(), hasSize(1));
-        assertThat(map.get("name"), equalTo("firstName"));
-    }
+    // Assert
+    assertThat(mappedEntity, instanceOf(ImmutableMap.class));
+    Map<String, Object> map = (Map<String, Object>) mappedEntity;
+    assertThat(map.values(), hasSize(1));
+    assertThat(map.get("name"), equalTo("firstName"));
+  }
 
-    @Test
-    public void map_ThrowsException_ForSingleResultWithSingleObject() {
-        // Arrange
-        StringProperty stringProperty = new StringProperty();
-        final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-                new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
-                result);
-        when(result.hasNext()).thenReturn(false);
+  @Test
+  public void map_ThrowsException_ForSingleResultWithSingleObject() {
+    // Arrange
+    StringProperty stringProperty = new StringProperty();
+    final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
+        result);
+    when(result.hasNext()).thenReturn(false);
 
-        // Assert
-        thrown.expect(EntityMapperRuntimeException.class);
-        thrown.expectMessage("TupleQueryResult did not yield any values.");
+    // Assert
+    thrown.expect(EntityMapperRuntimeException.class);
+    thrown.expectMessage("TupleQueryResult did not yield any values.");
 
-        // Act
-        tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
-    }
+    // Act
+    tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+  }
 
 
-    @Test
-    public void map_ThrowException_ForRequiredPropertyWithAbsentBinding() {
-        // Assert
-        final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-                new ArrayProperty().items(new ObjectProperty().properties(
-                        ImmutableMap.of("name", new StringProperty().required(true))))),
-                result);
-        when(result.hasNext()).thenReturn(true, false);
-        when(result.next()).thenReturn(new ListBindingSet(ImmutableList.of(), ImmutableList.of()));
+  @Test
+  public void map_ThrowException_ForRequiredPropertyWithAbsentBinding() {
+    // Assert
+    final TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ArrayProperty().items(new ObjectProperty().properties(
+            ImmutableMap.of("name", new StringProperty().required(true))))),
+        result);
+    when(result.hasNext()).thenReturn(true, false);
+    when(result.next()).thenReturn(new ListBindingSet(ImmutableList.of(), ImmutableList.of()));
 
-        // Assert
-        thrown.expect(EntityMapperRuntimeException.class);
-        thrown.expectMessage("Property 'name' is required.");
+    // Assert
+    thrown.expect(EntityMapperRuntimeException.class);
+    thrown.expectMessage("Property 'name' is required.");
 
-        // Act
-        tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
-    }
+    // Act
+    tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+  }
 
 }
