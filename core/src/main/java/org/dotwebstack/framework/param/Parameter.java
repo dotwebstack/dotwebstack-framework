@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.param;
 
 import java.util.Map;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -17,8 +18,8 @@ public interface Parameter<T> {
    * 
    * @throws BackendException If a supplied value is invalid.
    */
-  void validate(Map<String, Object> parameterValues);
+  void validate(@NonNull Map<String, Object> parameterValues);
 
-  T handle(Map<String, Object> parameterValues);
+  T handle(@NonNull Map<String, Object> parameterValues);
 
 }

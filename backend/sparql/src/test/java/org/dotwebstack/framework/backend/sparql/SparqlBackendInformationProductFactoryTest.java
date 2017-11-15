@@ -58,7 +58,6 @@ public class SparqlBackendInformationProductFactoryTest {
     new SparqlBackendInformationProductFactory(null, templateProcessorMock);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void create_InformationProductIsCreated_WithValidData() {
     // Arrange
