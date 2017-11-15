@@ -64,33 +64,42 @@ public class ParameterResourceProviderTest {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.TERM_FILTER),
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, ELMO.NAME_PROP,
-                DBEERPEDIA.PARAMETER_NAME_VALUE))));
+            VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP,
+                DBEERPEDIA.NAME_PARAMETER_VALUE),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PLACE_PARAMETER_ID, RDF.TYPE,
+                ELMO.TERM_FILTER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PLACE_PARAMETER_ID, ELMO.NAME_PROP,
+                DBEERPEDIA.PLACE_PARAMETER_VALUE))));
 
     // Act
     provider.loadResources();
 
     // Assert
-    assertThat(provider.getAll().entrySet(), hasSize(1));
+    assertThat(provider.getAll().entrySet(), hasSize(2));
 
-    Parameter result = provider.get(DBEERPEDIA.PARAMETER);
+    ParameterDefinition nameParamDef = provider.get(DBEERPEDIA.NAME_PARAMETER_ID);
 
-    assertThat(result.getIdentifier(), is(DBEERPEDIA.PARAMETER));
-    assertThat(result.getName(), is(DBEERPEDIA.PARAMETER_NAME_VALUE.stringValue()));
+    assertThat(nameParamDef.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
+    assertThat(nameParamDef.getName(), is(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING));
+
+    ParameterDefinition placeParamDef = provider.get(DBEERPEDIA.PLACE_PARAMETER_ID);
+
+    assertThat(placeParamDef.getIdentifier(), is(DBEERPEDIA.PLACE_PARAMETER_ID));
+    assertThat(placeParamDef.getName(), is(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING));
   }
 
   @Test
   public void loadResources_ThrowsException_TypeStatementMissing() {
     // Arrange
-    when(graphQueryMock.evaluate()).thenReturn(
-        new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.PARAMETER, RDF.TYPE, ELMO.TERM_FILTER))));
+    when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE,
+            ELMO.TERM_FILTER))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("No <%s> property found for <%s> of type <%s>",
-        ELMO.NAME_PROP, DBEERPEDIA.PARAMETER, ELMO.TERM_FILTER));
+        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_ID, ELMO.TERM_FILTER));
 
     // Act
     provider.loadResources();
