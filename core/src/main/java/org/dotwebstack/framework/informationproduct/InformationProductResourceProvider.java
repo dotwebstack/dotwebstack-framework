@@ -70,7 +70,7 @@ public class InformationProductResourceProvider
       Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
 
-    ImmutableList.Builder<Parameter<?>> builder = ImmutableList.builder();
+    ImmutableList.Builder<Parameter> builder = ImmutableList.builder();
 
     requiredParameterIds.stream().map(parameterResourceProvider::get).map(
         d -> TermParameter.requiredTermParameter(d.getIdentifier(), d.getName())).forEach(

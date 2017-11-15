@@ -76,6 +76,9 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     }
     if (responseOk != null) {
       return responseOk;
+    }else {
+      LOG.error("Result type {} not supported for information product {}",
+              informationProduct.getResultType(), informationProduct.getIdentifier());
     }
     return Response.serverError().build();
   }
