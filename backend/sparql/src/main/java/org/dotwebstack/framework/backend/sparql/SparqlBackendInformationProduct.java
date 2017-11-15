@@ -45,7 +45,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
         templateParameters.put(name, value);
 
         if (parameter instanceof BindableParameter) {
-          bindings.put(name, ((BindableParameter) parameter).getLiteral(value));
+          bindings.put(name, ((BindableParameter) parameter).getValue(value));
         }
       }
     }

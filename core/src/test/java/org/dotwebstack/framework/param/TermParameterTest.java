@@ -99,14 +99,14 @@ public class TermParameterTest {
   }
 
   @Test
-  public void getLiteral_ReturnsLiteral_ForValue() {
+  public void getValue_ReturnsLiteral_ForValue() {
     // Arrange
     Map<String, Object> parameterValues =
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
 
     // Act
     String value = requiredParameter.handle(parameterValues);
-    Literal result = requiredParameter.getLiteral(value);
+    Literal result = requiredParameter.getValue(value);
 
     // Assert
     assertThat(result, is(SimpleValueFactory.getInstance().createLiteral("value")));

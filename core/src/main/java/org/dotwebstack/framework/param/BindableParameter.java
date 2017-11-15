@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.param;
 
 import lombok.NonNull;
-import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Value;
 
 public interface BindableParameter<T> extends Parameter<T> {
 
-  Literal getLiteral(@NonNull T value);
+  Value getValue(@NonNull T value);
 
 }

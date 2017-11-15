@@ -26,8 +26,12 @@ public class TermParameter extends AbstractParameter<String> implements Bindable
   }
 
   @Override
-  public Literal getLiteral(String value) {
+  public Literal getValue(String value) {
     return SimpleValueFactory.getInstance().createLiteral(value);
+  }
+
+  private Object getValue(Map<String, Object> parameterValues) {
+    return parameterValues.get(getName());
   }
 
   @Override
@@ -50,10 +54,6 @@ public class TermParameter extends AbstractParameter<String> implements Bindable
       throw new BackendException(
           String.format("Value for parameter '%s' not a String: '%s'", getIdentifier(), value));
     }
-  }
-
-  private Object getValue(Map<String, Object> parameterValues) {
-    return parameterValues.get(getName());
   }
 
 }
