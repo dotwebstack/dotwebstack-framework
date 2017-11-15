@@ -109,7 +109,7 @@ public class EntityBuilderTest {
 
     String path = "/persons/{name}";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+        new EntityBuilderContext.Builder().swagger(
             swaggerValidConfig).queryResult(queryResultOneItem).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
@@ -135,7 +135,7 @@ public class EntityBuilderTest {
 
     String path = "/persons";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+        new EntityBuilderContext.Builder().swagger(
             swaggerValidConfig).queryResult(queryResultZeroItems).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
@@ -155,7 +155,7 @@ public class EntityBuilderTest {
 
     String path = "/persons";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+        new EntityBuilderContext.Builder().swagger(
             swaggerValidConfig).queryResult(queryResultOneItem).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
@@ -180,7 +180,7 @@ public class EntityBuilderTest {
 
     String path = "/persons";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+        new EntityBuilderContext.Builder().swagger(
             swaggerValidConfig).queryResult(queryResultThreeItems).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
@@ -217,7 +217,7 @@ public class EntityBuilderTest {
 
     String path = "/unsupportedSchemaType";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+        new EntityBuilderContext.Builder().swagger(
             swaggerValidConfig).queryResult(queryResultZeroItems).build();
     entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
   }
@@ -232,7 +232,7 @@ public class EntityBuilderTest {
 
     String path = "/persons/{name}";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+        new EntityBuilderContext.Builder().swagger(
             swaggerValidConfig).queryResult(queryResultThreeItems).build();
     entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
   }
@@ -249,7 +249,7 @@ public class EntityBuilderTest {
 
     String path = "/persons";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+        new EntityBuilderContext.Builder().swagger(
             swaggerValidConfig).queryResult(queryResultThreeItems).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);
@@ -270,7 +270,7 @@ public class EntityBuilderTest {
 
     String path = "/persons/{name}";
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(path).baseUri(BASE_URI).swagger(
+        new EntityBuilderContext.Builder().swagger(
             swaggerValidConfig).queryResult(queryResultOneItem).build();
     Map<String, Object> resource =
         entityBuilder.build(getSchemaPropertyForPath(path), registry, builderContext);

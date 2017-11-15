@@ -68,9 +68,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
           (org.eclipse.rdf4j.query.GraphQueryResult) informationProduct.getResult(parameterValues);
       GraphEntity entity =
           (GraphEntity) GraphEntity.builder().withSchemaProperty(schemaProperty).withQueryResult(
-              QueryResult.builder().withQueryResultGraph(result).build()).withBaseUri(
-                  context.getUriInfo().getBaseUri().toString()).withPath(
-                      context.getUriInfo().getPath()).build();
+              QueryResult.builder().withQueryResultGraph(result).build()).build();
       responseOk = responseOk(entity);
     }
     if (responseOk != null) {

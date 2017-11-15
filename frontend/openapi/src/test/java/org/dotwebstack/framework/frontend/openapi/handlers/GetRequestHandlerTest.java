@@ -116,8 +116,6 @@ public class GetRequestHandlerTest {
   public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForGraphResult() {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
-    when(uriInfo.getPath()).thenReturn("/");
-    when(uriInfo.getBaseUri()).thenReturn(URI.create("http://www.test.nl"));
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
     GraphQueryResult result = mock(GraphQueryResult.class);

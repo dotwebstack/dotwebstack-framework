@@ -15,7 +15,7 @@ public class EntityBuilderContext {
   private final LdPathExecutor ldPathExecutor;
 
   private EntityBuilderContext(Swagger swagger, Map<String, Model> swaggerDefinitions,
-      QueryResult queryResult, String baseUri, String endpoint) {
+      QueryResult queryResult) {
     this.swagger = swagger;
     this.swaggerDefinitions = Maps.newHashMap(swaggerDefinitions);
     this.queryResult = queryResult;
@@ -39,12 +39,9 @@ public class EntityBuilderContext {
     private Swagger swagger;
     private final Map<String, Model> swaggerDefinitions = Maps.newHashMap();
     private QueryResult queryResult;
-    private String baseUri;
-    private final String endpoint;
 
-    public Builder(String endpoint) {
+    public Builder() {
 
-      this.endpoint = endpoint;
     }
 
     public Builder swagger(Swagger swagger) {
@@ -66,15 +63,8 @@ public class EntityBuilderContext {
       return this;
     }
 
-    public Builder baseUri(String baseUri) {
-      this.baseUri = baseUri;
-      return this;
-    }
-
-
     public EntityBuilderContext build() {
-      return new EntityBuilderContext(swagger, swaggerDefinitions, queryResult, baseUri,
-           this.endpoint);
+      return new EntityBuilderContext(swagger, swaggerDefinitions, queryResult);
     }
   }
 

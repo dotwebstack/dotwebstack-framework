@@ -8,8 +8,8 @@ import org.eclipse.rdf4j.query.GraphQueryResult;
 
 public final class GraphEntity extends QueryEntity<GraphQueryResult> {
 
-  GraphEntity(Property schemaProperty, QueryResult queryResult, String baseUri, String endpoint) {
-    super(schemaProperty, queryResult, baseUri, endpoint);
+  GraphEntity(Property schemaProperty, QueryResult queryResult) {
+    super(schemaProperty, queryResult);
   }
 
 
@@ -40,7 +40,7 @@ public final class GraphEntity extends QueryEntity<GraphQueryResult> {
     }
 
     public Entity build() {
-      return new GraphEntity(schemaProperty, queryResult, baseUri, endpoint);
+      return new GraphEntity(schemaProperty, queryResult);
     }
   }
 

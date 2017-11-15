@@ -1,12 +1,24 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import io.swagger.models.properties.Property;
+import java.util.HashMap;
+import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilder;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.PropertyHandlerRegistry;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,19 +65,27 @@ public class GraphEntityMapperTest {
   }
 
   @Test
-  public void map_ThrowsException_ForUnknownMediaType() {
+  public void map_GraphMapping() {
     // Arrange
     Property property = mock(Property.class);
     QueryResult queryResult = mock(QueryResult.class);
-    GraphEntity entity = new GraphEntity(property, queryResult, "", "");
+    Model model = new ModelBuilder().add("http://www.test.nl", "http://www.test.nl",
+        "http://www.test.nl/").build();
+    when(queryResult.getModel()).thenReturn(model);
+    GraphEntity entity = new GraphEntity(property, queryResult);
 
     // Assert
-    thrown.expect(EntityMapperRuntimeException.class);
-    thrown.expectMessage(String.format("No schema found for media type '%s'.",
-        MediaType.TEXT_PLAIN_TYPE.toString()));
+    Map<String, Object> mapTest = new HashMap<>();
+    mapTest.put("test", "test");
+    when(entityBuilder.build(any(), eq(propertyHandlerRegistry),
+        argThat(f -> f.getQueryResult().equals(queryResult)))).thenReturn(mapTest);
 
     // Act
-    graphEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
+    Object mappedEntity = graphEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
+    assertThat(mappedEntity, instanceOf(HashMap.class));
+    Map<String, Object> map = (Map<String, Object>) mappedEntity;
+    assertThat(map.values(), hasSize(1));
+    assertThat(map.get("test"), equalTo("test"));
   }
 
 }

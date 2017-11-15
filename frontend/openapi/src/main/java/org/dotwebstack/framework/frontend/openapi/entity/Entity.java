@@ -14,9 +14,4 @@ public interface Entity<R extends org.eclipse.rdf4j.query.QueryResult<?>> {
   Property getSchemaProperty();
 
   QueryResult getQueryResult();
-
-  String getBaseUri();
-
-  String getEndpoint();
-
 }

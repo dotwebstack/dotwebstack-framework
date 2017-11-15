@@ -31,13 +31,11 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
   @Override
   public Object map(GraphEntity entity, MediaType mediaType) {
     Property schemaProperty = entity.getSchemaProperty();
-    String baseUri = entity.getBaseUri();
-    String endpoint = entity.getEndpoint();
 
     QueryResult result = entity.getQueryResult();
     LOG.debug("Building entity");
     EntityBuilderContext builderContext =
-        new EntityBuilderContext.Builder(endpoint).queryResult(result).baseUri(baseUri).build();
+        new EntityBuilderContext.Builder().queryResult(result).build();
     return entityBuilder.build(schemaProperty, propertyHandlerRegistry, builderContext);
   }
 
