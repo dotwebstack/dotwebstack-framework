@@ -50,11 +50,11 @@ GRAPH dbeerpedia:Theatre {
 #
 # ======
 <http://bp4mc2.org/elmo/def#> a	owl:Ontology;
-	rdfs:label					"The ELMO vocabulary";
-	rdfs:comment				"The vocabulary to configure the Linked Data Theatre. ELMO stands for Extendible Lightweight Model Ontology.";
+	rdfs:label "The ELMO vocabulary";
+	rdfs:comment "The vocabulary to configure the Linked Data Theatre. ELMO stands for Extendible Lightweight Model Ontology.";
 .
 <http://bp4mc2.org/elmo/def> a	void:Dataset;
-	rdfs:label					"The dataset containing the ELMO vocabulary";
+	rdfs:label "The dataset containing the ELMO vocabulary";
 .
 
 # ======
@@ -137,8 +137,8 @@ elmoshape:Part a sh:NodeShape;
 # ======
 elmo:Representation a owl:Class;
 	rdfs:subClassOf elmo:Part;
-	rdfs:label   "Representation"@en;
-	rdfs:label   "Representatie"@nl;
+	rdfs:label "Representation"@en;
+	rdfs:label "Representatie"@nl;
 	rdfs:comment "The class of representations of a resource"@en;
 	rdfs:comment "De klasse van representaties van een resource"@nl;
 .
