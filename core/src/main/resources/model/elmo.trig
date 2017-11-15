@@ -1,27 +1,22 @@
 @prefix elmo: <http://dotwebstack.org/def/elmo#>.
-  @prefix elmo-sp: <http://dotwebstack.org/def/elmo/storage-protocol/>.
-
-  @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
-  @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
-  @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-  @prefix owl: <http://www.w3.org/2002/07/owl#>.
-  @prefix sh: <http://www.w3.org/ns/shacl#>.
-
-  @prefix void: <http://rdfs.org/ns/void#>.
-  @prefix sh: <http://www.w3.org/ns/shacl#>.
-  @prefix xhtml: <http://www.w3.org/1999/xhtml/vocab#>.
-  @prefix xs: <http://www.w3.org/2001/XMLSchema#>.
-
-  @prefix elmoshape: <http://bp4mc2.org/elmo/def/>.
-  @prefix yed: <http://bp4mc2.org/yed/def#>.
-
-  @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
-    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
-    @prefix skos: <http://www.w3.org/2004/02/skos/core#>.
-
-    @prefix elmo: <http://dotwebstack.org/def/elmo#>.
-    @prefix elmo-schemes: <http://dotwebstack.org/def/elmo/>.
-    @prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-type/>.
+@prefix elmo-sp: <http://dotwebstack.org/def/elmo/storage-protocol/>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix void: <http://rdfs.org/ns/void#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix xhtml: <http://www.w3.org/1999/xhtml/vocab#>.
+@prefix xs: <http://www.w3.org/2001/XMLSchema#>.
+@prefix elmoshape: <http://bp4mc2.org/elmo/def/>.
+@prefix yed: <http://bp4mc2.org/yed/def#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix skos: <http://www.w3.org/2004/02/skos/core#>.
+@prefix elmo: <http://dotwebstack.org/def/elmo#>.
+@prefix elmo-schemes: <http://dotwebstack.org/def/elmo/>.
+@prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-type/>.
 
 GRAPH dbeerpedia:Theatre {
   elmo:SparqlBackend rdfs:subClassOf elmo:Backend .
@@ -49,32 +44,6 @@ GRAPH dbeerpedia:Theatre {
 
 
 GRAPH dbeerpedia:Theatre {
-
-#
-# NAME     elmo.ttl
-# VERSION  1.18.0
-# DATE     2017-06-18
-#
-# Copyright 2012-2017
-#
-# This file is part of the Linked Data Theatre.
-#
-# The Linked Data Theatre is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# The Linked Data Theatre is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with the Linked Data Theatre.  If not, see <http://www.gnu.org/licenses/>.
-#
-
-
-
 # ======
 #
 # Vocabulary and dataset
