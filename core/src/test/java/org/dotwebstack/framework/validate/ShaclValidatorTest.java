@@ -15,6 +15,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -79,16 +81,18 @@ public class ShaclValidatorTest {
   public void setUp() throws Exception {
     shaclValidator = new ShaclValidator();
     dataResource = mock(Resource.class);
-    shapesResource = mock(Resource.class);
+    shapesResource = new InputStreamResource(
+        new ClassPathResource("/shaclvalidation/shapes.trig").getInputStream());
+
     final File dummyFile = mock(File.class);
     final String dummyFilePath = "/this/is/sparta.dummy";
 
-    when(shapesResource.getInputStream()).thenReturn(new ByteArrayInputStream(
-        shapesContent.getBytes(StandardCharsets.UTF_8)));
+    /*when(shapesResource.getInputStream()).thenReturn(new ByteArrayInputStream(
+        shapesContent.getBytes(StandardCharsets.UTF_8)));*/
     when(dataResource.getFile()).thenReturn(dummyFile);
     when(dataResource.getFile().getAbsolutePath()).thenReturn(dummyFilePath);
-    when(shapesResource.getFile()).thenReturn(dummyFile);
-    when(shapesResource.getFile().getAbsolutePath()).thenReturn(dummyFilePath);
+    /*when(shapesResource.getFile()).thenReturn(dummyFile);
+    when(shapesResource.getFile().getAbsolutePath()).thenReturn(dummyFilePath);*/
   }
 
   @Test
@@ -197,7 +201,8 @@ public class ShaclValidatorTest {
     Resource prefixesResource = mock(Resource.class);
     when(prefixesResource.getInputStream()).thenReturn(
         new ByteArrayInputStream("@prefix dbeerpedia: <http://dbeerpedia.org#> .".getBytes()));
-    when(shapesResource.getInputStream()).thenThrow(IOException.class);
+    Resource ioExceptionShapesResource = mock(Resource.class);
+    when(ioExceptionShapesResource.getInputStream()).thenThrow(IOException.class);
     InputStream resource = mock(InputStream.class);
 
     // Assert
@@ -205,7 +210,7 @@ public class ShaclValidatorTest {
     thrown.expectMessage("File could not read during the validation process");
 
     // Act
-    shaclValidator.validate(resource, shapesResource, prefixesResource);
+    shaclValidator.validate(resource, ioExceptionShapesResource, prefixesResource);
   }
 
   @Test
