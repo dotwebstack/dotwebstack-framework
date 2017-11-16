@@ -91,7 +91,6 @@ public class FileConfigurationBackend
     }
 
     RepositoryConnection repositoryConnection;
-
     try {
       repositoryConnection = repository.getConnection();
     } catch (RepositoryException e) {
@@ -117,31 +116,50 @@ public class FileConfigurationBackend
           continue;
         }
         configurationStreams.add(resource.getInputStream());
-        if (optionalPrefixesResource.isPresent()) {
-          try (SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
-              optionalPrefixesResource.get().getInputStream(), resource.getInputStream())) {
-
-            repositoryConnection.add(
-                new EnvironmentAwareResource(resourceSquenceInputStream, environment)
-                    .getInputStream(), "#", FileFormats.getFormat(extension));
-          }
-        } else {
-          repositoryConnection.add(
-              new EnvironmentAwareResource(resource.getInputStream(), environment)
-                  .getInputStream(), "#", FileFormats.getFormat(extension));
-        }
+        addResoureToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource);
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
-      if (configurationStreams.size() > 0) {
-        try (InputStream stream = new SequenceInputStream(
-            Collections.enumeration(configurationStreams))) {
-          shaclValidator.validate(stream, elmoShapes);
-        }
-      }
+      validate(configurationStreams);
     } catch (RDF4JException | ShaclValidationException e) {
       throw new ConfigurationException("Error while loading RDF data.", e);
     } finally {
       repositoryConnection.close();
+    }
+  }
+
+  private void addResoureToRepositoryConnection(RepositoryConnection repositoryConnection,
+      Optional<Resource> optionalPrefixesResource, Resource resource) {
+    final String extension = FilenameUtils.getExtension(resource.getFilename());
+    try {
+      if (optionalPrefixesResource.isPresent()) {
+        try (SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
+            optionalPrefixesResource.get().getInputStream(), resource.getInputStream())) {
+          repositoryConnection.add(
+              new EnvironmentAwareResource(resourceSquenceInputStream, environment)
+                  .getInputStream(), "#", FileFormats.getFormat(extension));
+        }
+      } else {
+        repositoryConnection.add(
+            new EnvironmentAwareResource(resource.getInputStream(), environment)
+                .getInputStream(), "#", FileFormats.getFormat(extension));
+      }
+    } catch (IOException ex) {
+      LOG.error("Configuration file %s could not read", resource.getFilename());
+      throw new ConfigurationException(
+          String.format("Configuration file %s could not read", resource.getFilename()));
+    }
+  }
+
+  private void validate(List<InputStream> configurationStreams) throws ShaclValidationException {
+    if (configurationStreams.size() > 0) {
+      try (InputStream stream = new SequenceInputStream(
+          Collections.enumeration(configurationStreams))) {
+        shaclValidator.validate(stream, elmoShapes);
+      } catch (IOException ex) {
+        new ShaclValidationException("Configuration files could not read.", ex);
+      }
+    } else {
+      LOG.error("Found no configuration files");
     }
   }
 
