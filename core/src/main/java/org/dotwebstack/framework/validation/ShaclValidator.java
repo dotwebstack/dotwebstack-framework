@@ -5,12 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
-import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.util.FileUtils;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
@@ -74,38 +69,34 @@ public class ShaclValidator implements Validator<Resource, Model, InputStream> {
 
   @Override
   public void reportValidationResult(Model reportModel) throws ShaclValidationException {
-    StmtIterator iterator = reportModel.listStatements();
-
-    Boolean isValid = false;
-    String resultPath = "";
-    String resultMessage = "";
-    String focusNode = "";
-
-    while (iterator.hasNext()) {
-      Statement statement = iterator.nextStatement();
-      Property predicate = statement.getPredicate();
-      RDFNode object = statement.getObject();
-
-      if (predicate.getLocalName().equals("conforms") && object instanceof Literal) {
-        Literal literal = object.asLiteral();
-        isValid = literal.getBoolean();
-      }
-      if (predicate.getLocalName().equals("resultPath")
-          && object instanceof org.apache.jena.rdf.model.Resource) {
-        org.apache.jena.rdf.model.Resource resource = object.asResource();
-        resultPath = resource.toString();
-      }
-      if (predicate.getLocalName().equals("resultMessage") && object instanceof Literal) {
-        Literal literal = object.asLiteral();
-        resultMessage = literal.getString();
-      }
-      if (predicate.getLocalName().equals("focusNode") && object instanceof RDFNode) {
-        RDFNode rdfNode = object;
-        focusNode = rdfNode.toString();
-        break;
-      }
-    }
+    Boolean isValid = reportModel.listStatements().toList()
+        .stream()
+        .filter(
+            item -> item.getPredicate().toString()
+                .equals("http://www.w3.org/ns/shacl#conforms"))
+        .findFirst().get().getObject().asLiteral().getBoolean();
+    
     if (!isValid) {
+      final String resultPath = reportModel.listStatements().toList()
+          .stream()
+          .filter(
+              item -> item.getPredicate().toString()
+                  .equals("http://www.w3.org/ns/shacl#resultPath"))
+          .findFirst().get().getObject().toString();
+
+      final String resultMessage = reportModel.listStatements().toList()
+          .stream()
+          .filter(
+              item -> item.getPredicate().toString()
+                  .equals("http://www.w3.org/ns/shacl#resultMessage"))
+          .findFirst().get().getObject().toString();
+
+      final String focusNode = reportModel.listStatements().toList()
+          .stream()
+          .filter(
+              item -> item.getPredicate().toString()
+                  .equals("http://www.w3.org/ns/shacl#focusNode"))
+          .findFirst().get().getObject().toString();
       throw new ShaclValidationException(String
           .format("Invalid configuration at path [%s] on node [%s] with error message [%s]",
               resultPath, focusNode, resultMessage));
