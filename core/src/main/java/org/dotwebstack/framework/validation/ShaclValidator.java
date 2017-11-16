@@ -53,6 +53,25 @@ public class ShaclValidator implements Validator<Resource, Model, InputStream> {
     return model;
   }
 
+  private Model transformInputStreamToModel(InputStream inputStreamData) throws IOException {
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+    RDFWriter turtleWriter = Rio.createWriter(RDFFormat.TURTLE, byteArrayOutputStream);
+    RDFParser trigParser = Rio.createParser(RDFFormat.TRIG);
+
+    trigParser.setRDFHandler(turtleWriter);
+    trigParser.parse(inputStreamData, "");
+
+    Model model = JenaUtil.createMemoryModel();
+    model.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), "",
+        FileUtils.langTurtle);
+
+    byteArrayOutputStream.close();
+    inputStreamData.close();
+
+    return model;
+  }
+
   @Override
   public void getValidationReport(Model reportModel) throws ShaclValidationException {
     StmtIterator iterator = reportModel.listStatements();
@@ -96,7 +115,7 @@ public class ShaclValidator implements Validator<Resource, Model, InputStream> {
   @Override
   public void validate(InputStream data, Resource shapes) throws ShaclValidationException {
     try {
-      Model dataModel = transformTrigFileToModel(new InputStreamResource(data));
+      Model dataModel = transformInputStreamToModel(data);
       Model dataShape = transformTrigFileToModel(shapes);
 
       org.apache.jena.rdf.model.Resource report = ValidationUtil
