@@ -38,6 +38,8 @@ public class FileConfigurationBackend
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
 
+  private final Validator shaclValidator;
+
   private final String resourcePath;
 
   private final Resource elmoConfiguration;
@@ -50,16 +52,14 @@ public class FileConfigurationBackend
 
   private Environment environment;
 
-  private Validator shaclValidator;
-
   public FileConfigurationBackend(@NonNull Resource elmoConfiguration,
       @NonNull SailRepository repository, @NonNull String resourcePath,
-      @NonNull Resource elmoShapes) {
+      @NonNull Resource elmoShapes, @NonNull ShaclValidator shaclValidator) {
     this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
     this.resourcePath = resourcePath;
     this.elmoShapes = elmoShapes;
-    this.shaclValidator = new ShaclValidator();
+    this.shaclValidator = shaclValidator;
     repository.initialize();
   }
 

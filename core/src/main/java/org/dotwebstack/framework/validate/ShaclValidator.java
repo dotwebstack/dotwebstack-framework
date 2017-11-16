@@ -20,9 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 import org.topbraid.shacl.validation.ValidationUtil;
 import org.topbraid.spin.util.JenaUtil;
 
+@Service
 public class ShaclValidator implements Validator<Resource, Model, InputStream> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ShaclValidator.class);

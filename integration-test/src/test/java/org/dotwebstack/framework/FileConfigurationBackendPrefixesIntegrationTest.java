@@ -2,6 +2,7 @@ package org.dotwebstack.framework;
 
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
+import org.dotwebstack.framework.validate.ShaclValidator;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.Before;
@@ -36,6 +37,9 @@ public class FileConfigurationBackendPrefixesIntegrationTest {
   @Autowired
   private Environment environment;
 
+  @Autowired
+  private ShaclValidator shaclValidator;
+
   @Before
   public void initVars() {
     elmoConfiguration = new ClassPathResource("/model/elmo.trig");
@@ -48,7 +52,7 @@ public class FileConfigurationBackendPrefixesIntegrationTest {
       throws Exception {
     // Arrange
     fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
-        "invalidPrefixConfig", elmoShapes);
+        "invalidPrefixConfig", elmoShapes, shaclValidator);
 
     // Assert
     thrown.expect(ConfigurationException.class);

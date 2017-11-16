@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.validate.ShaclValidator;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
@@ -66,6 +67,9 @@ public class FileConfigurationBackendTest {
   @Mock
   private Resource prefixesResource;
 
+  @Mock
+  private ShaclValidator shaclValidator;
+
   private ResourceLoader resourceLoader;
 
   private FileConfigurationBackend backend;
@@ -76,11 +80,12 @@ public class FileConfigurationBackendTest {
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     elmoConfigurationResource = mock(Resource.class);
     elmoShapesResource = mock(Resource.class);
+    shaclValidator = mock(ShaclValidator.class);
     when(elmoConfigurationResource.getInputStream())
         .thenReturn(new ByteArrayInputStream("".getBytes()));
-    when(elmoShapesResource.getInputStream()).thenReturn(new ByteArrayInputStream("".getBytes()));
+    //when(elmoShapesResource.getInputStream()).thenReturn(new ByteArrayInputStream("".getBytes()));
     backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config",
-        elmoShapesResource);
+        elmoShapesResource, shaclValidator);
     backend.setResourceLoader(resourceLoader);
     backend.setEnvironment(environment);
     when(repository.getConnection()).thenReturn(repositoryConnection);
@@ -92,7 +97,8 @@ public class FileConfigurationBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new FileConfigurationBackend(null, repository, "file:config", elmoShapesResource);
+    new FileConfigurationBackend(null, repository, "file:config", elmoShapesResource,
+        shaclValidator);
   }
 
   @Test
@@ -102,7 +108,7 @@ public class FileConfigurationBackendTest {
 
     // Act
     new FileConfigurationBackend(elmoConfigurationResource, null, "file:config",
-        elmoShapesResource);
+        elmoShapesResource, shaclValidator);
   }
 
   @Test
@@ -111,7 +117,8 @@ public class FileConfigurationBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new FileConfigurationBackend(elmoConfigurationResource, repository, null, elmoShapesResource);
+    new FileConfigurationBackend(elmoConfigurationResource, repository, null, elmoShapesResource,
+        shaclValidator);
   }
 
   @Test
@@ -120,7 +127,8 @@ public class FileConfigurationBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config", null);
+    new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config", null,
+        shaclValidator);
   }
 
   @Test
