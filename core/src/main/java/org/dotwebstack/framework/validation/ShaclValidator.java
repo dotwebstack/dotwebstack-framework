@@ -73,7 +73,7 @@ public class ShaclValidator implements Validator<Resource, Model, InputStream> {
   }
 
   @Override
-  public void getValidationReport(Model reportModel) throws ShaclValidationException {
+  public void reportValidationResult(Model reportModel) throws ShaclValidationException {
     StmtIterator iterator = reportModel.listStatements();
 
     Boolean isValid = false;
@@ -121,7 +121,7 @@ public class ShaclValidator implements Validator<Resource, Model, InputStream> {
       org.apache.jena.rdf.model.Resource report = ValidationUtil
           .validateModel(dataModel, dataShape, true);
 
-      getValidationReport(report.getModel());
+      reportValidationResult(report.getModel());
     } catch (IOException e) {
       throw new ShaclValidationException("File could not read during the validation process", e);
     }
@@ -139,7 +139,7 @@ public class ShaclValidator implements Validator<Resource, Model, InputStream> {
       org.apache.jena.rdf.model.Resource report = ValidationUtil
           .validateModel(dataModel, dataShape, true);
 
-      getValidationReport(report.getModel());
+      reportValidationResult(report.getModel());
     } catch (IOException e) {
       throw new ShaclValidationException("File could not read during the validation process", e);
     }
