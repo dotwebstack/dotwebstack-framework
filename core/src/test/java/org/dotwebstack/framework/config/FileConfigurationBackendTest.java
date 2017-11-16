@@ -329,6 +329,31 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
+  public void loadConfiguration_ThrowConfigurationException_IoException() throws Exception {
+    // Arrange
+    Resource prefixes = mock(Resource.class);
+    when(prefixes.getInputStream()).thenReturn(
+        new ByteArrayInputStream(new String("@prefix dbeerpedia: <http://dbeerpedia.org#> .\n"
+            + "@prefix elmo: <http://dotwebstack.org/def/elmo#> .\n"
+            + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
+            + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .").getBytes(Charsets.UTF_8)));
+    when(prefixes.getFilename()).thenReturn("_prefixes.trig");
+    Resource config = mock(Resource.class);
+    when(config.getInputStream()).thenThrow(IOException.class);
+    when(config.getFilename()).thenReturn("config.trig");
+    when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
+        new Resource[] {prefixes, config});
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(
+        "Configuration file <config.trig> could not read");
+
+    // Act
+    backend.loadResources();
+  }
+
+  @Test
   public void loadPrefixes_ThrowIoException_WhenReadPrefixesFile() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
