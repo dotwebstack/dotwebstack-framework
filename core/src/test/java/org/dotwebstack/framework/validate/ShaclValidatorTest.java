@@ -4,10 +4,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,95 +23,61 @@ public class ShaclValidatorTest {
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
-  @Mock
   private ShaclValidator shaclValidator;
+
+  @Mock
+  private Resource validDataResoource;
+
+  @Mock
+  private Resource invalidDataResoource;
+
+  @Mock
+  private Resource shapesResource;
 
   @Mock
   private Resource dataResource;
 
   @Mock
-  private Resource shapesResource;
+  private Resource invalidDataWithoutPrefResoource;
+
+  @Mock
+  private Resource prefixesResource;
+
+  @Mock
+  private Resource validDataWithoutPrefResource;
 
   @Before
   public void setUp() throws Exception {
     shaclValidator = new ShaclValidator();
     dataResource = mock(Resource.class);
+    prefixesResource = mock(Resource.class);
     shapesResource = new InputStreamResource(
         new ClassPathResource("/shaclvalidation/shapes.trig").getInputStream());
-
-    final File dummyFile = mock(File.class);
-    final String dummyFilePath = "/this/is/sparta.dummy";
-
-    when(dataResource.getFile()).thenReturn(dummyFile);
-    when(dataResource.getFile().getAbsolutePath()).thenReturn(dummyFilePath);
+    validDataResoource = new InputStreamResource(
+        new ClassPathResource("/shaclvalidation/validData.trig").getInputStream());
+    invalidDataResoource = new InputStreamResource(
+        new ClassPathResource("/shaclvalidation/invalidData.trig").getInputStream());
+    invalidDataWithoutPrefResoource = new InputStreamResource(
+        new ClassPathResource("/shaclvalidation/invalidDataWithoutPref.trig").getInputStream());
+    validDataWithoutPrefResource = new InputStreamResource(
+        new ClassPathResource("/shaclvalidation/validDataWithoutPref.trig").getInputStream());
+    prefixesResource = new InputStreamResource(
+        new ClassPathResource("/shaclvalidation/_prefixes.trig").getInputStream());
   }
 
   @Test
   public void validate_NoError_validConfiguration() throws Exception {
-    // Arrange
-    String dataContent = "@prefix sh: <http://www.w3.org/ns/shacl#> .\n"
-        + "@prefix kkg: <http://bp4mc2.org/def/kkg/id/begrip> .\n"
-        + "@prefix uml: <http://bp4mc2.org/def/uml#> .\n"
-        + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-        + "@prefix owl: <http://www.w3.org/2002/07/owl#> .\n"
-        + "@prefix ex: <http://example.org#> .\n"
-        + "\n"
-        + "ex:Marco a ex:Persoon;\n"
-        + "\tex:naam \"Marco\";\n"
-        + ".\n"
-        + "\n"
-        + "ex:Nanda a ex:Persoon;\n"
-        + " \tex:naam \"Nanda\";\n"
-        + " .\n"
-        + "\n"
-        + "ex:HuwelijkMarcoNanda a ex:Huwelijk;\n"
-        + "\tex:lid ex:Marco;\n"
-        + "\tex:lid ex:Nanda;\n"
-        + ".";
-
-    when(dataResource.getInputStream()).thenReturn(new ByteArrayInputStream(
-        dataContent.getBytes(StandardCharsets.UTF_8)));
-
     // Act / Assert
-    shaclValidator.validate(dataResource.getInputStream(), shapesResource);
+    shaclValidator.validate(validDataResoource.getInputStream(), shapesResource);
   }
 
   @Test
   public void validate_throwShaclValidationException_invalidConfiguration() throws Exception {
-    // Arrange
-    String dataContent = "@prefix sh: <http://www.w3.org/ns/shacl#> .\n"
-        + "@prefix kkg: <http://bp4mc2.org/def/kkg/id/begrip> .\n"
-        + "@prefix uml: <http://bp4mc2.org/def/uml#> .\n"
-        + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-        + "@prefix owl: <http://www.w3.org/2002/07/owl#> .\n"
-        + "@prefix ex: <http://example.org#> .\n"
-        + "\n"
-        + "ex:Marco a ex:Persoon;\n"
-        + "\tex:naam \"Marco\";\n"
-        + ".\n"
-        + "\n"
-        + "ex:Nanda a ex:Persoon;\n"
-        + " \tex:naam \"Nanda\";\n"
-        + " .\n"
-        + "\n"
-        + " ex:Bobby a ex:Persoon;\n"
-        + " \tex:naam \"Bobby\";\n"
-        + " .\n"
-        + "\n"
-        + "ex:HuwelijkMarcoNanda a ex:Huwelijk;\n"
-        + "\tex:lid ex:Marco;\n"
-        + "\tex:lid ex:Nanda;\n"
-        + "\tex:lid ex:Bobby;\n"
-        + ".";
-
-    when(dataResource.getInputStream()).thenReturn(new ByteArrayInputStream(
-        dataContent.getBytes(StandardCharsets.UTF_8)));
-
     // Assert
     thrown.expect(ShaclValidationException.class);
 
     // Act
-    shaclValidator.validate(dataResource.getInputStream(), shapesResource);
+    shaclValidator.validate(invalidDataResoource.getInputStream(), shapesResource);
   }
 
   @Test
@@ -134,17 +98,15 @@ public class ShaclValidatorTest {
   public void validate_throwShaclValidationException_WithIoExceptionPrefixes()
       throws Exception {
     // Arrange
-    Resource prefixesResource = mock(Resource.class);
-    when(prefixesResource.getInputStream()).thenThrow(IOException.class);
-    when(dataResource.getInputStream()).thenThrow(IOException.class);
-    InputStream resource = mock(InputStream.class);
+    final Resource ioExceptionResource = mock(Resource.class);
+    when(ioExceptionResource.getInputStream()).thenThrow(IOException.class);
 
     // Assert
     thrown.expect(ShaclValidationException.class);
     thrown.expectMessage("File could not read during the validation process");
 
     // Act
-    shaclValidator.validate(resource, shapesResource, prefixesResource);
+    shaclValidator.validate(dataResource.getInputStream(), shapesResource, ioExceptionResource);
   }
 
   @Test
@@ -169,76 +131,20 @@ public class ShaclValidatorTest {
   @Test
   public void validate_throwShaclValidationException_invalidConfigurationWithPrefixes()
       throws Exception {
-    // Arrange
-    String dataContent = "\n"
-        + "ex:Marco a ex:Persoon;\n"
-        + "\tex:naam \"Marco\";\n"
-        + ".\n"
-        + "\n"
-        + "ex:Nanda a ex:Persoon;\n"
-        + " \tex:naam \"Nanda\";\n"
-        + " .\n"
-        + "\n"
-        + " ex:Bobby a ex:Persoon;\n"
-        + " \tex:naam \"Bobby\";\n"
-        + " .\n"
-        + "\n"
-        + "ex:HuwelijkMarcoNanda a ex:Huwelijk;\n"
-        + "\tex:lid ex:Marco;\n"
-        + "\tex:lid ex:Nanda;\n"
-        + "\tex:lid ex:Bobby;\n"
-        + ".";
-
-    Resource prefixesResource = mock(Resource.class);
-    when(prefixesResource.getInputStream()).thenReturn(
-        new ByteArrayInputStream(new String("@prefix sh: <http://www.w3.org/ns/shacl#> .\n"
-            + "@prefix kkg: <http://bp4mc2.org/def/kkg/id/begrip> .\n"
-            + "@prefix uml: <http://bp4mc2.org/def/uml#> .\n"
-            + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-            + "@prefix owl: <http://www.w3.org/2002/07/owl#> .\n"
-            + "@prefix ex: <http://example.org#> .\n").getBytes()));
-
-    when(dataResource.getInputStream()).thenReturn(new ByteArrayInputStream(
-        dataContent.getBytes(StandardCharsets.UTF_8)));
-
     // Assert
     thrown.expect(ShaclValidationException.class);
     thrown.expectMessage(
         "Invalid configuration at path [http://example.org#lid] on node [http://example.org#HuwelijkMarcoNanda] with error message [More than 2 values]");
 
     // Act
-    shaclValidator.validate(dataResource.getInputStream(), shapesResource, prefixesResource);
+    shaclValidator.validate(invalidDataWithoutPrefResoource.getInputStream(), shapesResource,
+        prefixesResource);
   }
 
   @Test
   public void validate_NoError_validConfigurationWithPrefixes() throws Exception {
-    // Arrange
-    String dataContent = "ex:Marco a ex:Persoon;\n"
-        + "\tex:naam \"Marco\";\n"
-        + ".\n"
-        + "\n"
-        + "ex:Nanda a ex:Persoon;\n"
-        + " \tex:naam \"Nanda\";\n"
-        + " .\n"
-        + "\n"
-        + "ex:HuwelijkMarcoNanda a ex:Huwelijk;\n"
-        + "\tex:lid ex:Marco;\n"
-        + "\tex:lid ex:Nanda;\n"
-        + ".";
-
-    Resource prefixesResource = mock(Resource.class);
-    when(prefixesResource.getInputStream()).thenReturn(
-        new ByteArrayInputStream(new String("@prefix sh: <http://www.w3.org/ns/shacl#> .\n"
-            + "@prefix kkg: <http://bp4mc2.org/def/kkg/id/begrip> .\n"
-            + "@prefix uml: <http://bp4mc2.org/def/uml#> .\n"
-            + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-            + "@prefix owl: <http://www.w3.org/2002/07/owl#> .\n"
-            + "@prefix ex: <http://example.org#> .\n").getBytes()));
-
-    when(dataResource.getInputStream()).thenReturn(new ByteArrayInputStream(
-        dataContent.getBytes(StandardCharsets.UTF_8)));
-
     // Act / Assert
-    shaclValidator.validate(dataResource.getInputStream(), shapesResource, prefixesResource);
+    shaclValidator
+        .validate(validDataWithoutPrefResource.getInputStream(), shapesResource, prefixesResource);
   }
 }
