@@ -3,7 +3,7 @@ package org.dotwebstack.framework;
 import java.io.IOException;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
-import org.dotwebstack.framework.validate.ShaclValidator;
+import org.dotwebstack.framework.validation.ShaclValidator;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.Before;

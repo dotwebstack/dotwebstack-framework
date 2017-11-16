@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.validate;
+package org.dotwebstack.framework.validation;
 
 public class ShaclValidationException extends Exception {
 

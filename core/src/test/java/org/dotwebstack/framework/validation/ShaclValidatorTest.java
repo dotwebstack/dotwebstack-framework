@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.validate;
+package org.dotwebstack.framework.validation;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

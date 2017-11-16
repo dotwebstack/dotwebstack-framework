@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.validate;
+package org.dotwebstack.framework.validation;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

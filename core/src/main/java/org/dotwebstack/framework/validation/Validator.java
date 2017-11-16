@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.validate;
+package org.dotwebstack.framework.validation;
 
 public interface Validator<R, M, I> {
 
