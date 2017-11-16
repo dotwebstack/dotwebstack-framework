@@ -115,8 +115,8 @@ public class FileConfigurationBackend
           LOG.debug("File extension not supported, ignoring file: \"{}\"", resource.getFilename());
           continue;
         }
-        configurationStreams.add(resource.getInputStream());
         addResoureToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource);
+        configurationStreams.add(resource.getInputStream());
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
       validate(configurationStreams);
@@ -146,7 +146,7 @@ public class FileConfigurationBackend
     } catch (IOException ex) {
       LOG.error("Configuration file %s could not read", resource.getFilename());
       throw new ConfigurationException(
-          String.format("Configuration file %s could not read", resource.getFilename()));
+          String.format("Configuration file <%s> could not read", resource.getFilename()));
     }
   }
 
