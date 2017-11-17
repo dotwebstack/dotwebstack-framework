@@ -68,9 +68,10 @@ public abstract class AbstractSchemaMapper {
 
   @SuppressWarnings("unchecked")
   Map<String, Object> mapGraphResource(Property schemaProperty,
-      GraphEntityContext entityBuilderContext, SchemaMapperAdapter schemaMapperAdapter, Value ldPathContext) {
-    return (Map<String, Object>) schemaMapperAdapter.mapGraphValue(schemaProperty, entityBuilderContext,
-        schemaMapperAdapter,ldPathContext);
+      GraphEntityContext entityBuilderContext, SchemaMapperAdapter schemaMapperAdapter,
+      Value ldPathContext) {
+    return (Map<String, Object>) schemaMapperAdapter.mapGraphValue(schemaProperty,
+        entityBuilderContext, schemaMapperAdapter, ldPathContext);
   }
 
 }

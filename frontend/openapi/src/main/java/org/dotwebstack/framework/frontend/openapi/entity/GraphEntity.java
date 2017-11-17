@@ -17,7 +17,7 @@ public final class GraphEntity extends QueryEntity<GraphQueryResult> {
   private final ImmutableMap<String, String> ldpathNamespaces;
 
   public GraphEntity(Property schemaProperty, QueryResult queryResult,
-                     ImmutableMap<String, String> ldpathNamespaces, Map<String, Model> swaggerDefinitions) {
+      ImmutableMap<String, String> ldpathNamespaces, Map<String, Model> swaggerDefinitions) {
     super(schemaProperty, queryResult);
     this.swaggerDefitions = swaggerDefinitions;
     this.ldpathNamespaces = ldpathNamespaces;

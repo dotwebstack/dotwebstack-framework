@@ -74,7 +74,8 @@ public class EntityWriterInterceptorTest {
     Object mappedEntity = ImmutableList.of();
     when(context.getEntity()).thenReturn(entity);
     when(context.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
-    when(tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE)).thenReturn(mappedEntity);
+    when(tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE)).thenReturn(
+        mappedEntity);
 
     // Act
     entityWriterInterceptor.aroundWriteTo(context);

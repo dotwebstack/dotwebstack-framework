@@ -79,7 +79,8 @@ public class IntegerPropertyHandlerTest {
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    Integer result = (Integer)registry.mapGraphValue(property, entityBuilderContext, registry, context);
+    Integer result =
+        (Integer) registry.mapGraphValue(property, entityBuilderContext, registry, context);
 
     assertThat(result, is(VALUE_1.integerValue().intValue()));
   }

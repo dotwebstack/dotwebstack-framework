@@ -30,7 +30,8 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
   }
 
   @Override
-  public Object mapGraph(GraphEntity entity, MediaType mediaType, GraphEntityContext graphEntityContext) {
+  public Object mapGraph(GraphEntity entity, MediaType mediaType,
+      GraphEntityContext graphEntityContext) {
     throw new UnsupportedOperationException("No support for graphs");
   }
 
