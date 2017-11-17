@@ -10,8 +10,8 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
 import io.swagger.models.Response;
+import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
-import java.net.URI;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
@@ -54,6 +54,9 @@ public class GetRequestHandlerTest {
   @Mock
   private io.swagger.models.properties.Property property;
 
+  @Mock
+  private Swagger swagger;
+
   @Before
   public void setUp() {
     when(mockResponse.getSchema()).thenReturn(property);
@@ -61,7 +64,7 @@ public class GetRequestHandlerTest {
 
     when(operationMock.getResponses()).thenReturn(response);
     getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of(),
-        requestParameterMapperMock);
+        requestParameterMapperMock, swagger);
   }
 
   @Test
@@ -70,7 +73,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock);
+    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock,
+        swagger);
   }
 
   @Test
@@ -79,7 +83,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock);
+    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock,
+        swagger);
   }
 
   @Test

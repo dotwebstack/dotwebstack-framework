@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import io.swagger.models.Operation;
+import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -29,14 +30,16 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
   private final Map<MediaType, Property> schemaMap;
 
   private final RequestParameterMapper requestParameterMapper;
+  private Swagger swagger;
 
   GetRequestHandler(@NonNull Operation operation, @NonNull InformationProduct informationProduct,
       @NonNull Map<MediaType, Property> schemaMap,
-      @NonNull RequestParameterMapper requestParameterMapper) {
+      @NonNull RequestParameterMapper requestParameterMapper, @NonNull Swagger swagger) {
     this.operation = operation;
     this.informationProduct = informationProduct;
     this.schemaMap = schemaMap;
     this.requestParameterMapper = requestParameterMapper;
+    this.swagger = swagger;
   }
 
   public InformationProduct getInformationProduct() {
@@ -68,7 +71,8 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
           (org.eclipse.rdf4j.query.GraphQueryResult) informationProduct.getResult(parameterValues);
       GraphEntity entity =
           (GraphEntity) GraphEntity.builder().withSchemaProperty(schemaProperty).withQueryResult(
-              QueryResult.builder().withQueryResultGraph(result).build()).build();
+              QueryResult.builder().withQueryResultGraph(result).build()).withApiDefinitions(
+                  swagger).withLdPathNamespaces(swagger).build();
       responseOk = responseOk(entity);
     }
     if (responseOk != null) {

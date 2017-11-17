@@ -1,4 +1,5 @@
-package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
+package org.dotwebstack.framework.frontend.openapi.schema;
+
 
 import com.google.common.base.Joiner;
 import io.swagger.models.properties.Property;
@@ -6,22 +7,22 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import jersey.repackaged.com.google.common.collect.ImmutableSet;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
-abstract class AbstractPropertyHandler<P extends Property> implements PropertyHandler<P> {
+public abstract class AbstractSchemaMapper {
 
   static Value getSingleStatement(Collection<Value> queryResult, String ldPathQuery) {
 
     if (queryResult.isEmpty()) {
-      throw new PropertyHandlerRuntimeException(
+      throw new SchemaMapperRuntimeException(
           String.format("No results for LDPath query '%s' for required property.", ldPathQuery));
     }
 
     if (queryResult.size() > 1) {
-      throw new PropertyHandlerRuntimeException(
+      throw new SchemaMapperRuntimeException(
           String.format("LDPath query '%s' yielded multiple results (%s) for a property, which "
               + "requires a single result.", ldPathQuery, queryResult.size()));
     }
@@ -66,11 +67,10 @@ abstract class AbstractPropertyHandler<P extends Property> implements PropertyHa
   }
 
   @SuppressWarnings("unchecked")
-  Map<String, Object> buildResource(Property schemaProperty,
-      EntityBuilderContext entityBuilderContext, PropertyHandlerRegistry registry,
-      Value ldPathContext) {
-    return (Map<String, Object>) registry.handle(schemaProperty, entityBuilderContext,
-        ldPathContext);
+  Map<String, Object> mapGraphResource(Property schemaProperty,
+      GraphEntityContext entityBuilderContext, SchemaMapperAdapter schemaMapperAdapter, Value ldPathContext) {
+    return (Map<String, Object>) schemaMapperAdapter.mapGraphValue(schemaProperty, entityBuilderContext,
+        schemaMapperAdapter,ldPathContext);
   }
 
 }

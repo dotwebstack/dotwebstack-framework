@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
+package org.dotwebstack.framework.frontend.openapi.schema;
 
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
@@ -20,9 +20,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.OasVendorExtensions;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
@@ -56,12 +56,13 @@ public class ObjectPropertyHandlerTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  private PropertyHandlerRegistry registry;
-  private StringPropertyHandler stringPropertyHandler;
-  private ArrayPropertyHandler arrayPropertyHandler;
+  private SchemaMapperAdapter registry;
+
+  private StringSchemaMapper stringPropertyHandler;
+  private ArraySchemaMapper arrayPropertyHandler;
 
   @Mock
-  private EntityBuilderContext entityBuilderContext;
+  private GraphEntityContext entityBuilderContext;
 
   @Mock
   private Value context1;
@@ -72,19 +73,22 @@ public class ObjectPropertyHandlerTest {
   @Mock
   private LdPathExecutor ldPathExecutor;
 
-  private ObjectPropertyHandler objectPropertyHandler;
+  private ObjectSchemaMapper objectPropertyHandler;
   private ObjectProperty objectProperty;
 
   @Before
   public void setUp() {
-    objectPropertyHandler = new ObjectPropertyHandler();
+    objectPropertyHandler = new ObjectSchemaMapper();
     objectProperty = new ObjectProperty();
-    stringPropertyHandler = new StringPropertyHandler();
-    arrayPropertyHandler = new ArrayPropertyHandler();
-    ARRAY_PROPERTY.setVendorExtension(OasVendorExtensions.LDPATH, ARRAY_LD_EXP);
-    STR_PROPERTY_1.setVendorExtension(OasVendorExtensions.LDPATH, STR1_LD_EXP);
-    STR_PROPERTY_2.setVendorExtension(OasVendorExtensions.LDPATH, STR2_LD_EXP);
-    STR_PROPERTY_3.setVendorExtension(OasVendorExtensions.LDPATH, STR3_LD_EXP);
+    stringPropertyHandler = new StringSchemaMapper();
+    arrayPropertyHandler = new ArraySchemaMapper();
+
+    registry = new SchemaMapperAdapter(
+        Arrays.asList(stringPropertyHandler, objectPropertyHandler, arrayPropertyHandler));
+    ARRAY_PROPERTY.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, ARRAY_LD_EXP);
+    STR_PROPERTY_1.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, STR1_LD_EXP);
+    STR_PROPERTY_2.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, STR2_LD_EXP);
+    STR_PROPERTY_3.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, STR3_LD_EXP);
 
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
     when(ldPathExecutor.ldPathQuery(any(), eq(STR1_LD_EXP))).thenReturn(
@@ -95,9 +99,7 @@ public class ObjectPropertyHandlerTest {
     objectProperty.setProperties(ImmutableMap.of(KEY_1, STR_PROPERTY_1, KEY_2, STR_PROPERTY_2,
         KEY_3, ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
 
-    registry = new PropertyHandlerRegistry();
-    registry.setPropertyHandlers(
-        Arrays.asList(stringPropertyHandler, objectPropertyHandler, arrayPropertyHandler));
+
     when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
 
@@ -111,8 +113,8 @@ public class ObjectPropertyHandlerTest {
   public void handleObjectWithoutProperties() {
     objectProperty.setProperties(ImmutableMap.of());
 
-    Map<String, Object> result =
-        (Map<String, Object>) registry.handle(objectProperty, entityBuilderContext, context1);
+    Map<String, Object> result = (Map<String, Object>) registry.mapGraphValue(objectProperty,
+        entityBuilderContext, registry, context1);
 
     assertThat(result.keySet(), hasSize(0));
   }
@@ -124,8 +126,8 @@ public class ObjectPropertyHandlerTest {
         KEY_3, ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
     when(ldPathExecutor.ldPathQuery(any(), eq(STR3_LD_EXP))).thenReturn(ImmutableList.of());
 
-    Map<String, Object> result =
-        (Map<String, Object>) registry.handle(objectProperty, entityBuilderContext, context1);
+    Map<String, Object> result = (Map<String, Object>) registry.mapGraphValue(objectProperty,
+        entityBuilderContext, registry, context1);
 
     assertThat(result.keySet(), hasSize(4));
     assertThat(result, hasEntry(KEY_1, Optional.of(STR_VALUE_1)));
@@ -137,42 +139,43 @@ public class ObjectPropertyHandlerTest {
 
   @Test
   public void handleObjectWithLdPathWithoutResult() {
-    objectProperty.setVendorExtension(OasVendorExtensions.LDPATH, DUMMY_EXPR_1);
+    objectProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
 
     when(ldPathExecutor.ldPathQuery(context1, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
 
-    Object result = registry.handle(objectProperty, entityBuilderContext, context1);
+    Object result =
+        registry.mapGraphValue(objectProperty, entityBuilderContext, registry, context1);
 
     assertThat(result, nullValue());
   }
 
   @Test
   public void handleObjectWithLdPathWithoutResultWhenRequiredThrowsException() {
-    objectProperty.setVendorExtension(OasVendorExtensions.LDPATH, DUMMY_EXPR_1);
+    objectProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
     objectProperty.setRequired(true);
 
     when(ldPathExecutor.ldPathQuery(context1, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
 
-    expectedException.expect(PropertyHandlerRuntimeException.class);
+    expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(
         String.format("LDPath expression for a required object property ('%s') yielded no result.",
             DUMMY_EXPR_1));
 
-    registry.handle(objectProperty, entityBuilderContext, context1);
+    registry.mapGraphValue(objectProperty, entityBuilderContext, registry, context1);
   }
 
   @Test
   public void handleObjectWithLdPathWithMultipleResultsThrowsException() {
-    objectProperty.setVendorExtension(OasVendorExtensions.LDPATH, DUMMY_EXPR_1);
+    objectProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
 
     when(ldPathExecutor.ldPathQuery(context1, DUMMY_EXPR_1)).thenReturn(
         ImmutableSet.of(context1, context2));
 
-    expectedException.expect(PropertyHandlerRuntimeException.class);
+    expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format(
         "LDPath expression for object property ('%s') yielded multiple elements.", DUMMY_EXPR_1));
 
-    registry.handle(objectProperty, entityBuilderContext, context1);
+    registry.mapGraphValue(objectProperty, entityBuilderContext, registry, context1);
   }
 
 }

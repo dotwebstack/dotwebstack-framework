@@ -10,13 +10,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.Property;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilder;
+import org.apache.http.client.entity.EntityBuilder;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.properties.PropertyHandlerRegistry;
+import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.junit.Before;
@@ -36,14 +37,14 @@ public class GraphEntityMapperTest {
   private GraphEntityMapper graphEntityMapper;
 
   @Mock
-  private EntityBuilder entityBuilder;
+  private GraphEntityContext graphEntityContext;
 
   @Mock
-  private PropertyHandlerRegistry propertyHandlerRegistry;
+  private SchemaMapperAdapter propertyHandlerRegistry;
 
   @Before
   public void setUp() {
-    graphEntityMapper = new GraphEntityMapper(entityBuilder, propertyHandlerRegistry);
+    graphEntityMapper = new GraphEntityMapper(propertyHandlerRegistry);
   }
 
   @Test
@@ -52,7 +53,7 @@ public class GraphEntityMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GraphEntityMapper(null, null);
+    new GraphEntityMapper( null);
   }
 
   @Test
@@ -61,7 +62,7 @@ public class GraphEntityMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    graphEntityMapper.map(null, MediaType.APPLICATION_JSON_TYPE);
+    graphEntityMapper.mapGraph(null, null,graphEntityContext);
   }
 
   @Test
@@ -72,16 +73,16 @@ public class GraphEntityMapperTest {
     Model model = new ModelBuilder().add("http://www.test.nl", "http://www.test.nl",
         "http://www.test.nl/").build();
     when(queryResult.getModel()).thenReturn(model);
-    GraphEntity entity = new GraphEntity(property, queryResult);
+    GraphEntity entity = new GraphEntity(property, queryResult, ImmutableMap.of(),ImmutableMap.of());
 
     // Assert
     Map<String, Object> mapTest = new HashMap<>();
     mapTest.put("test", "test");
-    when(entityBuilder.build(any(), eq(propertyHandlerRegistry),
-        argThat(f -> f.getQueryResult().equals(queryResult)))).thenReturn(mapTest);
+//    when(entityBuilder.build(any(), eq(propertyHandlerRegistry),
+//        argThat(f -> .equals(queryResult)))).thenReturn(mapTest);
 
     // Act
-    Object mappedEntity = graphEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
+    Object mappedEntity = graphEntityMapper.mapGraph(entity, MediaType.TEXT_PLAIN_TYPE,graphEntityContext);
     assertThat(mappedEntity, instanceOf(HashMap.class));
     Map<String, Object> map = (Map<String, Object>) mappedEntity;
     assertThat(map.values(), hasSize(1));

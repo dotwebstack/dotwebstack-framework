@@ -1,0 +1,123 @@
+package org.dotwebstack.framework.frontend.openapi.schema;
+
+import com.google.common.collect.ImmutableMap;
+import io.swagger.models.properties.ObjectProperty;
+import io.swagger.models.properties.Property;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ObjectSchemaMapper implements SchemaMapper<ObjectProperty, Object> {
+
+  @Override
+  public Object mapTupleValue(ObjectProperty schema, Value value) {
+    return null;
+  }
+
+  @Override
+  public Object mapGraphValue(ObjectProperty schema, GraphEntityContext graphEntityContext,
+      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+    return handleObject(schema, graphEntityContext, schemaMapperAdapter, value);
+  }
+
+
+  public Object handleObject(ObjectProperty property, GraphEntityContext entityBuilderContext,
+      SchemaMapperAdapter schemaMapperAdapter, Value context) {
+
+    Value contextNew = context;
+    if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.SUBJECT_FILTER)) {
+      LinkedHashMap subjectFilter = (LinkedHashMap) property.getVendorExtensions().get(
+          OpenApiSpecificationExtensions.SUBJECT_FILTER);
+
+      String predicate =
+          (String) subjectFilter.get(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE);
+      String object =
+          (String) subjectFilter.get(OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT);
+
+      ValueFactory vf = SimpleValueFactory.getInstance();
+
+      final IRI predicateIri = vf.createIRI(predicate);
+      final IRI objectLiteral = vf.createIRI(object);
+
+      Model filteredModel =
+          entityBuilderContext.getModel().filter(null, predicateIri, objectLiteral);
+
+      if (filteredModel.subjects().iterator().hasNext()) {
+        if (filteredModel.subjects().size() > 1) {
+          throw new SchemaMapperRuntimeException(
+              String.format("More entrypoint subjects found for ('%s,%s'). Only one is needed.",
+                  predicate, object));
+        }
+        contextNew = filteredModel.subjects().iterator().next();
+      } else {
+        throw new SchemaMapperRuntimeException(
+            String.format("No entrypoint subject found for ('%s,%s')", predicate, object));
+      }
+    }
+
+    if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+      String ldPath =
+          property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
+      return handleLdPathVendorExtension(property, entityBuilderContext, contextNew, ldPath,
+          schemaMapperAdapter);
+    }
+
+    return handleProperties(property, entityBuilderContext, schemaMapperAdapter, contextNew);
+  }
+
+  private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
+      GraphEntityContext entityBuilderContext, Value context, String ldPathQuery,
+      SchemaMapperAdapter schemaMapperAdapter) {
+
+    LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
+    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context, ldPathQuery);
+
+    if (queryResult.isEmpty()) {
+      if (!property.getRequired()) {
+        return null;
+      }
+      throw new SchemaMapperRuntimeException(String.format(
+          "LDPath expression for a required object property ('%s') yielded no result.",
+          ldPathQuery));
+    }
+
+    if (queryResult.size() > 1) {
+      throw new SchemaMapperRuntimeException(String.format(
+          "LDPath expression for object property ('%s') yielded multiple elements.", ldPathQuery));
+    }
+
+    return handleProperties(property, entityBuilderContext, schemaMapperAdapter,
+        queryResult.iterator().next());
+  }
+
+  private Map<String, Object> handleProperties(ObjectProperty property,
+      GraphEntityContext entityBuilderContext, SchemaMapperAdapter schemaMapperAdapter,
+      Value context) {
+    ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+    property.getProperties().forEach((propKey, propValue) -> {
+      Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
+          schemaMapperAdapter, context);
+      builder.put(propKey, Optional.ofNullable(propertyResult));
+    });
+    return builder.build();
+  }
+
+
+  @Override
+  public boolean supports(@NonNull Property schema) {
+    return schema instanceof ObjectProperty;
+  }
+
+}

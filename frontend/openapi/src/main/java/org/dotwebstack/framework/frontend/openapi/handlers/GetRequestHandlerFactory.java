@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import io.swagger.models.Operation;
+import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
@@ -19,8 +20,10 @@ public class GetRequestHandlerFactory {
   }
 
   public GetRequestHandler newGetRequestHandler(@NonNull Operation operation,
-      @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap) {
-    return new GetRequestHandler(operation, informationProduct, schemaMap, requestParameterMapper);
+      @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
+      @NonNull Swagger swagger) {
+    return new GetRequestHandler(operation, informationProduct, schemaMap, requestParameterMapper,
+        swagger);
   }
 
 }

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
+package org.dotwebstack.framework.frontend.openapi.schema;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -9,11 +9,11 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.BaseIntegerProperty;
+import io.swagger.models.properties.IntegerProperty;
 import java.util.Arrays;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.OasVendorExtensions;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -38,26 +38,26 @@ public class IntegerPropertyHandlerTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Mock
-  private EntityBuilderContext entityBuilderContext;
+  private GraphEntityContext entityBuilderContext;
 
   @Mock
   private Value context;
 
-  private PropertyHandlerRegistry registry;
+  private SchemaMapperAdapter registry;
 
   @Mock
   private LdPathExecutor ldPathExecutor;
 
-  private PropertyHandler<?> handler;
-  private BaseIntegerProperty property;
+  private SchemaMapper handler;
+  private IntegerProperty property;
 
   @Before
   public void setUp() {
-    handler = new IntegerPropertyHandler();
-    property = new BaseIntegerProperty();
+    handler = new IntegerSchemaMapper();
+    property = new IntegerProperty();
     when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
-    registry = new PropertyHandlerRegistry();
-    registry.setPropertyHandlers(Arrays.asList(handler));
+    registry = new SchemaMapperAdapter(Arrays.asList(handler));
+
   }
 
   @Test
@@ -67,7 +67,7 @@ public class IntegerPropertyHandlerTest {
 
   @Test
   public void handleValidContextWithoutLdPathQuery() {
-    Object result = registry.handle(property, entityBuilderContext, VALUE_1);
+    Object result = registry.mapGraphValue(property, entityBuilderContext, registry, VALUE_1);
 
     assertThat(result, is(VALUE_1.integerValue()));
     verifyZeroInteractions(ldPathExecutor);
@@ -75,34 +75,34 @@ public class IntegerPropertyHandlerTest {
 
   @Test
   public void handleValidLdPathQuery() {
-    property.setVendorExtension(OasVendorExtensions.LDPATH, DUMMY_EXPR);
+    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    Object result = registry.handle(property, entityBuilderContext, context);
+    Object result = registry.mapGraphValue(property, entityBuilderContext, registry, context);
 
     assertThat(result, is(VALUE_1.integerValue()));
   }
 
   @Test
   public void handleUnsupportedLiteralDataType() {
-    property.setVendorExtension(OasVendorExtensions.LDPATH, DUMMY_EXPR);
+    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_3));
-    expectedException.expect(PropertyHandlerRuntimeException.class);
+    expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format(
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         DUMMY_EXPR, Joiner.on(", ").join(XMLSchema.INTEGER, XMLSchema.INT)));
 
-    registry.handle(property, entityBuilderContext, context);
+    registry.mapGraphValue(property, entityBuilderContext, registry, context);
   }
 
   @Test
   public void testEmptyLdPath() {
-    expectedException.expect(PropertyHandlerRuntimeException.class);
+    expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format("Property '%s' must have a '%s' attribute",
-        property.getName(), OasVendorExtensions.LDPATH));
-    registry.handle(property, entityBuilderContext, context);
+        property.getName(), OpenApiSpecificationExtensions.LDPATH));
+    registry.mapGraphValue(property, entityBuilderContext, registry, context);
   }
 
 }

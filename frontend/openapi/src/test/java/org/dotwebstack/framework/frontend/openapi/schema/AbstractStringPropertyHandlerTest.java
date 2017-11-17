@@ -1,11 +1,12 @@
-package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
+package org.dotwebstack.framework.frontend.openapi.schema;
 
 import static org.mockito.Mockito.mock;
 
 import io.swagger.models.properties.StringProperty;
+import java.util.Arrays;
 import java.util.Collections;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -26,29 +27,28 @@ public abstract class AbstractStringPropertyHandlerTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  EntityBuilderContext entityBuilderContext;
+  GraphEntityContext entityBuilderContext;
 
   @Mock
   Value context;
 
   LdPathExecutor ldPathExecutor;
 
-  PropertyHandlerRegistry registry;
+  SchemaMapperAdapter registry;
 
-  PropertyHandler<?> handler;
+  SchemaMapper handler;
   StringProperty stringProperty;
 
   AbstractStringPropertyHandlerTest() {
-    entityBuilderContext = mock(EntityBuilderContext.class);
+    entityBuilderContext = mock(GraphEntityContext.class);
     ldPathExecutor = mock(LdPathExecutor.class);
   }
 
   @Before
   public void setUp() {
-    handler = new StringPropertyHandler();
+    handler = new StringSchemaMapper();
     stringProperty = new StringProperty();
-    registry = new PropertyHandlerRegistry();
-    registry.setPropertyHandlers(Collections.singleton(handler));
+    registry = new SchemaMapperAdapter(Arrays.asList(handler));
   }
 
 }

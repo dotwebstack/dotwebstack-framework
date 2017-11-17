@@ -158,8 +158,8 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
       ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          getRequestHandlerFactory.newGetRequestHandler(getOperation, informationProduct,
-              schemaMap));
+          getRequestHandlerFactory.newGetRequestHandler(getOperation, informationProduct, schemaMap,
+                  swagger));
 
       produces.forEach(methodBuilder::produces);
 

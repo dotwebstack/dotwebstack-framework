@@ -30,7 +30,12 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
   }
 
   @Override
-  public Object map(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
+  public Object mapGraph(GraphEntity entity, MediaType mediaType, GraphEntityContext graphEntityContext) {
+    throw new UnsupportedOperationException("No support for graphs");
+  }
+
+  @Override
+  public Object mapTuple(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
     Property schema = entity.getSchemaMap().get(mediaType);
 
     if (schema == null) {

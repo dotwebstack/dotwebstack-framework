@@ -24,12 +24,18 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
     if (context.getEntity() instanceof Entity) {
       if (context.getEntity() instanceof TupleEntity) {
         TupleEntity entity = (TupleEntity) context.getEntity();
-        Object mappedEntity = tupleEntityMapper.map(entity, context.getMediaType());
+        Object mappedEntity = tupleEntityMapper.mapTuple(entity, context.getMediaType());
         context.setEntity(mappedEntity);
       }
       if (context.getEntity() instanceof GraphEntity) {
         GraphEntity entity = (GraphEntity) context.getEntity();
-        Object mappedEntity = graphEntityMapper.map(entity, context.getMediaType());
+
+        GraphEntityContext graphEntityContext =
+                new GraphEntityContext(entity.getLdpathNamespaces(), entity.getSwaggerDefitions(),
+                (((GraphEntity) context.getEntity()).getQueryResult()).getModel());
+
+        Object mappedEntity =
+            graphEntityMapper.mapGraph(entity, context.getMediaType(), graphEntityContext);
         context.setEntity(mappedEntity);
       }
     }

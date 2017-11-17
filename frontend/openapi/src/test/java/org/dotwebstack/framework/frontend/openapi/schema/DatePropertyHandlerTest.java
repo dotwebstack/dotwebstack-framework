@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.entity.builder.properties;
+package org.dotwebstack.framework.frontend.openapi.schema;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -9,9 +9,9 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.DateProperty;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.EntityBuilderContext;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.OasVendorExtensions;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -36,10 +36,10 @@ public class DatePropertyHandlerTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Mock
-  private EntityBuilderContext entityBuilderContext;
+  private GraphEntityContext entityBuilderContext;
 
   @Mock
-  private PropertyHandlerRegistry registry;
+  private SchemaMapperAdapter registry;
 
   @Mock
   private Value context;
@@ -47,12 +47,12 @@ public class DatePropertyHandlerTest {
   @Mock
   private LdPathExecutor ldPathExecutor;
 
-  private DatePropertyHandler handler;
+  private DateSchemaMapper handler;
   private DateProperty property;
 
   @Before
   public void setUp() {
-    handler = new DatePropertyHandler();
+    handler = new DateSchemaMapper();
     property = new DateProperty();
     when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
@@ -64,7 +64,7 @@ public class DatePropertyHandlerTest {
 
   @Test
   public void handleValidContextWithoutLdPathQuery() {
-    Object result = handler.handle(property, entityBuilderContext, registry, VALUE_1);
+    Object result = handler.mapGraphValue(property, entityBuilderContext, registry, VALUE_1);
 
     assertThat(result, is(VALUE_1.calendarValue()));
     verifyZeroInteractions(ldPathExecutor);
@@ -72,26 +72,26 @@ public class DatePropertyHandlerTest {
 
   @Test
   public void handleValidLdPathQuery() {
-    property.setVendorExtension(OasVendorExtensions.LDPATH, DUMMY_EXPR);
+    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    Object result = handler.handle(property, entityBuilderContext, registry, context);
+    Object result = handler.mapGraphValue(property, entityBuilderContext, registry, context);
 
     assertThat(result, is(VALUE_1.calendarValue()));
   }
 
   @Test
   public void handleUnsupportedLiteralDataType() {
-    property.setVendorExtension(OasVendorExtensions.LDPATH, DUMMY_EXPR);
+    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_3));
-    expectedException.expect(PropertyHandlerRuntimeException.class);
+    expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format(
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         DUMMY_EXPR, XMLSchema.DATE.stringValue()));
 
-    handler.handle(property, entityBuilderContext, registry, context);
+    handler.mapGraphValue(property, entityBuilderContext, registry, context);
   }
 
 }

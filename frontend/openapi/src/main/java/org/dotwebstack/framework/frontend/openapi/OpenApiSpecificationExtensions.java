@@ -8,6 +8,24 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String PARAMETER = DOTWEBSTACK_PREFIX.concat("parameter");
 
+
+  public static final String LDPATH = "x-ldpath";
+  public static final String LDPATH_NAMESPACES = "x-ldpath-namespaces";
+
+  public static final String TYPE = "x-type";
+
+  public static final String CONSTANT_VALUE = "x-constant-value";
+
+  public static final String SUBJECT_FILTER = "x-dotwebstack-subject-filter";
+
+  public static final String SUBJECT_FILTER_PREDICATE = "predicate";
+
+  public static final String SUBJECT_FILTER_OBJECT = "object";
+  public static final String RELATIVE_LINK = "x-relative-link";
+
+
+  public static final String RESULT_REF = "x-result-ref";
+
   private OpenApiSpecificationExtensions() {
     throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", OpenApiSpecificationExtensions.class));

@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.builder;
 
 import com.google.common.collect.ImmutableList;
+import io.swagger.models.Swagger;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
@@ -24,12 +25,6 @@ public class QueryResult {
     return model;
   }
 
-
-  public ImmutableList<Resource> getSubjects() {
-    return this.subjects;
-
-  }
-
   public static Builder builder() {
     return new Builder();
   }
@@ -44,10 +39,6 @@ public class QueryResult {
       model = new LinkedHashModel();
     }
 
-    public Builder withQueryResultTriple(org.eclipse.rdf4j.query.QueryResult queryResultDb) {
-      this.queryResultDb = queryResultDb;
-      return this;
-    }
 
     public Builder withQueryResultGraph(org.eclipse.rdf4j.query.QueryResult queryResultDb) {
       this.model = QueryResults.asModel(queryResultDb);
@@ -78,11 +69,6 @@ public class QueryResult {
       return new QueryResult(model, this.subjects);
     }
 
-    public Builder withModel(Model model, ImmutableList<Resource> resources) {
-      this.model = model;
-      this.subjects = resources;
-      return this;
-    }
   }
 
 }

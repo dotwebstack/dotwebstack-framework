@@ -1,11 +1,13 @@
 package org.dotwebstack.framework.frontend.openapi.schema;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.properties.BaseIntegerProperty;
-import io.swagger.models.properties.IntegerProperty;
+import io.swagger.models.properties.BooleanProperty;
+import io.swagger.models.properties.DateProperty;
 import io.swagger.models.properties.Property;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
+import javax.xml.datatype.XMLGregorianCalendar;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
@@ -19,46 +21,44 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 @Service
-class IntegerSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<IntegerProperty, Integer> {
-
-  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
-
-  @Lazy
-  @Autowired
-  private SchemaMapperAdapter schemaMapperAdapter;
+class DateSchemaMapper extends AbstractSchemaMapper
+    implements SchemaMapper<DateProperty, LocalDateTime> {
 
   @Override
-  public Integer mapTupleValue(@NonNull IntegerProperty schema, @NonNull Value value) {
-    return SchemaMapperUtils.castLiteralValue(value).intValue();
+  public LocalDateTime mapTupleValue(@NonNull DateProperty schema, @NonNull Value value) {
+    return convertToDateTime(SchemaMapperUtils.castLiteralValue(value).calendarValue());
   }
 
   @Override
-  public Integer mapGraphValue(IntegerProperty schema, GraphEntityContext graphEntityContext,
+  public LocalDateTime mapGraphValue(DateProperty schema, GraphEntityContext graphEntityContext,
       SchemaMapperAdapter schemaMapperAdapter, Value value) {
-    return map(schema, graphEntityContext, value);
+    return handle(schema, graphEntityContext, value);
   }
 
+
+  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
   }
 
-  public Integer map(BaseIntegerProperty property, GraphEntityContext entityBuilderContext,
+
+  public LocalDateTime handle(DateProperty property, GraphEntityContext entityBuilderContext,
       Value context) {
 
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
     if (ldPathQuery == null && isLiteral(context)) {
-      return ((Literal) context).integerValue().intValue();
+      return ((Literal) context).calendarValue().toGregorianCalendar().toZonedDateTime().toLocalDateTime();
     }
 
     if (ldPathQuery == null) {
       throw new SchemaMapperRuntimeException(
           String.format("Property '%s' must have a '%s' attribute.", property.getName(),
-                  OpenApiSpecificationExtensions.LDPATH));
+              OpenApiSpecificationExtensions.LDPATH));
     }
+
     LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
     Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context, ldPathQuery);
 
@@ -66,21 +66,26 @@ class IntegerSchemaMapper extends AbstractSchemaMapper
       return null;
     }
 
-    Value integerValue = getSingleStatement(queryResult, ldPathQuery);
+    Value dateValue = getSingleStatement(queryResult, ldPathQuery);
 
-    if (!isLiteral(integerValue)) {
+    if (!isLiteral(dateValue)) {
       throw new SchemaMapperRuntimeException(String.format(
           "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>.",
           ldPathQuery, dataTypesAsString()));
     }
 
-    return ((Literal) integerValue).integerValue().intValue();
+    return convertToDateTime(((Literal) dateValue).calendarValue());
+  }
+
+  private LocalDateTime convertToDateTime(XMLGregorianCalendar dateValue) {
+
+    return dateValue.toGregorianCalendar().toZonedDateTime().toLocalDateTime();
   }
 
 
   @Override
   public boolean supports(@NonNull Property schema) {
-    return schema instanceof IntegerProperty;
+    return schema instanceof BooleanProperty;
   }
 
 }
