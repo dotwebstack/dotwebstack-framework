@@ -14,10 +14,10 @@ public final class GraphEntity extends QueryEntity<GraphQueryResult> {
 
 
   private final Map<String, Model> swaggerDefitions;
-  private final Map<String, String> ldpathNamespaces;
+  private final ImmutableMap<String, String> ldpathNamespaces;
 
   public GraphEntity(Property schemaProperty, QueryResult queryResult,
-      Map<String, String> ldpathNamespaces, Map<String, Model> swaggerDefinitions) {
+                     ImmutableMap<String, String> ldpathNamespaces, Map<String, Model> swaggerDefinitions) {
     super(schemaProperty, queryResult);
     this.swaggerDefitions = swaggerDefinitions;
     this.ldpathNamespaces = ldpathNamespaces;
@@ -42,7 +42,7 @@ public final class GraphEntity extends QueryEntity<GraphQueryResult> {
     return swaggerDefitions;
   }
 
-  public Map<String, String> getLdpathNamespaces() {
+  public ImmutableMap<String, String> getLdpathNamespaces() {
     return ldpathNamespaces;
   }
 
@@ -50,7 +50,7 @@ public final class GraphEntity extends QueryEntity<GraphQueryResult> {
   public static class Builder extends QueryEntity.Builder {
 
     private Map<String, Model> swaggerDefinitions;
-    private Map<String, String> ldpathNamespaces;
+    private ImmutableMap<String, String> ldpathNamespaces;
 
     public Builder withSchemaProperty(Property schemaProperty) {
       this.schemaProperty = schemaProperty;

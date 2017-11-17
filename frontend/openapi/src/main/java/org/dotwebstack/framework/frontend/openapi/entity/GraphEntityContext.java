@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.swagger.models.Model;
 import java.util.Map;
@@ -9,12 +10,12 @@ import org.eclipse.rdf4j.model.Resource;
 public class GraphEntityContext {
 
   private final Map<String, Model> swaggerDefinitions;
-  private final Map<String, String> ldPathNamespaces;
+  private final ImmutableMap<String, String> ldPathNamespaces;
   private final org.eclipse.rdf4j.model.Model model;
   private final LdPathExecutor ldPathExecutor;
   private ImmutableList<Resource> subjects;
 
-  public GraphEntityContext(Map<String, String> ldPathNamespaces,
+  public GraphEntityContext(ImmutableMap<String, String> ldPathNamespaces,
       Map<String, Model> swaggerDefinitions, org.eclipse.rdf4j.model.Model model) {
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = Maps.newHashMap(swaggerDefinitions);
@@ -34,7 +35,7 @@ public class GraphEntityContext {
     return subjects;
   }
 
-  public Map<String, String> getLdPathNamespaces() {
+  public ImmutableMap<String, String> getLdPathNamespaces() {
     return ldPathNamespaces;
   }
 

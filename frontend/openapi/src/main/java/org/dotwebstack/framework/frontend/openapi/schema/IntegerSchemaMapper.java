@@ -20,21 +20,18 @@ import org.springframework.stereotype.Service;
 
 @Service
 class IntegerSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<IntegerProperty, Integer> {
+    implements SchemaMapper<IntegerProperty, Object> {
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
 
-  @Lazy
-  @Autowired
-  private SchemaMapperAdapter schemaMapperAdapter;
 
   @Override
-  public Integer mapTupleValue(@NonNull IntegerProperty schema, @NonNull Value value) {
+  public Object mapTupleValue(@NonNull IntegerProperty schema, @NonNull Value value) {
     return SchemaMapperUtils.castLiteralValue(value).intValue();
   }
 
   @Override
-  public Integer mapGraphValue(IntegerProperty schema, GraphEntityContext graphEntityContext,
+  public Object mapGraphValue(IntegerProperty schema, GraphEntityContext graphEntityContext,
       SchemaMapperAdapter schemaMapperAdapter, Value value) {
     return map(schema, graphEntityContext, value);
   }

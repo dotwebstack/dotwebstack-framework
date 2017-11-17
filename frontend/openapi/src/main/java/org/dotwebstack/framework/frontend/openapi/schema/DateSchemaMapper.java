@@ -1,10 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.schema;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.properties.BooleanProperty;
 import io.swagger.models.properties.DateProperty;
 import io.swagger.models.properties.Property;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Set;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -16,41 +15,36 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 @Service
 class DateSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<DateProperty, LocalDateTime> {
-
-  @Override
-  public LocalDateTime mapTupleValue(@NonNull DateProperty schema, @NonNull Value value) {
-    return convertToDateTime(SchemaMapperUtils.castLiteralValue(value).calendarValue());
-  }
-
-  @Override
-  public LocalDateTime mapGraphValue(DateProperty schema, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
-    return handle(schema, graphEntityContext, value);
-  }
-
-
+    implements SchemaMapper<DateProperty, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
   }
 
+  @Override
+  public LocalDate mapTupleValue(@NonNull DateProperty schema, @NonNull Value value) {
+    return convertToDate(SchemaMapperUtils.castLiteralValue(value).calendarValue());
+  }
 
-  public LocalDateTime handle(DateProperty property, GraphEntityContext entityBuilderContext,
+  @Override
+  public LocalDate mapGraphValue(DateProperty schema, GraphEntityContext graphEntityContext,
+                                 SchemaMapperAdapter schemaMapperAdapter, Value value) {
+    return handle(schema, graphEntityContext, value);
+  }
+
+  LocalDate handle(DateProperty property, GraphEntityContext entityBuilderContext,
       Value context) {
 
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
     if (ldPathQuery == null && isLiteral(context)) {
-      return ((Literal) context).calendarValue().toGregorianCalendar().toZonedDateTime().toLocalDateTime();
+      return convertToDate(((Literal) context).calendarValue());
     }
 
     if (ldPathQuery == null) {
@@ -74,18 +68,18 @@ class DateSchemaMapper extends AbstractSchemaMapper
           ldPathQuery, dataTypesAsString()));
     }
 
-    return convertToDateTime(((Literal) dateValue).calendarValue());
+    return convertToDate(((Literal) dateValue).calendarValue());
   }
 
-  private LocalDateTime convertToDateTime(XMLGregorianCalendar dateValue) {
+  private LocalDate convertToDate(XMLGregorianCalendar dateValue) {
 
-    return dateValue.toGregorianCalendar().toZonedDateTime().toLocalDateTime();
+    return dateValue.toGregorianCalendar().toZonedDateTime().toLocalDate();
   }
 
 
   @Override
   public boolean supports(@NonNull Property schema) {
-    return schema instanceof BooleanProperty;
+    return schema instanceof DateProperty;
   }
 
 }

@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.schema;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -64,9 +67,9 @@ public class DatePropertyHandlerTest {
 
   @Test
   public void handleValidContextWithoutLdPathQuery() {
-    Object result = handler.mapGraphValue(property, entityBuilderContext, registry, VALUE_1);
+    LocalDate result = handler.mapGraphValue(property, entityBuilderContext, registry, VALUE_1);
 
-    assertThat(result, is(VALUE_1.calendarValue()));
+    assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
     verifyZeroInteractions(ldPathExecutor);
   }
 
@@ -76,9 +79,9 @@ public class DatePropertyHandlerTest {
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    Object result = handler.mapGraphValue(property, entityBuilderContext, registry, context);
+    LocalDate result = handler.mapGraphValue(property, entityBuilderContext, registry, context);
 
-    assertThat(result, is(VALUE_1.calendarValue()));
+    assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
   }
 
   @Test

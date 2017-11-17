@@ -69,7 +69,7 @@ public class IntegerPropertyHandlerTest {
   public void handleValidContextWithoutLdPathQuery() {
     Object result = registry.mapGraphValue(property, entityBuilderContext, registry, VALUE_1);
 
-    assertThat(result, is(VALUE_1.integerValue()));
+    assertThat(result, is(VALUE_1.integerValue().intValue()));
     verifyZeroInteractions(ldPathExecutor);
   }
 
@@ -79,9 +79,9 @@ public class IntegerPropertyHandlerTest {
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    Object result = registry.mapGraphValue(property, entityBuilderContext, registry, context);
+    Integer result = (Integer)registry.mapGraphValue(property, entityBuilderContext, registry, context);
 
-    assertThat(result, is(VALUE_1.integerValue()));
+    assertThat(result, is(VALUE_1.integerValue().intValue()));
   }
 
   @Test

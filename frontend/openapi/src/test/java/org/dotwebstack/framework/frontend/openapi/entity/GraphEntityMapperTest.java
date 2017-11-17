@@ -15,7 +15,6 @@ import io.swagger.models.properties.Property;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
-import org.apache.http.client.entity.EntityBuilder;
 import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
 import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
 import org.eclipse.rdf4j.model.Model;
@@ -70,23 +69,14 @@ public class GraphEntityMapperTest {
     // Arrange
     Property property = mock(Property.class);
     QueryResult queryResult = mock(QueryResult.class);
-    Model model = new ModelBuilder().add("http://www.test.nl", "http://www.test.nl",
-        "http://www.test.nl/").build();
-    when(queryResult.getModel()).thenReturn(model);
     GraphEntity entity = new GraphEntity(property, queryResult, ImmutableMap.of(),ImmutableMap.of());
 
-    // Assert
-    Map<String, Object> mapTest = new HashMap<>();
-    mapTest.put("test", "test");
-//    when(entityBuilder.build(any(), eq(propertyHandlerRegistry),
-//        argThat(f -> .equals(queryResult)))).thenReturn(mapTest);
-
-    // Act
+    when(propertyHandlerRegistry.mapGraphValue(any(),any(),any(),any())).thenReturn(new HashMap<>());
+    //Act
     Object mappedEntity = graphEntityMapper.mapGraph(entity, MediaType.TEXT_PLAIN_TYPE,graphEntityContext);
+    //Assert
     assertThat(mappedEntity, instanceOf(HashMap.class));
-    Map<String, Object> map = (Map<String, Object>) mappedEntity;
-    assertThat(map.values(), hasSize(1));
-    assertThat(map.get("test"), equalTo("test"));
+
   }
 
 }
