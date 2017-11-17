@@ -7,6 +7,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
@@ -22,6 +24,7 @@ import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -114,60 +117,7 @@ public class ArrayPropertyHandlerTest {
     assertThat(result.get(2), is(Optional.of(VALUE_3.stringValue())));
   }
 
-  @Test
-  @SuppressWarnings({"unchecked"})
-  public void collectionOfObjects() throws Exception {
-    property.setVendorExtension(OpenApiSpecificationExtensions.RESULT_REF, "collection");
 
-    IRI person1Iri = SimpleValueFactory.getInstance().createIRI("http://test.org#person1");
-    IRI person2Iri = SimpleValueFactory.getInstance().createIRI("http://test.org#person2");
-
-    // Model model =
-    // new ModelBuilder().subject("generic:subj").add("predicate:is", "object:obj").build();
-
-    ModelBuilder builder = new ModelBuilder();
-    builder.setNamespace("ex", "http://example.org/");
-
-    // In named graph 1, we add info about Picasso
-    builder// .namedGraph("ex:namedGraph1")
-        .subject("ex:Picasso").add(RDF.TYPE, "ARTIST").add(FOAF.FIRST_NAME, "Pablo");
-
-    // In named graph 2, we add info about Van Gogh.
-    builder// .namedGraph("ex:namedGraph2")
-        .subject("ex:VanGogh").add(RDF.TYPE, "ARTIST").add(FOAF.FIRST_NAME, "Vincent");
-
-
-    // We're done building, create our Model
-    Model model = builder.build();
-
-
-
-    when(entityBuilderContext.getModel()).thenReturn(model);
-    Set<Resource> f = model.subjects();
-
-    List<Resource> resources = new ArrayList<>();
-    resources.addAll(f);
-
-    when(entityBuilderContext.getSubjects()).thenReturn(ImmutableList.copyOf(resources));
-    when(ldPathExecutor.ldPathQuery(eq(person1Iri), eq("name"))).thenReturn(
-        ImmutableList.of(stringLiteral("Nick 1")));
-    when(ldPathExecutor.ldPathQuery(eq(person2Iri), eq("name"))).thenReturn(
-        ImmutableList.of(stringLiteral("Nick 2")));
-
-    Collection<Map<String, Object>> collection =
-        (Collection<Map<String, Object>>) registry.mapGraphValue(property, entityBuilderContext,
-            registry,context);
-    assertThat(collection, Matchers.hasSize(2));
-
-    Map<String, Object> person1 = Maps.newHashMap();
-    person1.put("firstName", Optional.of("Nick 1"));
-    Map<String, Object> person2 = Maps.newHashMap();
-    person2.put("firstName", Optional.of("Nick 2"));
-
-    Iterator<Map<String, Object>> iterator = collection.iterator();
-    assertThat(iterator.next(), is(person1));
-    assertThat(iterator.next(), is(person2));
-  }
 
   private Literal stringLiteral(String value) {
     return SimpleValueFactory.getInstance().createLiteral(value);
