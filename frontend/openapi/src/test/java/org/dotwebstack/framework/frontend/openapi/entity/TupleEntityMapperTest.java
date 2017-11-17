@@ -133,7 +133,6 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void map_MapsToHandlerResult_ForRequiredPropertyWithPresentBinding() {
     // Assert
     StringProperty nameProperty = new StringProperty().required(true);
@@ -158,7 +157,6 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void map_MapsToAbsentOptionalValue_ForOptionalPropertyWithAbsentBinding() {
     // Arrange
     TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
@@ -179,7 +177,6 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void map_MapsToObjectProperty_ForSingleResult() {
     // Arrange
     StringProperty stringProperty = new StringProperty();
@@ -204,7 +201,6 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void map_ForObjectPropertyOnlyMapsFirstResult_ForMultipleResults() {
     // Arrange
     StringProperty stringProperty = new StringProperty();

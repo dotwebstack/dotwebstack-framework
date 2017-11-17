@@ -19,7 +19,6 @@ public class SchemaMapperAdapter {
     this.schemaMappers = ImmutableList.copyOf(schemaMappers);
   }
 
-  @SuppressWarnings("unchecked")
   public <S extends Property> Object mapTupleValue(@NonNull S schema, @NonNull Value value) {
     SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(

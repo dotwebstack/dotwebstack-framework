@@ -197,7 +197,6 @@ public class InformationProductResourceProviderTest {
     informationProductResourceProvider.get(unknownResource);
   }
 
-  @SuppressWarnings({"unchecked"})
   @Test
   public void loadResources_CreatesInformationProduct_WithCorrectValues() {
 
