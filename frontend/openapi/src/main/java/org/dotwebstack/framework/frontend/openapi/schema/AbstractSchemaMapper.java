@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.schema;
 
-
 import com.google.common.base.Joiner;
+
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Map;
