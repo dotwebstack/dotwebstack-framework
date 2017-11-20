@@ -69,7 +69,7 @@ public class Representation {
 
     private Stage stage;
 
-    private List<Representation> subRepresentations;
+    private List<Representation> subRepresentations = ImmutableList.of();
 
     public Builder(@NonNull IRI identifier) {
       this.identifier = identifier;

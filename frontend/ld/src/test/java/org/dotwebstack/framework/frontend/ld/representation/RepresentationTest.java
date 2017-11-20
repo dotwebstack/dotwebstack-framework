@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
@@ -40,7 +41,6 @@ public class RepresentationTest {
   public void build_ThrowsException_WithMissingIdentifier() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new Representation.Builder(null).build();
   }
@@ -50,21 +50,19 @@ public class RepresentationTest {
     // Act
     final Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).urlPatterns("urlPattern").build();
-
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), is(nullValue()));
     assertThat(representation.getStage(), is(nullValue()));
     assertThat(representation.getAppearance(), is(nullValue()));
     assertThat(representation.getUrlPatterns(), hasItem("urlPattern"));
-    assertThat(representation.getSubRepresentation(), is(nullValue()));
+    assertThat(representation.getSubRepresentations(), is(Collections.EMPTY_LIST));
   }
 
   @Test
   public void build_CreatesRepresentation_WithoutUrlPattern() {
     // Act
     final Representation representation = new Representation.Builder(DBEERPEDIA.BREWERIES).build();
-
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), is(nullValue()));
@@ -79,10 +77,8 @@ public class RepresentationTest {
     final Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).urlPatterns(
             DBEERPEDIA.URL_PATTERN_VALUE).build();
-
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-
     assertThat(representation.getUrlPatterns().toArray()[0], equalTo(DBEERPEDIA.URL_PATTERN_VALUE));
   }
 
@@ -92,7 +88,6 @@ public class RepresentationTest {
     final Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE,
             DBEERPEDIA.URL_PATTERN_VALUE, DBEERPEDIA.URL_PATTERN_VALUE).build();
-
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), is(nullValue()));
@@ -106,16 +101,13 @@ public class RepresentationTest {
     // Act
     final Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
-
     final Appearance appearance = new Appearance.Builder(DBEERPEDIA.BREWERY_APPEARANCE,
         ELMO.RESOURCE_APPEARANCE, new LinkedHashModel()).build();
-
     final Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
             informationProduct).stage(stage).appearance(appearance)
             .urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE)
             .subRepresentation(subRepresentation).build();
-
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), equalTo(informationProduct));
@@ -123,7 +115,8 @@ public class RepresentationTest {
     assertThat(representation.getAppearance(), equalTo(appearance));
     assertThat(representation.getUrlPatterns().toArray()[0], equalTo(DBEERPEDIA.URL_PATTERN_VALUE));
     assertThat(representation.getUrlPatterns().size(), equalTo(1));
-    assertThat(representation.getSubRepresentation(), equalTo(subRepresentation));
+    assertThat(representation.getSubRepresentations(),
+        equalTo(ImmutableList.of(subRepresentation)));
   }
 
 }

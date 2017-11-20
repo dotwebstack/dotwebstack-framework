@@ -86,15 +86,12 @@ public class RepresentationResourceProviderTest {
     representationResourceProvider = new RepresentationResourceProvider(configurationBackend,
         informationProductResourceProvider, appearanceResourceProvider,
         stageResourceProvider, applicationProperties);
-
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
-
     when(informationProductResourceProvider.get(any())).thenReturn(informationProduct);
     when(stageResourceProvider.get(any())).thenReturn(stage);
     when(appearanceResourceProvider.get(any())).thenReturn(appearance);
-
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
@@ -102,7 +99,6 @@ public class RepresentationResourceProviderTest {
   public void constructor_ThrowsException_WithMissingConfigurationBackend() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new RepresentationResourceProvider(null, informationProductResourceProvider,
         appearanceResourceProvider, stageResourceProvider, applicationProperties);
@@ -112,7 +108,6 @@ public class RepresentationResourceProviderTest {
   public void constructor_ThrowsException_WithMissingInformationProductResourceProvider() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new RepresentationResourceProvider(configurationBackend, null, null, null,
         applicationProperties);
@@ -122,7 +117,6 @@ public class RepresentationResourceProviderTest {
   public void constructor_ThrowsException_WithMissingAppearanceResourceProvider() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
         null, stageResourceProvider, applicationProperties);
@@ -132,7 +126,6 @@ public class RepresentationResourceProviderTest {
   public void constructor_ThrowsException_WithMissingStageResourceProvider() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
         appearanceResourceProvider, null, applicationProperties);
@@ -142,7 +135,6 @@ public class RepresentationResourceProviderTest {
   public void constructor_ThrowsException_WithMissingApplicationProperties() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
         appearanceResourceProvider, stageResourceProvider, null);
@@ -163,10 +155,8 @@ public class RepresentationResourceProviderTest {
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.APPEARANCE_PROP, DBEERPEDIA.BREWERY_APPEARANCE))));
-
     // Act
     representationResourceProvider.loadResources();
-
     // Assert
     assertThat(representationResourceProvider.getAll().entrySet(), hasSize(1));
     Representation representation =
@@ -200,10 +190,8 @@ public class RepresentationResourceProviderTest {
                 DBEERPEDIA.URL_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.BREWERY_REPRESENTATION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE))));
-
     // Act
     representationResourceProvider.loadResources();
-
     // Assert
     assertThat(representationResourceProvider.getAll().entrySet(), hasSize(2));
   }
@@ -219,10 +207,8 @@ public class RepresentationResourceProviderTest {
                 ELMO.URL_PATTERN, DBEERPEDIA.URL_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE))));
-
     // Act
     representationResourceProvider.loadResources();
-
     // Assert
     Representation representation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
@@ -238,10 +224,8 @@ public class RepresentationResourceProviderTest {
                 ELMO.REPRESENTATION),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.URL_PATTERN, DBEERPEDIA.URL_PATTERN))));
-
     // Act
     representationResourceProvider.loadResources();
-
     // Assert
     Representation representation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
@@ -260,10 +244,8 @@ public class RepresentationResourceProviderTest {
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT))));
-
     // Act
     representationResourceProvider.loadResources();
-
     // Assert
     Representation representation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
@@ -278,10 +260,8 @@ public class RepresentationResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
             RDF.TYPE, ELMO.REPRESENTATION))));
-
     // Act
     representationResourceProvider.loadResources();
-
     // Assert
     Representation representation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
@@ -301,7 +281,6 @@ public class RepresentationResourceProviderTest {
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-
             valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
             valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
@@ -311,22 +290,20 @@ public class RepresentationResourceProviderTest {
             valueFactory
                 .createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, ELMO.CONTAINS_PROP,
                     DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION))));
-
     // Act
     representationResourceProvider.loadResources();
-
     // Assert
     Representation graphBreweryRepresentation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
     assertThat(graphBreweryRepresentation.getUrlPatterns(), is(Collections.EMPTY_LIST));
     assertThat(graphBreweryRepresentation.getStage(), not(nullValue()));
     assertThat(graphBreweryRepresentation.getInformationProduct(), not(nullValue()));
-
     Representation tupleBreweryRepresentation =
         representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION);
     assertThat(tupleBreweryRepresentation.getUrlPatterns(), is(Collections.EMPTY_LIST));
     assertThat(tupleBreweryRepresentation.getStage(), not(nullValue()));
     assertThat(tupleBreweryRepresentation.getInformationProduct(), not(nullValue()));
-    assertThat(tupleBreweryRepresentation.getSubRepresentation(), is(graphBreweryRepresentation));
+    assertThat(tupleBreweryRepresentation.getSubRepresentations(),
+        is(ImmutableList.of(graphBreweryRepresentation)));
   }
 }
