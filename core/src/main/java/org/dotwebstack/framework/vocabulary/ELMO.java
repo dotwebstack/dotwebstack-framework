@@ -9,6 +9,8 @@ public final class ELMO {
 
   public static final IRI CONFIG_GRAPHNAME;
 
+  public static final IRI CONTAINS_PROP;
+
   public static final IRI INFORMATION_PRODUCT;
 
   public static final IRI INFORMATION_PRODUCT_PROP;
@@ -63,8 +65,6 @@ public final class ELMO {
 
   public static final IRI RESULT_TYPE_DEFAULT;
 
-  public static final IRI CONTAINS_PROP;
-
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -73,51 +73,37 @@ public final class ELMO {
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
-
     CONFIG_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Config");
-
     // Classes
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
-
     SITE = valueFactory.createIRI(ELMO.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(ELMO.NAMESPACE, "Stage");
-
     BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "Backend");
     SPARQL_BACKEND = valueFactory.createIRI(ELMO.NAMESPACE, "SparqlBackend");
-
     REPRESENTATION = valueFactory.createIRI(ELMO.NAMESPACE, "Representation");
     REDIRECTION = valueFactory.createIRI(ELMO.NAMESPACE, "Redirection");
-
     APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "Appearance");
     RESOURCE_APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "ResourceAppearance");
     TABLE_APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "TableAppearance");
-
     // Properties
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
     DOMAIN = valueFactory.createIRI(ELMO.NAMESPACE, "domain");
     SITE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "site");
-
     ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "endpoint");
     QUERY = valueFactory.createIRI(ELMO.NAMESPACE, "query");
     RESULT_TYPE = valueFactory.createIRI(ELMO.NAMESPACE, "resultType");
     RESULT_TYPE_DEFAULT =
         valueFactory.createIRI(ELMO.NAMESPACE_EXTENSION_RESULTTYPE, ResultType.GRAPH.name());
-
     INFORMATION_PRODUCT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "informationProduct");
     URL_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "urlPattern");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
-
     TARGET_URL = valueFactory.createIRI(ELMO.NAMESPACE, "targetUrl");
-
     TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
-
     OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
     REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
-
     NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
     APPEARANCE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "appearance");
-
     CONTAINS_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "contains");
   }
 
