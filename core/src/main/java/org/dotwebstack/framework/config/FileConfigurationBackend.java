@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.config;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,42 +82,35 @@ public class FileConfigurationBackend
 
   @PostConstruct
   public void loadResources() throws IOException {
-
     Resource[] projectResources =
         ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
             resourcePath + "/model/**");
-
     if (projectResources.length == 0) {
       LOG.warn("No model resources found in path:{}/model", resourcePath);
       return;
     }
-
     RepositoryConnection repositoryConnection;
     try {
       repositoryConnection = repository.getConnection();
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
-
     List<Resource> resources = getCombinedResources(projectResources);
-
     final Optional<Resource> optionalPrefixesResource = getPrefixesResource(resources);
     Resource prefixesResource = null;
     if (optionalPrefixesResource.isPresent()) {
       prefixesResource = optionalPrefixesResource.get();
       checkMultiplePrefixesDeclaration(prefixesResource);
     }
-
-    List<InputStream> configurationStreams = new ArrayList<>();
+    List<InputStream> configurationStreams = ImmutableList.of();
     try {
       for (Resource resource : resources) {
         String extension = FilenameUtils.getExtension(resource.getFilename());
-
         if (!FileFormats.containsExtension(extension)) {
           LOG.debug("File extension not supported, ignoring file: \"{}\"", resource.getFilename());
           continue;
         }
-        addResoureToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource);
+        addResourceToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource);
         configurationStreams.add(resource.getInputStream());
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
@@ -128,8 +122,9 @@ public class FileConfigurationBackend
     }
   }
 
-  private void addResoureToRepositoryConnection(RepositoryConnection repositoryConnection,
-      Optional<Resource> optionalPrefixesResource, Resource resource) {
+  private void addResourceToRepositoryConnection(RepositoryConnection repositoryConnection,
+                                                 Optional<Resource> optionalPrefixesResource,
+                                                 Resource resource) {
     final String extension = FilenameUtils.getExtension(resource.getFilename());
     try {
       if (optionalPrefixesResource.isPresent()) {
@@ -187,7 +182,6 @@ public class FileConfigurationBackend
 
   private void checkMultiplePrefixesDeclaration(Resource prefixes) throws IOException {
     Map<String, String> prefixesMap = new HashMap<>();
-
     final String[] allPrefixes = getPrefixesOfResource(prefixes);
     int lineNumber = 0;
     for (String prefix : allPrefixes) {
