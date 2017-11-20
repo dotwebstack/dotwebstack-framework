@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
+import org.dotwebstack.framework.validation.ShaclValidator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +22,9 @@ public class ApplicationConfigurationTest {
   @Mock
   private Resource elmoShapesResource;
 
+  @Mock
+  private ShaclValidator shaclValidator;
+
   private ApplicationConfiguration applicationConfiguration;
 
   @Before
@@ -33,8 +37,8 @@ public class ApplicationConfigurationTest {
     // Act
     ConfigurationBackend backend =
         applicationConfiguration
-            .configurationBackend(resource, "file:src/main/resources", elmoShapesResource);
-
+            .configurationBackend(resource, "file:src/main/resources",
+                elmoShapesResource, shaclValidator);
     // Assert
     assertThat(backend, instanceOf(FileConfigurationBackend.class));
   }
