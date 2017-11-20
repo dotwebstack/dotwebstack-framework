@@ -128,10 +128,10 @@ public class FileConfigurationBackend
     final String extension = FilenameUtils.getExtension(resource.getFilename());
     try {
       if (optionalPrefixesResource.isPresent()) {
-        try (SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
+        try (SequenceInputStream resourceSequenceInputStream = new SequenceInputStream(
             optionalPrefixesResource.get().getInputStream(), resource.getInputStream())) {
           repositoryConnection.add(
-              new EnvironmentAwareResource(resourceSquenceInputStream, environment)
+              new EnvironmentAwareResource(resourceSequenceInputStream, environment)
                   .getInputStream(), "#", FileFormats.getFormat(extension));
         }
       } else {
