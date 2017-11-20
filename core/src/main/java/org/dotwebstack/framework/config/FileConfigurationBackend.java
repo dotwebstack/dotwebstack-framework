@@ -140,9 +140,9 @@ public class FileConfigurationBackend
                 .getInputStream(), "#", FileFormats.getFormat(extension));
       }
     } catch (IOException ex) {
-      LOG.error("Configuration file %s could not read", resource.getFilename());
+      LOG.error("Configuration file %s could not be read.", resource.getFilename());
       throw new ConfigurationException(
-          String.format("Configuration file <%s> could not read", resource.getFilename()));
+          String.format("Configuration file <%s> could not be read.", resource.getFilename()));
     }
   }
 
@@ -152,7 +152,7 @@ public class FileConfigurationBackend
           Collections.enumeration(configurationStreams))) {
         shaclValidator.validate(stream, elmoShapes);
       } catch (IOException ex) {
-        new ShaclValidationException("Configuration files could not read.", ex);
+        new ShaclValidationException("Configuration files could not be read.", ex);
       }
     } else {
       LOG.error("Found no configuration files");
