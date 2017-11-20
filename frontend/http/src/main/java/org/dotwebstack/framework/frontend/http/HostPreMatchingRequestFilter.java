@@ -20,10 +20,8 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
-
     UriInfo uriInfo = requestContext.getUriInfo();
     UriBuilder hostUriBuilder = uriInfo.getRequestUriBuilder();
-
     // get host from header forwarded host if set
     String forwardedHost = requestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
     URI builtRequestUri = hostUriBuilder.build();
@@ -33,9 +31,7 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
       replacementUri = forwardedHostUriBuilder.build().getHost() + builtRequestUri.getPath();
     }
     hostUriBuilder.replacePath(replacementUri);
-
     LOG.debug("Set new request path to {} (was {})", hostUriBuilder, uriInfo.getAbsolutePath());
-
     requestContext.setRequestUri(hostUriBuilder.build());
   }
 
