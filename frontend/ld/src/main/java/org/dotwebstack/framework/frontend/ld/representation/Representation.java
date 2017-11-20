@@ -22,7 +22,7 @@ public class Representation {
 
   private Stage stage;
 
-  private Representation subRepresentation;
+  private List<Representation> subRepresentations;
 
   private Representation(Builder builder) {
     identifier = builder.identifier;
@@ -30,7 +30,7 @@ public class Representation {
     stage = builder.stage;
     informationProduct = builder.informationProduct;
     appearance = builder.appearance;
-    subRepresentation = builder.subRepresentation;
+    subRepresentations = builder.subRepresentations;
   }
 
   public IRI getIdentifier() {
@@ -53,8 +53,8 @@ public class Representation {
     return stage;
   }
 
-  public Representation getSubRepresentation() {
-    return subRepresentation;
+  public List<Representation> getSubRepresentations() {
+    return subRepresentations;
   }
 
   public static class Builder {
@@ -69,7 +69,7 @@ public class Representation {
 
     private Stage stage;
 
-    private Representation subRepresentation;
+    private List<Representation> subRepresentations;
 
     public Builder(@NonNull IRI identifier) {
       this.identifier = identifier;
@@ -95,8 +95,8 @@ public class Representation {
       return this;
     }
 
-    public Builder subRepresentation(Representation subRespresentation) {
-      this.subRepresentation = subRespresentation;
+    public Builder subRepresentation(Representation... subRespresentations) {
+      this.subRepresentations = Arrays.asList(subRespresentations);
       return this;
     }
 
