@@ -29,7 +29,7 @@ public class ShaclValidatorTest {
   private Resource validDataResoource;
 
   @Mock
-  private Resource invalidDataResoource;
+  private Resource invalidDataResource;
 
   @Mock
   private Resource shapesResource;
@@ -38,7 +38,7 @@ public class ShaclValidatorTest {
   private Resource dataResource;
 
   @Mock
-  private Resource invalidDataWithoutPrefResoource;
+  private Resource invalidDataWithoutPrefResource;
 
   @Mock
   private Resource prefixesResource;
@@ -55,9 +55,9 @@ public class ShaclValidatorTest {
         new ClassPathResource("/shaclvalidation/shapes.trig").getInputStream());
     validDataResoource = new InputStreamResource(
         new ClassPathResource("/shaclvalidation/validData.trig").getInputStream());
-    invalidDataResoource = new InputStreamResource(
+    invalidDataResource = new InputStreamResource(
         new ClassPathResource("/shaclvalidation/invalidData.trig").getInputStream());
-    invalidDataWithoutPrefResoource = new InputStreamResource(
+    invalidDataWithoutPrefResource = new InputStreamResource(
         new ClassPathResource("/shaclvalidation/invalidDataWithoutPref.trig").getInputStream());
     validDataWithoutPrefResource = new InputStreamResource(
         new ClassPathResource("/shaclvalidation/validDataWithoutPref.trig").getInputStream());

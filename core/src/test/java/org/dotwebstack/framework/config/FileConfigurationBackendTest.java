@@ -95,7 +95,6 @@ public class FileConfigurationBackendTest {
   public void constructor_ThrowsException_WithMissingElmoConfiguration() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new FileConfigurationBackend(null, repository, "file:config", elmoShapesResource,
         shaclValidator);
@@ -105,7 +104,6 @@ public class FileConfigurationBackendTest {
   public void constructor_ThrowsException_WithMissingRepository() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new FileConfigurationBackend(elmoConfigurationResource, null, "file:config",
         elmoShapesResource, shaclValidator);
@@ -115,7 +113,6 @@ public class FileConfigurationBackendTest {
   public void constructor_ThrowsException_WithMissingResourcePath() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new FileConfigurationBackend(elmoConfigurationResource, repository, null, elmoShapesResource,
         shaclValidator);
@@ -125,7 +122,6 @@ public class FileConfigurationBackendTest {
   public void constructor_ThrowsException_WithMissingShapesResource() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config", null,
         shaclValidator);
@@ -135,7 +131,6 @@ public class FileConfigurationBackendTest {
   public void setResourceLoader_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     backend.setResourceLoader(null);
   }
@@ -144,7 +139,6 @@ public class FileConfigurationBackendTest {
   public void setEnvironment_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
-
     // Act
     backend.setEnvironment(null);
   }
@@ -169,11 +163,9 @@ public class FileConfigurationBackendTest {
         new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[] {resource});
-
+        new Resource[]{resource});
     // Act
     backend.loadResources();
-
     // Assert
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
@@ -187,10 +179,8 @@ public class FileConfigurationBackendTest {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[0]);
-
     // Act
     backend.loadResources();
-
     // Assert
     verifyZeroInteractions(repositoryConnection);
   }
@@ -201,11 +191,9 @@ public class FileConfigurationBackendTest {
     Resource resource = mock(Resource.class);
     when(resource.getFilename()).thenReturn("not-existing.md");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[] {resource});
-
+        new Resource[]{resource});
     // Act
     backend.loadResources();
-
     // Assert
     verify(repositoryConnection).close();
     verifyNoMoreInteractions(repositoryConnection);
@@ -216,13 +204,11 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource resource = mock(Resource.class);
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[] {resource});
+        new Resource[]{resource});
     when(repository.getConnection()).thenThrow(RepositoryException.class);
-
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Error while getting repository connection.");
-
     // Act
     backend.loadResources();
   }
@@ -234,12 +220,10 @@ public class FileConfigurationBackendTest {
     when(resource.getInputStream()).thenThrow(new RDFParseException("message"));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[] {resource});
-
+        new Resource[]{resource});
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Error while loading RDF data.");
-
     // Act
     backend.loadResources();
   }
@@ -252,20 +236,16 @@ public class FileConfigurationBackendTest {
         new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[] {resource});
-
+        new Resource[]{resource});
     when(elmoConfigurationResource.getInputStream()).thenReturn(
         new ByteArrayInputStream("elmo".getBytes(Charsets.UTF_8)));
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
-
     // Act
     backend.loadResources();
-
     // Assert
     verify(elmoConfigurationResource, atLeastOnce()).getInputStream();
     ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
     verify(repositoryConnection, times(2)).add(captor.capture(), any(), any());
-
     List<InputStream> inputStreams = captor.getAllValues();
     List<String> fileContents = inputStreams.stream().map(stream -> {
       try {
@@ -275,7 +255,6 @@ public class FileConfigurationBackendTest {
         return null;
       }
     }).collect(Collectors.toList());
-
     assertThat(fileContents, hasItems("file", "elmo"));
   }
 
@@ -293,13 +272,11 @@ public class FileConfigurationBackendTest {
             .getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[] {resource});
-
+        new Resource[]{resource});
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
         "Found multiple declaration <@prefix rdfs: <http://www.have-a-nice-day.com/rdf-schema#> .> at line <5>");
-
     // Act
     backend.loadResources();
   }
@@ -317,13 +294,11 @@ public class FileConfigurationBackendTest {
             .getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[] {resource});
-
+        new Resource[]{resource});
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
         "Found unknown prefix format <this is not a valid prefix> at line <5>");
-
     // Act
     backend.loadResources();
   }
@@ -342,29 +317,25 @@ public class FileConfigurationBackendTest {
     when(config.getInputStream()).thenThrow(IOException.class);
     when(config.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[] {prefixes, config});
-
+        new Resource[]{prefixes, config});
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
-        "Configuration file <config.trig> could not read");
-
+        "Configuration file <config.trig> could not be read");
     // Act
     backend.loadResources();
   }
 
   @Test
-  public void loadPrefixes_ThrowIoException_WhenReadPrefixesFile() throws Exception {
+  public void loadPrefixes_ThrowConfigurationException_WhenReadPrefixesFile() throws Exception {
     // Arrange
     Resource resource = mock(Resource.class);
     when(resource.getInputStream()).thenThrow(new IOException());
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[] {resource});
-
+        new Resource[]{resource});
     // Assert
-    thrown.expect(IOException.class);
-
+    thrown.expect(ConfigurationException.class);
     // Act
     backend.loadResources();
   }
@@ -391,8 +362,7 @@ public class FileConfigurationBackendTest {
             + "}")
             .getBytes(Charsets.UTF_8)));
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[] {prefixesResource, backendResource, resource, elmoShapesResource});
-
+        new Resource[]{prefixesResource, backendResource, resource, elmoShapesResource});
     // Act / Assert
     backend.loadResources();
   }
