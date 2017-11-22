@@ -20,7 +20,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class HttpConfigurationTest {
+public class ErrorIntegrationTest {
 
   private WebTarget target;
 
@@ -37,14 +37,36 @@ public class HttpConfigurationTest {
   }
 
   @Test
-  public void get_GivesValidResponse_ForStaticAsset() {
+  public void get_ReturnsNotFoundResponse_ForNonExistingPath() {
     // Act
-    Response response = target.path("/robots.txt").request().get();
+    Response response = target.path("/some/non-existing-path").request().get();
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getStatusInfo(), equalTo(Status.NOT_FOUND));
     assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("User-agent: *\nDisallow:\n"));
+    assertThat(response.readEntity(String.class), equalTo("Not Found"));
+  }
+
+  @Test
+  public void get_ReturnsNotFoundResponse_ForNonExistingAsset() {
+    // Act
+    Response response = target.path("/assets/non-existing-asset").request().get();
+
+    // Assert
+    assertThat(response.getStatusInfo(), equalTo(Status.NOT_FOUND));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
+    assertThat(response.readEntity(String.class), equalTo("Not Found"));
+  }
+
+  @Test
+  public void get_ReturnsErrorResponseWithoutExposingDetails_ForUnexpectedRuntimeException() {
+    // Act
+    Response response = target.path("/runtime-exception").request().get();
+
+    // Assert
+    assertThat(response.getStatusInfo(), equalTo(Status.INTERNAL_SERVER_ERROR));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
+    assertThat(response.readEntity(String.class), equalTo("Internal Server Error"));
   }
 
 }
