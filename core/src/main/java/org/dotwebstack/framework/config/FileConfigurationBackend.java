@@ -117,7 +117,7 @@ public class FileConfigurationBackend
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
       validate(configurationStreams);
-    } catch (RDF4JException | ShaclValidationException e) {
+    } catch (RDF4JException e) {
       throw new ConfigurationException("Error while loading RDF data.", e);
     } finally {
       repositoryConnection.close();
@@ -152,7 +152,12 @@ public class FileConfigurationBackend
     if (configurationStreams.size() > 0) {
       try (InputStream stream = new SequenceInputStream(
           Collections.enumeration(configurationStreams))) {
-        shaclValidator.validate(stream, elmoShapes);
+        final ValidationReport report = shaclValidator.validate(
+            RdfModelTransformer.transformInputStreamToModel(stream),
+            RdfModelTransformer.transformTrigFileToModel(elmoShapes));
+        if (!report.isValid()) {
+          throw new ShaclValidationException(report.getValidationReport());
+        }
       } catch (IOException ex) {
         new ShaclValidationException("Configuration files could not be read.", ex);
       }

@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.validation;
 
-public class ShaclValidationException extends Exception {
+public class ShaclValidationException extends RuntimeException {
 
   private static final long serialVersionUID = 6908579800668544739L;
 
