@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.validation;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -68,16 +70,21 @@ public class ShaclValidatorTest {
   @Test
   public void validate_NoError_validConfiguration() throws Exception {
     // Act / Assert
-    shaclValidator.validate(validDataResoource.getInputStream(), shapesResource);
+    shaclValidator.validate(RdfModelTransformer.transformTrigFileToModel(validDataResoource),
+        RdfModelTransformer.transformTrigFileToModel(shapesResource));
   }
 
   @Test
-  public void validate_throwShaclValidationException_invalidConfiguration() throws Exception {
-    // Assert
-    thrown.expect(ShaclValidationException.class);
-
+  public void validate_getShaclValidationReport_invalidConfiguration() throws Exception {
     // Act
-    shaclValidator.validate(invalidDataResoource.getInputStream(), shapesResource);
+    final ValidationReport report = shaclValidator.validate(RdfModelTransformer
+            .transformTrigFileToModel(invalidDataResource),
+        RdfModelTransformer.transformTrigFileToModel(shapesResource));
+    // Assert
+    assertThat(report.isValid(), equalTo(false));
+    assertThat(report.getValidationReport(), equalTo("Invalid configuration at path "
+        + "[http://example.org#lid] on node [http://example.org#HuwelijkMarcoNanda] "
+        + "with error message [More than 2 values]"));
   }
 
   @Test
@@ -85,33 +92,28 @@ public class ShaclValidatorTest {
     // Arrange
     when(dataResource.getInputStream()).thenThrow(IOException.class);
     InputStream resource = mock(InputStream.class);
-
     // Assert
-    thrown.expect(ShaclValidationException.class);
-    thrown.expectMessage("File could not read during the validation process");
-
+    thrown.expect(IOException.class);
     // Act
-    shaclValidator.validate(resource, shapesResource);
+    shaclValidator.validate(RdfModelTransformer.transformInputStreamToModel(resource),
+        RdfModelTransformer.transformTrigFileToModel(shapesResource));
   }
 
   @Test
-  public void validate_throwShaclValidationException_WithIoExceptionPrefixes()
-      throws Exception {
+  public void validate_throwShaclValidationException_WithIoExceptionPrefixes() throws Exception {
     // Arrange
     final Resource ioExceptionResource = mock(Resource.class);
     when(ioExceptionResource.getInputStream()).thenThrow(IOException.class);
-
     // Assert
-    thrown.expect(ShaclValidationException.class);
-    thrown.expectMessage("File could not read during the validation process");
-
+    thrown.expect(IOException.class);
     // Act
-    shaclValidator.validate(dataResource.getInputStream(), shapesResource, ioExceptionResource);
+    shaclValidator.validate(RdfModelTransformer.mergeResourceWithPrefixes(
+        dataResource.getInputStream(), ioExceptionResource.getInputStream()),
+        RdfModelTransformer.transformTrigFileToModel(shapesResource));
   }
 
   @Test
-  public void validate_throwShaclValidationException_WithIoExceptionDataShape()
-      throws Exception {
+  public void validate_throwShaclValidationException_WithIoExceptionDataShape() throws Exception {
     // Arrange
     Resource prefixesResource = mock(Resource.class);
     when(prefixesResource.getInputStream()).thenReturn(
@@ -119,32 +121,36 @@ public class ShaclValidatorTest {
     Resource ioExceptionShapesResource = mock(Resource.class);
     when(ioExceptionShapesResource.getInputStream()).thenThrow(IOException.class);
     InputStream resource = mock(InputStream.class);
-
     // Assert
-    thrown.expect(ShaclValidationException.class);
-    thrown.expectMessage("File could not read during the validation process");
-
+    thrown.expect(IOException.class);
     // Act
-    shaclValidator.validate(resource, ioExceptionShapesResource, prefixesResource);
+    final ValidationReport report = shaclValidator.validate(RdfModelTransformer
+            .mergeResourceWithPrefixes(prefixesResource.getInputStream(), resource),
+        RdfModelTransformer.transformTrigFileToModel(ioExceptionShapesResource));
   }
 
   @Test
-  public void validate_throwShaclValidationException_invalidConfigurationWithPrefixes()
-      throws Exception {
-    // Assert
-    thrown.expect(ShaclValidationException.class);
-    thrown.expectMessage(
-        "Invalid configuration at path [http://example.org#lid] on node [http://example.org#HuwelijkMarcoNanda] with error message [More than 2 values]");
-
+  public void validate_isNotValid_invalidConfigurationWithPrefixes() throws Exception {
     // Act
-    shaclValidator.validate(invalidDataWithoutPrefResoource.getInputStream(), shapesResource,
-        prefixesResource);
+    final ValidationReport report = shaclValidator.validate(RdfModelTransformer
+            .mergeResourceWithPrefixes(prefixesResource.getInputStream(),
+                invalidDataWithoutPrefResource.getInputStream()),
+        RdfModelTransformer.transformTrigFileToModel(shapesResource));
+    // Assert
+    assertThat(report.isValid(), equalTo(false));
+    assertThat(report.getValidationReport(), equalTo("Invalid configuration at path "
+        + "[http://example.org#lid] on node [http://example.org#HuwelijkMarcoNanda] with error "
+        + "message [More than 2 values]"));
   }
 
   @Test
   public void validate_NoError_validConfigurationWithPrefixes() throws Exception {
-    // Act / Assert
-    shaclValidator
-        .validate(validDataWithoutPrefResource.getInputStream(), shapesResource, prefixesResource);
+    // Act
+    final ValidationReport report = shaclValidator.validate(RdfModelTransformer
+        .mergeResourceWithPrefixes(prefixesResource.getInputStream(),
+            validDataWithoutPrefResource.getInputStream()), RdfModelTransformer
+        .transformTrigFileToModel(shapesResource));
+    // Assert
+    assertThat(report.isValid(), equalTo(true));
   }
 }

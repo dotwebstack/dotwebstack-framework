@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.validation.ShaclValidator;
+import org.dotwebstack.framework.validation.ValidationReport;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
@@ -70,6 +71,9 @@ public class FileConfigurationBackendTest {
   @Mock
   private ShaclValidator shaclValidator;
 
+  @Mock
+  private ValidationReport report;
+
   private ResourceLoader resourceLoader;
 
   private FileConfigurationBackend backend;
@@ -80,10 +84,14 @@ public class FileConfigurationBackendTest {
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     elmoConfigurationResource = mock(Resource.class);
     elmoShapesResource = mock(Resource.class);
+    when(elmoShapesResource.getInputStream()).thenReturn(
+        new ByteArrayInputStream("".getBytes(Charsets.UTF_8)));
     shaclValidator = mock(ShaclValidator.class);
     when(elmoConfigurationResource.getInputStream())
         .thenReturn(new ByteArrayInputStream("".getBytes()));
-    //when(elmoShapesResource.getInputStream()).thenReturn(new ByteArrayInputStream("".getBytes()));
+    report = mock(ValidationReport.class);
+    when(report.isValid()).thenReturn(true);
+    when(shaclValidator.validate(any(), any())).thenReturn(report);
     backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config",
         elmoShapesResource, shaclValidator);
     backend.setResourceLoader(resourceLoader);

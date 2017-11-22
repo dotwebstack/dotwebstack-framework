@@ -3,6 +3,7 @@ package org.dotwebstack.framework;
 import java.io.IOException;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
+import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
@@ -58,11 +59,23 @@ public class FileConfigurationBackendIntegrationTest {
     // Arrange
     fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
         "invalidConfig", elmoShapes, shaclValidator);
-
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Error while loading RDF data.");
+    // Act
+    fileConfigurationBackend.setEnvironment(environment);
+    fileConfigurationBackend.loadResources();
+  }
 
+  @Test
+  public void configrateBackend_WithInvalidConfiguration_throwShaclValidationException()
+      throws Exception {
+    // Arrange
+    fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
+        "shaclValidationException", elmoShapes, shaclValidator);
+    // Assert
+    thrown.expect(ShaclValidationException.class);
+    thrown.expectMessage("Invalid configuration at path [http://dotwebstack.org/def/elmo#name] on node [http://dbeerpedia.org#GraphBreweryListRepresentation] with error message [More than 1 values]");
     // Act
     fileConfigurationBackend.setEnvironment(environment);
     fileConfigurationBackend.loadResources();
