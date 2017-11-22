@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -26,10 +28,12 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
-      @NonNull InformationProductResourceProvider informationProductResourceProvider,
-      @NonNull AppearanceResourceProvider appearanceResourceProvider,
-      @NonNull StageResourceProvider stageResourceProvider,
-      ApplicationProperties applicationProperties) {
+                                        @NonNull InformationProductResourceProvider
+                                            informationProductResourceProvider,
+                                        @NonNull AppearanceResourceProvider
+                                            appearanceResourceProvider,
+                                        @NonNull StageResourceProvider stageResourceProvider,
+                                        ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.informationProductResourceProvider = informationProductResourceProvider;
     this.appearanceResourceProvider = appearanceResourceProvider;
@@ -39,31 +43,26 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   @Override
   protected GraphQuery getQueryForResources(RepositoryConnection conn) {
     final String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
-
     final GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.REPRESENTATION);
-
     return graphQuery;
   }
 
   @Override
   protected Representation createResource(Model model, IRI identifier) {
     final Representation.Builder builder = new Representation.Builder(identifier);
-
     getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(iri ->
         builder.informationProduct(informationProductResourceProvider.get(iri)));
-
     getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(iri ->
         builder.appearance(appearanceResourceProvider.get(iri)));
-
-    getObjectString(model, identifier, ELMO.URL_PATTERN).ifPresent(builder::urlPatterns);
-
+    getObjectStrings(model, identifier, ELMO.URL_PATTERN).ifPresent(builder::urlPatterns);
     getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(iri ->
         builder.stage(stageResourceProvider.get(iri)));
-
-    getObjectIRI(model, identifier, ELMO.CONTAINS_PROP).ifPresent(iri ->
-        builder.subRepresentation(this.get(iri)));
-
+    List<IRI> subRepresentationIris = new ArrayList<>();
+    getObjectIris(model, identifier, ELMO.CONTAINS_PROP).ifPresent(subRepresentationIris::addAll);
+    subRepresentationIris.stream().forEach(iri -> builder.subRepresentation(this.get(iri)));
+    /*getObjectIRIs(model, identifier, ELMO.CONTAINS_PROP).ifPresent(iri ->
+        builder.subRepresentation(this.get(iri)));*/
     return builder.build();
   }
 
