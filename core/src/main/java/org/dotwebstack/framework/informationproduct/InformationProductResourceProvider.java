@@ -32,11 +32,12 @@ public class InformationProductResourceProvider
 
   @Autowired
   public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
-      @NonNull BackendResourceProvider backendResourceProvider,
-      @NonNull ParameterResourceProvider parameterResourceProvider,
-      ApplicationProperties applicationProperties) {
+                                            @NonNull BackendResourceProvider
+                                                backendResourceProvider,
+                                            @NonNull ParameterResourceProvider
+                                                parameterResourceProvider,
+                                            ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
-
     this.backendResourceProvider = backendResourceProvider;
     this.parameterResourceProvider = parameterResourceProvider;
   }
@@ -60,26 +61,26 @@ public class InformationProductResourceProvider
         Models.objectIRIs(model.filter(identifier, ELMO.REQUIRED_PARAMETER_PROP, null));
     Set<IRI> optionalParameterIds =
         Models.objectIRIs(model.filter(identifier, ELMO.OPTIONAL_PARAMETER_PROP, null));
-
     String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
-
     return create(backendIRI, requiredParameterIds, optionalParameterIds, identifier, label, model);
   }
 
+  @Override
+  protected InformationProduct postLoad(Model model, InformationProduct resource) {
+    return resource;
+  }
+
   private InformationProduct create(IRI backendIdentifier, Set<IRI> requiredParameterIds,
-      Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements) {
+                                    Set<IRI> optionalParameterIds, IRI identifier,
+                                    String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
-
     ImmutableList.Builder<Parameter> builder = ImmutableList.builder();
-
     requiredParameterIds.stream().map(parameterResourceProvider::get).map(
         d -> TermParameter.requiredTermParameter(d.getIdentifier(), d.getName())).forEach(
-            builder::add);
-
+        builder::add);
     optionalParameterIds.stream().map(parameterResourceProvider::get).map(
         d -> TermParameter.optionalTermParameter(d.getIdentifier(), d.getName())).forEach(
-            builder::add);
-
+        builder::add);
     return backend.createInformationProduct(identifier, label, builder.build(), statements);
   }
 

@@ -75,6 +75,11 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
         resources.put((IRI) identifier, resource);
         LOG.info("Registered resource: <{}>", identifier);
       });
+      model.subjects().forEach(identifier -> {
+        R resource = postLoad(model, resources.get(identifier));
+        resources.replace((IRI) identifier, resource);
+        LOG.info("Update resource: <{}>", identifier);
+      });
     } catch (QueryEvaluationException e) {
       throw new ConfigurationException("Error while evaluating SPARQL query.", e);
     } finally {
@@ -85,6 +90,8 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
   protected abstract GraphQuery getQueryForResources(RepositoryConnection conn);
 
   protected abstract R createResource(Model model, IRI identifier);
+
+  protected abstract R postLoad(Model model, R resource);
 
   protected Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
     return Models.objectString(model.filter(subject, predicate, null));

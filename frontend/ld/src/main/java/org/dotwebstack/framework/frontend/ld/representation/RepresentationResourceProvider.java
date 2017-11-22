@@ -58,11 +58,29 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     getObjectStrings(model, identifier, ELMO.URL_PATTERN).ifPresent(builder::urlPatterns);
     getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(iri ->
         builder.stage(stageResourceProvider.get(iri)));
+    return builder.build();
+  }
+
+  @Override
+  public Representation postLoad(Model model, Representation representation) {
+    Representation.Builder builder = new Representation.Builder(representation.getIdentifier());
+    if (representation.getStage() != null) {
+      builder.stage(representation.getStage());
+    }
+    if (representation.getUrlPatterns() != null) {
+      builder.urlPatterns(representation.getUrlPatterns().toArray(
+          new String[representation.getUrlPatterns().size()]));
+    }
+    if (representation.getInformationProduct() != null) {
+      builder.informationProduct(representation.getInformationProduct());
+    }
+    if (representation.getAppearance() != null) {
+      builder.appearance(representation.getAppearance());
+    }
     List<IRI> subRepresentationIris = new ArrayList<>();
-    getObjectIris(model, identifier, ELMO.CONTAINS_PROP).ifPresent(subRepresentationIris::addAll);
+    getObjectIris(model, representation.getIdentifier(), ELMO.CONTAINS_PROP)
+        .ifPresent(subRepresentationIris::addAll);
     subRepresentationIris.stream().forEach(iri -> builder.subRepresentation(this.get(iri)));
-    /*getObjectIRIs(model, identifier, ELMO.CONTAINS_PROP).ifPresent(iri ->
-        builder.subRepresentation(this.get(iri)));*/
     return builder.build();
   }
 

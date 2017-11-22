@@ -21,8 +21,8 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
 
   @Autowired
   public StageResourceProvider(ConfigurationBackend configurationBackend,
-      @NonNull SiteResourceProvider siteResourceProvider,
-      ApplicationProperties applicationProperties) {
+                               @NonNull SiteResourceProvider siteResourceProvider,
+                               ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.siteResourceProvider = siteResourceProvider;
   }
@@ -40,10 +40,14 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
     IRI siteIRI = getObjectIRI(model, identifier, ELMO.SITE_PROP).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for stage <%s>.", ELMO.SITE_PROP, identifier)));
-
     Stage.Builder builder = new Stage.Builder(identifier, siteResourceProvider.get(siteIRI));
     getObjectString(model, identifier, ELMO.BASE_PATH).ifPresent(builder::basePath);
     return builder.build();
+  }
+
+  @Override
+  protected Stage postLoad(Model model, Stage resource) {
+    return resource;
   }
 
 }

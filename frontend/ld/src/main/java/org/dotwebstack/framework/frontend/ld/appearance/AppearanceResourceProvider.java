@@ -23,7 +23,7 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
 
   @Autowired
   public AppearanceResourceProvider(ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties) {
+                                    ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
   }
 
@@ -32,7 +32,6 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o. ?rep ?appearance ?s. }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("appearance", ELMO.APPEARANCE_PROP);
-
     return graphQuery;
   }
 
@@ -42,30 +41,30 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
         getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(() -> new ConfigurationException(
             String.format("No <%s> statement has been found for appearance <%s>.",
                 RDF.TYPE, identifier)));
-
     return new Appearance.Builder(identifier, type, getModel(identifier)).build();
+  }
+
+  @Override
+  protected Appearance postLoad(Model model, Appearance resource) {
+    return resource;
   }
 
   private Model getModel(IRI identifier) {
     final RepositoryConnection repositoryConnection;
     final Model model;
-
     try {
       repositoryConnection = configurationBackend.getRepository().getConnection();
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
-
     String query = "CONSTRUCT { ?app ?p ?o. ?o ?op ?oo } "
         + "WHERE { ?app ?p ?o. OPTIONAL { ?o ?op ?oo } }";
     GraphQuery graphQuery = repositoryConnection.prepareGraphQuery(query);
     graphQuery.setBinding("app", identifier);
-
     SimpleDataset simpleDataset = new SimpleDataset();
     simpleDataset.addDefaultGraph(applicationProperties.getSystemGraph());
     simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
     graphQuery.setDataset(simpleDataset);
-
     try {
       model = QueryResults.asModel(graphQuery.evaluate());
     } catch (QueryEvaluationException e) {
@@ -73,7 +72,6 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
     } finally {
       repositoryConnection.close();
     }
-
     return model;
   }
 

@@ -18,7 +18,7 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
 
   @Autowired
   public SiteResourceProvider(ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties) {
+                              ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
   }
 
@@ -34,7 +34,6 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
   protected Site createResource(Model model, IRI identifier) {
     Site.Builder builder = new Site.Builder(identifier);
     Optional<String> domain = getObjectString(model, identifier, ELMO.DOMAIN);
-
     // Check if domain already exists
     if (domain.isPresent()) {
       if (getAll().entrySet().stream().anyMatch(
@@ -48,8 +47,12 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
         throw new ConfigurationException("Catch all domain found for multiple sites.");
       }
     }
-
     return builder.build();
+  }
+
+  @Override
+  protected Site postLoad(Model model, Site resource) {
+    return resource;
   }
 
 }
