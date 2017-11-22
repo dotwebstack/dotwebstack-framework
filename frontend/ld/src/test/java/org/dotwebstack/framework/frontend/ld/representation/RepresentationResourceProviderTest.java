@@ -23,6 +23,7 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -109,7 +110,8 @@ public class RepresentationResourceProviderTest {
     // Assert
     thrown.expect(NullPointerException.class);
     // Act
-    new RepresentationResourceProvider(configurationBackend, null, null, null,
+    new RepresentationResourceProvider(configurationBackend, null,
+        null, null,
         applicationProperties);
   }
 
@@ -167,6 +169,93 @@ public class RepresentationResourceProviderTest {
         equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
     assertThat(representation.getStage(), equalTo(stage));
     assertThat(representation.getAppearance(), equalTo(appearance));
+  }
+
+  @Test
+  public void loadResources_LoadMultipleUrlPatterns_WithValidData() {
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.URL_PATTERN, valueFactory.createIRI(DBEERPEDIA.NAMESPACE,
+                    "helloWorld")),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.URL_PATTERN, valueFactory.createIRI(DBEERPEDIA.NAMESPACE,
+                    "this/is/sparta")),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.APPEARANCE_PROP, DBEERPEDIA.BREWERY_APPEARANCE))));
+    // Act
+    representationResourceProvider.loadResources();
+    // Assert
+    assertThat(representationResourceProvider.getAll().entrySet(), hasSize(1));
+    Representation representation =
+        representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
+    assertThat(representation, is(not(nullValue())));
+    assertThat(representation.getInformationProduct(), equalTo(informationProduct));
+    assertThat(representation.getUrlPatterns().toArray()[1],
+        equalTo(DBEERPEDIA.NAMESPACE + "helloWorld"));
+    assertThat(representation.getUrlPatterns().toArray()[0],
+        equalTo(DBEERPEDIA.NAMESPACE + "this/is/sparta"));
+    assertThat(representation.getStage(), equalTo(stage));
+    assertThat(representation.getAppearance(), equalTo(appearance));
+  }
+
+  @Test
+  public void loadResources_LoadMultipleSubRepresentations_WithValidData() {
+    // Arrange
+    final IRI subRepresentationName = valueFactory.createIRI(DBEERPEDIA.NAMESPACE,
+        "subrepresentation");
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            // first subrepresentation
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+            // second subrepresentation
+            valueFactory.createStatement(subRepresentationName, RDF.TYPE,
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(subRepresentationName,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
+            valueFactory.createStatement(subRepresentationName,
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+            // main representation
+            valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
+                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
+                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+            valueFactory
+                .createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, ELMO.CONTAINS_PROP,
+                    DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
+            valueFactory
+                .createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, ELMO.CONTAINS_PROP,
+                    subRepresentationName))));
+    // Act
+    representationResourceProvider.loadResources();
+    // Assert
+    Representation graphBreweryRepresentation =
+        representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
+    assertThat(graphBreweryRepresentation.getUrlPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(graphBreweryRepresentation.getStage(), not(nullValue()));
+    assertThat(graphBreweryRepresentation.getInformationProduct(), not(nullValue()));
+    Representation tupleBreweryRepresentation =
+        representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION);
+    assertThat(tupleBreweryRepresentation.getUrlPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(tupleBreweryRepresentation.getStage(), not(nullValue()));
+    assertThat(tupleBreweryRepresentation.getInformationProduct(), not(nullValue()));
+    Representation subRepresentation = representationResourceProvider.get(subRepresentationName);
+    assertThat(tupleBreweryRepresentation.getSubRepresentations(),
+        is(ImmutableList.of(graphBreweryRepresentation, subRepresentation)));
   }
 
   @Test
