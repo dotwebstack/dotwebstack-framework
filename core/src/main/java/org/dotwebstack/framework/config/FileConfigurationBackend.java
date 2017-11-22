@@ -97,12 +97,14 @@ public class FileConfigurationBackend
     }
     List<Resource> resources = getCombinedResources(projectResources);
     final Optional<Resource> optionalPrefixesResource = getPrefixesResource(resources);
-    Resource prefixesResource = null;
-    if (optionalPrefixesResource.isPresent()) {
-      prefixesResource = optionalPrefixesResource.get();
-      checkMultiplePrefixesDeclaration(prefixesResource);
-    }
-    List<InputStream> configurationStreams = ImmutableList.of();
+    optionalPrefixesResource.ifPresent(prefixesResource -> {
+      try {
+        checkMultiplePrefixesDeclaration(prefixesResource);
+      } catch (IOException e) {
+        throw new ConfigurationException("Error while reading _prefixes.trig.", e);
+      }
+    });
+    List<InputStream> configurationStreams = new ArrayList<>();
     try {
       for (Resource resource : resources) {
         String extension = FilenameUtils.getExtension(resource.getFilename());
