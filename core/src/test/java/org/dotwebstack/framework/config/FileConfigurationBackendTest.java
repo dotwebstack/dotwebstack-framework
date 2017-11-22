@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -161,6 +162,24 @@ public class FileConfigurationBackendTest {
   public void setEnvironment_DoesNotCrash_WithValue() {
     // Act
     backend.setEnvironment(environment);
+  }
+
+  @Test
+  public void configurateBackend_validationFailed_throwShaclValdiationException() throws Exception {
+    // Arrange
+    Resource resource = mock(Resource.class);
+    when(resource.getInputStream()).thenReturn(
+        new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
+    when(resource.getFilename()).thenReturn("config.trig");
+    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
+        new Resource[]{resource});
+    when(report.getValidationReport()).thenReturn("Error");
+    when(report.isValid()).thenReturn(false);
+    // Assert
+    thrown.expect(ShaclValidationException.class);
+    thrown.expectMessage("Error");
+    // Act
+    backend.loadResources();
   }
 
   @Test
