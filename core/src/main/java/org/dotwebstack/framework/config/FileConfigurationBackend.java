@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.config;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,9 +17,10 @@ import javax.annotation.PostConstruct;
 import lombok.NonNull;
 import org.apache.commons.io.FilenameUtils;
 import org.dotwebstack.framework.EnvironmentAwareResource;
+import org.dotwebstack.framework.validation.RdfModelTransformer;
 import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.dotwebstack.framework.validation.ShaclValidator;
-import org.dotwebstack.framework.validation.Validator;
+import org.dotwebstack.framework.validation.ValidationReport;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
@@ -39,7 +39,7 @@ public class FileConfigurationBackend
 
   private static final Logger LOG = LoggerFactory.getLogger(FileConfigurationBackend.class);
 
-  private final Validator shaclValidator;
+  private final ShaclValidator shaclValidator;
 
   private final String resourcePath;
 
