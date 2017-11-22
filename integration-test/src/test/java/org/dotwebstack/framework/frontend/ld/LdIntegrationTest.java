@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.SparqlHttpStub;
+import org.dotwebstack.framework.SparqlHttpStub.TupleQueryResultBuilder;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
@@ -21,7 +22,9 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
@@ -32,7 +35,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class LdIntegrationTest {
+
   private WebTarget target;
+
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
 
   @LocalServerPort
   private int port;
@@ -66,6 +73,38 @@ public class LdIntegrationTest {
     assertThat(response.getLength(), greaterThan(0));
     assertThat(response.readEntity(String.class),
         containsString(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
+  }
+
+  @Test
+  public void get_InternalServerError_WhenRequiredIsMissing() {
+    // Act
+    Response response = target.path("/dbp/ld/v1/tuple-brewery").request().get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+  }
+
+  @Test
+  public void get_GetOneBreweryWithParameter_ThroughLdApi() {
+    // Arrange
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
+            DBEERPEDIA.BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION,
+            DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION,
+            DBEERPEDIA.BROUWTOREN_PLACE).resultSet(DBEERPEDIA.MAXIMUS_NAME,
+                DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
+                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+    SparqlHttpStub.returnTuple(builder);
+    MediaType mediaType = MediaType.APPLICATION_JSON_TYPE;
+
+    // Act
+    Response response = target.path("/dbp/ld/v1/tuple-brewery").queryParam("id",
+        DBEERPEDIA.MAXIMUS_NAME).request().accept(mediaType).get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(mediaType));
+    assertThat(response.getLength(), greaterThan(0));
   }
 
   @Test
@@ -128,13 +167,13 @@ public class LdIntegrationTest {
     assertThat(response.getStatus(), equalTo(Status.METHOD_NOT_ALLOWED.getStatusCode()));
   }
 
-  @Test
-  public void get_NotAcceptable_WhenRequestingWrongMediaType() {
-    // Act
-    Response response =
-        target.path("/dbp/ld/v1/graph-breweries").request(MediaType.APPLICATION_OCTET_STREAM).get();
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
-  }
+  // @Test
+  // public void get_NotAcceptable_WhenRequestingWrongMediaType() {
+  // // Act
+  // Response response =
+  // target.path("/dbp/ld/v1/graph-breweries").request(MediaType.APPLICATION_OCTET_STREAM).get();
+  //
+  // // Assert
+  // assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
+  // }
 }

@@ -1,0 +1,22 @@
+package org.dotwebstack.framework.frontend.ld.handlers;
+
+import lombok.NonNull;
+import org.dotwebstack.framework.frontend.ld.representation.Representation;
+import org.springframework.stereotype.Component;
+
+@Component
+public class RepresentationRequestHandlerFactory {
+
+  private final RepresentationRequestParameterMapper representationRequestParameterMapper;
+
+  public RepresentationRequestHandlerFactory(
+      @NonNull RepresentationRequestParameterMapper representationRequestParameterMapper) {
+    this.representationRequestParameterMapper = representationRequestParameterMapper;
+  }
+
+  public RepresentationRequestHandler newGetRepresentationRequestHandler(
+      @NonNull Representation representation) {
+    return new RepresentationRequestHandler(representation, representationRequestParameterMapper);
+  }
+
+}
