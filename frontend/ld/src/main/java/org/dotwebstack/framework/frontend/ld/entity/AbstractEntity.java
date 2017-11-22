@@ -5,13 +5,13 @@ import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.eclipse.rdf4j.query.QueryResult;
 
 
-abstract class AbstractEntity<R extends QueryResult<?>> implements Entity<R> {
+public abstract class AbstractEntity<R extends QueryResult<?>> implements Entity<R> {
 
   private final R queryResult;
 
   private final Representation representation;
 
-  public AbstractEntity(@NonNull R queryResult, @NonNull Representation representation) {
+  AbstractEntity(@NonNull R queryResult, @NonNull Representation representation) {
     this.queryResult = queryResult;
     this.representation = representation;
   }
