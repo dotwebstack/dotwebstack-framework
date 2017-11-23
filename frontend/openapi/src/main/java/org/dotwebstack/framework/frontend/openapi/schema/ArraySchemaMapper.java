@@ -5,7 +5,6 @@ import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
@@ -52,9 +51,9 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
       validateMinItems(property, queryResult);
       validateMaxItems(property, queryResult);
 
-      queryResult.forEach(
-          value -> builder.add(Optional.ofNullable(schemaMapperAdapter.mapGraphValue(itemProperty,
-              entityBuilderContext, schemaMapperAdapter, value))));
+      queryResult.forEach(value -> builder.add(
+              com.google.common.base.Optional.fromNullable(schemaMapperAdapter.mapGraphValue(
+              itemProperty, entityBuilderContext, schemaMapperAdapter, value))));
 
     } else {
       throw new SchemaMapperRuntimeException(
