@@ -114,9 +114,9 @@ public final class GraphEntity extends AbstractEntity<GraphQueryResult> {
             listBuilder.add(queryStatement.getSubject());
           }
         }
-      } catch (Exception e) {
-        LOG.error("Could not get subjects from queryresult.", e);
-        throw new LdPathExecutorRuntimeException("Unable to initialize RDF4JRepository.", e);
+      } catch (Exception exp) {
+        LOG.error("Could not get subjects from queryresult.", exp);
+        throw new LdPathExecutorRuntimeException("Unable to initialize RDF4JRepository.", exp);
       }
       return listBuilder.build();
 

@@ -85,7 +85,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
           applicationProperties.getResourcePath() + "/openapi/**.y*ml");
-    } catch (FileNotFoundException e) {
+    } catch (FileNotFoundException exp) {
       LOG.warn("No Open API resources found in path:{}/openapi",
           applicationProperties.getResourcePath());
       return;

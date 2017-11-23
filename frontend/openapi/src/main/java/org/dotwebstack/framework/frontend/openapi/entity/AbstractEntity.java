@@ -15,12 +15,12 @@ abstract class AbstractEntity<Q extends org.eclipse.rdf4j.query.QueryResult<?>>
   private Map<MediaType, Property> schemaMap;
 
 
-  protected AbstractEntity(@NonNull Property schemaProperty) {
+  AbstractEntity(@NonNull Property schemaProperty) {
     this.schemaProperty = schemaProperty;
 
   }
 
-  protected AbstractEntity(@NonNull Map<MediaType, Property> schemaProperty,
+  AbstractEntity(@NonNull Map<MediaType, Property> schemaProperty,
       @NonNull Q queryResultDb) {
     this.schemaMap = schemaProperty;
     this.queryResultDb = queryResultDb;
