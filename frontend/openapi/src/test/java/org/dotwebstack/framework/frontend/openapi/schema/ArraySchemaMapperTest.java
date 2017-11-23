@@ -18,7 +18,6 @@ import java.util.Optional;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.hamcrest.Matchers;
@@ -103,15 +102,9 @@ public class ArraySchemaMapperTest {
         entityBuilderContext, registry, context);
 
     assertThat(result, Matchers.hasSize(3));
-    assertThat(result.get(0), is(Optional.of(VALUE_1.stringValue())));
-    assertThat(result.get(1), is(Optional.of(VALUE_2.stringValue())));
-    assertThat(result.get(2), is(Optional.of(VALUE_3.stringValue())));
-  }
-
-
-
-  private Literal stringLiteral(String value) {
-    return SimpleValueFactory.getInstance().createLiteral(value);
+    assertThat(result.get(0), is(com.google.common.base.Optional.of(VALUE_1.stringValue())));
+    assertThat(result.get(1), is(com.google.common.base.Optional.of(VALUE_2.stringValue())));
+    assertThat(result.get(2), is(com.google.common.base.Optional.of(VALUE_3.stringValue())));
   }
 
   @Test
