@@ -3,18 +3,23 @@ package org.dotwebstack.framework.frontend.openapi.schema;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.StringProperty;
+import java.util.Arrays;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.Value;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -25,12 +30,26 @@ public class StringSchemaMapperTest extends AbstractStringPropertyHandlerTest {
 
   private StringSchemaMapper schemaMapper;
 
-  private StringProperty schema;
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
+  private GraphEntityContext entityBuilderContextMock;
+
+  @Mock
+  private Value contextMock;
+
+  private SchemaMapperAdapter registry;
+
+  private SchemaMapper handler;
+  private StringProperty stringProperty;
 
   @Before
   public void setUp() {
     schemaMapper = new StringSchemaMapper();
-    schema = new StringProperty();
+    entityBuilderContextMock = mock(GraphEntityContext.class);
+    handler = new StringSchemaMapper();
+    stringProperty = new StringProperty();
+    registry = new SchemaMapperAdapter(Arrays.asList(handler));
   }
 
   @Test
@@ -48,13 +67,13 @@ public class StringSchemaMapperTest extends AbstractStringPropertyHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, null);
+    schemaMapper.mapTupleValue(stringProperty, null);
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    String result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
+    String result = schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME);
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
@@ -72,7 +91,7 @@ public class StringSchemaMapperTest extends AbstractStringPropertyHandlerTest {
   @Test
   public void supports_ReturnsTrue_ForStringSchema() {
     // Arrange & Act
-    Boolean supported = schemaMapper.supports(schema);
+    Boolean supported = schemaMapper.supports(stringProperty);
 
     // Assert
     assertThat(supported, equalTo(true));

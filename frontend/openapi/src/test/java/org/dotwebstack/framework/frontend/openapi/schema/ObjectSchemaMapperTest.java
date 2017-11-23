@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
@@ -130,10 +129,10 @@ public class ObjectSchemaMapperTest {
             entityBuilderContextMock, registry, context1Mock);
 
     assertThat(result.keySet(), hasSize(4));
-    assertThat(result, hasEntry(KEY_1, Optional.of(STR_VALUE_1)));
-    assertThat(result, hasEntry(KEY_2, Optional.of(STR_VALUE_2)));
-    assertThat(result, hasEntry(KEY_3, Optional.of(VALUE_3)));
-    assertThat(result, hasEntry(KEY_4, Optional.empty()));
+    assertThat(result, hasEntry(KEY_1, com.google.common.base.Optional.of(STR_VALUE_1)));
+    assertThat(result, hasEntry(KEY_2, com.google.common.base.Optional.of(STR_VALUE_2)));
+    assertThat(result, hasEntry(KEY_3, com.google.common.base.Optional.of(VALUE_3)));
+    assertThat(result, hasEntry(KEY_4, com.google.common.base.Optional.absent()));
   }
 
 

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptorContext;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,7 +73,7 @@ public class EntityWriterInterceptorTest {
   @Test
   public void aroundWriteTo_MapsEntity_ForTupleEntity() throws IOException {
     // Arrange
-    TupleEntity entity = new TupleEntity(ImmutableMap.of(), null);
+    TupleEntity entity = new TupleEntity(ImmutableMap.of(), mock(TupleQueryResult.class));
     Object mappedEntity = ImmutableList.of();
     when(contextMock.getEntity()).thenReturn(entity);
     when(contextMock.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);

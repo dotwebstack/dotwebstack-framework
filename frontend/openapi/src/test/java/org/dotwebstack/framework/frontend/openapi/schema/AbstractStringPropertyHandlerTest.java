@@ -17,31 +17,5 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public abstract class AbstractStringPropertyHandlerTest {
 
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
-
-  GraphEntityContext entityBuilderContextMock;
-
-  @Mock
-  Value contextMock;
-
-  LdPathExecutor ldPathExecutorMock;
-
-  SchemaMapperAdapter registry;
-
-  SchemaMapper handler;
-  StringProperty stringProperty;
-
-  AbstractStringPropertyHandlerTest() {
-    entityBuilderContextMock = mock(GraphEntityContext.class);
-    ldPathExecutorMock = mock(LdPathExecutor.class);
-  }
-
-  @Before
-  public void setUp() {
-    handler = new StringSchemaMapper();
-    stringProperty = new StringProperty();
-    registry = new SchemaMapperAdapter(Arrays.asList(handler));
-  }
 
 }

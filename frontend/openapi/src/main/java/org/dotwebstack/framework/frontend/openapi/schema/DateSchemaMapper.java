@@ -34,8 +34,8 @@ class DateSchemaMapper extends AbstractSchemaMapper
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
-    if (ldPathQuery == null && isLiteral(context)) {
-      return convertToDate(((Literal) context).calendarValue());
+    if (ldPathQuery == null && isLiteral(value)) {
+      return convertToDate(((Literal) value).calendarValue());
     }
 
     if (ldPathQuery == null) {
