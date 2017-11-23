@@ -34,7 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ObjectPropertyHandlerTest {
+public class ObjectSchemaMapperTest {
 
   private static final String KEY_1 = "key1";
   private static final String KEY_2 = "key2";
@@ -62,16 +62,16 @@ public class ObjectPropertyHandlerTest {
   private ArraySchemaMapper arrayPropertyHandler;
 
   @Mock
-  private GraphEntityContext entityBuilderContext;
+  private GraphEntityContext entityBuilderContextMock;
 
   @Mock
-  private Value context1;
+  private Value context1Mock;
 
   @Mock
-  private Value context2;
+  private Value context2Mock;
 
   @Mock
-  private LdPathExecutor ldPathExecutor;
+  private LdPathExecutor ldPathExecutorMock;
 
   private ObjectSchemaMapper objectPropertyHandler;
   private ObjectProperty objectProperty;
@@ -91,16 +91,16 @@ public class ObjectPropertyHandlerTest {
     STR_PROPERTY_3.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, STR3_LD_EXP);
 
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
-    when(ldPathExecutor.ldPathQuery(any(), eq(STR1_LD_EXP))).thenReturn(
+    when(ldPathExecutorMock.ldPathQuery(any(), eq(STR1_LD_EXP))).thenReturn(
         Collections.singleton(valueFactory.createLiteral(STR_VALUE_1)));
-    when(ldPathExecutor.ldPathQuery(any(), eq(STR2_LD_EXP))).thenReturn(
+    when(ldPathExecutorMock.ldPathQuery(any(), eq(STR2_LD_EXP))).thenReturn(
         Collections.singleton(valueFactory.createLiteral(STR_VALUE_2)));
 
     objectProperty.setProperties(ImmutableMap.of(KEY_1, STR_PROPERTY_1, KEY_2, STR_PROPERTY_2,
         KEY_3, ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
 
 
-    when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
+    when(entityBuilderContextMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
   @Test
@@ -114,7 +114,7 @@ public class ObjectPropertyHandlerTest {
     objectProperty.setProperties(ImmutableMap.of());
 
     Map<String, Object> result = (Map<String, Object>) registry.mapGraphValue(objectProperty,
-        entityBuilderContext, registry, context1);
+            entityBuilderContextMock, registry, context1Mock);
 
     assertThat(result.keySet(), hasSize(0));
   }
@@ -124,10 +124,10 @@ public class ObjectPropertyHandlerTest {
   public void handleObjectProperties() {
     objectProperty.setProperties(ImmutableMap.of(KEY_1, STR_PROPERTY_1, KEY_2, STR_PROPERTY_2,
         KEY_3, ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
-    when(ldPathExecutor.ldPathQuery(any(), eq(STR3_LD_EXP))).thenReturn(ImmutableList.of());
+    when(ldPathExecutorMock.ldPathQuery(any(), eq(STR3_LD_EXP))).thenReturn(ImmutableList.of());
 
     Map<String, Object> result = (Map<String, Object>) registry.mapGraphValue(objectProperty,
-        entityBuilderContext, registry, context1);
+            entityBuilderContextMock, registry, context1Mock);
 
     assertThat(result.keySet(), hasSize(4));
     assertThat(result, hasEntry(KEY_1, Optional.of(STR_VALUE_1)));
@@ -141,10 +141,10 @@ public class ObjectPropertyHandlerTest {
   public void handleObjectWithLdPathWithoutResult() {
     objectProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
 
-    when(ldPathExecutor.ldPathQuery(context1, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
+    when(ldPathExecutorMock.ldPathQuery(context1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
 
     Object result =
-        registry.mapGraphValue(objectProperty, entityBuilderContext, registry, context1);
+        registry.mapGraphValue(objectProperty, entityBuilderContextMock, registry, context1Mock);
 
     assertThat(result, nullValue());
   }
@@ -154,28 +154,28 @@ public class ObjectPropertyHandlerTest {
     objectProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
     objectProperty.setRequired(true);
 
-    when(ldPathExecutor.ldPathQuery(context1, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
+    when(ldPathExecutorMock.ldPathQuery(context1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
 
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(
         String.format("LDPath expression for a required object property ('%s') yielded no result.",
             DUMMY_EXPR_1));
 
-    registry.mapGraphValue(objectProperty, entityBuilderContext, registry, context1);
+    registry.mapGraphValue(objectProperty, entityBuilderContextMock, registry, context1Mock);
   }
 
   @Test
   public void handleObjectWithLdPathWithMultipleResultsThrowsException() {
     objectProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
 
-    when(ldPathExecutor.ldPathQuery(context1, DUMMY_EXPR_1)).thenReturn(
-        ImmutableSet.of(context1, context2));
+    when(ldPathExecutorMock.ldPathQuery(context1Mock, DUMMY_EXPR_1)).thenReturn(
+        ImmutableSet.of(context1Mock, context2Mock));
 
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format(
         "LDPath expression for object property ('%s') yielded multiple elements.", DUMMY_EXPR_1));
 
-    registry.mapGraphValue(objectProperty, entityBuilderContext, registry, context1);
+    registry.mapGraphValue(objectProperty, entityBuilderContextMock, registry, context1Mock);
   }
 
 }

@@ -6,7 +6,6 @@ import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
@@ -23,17 +22,11 @@ public class ObjectSchemaMapper implements SchemaMapper<ObjectProperty, Object> 
 
   @Override
   public Object mapTupleValue(ObjectProperty schema, Value value) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  public Object mapGraphValue(ObjectProperty schema, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
-    return handleObject(schema, graphEntityContext, schemaMapperAdapter, value);
-  }
-
-
-  public Object handleObject(ObjectProperty property, GraphEntityContext entityBuilderContext,
+  public Object mapGraphValue(ObjectProperty property, GraphEntityContext graphEntityContext,
       SchemaMapperAdapter schemaMapperAdapter, Value context) {
 
     Value contextNew = context;
@@ -51,8 +44,7 @@ public class ObjectSchemaMapper implements SchemaMapper<ObjectProperty, Object> 
       final IRI predicateIri = vf.createIRI(predicate);
       final IRI objectLiteral = vf.createIRI(object);
 
-      Model filteredModel =
-          entityBuilderContext.getModel().filter(null, predicateIri, objectLiteral);
+      Model filteredModel = graphEntityContext.getModel().filter(null, predicateIri, objectLiteral);
 
       if (filteredModel.subjects().iterator().hasNext()) {
         if (filteredModel.subjects().size() > 1) {
@@ -70,11 +62,11 @@ public class ObjectSchemaMapper implements SchemaMapper<ObjectProperty, Object> 
     if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
-      return handleLdPathVendorExtension(property, entityBuilderContext, contextNew, ldPath,
+      return handleLdPathVendorExtension(property, graphEntityContext, contextNew, ldPath,
           schemaMapperAdapter);
     }
 
-    return handleProperties(property, entityBuilderContext, schemaMapperAdapter, contextNew);
+    return handleProperties(property, graphEntityContext, schemaMapperAdapter, contextNew);
   }
 
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
@@ -109,7 +101,7 @@ public class ObjectSchemaMapper implements SchemaMapper<ObjectProperty, Object> 
     property.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
           schemaMapperAdapter, context);
-      builder.put(propKey, Optional.ofNullable(propertyResult));
+      builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
     });
     return builder.build();
   }

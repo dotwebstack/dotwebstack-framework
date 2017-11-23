@@ -21,16 +21,16 @@ public class OpenApiModuleTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private OpenApiRequestMapper requestMapper;
+  private OpenApiRequestMapper requestMapperMock;
 
   @Mock
-  private HttpConfiguration httpConfiguration;
+  private HttpConfiguration httpConfigurationMock;
 
   private OpenApiModule openApiModule;
 
   @Before
   public void setUp() {
-    openApiModule = new OpenApiModule(requestMapper);
+    openApiModule = new OpenApiModule(requestMapperMock);
   }
 
   @Test
@@ -54,36 +54,36 @@ public class OpenApiModuleTest {
   @Test
   public void initialize_ImportDefinitions_WithConfiguration() throws IOException {
     // Act
-    openApiModule.initialize(httpConfiguration);
+    openApiModule.initialize(httpConfigurationMock);
 
     // Assert
-    verify(requestMapper).map(httpConfiguration);
+    verify(requestMapperMock).map(httpConfigurationMock);
   }
 
   @Test
   public void initialize_ThrowsException_WhenImportDefinitionsFailedIo() throws IOException {
     // Arrange
-    doThrow(IOException.class).when(requestMapper).map(httpConfiguration);
+    doThrow(IOException.class).when(requestMapperMock).map(httpConfigurationMock);
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Failed loading OpenAPI definitions.");
 
     // Act
-    openApiModule.initialize(httpConfiguration);
+    openApiModule.initialize(httpConfigurationMock);
   }
 
   @Test
   public void initialize_ThrowsException_WhenImportDefinitionsFailedConfiguration()
       throws IOException {
     // Arrange
-    doThrow(ConfigurationException.class).when(requestMapper).map(httpConfiguration);
+    doThrow(ConfigurationException.class).when(requestMapperMock).map(httpConfigurationMock);
 
     // Assert
     thrown.expect(ConfigurationException.class);
 
     // Act
-    openApiModule.initialize(httpConfiguration);
+    openApiModule.initialize(httpConfigurationMock);
   }
 
 }

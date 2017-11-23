@@ -8,9 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public final class EntityWriterInterceptor implements WriterInterceptor {
 
-  private TupleEntityMapper tupleEntityMapper;
+  private final TupleEntityMapper tupleEntityMapper;
 
-  private GraphEntityMapper graphEntityMapper;
+  private final GraphEntityMapper graphEntityMapper;
 
   @Autowired
   public EntityWriterInterceptor(@NonNull GraphEntityMapper graphEntityMapper,
@@ -24,18 +24,13 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
     if (context.getEntity() instanceof Entity) {
       if (context.getEntity() instanceof TupleEntity) {
         TupleEntity entity = (TupleEntity) context.getEntity();
-        Object mappedEntity = tupleEntityMapper.mapTuple(entity, context.getMediaType());
+        Object mappedEntity = tupleEntityMapper.map(entity, context.getMediaType());
         context.setEntity(mappedEntity);
       }
       if (context.getEntity() instanceof GraphEntity) {
         GraphEntity entity = (GraphEntity) context.getEntity();
-
-        GraphEntityContext graphEntityContext =
-                new GraphEntityContext(entity.getLdpathNamespaces(), entity.getSwaggerDefitions(),
-                (((GraphEntity) context.getEntity()).getQueryResult()).getModel());
-
         Object mappedEntity =
-            graphEntityMapper.mapGraph(entity, context.getMediaType(), graphEntityContext);
+            graphEntityMapper.map(entity, context.getMediaType());
         context.setEntity(mappedEntity);
       }
     }

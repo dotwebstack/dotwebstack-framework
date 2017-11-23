@@ -4,12 +4,9 @@ import static org.mockito.Mockito.mock;
 
 import io.swagger.models.properties.StringProperty;
 import java.util.Arrays;
-import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
@@ -20,19 +17,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public abstract class AbstractStringPropertyHandlerTest {
 
-  static final String DUMMY_EXPR = "dummyExpr()";
-  static final Literal VALUE_1 = SimpleValueFactory.getInstance().createLiteral("a");
-  static final Literal VALUE_2 = SimpleValueFactory.getInstance().createLiteral("b");
-
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  GraphEntityContext entityBuilderContext;
+  GraphEntityContext entityBuilderContextMock;
 
   @Mock
-  Value context;
+  Value contextMock;
 
-  LdPathExecutor ldPathExecutor;
+  LdPathExecutor ldPathExecutorMock;
 
   SchemaMapperAdapter registry;
 
@@ -40,8 +33,8 @@ public abstract class AbstractStringPropertyHandlerTest {
   StringProperty stringProperty;
 
   AbstractStringPropertyHandlerTest() {
-    entityBuilderContext = mock(GraphEntityContext.class);
-    ldPathExecutor = mock(LdPathExecutor.class);
+    entityBuilderContextMock = mock(GraphEntityContext.class);
+    ldPathExecutorMock = mock(LdPathExecutor.class);
   }
 
   @Before

@@ -21,7 +21,7 @@ class RequestParameterMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
-  private static ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private static final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   Map<String, Object> map(@NonNull Operation operation, @NonNull InformationProduct product,
       @NonNull ContainerRequestContext context) {

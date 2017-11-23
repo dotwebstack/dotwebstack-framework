@@ -33,7 +33,7 @@ public class GetRequestHandlerFactoryTest {
   private GetRequestHandlerFactory getRequestHandlerFactory;
 
   @Mock
-  private Swagger swagger;
+  private Swagger mockSwagger;
 
   @Before
   public void setUp() {
@@ -51,7 +51,7 @@ public class GetRequestHandlerFactoryTest {
 
     // Act
     GetRequestHandler result =
-        getRequestHandlerFactory.newGetRequestHandler(operation, product, schemaMap, swagger);
+        getRequestHandlerFactory.newGetRequestHandler(operation, product, schemaMap, mockSwagger);
 
     // Assert
     assertThat(result.getInformationProduct(), sameInstance(product));

@@ -22,23 +22,14 @@ class DateSchemaMapper extends AbstractSchemaMapper
     implements SchemaMapper<DateProperty, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
-  protected Set<IRI> getSupportedDataTypes() {
-    return SUPPORTED_TYPES;
-  }
-
   @Override
   public LocalDate mapTupleValue(@NonNull DateProperty schema, @NonNull Value value) {
     return convertToDate(SchemaMapperUtils.castLiteralValue(value).calendarValue());
   }
 
   @Override
-  public LocalDate mapGraphValue(DateProperty schema, GraphEntityContext graphEntityContext,
-                                 SchemaMapperAdapter schemaMapperAdapter, Value value) {
-    return handle(schema, graphEntityContext, value);
-  }
-
-  LocalDate handle(DateProperty property, GraphEntityContext entityBuilderContext,
-      Value context) {
+  public LocalDate mapGraphValue(DateProperty property, GraphEntityContext context,
+      SchemaMapperAdapter schemaMapperAdapter, Value value) {
 
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
@@ -53,8 +44,8 @@ class DateSchemaMapper extends AbstractSchemaMapper
               OpenApiSpecificationExtensions.LDPATH));
     }
 
-    LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context, ldPathQuery);
+    LdPathExecutor ldPathExecutor = context.getLdPathExecutor();
+    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(value, ldPathQuery);
 
     if (!property.getRequired() && queryResult.isEmpty()) {
       return null;
@@ -72,14 +63,16 @@ class DateSchemaMapper extends AbstractSchemaMapper
   }
 
   private LocalDate convertToDate(XMLGregorianCalendar dateValue) {
-
     return dateValue.toGregorianCalendar().toZonedDateTime().toLocalDate();
   }
-
 
   @Override
   public boolean supports(@NonNull Property schema) {
     return schema instanceof DateProperty;
+  }
+
+  protected Set<IRI> getSupportedDataTypes() {
+    return SUPPORTED_TYPES;
   }
 
 }

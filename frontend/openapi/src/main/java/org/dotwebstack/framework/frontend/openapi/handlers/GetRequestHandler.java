@@ -12,7 +12,6 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
@@ -30,7 +29,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
   private final Map<MediaType, Property> schemaMap;
 
   private final RequestParameterMapper requestParameterMapper;
-  private Swagger swagger;
+  private final Swagger swagger;
 
   GetRequestHandler(@NonNull Operation operation, @NonNull InformationProduct informationProduct,
       @NonNull Map<MediaType, Property> schemaMap,
@@ -71,8 +70,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
           (org.eclipse.rdf4j.query.GraphQueryResult) informationProduct.getResult(parameterValues);
       GraphEntity entity =
           (GraphEntity) GraphEntity.builder().withSchemaProperty(schemaProperty).withQueryResult(
-              QueryResult.builder().withQueryResultGraph(result).build()).withApiDefinitions(
-                  swagger).withLdPathNamespaces(swagger).build();
+              result).withApiDefinitions(swagger).withLdPathNamespaces(swagger).build();
       responseOk = responseOk(entity);
     }
     if (responseOk != null) {

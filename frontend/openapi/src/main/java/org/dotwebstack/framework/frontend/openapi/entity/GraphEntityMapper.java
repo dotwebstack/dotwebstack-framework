@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.Property;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
@@ -15,37 +14,24 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
 
   private static final Logger LOG = LoggerFactory.getLogger(GraphEntityMapper.class);
 
-  private SchemaMapperAdapter schemaMapperAdapter;
-
+  private final SchemaMapperAdapter schemaMapperAdapter;
 
   @Autowired
   public GraphEntityMapper(@NonNull SchemaMapperAdapter schemaMapperAdapter) {
     this.schemaMapperAdapter = schemaMapperAdapter;
   }
 
-
   @Override
-  public Object mapGraph(@NonNull GraphEntity entity, @NonNull MediaType mediaType,
-      @NonNull GraphEntityContext graphEntityContext) {
+  public Object map(@NonNull GraphEntity entity, @NonNull MediaType mediaType) {
+    GraphEntityContext graphEntityContext = (GraphEntityContext) entity.getEntityContext();
     Property schema = entity.getSchemaProperty();
-
+    LOG.debug("Map graph entity to representation.");
     if (schema == null) {
       throw new EntityMapperRuntimeException(
           String.format("No schema found for media type '%s'.", mediaType.toString()));
     }
 
-
-    if (schema instanceof ArrayProperty) {
-      // return mapCollection(entity, (ArrayProperty) schema);
-    }
-    return schemaMapperAdapter.mapGraphValue(schema, graphEntityContext,schemaMapperAdapter, null);
-
+    return schemaMapperAdapter.mapGraphValue(schema, graphEntityContext, schemaMapperAdapter, null);
   }
 
-
-
-  @Override
-  public Object mapTuple(GraphEntity entity, MediaType mediaType) {
-    throw new UnsupportedOperationException("No support for tuples");
-  }
 }

@@ -5,14 +5,10 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-public final class TupleEntity extends QueryEntity<TupleQueryResult> {
+public final class TupleEntity extends AbstractEntity<TupleQueryResult> {
 
   TupleEntity(Map<MediaType, Property> schemaProperty, TupleQueryResult queryResult) {
     super(schemaProperty, queryResult);
-  }
-
-  public static Builder builder() {
-    return new Builder();
   }
 
   @Override
@@ -25,7 +21,16 @@ public final class TupleEntity extends QueryEntity<TupleQueryResult> {
     return super.getSchemaMap();
   }
 
-  public static class Builder extends QueryEntity.Builder {
+  @Override
+  public EntityContext getEntityContext() {
+    throw new UnsupportedOperationException("No entity context available");
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
 
     private Map<MediaType, Property> schemaMap;
 

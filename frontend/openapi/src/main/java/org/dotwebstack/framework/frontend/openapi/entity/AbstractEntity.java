@@ -4,12 +4,10 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
 
 abstract class AbstractEntity<Q extends org.eclipse.rdf4j.query.QueryResult<?>>
     implements Entity<Q> {
 
-  private QueryResult queryResult;
   private Q queryResultDb;
 
   private Property schemaProperty;
@@ -17,10 +15,8 @@ abstract class AbstractEntity<Q extends org.eclipse.rdf4j.query.QueryResult<?>>
   private Map<MediaType, Property> schemaMap;
 
 
-  protected AbstractEntity(@NonNull Property schemaProperty, @NonNull QueryResult queryResult) {
-
+  protected AbstractEntity(@NonNull Property schemaProperty) {
     this.schemaProperty = schemaProperty;
-    this.queryResult = queryResult;
 
   }
 
@@ -33,11 +29,6 @@ abstract class AbstractEntity<Q extends org.eclipse.rdf4j.query.QueryResult<?>>
   @Override
   public Property getSchemaProperty() {
     return schemaProperty;
-  }
-
-  @Override
-  public QueryResult getQueryResult() {
-    return queryResult;
   }
 
   public Q getQueryResultDb() {

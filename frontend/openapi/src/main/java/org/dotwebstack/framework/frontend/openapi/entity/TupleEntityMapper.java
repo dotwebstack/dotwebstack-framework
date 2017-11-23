@@ -22,7 +22,7 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
 
   private static final Logger LOG = LoggerFactory.getLogger(TupleEntityMapper.class);
 
-  private SchemaMapperAdapter schemaMapperAdapter;
+  private final SchemaMapperAdapter schemaMapperAdapter;
 
   @Autowired
   public TupleEntityMapper(@NonNull SchemaMapperAdapter schemaMapperAdapter) {
@@ -30,13 +30,7 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
   }
 
   @Override
-  public Object mapGraph(GraphEntity entity, MediaType mediaType,
-      GraphEntityContext graphEntityContext) {
-    throw new UnsupportedOperationException("No support for graphs");
-  }
-
-  @Override
-  public Object mapTuple(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
+  public Object map(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
     Property schema = entity.getSchemaMap().get(mediaType);
 
     if (schema == null) {

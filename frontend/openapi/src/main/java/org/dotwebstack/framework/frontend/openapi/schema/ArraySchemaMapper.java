@@ -28,8 +28,6 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
     return handle(schema, graphEntityContext, schemaMapperAdapter, value);
   }
 
-
-
   public Object handle(ArrayProperty property, GraphEntityContext entityBuilderContext,
       SchemaMapperAdapter schemaMapperAdapter, Value context) {
 
@@ -51,7 +49,6 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
       Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context,
           (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH));
 
-
       validateMinItems(property, queryResult);
       validateMaxItems(property, queryResult);
 
@@ -68,11 +65,8 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
     return builder.build();
   }
 
-
-
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {
     Integer minItems = arrayProperty.getMinItems();
-
     if (minItems != null && minItems > queryResult.size()) {
       throw new SchemaMapperRuntimeException(String.format(
           "Mapping for property yielded %d elements, which is less than 'minItems' (%d)"
@@ -83,7 +77,6 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
 
   private static void validateMaxItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {
     Integer maxItems = arrayProperty.getMaxItems();
-
     if (maxItems != null && maxItems < queryResult.size()) {
       throw new SchemaMapperRuntimeException(String.format(
           "Mapping for property yielded %d elements, which is more than 'maxItems' (%d)"
@@ -91,8 +84,6 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
           queryResult.size(), maxItems));
     }
   }
-
-
 
   @Override
   public boolean supports(@NonNull Property schema) {

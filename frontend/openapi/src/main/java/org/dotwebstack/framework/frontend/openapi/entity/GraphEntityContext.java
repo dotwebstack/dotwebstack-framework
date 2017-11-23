@@ -1,26 +1,28 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.swagger.models.Model;
+import java.util.List;
 import java.util.Map;
 import org.eclipse.rdf4j.model.Resource;
 
-public class GraphEntityContext {
+public class GraphEntityContext implements EntityContext {
 
   private final Map<String, Model> swaggerDefinitions;
   private final ImmutableMap<String, String> ldPathNamespaces;
   private final org.eclipse.rdf4j.model.Model model;
   private final LdPathExecutor ldPathExecutor;
-  private ImmutableList<Resource> subjects;
+  private final List<Resource> subjects;
 
   public GraphEntityContext(ImmutableMap<String, String> ldPathNamespaces,
-      Map<String, Model> swaggerDefinitions, org.eclipse.rdf4j.model.Model model) {
+      Map<String, Model> swaggerDefinitions, org.eclipse.rdf4j.model.Model model,
+      List<Resource> subjects) {
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = Maps.newHashMap(swaggerDefinitions);
     this.model = model;
     this.ldPathExecutor = new LdPathExecutor(this);
+    this.subjects = subjects;
   }
 
   public LdPathExecutor getLdPathExecutor() {
@@ -31,10 +33,6 @@ public class GraphEntityContext {
     return model;
   }
 
-  public ImmutableList<Resource> getSubjects() {
-    return subjects;
-  }
-
   public ImmutableMap<String, String> getLdPathNamespaces() {
     return ldPathNamespaces;
   }
@@ -43,25 +41,7 @@ public class GraphEntityContext {
     return swaggerDefinitions;
   }
 
-  //
-  // public static class Builder {
-  //
-  // private final Map<String, Model> swaggerDefinitions = Maps.newHashMap();
-  // private org.eclipse.rdf4j.model.Model model;
-  // private Map<String, String> ldPathNamespaces;
-  //
-  // public Builder() {
-  //
-  // }
-  //
-  // public Builder model(org.eclipse.rdf4j.model.Model model) {
-  // this.model = model;
-  // return this;
-  // }
-  //
-  // public GraphEntityContext build() {
-  // return new GraphEntityContext(ldPathNamespaces, swaggerDefinitions,model);
-  // }
-  // }
-
+  public List<Resource> getSubjects() {
+    return subjects;
+  }
 }

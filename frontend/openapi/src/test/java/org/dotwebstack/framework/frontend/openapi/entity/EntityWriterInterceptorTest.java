@@ -3,12 +3,12 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptorContext;
@@ -29,13 +29,13 @@ public class EntityWriterInterceptorTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private WriterInterceptorContext context;
+  private WriterInterceptorContext contextMock;
 
   @Mock
-  private TupleEntityMapper tupleEntityMapper;
+  private TupleEntityMapper tupleEntityMapperMock;
 
   @Mock
-  private GraphEntityMapper graphEntityMapper;
+  private GraphEntityMapper graphEntityMapperMock;
 
   @Captor
   private ArgumentCaptor<Object> entityCaptor;
@@ -44,7 +44,8 @@ public class EntityWriterInterceptorTest {
 
   @Before
   public void setUp() {
-    entityWriterInterceptor = new EntityWriterInterceptor(graphEntityMapper, tupleEntityMapper);
+    entityWriterInterceptor =
+        new EntityWriterInterceptor(graphEntityMapperMock, tupleEntityMapperMock);
   }
 
   @Test
@@ -70,33 +71,33 @@ public class EntityWriterInterceptorTest {
   @Test
   public void aroundWriteTo_MapsEntity_ForTupleEntity() throws IOException {
     // Arrange
-    TupleEntity entity = mock(TupleEntity.class);
+    TupleEntity entity = new TupleEntity(ImmutableMap.of(), null);
     Object mappedEntity = ImmutableList.of();
-    when(context.getEntity()).thenReturn(entity);
-    when(context.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
-    when(tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE)).thenReturn(
+    when(contextMock.getEntity()).thenReturn(entity);
+    when(contextMock.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
+    when(tupleEntityMapperMock.map(entity, MediaType.APPLICATION_JSON_TYPE)).thenReturn(
         mappedEntity);
 
     // Act
-    entityWriterInterceptor.aroundWriteTo(context);
+    entityWriterInterceptor.aroundWriteTo(contextMock);
 
     // Assert
-    verify(context).setEntity(entityCaptor.capture());
-    verify(context).proceed();
+    verify(contextMock).setEntity(entityCaptor.capture());
+    verify(contextMock).proceed();
     assertThat(entityCaptor.getValue(), equalTo(mappedEntity));
   }
 
   @Test
   public void aroundWriteTo_DoesNothing_ForUnknownEntity() throws IOException {
     // Arrange
-    when(context.getEntity()).thenReturn(new Object());
+    when(contextMock.getEntity()).thenReturn(new Object());
 
     // Act
-    entityWriterInterceptor.aroundWriteTo(context);
+    entityWriterInterceptor.aroundWriteTo(contextMock);
 
     // Assert
-    verify(context, never()).setEntity(any());
-    verify(context).proceed();
+    verify(contextMock, never()).setEntity(any());
+    verify(contextMock).proceed();
   }
 
 }

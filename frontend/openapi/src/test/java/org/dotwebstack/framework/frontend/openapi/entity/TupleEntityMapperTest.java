@@ -64,7 +64,7 @@ public class TupleEntityMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    tupleEntityMapper.mapTuple(null, MediaType.APPLICATION_JSON_TYPE);
+    tupleEntityMapper.map(null, MediaType.APPLICATION_JSON_TYPE);
   }
 
   @Test
@@ -73,7 +73,8 @@ public class TupleEntityMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    tupleEntityMapper.mapTuple(mock(TupleEntity.class), null);
+    TupleEntity tupleEntity = new TupleEntity(ImmutableMap.of(), null);
+    tupleEntityMapper.map(tupleEntity, null);
   }
 
   @Test
@@ -88,7 +89,7 @@ public class TupleEntityMapperTest {
         MediaType.TEXT_PLAIN_TYPE.toString()));
 
     // Act
-    tupleEntityMapper.mapTuple(entity, MediaType.TEXT_PLAIN_TYPE);
+    tupleEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
   }
 
   @Test
@@ -98,7 +99,7 @@ public class TupleEntityMapperTest {
         ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new DoubleProperty()), result);
 
     // Act
-    Object mappedEntity = tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE);
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(mappedEntity, equalTo(ImmutableMap.of()));
@@ -115,7 +116,7 @@ public class TupleEntityMapperTest {
     thrown.expectMessage("Array schemas must have an 'items' property.");
 
     // Act
-    tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE);
+    tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
   }
 
   @Test
@@ -129,7 +130,7 @@ public class TupleEntityMapperTest {
     thrown.expectMessage("Only array items of type 'object' are supported for now.");
 
     // Act
-    tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE);
+    tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
   }
 
   @Test
@@ -147,7 +148,7 @@ public class TupleEntityMapperTest {
         DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
-    Object mappedEntity = tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE);
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(mappedEntity, instanceOf(ImmutableList.class));
@@ -167,7 +168,7 @@ public class TupleEntityMapperTest {
     when(result.next()).thenReturn(new ListBindingSet(ImmutableList.of(), ImmutableList.of()));
 
     // Act
-    Object mappedEntity = tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE);
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(mappedEntity, instanceOf(ImmutableList.class));
@@ -191,7 +192,7 @@ public class TupleEntityMapperTest {
         DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
-    Object mappedEntity = tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE);
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(mappedEntity, instanceOf(ImmutableMap.class));
@@ -215,7 +216,7 @@ public class TupleEntityMapperTest {
         "firstName").thenReturn("secondName");
 
     // Act
-    Object mappedEntity = tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE);
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
 
     // Assert
     assertThat(mappedEntity, instanceOf(ImmutableMap.class));
@@ -238,7 +239,7 @@ public class TupleEntityMapperTest {
     thrown.expectMessage("TupleQueryResult did not yield any values.");
 
     // Act
-    tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE);
+    tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
   }
 
 
@@ -257,7 +258,7 @@ public class TupleEntityMapperTest {
     thrown.expectMessage("Property 'name' is required.");
 
     // Act
-    tupleEntityMapper.mapTuple(entity, MediaType.APPLICATION_JSON_TYPE);
+    tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
   }
 
 }

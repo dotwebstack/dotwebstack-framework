@@ -6,11 +6,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.Property;
 import java.util.HashMap;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
 import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,14 +27,14 @@ public class GraphEntityMapperTest {
   private GraphEntityMapper graphEntityMapper;
 
   @Mock
-  private GraphEntityContext graphEntityContext;
+  private GraphEntityContext graphEntityContextMock;
 
   @Mock
-  private SchemaMapperAdapter propertyHandlerRegistry;
+  private SchemaMapperAdapter propertyHandlerRegistryMock;
 
   @Before
   public void setUp() {
-    graphEntityMapper = new GraphEntityMapper(propertyHandlerRegistry);
+    graphEntityMapper = new GraphEntityMapper(propertyHandlerRegistryMock);
   }
 
   @Test
@@ -54,22 +52,21 @@ public class GraphEntityMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    graphEntityMapper.mapGraph(null, null, graphEntityContext);
+    graphEntityMapper.map(null, null);
   }
 
   @Test
   public void map_GraphMapping() {
     // Arrange
     Property property = mock(Property.class);
-    QueryResult queryResult = mock(QueryResult.class);
     GraphEntity entity =
-        new GraphEntity(property, queryResult, ImmutableMap.of(), ImmutableMap.of());
+        new GraphEntity(property, graphEntityContextMock);
 
-    when(propertyHandlerRegistry.mapGraphValue(any(), any(), any(), any())).thenReturn(
+    when(propertyHandlerRegistryMock.mapGraphValue(any(), any(), any(), any())).thenReturn(
         new HashMap<>());
     // Act
     Object mappedEntity =
-        graphEntityMapper.mapGraph(entity, MediaType.TEXT_PLAIN_TYPE, graphEntityContext);
+        graphEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
     // Assert
     assertThat(mappedEntity, instanceOf(HashMap.class));
 

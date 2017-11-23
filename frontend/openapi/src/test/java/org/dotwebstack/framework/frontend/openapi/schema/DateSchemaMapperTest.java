@@ -26,7 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DatePropertyHandlerTest {
+public class DateSchemaMapperTest {
 
   private static final String DUMMY_EXPR = "dummyExpr()";
   private static final Literal VALUE_1 =

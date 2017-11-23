@@ -8,8 +8,8 @@ public interface SchemaMapper<S extends Property, T> {
 
   T mapTupleValue(S schema, Value value);
 
-  T mapGraphValue(S schema, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value value);
+  T mapGraphValue(S schema, GraphEntityContext entityContext,
+                  SchemaMapperAdapter schemaMapperAdapter, Value value);
 
   boolean supports(Property schema);
 

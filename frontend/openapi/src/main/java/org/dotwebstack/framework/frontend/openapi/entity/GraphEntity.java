@@ -1,32 +1,31 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Model;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.builder.QueryResult;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.QueryResults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public final class GraphEntity extends QueryEntity<GraphQueryResult> {
+public final class GraphEntity extends AbstractEntity<GraphQueryResult> {
 
+  private static final Logger LOG = LoggerFactory.getLogger(GraphEntity.class);
 
-  private final Map<String, Model> swaggerDefitions;
-  private final ImmutableMap<String, String> ldpathNamespaces;
+  private final GraphEntityContext graphEntityContext;
 
-  public GraphEntity(Property schemaProperty, QueryResult queryResult,
-      ImmutableMap<String, String> ldpathNamespaces, Map<String, Model> swaggerDefinitions) {
-    super(schemaProperty, queryResult);
-    this.swaggerDefitions = swaggerDefinitions;
-    this.ldpathNamespaces = ldpathNamespaces;
+  public GraphEntity(Property schemaProperty, GraphEntityContext graphEntityContext) {
+    super(schemaProperty);
+    this.graphEntityContext = graphEntityContext;
   }
 
-
-  public static Builder builder() {
-    return new Builder();
-  }
 
   @Override
   public GraphQueryResult getResult() {
@@ -38,27 +37,32 @@ public final class GraphEntity extends QueryEntity<GraphQueryResult> {
     return null;
   }
 
-  public Map<String, Model> getSwaggerDefitions() {
-    return swaggerDefitions;
+  @Override
+  public EntityContext getEntityContext() {
+    return graphEntityContext;
   }
 
-  public ImmutableMap<String, String> getLdpathNamespaces() {
-    return ldpathNamespaces;
+  public static Builder builder() {
+    return new Builder();
   }
 
-
-  public static class Builder extends QueryEntity.Builder {
-
-    private Map<String, Model> swaggerDefinitions;
+  public static class Builder {
+    private Map<String, io.swagger.models.Model> swaggerDefinitions;
     private ImmutableMap<String, String> ldpathNamespaces;
+    private Property schemaProperty;
+    private org.eclipse.rdf4j.query.QueryResult queryResult;
+    private GraphEntityContext graphEntityContext;
+    private Model model;
 
     public Builder withSchemaProperty(Property schemaProperty) {
       this.schemaProperty = schemaProperty;
       return this;
     }
 
-    public Builder withQueryResult(QueryResult queryResult) {
+    public Builder withQueryResult(org.eclipse.rdf4j.query.QueryResult queryResult) {
       this.queryResult = queryResult;
+
+      this.model = QueryResults.asModel(queryResult);
       return this;
     }
 
@@ -72,7 +76,7 @@ public final class GraphEntity extends QueryEntity<GraphQueryResult> {
       return this;
     }
 
-    private static Map<String, Model> extractSwaggerDefinitions(Swagger swagger) {
+    private static Map<String, io.swagger.models.Model> extractSwaggerDefinitions(Swagger swagger) {
       if (swagger.getDefinitions() != null) {
         return ImmutableMap.copyOf(swagger.getDefinitions());
       }
@@ -96,12 +100,33 @@ public final class GraphEntity extends QueryEntity<GraphQueryResult> {
               OpenApiSpecificationExtensions.LDPATH_NAMESPACES), cce);
         }
       }
-
       return null;
     }
 
+    private ImmutableList<Resource> getSubjects() {
+
+      ImmutableList.Builder<Resource> listBuilder = ImmutableList.builder();
+      try {
+        while (this.queryResult.hasNext()) {
+
+          if (this.queryResult.next() instanceof Statement) {
+            Statement queryStatement = (Statement) this.queryResult.next();
+            listBuilder.add(queryStatement.getSubject());
+          }
+        }
+      } catch (Exception e) {
+        LOG.error("Could not get subjects from queryresult.", e);
+        throw new LdPathExecutorRuntimeException("Unable to initialize RDF4JRepository.", e);
+      }
+      return listBuilder.build();
+
+    }
+
     public Entity build() {
-      return new GraphEntity(schemaProperty, queryResult, ldpathNamespaces, swaggerDefinitions);
+      this.graphEntityContext =
+          new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model, getSubjects());
+
+      return new GraphEntity(schemaProperty, graphEntityContext);
     }
   }
 
