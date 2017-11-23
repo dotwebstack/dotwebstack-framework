@@ -24,8 +24,8 @@ public class RedirectionResourceProvider extends AbstractResourceProvider<Redire
 
   @Autowired
   public RedirectionResourceProvider(ConfigurationBackend configurationBackend,
-                                     @NonNull StageResourceProvider stageResourceProvider,
-                                     ApplicationProperties applicationProperties) {
+      @NonNull StageResourceProvider stageResourceProvider,
+      ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.stageResourceProvider = stageResourceProvider;
   }

@@ -23,6 +23,31 @@ class RequestParameterMapper {
 
   private static ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
+  private static Parameter<?> getParameter(InformationProduct product, IRI iri) {
+    for (Parameter<?> parameter : product.getParameters()) {
+      if (parameter.getIdentifier().equals(iri)) {
+        return parameter;
+      }
+    }
+
+    return null;
+  }
+
+  private static String getOpenApiParameterValue(ContainerRequestContext context,
+      io.swagger.models.parameters.Parameter openApiParameter) {
+    switch (openApiParameter.getIn()) {
+      case "header":
+        return context.getHeaders().getFirst(openApiParameter.getName());
+      case "path":
+        return context.getUriInfo().getPathParameters().getFirst(openApiParameter.getName());
+      case "query":
+        return context.getUriInfo().getQueryParameters().getFirst(openApiParameter.getName());
+      default:
+        throw new ConfigurationException(
+            String.format("Unknown parameter location: '%s'", openApiParameter.getIn()));
+    }
+  }
+
   Map<String, Object> map(@NonNull Operation operation, @NonNull InformationProduct product,
       @NonNull ContainerRequestContext context) {
     Map<String, Object> result = new HashMap<>();
@@ -54,31 +79,6 @@ class RequestParameterMapper {
     }
 
     return result;
-  }
-
-  private static Parameter<?> getParameter(InformationProduct product, IRI iri) {
-    for (Parameter<?> parameter : product.getParameters()) {
-      if (parameter.getIdentifier().equals(iri)) {
-        return parameter;
-      }
-    }
-
-    return null;
-  }
-
-  private static String getOpenApiParameterValue(ContainerRequestContext context,
-      io.swagger.models.parameters.Parameter openApiParameter) {
-    switch (openApiParameter.getIn()) {
-      case "header":
-        return context.getHeaders().getFirst(openApiParameter.getName());
-      case "path":
-        return context.getUriInfo().getPathParameters().getFirst(openApiParameter.getName());
-      case "query":
-        return context.getUriInfo().getQueryParameters().getFirst(openApiParameter.getName());
-      default:
-        throw new ConfigurationException(
-            String.format("Unknown parameter location: '%s'", openApiParameter.getIn()));
-    }
   }
 
 }

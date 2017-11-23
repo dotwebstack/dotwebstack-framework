@@ -19,10 +19,11 @@ public final class SchemaMapperAdapter {
   }
 
   public <S extends Property> Object mapTupleValue(@NonNull S schema, @NonNull Value value) {
-    SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
-        candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
-            () -> new SchemaMapperRuntimeException(String.format(
-                "No schema handler available for '%s'.", schema.getClass().getName())));
+    SchemaMapper<? extends Property,
+        ?> schemaMapper = schemaMappers.stream().filter(
+            candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
+                () -> new SchemaMapperRuntimeException(String.format(
+                    "No schema handler available for '%s'.", schema.getClass().getName())));
 
     return ((SchemaMapper<S, ?>) schemaMapper).mapTupleValue(schema, value);
   }

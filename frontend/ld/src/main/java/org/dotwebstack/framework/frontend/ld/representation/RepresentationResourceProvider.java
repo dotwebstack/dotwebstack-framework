@@ -28,12 +28,10 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
-                                        @NonNull InformationProductResourceProvider
-                                            informationProductResourceProvider,
-                                        @NonNull AppearanceResourceProvider
-                                            appearanceResourceProvider,
-                                        @NonNull StageResourceProvider stageResourceProvider,
-                                        ApplicationProperties applicationProperties) {
+      @NonNull InformationProductResourceProvider informationProductResourceProvider,
+      @NonNull AppearanceResourceProvider appearanceResourceProvider,
+      @NonNull StageResourceProvider stageResourceProvider,
+      ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.informationProductResourceProvider = informationProductResourceProvider;
     this.appearanceResourceProvider = appearanceResourceProvider;
@@ -51,13 +49,13 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   @Override
   protected Representation createResource(Model model, IRI identifier) {
     final Representation.Builder builder = new Representation.Builder(identifier);
-    getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(iri ->
-        builder.informationProduct(informationProductResourceProvider.get(iri)));
-    getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(iri ->
-        builder.appearance(appearanceResourceProvider.get(iri)));
+    getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(
+        iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
+    getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(
+        iri -> builder.appearance(appearanceResourceProvider.get(iri)));
     getObjectStrings(model, identifier, ELMO.URL_PATTERN).ifPresent(builder::urlPatterns);
-    getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(iri ->
-        builder.stage(stageResourceProvider.get(iri)));
+    getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(
+        iri -> builder.stage(stageResourceProvider.get(iri)));
     return builder.build();
   }
 
@@ -78,8 +76,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
       builder.appearance(representation.getAppearance());
     }
     List<IRI> subRepresentationIris = new ArrayList<>();
-    getObjectIris(model, representation.getIdentifier(), ELMO.CONTAINS_PROP)
-        .ifPresent(subRepresentationIris::addAll);
+    getObjectIris(model, representation.getIdentifier(), ELMO.CONTAINS_PROP).ifPresent(
+        subRepresentationIris::addAll);
     subRepresentationIris.stream().forEach(iri -> builder.subRepresentation(this.get(iri)));
     return builder.build();
   }

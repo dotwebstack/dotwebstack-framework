@@ -18,7 +18,7 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
 
   @Autowired
   public SiteResourceProvider(ConfigurationBackend configurationBackend,
-                              ApplicationProperties applicationProperties) {
+      ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
   }
 

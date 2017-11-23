@@ -23,7 +23,7 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
 
   @Autowired
   public AppearanceResourceProvider(ConfigurationBackend configurationBackend,
-                                    ApplicationProperties applicationProperties) {
+      ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
   }
 
@@ -37,10 +37,9 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
 
   @Override
   protected Appearance createResource(@NonNull Model model, @NonNull IRI identifier) {
-    IRI type =
-        getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(() -> new ConfigurationException(
-            String.format("No <%s> statement has been found for appearance <%s>.",
-                RDF.TYPE, identifier)));
+    IRI type = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
+        () -> new ConfigurationException(String.format(
+            "No <%s> statement has been found for appearance <%s>.", RDF.TYPE, identifier)));
     return new Appearance.Builder(identifier, type, getModel(identifier)).build();
   }
 
@@ -57,8 +56,8 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
-    String query = "CONSTRUCT { ?app ?p ?o. ?o ?op ?oo } "
-        + "WHERE { ?app ?p ?o. OPTIONAL { ?o ?op ?oo } }";
+    String query =
+        "CONSTRUCT { ?app ?p ?o. ?o ?op ?oo } " + "WHERE { ?app ?p ?o. OPTIONAL { ?o ?op ?oo } }";
     GraphQuery graphQuery = repositoryConnection.prepareGraphQuery(query);
     graphQuery.setBinding("app", identifier);
     SimpleDataset simpleDataset = new SimpleDataset();

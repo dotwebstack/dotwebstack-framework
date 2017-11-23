@@ -22,8 +22,7 @@ public class BackendResourceProvider extends AbstractResourceProvider<Backend> {
 
   @Autowired
   public BackendResourceProvider(ConfigurationBackend configurationBackend,
-                                 @NonNull List<BackendFactory> backendFactories,
-                                 ApplicationProperties applicationProperties) {
+      @NonNull List<BackendFactory> backendFactories, ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.backendFactories = backendFactories;
   }

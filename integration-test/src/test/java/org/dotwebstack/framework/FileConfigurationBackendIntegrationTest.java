@@ -44,8 +44,8 @@ public class FileConfigurationBackendIntegrationTest {
   public void configrateBackend_WithoutPrefixesInBackendfile_throwConfigurationException()
       throws Exception {
     // Arrange
-    fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
-        "invalidConfig");
+    fileConfigurationBackend =
+        new FileConfigurationBackend(elmoConfiguration, sailRepository, "invalidConfig");
 
     // Assert
     thrown.expect(ConfigurationException.class);

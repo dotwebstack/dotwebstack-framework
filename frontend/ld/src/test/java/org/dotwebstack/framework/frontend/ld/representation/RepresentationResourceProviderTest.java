@@ -84,9 +84,9 @@ public class RepresentationResourceProviderTest {
 
   @Before
   public void setUp() {
-    representationResourceProvider = new RepresentationResourceProvider(configurationBackend,
-        informationProductResourceProvider, appearanceResourceProvider,
-        stageResourceProvider, applicationProperties);
+    representationResourceProvider =
+        new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
+            appearanceResourceProvider, stageResourceProvider, applicationProperties);
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
@@ -110,8 +110,7 @@ public class RepresentationResourceProviderTest {
     // Assert
     thrown.expect(NullPointerException.class);
     // Act
-    new RepresentationResourceProvider(configurationBackend, null,
-        null, null,
+    new RepresentationResourceProvider(configurationBackend, null, null, null,
         applicationProperties);
   }
 
@@ -181,11 +180,9 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
-                ELMO.URL_PATTERN, valueFactory.createIRI(DBEERPEDIA.NAMESPACE,
-                    "helloWorld")),
+                ELMO.URL_PATTERN, valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "helloWorld")),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
-                ELMO.URL_PATTERN, valueFactory.createIRI(DBEERPEDIA.NAMESPACE,
-                    "this/is/sparta")),
+                ELMO.URL_PATTERN, valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "this/is/sparta")),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
@@ -209,8 +206,8 @@ public class RepresentationResourceProviderTest {
   @Test
   public void loadResources_LoadMultipleSubRepresentations_WithValidData() {
     // Arrange
-    final IRI subRepresentationName = valueFactory.createIRI(DBEERPEDIA.NAMESPACE,
-        "subrepresentation");
+    final IRI subRepresentationName =
+        valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "subrepresentation");
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             // first subrepresentation
@@ -221,12 +218,10 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             // second subrepresentation
-            valueFactory.createStatement(subRepresentationName, RDF.TYPE,
-                ELMO.REPRESENTATION),
-            valueFactory.createStatement(subRepresentationName,
-                ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
-            valueFactory.createStatement(subRepresentationName,
-                ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
+            valueFactory.createStatement(subRepresentationName, RDF.TYPE, ELMO.REPRESENTATION),
+            valueFactory.createStatement(subRepresentationName, ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
+            valueFactory.createStatement(subRepresentationName, ELMO.INFORMATION_PRODUCT_PROP,
+                DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             // main representation
             valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, RDF.TYPE,
                 ELMO.REPRESENTATION),
@@ -234,12 +229,10 @@ public class RepresentationResourceProviderTest {
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-            valueFactory
-                .createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, ELMO.CONTAINS_PROP,
-                    DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
-            valueFactory
-                .createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, ELMO.CONTAINS_PROP,
-                    subRepresentationName))));
+            valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
+                ELMO.CONTAINS_PROP, DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
+                ELMO.CONTAINS_PROP, subRepresentationName))));
     // Act
     representationResourceProvider.loadResources();
     // Assert
@@ -376,9 +369,8 @@ public class RepresentationResourceProviderTest {
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
-            valueFactory
-                .createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION, ELMO.CONTAINS_PROP,
-                    DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION))));
+            valueFactory.createStatement(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION,
+                ELMO.CONTAINS_PROP, DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION))));
     // Act
     representationResourceProvider.loadResources();
     // Assert

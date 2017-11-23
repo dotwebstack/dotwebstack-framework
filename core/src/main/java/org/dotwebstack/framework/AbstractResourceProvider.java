@@ -34,7 +34,7 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
   private HashMap<IRI, R> resources = new HashMap<>();
 
   public AbstractResourceProvider(@NonNull ConfigurationBackend configurationBackend,
-                                  @NonNull ApplicationProperties applicationProperties) {
+      @NonNull ApplicationProperties applicationProperties) {
     this.configurationBackend = configurationBackend;
     this.applicationProperties = applicationProperties;
   }
