@@ -44,9 +44,11 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     if (!resources.containsKey(identifier)) {
       String availableResources = resources.keySet().stream().map(i -> "<" + i + ">").collect(
           Collectors.toSet()).toString();
+
       throw new IllegalArgumentException(String.format(
           "Resource <%s> not found. Available resources: %s", identifier, availableResources));
     }
+
     return resources.get(identifier);
   }
 
@@ -58,16 +60,20 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
   @PostConstruct
   public void loadResources() {
     RepositoryConnection repositoryConnection;
+
     try {
       repositoryConnection = configurationBackend.getRepository().getConnection();
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
+
     GraphQuery query = getQueryForResources(repositoryConnection);
+
     SimpleDataset simpleDataset = new SimpleDataset();
     simpleDataset.addDefaultGraph(applicationProperties.getSystemGraph());
     simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
     query.setDataset(simpleDataset);
+
     try {
       Model model = QueryResults.asModel(query.evaluate());
       model.subjects().forEach(identifier -> {

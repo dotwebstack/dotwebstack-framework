@@ -90,9 +90,11 @@ public class RepresentationResourceProviderTest {
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
+
     when(informationProductResourceProvider.get(any())).thenReturn(informationProduct);
     when(stageResourceProvider.get(any())).thenReturn(stage);
     when(appearanceResourceProvider.get(any())).thenReturn(appearance);
+
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 

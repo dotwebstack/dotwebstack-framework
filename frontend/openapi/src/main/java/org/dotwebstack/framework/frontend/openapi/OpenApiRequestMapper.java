@@ -44,10 +44,15 @@ import org.springframework.stereotype.Service;
 class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
+
   private final InformationProductResourceProvider informationProductResourceProvider;
+
   private final SwaggerParser openApiParser;
+
   private final GetRequestHandlerFactory getRequestHandlerFactory;
+
   private ApplicationProperties applicationProperties;
+
   private ResourceLoader resourceLoader;
 
   private Environment environment;

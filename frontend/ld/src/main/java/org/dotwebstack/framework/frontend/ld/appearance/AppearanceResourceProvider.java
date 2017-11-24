@@ -32,6 +32,7 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o. ?rep ?appearance ?s. }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("appearance", ELMO.APPEARANCE_PROP);
+
     return graphQuery;
   }
 
@@ -51,19 +52,23 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
   private Model getModel(IRI identifier) {
     final RepositoryConnection repositoryConnection;
     final Model model;
+
     try {
       repositoryConnection = configurationBackend.getRepository().getConnection();
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
+
     String query =
         "CONSTRUCT { ?app ?p ?o. ?o ?op ?oo } " + "WHERE { ?app ?p ?o. OPTIONAL { ?o ?op ?oo } }";
     GraphQuery graphQuery = repositoryConnection.prepareGraphQuery(query);
     graphQuery.setBinding("app", identifier);
+
     SimpleDataset simpleDataset = new SimpleDataset();
     simpleDataset.addDefaultGraph(applicationProperties.getSystemGraph());
     simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
     graphQuery.setDataset(simpleDataset);
+
     try {
       model = QueryResults.asModel(graphQuery.evaluate());
     } catch (QueryEvaluationException e) {
@@ -71,6 +76,7 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
     } finally {
       repositoryConnection.close();
     }
+
     return model;
   }
 

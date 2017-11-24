@@ -33,8 +33,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class ParameterResourceProviderTest {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+
   @Mock
   private GraphQuery graphQueryMock;
 

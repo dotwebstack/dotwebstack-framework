@@ -41,6 +41,7 @@ public class RepresentationTest {
   public void build_ThrowsException_WithMissingIdentifier() {
     // Assert
     thrown.expect(NullPointerException.class);
+
     // Act
     new Representation.Builder(null).build();
   }

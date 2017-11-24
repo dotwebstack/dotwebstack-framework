@@ -41,8 +41,10 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   @Override
   protected GraphQuery getQueryForResources(RepositoryConnection conn) {
     final String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
+
     final GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.REPRESENTATION);
+
     return graphQuery;
   }
 

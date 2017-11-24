@@ -43,14 +43,18 @@ public class RedirectionResourceProvider extends AbstractResourceProvider<Redire
     IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP).orElseThrow(
         () -> new ConfigurationException(String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION,
             ELMO.STAGE_PROP, identifier)));
+
     String urlPattern = getObjectString(model, identifier, ELMO.URL_PATTERN).orElseThrow(
         () -> new ConfigurationException(String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION,
             ELMO.URL_PATTERN, identifier)));
+
     String targetUrl = getObjectString(model, identifier, ELMO.TARGET_URL).orElseThrow(
         () -> new ConfigurationException(String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION,
             ELMO.TARGET_URL, identifier)));
+
     Redirection.Builder builder = new Redirection.Builder(identifier,
         stageResourceProvider.get(stageIri), urlPattern, targetUrl);
+
     return builder.build();
   }
 

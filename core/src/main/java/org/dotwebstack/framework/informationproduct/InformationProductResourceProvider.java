@@ -36,6 +36,7 @@ public class InformationProductResourceProvider
       @NonNull ParameterResourceProvider parameterResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
+
     this.backendResourceProvider = backendResourceProvider;
     this.parameterResourceProvider = parameterResourceProvider;
   }
@@ -45,6 +46,7 @@ public class InformationProductResourceProvider
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.INFORMATION_PRODUCT);
+
     return graphQuery;
   }
 
@@ -59,7 +61,9 @@ public class InformationProductResourceProvider
         Models.objectIRIs(model.filter(identifier, ELMO.REQUIRED_PARAMETER_PROP, null));
     Set<IRI> optionalParameterIds =
         Models.objectIRIs(model.filter(identifier, ELMO.OPTIONAL_PARAMETER_PROP, null));
+
     String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
+
     return create(backendIRI, requiredParameterIds, optionalParameterIds, identifier, label, model);
   }
 
@@ -71,13 +75,17 @@ public class InformationProductResourceProvider
   private InformationProduct create(IRI backendIdentifier, Set<IRI> requiredParameterIds,
       Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
+
     ImmutableList.Builder<Parameter> builder = ImmutableList.builder();
+
     requiredParameterIds.stream().map(parameterResourceProvider::get).map(
         d -> TermParameter.requiredTermParameter(d.getIdentifier(), d.getName())).forEach(
             builder::add);
+
     optionalParameterIds.stream().map(parameterResourceProvider::get).map(
         d -> TermParameter.optionalTermParameter(d.getIdentifier(), d.getName())).forEach(
             builder::add);
+
     return backend.createInformationProduct(identifier, label, builder.build(), statements);
   }
 }

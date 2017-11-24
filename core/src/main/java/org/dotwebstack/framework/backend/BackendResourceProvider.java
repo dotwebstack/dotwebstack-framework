@@ -33,6 +33,7 @@ public class BackendResourceProvider extends AbstractResourceProvider<Backend> {
         "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . ?type rdfs:subClassOf ?backend }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("backend", ELMO.BACKEND);
+
     return graphQuery;
   }
 
@@ -41,11 +42,13 @@ public class BackendResourceProvider extends AbstractResourceProvider<Backend> {
     IRI backendType = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for backend <%s>.", RDF.TYPE, identifier)));
+
     for (BackendFactory backendFactory : backendFactories) {
       if (backendFactory.supports(backendType)) {
         return backendFactory.create(model, identifier);
       }
     }
+
     throw new ConfigurationException(
         String.format("No backend factory available for type <%s>.", backendType));
   }

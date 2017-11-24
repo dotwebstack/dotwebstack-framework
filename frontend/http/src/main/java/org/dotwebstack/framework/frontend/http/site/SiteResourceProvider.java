@@ -27,6 +27,7 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.SITE);
+
     return graphQuery;
   }
 
@@ -34,6 +35,7 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
   protected Site createResource(Model model, IRI identifier) {
     Site.Builder builder = new Site.Builder(identifier);
     Optional<String> domain = getObjectString(model, identifier, ELMO.DOMAIN);
+
     // Check if domain already exists
     if (domain.isPresent()) {
       if (getAll().entrySet().stream().anyMatch(
@@ -47,6 +49,7 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
         throw new ConfigurationException("Catch all domain found for multiple sites.");
       }
     }
+
     return builder.build();
   }
 
