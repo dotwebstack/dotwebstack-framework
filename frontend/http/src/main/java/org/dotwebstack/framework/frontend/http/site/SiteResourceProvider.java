@@ -53,9 +53,4 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
     return builder.build();
   }
 
-  @Override
-  protected Site postLoad(Model model, Site resource) {
-    return resource;
-  }
-
 }

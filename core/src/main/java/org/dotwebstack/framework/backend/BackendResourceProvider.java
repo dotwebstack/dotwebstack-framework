@@ -53,9 +53,4 @@ public class BackendResourceProvider extends AbstractResourceProvider<Backend> {
         String.format("No backend factory available for type <%s>.", backendType));
   }
 
-  @Override
-  protected Backend postLoad(Model model, Backend resource) {
-    return resource;
-  }
-
 }

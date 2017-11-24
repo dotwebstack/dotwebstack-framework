@@ -58,8 +58,4 @@ public class RedirectionResourceProvider extends AbstractResourceProvider<Redire
     return builder.build();
   }
 
-  @Override
-  protected Redirection postLoad(Model model, Redirection resource) {
-    return resource;
-  }
 }

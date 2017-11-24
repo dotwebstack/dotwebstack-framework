@@ -44,11 +44,6 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
     return new Appearance.Builder(identifier, type, getModel(identifier)).build();
   }
 
-  @Override
-  protected Appearance postLoad(Model model, Appearance resource) {
-    return resource;
-  }
-
   private Model getModel(IRI identifier) {
     final RepositoryConnection repositoryConnection;
     final Model model;

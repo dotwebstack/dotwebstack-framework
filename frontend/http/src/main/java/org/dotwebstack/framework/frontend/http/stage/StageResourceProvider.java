@@ -48,9 +48,4 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
     return builder.build();
   }
 
-  @Override
-  protected Stage postLoad(Model model, Stage resource) {
-    return resource;
-  }
-
 }

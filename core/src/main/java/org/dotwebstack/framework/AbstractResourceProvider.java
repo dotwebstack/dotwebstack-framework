@@ -82,8 +82,8 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
         LOG.info("Registered resource: <{}>", identifier);
       });
       model.subjects().forEach(identifier -> {
-        R resource = postLoad(model, resources.get(identifier));
-        resources.replace((IRI) identifier, resource);
+        postLoad(model, resources.get(identifier)).ifPresent(
+            res -> resources.replace((IRI) identifier, res));
         LOG.info("Update resource: <{}>", identifier);
       });
     } catch (QueryEvaluationException e) {
@@ -97,7 +97,9 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
 
   protected abstract R createResource(Model model, IRI identifier);
 
-  protected abstract R postLoad(Model model, R resource);
+  protected Optional<R> postLoad(Model model, R resource) {
+    return Optional.empty();
+  }
 
   protected Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
     return Models.objectString(model.filter(subject, predicate, null));

@@ -76,6 +76,15 @@ public class Representation {
       this.identifier = identifier;
     }
 
+    public Builder(@NonNull Representation representation) {
+      this.identifier = representation.identifier;
+      this.informationProduct = representation.informationProduct;
+      this.appearance = representation.appearance;
+      this.urlPatterns = representation.urlPatterns;
+      this.stage = representation.stage;
+      this.subRepresentations = representation.subRepresentations;
+    }
+
     public Builder informationProduct(InformationProduct informationProduct) {
       this.informationProduct = informationProduct;
       return this;

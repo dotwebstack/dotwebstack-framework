@@ -67,11 +67,6 @@ public class InformationProductResourceProvider
     return create(backendIRI, requiredParameterIds, optionalParameterIds, identifier, label, model);
   }
 
-  @Override
-  protected InformationProduct postLoad(Model model, InformationProduct resource) {
-    return resource;
-  }
-
   private InformationProduct create(IRI backendIdentifier, Set<IRI> requiredParameterIds,
       Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);

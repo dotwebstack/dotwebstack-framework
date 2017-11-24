@@ -14,6 +14,7 @@ import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,7 +44,18 @@ public class RepresentationTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Representation.Builder(null).build();
+    IRI representationIri = null;
+    new Representation.Builder(representationIri).build();
+  }
+
+  @Test
+  public void build_ThrowsException_WithMissingRepreseentation() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    Representation representation = null;
+    new Representation.Builder(representation).build();
   }
 
   @Test

@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.ld.representation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -62,26 +63,15 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   }
 
   @Override
-  public Representation postLoad(Model model, Representation representation) {
-    Representation.Builder builder = new Representation.Builder(representation.getIdentifier());
-    if (representation.getStage() != null) {
-      builder.stage(representation.getStage());
-    }
-    if (representation.getUrlPatterns() != null) {
-      builder.urlPatterns(representation.getUrlPatterns().toArray(
-          new String[representation.getUrlPatterns().size()]));
-    }
-    if (representation.getInformationProduct() != null) {
-      builder.informationProduct(representation.getInformationProduct());
-    }
-    if (representation.getAppearance() != null) {
-      builder.appearance(representation.getAppearance());
-    }
+  public Optional<Representation> postLoad(Model model, Representation representation) {
+    Representation.Builder builder = new Representation.Builder(representation);
+
     List<IRI> subRepresentationIris = new ArrayList<>();
     getObjectIris(model, representation.getIdentifier(), ELMO.CONTAINS_PROP).ifPresent(
         subRepresentationIris::addAll);
     subRepresentationIris.stream().forEach(iri -> builder.subRepresentation(this.get(iri)));
-    return builder.build();
+
+    return Optional.of(builder.build());
   }
 
 }

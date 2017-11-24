@@ -42,9 +42,4 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
     return new ParameterDefinition(identifier, name);
   }
 
-  @Override
-  protected ParameterDefinition postLoad(Model model, ParameterDefinition resource) {
-    return resource;
-  }
-
 }
