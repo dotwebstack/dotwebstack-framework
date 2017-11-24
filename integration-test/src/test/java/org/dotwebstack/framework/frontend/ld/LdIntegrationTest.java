@@ -22,9 +22,7 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
@@ -37,9 +35,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class LdIntegrationTest {
 
   private WebTarget target;
-
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
 
   @LocalServerPort
   private int port;
@@ -167,13 +162,18 @@ public class LdIntegrationTest {
     assertThat(response.getStatus(), equalTo(Status.METHOD_NOT_ALLOWED.getStatusCode()));
   }
 
-  // @Test
-  // public void get_NotAcceptable_WhenRequestingWrongMediaType() {
-  // // Act
-  // Response response =
-  // target.path("/dbp/ld/v1/graph-breweries").request(MediaType.APPLICATION_OCTET_STREAM).get();
-  //
-  // // Assert
-  // assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
-  // }
+  @Test
+  public void get_NotAcceptable_WhenRequestingWrongMediaType() {
+    // Arrange
+    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
+        DBEERPEDIA.BREWERIES_LABEL).build();
+    SparqlHttpStub.returnGraph(model);
+
+    // Act
+    Response response =
+        target.path("/dbp/ld/v1/graph-breweries").request(MediaType.APPLICATION_OCTET_STREAM).get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
+  }
 }
