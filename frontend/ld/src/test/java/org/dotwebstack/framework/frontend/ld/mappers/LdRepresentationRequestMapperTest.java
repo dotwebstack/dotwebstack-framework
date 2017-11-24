@@ -5,16 +5,20 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsNot.not;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestParameterMapper;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -62,6 +66,9 @@ public class LdRepresentationRequestMapperTest {
   @Mock
   private RepresentationRequestParameterMapper representationRequestParameterMapper;
 
+  private RepresentationRequestHandler representationRequestHandler;
+
+  @Mock
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   private HttpConfiguration httpConfiguration;
@@ -80,33 +87,15 @@ public class LdRepresentationRequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
-    representationRequestHandlerFactory =
-        new RepresentationRequestHandlerFactory(representationRequestParameterMapper);
+    representationRequestHandler =
+        new RepresentationRequestHandler(representation, representationRequestParameterMapper);
     ldRepresentationRequestMapper =
         new LdRepresentationRequestMapper(representationResourceProvider,
             supportedMediaTypesScanner, representationRequestHandlerFactory);
+    when(representationRequestHandlerFactory.newRepresentationRequestHandler(
+        isA(Representation.class))).thenReturn(representationRequestHandler);
 
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingRepresentationResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new LdRepresentationRequestMapper(null, supportedMediaTypesScanner,
-        representationRequestHandlerFactory);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingMediaTypesScanner() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new LdRepresentationRequestMapper(representationResourceProvider, null,
-        representationRequestHandlerFactory);
   }
 
   @Test
@@ -122,6 +111,10 @@ public class LdRepresentationRequestMapperTest {
 
   @Test
   public void loadRepresentations_MapRepresentation_WithValidData() {
+    // Arrange
+    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+        new MediaType[] {MediaType.valueOf("text/turtle")});
+
     // Act
     ldRepresentationRequestMapper.loadRepresentations(httpConfiguration);
 
@@ -169,6 +162,10 @@ public class LdRepresentationRequestMapperTest {
 
   @Test
   public void loadRepresentations_IgnoreSecondRepresentation_WhenAddedTwice() {
+    // Arrange
+    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+        new MediaType[] {MediaType.valueOf("text/turtle")});
+
     Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
             informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
@@ -190,6 +187,9 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void loadRepresentations_UsesPathDomainParameter_WithMatchAllDomain() {
     // Arrange
+    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+        new MediaType[] {MediaType.valueOf("text/turtle")});
+
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();

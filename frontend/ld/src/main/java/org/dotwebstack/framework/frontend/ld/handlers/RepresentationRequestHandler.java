@@ -5,6 +5,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -29,6 +30,10 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
     this.representationRequestParameterMapper = representationRequestParameterMapper;
   }
 
+  public RepresentationRequestParameterMapper getRepresentationRequestParameterMapper() {
+    return representationRequestParameterMapper;
+  }
+
   @Override
   public Response apply(ContainerRequestContext containerRequestContext) {
     String path = containerRequestContext.getUriInfo().getPath();
@@ -48,7 +53,7 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
       return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
     }
 
-    throw new IllegalStateException(
+    throw new ConfigurationException(
         String.format("Result type {} not supported for information product {}",
             informationProduct.getResultType(), informationProduct.getIdentifier()));
   }

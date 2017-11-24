@@ -14,7 +14,7 @@ public class RepresentationRequestHandlerFactory {
     this.representationRequestParameterMapper = representationRequestParameterMapper;
   }
 
-  public RepresentationRequestHandler newGetRepresentationRequestHandler(
+  public RepresentationRequestHandler newRepresentationRequestHandler(
       @NonNull Representation representation) {
     return new RepresentationRequestHandler(representation, representationRequestParameterMapper);
   }

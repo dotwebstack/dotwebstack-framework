@@ -52,7 +52,10 @@ public class LdRepresentationRequestMapper {
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          representationRequestHandlerFactory.newGetRepresentationRequestHandler(representation));
+          representationRequestHandlerFactory.newRepresentationRequestHandler(
+              representation)).produces(
+                  supportedMediaTypesScanner.getMediaTypes(
+                      representation.getInformationProduct().getResultType()));
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());
