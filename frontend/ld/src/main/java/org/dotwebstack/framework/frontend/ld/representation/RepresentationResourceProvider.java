@@ -15,11 +15,15 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RepresentationResourceProvider extends AbstractResourceProvider<Representation> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RepresentationResourceProvider.class);
 
   private final InformationProductResourceProvider informationProductResourceProvider;
 
@@ -52,6 +56,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   @Override
   protected Representation createResource(Model model, IRI identifier) {
     final Representation.Builder builder = new Representation.Builder(identifier);
+
     getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(
         iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
     getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(
@@ -59,6 +64,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     getObjectStrings(model, identifier, ELMO.URL_PATTERN).ifPresent(builder::urlPatterns);
     getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));
+
     return builder.build();
   }
 
@@ -70,6 +76,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     getObjectIris(model, representation.getIdentifier(), ELMO.CONTAINS_PROP).ifPresent(
         subRepresentationIris::addAll);
     subRepresentationIris.stream().forEach(iri -> builder.subRepresentation(this.get(iri)));
+
+    LOG.info("Updated resource: <{}>", representation.getIdentifier());
 
     return Optional.of(builder.build());
   }

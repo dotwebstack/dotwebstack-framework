@@ -84,7 +84,6 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
       model.subjects().forEach(identifier -> {
         postLoad(model, resources.get(identifier)).ifPresent(
             res -> resources.replace((IRI) identifier, res));
-        LOG.info("Update resource: <{}>", identifier);
       });
     } catch (QueryEvaluationException e) {
       throw new ConfigurationException("Error while evaluating SPARQL query.", e);
