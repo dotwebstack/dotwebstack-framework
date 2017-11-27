@@ -10,6 +10,8 @@ import com.google.common.collect.ImmutableMap;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -39,11 +41,15 @@ public class RepresentationRequestHandlerTest {
   @Mock
   private InformationProduct informationProduct;
 
+  private RepresentationRequestParameterMapper representationRequestParameterMapper;
+
   private RepresentationRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
-    getRequestHandler = new RepresentationRequestHandler(representation);
+    representationRequestParameterMapper = new RepresentationRequestParameterMapper();
+    getRequestHandler =
+        new RepresentationRequestHandler(representation, representationRequestParameterMapper);
   }
 
   @Test
@@ -52,7 +58,7 @@ public class RepresentationRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new RepresentationRequestHandler(null);
+    new RepresentationRequestHandler(null, representationRequestParameterMapper);
   }
 
   @Test
@@ -61,6 +67,7 @@ public class RepresentationRequestHandlerTest {
     when(representation.getInformationProduct()).thenReturn(informationProduct);
     GraphQueryResult queryResult = mock(GraphQueryResult.class);
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
+    when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
 
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
@@ -83,6 +90,7 @@ public class RepresentationRequestHandlerTest {
     when(representation.getInformationProduct()).thenReturn(informationProduct);
     TupleQueryResult queryResult = mock(TupleQueryResult.class);
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
+    when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
@@ -111,8 +119,7 @@ public class RepresentationRequestHandlerTest {
     when(uriInfo.getPath()).thenReturn("/");
 
     // Assert
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("Received a query result that was not supported");
+    thrown.expect(ConfigurationException.class);
 
     // Act
     getRequestHandler.apply(containerRequestContext);

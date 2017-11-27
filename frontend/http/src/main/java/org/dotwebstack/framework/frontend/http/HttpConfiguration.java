@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.http;
 
 import java.util.List;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.http.error.WebApplicationExceptionMapper;
 import org.dotwebstack.framework.frontend.http.jackson.ObjectMapperProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -19,6 +20,7 @@ public class HttpConfiguration extends ResourceConfig {
 
     register(ObjectMapperProvider.class);
     register(HostPreMatchingRequestFilter.class);
+    register(WebApplicationExceptionMapper.class);
     property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(robots.txt|(assets|webjars)/.*)");
     property(ServerProperties.WADL_FEATURE_DISABLE, true);
     httpModules.forEach(module -> module.initialize(this));

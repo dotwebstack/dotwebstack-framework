@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 class RequestParameterMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RequestParameterMapper.class);
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 

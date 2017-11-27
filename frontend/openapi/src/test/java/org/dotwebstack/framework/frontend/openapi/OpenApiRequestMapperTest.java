@@ -25,6 +25,7 @@ import io.swagger.parser.SwaggerParser;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -275,7 +276,7 @@ public class OpenApiRequestMapperTest {
     assertThat(resource.getResourceMethods(), hasSize(1));
 
     ResourceMethod method = resource.getResourceMethods().get(0);
-    assertThat(method.getHttpMethod(), equalTo("GET"));
+    assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
     assertThat(method.getProducedTypes(),
         contains(MediaType.TEXT_PLAIN_TYPE, MediaType.APPLICATION_JSON_TYPE));
 

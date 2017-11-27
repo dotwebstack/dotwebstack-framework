@@ -14,7 +14,6 @@ import java.util.Map;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.redirection.Redirection;
 import org.dotwebstack.framework.frontend.ld.redirection.RedirectionResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -46,9 +45,6 @@ public class LdRedirectionRequestMapperTest {
 
   @Mock
   private RedirectionResourceProvider redirectionResourceProvider;
-
-  @Mock
-  private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   private LdRedirectionRequestMapper ldRedirectionRequestMapper;
 
