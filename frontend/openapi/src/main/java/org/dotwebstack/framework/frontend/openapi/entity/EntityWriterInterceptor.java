@@ -21,19 +21,17 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
 
   @Override
   public void aroundWriteTo(@NonNull WriterInterceptorContext context) throws IOException {
-    if (context.getEntity() instanceof Entity) {
-      if (context.getEntity() instanceof TupleEntity) {
-        TupleEntity entity = (TupleEntity) context.getEntity();
-        Object mappedEntity = tupleEntityMapper.map(entity, context.getMediaType());
-        context.setEntity(mappedEntity);
-      }
-      if (context.getEntity() instanceof GraphEntity) {
-        GraphEntity entity = (GraphEntity) context.getEntity();
-        Object mappedEntity =
-            graphEntityMapper.map(entity, context.getMediaType());
-        context.setEntity(mappedEntity);
-      }
+    if (context.getEntity() instanceof TupleEntity) {
+      TupleEntity entity = (TupleEntity) context.getEntity();
+      Object mappedEntity = tupleEntityMapper.map(entity, context.getMediaType());
+      context.setEntity(mappedEntity);
     }
+    if (context.getEntity() instanceof GraphEntity) {
+      GraphEntity entity = (GraphEntity) context.getEntity();
+      Object mappedEntity = graphEntityMapper.map(entity, context.getMediaType());
+      context.setEntity(mappedEntity);
+    }
+
     context.proceed();
   }
 
