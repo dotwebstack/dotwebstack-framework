@@ -7,15 +7,10 @@ import javax.ws.rs.container.ContainerRequestContext;
 import lombok.NonNull;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RepresentationRequestParameterMapper {
-
-  private static final Logger LOG =
-      LoggerFactory.getLogger(RepresentationRequestParameterMapper.class);
 
   Map<String, Object> map(@NonNull InformationProduct informationProduct,
       @NonNull ContainerRequestContext context) {

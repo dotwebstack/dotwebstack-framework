@@ -54,7 +54,7 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
     }
 
     throw new ConfigurationException(
-        String.format("Result type {} not supported for information product {}",
+        String.format("Result type %s not supported for information product %s",
             informationProduct.getResultType(), informationProduct.getIdentifier()));
   }
 
