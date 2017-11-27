@@ -68,11 +68,11 @@
       <artifactId>ldpath-core</artifactId>
       <version>3.3.0</version>
     </dependency>
-      <dependency>
-          <groupId>org.skyscreamer</groupId>
-          <artifactId>jsonassert</artifactId>
-          <scope>test</scope>
-      </dependency>
+    <dependency>
+      <groupId>org.skyscreamer</groupId>
+      <artifactId>jsonassert</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
