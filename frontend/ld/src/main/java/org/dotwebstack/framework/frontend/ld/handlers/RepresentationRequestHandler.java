@@ -44,7 +44,7 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
     Map<String, Object> parameterValues =
         representationRequestParameterMapper.map(informationProduct, containerRequestContext);
 
-    Object result = representation.getInformationProduct().getResult(parameterValues);
+    Object result = informationProduct.getResult(parameterValues);
 
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
       return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();

@@ -2,9 +2,9 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class RepresentationRequestHandlerFactory {
 
   private final RepresentationRequestParameterMapper representationRequestParameterMapper;
