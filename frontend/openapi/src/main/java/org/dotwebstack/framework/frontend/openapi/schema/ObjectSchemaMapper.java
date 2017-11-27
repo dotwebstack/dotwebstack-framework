@@ -4,21 +4,19 @@ import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ObjectSchemaMapper implements SchemaMapper<ObjectProperty, Object> {
+public class ObjectSchemaMapper extends AbstractSchemaMapper
+    implements SchemaMapper<ObjectProperty, Object> {
 
   @Override
   public Object mapTupleValue(ObjectProperty schema, Value value) {
@@ -30,35 +28,18 @@ public class ObjectSchemaMapper implements SchemaMapper<ObjectProperty, Object> 
       SchemaMapperAdapter schemaMapperAdapter, Value context) {
 
     Value contextNew = context;
-    if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.SUBJECT_FILTER)) {
-      LinkedHashMap subjectFilter = (LinkedHashMap) property.getVendorExtensions().get(
-          OpenApiSpecificationExtensions.SUBJECT_FILTER);
-
-      String predicate =
-          (String) subjectFilter.get(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE);
-      String object =
-          (String) subjectFilter.get(OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT);
-
-      ValueFactory vf = SimpleValueFactory.getInstance();
-
-      final IRI predicateIri = vf.createIRI(predicate);
-      final IRI objectLiteral = vf.createIRI(object);
-
-      Model filteredModel = graphEntityContext.getModel().filter(null, predicateIri, objectLiteral);
-
-      if (filteredModel.subjects().iterator().hasNext()) {
-        if (filteredModel.subjects().size() > 1) {
+    Set<Resource> subjects = applySubjectFilterIfPossible(property, graphEntityContext);
+    if (subjects != null) {
+      if (subjects.iterator().hasNext()) {
+        if (subjects.size() > 1) {
           throw new SchemaMapperRuntimeException(
-              String.format("More entrypoint subjects found for ('%s,%s'). Only one is needed.",
-                  predicate, object));
+              String.format("More entrypoint subjects found. Only one is needed."));
         }
-        contextNew = filteredModel.subjects().iterator().next();
+        contextNew = subjects.iterator().next();
       } else {
-        throw new SchemaMapperRuntimeException(
-            String.format("No entrypoint subject found for ('%s,%s')", predicate, object));
+        throw new SchemaMapperRuntimeException(String.format("No entrypoint subject found."));
       }
     }
-
     if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
@@ -68,6 +49,8 @@ public class ObjectSchemaMapper implements SchemaMapper<ObjectProperty, Object> 
 
     return handleProperties(property, graphEntityContext, schemaMapperAdapter, contextNew);
   }
+
+
 
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
       GraphEntityContext entityBuilderContext, Value context, String ldPathQuery,

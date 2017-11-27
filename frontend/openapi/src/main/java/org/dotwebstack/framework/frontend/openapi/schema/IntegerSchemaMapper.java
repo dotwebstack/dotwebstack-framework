@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.schema;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.properties.IntegerProperty;
+import io.swagger.models.properties.BaseIntegerProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
@@ -17,23 +17,23 @@ import org.springframework.stereotype.Service;
 
 @Service
 class IntegerSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<IntegerProperty, Object> {
+    implements SchemaMapper<BaseIntegerProperty, Object> {
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
 
 
   @Override
-  public Object mapTupleValue(@NonNull IntegerProperty schema, @NonNull Value value) {
+  public Object mapTupleValue(@NonNull BaseIntegerProperty schema, @NonNull Value value) {
     return SchemaMapperUtils.castLiteralValue(value).intValue();
   }
 
   @Override
-  public Object mapGraphValue(IntegerProperty property, GraphEntityContext context,
+  public Object mapGraphValue(BaseIntegerProperty property, GraphEntityContext context,
       SchemaMapperAdapter schemaMapperAdapter, Value value) {
     String ldPathQuery =
             (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
-    if (ldPathQuery == null && isLiteral(value)) {
+    if (ldPathQuery == null && isSupported(value)) {
       return ((Literal) value).integerValue().intValue();
     }
 
@@ -51,7 +51,7 @@ class IntegerSchemaMapper extends AbstractSchemaMapper
 
     Value integerValue = getSingleStatement(queryResult, ldPathQuery);
 
-    if (!isLiteral(integerValue)) {
+    if (!isSupported(integerValue)) {
       throw new SchemaMapperRuntimeException(String.format(
               "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>.",
               ldPathQuery, dataTypesAsString()));
@@ -69,7 +69,7 @@ class IntegerSchemaMapper extends AbstractSchemaMapper
 
   @Override
   public boolean supports(@NonNull Property schema) {
-    return schema instanceof IntegerProperty;
+    return schema instanceof BaseIntegerProperty;
   }
 
 }

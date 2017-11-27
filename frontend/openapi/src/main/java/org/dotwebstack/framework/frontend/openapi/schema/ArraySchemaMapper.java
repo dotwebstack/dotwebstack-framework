@@ -4,11 +4,12 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,46 +23,49 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
   }
 
   @Override
-  public Object mapGraphValue(ArrayProperty schema, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
-    return handle(schema, graphEntityContext, schemaMapperAdapter, value);
-  }
-
-  public Object handle(ArrayProperty property, GraphEntityContext entityBuilderContext,
+  public Object mapGraphValue(ArrayProperty property, GraphEntityContext graphEntityContext,
       SchemaMapperAdapter schemaMapperAdapter, Value context) {
 
-    Property itemProperty = property.getItems();
+
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    if ("collection".equals(
-        property.getVendorExtensions().get(OpenApiSpecificationExtensions.RESULT_REF))) {
-      for (Value subject : entityBuilderContext.getSubjects()) {
+    Set<Resource> subjects = applySubjectFilterIfPossible(property, graphEntityContext);
 
-        Map<String, Object> resource =
-            mapGraphResource(itemProperty, entityBuilderContext, schemaMapperAdapter, subject);
-
-        builder.add(resource);
+    if (subjects != null) {
+      if (subjects.iterator().hasNext() && !subjects.isEmpty()) {
+        subjects.forEach(value -> {
+          if ((property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH))) {
+            queryAndValidate(property, graphEntityContext, schemaMapperAdapter, value, builder);
+          }
+        });
       }
-    } else if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-
-      LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
-      Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context,
-          (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH));
-
-      validateMinItems(property, queryResult);
-      validateMaxItems(property, queryResult);
-
-      queryResult.forEach(value -> builder.add(
-              com.google.common.base.Optional.fromNullable(schemaMapperAdapter.mapGraphValue(
-              itemProperty, entityBuilderContext, schemaMapperAdapter, value))));
-
     } else {
-      throw new SchemaMapperRuntimeException(
-          String.format("ArrayProperty must have either a '%s', of a '%s' attribute",
+      if (context != null) {
+        if ((property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH))) {
+          queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
+        } else {
+          throw new SchemaMapperRuntimeException(String.format(
+              "ArrayProperty must have either a '%s', of a '%s' attribute",
               OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RESULT_REF));
+        }
+      }
     }
-
     return builder.build();
+  }
+
+  private void queryAndValidate(ArrayProperty property, GraphEntityContext graphEntityContext,
+      SchemaMapperAdapter schemaMapperAdapter, Value context,
+      ImmutableList.Builder<Object> builder) {
+    LdPathExecutor ldPathExecutor = graphEntityContext.getLdPathExecutor();
+    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context,
+        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH));
+
+    validateMinItems(property, queryResult);
+    validateMaxItems(property, queryResult);
+
+    queryResult.forEach(value2 -> builder.add(
+        com.google.common.base.Optional.fromNullable(schemaMapperAdapter.mapGraphValue(
+            property.getItems(), graphEntityContext, schemaMapperAdapter, value2))));
   }
 
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {

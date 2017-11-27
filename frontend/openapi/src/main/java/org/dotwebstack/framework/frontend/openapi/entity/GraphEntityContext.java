@@ -3,9 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.swagger.models.Model;
-import java.util.List;
 import java.util.Map;
-import org.eclipse.rdf4j.model.Resource;
 
 public class GraphEntityContext implements EntityContext {
 
@@ -13,16 +11,13 @@ public class GraphEntityContext implements EntityContext {
   private final ImmutableMap<String, String> ldPathNamespaces;
   private final org.eclipse.rdf4j.model.Model model;
   private final LdPathExecutor ldPathExecutor;
-  private final List<Resource> subjects;
 
   public GraphEntityContext(ImmutableMap<String, String> ldPathNamespaces,
-      Map<String, Model> swaggerDefinitions, org.eclipse.rdf4j.model.Model model,
-      List<Resource> subjects) {
+      Map<String, Model> swaggerDefinitions, org.eclipse.rdf4j.model.Model model) {
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = Maps.newHashMap(swaggerDefinitions);
     this.model = model;
     this.ldPathExecutor = new LdPathExecutor(this);
-    this.subjects = subjects;
   }
 
   public LdPathExecutor getLdPathExecutor() {
@@ -41,7 +36,4 @@ public class GraphEntityContext implements EntityContext {
     return swaggerDefinitions;
   }
 
-  public List<Resource> getSubjects() {
-    return subjects;
-  }
 }

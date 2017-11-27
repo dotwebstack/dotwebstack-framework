@@ -34,7 +34,7 @@ class DateSchemaMapper extends AbstractSchemaMapper
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
-    if (ldPathQuery == null && isLiteral(value)) {
+    if (ldPathQuery == null && isSupported(value)) {
       return convertToDate(((Literal) value).calendarValue());
     }
 
@@ -53,7 +53,7 @@ class DateSchemaMapper extends AbstractSchemaMapper
 
     Value dateValue = getSingleStatement(queryResult, ldPathQuery);
 
-    if (!isLiteral(dateValue)) {
+    if (!isSupported(dateValue)) {
       throw new SchemaMapperRuntimeException(String.format(
           "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>.",
           ldPathQuery, dataTypesAsString()));

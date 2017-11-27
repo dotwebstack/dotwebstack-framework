@@ -16,15 +16,13 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 @Service
 class StringSchemaMapper extends AbstractSchemaMapper
     implements SchemaMapper<StringProperty, String> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(StringSchemaMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LdPathSchemaMapper.class);
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   @Override
@@ -47,7 +45,7 @@ class StringSchemaMapper extends AbstractSchemaMapper
       return handleConstantValueVendorExtension(property);
     }
 
-    if (value != null && isLiteral(value)) {
+    if (value != null && isSupported(value)) {
       return value.stringValue();
     } else if (property.getRequired()) {
       throw new SchemaMapperRuntimeException("No result for required property.");
@@ -102,7 +100,7 @@ class StringSchemaMapper extends AbstractSchemaMapper
         property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
     if (value != null) {
-      if (isLiteral(value)) {
+      if (isSupported(value)) {
         return ((Value) value).stringValue();
       }
 

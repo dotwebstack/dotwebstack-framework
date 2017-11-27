@@ -124,7 +124,7 @@ public final class GraphEntity extends AbstractEntity<GraphQueryResult> {
 
     public Entity build() {
       this.graphEntityContext =
-          new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model, getSubjects());
+          new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model);
 
       return new GraphEntity(schemaProperty, graphEntityContext);
     }
