@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
-import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
@@ -50,20 +49,11 @@ public class GetRequestHandlerTest {
   private GetRequestHandler getRequestHandler;
 
   @Mock
-  private io.swagger.models.Response mockResponse;
-
-  @Mock
-  private io.swagger.models.properties.Property propertyMock;
-
-  @Mock
   private Swagger swaggerMock;
 
   @Before
   public void setUp() {
-    when(mockResponse.getSchema()).thenReturn(propertyMock);
-    Map<String, Response> response = ImmutableMap.of("200", mockResponse);
 
-    when(operationMock.getResponses()).thenReturn(response);
     getRequestHandler = new GetRequestHandler(operationMock, informationProductMock,
         ImmutableMap.of(), requestParameterMapperMock, swaggerMock);
   }
