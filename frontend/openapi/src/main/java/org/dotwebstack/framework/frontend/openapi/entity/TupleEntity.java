@@ -5,25 +5,22 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
-public final class TupleEntity extends AbstractEntity<TupleQueryResult> {
+public final class TupleEntity extends AbstractEntity {
+
+  private final TupleQueryResult queryResult;
 
   TupleEntity(Map<MediaType, Property> schemaProperty, TupleQueryResult queryResult) {
-    super(schemaProperty, queryResult);
+    super(schemaProperty);
+    this.queryResult = queryResult;
   }
 
-  @Override
   public TupleQueryResult getResult() {
-    return getQueryResultDb();
+    return queryResult;
   }
 
   @Override
   public Map<MediaType, Property> getSchemaMap() {
     return super.getSchemaMap();
-  }
-
-  @Override
-  public EntityContext getEntityContext() {
-    throw new UnsupportedOperationException("No entity context available");
   }
 
   public static Builder builder() {
@@ -36,10 +33,6 @@ public final class TupleEntity extends AbstractEntity<TupleQueryResult> {
 
     private TupleQueryResult tupleQueryResult;
 
-    public TupleEntity build() {
-      return new TupleEntity(schemaMap, tupleQueryResult);
-    }
-
     public Builder withQueryResult(TupleQueryResult queryResult) {
       this.tupleQueryResult = queryResult;
       return this;
@@ -50,6 +43,9 @@ public final class TupleEntity extends AbstractEntity<TupleQueryResult> {
       return this;
     }
 
+    public TupleEntity build() {
+      return new TupleEntity(schemaMap, tupleQueryResult);
+    }
 
   }
 }

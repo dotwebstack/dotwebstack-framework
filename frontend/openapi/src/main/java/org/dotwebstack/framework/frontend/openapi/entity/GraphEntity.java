@@ -8,32 +8,20 @@ import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public final class GraphEntity extends AbstractEntity<GraphQueryResult> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(GraphEntity.class);
+public final class GraphEntity extends AbstractEntity {
 
   private final GraphEntityContext graphEntityContext;
 
-  public GraphEntity(@NonNull Map<MediaType, Property> schemaProperty,
+  GraphEntity(@NonNull Map<MediaType, Property> schemaProperty,
       GraphEntityContext graphEntityContext) {
     super(schemaProperty);
     this.graphEntityContext = graphEntityContext;
 
   }
 
-
-  @Override
-  public GraphQueryResult getResult() {
-    return null;
-  }
-
-  @Override
-  public EntityContext getEntityContext() {
+  EntityContext getEntityContext() {
     return graphEntityContext;
   }
 
@@ -44,7 +32,6 @@ public final class GraphEntity extends AbstractEntity<GraphQueryResult> {
   public static class Builder {
     private Map<String, io.swagger.models.Model> swaggerDefinitions;
     private ImmutableMap<String, String> ldpathNamespaces;
-    private GraphEntityContext graphEntityContext;
     private Model model;
     private Map<MediaType, Property> schemaProperty;
 
@@ -96,9 +83,8 @@ public final class GraphEntity extends AbstractEntity<GraphQueryResult> {
     }
 
     public Entity build() {
-      this.graphEntityContext = new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model);
-
-      return new GraphEntity(schemaProperty, graphEntityContext);
+      return new GraphEntity(schemaProperty,
+          new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model));
     }
   }
 
