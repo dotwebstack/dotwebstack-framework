@@ -14,16 +14,12 @@ public class ApplicationProperties {
 
   private String systemGraph;
 
-  public void setResourcePath(String resourcePath) {
-    this.resourcePath = resourcePath;
-  }
-
   public String getResourcePath() {
     return resourcePath;
   }
 
-  public void setSystemGraph(String systemGraph) {
-    this.systemGraph = systemGraph;
+  public void setResourcePath(String resourcePath) {
+    this.resourcePath = resourcePath;
   }
 
   public IRI getSystemGraph() {
@@ -33,6 +29,10 @@ public class ApplicationProperties {
     }
 
     return SimpleValueFactory.getInstance().createIRI(systemGraph);
+  }
+
+  public void setSystemGraph(String systemGraph) {
+    this.systemGraph = systemGraph;
   }
 
 }

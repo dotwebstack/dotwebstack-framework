@@ -12,11 +12,15 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RepresentationResourceProvider extends AbstractResourceProvider<Representation> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RepresentationResourceProvider.class);
 
   private final InformationProductResourceProvider informationProductResourceProvider;
 
@@ -50,18 +54,23 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   protected Representation createResource(Model model, IRI identifier) {
     final Representation.Builder builder = new Representation.Builder(identifier);
 
-    getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(iri ->
-        builder.informationProduct(informationProductResourceProvider.get(iri)));
-
-    getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(iri ->
-        builder.appearance(appearanceResourceProvider.get(iri)));
-
-    getObjectString(model, identifier, ELMO.URL_PATTERN).ifPresent(builder::urlPatterns);
-
-    getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(iri ->
-        builder.stage(stageResourceProvider.get(iri)));
+    getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(
+        iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
+    getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(
+        iri -> builder.appearance(appearanceResourceProvider.get(iri)));
+    getObjectStrings(model, identifier, ELMO.URL_PATTERN).stream().forEach(builder::urlPattern);
+    getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(
+        iri -> builder.stage(stageResourceProvider.get(iri)));
 
     return builder.build();
   }
-  
+
+  @Override
+  protected void finalizeResource(Model model, Representation resource) {
+    getObjectIris(model, resource.getIdentifier(), ELMO.CONTAINS_PROP).stream().forEach(
+        iri -> resource.addSubRepresentation(this.get(iri)));
+
+    LOG.info("Updated resource: <{}>", resource.getIdentifier());
+  }
+
 }

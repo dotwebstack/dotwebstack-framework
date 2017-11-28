@@ -44,8 +44,8 @@ public class FileConfigurationBackendPrefixesIntegrationTest {
   public void configrateBackend_WithoutPrefixesInBackendfile_throwConfigurationException()
       throws Exception {
     // Arrange
-    fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
-        "invalidPrefixConfig");
+    fileConfigurationBackend =
+        new FileConfigurationBackend(elmoConfiguration, sailRepository, "invalidPrefixConfig");
 
     // Assert
     thrown.expect(ConfigurationException.class);

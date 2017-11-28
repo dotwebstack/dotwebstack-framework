@@ -104,14 +104,13 @@ public class FileConfigurationBackend
         if (optionalPrefixesResource.isPresent()) {
           try (SequenceInputStream resourceSquenceInputStream = new SequenceInputStream(
               optionalPrefixesResource.get().getInputStream(), resource.getInputStream())) {
-            repositoryConnection.add(
-                new EnvironmentAwareResource(resourceSquenceInputStream, environment)
-                    .getInputStream(), "#", FileFormats.getFormat(extension));
+            repositoryConnection.add(new EnvironmentAwareResource(resourceSquenceInputStream,
+                environment).getInputStream(), "#", FileFormats.getFormat(extension));
           }
         } else {
           repositoryConnection.add(
-              new EnvironmentAwareResource(resource.getInputStream(), environment)
-                  .getInputStream(), "#", FileFormats.getFormat(extension));
+              new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
+              "#", FileFormats.getFormat(extension));
         }
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
@@ -129,23 +128,21 @@ public class FileConfigurationBackend
   }
 
   private Optional<Resource> getPrefixesResource(List<Resource> resources) {
-    return resources.stream()
-        .filter(resource -> resource.getFilename() != null && resource.getFilename()
-            .startsWith("_prefixes") && FileFormats
-            .containsExtension(FilenameUtils.getExtension(resource.getFilename())))
-        .findFirst();
+    return resources.stream().filter(resource -> resource.getFilename() != null
+        && resource.getFilename().startsWith("_prefixes") && FileFormats.containsExtension(
+            FilenameUtils.getExtension(resource.getFilename()))).findFirst();
   }
 
   private String[] getPrefixesOfResource(Resource inputResource) throws IOException {
-    String result = CharStreams
-        .toString(new InputStreamReader(inputResource.getInputStream(), Charsets.UTF_8));
+    String result =
+        CharStreams.toString(new InputStreamReader(inputResource.getInputStream(), Charsets.UTF_8));
     return result.split("\n");
   }
 
 
   private void checkMultiplePrefixesDeclaration(Resource prefixes) throws IOException {
     Map<String, String> prefixesMap = new HashMap<>();
-    
+
     final String[] allPrefixes = getPrefixesOfResource(prefixes);
     int lineNumber = 0;
     for (String prefix : allPrefixes) {
