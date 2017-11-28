@@ -20,11 +20,6 @@ public final class TupleEntity extends AbstractEntity {
     return queryResult;
   }
 
-  @Override
-  public Map<MediaType, Property> getSchemaMap() {
-    return super.getSchemaMap();
-  }
-
   public static Builder builder() {
     return new Builder();
   }
