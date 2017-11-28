@@ -1,8 +1,5 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
