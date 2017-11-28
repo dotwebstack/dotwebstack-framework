@@ -94,7 +94,7 @@ public class Rdf4jValueBackendTest {
 
   @Test
   public void testGetIntegerType() {
-    Literal value = SimpleValueFactory.getInstance().createLiteral(Integer.valueOf(10));
+    Literal value = SimpleValueFactory.getInstance().createLiteral(10);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
@@ -103,7 +103,7 @@ public class Rdf4jValueBackendTest {
 
   @Test
   public void testGetDoubleType() {
-    Literal value = SimpleValueFactory.getInstance().createLiteral(Double.valueOf(10.0));
+    Literal value = SimpleValueFactory.getInstance().createLiteral(10.0);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 

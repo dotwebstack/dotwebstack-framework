@@ -147,7 +147,6 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   public Date dateTimeValue(Value node) {
     try {
       XMLGregorianCalendar cal = ((Literal) node).calendarValue();
-      // TODO: check if we need to deal with timezone and Local here
       return cal.toGregorianCalendar().getTime();
     } catch (ClassCastException ex) {
       throw getNodeCastException(node, ex);

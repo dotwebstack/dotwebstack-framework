@@ -74,4 +74,46 @@ public class Rdf4jRepositoryBackendTest {
     assertThat(values, hasSize(1));
     assertThat(values.iterator().next().stringValue(), is("test"));
   }
+
+  @Test
+  public void testCreateLiteral() throws Exception {
+    ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
+    Literal literal = backend.createLiteralInternal(valueFactory, "test");
+    assertThat(literal, is(SimpleValueFactory.getInstance().createLiteral("test")));
+  }
+
+
+  @Test
+  public void testListSubjects() throws Exception {
+    RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
+    when(repository.getConnection()).thenReturn(repositoryConnection);
+    ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    when(repositoryConnection.getValueFactory()).thenReturn(valueFactory);
+    RepositoryResult queryResult = mock(RepositoryResult.class);
+
+    Model model =
+        new ModelBuilder().add("http://www.test.nl#sub", "http://www.test.nl#pred", "test").build();
+    when(queryResult.hasNext()).thenReturn(true).thenReturn(false);
+    when(queryResult.next()).thenReturn(model.stream().findFirst().get());
+    when(
+        repositoryConnection.getStatements(isNull(), any(), any(), anyBoolean(), any())).thenReturn(
+            queryResult);
+    Value subject = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
+    Value prop = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
+    Collection<Value> values = backend.listSubjects(subject, prop);
+    assertThat(values, hasSize(1));
+    assertThat(values.iterator().next(),
+        is(SimpleValueFactory.getInstance().createIRI("http://www.test.nl#sub")));
+  }
+
+  @Test
+  public void testCreateURI() throws Exception {
+
+    IRI iri = backend.createURI("http://www.test.nl");
+    assertThat(iri, is(SimpleValueFactory.getInstance().createIRI("http://www.test.nl")));
+
+  }
+
+
 }
