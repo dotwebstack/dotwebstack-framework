@@ -3,13 +3,15 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
+import lombok.NonNull;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
 public final class TupleEntity extends AbstractEntity {
 
   private final TupleQueryResult queryResult;
 
-  TupleEntity(Map<MediaType, Property> schemaProperty, TupleQueryResult queryResult) {
+  TupleEntity(@NonNull Map<MediaType, Property> schemaProperty,
+      @NonNull TupleQueryResult queryResult) {
     super(schemaProperty);
     this.queryResult = queryResult;
   }
