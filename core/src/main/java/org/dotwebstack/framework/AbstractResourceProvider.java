@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import lombok.NonNull;
@@ -74,47 +73,48 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
     query.setDataset(simpleDataset);
 
+    Model model;
+
     try {
-      Model model = QueryResults.asModel(query.evaluate());
+      model = QueryResults.asModel(query.evaluate());
       model.subjects().forEach(identifier -> {
         R resource = createResource(model, (IRI) identifier);
         resources.put((IRI) identifier, resource);
         LOG.info("Registered resource: <{}>", identifier);
-      });
-      model.subjects().forEach(identifier -> {
-        postLoad(model, resources.get(identifier)).ifPresent(
-            res -> resources.replace((IRI) identifier, res));
       });
     } catch (QueryEvaluationException e) {
       throw new ConfigurationException("Error while evaluating SPARQL query.", e);
     } finally {
       repositoryConnection.close();
     }
+
+    resources.forEach((key, resource) -> {
+      resources.replace(key, finalizeResource(model, resource));
+    });
   }
 
   protected abstract GraphQuery getQueryForResources(RepositoryConnection conn);
 
   protected abstract R createResource(Model model, IRI identifier);
 
-  protected Optional<R> postLoad(Model model, R resource) {
-    return Optional.empty();
+  protected R finalizeResource(Model model, R resource) {
+    return resource;
   }
 
   protected Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
     return Models.objectString(model.filter(subject, predicate, null));
   }
 
-  protected Optional<String[]> getObjectStrings(Model model, IRI subject, IRI predicate) {
-    Set<String> objectStrings = Models.objectStrings(model.filter(subject, predicate, null));
-    return Optional.of(objectStrings.toArray(new String[objectStrings.size()]));
+  protected Collection<String> getObjectStrings(Model model, IRI subject, IRI predicate) {
+    return Models.objectStrings(model.filter(subject, predicate, null));
   }
 
   protected Optional<IRI> getObjectIRI(Model model, IRI subject, IRI predicate) {
     return Models.objectIRI(model.filter(subject, predicate, null));
   }
 
-  protected Optional<Collection<IRI>> getObjectIris(Model model, IRI subject, IRI predicate) {
-    return Optional.of(Models.objectIRIs(model.filter(subject, predicate, null)));
+  protected Collection<IRI> getObjectIris(Model model, IRI subject, IRI predicate) {
+    return Models.objectIRIs(model.filter(subject, predicate, null));
   }
 
 }
