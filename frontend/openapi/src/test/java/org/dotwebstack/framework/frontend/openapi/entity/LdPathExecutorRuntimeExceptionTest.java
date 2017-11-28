@@ -16,10 +16,10 @@ public class LdPathExecutorRuntimeExceptionTest {
     assertEquals("message", executorRuntimeException.getMessage());
   }
 
-    @Test
-    public void testConstructorMessage() {
-        LdPathExecutorRuntimeException executorRuntimeException =
-                new LdPathExecutorRuntimeException("message");
-        assertEquals("message", executorRuntimeException.getMessage());
-    }
+  @Test
+  public void testConstructorMessage() {
+    LdPathExecutorRuntimeException executorRuntimeException =
+        new LdPathExecutorRuntimeException("message");
+    assertEquals("message", executorRuntimeException.getMessage());
+  }
 }
