@@ -102,8 +102,8 @@ public class Representation {
       return this;
     }
 
-    public Builder addUrlPattern(String urlPatterns) {
-      this.urlPatterns.add(urlPatterns);
+    public Builder urlPattern(String urlPattern) {
+      this.urlPatterns.add(urlPattern);
       return this;
     }
 

@@ -62,7 +62,7 @@ public class RepresentationTest {
   public void build_CreatesRepresentation_WithValidData() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).addUrlPattern("urlPattern").build();
+        new Representation.Builder(DBEERPEDIA.BREWERIES).urlPattern("urlPattern").build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -90,7 +90,7 @@ public class RepresentationTest {
   public void build_CreatesRepresentation_WithUrlPattern() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).addUrlPattern(
+        new Representation.Builder(DBEERPEDIA.BREWERIES).urlPattern(
             DBEERPEDIA.URL_PATTERN_VALUE).build();
 
     // Assert
@@ -102,8 +102,8 @@ public class RepresentationTest {
   public void build_CreatesRepresentation_WithMultipleUrlPattern() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).addUrlPattern(
-            DBEERPEDIA.URL_PATTERN_VALUE).addUrlPattern(DBEERPEDIA.URL_PATTERN_VALUE).addUrlPattern(
+        new Representation.Builder(DBEERPEDIA.BREWERIES).urlPattern(
+            DBEERPEDIA.URL_PATTERN_VALUE).urlPattern(DBEERPEDIA.URL_PATTERN_VALUE).urlPattern(
                 DBEERPEDIA.URL_PATTERN_VALUE).build();
 
     // Assert
@@ -123,7 +123,7 @@ public class RepresentationTest {
         ELMO.RESOURCE_APPEARANCE, new LinkedHashModel()).build();
     final Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-            informationProduct).stage(stage).appearance(appearance).addUrlPattern(
+            informationProduct).stage(stage).appearance(appearance).urlPattern(
                 DBEERPEDIA.URL_PATTERN_VALUE).subRepresentation(subRepresentation).build();
 
     // Assert

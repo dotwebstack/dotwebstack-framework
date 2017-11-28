@@ -58,7 +58,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
         iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
     getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(
         iri -> builder.appearance(appearanceResourceProvider.get(iri)));
-    getObjectStrings(model, identifier, ELMO.URL_PATTERN).stream().forEach(builder::addUrlPattern);
+    getObjectStrings(model, identifier, ELMO.URL_PATTERN).stream().forEach(builder::urlPattern);
     getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));
 
@@ -66,13 +66,11 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   }
 
   @Override
-  protected Representation finalizeResource(Model model, Representation resource) {
+  protected void finalizeResource(Model model, Representation resource) {
     getObjectIris(model, resource.getIdentifier(), ELMO.CONTAINS_PROP).stream().forEach(
         iri -> resource.addSubRepresentation(this.get(iri)));
 
     LOG.info("Updated resource: <{}>", resource.getIdentifier());
-
-    return resource;
   }
 
 }

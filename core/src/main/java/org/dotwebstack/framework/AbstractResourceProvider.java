@@ -89,7 +89,7 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     }
 
     resources.forEach((key, resource) -> {
-      resources.replace(key, finalizeResource(model, resource));
+      finalizeResource(model, resource);
     });
   }
 
@@ -97,9 +97,7 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
 
   protected abstract R createResource(Model model, IRI identifier);
 
-  protected R finalizeResource(Model model, R resource) {
-    return resource;
-  }
+  protected void finalizeResource(Model model, R resource) {}
 
   protected Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
     return Models.objectString(model.filter(subject, predicate, null));
