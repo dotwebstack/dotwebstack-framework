@@ -66,17 +66,13 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   }
 
   @Override
-  public Optional<Representation> postLoad(Model model, Representation representation) {
-    Representation.Builder builder = new Representation.Builder(representation);
+  protected Representation finalizeResource(Model model, Representation resource) {
+    getObjectIris(model, resource.getIdentifier(), ELMO.CONTAINS_PROP).stream().forEach(
+        iri -> resource.addSubRepresentation(this.get(iri)));
 
-    List<IRI> subRepresentationIris = new ArrayList<>();
-    getObjectIris(model, representation.getIdentifier(), ELMO.CONTAINS_PROP).ifPresent(
-        subRepresentationIris::addAll);
-    subRepresentationIris.stream().forEach(iri -> builder.subRepresentation(this.get(iri)));
+    LOG.info("Updated resource: <{}>", resource.getIdentifier());
 
-    LOG.info("Updated resource: <{}>", representation.getIdentifier());
-
-    return Optional.of(builder.build());
+    return resource;
   }
 
 }
