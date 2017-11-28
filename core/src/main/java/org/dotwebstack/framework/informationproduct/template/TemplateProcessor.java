@@ -20,6 +20,17 @@ public class TemplateProcessor implements InitializingBean {
 
   private Configuration config;
 
+  private static Configuration prepareConfiguration() {
+    Configuration result = new Configuration(Configuration.VERSION_2_3_26);
+
+    result.setNumberFormat("computer");
+    result.setDefaultEncoding(StandardCharsets.UTF_8.name());
+    result.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+    result.setLogTemplateExceptions(false);
+
+    return result;
+  }
+
   public String processString(@NonNull String templateString, Map<String, Object> parameters) {
     LOG.debug("Processing template string with parameters: {}", parameters);
 
@@ -33,17 +44,6 @@ public class TemplateProcessor implements InitializingBean {
     } catch (IOException | freemarker.template.TemplateException ex) {
       throw new TemplateException(ex);
     }
-  }
-
-  private static Configuration prepareConfiguration() {
-    Configuration result = new Configuration(Configuration.VERSION_2_3_26);
-
-    result.setNumberFormat("computer");
-    result.setDefaultEncoding(StandardCharsets.UTF_8.name());
-    result.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    result.setLogTemplateExceptions(false);
-
-    return result;
   }
 
   @Override

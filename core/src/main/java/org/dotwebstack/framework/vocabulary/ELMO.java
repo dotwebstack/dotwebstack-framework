@@ -9,11 +9,7 @@ public final class ELMO {
 
   public static final IRI CONFIG_GRAPHNAME;
 
-  private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
-
-  private static final String NAMESPACE = NAMESPACE_BASE + "#";
-
-  private static final String NAMESPACE_EXTENSION_RESULTTYPE = NAMESPACE_BASE + "/resulttype/";
+  public static final IRI CONTAINS_PROP;
 
   public static final IRI INFORMATION_PRODUCT;
 
@@ -69,6 +65,12 @@ public final class ELMO {
 
   public static final IRI RESULT_TYPE_DEFAULT;
 
+  private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
+
+  private static final String NAMESPACE = NAMESPACE_BASE + "#";
+
+  private static final String NAMESPACE_EXTENSION_RESULTTYPE = NAMESPACE_BASE + "/resulttype/";
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
@@ -115,6 +117,7 @@ public final class ELMO {
 
     NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
     APPEARANCE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "appearance");
+    CONTAINS_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "contains");
   }
 
   private ELMO() {
