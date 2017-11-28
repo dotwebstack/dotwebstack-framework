@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.backend;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.concurrent.ThreadPoolExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
@@ -91,15 +92,15 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
         connection.commit();
         connection.close();
       }
-    } catch (RepositoryException ex) {
-      throw new RuntimeException("Error while querying RDF4J repository.", ex);
-    } catch (ClassCastException ex) {
+    } catch (RepositoryException exception) {
+      throw new Rdf4jBackendRuntimeException("Error while querying RDF4J repository.", exception);
+    } catch (ClassCastException exception) {
       throw new IllegalArgumentException(
           String.format(
               "Subject needs to be a URI or blank node, property a URI node "
                   + "(types: [subject: %s, property: %s]).",
               debugType(subject), debugType(property)),
-          ex);
+          exception);
     }
 
   }
@@ -127,7 +128,7 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
         connection.close();
       }
     } catch (RepositoryException ex) {
-      throw new RuntimeException("Error while querying RDF4J repository.", ex);
+      throw new Rdf4jBackendRuntimeException("Error while querying RDF4J repository.", ex);
     } catch (ClassCastException ex) {
       String namelessNodeType = isBlank(property) ? "bNode" : "literal";
       throw new IllegalArgumentException(

@@ -26,19 +26,17 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
   public Object mapGraphValue(ArrayProperty property, GraphEntityContext graphEntityContext,
       SchemaMapperAdapter schemaMapperAdapter, Value context) {
 
-
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
     Set<Resource> subjects = applySubjectFilterIfPossible(property, graphEntityContext);
 
-    if (subjects != null) {
-      if (subjects.iterator().hasNext() && !subjects.isEmpty()) {
-        subjects.forEach(value -> {
-          if ((property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH))) {
-            queryAndValidate(property, graphEntityContext, schemaMapperAdapter, value, builder);
-          }
-        });
-      }
+    if (!subjects.isEmpty() && subjects.iterator().hasNext()) {
+      subjects.forEach(value -> {
+        if ((property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH))) {
+          queryAndValidate(property, graphEntityContext, schemaMapperAdapter, value, builder);
+        }
+      });
+
     } else {
       if (context != null) {
         if ((property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH))) {

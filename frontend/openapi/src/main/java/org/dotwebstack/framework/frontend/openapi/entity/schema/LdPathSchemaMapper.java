@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
+import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -32,6 +33,6 @@ abstract class LdPathSchemaMapper {
 
       return filteredModel.subjects();
     }
-    return null;
+    return ImmutableSet.of();
   }
 }
