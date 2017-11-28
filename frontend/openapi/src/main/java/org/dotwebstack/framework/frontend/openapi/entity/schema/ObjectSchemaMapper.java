@@ -14,6 +14,8 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
+// XXX (PvH) Klasse ontbreekt testdekking
+// XXX (PvH) Kunnen deze en andere mappers package-private worden?
 @Service
 public class ObjectSchemaMapper extends AbstractSchemaMapper
     implements SchemaMapper<ObjectProperty, Object> {

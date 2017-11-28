@@ -8,8 +8,12 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
+// XXX (PvH) Kan package private worden
+// XXX (PvH) Moet deze klasse SchemaMapper niet implementeren?
 public abstract class AbstractSchemaMapper extends LdPathSchemaMapper {
 
+  // XXX (PvH) @NonNull annotaties ontbreken. Miss goed om de volledige change set er op te
+  // controleren.
   static Value getSingleStatement(Collection<Value> queryResult, String ldPathQuery) {
 
     if (queryResult.isEmpty()) {
@@ -26,6 +30,7 @@ public abstract class AbstractSchemaMapper extends LdPathSchemaMapper {
     return queryResult.iterator().next();
   }
 
+  // XXX (PvH) Returned altijd een lege set?
   protected Set<IRI> getSupportedDataTypes() {
     return ImmutableSet.of();
   }
@@ -49,6 +54,9 @@ public abstract class AbstractSchemaMapper extends LdPathSchemaMapper {
     return false;
   }
 
+  // XXX (PvH) Ik vond isLiteral voor de method naam beter, dat dekt meer de lading
+  // XXX (PvH) Er wordt verwezen in de Javadoc naar een private method, dat lijkt me niet de
+  // bedoeling.
   /**
    * Checks if given value object is instance of {@link Literal} and its data type is one of those
    * provided by {@link #isDataTypeSupported(Literal)}.

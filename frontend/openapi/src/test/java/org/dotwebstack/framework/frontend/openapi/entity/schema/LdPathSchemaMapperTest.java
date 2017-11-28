@@ -32,6 +32,7 @@ public class LdPathSchemaMapperTest {
   private Property propertyMock;
 
   private LdPathSchemaMapper ldPathSchemaMapper = new LdPathSchemaMapper() {
+    // XXX (PvH) Waarom override je de method? (code kan weg)
     @Override
     Set<Resource> applySubjectFilterIfPossible(Property property,
         GraphEntityContext graphEntityContext) {
@@ -42,6 +43,8 @@ public class LdPathSchemaMapperTest {
   @Before
   public void before() {
     ValueFactory vf = SimpleValueFactory.getInstance();
+
+    // XXX (PvH) Miss kan je gebruiken van de dbeerpedia test data
     Model model =
         new ModelBuilder().subject("http://www.test.nl#subj").add("http://www.test.nl#subj",
             "http://www.test.nl#is", vf.createIRI("http://www.test.nl#obj")).build();
@@ -51,6 +54,7 @@ public class LdPathSchemaMapperTest {
   @Test
   public void when_Pred_and_Obj_exists__then_given_filter_results() {
     // Arrange
+    // XXX (PvH) Maak je bewust gebruik van een LinkedHashMap? (en geen normale HashMap)
     Map<String, Object> vendorExtensions =
         Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
             Maps.newLinkedHashMap(ImmutableMap.of(
@@ -64,6 +68,8 @@ public class LdPathSchemaMapperTest {
     assertThat(results, hasSize(is(1)));
   }
 
+  // XXX (PvH) Omdat je een Set terug geeft, mis ik een test voor meerdere results. Persoonlijk zou
+  // ik niet testen op 1 resultaat, en enkel op 0 en meerdere
   @Test
   public void when_Pred_and_Obj__not_matched__then_no_results() {
     // Arrange

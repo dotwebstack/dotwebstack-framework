@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 class StringSchemaMapper extends AbstractSchemaMapper
     implements SchemaMapper<StringProperty, String> {
 
+  // XXX (PvH) Logger verwijst naar verkeerde mapper
   private static final Logger LOG = LoggerFactory.getLogger(LdPathSchemaMapper.class);
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 

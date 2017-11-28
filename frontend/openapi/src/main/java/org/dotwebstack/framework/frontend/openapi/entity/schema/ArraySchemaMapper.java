@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
+// XXX (PvH) Klasse ontbreekt testdekking
 @Service
 public class ArraySchemaMapper extends AbstractSchemaMapper
     implements SchemaMapper<ArrayProperty, Object> {
@@ -32,6 +33,8 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
     Set<Resource> subjects = applySubjectFilterIfPossible(property, graphEntityContext);
 
     if (subjects != null) {
+
+      // XXX (PvH) Waarom doe je subjects.iterator().hasNext() én !subjects.isEmpty()?
       if (subjects.iterator().hasNext() && !subjects.isEmpty()) {
         subjects.forEach(value -> {
           if ((property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH))) {
@@ -44,6 +47,7 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
         if ((property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH))) {
           queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
         } else {
+          // XXX (PvH) Wat doen we met de RESULT_REF property?
           throw new SchemaMapperRuntimeException(String.format(
               "ArrayProperty must have either a '%s', of a '%s' attribute",
               OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RESULT_REF));
@@ -63,6 +67,7 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
     validateMinItems(property, queryResult);
     validateMaxItems(property, queryResult);
 
+    // XXX (PvH) value2?
     queryResult.forEach(value2 -> builder.add(
         com.google.common.base.Optional.fromNullable(schemaMapperAdapter.mapGraphValue(
             property.getItems(), graphEntityContext, schemaMapperAdapter, value2))));
