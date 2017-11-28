@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
@@ -116,8 +116,10 @@ public class RefSchemaMapperTest {
         entityBuilderContext, propertyHandlerRegistry, context);
 
     assertThat(result.keySet(), hasSize(2));
-    assertThat(result, hasEntry(KEY_1, com.google.common.base.Optional.of(VALUE_1.stringValue())));
-    assertThat(result, hasEntry(KEY_2, com.google.common.base.Optional.of(VALUE_2.integerValue())));
+    assertEquals(((com.google.common.base.Optional) result.get(KEY_1)).orNull(),
+        VALUE_1.stringValue());
+    assertEquals(((com.google.common.base.Optional) result.get(KEY_2)).orNull(),
+        VALUE_2.intValue());
   }
 
 }
