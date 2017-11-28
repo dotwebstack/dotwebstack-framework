@@ -81,7 +81,7 @@ public class LdRepresentationRequestMapperTest {
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-        informationProduct).stage(stage).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).build();
+        informationProduct).stage(stage).addUrlPattern(DBEERPEDIA.URL_PATTERN_VALUE).build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
 
@@ -132,7 +132,7 @@ public class LdRepresentationRequestMapperTest {
   public void loadRepresentations_MapRepresentation_WithoutStage() {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-        informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).build();
+        informationProduct).addUrlPattern(DBEERPEDIA.URL_PATTERN_VALUE).build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
@@ -148,7 +148,7 @@ public class LdRepresentationRequestMapperTest {
   public void loadRepresentations_MapRepresentation_WithNullStage() {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-        informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(null).build();
+        informationProduct).addUrlPattern(DBEERPEDIA.URL_PATTERN_VALUE).stage(null).build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
@@ -168,10 +168,10 @@ public class LdRepresentationRequestMapperTest {
 
     Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-            informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
+            informationProduct).addUrlPattern(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
     Representation samePathRepresentation =
         new Representation.Builder(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION).informationProduct(
-            informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
+            informationProduct).addUrlPattern(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     representationMap.put(samePathRepresentation.getIdentifier(), samePathRepresentation);
@@ -195,7 +195,7 @@ public class LdRepresentationRequestMapperTest {
         DBEERPEDIA.BASE_PATH.stringValue()).build();
     Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-            informationProduct).urlPatterns(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
+            informationProduct).addUrlPattern(DBEERPEDIA.URL_PATTERN_VALUE).stage(stage).build();
 
     Map<IRI, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
