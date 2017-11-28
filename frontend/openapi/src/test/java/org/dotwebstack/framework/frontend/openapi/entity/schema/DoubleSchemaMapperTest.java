@@ -1,9 +1,9 @@
-package org.dotwebstack.framework.frontend.openapi.schema;
+package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import io.swagger.models.properties.BooleanProperty;
+import io.swagger.models.properties.DoubleProperty;
 import io.swagger.models.properties.StringProperty;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
@@ -14,19 +14,19 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class BooleanSchemaMapperTest {
+public class DoubleSchemaMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
-  private BooleanSchemaMapper schemaMapper;
+  private DoubleSchemaMapper schemaMapper;
 
-  private BooleanProperty schema;
+  private DoubleProperty schema;
 
   @Before
   public void setUp() {
-    schemaMapper = new BooleanSchemaMapper();
-    schema = new BooleanProperty();
+    schemaMapper = new DoubleSchemaMapper();
+    schema = new DoubleProperty();
   }
 
   @Test
@@ -35,7 +35,7 @@ public class BooleanSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER);
+    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
   }
 
   @Test
@@ -60,10 +60,10 @@ public class BooleanSchemaMapperTest {
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Boolean result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER);
+    Double result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_FTE);
 
     // Assert
-    assertThat(result, equalTo(true));
+    assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_FTE.doubleValue()));
   }
 
   @Test
@@ -76,7 +76,7 @@ public class BooleanSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForBooleanSchema() {
+  public void supports_ReturnsTrue_ForDoubleSchema() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(schema);
 
@@ -85,7 +85,7 @@ public class BooleanSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsFalse_ForNonBooleanSchema() {
+  public void supports_ReturnsTrue_ForNonDoubleSchema() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(new StringProperty());
 

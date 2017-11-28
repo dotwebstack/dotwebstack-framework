@@ -21,7 +21,7 @@ class RequestParameterMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestParameterMapper.class);
 
-  private static ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   Map<String, Object> map(@NonNull Operation operation, @NonNull InformationProduct product,
       @NonNull ContainerRequestContext context) {
@@ -40,7 +40,7 @@ class RequestParameterMapper {
         continue;
       }
 
-      IRI parameterId = valueFactory.createIRI((String) parameterIdString);
+      IRI parameterId = VALUE_FACTORY.createIRI((String) parameterIdString);
       Parameter<?> parameter = getParameter(product, parameterId);
 
       if (parameter == null) {

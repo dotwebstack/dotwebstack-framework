@@ -5,7 +5,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.0.10-SNAPSHOT</version>
+  <version>0.0.10-SNAPSHOT-GRID-1893</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -58,6 +58,11 @@
       <name>Rick Fleuren</name>
       <email>dotwebstack@rickfleuren.nl</email>
     </developer>
+    <developer>
+      <id>BertVrh</id>
+      <name>Bert Verhelst</name>
+      <email>b.verhelst@bitunified.nl</email>
+    </developer>
   </developers>
 
   <properties>
@@ -66,7 +71,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <spring.boot.version>1.5.4.RELEASE</spring.boot.version>
-    <rdf4j.version>2.2.2</rdf4j.version>
+    <rdf4j.version>2.2.4</rdf4j.version>
     <slf4j.version>1.7.25</slf4j.version>
     <mockito.version>2.12.0</mockito.version>
   </properties>
