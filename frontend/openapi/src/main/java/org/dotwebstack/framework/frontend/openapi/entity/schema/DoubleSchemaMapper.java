@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.schema;
+package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import io.swagger.models.properties.DoubleProperty;
 import io.swagger.models.properties.Property;

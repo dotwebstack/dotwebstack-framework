@@ -3,7 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import io.swagger.models.properties.Property;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,8 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
   @Override
   public Object map(@NonNull GraphEntity entity, @NonNull MediaType mediaType) {
     GraphEntityContext graphEntityContext = (GraphEntityContext) entity.getEntityContext();
-    Property schema = entity.getSchemaProperty();
+    Property schema = entity.getSchemaMap().get(mediaType);
+
     LOG.debug("Map graph entity to representation.");
     if (schema == null) {
       throw new EntityMapperRuntimeException(

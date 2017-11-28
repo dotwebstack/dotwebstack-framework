@@ -1,15 +1,13 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.slf4j.Logger;
@@ -21,19 +19,16 @@ public final class GraphEntity extends AbstractEntity<GraphQueryResult> {
 
   private final GraphEntityContext graphEntityContext;
 
-  public GraphEntity(Property schemaProperty, GraphEntityContext graphEntityContext) {
+  public GraphEntity(@NonNull Map<MediaType, Property> schemaProperty,
+      GraphEntityContext graphEntityContext) {
     super(schemaProperty);
     this.graphEntityContext = graphEntityContext;
+
   }
 
 
   @Override
   public GraphQueryResult getResult() {
-    return null;
-  }
-
-  @Override
-  public Map<MediaType, Property> getSchemaMap() {
     return null;
   }
 
@@ -49,19 +44,16 @@ public final class GraphEntity extends AbstractEntity<GraphQueryResult> {
   public static class Builder {
     private Map<String, io.swagger.models.Model> swaggerDefinitions;
     private ImmutableMap<String, String> ldpathNamespaces;
-    private Property schemaProperty;
-    private org.eclipse.rdf4j.query.QueryResult queryResult;
     private GraphEntityContext graphEntityContext;
     private Model model;
+    private Map<MediaType, Property> schemaProperty;
 
-    public Builder withSchemaProperty(Property schemaProperty) {
+    public Builder withSchemaProperty(Map<MediaType, Property> schemaProperty) {
       this.schemaProperty = schemaProperty;
       return this;
     }
 
     public Builder withQueryResult(org.eclipse.rdf4j.query.QueryResult queryResult) {
-      this.queryResult = queryResult;
-
       this.model = QueryResults.asModel(queryResult);
       return this;
     }
@@ -103,28 +95,8 @@ public final class GraphEntity extends AbstractEntity<GraphQueryResult> {
       return null;
     }
 
-    private ImmutableList<Resource> getSubjects() {
-
-      ImmutableList.Builder<Resource> listBuilder = ImmutableList.builder();
-      try {
-        while (this.queryResult.hasNext()) {
-
-          if (this.queryResult.next() instanceof Statement) {
-            Statement queryStatement = (Statement) this.queryResult.next();
-            listBuilder.add(queryStatement.getSubject());
-          }
-        }
-      } catch (Exception exp) {
-        LOG.error("Could not get subjects from queryresult.", exp);
-        throw new LdPathExecutorRuntimeException("Unable to initialize RDF4JRepository.", exp);
-      }
-      return listBuilder.build();
-
-    }
-
     public Entity build() {
-      this.graphEntityContext =
-          new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model);
+      this.graphEntityContext = new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model);
 
       return new GraphEntity(schemaProperty, graphEntityContext);
     }

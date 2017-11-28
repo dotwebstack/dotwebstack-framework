@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.schema;
+package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;

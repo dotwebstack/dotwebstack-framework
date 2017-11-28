@@ -9,7 +9,7 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;

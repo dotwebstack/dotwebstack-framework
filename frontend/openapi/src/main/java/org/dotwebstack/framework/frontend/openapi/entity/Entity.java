@@ -10,7 +10,6 @@ public interface Entity<R extends org.eclipse.rdf4j.query.QueryResult<?>> {
 
   Map<MediaType, Property> getSchemaMap();
 
-  Property getSchemaProperty();
 
   EntityContext getEntityContext();
 }

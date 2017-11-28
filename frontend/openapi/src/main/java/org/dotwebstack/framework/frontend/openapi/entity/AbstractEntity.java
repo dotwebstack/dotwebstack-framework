@@ -10,14 +10,11 @@ abstract class AbstractEntity<Q extends org.eclipse.rdf4j.query.QueryResult<?>>
 
   private Q queryResultDb;
 
-  private Property schemaProperty;
-
   private Map<MediaType, Property> schemaMap;
 
 
-  AbstractEntity(@NonNull Property schemaProperty) {
-    this.schemaProperty = schemaProperty;
-
+  AbstractEntity(@NonNull Map<MediaType, Property> schemaProperty) {
+    this.schemaMap = schemaProperty;
   }
 
   AbstractEntity(@NonNull Map<MediaType, Property> schemaProperty,
@@ -26,10 +23,6 @@ abstract class AbstractEntity<Q extends org.eclipse.rdf4j.query.QueryResult<?>>
     this.queryResultDb = queryResultDb;
   }
 
-  @Override
-  public Property getSchemaProperty() {
-    return schemaProperty;
-  }
 
   public Q getQueryResultDb() {
     return queryResultDb;

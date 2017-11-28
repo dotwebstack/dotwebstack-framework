@@ -17,7 +17,7 @@ import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.StringProperty;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.algebra.evaluation.QueryBindingSet;

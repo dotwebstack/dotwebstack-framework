@@ -3,13 +3,14 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.Property;
 import java.util.HashMap;
+import java.util.Map;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.openapi.schema.SchemaMapperAdapter;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,15 +59,14 @@ public class GraphEntityMapperTest {
   @Test
   public void map_GraphMapping() {
     // Arrange
-    Property property = mock(Property.class);
-    GraphEntity entity =
-        new GraphEntity(property, graphEntityContextMock);
+    Map<MediaType, Property> schemaMap = new HashMap<>();
+    schemaMap.put(MediaType.TEXT_PLAIN_TYPE,new IntegerProperty());
+    GraphEntity entity = new GraphEntity(schemaMap, graphEntityContextMock);
 
     when(propertyHandlerRegistryMock.mapGraphValue(any(), any(), any(), any())).thenReturn(
         new HashMap<>());
     // Act
-    Object mappedEntity =
-        graphEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
+    Object mappedEntity = graphEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
     // Assert
     assertThat(mappedEntity, instanceOf(HashMap.class));
 
