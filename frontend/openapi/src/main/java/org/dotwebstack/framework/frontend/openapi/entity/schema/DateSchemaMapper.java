@@ -71,6 +71,7 @@ class DateSchemaMapper extends AbstractSchemaMapper
     return schema instanceof DateProperty;
   }
 
+  @Override
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
   }

@@ -33,11 +33,11 @@ public class ObjectSchemaMapper extends AbstractSchemaMapper
       if (subjects.iterator().hasNext()) {
         if (subjects.size() > 1) {
           throw new SchemaMapperRuntimeException(
-              String.format("More entrypoint subjects found. Only one is needed."));
+              "More entrypoint subjects found. Only one is needed.");
         }
         contextNew = subjects.iterator().next();
       } else {
-        throw new SchemaMapperRuntimeException(String.format("No entrypoint subject found."));
+        throw new SchemaMapperRuntimeException("No entrypoint subject found.");
       }
     }
     if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {

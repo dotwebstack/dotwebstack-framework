@@ -53,9 +53,6 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     Map<String, Object> parameterValues =
         requestParameterMapper.map(operation, informationProduct, context);
 
-    io.swagger.models.Response response = operation.getResponses().get("200");
-    Property schemaProperty = response.getSchema();
-
     Response responseOk = null;
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
 

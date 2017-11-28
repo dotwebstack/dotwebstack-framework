@@ -60,12 +60,10 @@ class IntegerSchemaMapper extends AbstractSchemaMapper
     return ((Literal) integerValue).integerValue().intValue();
   }
 
-
+  @Override
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
   }
-
-
 
   @Override
   public boolean supports(@NonNull Property schema) {
