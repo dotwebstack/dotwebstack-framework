@@ -54,9 +54,8 @@ public class FileConfigurationBackend
   private Environment environment;
 
   public FileConfigurationBackend(@NonNull Resource elmoConfiguration,
-                                  @NonNull SailRepository repository, @NonNull String resourcePath,
-                                  @NonNull Resource elmoShapes,
-                                  @NonNull ShaclValidator shaclValidator) {
+      @NonNull SailRepository repository, @NonNull String resourcePath,
+      @NonNull Resource elmoShapes, @NonNull ShaclValidator shaclValidator) {
     this.elmoConfiguration = elmoConfiguration;
     this.repository = repository;
     this.resourcePath = resourcePath;
@@ -125,21 +124,19 @@ public class FileConfigurationBackend
   }
 
   private void addResourceToRepositoryConnection(RepositoryConnection repositoryConnection,
-                                                 Optional<Resource> optionalPrefixesResource,
-                                                 Resource resource) {
+      Optional<Resource> optionalPrefixesResource, Resource resource) {
     final String extension = FilenameUtils.getExtension(resource.getFilename());
     try {
       if (optionalPrefixesResource.isPresent()) {
         try (SequenceInputStream resourceSequenceInputStream = new SequenceInputStream(
             optionalPrefixesResource.get().getInputStream(), resource.getInputStream())) {
-          repositoryConnection.add(
-              new EnvironmentAwareResource(resourceSequenceInputStream, environment)
-                  .getInputStream(), "#", FileFormats.getFormat(extension));
+          repositoryConnection.add(new EnvironmentAwareResource(resourceSequenceInputStream,
+              environment).getInputStream(), "#", FileFormats.getFormat(extension));
         }
       } else {
         repositoryConnection.add(
-            new EnvironmentAwareResource(resource.getInputStream(), environment)
-                .getInputStream(), "#", FileFormats.getFormat(extension));
+            new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
+            "#", FileFormats.getFormat(extension));
       }
     } catch (IOException ex) {
       LOG.error("Configuration file %s could not be read.", resource.getFilename());
@@ -150,11 +147,11 @@ public class FileConfigurationBackend
 
   private void validate(List<InputStream> configurationStreams) throws ShaclValidationException {
     if (configurationStreams.size() > 0) {
-      try (InputStream stream = new SequenceInputStream(
-          Collections.enumeration(configurationStreams))) {
-        final ValidationReport report = shaclValidator.validate(
-            RdfModelTransformer.transformInputStreamToModel(stream),
-            RdfModelTransformer.transformTrigFileToModel(elmoShapes));
+      try (InputStream stream =
+          new SequenceInputStream(Collections.enumeration(configurationStreams))) {
+        final ValidationReport report =
+            shaclValidator.validate(RdfModelTransformer.transformInputStreamToModel(stream),
+                RdfModelTransformer.transformTrigFileToModel(elmoShapes));
         if (!report.isValid()) {
           throw new ShaclValidationException(report.getValidationReport());
         }
@@ -173,22 +170,21 @@ public class FileConfigurationBackend
   }
 
   private Optional<Resource> getPrefixesResource(List<Resource> resources) {
-    return resources.stream()
-        .filter(resource -> resource.getFilename() != null && resource.getFilename()
-            .startsWith("_prefixes") && FileFormats
-            .containsExtension(FilenameUtils.getExtension(resource.getFilename())))
-        .findFirst();
+    return resources.stream().filter(resource -> resource.getFilename() != null
+        && resource.getFilename().startsWith("_prefixes") && FileFormats.containsExtension(
+            FilenameUtils.getExtension(resource.getFilename()))).findFirst();
   }
 
   private String[] getPrefixesOfResource(Resource inputResource) throws IOException {
-    String result = CharStreams
-        .toString(new InputStreamReader(inputResource.getInputStream(), Charsets.UTF_8));
+    String result =
+        CharStreams.toString(new InputStreamReader(inputResource.getInputStream(), Charsets.UTF_8));
     return result.split("\n");
   }
 
 
   private void checkMultiplePrefixesDeclaration(Resource prefixes) throws IOException {
     Map<String, String> prefixesMap = new HashMap<>();
+
     final String[] allPrefixes = getPrefixesOfResource(prefixes);
     int lineNumber = 0;
     for (String prefix : allPrefixes) {

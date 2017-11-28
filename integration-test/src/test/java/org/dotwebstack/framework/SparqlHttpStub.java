@@ -74,6 +74,28 @@ public class SparqlHttpStub {
     instance.graphResult = null;
   }
 
+  public static void main(String[] args) throws IOException {
+    SparqlHttpStub.start();
+
+    // returnGraphExample();
+    returnTupleExample();
+
+    System.out.println("Press enter to exit.");
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    br.readLine();
+
+    SparqlHttpStub.stop();
+  }
+
+  private static void returnTupleExample() {
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("name", "fte", "year").resultSet(DBEERPEDIA.BROUWTOREN_NAME,
+            DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).resultSet(
+                "Heineken", 80933d, 1864);
+
+    SparqlHttpStub.returnTuple(builder);
+  }
+
   private void init() {
     try {
       server = HttpServer.create(new InetSocketAddress(8900), 0);
@@ -126,28 +148,6 @@ public class SparqlHttpStub {
         fail(ex.getMessage());
       }
     }
-  }
-
-  public static void main(String[] args) throws IOException {
-    SparqlHttpStub.start();
-
-    // returnGraphExample();
-    returnTupleExample();
-
-    System.out.println("Press enter to exit.");
-    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-    br.readLine();
-
-    SparqlHttpStub.stop();
-  }
-
-  private static void returnTupleExample() {
-    TupleQueryResultBuilder builder =
-        new TupleQueryResultBuilder("name", "fte", "year").resultSet(DBEERPEDIA.BROUWTOREN_NAME,
-            DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).resultSet(
-                "Heineken", 80933d, 1864);
-
-    SparqlHttpStub.returnTuple(builder);
   }
 
   public static class TupleQueryResultBuilder {

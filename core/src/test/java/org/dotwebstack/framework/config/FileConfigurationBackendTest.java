@@ -88,8 +88,8 @@ public class FileConfigurationBackendTest {
     when(elmoShapesResource.getInputStream()).thenReturn(
         new ByteArrayInputStream("".getBytes(Charsets.UTF_8)));
     shaclValidator = mock(ShaclValidator.class);
-    when(elmoConfigurationResource.getInputStream())
-        .thenReturn(new ByteArrayInputStream("".getBytes()));
+    when(elmoConfigurationResource.getInputStream()).thenReturn(
+        new ByteArrayInputStream("".getBytes()));
     report = mock(ValidationReport.class);
     when(report.isValid()).thenReturn(true);
     when(shaclValidator.validate(any(), any())).thenReturn(report);
@@ -114,8 +114,8 @@ public class FileConfigurationBackendTest {
     // Assert
     thrown.expect(NullPointerException.class);
     // Act
-    new FileConfigurationBackend(elmoConfigurationResource, null, "file:config",
-        elmoShapesResource, shaclValidator);
+    new FileConfigurationBackend(elmoConfigurationResource, null, "file:config", elmoShapesResource,
+        shaclValidator);
   }
 
   @Test
@@ -172,7 +172,7 @@ public class FileConfigurationBackendTest {
         new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[]{resource});
+        new Resource[] {resource});
     when(report.getValidationReport()).thenReturn("Error");
     when(report.isValid()).thenReturn(false);
     // Assert
@@ -190,7 +190,7 @@ public class FileConfigurationBackendTest {
         new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[]{resource});
+        new Resource[] {resource});
     // Act
     backend.loadResources();
     // Assert
@@ -218,7 +218,7 @@ public class FileConfigurationBackendTest {
     Resource resource = mock(Resource.class);
     when(resource.getFilename()).thenReturn("not-existing.md");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[]{resource});
+        new Resource[] {resource});
     // Act
     backend.loadResources();
     // Assert
@@ -231,7 +231,7 @@ public class FileConfigurationBackendTest {
     // Arrange
     Resource resource = mock(Resource.class);
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[]{resource});
+        new Resource[] {resource});
     when(repository.getConnection()).thenThrow(RepositoryException.class);
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -247,7 +247,7 @@ public class FileConfigurationBackendTest {
     when(resource.getInputStream()).thenThrow(new RDFParseException("message"));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new Resource[]{resource});
+        new Resource[] {resource});
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Error while loading RDF data.");
@@ -263,7 +263,7 @@ public class FileConfigurationBackendTest {
         new ByteArrayInputStream("file".getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[]{resource});
+        new Resource[] {resource});
     when(elmoConfigurationResource.getInputStream()).thenReturn(
         new ByteArrayInputStream("elmo".getBytes(Charsets.UTF_8)));
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
@@ -295,11 +295,11 @@ public class FileConfigurationBackendTest {
             + "@prefix elmo: <http://dotwebstack.org/def/elmo#> .\n"
             + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
             + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n"
-            + "@prefix rdfs: <http://www.have-a-nice-day.com/rdf-schema#> .")
-            .getBytes(Charsets.UTF_8)));
+            + "@prefix rdfs: <http://www.have-a-nice-day.com/rdf-schema#> .").getBytes(
+                Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[]{resource});
+        new Resource[] {resource});
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
@@ -317,15 +317,13 @@ public class FileConfigurationBackendTest {
             + "@prefix elmo: <http://dotwebstack.org/def/elmo#> .\n"
             + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
             + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n"
-            + "this is not a valid prefix")
-            .getBytes(Charsets.UTF_8)));
+            + "this is not a valid prefix").getBytes(Charsets.UTF_8)));
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[]{resource});
+        new Resource[] {resource});
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(
-        "Found unknown prefix format <this is not a valid prefix> at line <5>");
+    thrown.expectMessage("Found unknown prefix format <this is not a valid prefix> at line <5>");
     // Act
     backend.loadResources();
   }
@@ -344,11 +342,10 @@ public class FileConfigurationBackendTest {
     when(config.getInputStream()).thenThrow(IOException.class);
     when(config.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[]{prefixes, config});
+        new Resource[] {prefixes, config});
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(
-        "Configuration file <config.trig> could not be read");
+    thrown.expectMessage("Configuration file <config.trig> could not be read");
     // Act
     backend.loadResources();
   }
@@ -360,7 +357,7 @@ public class FileConfigurationBackendTest {
     when(resource.getInputStream()).thenThrow(new IOException());
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[]{resource});
+        new Resource[] {resource});
     // Assert
     thrown.expect(ConfigurationException.class);
     // Act
@@ -368,8 +365,7 @@ public class FileConfigurationBackendTest {
   }
 
   @Test
-  public void loadPrefixes_CombinePrefixesWithConfiguration_WhenLoadResources()
-      throws Exception {
+  public void loadPrefixes_CombinePrefixesWithConfiguration_WhenLoadResources() throws Exception {
     // Arrange
     Resource backendResource = mock(Resource.class);
     Resource resource = mock(Resource.class);
@@ -378,18 +374,14 @@ public class FileConfigurationBackendTest {
         new ByteArrayInputStream(new String("@prefix dbeerpedia: <http://dbeerpedia.org#> .\n"
             + "@prefix elmo: <http://dotwebstack.org/def/elmo#> .\n"
             + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-            + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n")
-            .getBytes(Charsets.UTF_8)));
+            + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n").getBytes(Charsets.UTF_8)));
     when(backendResource.getFilename()).thenReturn("backend.trig");
-    when(backendResource.getInputStream()).thenReturn(
-        new ByteArrayInputStream(new String("GRAPH dbeerpedia:Theatre {\n"
-            + "  dbeerpedia:Backend a elmo:SparqlBackend;\n"
-            + "    elmo:endpoint \"http://localhost:8900/sparql\"^^xsd:anyURI;\n"
-            + "  .\n"
-            + "}")
-            .getBytes(Charsets.UTF_8)));
+    when(backendResource.getInputStream()).thenReturn(new ByteArrayInputStream(
+        new String("GRAPH dbeerpedia:Theatre {\n" + "  dbeerpedia:Backend a elmo:SparqlBackend;\n"
+            + "    elmo:endpoint \"http://localhost:8900/sparql\"^^xsd:anyURI;\n" + "  .\n"
+            + "}").getBytes(Charsets.UTF_8)));
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
-        new Resource[]{prefixesResource, backendResource, resource, elmoShapesResource});
+        new Resource[] {prefixesResource, backendResource, resource, elmoShapesResource});
     // Act / Assert
     backend.loadResources();
   }

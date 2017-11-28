@@ -77,6 +77,10 @@ public class InformationProductResourceProviderTest {
 
   private InformationProductResourceProvider informationProductResourceProvider;
 
+  private static ParameterMatcher equalToParameter(IRI identifier, String name) {
+    return new ParameterMatcher(identifier, name);
+  }
+
   @Before
   public void setUp() {
     informationProductResourceProvider =
@@ -268,10 +272,6 @@ public class InformationProductResourceProviderTest {
 
     // Act
     informationProductResourceProvider.loadResources();
-  }
-
-  private static ParameterMatcher equalToParameter(IRI identifier, String name) {
-    return new ParameterMatcher(identifier, name);
   }
 
   private static final class ParameterMatcher extends TypeSafeMatcher<Parameter> {

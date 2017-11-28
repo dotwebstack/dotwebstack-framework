@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
+import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
@@ -31,6 +32,9 @@ public class GetRequestHandlerFactoryTest {
 
   private GetRequestHandlerFactory getRequestHandlerFactory;
 
+  @Mock
+  private Swagger mockSwagger;
+
   @Before
   public void setUp() {
     getRequestHandlerFactory = new GetRequestHandlerFactory(requestParameterMapperMock);
@@ -47,7 +51,7 @@ public class GetRequestHandlerFactoryTest {
 
     // Act
     GetRequestHandler result =
-        getRequestHandlerFactory.newGetRequestHandler(operation, product, schemaMap);
+        getRequestHandlerFactory.newGetRequestHandler(operation, product, schemaMap, mockSwagger);
 
     // Assert
     assertThat(result.getInformationProduct(), sameInstance(product));

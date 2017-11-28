@@ -9,15 +9,15 @@ public class Appearance {
   private IRI identifier;
 
   private IRI type;
-  
+
   private Model model;
-  
+
   private Appearance(Builder builder) {
     identifier = builder.identifier;
     type = builder.type;
     model = builder.model;
   }
-  
+
   public IRI getIdentifier() {
     return identifier;
   }
@@ -25,11 +25,11 @@ public class Appearance {
   public IRI getType() {
     return type;
   }
-  
+
   public Model getModel() {
     return model;
   }
-  
+
   public static class Builder {
 
     private IRI identifier;

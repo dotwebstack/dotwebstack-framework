@@ -59,6 +59,7 @@ public class FileConfigurationBackendIntegrationTest {
     // Arrange
     fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,
         "invalidConfig", elmoShapes, shaclValidator);
+
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Error while loading RDF data.");
@@ -75,7 +76,8 @@ public class FileConfigurationBackendIntegrationTest {
         "shaclValidationException", elmoShapes, shaclValidator);
     // Assert
     thrown.expect(ShaclValidationException.class);
-    thrown.expectMessage("Invalid configuration at path [http://dotwebstack.org/def/elmo#name] on node [http://dbeerpedia.org#GraphBreweryListRepresentation] with error message [More than 1 values]");
+    thrown.expectMessage(
+        "Invalid configuration at path [http://dotwebstack.org/def/elmo#name] on node [http://dbeerpedia.org#GraphBreweryListRepresentation] with error message [More than 1 values]");
     // Act
     fileConfigurationBackend.setEnvironment(environment);
     fileConfigurationBackend.loadResources();
