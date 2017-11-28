@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.entity.backend;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
