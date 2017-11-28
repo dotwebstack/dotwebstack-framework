@@ -48,7 +48,7 @@ public class ConfigurationIntegrationTest {
     assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(3));
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.TUPLE_BREWERIES), notNullValue());
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.GRAPH_BREWERIES), notNullValue());
-    assertThat(representationResourceProvider.getAll().entrySet(), hasSize(3));
+    assertThat(representationResourceProvider.getAll().entrySet(), hasSize(4));
     assertThat(representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
         notNullValue());
     assertThat(representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION),
