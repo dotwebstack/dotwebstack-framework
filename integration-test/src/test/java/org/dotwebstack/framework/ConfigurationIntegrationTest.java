@@ -53,6 +53,8 @@ public class ConfigurationIntegrationTest {
         notNullValue());
     assertThat(representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION),
         notNullValue());
+    assertThat(representationResourceProvider.get(DBEERPEDIA.BREWERY_REPRESENTATION),
+        notNullValue());
   }
 
 }
