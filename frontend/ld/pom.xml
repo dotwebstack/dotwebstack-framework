@@ -59,6 +59,10 @@
       <artifactId>jsonassert</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.dotwebstack.framework</groupId>
+      <artifactId>dotwebstack-core</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

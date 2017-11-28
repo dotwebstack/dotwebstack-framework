@@ -25,8 +25,8 @@ public final class OpenApiModule implements HttpModule {
 
     try {
       requestMapper.map(httpConfiguration);
-    } catch (IOException e) {
-      throw new ConfigurationException("Failed loading OpenAPI definitions.", e);
+    } catch (IOException exp) {
+      throw new ConfigurationException("Failed loading OpenAPI definitions.", exp);
     }
   }
 

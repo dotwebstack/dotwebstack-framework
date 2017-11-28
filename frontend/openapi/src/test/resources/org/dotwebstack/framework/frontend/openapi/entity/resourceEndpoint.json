@@ -1,0 +1,30 @@
+{
+  "_links" : {
+    "arrayType" : [ {
+      "title" : "Jane Doe link"
+    }, {
+      "title" : "Peter Pan link"
+    } ],
+    "objectTypeWithLdPath" : {
+      "href" : "http://www.freenode.net/jd",
+      "title" : "Link to account page for account jd"
+    },
+    "objectTypeWithoutLdPath" : {
+      "title" : "Self-link for John Doe"
+    }
+  },
+  "firstName" : "John",
+  "lastName" : "Doe",
+  "gender" : "male",
+  "account" : {
+    "accountName" : "jd",
+    "accountServiceHomepage" : "http://www.freenode.net"
+  },
+  "knows" : [ {
+    "firstName" : "Jane",
+    "lastName" : "Doe"
+  }, {
+    "firstName" : "Peter",
+    "lastName" : "Pan"
+  } ]
+}

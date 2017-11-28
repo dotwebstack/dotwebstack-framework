@@ -1,0 +1,82 @@
+{
+  "_links" : {
+    "self" : {
+      "href" : "http://someUri/path/persons"
+    }
+  },
+  "_embedded" : {
+    "persons" : [ {
+      "_links" : {
+        "self" : {
+          "href" : "http://someUri/path/persons/John Doe"
+        },
+        "arrayType" : [ {
+          "href" : "http://someUri/path/persons/Jane Doe",
+          "title" : "Jane Doe link"
+        }, {
+          "href" : "http://someUri/path/persons/Peter Pan",
+          "title" : "Peter Pan link"
+        } ],
+        "objectTypeWithLdPath" : {
+          "href" : "http://www.freenode.net/jd",
+          "title" : "Link to account page for account jd"
+        },
+        "objectTypeWithoutLdPath" : {
+          "href" : "http://someUri/path/persons/John Doe",
+          "title" : "Self-link for John Doe"
+        }
+      },
+      "firstName" : "John",
+      "lastName" : "Doe",
+      "gender" : "male",
+      "account" : {
+        "accountName" : "jd",
+        "accountServiceHomepage" : "http://www.freenode.net"
+      },
+      "knows" : [ {
+        "firstName" : "Jane",
+        "lastName" : "Doe"
+      }, {
+        "firstName" : "Peter",
+        "lastName" : "Pan"
+      } ]
+    }, {
+      "_links" : {
+        "self" : {
+          "href" : "http://someUri/path/persons/Jane Doe"
+        },
+        "arrayType" : [ {
+          "href" : "http://someUri/path/persons/Peter Pan",
+          "title" : "Peter Pan link"
+        } ],
+        "objectTypeWithoutLdPath" : {
+          "href" : "http://someUri/path/persons/Jane Doe",
+          "title" : "Self-link for Jane Doe"
+        }
+      },
+      "firstName" : "Jane",
+      "lastName" : "Doe",
+      "gender" : "female",
+      "account" : null,
+      "knows" : [ {
+        "firstName" : "Peter",
+        "lastName" : "Pan"
+      } ]
+    }, {
+      "_links" : {
+        "self" : {
+          "href" : "http://someUri/path/persons/Peter Pan"
+        },
+        "objectTypeWithoutLdPath" : {
+          "href" : "http://someUri/path/persons/Peter Pan",
+          "title" : "Self-link for Peter Pan"
+        }
+      },
+      "firstName" : "Peter",
+      "lastName" : "Pan",
+      "gender" : "male",
+      "account" : null,
+      "knows" : [ ]
+    } ]
+  }
+}

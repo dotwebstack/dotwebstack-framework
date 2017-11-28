@@ -9,15 +9,17 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
+import io.swagger.models.Response;
+import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,20 +39,33 @@ public class GetRequestHandlerTest {
   private Operation operationMock;
 
   @Mock
-  private InformationProduct informationProduct;
+  private InformationProduct informationProductMock;
 
   @Mock
-  private ContainerRequestContext containerRequestContext;
+  private ContainerRequestContext containerRequestContextMock;
 
   @Mock
   private RequestParameterMapper requestParameterMapperMock;
 
   private GetRequestHandler getRequestHandler;
 
+  @Mock
+  private io.swagger.models.Response mockResponse;
+
+  @Mock
+  private io.swagger.models.properties.Property propertyMock;
+
+  @Mock
+  private Swagger swaggerMock;
+
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of(),
-        requestParameterMapperMock);
+    when(mockResponse.getSchema()).thenReturn(propertyMock);
+    Map<String, Response> response = ImmutableMap.of("200", mockResponse);
+
+    when(operationMock.getResponses()).thenReturn(response);
+    getRequestHandler = new GetRequestHandler(operationMock, informationProductMock,
+        ImmutableMap.of(), requestParameterMapperMock, swaggerMock);
   }
 
   @Test
@@ -59,7 +74,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock);
+    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock,
+        swaggerMock);
   }
 
   @Test
@@ -68,7 +84,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock);
+    new GetRequestHandler(operationMock, informationProductMock, null, requestParameterMapperMock,
+        swaggerMock);
   }
 
   @Test
@@ -85,17 +102,17 @@ public class GetRequestHandlerTest {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
     final Map<String, Property> schemaMap = ImmutableMap.of();
-    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
-    when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
+    when(informationProductMock.getResult(ImmutableMap.of())).thenReturn(result);
+    when(informationProductMock.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContext);
+    javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContextMock);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(javax.ws.rs.core.Response.Status.OK.getStatusCode()));
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
     assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
@@ -105,16 +122,32 @@ public class GetRequestHandlerTest {
   public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForGraphResult() {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
-    when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
+    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
+    GraphQueryResult result = mock(GraphQueryResult.class);
+    when(informationProductMock.getResult(ImmutableMap.of())).thenReturn(result);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContext);
+    javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContextMock);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
-    assertThat(response.getEntity(), nullValue());
+    assertThat(response.getEntity(), instanceOf(GraphEntity.class));
+
   }
 
+  @Test
+  public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForOtherResult() {
+    // Arrange
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(uriInfo.getPath()).thenReturn("/");
+    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+
+    // Act
+    javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContextMock);
+
+    // Assert
+    assertThat(response.getStatus(),
+        equalTo(javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    assertThat(response.getEntity(), nullValue());
+  }
 }
