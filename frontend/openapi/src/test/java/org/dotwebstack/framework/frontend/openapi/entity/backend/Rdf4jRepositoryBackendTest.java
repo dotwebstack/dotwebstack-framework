@@ -108,7 +108,7 @@ public class Rdf4jRepositoryBackendTest {
   }
 
   @Test
-  public void testCreateURI() throws Exception {
+  public void testCreateUri() throws Exception {
 
     IRI iri = backend.createURI("http://www.test.nl");
     assertThat(iri, is(SimpleValueFactory.getInstance().createIRI("http://www.test.nl")));
