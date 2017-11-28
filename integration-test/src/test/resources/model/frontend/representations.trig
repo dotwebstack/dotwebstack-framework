@@ -15,4 +15,10 @@ GRAPH dbeerpedia:Theatre {
     elmo:stage dbeerpedia:Stage;
     elmo:informationProduct dbeerpedia:TupleBreweries;
   .
+
+  dbeerpedia:BreweryRepresentation a elmo:Representation;
+    elmo:urlPattern "/tuple-brewery";
+    elmo:stage dbeerpedia:Stage;
+    elmo:informationProduct dbeerpedia:TupleBrewery;
+  .
 }
