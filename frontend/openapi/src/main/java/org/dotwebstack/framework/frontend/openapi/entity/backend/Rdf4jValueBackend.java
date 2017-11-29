@@ -165,7 +165,6 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
 
   @Override
   public Date timeValue(Value node) {
-    // TODO: Unless someone knows how to create a Date that only has the time
     // from a XMLGregorianCalendar
     return dateTimeValue(node);
   }

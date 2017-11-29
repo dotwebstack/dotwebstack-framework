@@ -103,19 +103,12 @@ public abstract class AbstractRdf4jBackend extends Rdf4jValueBackend implements 
   @Override
   public abstract IRI createURI(String uri);
 
-  /**
-   * @deprecated subject to be removed in the next release.
-   */
-  @Deprecated
+
   @Override
   public boolean supportsThreading() {
     return false;
   }
 
-  /**
-   * @deprecated subject to be removed in the next release.
-   */
-  @Deprecated
   @Override
   public ThreadPoolExecutor getThreadPool() {
     return null;

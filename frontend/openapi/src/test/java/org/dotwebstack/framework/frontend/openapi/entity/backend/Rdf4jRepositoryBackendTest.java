@@ -10,7 +10,9 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.Collection;
+import java.util.Locale;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -114,6 +116,17 @@ public class Rdf4jRepositoryBackendTest {
     assertThat(iri, is(SimpleValueFactory.getInstance().createIRI("http://www.test.nl")));
 
   }
+
+  @Test
+  public void testcreateLiteral() throws Exception {
+
+    Literal literal = backend.createLiteral("http://www.test.nl", Locale.CANADA,
+        URI.create("http://www.test.nl"));
+    assertThat(literal, is(SimpleValueFactory.getInstance().createLiteral("http://www.test.nl",
+        SimpleValueFactory.getInstance().createIRI("http://www.test.nl"))));
+
+  }
+
 
 
 }

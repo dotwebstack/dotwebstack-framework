@@ -12,9 +12,9 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-abstract class LdPathSchemaMapper {
+public interface LdPathSchemaMapper {
 
-  Set<Resource> applySubjectFilterIfPossible(Property property,
+  default Set<Resource> applySubjectFilterIfPossible(Property property,
       GraphEntityContext graphEntityContext) {
     if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.SUBJECT_FILTER)) {
       LinkedHashMap subjectFilter = (LinkedHashMap) property.getVendorExtensions().get(
