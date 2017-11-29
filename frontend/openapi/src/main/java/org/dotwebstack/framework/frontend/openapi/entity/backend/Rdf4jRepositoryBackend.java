@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.openapi.entity.backend;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.concurrent.ThreadPoolExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
