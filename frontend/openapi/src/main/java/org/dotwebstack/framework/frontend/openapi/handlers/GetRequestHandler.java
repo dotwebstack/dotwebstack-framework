@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import io.swagger.models.Operation;
+import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -19,7 +19,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
-  private final Operation operation;
+  private final ApiOperation apiOperation;
 
   private final InformationProduct informationProduct;
 
@@ -27,10 +27,14 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private final RequestParameterMapper requestParameterMapper;
 
-  GetRequestHandler(@NonNull Operation operation, @NonNull InformationProduct informationProduct,
-      @NonNull Map<MediaType, Property> schemaMap,
-      @NonNull RequestParameterMapper requestParameterMapper) {
-    this.operation = operation;
+  private final ApiRequestValidator apiRequestValidator;
+
+  GetRequestHandler(@NonNull ApiOperation apiOperation,
+      @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
+      @NonNull RequestParameterMapper requestParameterMapper,
+      @NonNull ApiRequestValidator apiRequestValidator) {
+    this.apiRequestValidator = apiRequestValidator;
+    this.apiOperation = apiOperation;
     this.informationProduct = informationProduct;
     this.schemaMap = schemaMap;
     this.requestParameterMapper = requestParameterMapper;
@@ -50,8 +54,11 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     LOG.debug("Handling GET request for path {}", path);
 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-      Map<String, Object> parameterValues =
-          requestParameterMapper.map(operation, informationProduct, context);
+
+      RequestParameters requestParameters = apiRequestValidator.validate(apiOperation, context);
+
+      Map<String, Object> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
+          informationProduct, requestParameters);
 
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
       TupleEntity entity = new TupleEntity(schemaMap, result);

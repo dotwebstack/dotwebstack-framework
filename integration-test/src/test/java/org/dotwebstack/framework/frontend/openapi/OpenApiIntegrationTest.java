@@ -46,6 +46,7 @@ public class OpenApiIntegrationTest {
     SparqlHttpStub.start();
   }
 
+  // @Ignore
   @Test
   public void get_GetBreweryCollection_ThroughOpenApi() throws JSONException {
     // Arrange
@@ -59,7 +60,8 @@ public class OpenApiIntegrationTest {
     SparqlHttpStub.returnTuple(builder);
 
     // Act
-    Response response = target.path("/dbp/api/v1/breweries").request().get();
+    Response response = target.path("/dbp/api/v1/breweries").request().accept(
+        MediaType.APPLICATION_JSON_TYPE).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -81,6 +83,7 @@ public class OpenApiIntegrationTest {
     JSONAssert.assertEquals(expected.toString(), result, true);
   }
 
+  // @Ignore
   @Test
   public void get_GetSingleBreweryWithId_ThroughOpenApi() throws JSONException {
     // Arrange
@@ -92,7 +95,7 @@ public class OpenApiIntegrationTest {
 
     // Act
     Response response = target.path(String.format("/dbp/api/v1/breweries/%s",
-        DBEERPEDIA.MAXIMUS.getLocalName())).request().get();
+        DBEERPEDIA.MAXIMUS.getLocalName())).request().accept(MediaType.APPLICATION_JSON_TYPE).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -122,6 +125,7 @@ public class OpenApiIntegrationTest {
     assertThat(response.getHeaderString("allow"), equalTo("HEAD,GET,OPTIONS"));
   }
 
+  // @Ignore
   @Test
   public void get_GetCorrectHead_ThroughOpenApi() {
     // Arrange
@@ -132,7 +136,8 @@ public class OpenApiIntegrationTest {
     SparqlHttpStub.returnTuple(builder);
 
     // Act
-    Response response = target.path("/dbp/api/v1/breweries").request().head();
+    Response response = target.path("/dbp/api/v1/breweries").request().accept(
+        MediaType.APPLICATION_JSON_TYPE).head();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));

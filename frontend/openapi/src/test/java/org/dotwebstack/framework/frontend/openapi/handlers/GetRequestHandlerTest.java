@@ -7,8 +7,8 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Operation;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -34,13 +34,16 @@ public class GetRequestHandlerTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private Operation operationMock;
+  private ApiOperation operationMock;
 
   @Mock
   private InformationProduct informationProduct;
 
   @Mock
   private ContainerRequestContext containerRequestContext;
+
+  @Mock
+  private ApiRequestValidator apiRequestValidatorMock;
 
   @Mock
   private RequestParameterMapper requestParameterMapperMock;
@@ -50,7 +53,7 @@ public class GetRequestHandlerTest {
   @Before
   public void setUp() {
     getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of(),
-        requestParameterMapperMock);
+        requestParameterMapperMock, apiRequestValidatorMock);
   }
 
   @Test
@@ -59,7 +62,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock);
+    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock,
+        apiRequestValidatorMock);
   }
 
   @Test
@@ -68,7 +72,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock);
+    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock,
+        apiRequestValidatorMock);
   }
 
   @Test

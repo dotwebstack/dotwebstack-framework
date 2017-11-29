@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 import io.swagger.models.Operation;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.container.ContainerRequestContext;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -19,12 +18,12 @@ import org.springframework.stereotype.Service;
 @Service
 class RequestParameterMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RequestParameterMapper.class);
 
   private static ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   Map<String, Object> map(@NonNull Operation operation, @NonNull InformationProduct product,
-      @NonNull ContainerRequestContext context) {
+      @NonNull RequestParameters requestParameters) {
     Map<String, Object> result = new HashMap<>();
 
     for (io.swagger.models.parameters.Parameter openApiParameter : operation.getParameters()) {
@@ -48,7 +47,7 @@ class RequestParameterMapper {
             "No parameter found for vendor extension value: '%s'", parameterIdString));
       }
 
-      String value = getOpenApiParameterValue(context, openApiParameter);
+      String value = (String) requestParameters.get(openApiParameter.getName());
 
       result.put(parameter.getName(), value);
     }
@@ -64,21 +63,6 @@ class RequestParameterMapper {
     }
 
     return null;
-  }
-
-  private static String getOpenApiParameterValue(ContainerRequestContext context,
-      io.swagger.models.parameters.Parameter openApiParameter) {
-    switch (openApiParameter.getIn()) {
-      case "header":
-        return context.getHeaders().getFirst(openApiParameter.getName());
-      case "path":
-        return context.getUriInfo().getPathParameters().getFirst(openApiParameter.getName());
-      case "query":
-        return context.getUriInfo().getQueryParameters().getFirst(openApiParameter.getName());
-      default:
-        throw new ConfigurationException(
-            String.format("Unknown parameter location: '%s'", openApiParameter.getIn()));
-    }
   }
 
 }

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
+import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import io.swagger.models.Operation;
@@ -85,7 +86,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
           applicationProperties.getResourcePath() + "/openapi/**.y*ml");
-    } catch (FileNotFoundException e) {
+    } catch (FileNotFoundException ex) {
       LOG.warn("No Open API resources found in path:{}/openapi",
           applicationProperties.getResourcePath());
       return;
@@ -107,8 +108,16 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
+
+      ApiOperation apiOperation = null;
+      try {
+        apiOperation = SwaggerUtils.extractApiOperation(swagger, path, "get");
+      } catch (IllegalStateException ex) {
+        return;
+      }
+      Operation getOperation = apiOperation.getOperation();
+
       String absolutePath = basePath.concat(path);
-      Operation getOperation = pathItem.getGet();
 
       if (getOperation == null) {
         return;
@@ -158,8 +167,8 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
       ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          getRequestHandlerFactory.newGetRequestHandler(getOperation, informationProduct,
-              schemaMap));
+          getRequestHandlerFactory.newGetRequestHandler(apiOperation, informationProduct, schemaMap,
+              swagger));
 
       produces.forEach(methodBuilder::produces);
 
