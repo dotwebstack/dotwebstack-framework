@@ -11,7 +11,8 @@ import org.eclipse.rdf4j.model.Value;
 
 abstract class AbstractSchemaMapper {
 
-  static Value getSingleStatement(@NonNull Collection<Value> queryResult, @NonNull String ldPathQuery) {
+  static Value getSingleStatement(@NonNull Collection<Value> queryResult,
+      @NonNull String ldPathQuery) {
 
     if (queryResult.isEmpty()) {
       throw new SchemaMapperRuntimeException(
@@ -59,6 +60,5 @@ abstract class AbstractSchemaMapper {
   boolean isSupportedLiteral(Object value) {
     return value instanceof Literal && isDataTypeSupported((Literal) value);
   }
-
 
 }

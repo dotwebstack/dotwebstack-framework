@@ -49,7 +49,5 @@ public interface LdPathSchemaMapper {
       return filteredModel.subjects();
     }
     return ImmutableSet.of();
-
-
   }
 }
