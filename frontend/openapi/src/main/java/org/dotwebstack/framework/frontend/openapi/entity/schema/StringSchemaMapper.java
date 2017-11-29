@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 class StringSchemaMapper extends AbstractSchemaMapper
     implements SchemaMapper<StringProperty, String> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LdPathSchemaMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(StringSchemaMapper.class);
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   @Override
@@ -45,7 +45,7 @@ class StringSchemaMapper extends AbstractSchemaMapper
       return handleConstantValueVendorExtension(property);
     }
 
-    if (value != null && isSupported(value)) {
+    if (value != null && isSupportedLiteral(value)) {
       return value.stringValue();
     } else if (property.getRequired()) {
       throw new SchemaMapperRuntimeException("No result for required property.");
@@ -53,17 +53,6 @@ class StringSchemaMapper extends AbstractSchemaMapper
 
     return null;
 
-  }
-
-
-  @Override
-  public boolean supports(@NonNull Property schema) {
-    return schema instanceof StringProperty;
-  }
-
-  @Override
-  protected Set<IRI> getSupportedDataTypes() {
-    return SUPPORTED_TYPES;
   }
 
   /**
@@ -100,7 +89,7 @@ class StringSchemaMapper extends AbstractSchemaMapper
         property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
     if (value != null) {
-      if (isSupported(value)) {
+      if (isSupportedLiteral(value)) {
         return ((Value) value).stringValue();
       }
 
@@ -140,6 +129,15 @@ class StringSchemaMapper extends AbstractSchemaMapper
     return getSingleStatement(queryResult, ldPathQuery).stringValue();
   }
 
+  @Override
+  public boolean supports(@NonNull Property schema) {
+    return schema instanceof StringProperty;
+  }
+
+  @Override
+  protected Set<IRI> getSupportedDataTypes() {
+    return SUPPORTED_TYPES;
+  }
 
 
 }

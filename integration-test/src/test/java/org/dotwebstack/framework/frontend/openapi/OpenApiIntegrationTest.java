@@ -13,10 +13,13 @@ import org.dotwebstack.framework.SparqlHttpStub;
 import org.dotwebstack.framework.SparqlHttpStub.TupleQueryResultBuilder;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -166,5 +169,37 @@ public class OpenApiIntegrationTest {
     // Assert
     assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
   }
+
+  @Ignore
+  @Test
+  public void get_GraphGetBreweryCollection_ThroughOpenApi() throws JSONException {
+    // Arrange
+    Model model= new ModelBuilder().add("http://www.test.nl","http://www.test.nl","http://www.test.nl").build();
+   
+    SparqlHttpStub.returnGraph(model);
+
+    // Act
+    Response response = target.path("/dbp/api/v1/graph-breweries").request().get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
+
+    JSONArray expected = new JSONArray();
+    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
+            DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
+            DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
+            DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+            DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
+    expected.put(new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
+            DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue()).put("fte",
+            DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
+            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+            DBEERPEDIA.MAXIMUS_PLACE.stringValue()));
+
+    String result = response.readEntity(String.class);
+    JSONAssert.assertEquals(expected.toString(), result, true);
+  }
+
 
 }

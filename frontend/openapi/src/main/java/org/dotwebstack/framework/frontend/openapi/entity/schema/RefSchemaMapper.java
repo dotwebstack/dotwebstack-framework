@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
 
-
-
   @Override
   public Object mapTupleValue(RefProperty schema, Value value) {
     throw new UnsupportedOperationException("Tuple query not supported.");
