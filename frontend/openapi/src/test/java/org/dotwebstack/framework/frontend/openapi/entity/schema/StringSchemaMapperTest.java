@@ -23,7 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class StringSchemaMapperTest extends AbstractStringPropertyHandlerTest {
+public class StringSchemaMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();

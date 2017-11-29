@@ -21,7 +21,6 @@ class IntegerSchemaMapper extends AbstractSchemaMapper
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
 
-
   @Override
   public Object mapTupleValue(@NonNull BaseIntegerProperty schema, @NonNull Value value) {
     return SchemaMapperUtils.castLiteralValue(value).intValue();
@@ -31,16 +30,16 @@ class IntegerSchemaMapper extends AbstractSchemaMapper
   public Object mapGraphValue(BaseIntegerProperty property, GraphEntityContext context,
       SchemaMapperAdapter schemaMapperAdapter, Value value) {
     String ldPathQuery =
-            (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
-    if (ldPathQuery == null && isSupported(value)) {
+    if (ldPathQuery == null && isSupportedLiteral(value)) {
       return ((Literal) value).integerValue().intValue();
     }
 
     if (ldPathQuery == null) {
       throw new SchemaMapperRuntimeException(
-              String.format("Property '%s' must have a '%s' attribute.", property.getName(),
-                      OpenApiSpecificationExtensions.LDPATH));
+          String.format("Property '%s' must have a '%s' attribute.", property.getName(),
+              OpenApiSpecificationExtensions.LDPATH));
     }
     LdPathExecutor ldPathExecutor = context.getLdPathExecutor();
     Collection<Value> queryResult = ldPathExecutor.ldPathQuery(value, ldPathQuery);
@@ -51,10 +50,10 @@ class IntegerSchemaMapper extends AbstractSchemaMapper
 
     Value integerValue = getSingleStatement(queryResult, ldPathQuery);
 
-    if (!isSupported(integerValue)) {
+    if (!isSupportedLiteral(integerValue)) {
       throw new SchemaMapperRuntimeException(String.format(
-              "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>.",
-              ldPathQuery, dataTypesAsString()));
+          "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>.",
+          ldPathQuery, dataTypesAsString()));
     }
 
     return ((Literal) integerValue).integerValue().intValue();

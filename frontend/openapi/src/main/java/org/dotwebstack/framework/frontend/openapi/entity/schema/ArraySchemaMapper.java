@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
@@ -9,13 +10,14 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ArraySchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<ArrayProperty, Object> {
+    implements SchemaMapper<ArrayProperty, Object>, LdPathSchemaMapper {
 
   @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull Value value) {
@@ -25,6 +27,7 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
   @Override
   public Object mapGraphValue(ArrayProperty property, GraphEntityContext graphEntityContext,
       SchemaMapperAdapter schemaMapperAdapter, Value context) {
+
 
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
@@ -42,9 +45,9 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
         if ((property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH))) {
           queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
         } else {
-          throw new SchemaMapperRuntimeException(String.format(
-              "ArrayProperty must have either a '%s', of a '%s' attribute",
-              OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RESULT_REF));
+          throw new SchemaMapperRuntimeException(
+              String.format("ArrayProperty must have either a '%s' attribute",
+                  OpenApiSpecificationExtensions.LDPATH));
         }
       }
     }
@@ -61,9 +64,9 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
     validateMinItems(property, queryResult);
     validateMaxItems(property, queryResult);
 
-    queryResult.forEach(value2 -> builder.add(
+    queryResult.forEach(valueNext -> builder.add(
         com.google.common.base.Optional.fromNullable(schemaMapperAdapter.mapGraphValue(
-            property.getItems(), graphEntityContext, schemaMapperAdapter, value2))));
+            property.getItems(), graphEntityContext, schemaMapperAdapter, valueNext))));
   }
 
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {
@@ -91,4 +94,8 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
     return schema instanceof ArrayProperty;
   }
 
+  @Override
+  protected Set<IRI> getSupportedDataTypes() {
+    return ImmutableSet.of();
+  }
 }
