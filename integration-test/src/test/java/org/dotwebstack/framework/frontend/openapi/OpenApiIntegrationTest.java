@@ -174,8 +174,9 @@ public class OpenApiIntegrationTest {
   @Test
   public void get_GraphGetBreweryCollection_ThroughOpenApi() throws JSONException {
     // Arrange
-    Model model= new ModelBuilder().add("http://www.test.nl","http://www.test.nl","http://www.test.nl").build();
-   
+    Model model = new ModelBuilder().add("http://www.test.nl", "http://www.test.nl",
+        "http://www.test.nl").build();
+
     SparqlHttpStub.returnGraph(model);
 
     // Act
@@ -187,19 +188,18 @@ public class OpenApiIntegrationTest {
 
     JSONArray expected = new JSONArray();
     expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
-            DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
+        DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
             DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
-            DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
-            DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
+                DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+                    DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
     expected.put(new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
-            DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue()).put("fte",
+        DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue()).put("fte",
             DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
-            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
-            DBEERPEDIA.MAXIMUS_PLACE.stringValue()));
+                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+                    DBEERPEDIA.MAXIMUS_PLACE.stringValue()));
 
     String result = response.readEntity(String.class);
     JSONAssert.assertEquals(expected.toString(), result, true);
   }
-
 
 }

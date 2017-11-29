@@ -201,24 +201,4 @@ public class SparqlHttpStub {
     }
   }
 
-//  public static class GraphQueryResultBuilder {
-//
-//    private Model model;
-//
-//    public GraphQueryResultBuilder(Model model) {
-//      this.model = model;
-//    }
-//
-//    public GraphQueryResultBuilder withModel(Model model) {
-//      this.model=model;
-//      return this;
-//    }
-//
-//    public GraphQueryResult build() {
-//      Map<String, String> namespaces=new HashMap<>();
-//      IteratingGraphQueryResult graphQueryResult =
-//              new IteratingGraphQueryResult(namespaces,this.model.stream().iterator());
-//      return graphQueryResult;
-//    }
-//  }
 }
