@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
@@ -94,6 +96,11 @@ class ObjectSchemaMapper extends AbstractSchemaMapper
   @Override
   public boolean supports(@NonNull Property schema) {
     return schema instanceof ObjectProperty;
+  }
+
+  @Override
+  protected Set<IRI> getSupportedDataTypes() {
+    return ImmutableSet.of();
   }
 
 }

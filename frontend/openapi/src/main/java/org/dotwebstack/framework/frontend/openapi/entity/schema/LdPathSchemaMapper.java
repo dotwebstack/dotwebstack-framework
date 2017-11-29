@@ -19,8 +19,8 @@ public interface LdPathSchemaMapper {
   /**
    * Apply subject filter if possible.
    * 
-   * @param property
-   * @param graphEntityContext
+   * @param property property with subject filter
+   * @param graphEntityContext context of the entity
    * @return non empty set when no results could be found.
    */
   default Set<Resource> applySubjectFilterIfPossible(@NonNull Property property,
