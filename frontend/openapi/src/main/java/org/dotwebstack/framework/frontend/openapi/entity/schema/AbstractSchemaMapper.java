@@ -8,7 +8,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
-public abstract class AbstractSchemaMapper extends LdPathSchemaMapper {
+public abstract class AbstractSchemaMapper implements LdPathSchemaMapper {
 
   static Value getSingleStatement(Collection<Value> queryResult, String ldPathQuery) {
 
