@@ -29,17 +29,18 @@ public class ObjectSchemaMapper extends AbstractSchemaMapper
 
     Value contextNew = context;
     Set<Resource> subjects = applySubjectFilterIfPossible(property, graphEntityContext);
-    if (subjects != null) {
-      if (subjects.iterator().hasNext()) {
-        if (subjects.size() > 1) {
-          throw new SchemaMapperRuntimeException(
-              "More entrypoint subjects found. Only one is needed.");
-        }
-        contextNew = subjects.iterator().next();
-      } else {
+    if (!subjects.isEmpty() && subjects.iterator().hasNext()) {
+      if (subjects.size() > 1) {
+        throw new SchemaMapperRuntimeException(
+            "More entrypoint subjects found. Only one is needed.");
+      }
+      contextNew = subjects.iterator().next();
+    } else {
+      if (context == null) {
         throw new SchemaMapperRuntimeException("No entrypoint subject found.");
       }
     }
+
     if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();

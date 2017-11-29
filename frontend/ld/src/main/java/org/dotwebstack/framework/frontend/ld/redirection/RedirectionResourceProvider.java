@@ -57,4 +57,5 @@ public class RedirectionResourceProvider extends AbstractResourceProvider<Redire
 
     return builder.build();
   }
+
 }

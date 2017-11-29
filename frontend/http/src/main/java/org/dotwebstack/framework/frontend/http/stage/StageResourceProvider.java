@@ -32,6 +32,7 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.STAGE);
+
     return graphQuery;
   }
 
@@ -43,6 +44,7 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
 
     Stage.Builder builder = new Stage.Builder(identifier, siteResourceProvider.get(siteIRI));
     getObjectString(model, identifier, ELMO.BASE_PATH).ifPresent(builder::basePath);
+
     return builder.build();
   }
 

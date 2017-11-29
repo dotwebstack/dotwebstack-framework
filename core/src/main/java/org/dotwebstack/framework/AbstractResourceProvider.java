@@ -1,5 +1,6 @@
 package org.dotwebstack.framework;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -72,8 +73,10 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
     query.setDataset(simpleDataset);
 
+    Model model;
+
     try {
-      Model model = QueryResults.asModel(query.evaluate());
+      model = QueryResults.asModel(query.evaluate());
       model.subjects().forEach(identifier -> {
         R resource = createResource(model, (IRI) identifier);
         resources.put((IRI) identifier, resource);
@@ -84,18 +87,30 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     } finally {
       repositoryConnection.close();
     }
+
+    resources.forEach((key, resource) -> finalizeResource(model, resource));
   }
 
   protected abstract GraphQuery getQueryForResources(RepositoryConnection conn);
 
   protected abstract R createResource(Model model, IRI identifier);
 
+  protected void finalizeResource(Model model, R resource) {}
+
   protected Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
     return Models.objectString(model.filter(subject, predicate, null));
   }
 
+  protected Collection<String> getObjectStrings(Model model, IRI subject, IRI predicate) {
+    return Models.objectStrings(model.filter(subject, predicate, null));
+  }
+
   protected Optional<IRI> getObjectIRI(Model model, IRI subject, IRI predicate) {
     return Models.objectIRI(model.filter(subject, predicate, null));
+  }
+
+  protected Collection<IRI> getObjectIris(Model model, IRI subject, IRI predicate) {
+    return Models.objectIRIs(model.filter(subject, predicate, null));
   }
 
 }

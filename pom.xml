@@ -5,7 +5,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.0.10-SNAPSHOT</version>
+  <version>0.0.11-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -62,6 +62,11 @@
       <id>BertVrh</id>
       <name>Bert Verhelst</name>
       <email>b.verhelst@bitunified.nl</email>
+    </developer>
+    <developer>
+      <id>PhilippJuergensenOVSoftware</id>
+      <name>Philipp Jürgensen</name>
+      <email>philipp.juergensen@ovsoftware.com</email>
     </developer>
   </developers>
 
@@ -313,7 +318,7 @@
                         <limit>
                           <counter>INSTRUCTION</counter>
                           <value>COVEREDRATIO</value>
-                          <minimum>0.8</minimum>
+                          <minimum>0.6</minimum>
                         </limit>
                       </limits>
                       <excludes />
@@ -323,7 +328,7 @@
               </execution>
             </executions>
           </plugin>
-          
+
           <!-- temporarily disabled: plugin>
             <groupId>org.owasp</groupId>
             <artifactId>dependency-check-maven</artifactId>
@@ -339,7 +344,7 @@
               </execution>
             </executions>
           </plugin -->
-          
+
         </plugins>
       </build>
     </profile>

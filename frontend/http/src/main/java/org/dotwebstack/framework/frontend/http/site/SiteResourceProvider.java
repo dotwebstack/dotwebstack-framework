@@ -27,6 +27,7 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.SITE);
+
     return graphQuery;
   }
 

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
+import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
 import java.util.LinkedHashMap;
 import java.util.Set;
@@ -11,9 +12,9 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-abstract class LdPathSchemaMapper {
+public interface LdPathSchemaMapper {
 
-  Set<Resource> applySubjectFilterIfPossible(Property property,
+  default Set<Resource> applySubjectFilterIfPossible(Property property,
       GraphEntityContext graphEntityContext) {
     if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.SUBJECT_FILTER)) {
       LinkedHashMap subjectFilter = (LinkedHashMap) property.getVendorExtensions().get(
@@ -32,6 +33,6 @@ abstract class LdPathSchemaMapper {
 
       return filteredModel.subjects();
     }
-    return null;
+    return ImmutableSet.of();
   }
 }
