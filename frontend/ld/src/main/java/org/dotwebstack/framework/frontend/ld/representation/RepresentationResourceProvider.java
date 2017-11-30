@@ -59,6 +59,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(
         iri -> builder.appearance(appearanceResourceProvider.get(iri)));
     getObjectStrings(model, identifier, ELMO.URL_PATTERN).stream().forEach(builder::urlPattern);
+    getObjectStrings(model, identifier, ELMO.PARAMETER_MAPPER_PROP).stream().forEach(
+        builder::parameterMapper);
     getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));
 

@@ -19,6 +19,8 @@ public class Representation {
 
   private List<String> urlPatterns;
 
+  private List<String> parametersMappers;
+
   private Stage stage;
 
   private List<Representation> subRepresentations;
@@ -26,6 +28,7 @@ public class Representation {
   private Representation(Builder builder) {
     identifier = builder.identifier;
     urlPatterns = builder.urlPatterns;
+    parametersMappers = builder.parameterMappers;
     stage = builder.stage;
     informationProduct = builder.informationProduct;
     appearance = builder.appearance;
@@ -46,6 +49,10 @@ public class Representation {
 
   public Collection<String> getUrlPatterns() {
     return urlPatterns;
+  }
+
+  public List<String> getParametersMappers() {
+    return parametersMappers;
   }
 
   public Stage getStage() {
@@ -70,6 +77,8 @@ public class Representation {
 
     private List<String> urlPatterns = new ArrayList<>();
 
+    private List<String> parameterMappers = new ArrayList<>();
+
     private Stage stage;
 
     private List<Representation> subRepresentations = new ArrayList<>();
@@ -83,6 +92,7 @@ public class Representation {
       this.informationProduct = representation.informationProduct;
       this.appearance = representation.appearance;
       this.urlPatterns = representation.urlPatterns;
+      this.parameterMappers = representation.parametersMappers;
       this.stage = representation.stage;
       this.subRepresentations = representation.subRepresentations;
     }
@@ -104,6 +114,11 @@ public class Representation {
 
     public Builder urlPattern(String urlPattern) {
       this.urlPatterns.add(urlPattern);
+      return this;
+    }
+
+    public Builder parameterMapper(String parameterMapper) {
+      this.parameterMappers.add(parameterMapper);
       return this;
     }
 

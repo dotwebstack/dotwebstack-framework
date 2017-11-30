@@ -14,6 +14,7 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
+import org.dotwebstack.framework.frontend.ld.parameter.QueryParameterMapper;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -41,15 +42,14 @@ public class RepresentationRequestHandlerTest {
   @Mock
   private InformationProduct informationProduct;
 
-  private RepresentationRequestParameterMapper representationRequestParameterMapper;
+  private QueryParameterMapper queryParameterMapper;
 
   private RepresentationRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
-    representationRequestParameterMapper = new RepresentationRequestParameterMapper();
-    getRequestHandler =
-        new RepresentationRequestHandler(representation, representationRequestParameterMapper);
+    queryParameterMapper = new QueryParameterMapper();
+    getRequestHandler = new RepresentationRequestHandler(representation, queryParameterMapper);
   }
 
   @Test
@@ -58,7 +58,7 @@ public class RepresentationRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new RepresentationRequestHandler(null, representationRequestParameterMapper);
+    new RepresentationRequestHandler(null, queryParameterMapper);
   }
 
   @Test

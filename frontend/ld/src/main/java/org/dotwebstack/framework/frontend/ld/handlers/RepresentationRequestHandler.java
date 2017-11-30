@@ -8,6 +8,7 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
+import org.dotwebstack.framework.frontend.ld.parameter.QueryParameterMapper;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -22,16 +23,16 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
 
   private Representation representation;
 
-  private RepresentationRequestParameterMapper representationRequestParameterMapper;
+  private QueryParameterMapper queryParameterMapper;
 
   public RepresentationRequestHandler(@NonNull Representation representation,
-      @NonNull RepresentationRequestParameterMapper representationRequestParameterMapper) {
+      @NonNull QueryParameterMapper queryParameterMapper) {
     this.representation = representation;
-    this.representationRequestParameterMapper = representationRequestParameterMapper;
+    this.queryParameterMapper = queryParameterMapper;
   }
 
-  public RepresentationRequestParameterMapper getRepresentationRequestParameterMapper() {
-    return representationRequestParameterMapper;
+  public QueryParameterMapper getQueryParameterMapper() {
+    return queryParameterMapper;
   }
 
   @Override
@@ -42,7 +43,7 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
     InformationProduct informationProduct = representation.getInformationProduct();
 
     Map<String, Object> parameterValues =
-        representationRequestParameterMapper.map(informationProduct, containerRequestContext);
+        queryParameterMapper.map(representation, containerRequestContext);
 
     Object result = informationProduct.getResult(parameterValues);
 
