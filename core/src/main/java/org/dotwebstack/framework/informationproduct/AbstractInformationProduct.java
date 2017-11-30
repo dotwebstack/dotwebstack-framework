@@ -52,12 +52,5 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   }
 
   @Override
-  public Object getResult(@NonNull Map<String, String> parameterValues) {
-    parameters.forEach(p -> p.validate(parameterValues));
-
-    return getInnerResult(parameterValues);
-  }
-
-  protected abstract Object getInnerResult(@NonNull Map<String, String> parameterValues);
-
+  public abstract Object getResult(@NonNull Map<String, String> parameterValues);
 }

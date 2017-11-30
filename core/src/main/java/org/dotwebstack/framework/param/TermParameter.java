@@ -21,7 +21,7 @@ public class TermParameter extends AbstractParameter<String> implements Bindable
   }
 
   @Override
-  public String handle(Map<String, String> parameterValues) {
+  protected String handleInner(Map<String, String> parameterValues) {
     return getValue(parameterValues);
   }
 

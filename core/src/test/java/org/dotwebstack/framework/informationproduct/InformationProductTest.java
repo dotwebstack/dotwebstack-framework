@@ -64,7 +64,7 @@ public class InformationProductTest {
     }
 
     @Override
-    protected Object getInnerResult(Map<String, String> parameterValues) {
+    public Object getResult(Map<String, String> parameterValues) {
       return null;
     }
 

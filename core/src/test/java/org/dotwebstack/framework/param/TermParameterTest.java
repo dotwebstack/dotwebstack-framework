@@ -70,20 +70,20 @@ public class TermParameterTest {
             DBEERPEDIA.NAME_PARAMETER_ID));
 
     // Act
-    requiredParameter.validate(ImmutableMap.of());
+    requiredParameter.handle(ImmutableMap.of());
   }
 
   @Test
   public void validate_AcceptsNonNullValue_ForRequiredParameter() {
     // Act
-    requiredParameter.validate(
+    requiredParameter.handle(
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, DBEERPEDIA.BREWERY_DAVO_NAME));
   }
 
   @Test
   public void validate_AcceptsNullValue_ForOptionalParameter() {
     // Act
-    optionalParameter.validate(ImmutableMap.of());
+    optionalParameter.handle(ImmutableMap.of());
   }
 
   @Test
