@@ -18,8 +18,8 @@ public interface Parameter<T> {
    * 
    * @throws BackendException If a supplied value is invalid.
    */
-  void validate(@NonNull Map<String, Object> parameterValues);
+  void validate(@NonNull Map<String, String> parameterValues);
 
-  T handle(@NonNull Map<String, Object> parameterValues);
+  T handle(@NonNull Map<String, String> parameterValues);
 
 }

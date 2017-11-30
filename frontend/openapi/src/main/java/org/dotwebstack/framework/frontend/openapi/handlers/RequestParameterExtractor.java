@@ -63,7 +63,6 @@ final class RequestParameterExtractor {
    * }
    * </pre>
    */
-  @SuppressWarnings("unchecked")
   private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx,
       RequestParameters parameters, ObjectMapper mapper) throws IOException {
 
@@ -92,7 +91,7 @@ final class RequestParameterExtractor {
     // Object geoJsonObject = query.get(queryType);
     // Geometry geometry = extractGeometry(geoJsonObject, parameters);
     //
-    // builder.put(PARAM_GEOMETRY, null);
+    // builder.put(PARAM_GEOMETRY, geometry);
     // }
 
     return builder.build();

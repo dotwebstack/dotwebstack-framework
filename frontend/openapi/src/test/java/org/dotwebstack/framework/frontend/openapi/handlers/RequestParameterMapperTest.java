@@ -80,7 +80,7 @@ public class RequestParameterMapperTest {
     Operation operation = new Operation();
 
     // Act
-    Map<String, Object> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -97,7 +97,7 @@ public class RequestParameterMapperTest {
     operation.setParameters(ImmutableList.of(pathParameter));
 
     // Act
-    Map<String, Object> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -152,7 +152,7 @@ public class RequestParameterMapperTest {
     pathParameters.put(pathParameter2.getName(), ImmutableList.of("value2"));
 
     // Act
-    Map<String, Object> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.size(), is(2));
@@ -177,7 +177,7 @@ public class RequestParameterMapperTest {
     queryParameters.put(queryParameter.getName(), ImmutableList.of("value", "valueB"));
 
     // Act
-    Map<String, Object> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -201,7 +201,7 @@ public class RequestParameterMapperTest {
     headerParameters.put(headerParameter.getName(), ImmutableList.of("value", "valueB"));
 
     // Act
-    Map<String, Object> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.size(), is(1));

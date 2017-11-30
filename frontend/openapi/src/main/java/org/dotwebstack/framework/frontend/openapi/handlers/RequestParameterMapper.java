@@ -22,9 +22,9 @@ class RequestParameterMapper {
 
   private static ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-  Map<String, Object> map(@NonNull Operation operation, @NonNull InformationProduct product,
+  Map<String, String> map(@NonNull Operation operation, @NonNull InformationProduct product,
       @NonNull RequestParameters requestParameters) {
-    Map<String, Object> result = new HashMap<>();
+    Map<String, String> result = new HashMap<>();
 
     for (io.swagger.models.parameters.Parameter openApiParameter : operation.getParameters()) {
       Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();

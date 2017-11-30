@@ -21,8 +21,8 @@ public class TermParameter extends AbstractParameter<String> implements Bindable
   }
 
   @Override
-  public String handle(Map<String, Object> parameterValues) {
-    return (String) getValue(parameterValues);
+  public String handle(Map<String, String> parameterValues) {
+    return getValue(parameterValues);
   }
 
   @Override
@@ -30,29 +30,16 @@ public class TermParameter extends AbstractParameter<String> implements Bindable
     return SimpleValueFactory.getInstance().createLiteral(value);
   }
 
-  private Object getValue(Map<String, Object> parameterValues) {
+  private String getValue(Map<String, String> parameterValues) {
     return parameterValues.get(getName());
   }
 
   @Override
-  protected void validateRequired(Map<String, Object> parameterValues) {
+  protected void validateRequired(Map<String, String> parameterValues) {
     if (getValue(parameterValues) == null) {
       throw new BackendException(
           String.format("No value found for required parameter '%s'. Supplied parameterValues: %s",
               getIdentifier(), parameterValues));
-    }
-  }
-
-  /**
-   * @throws BackendException If the value is not a String.
-   */
-  @Override
-  protected void validateInner(Map<String, Object> parameterValues) {
-    Object value = getValue(parameterValues);
-
-    if (value != null && !(value instanceof String)) {
-      throw new BackendException(
-          String.format("Value for parameter '%s' not a String: '%s'", getIdentifier(), value));
     }
   }
 

@@ -57,7 +57,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
       RequestParameters requestParameters = apiRequestValidator.validate(apiOperation, context);
 
-      Map<String, Object> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
+      Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
           informationProduct, requestParameters);
 
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);

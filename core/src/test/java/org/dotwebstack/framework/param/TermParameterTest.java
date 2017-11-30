@@ -38,7 +38,7 @@ public class TermParameterTest {
   @Test
   public void handle_ReturnsValueForRequiredFilter() {
     // Arrange
-    Map<String, Object> parameterValues =
+    Map<String, String> parameterValues =
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
 
     // Act
@@ -51,7 +51,7 @@ public class TermParameterTest {
   @Test
   public void handle_ReturnsNullForOptionalFilter() {
     // Arrange
-    Map<String, Object> parameterValues =
+    Map<String, String> parameterValues =
         Collections.singletonMap(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, null);
 
     // Act
@@ -87,21 +87,9 @@ public class TermParameterTest {
   }
 
   @Test
-  public void validate_RejectsNonStringValue_ForTermParameter() {
-    // Assert
-    thrown.expect(BackendException.class);
-    thrown.expectMessage(
-        String.format("Value for parameter '%s' not a String:", DBEERPEDIA.NAME_PARAMETER_ID));
-
-    // Act
-    requiredParameter.validate(
-        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, new Object()));
-  }
-
-  @Test
   public void getValue_ReturnsLiteral_ForValue() {
     // Arrange
-    Map<String, Object> parameterValues =
+    Map<String, String> parameterValues =
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
 
     // Act
