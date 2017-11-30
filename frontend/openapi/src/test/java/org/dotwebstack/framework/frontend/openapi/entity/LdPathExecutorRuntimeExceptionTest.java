@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
 
+// XXX (PvH) Sonar pleasing?
 public class LdPathExecutorRuntimeExceptionTest {
 
   @Test

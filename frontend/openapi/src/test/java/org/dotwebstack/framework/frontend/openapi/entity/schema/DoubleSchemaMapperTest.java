@@ -17,12 +17,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+// XXX (PvH) Nette test, maar veel Sonar pleasing. Ik dacht dat we hadden afgesproken dit niet
+// (meer) te doen :-)
 @RunWith(MockitoJUnitRunner.class)
 public class DoubleSchemaMapperTest {
 
   @Mock
   private GraphEntityContext graphEntityContext;
 
+  // XXX (PvH) Qua volgorde zou ik public member voor privates zetten
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
@@ -42,7 +45,7 @@ public class DoubleSchemaMapperTest {
   }
 
   @Test
-  public void mapGraph_ThrowsException_WithUnspportedOperation() {
+  public void mapGraph_ThrowsException_WithUnsupportedOperation() {
     // Assert
     thrown.expect(UnsupportedOperationException.class);
 
@@ -106,6 +109,7 @@ public class DoubleSchemaMapperTest {
     assertThat(supported, equalTo(true));
   }
 
+  // XXX (PvH) supports_ReturnsFalse_ForNonDoubleSchema
   @Test
   public void supports_ReturnsTrue_ForNonDoubleSchema() {
     // Arrange & Act

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.junit.Test;
 
+// XXX (PvH) Sonar pleasing?
 public class Rdf4jBackendRuntimeExceptionTest {
   @Test
   public void testConstructorMessageException() {

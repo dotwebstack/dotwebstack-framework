@@ -29,6 +29,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+// XXX (PvH) Waarom houd je niet de .wsf naamgeving aan voor test methods?
+// XXX (PvH) We missen test coverage op AbstractRdf4jBackend, bewust?
 @RunWith(MockitoJUnitRunner.class)
 public class Rdf4jRepositoryBackendTest {
 
@@ -77,6 +79,8 @@ public class Rdf4jRepositoryBackendTest {
     assertThat(values.iterator().next().stringValue(), is("test"));
   }
 
+  // XXX (PvH) Waarom een protected method testen? Deze wil je toch indirect testen via een public
+  // method?
   @Test
   public void testCreateLiteral() throws Exception {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -117,6 +121,9 @@ public class Rdf4jRepositoryBackendTest {
 
   }
 
+  // XXX (PvH) Duplicate test method (tov testCreateLiteral) En hoe is deze gerelateerd aan
+  // testStringLiteral en testCreateLiteral.
+  // Aan de namen kan ik dit niet afleiden.
   @Test
   public void testcreateLiteral() throws Exception {
 
