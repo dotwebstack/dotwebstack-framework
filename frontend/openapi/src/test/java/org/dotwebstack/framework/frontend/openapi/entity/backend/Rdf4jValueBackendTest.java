@@ -21,6 +21,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+// XXX (PvH) Waarom houd je niet de .wsf naamgeving aan voor test methods?
+// XXX (PvH) We missen test coverage op Rdf4jValueBackend, bewust?
 @RunWith(MockitoJUnitRunner.class)
 public class Rdf4jValueBackendTest {
 
@@ -28,6 +30,8 @@ public class Rdf4jValueBackendTest {
   public ExpectedException expectedException = ExpectedException.none();
 
 
+  // XXX (PvH) Suggestie: hernoemen naar iets met Language
+  // XXX (PvH) Testen we de null case ook ergens?
   @Test
   public void testGetLiteralLocale() {
     Literal value = SimpleValueFactory.getInstance().createLiteral("value", "nl");
@@ -48,6 +52,8 @@ public class Rdf4jValueBackendTest {
         is(XMLSchema.STRING.stringValue()));
   }
 
+  // XXX (PvH) Test method name matched niet met wat je test, in ieder geval niet in relatie tot de
+  // vorige method (testGetLiteralType) waarbij je wel het type test
   @Test
   public void testGetDecimalType() {
     Literal value = SimpleValueFactory.getInstance().createLiteral(BigDecimal.ONE);
@@ -57,6 +63,7 @@ public class Rdf4jValueBackendTest {
     assertThat(backend.decimalValue(value).toString(), is("1"));
   }
 
+  // XXX (PvH) Duplicate method als je camelCase zou toepassen
   @Test
   public void testcreateLiteral() {
     URI uri = URI.create("http://www.test.nl");
@@ -68,8 +75,9 @@ public class Rdf4jValueBackendTest {
     assertThat(backend.createLiteral("test", Locale.CANADA, uri), is(value));
   }
 
+  // XXX (PvH) Test method name matched niet met wat je test
   @Test
-  public void testcreateLiteralLanguage() {
+  public void testCreateLiteralLanguage() {
     Literal value = SimpleValueFactory.getInstance().createLiteral("test", "en");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
@@ -78,7 +86,7 @@ public class Rdf4jValueBackendTest {
   }
 
   @Test
-  public void testcreateLiteralClassCast() {
+  public void testCreateLiteralClassCast() {
     expectedException.expect(IllegalArgumentException.class);
     BNode value = SimpleValueFactory.getInstance().createBNode("test");
 
