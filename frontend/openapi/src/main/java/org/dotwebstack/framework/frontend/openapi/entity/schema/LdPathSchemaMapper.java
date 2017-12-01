@@ -14,6 +14,8 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
+// TODO Should not be an interface, but a utility class. Or move the method the abstract class. Or
+// create a extenstion of the current abstract class.
 public interface LdPathSchemaMapper {
 
   /**
