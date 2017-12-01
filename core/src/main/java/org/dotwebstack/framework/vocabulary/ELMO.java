@@ -65,6 +65,14 @@ public final class ELMO {
 
   public static final IRI NAME_PROP;
 
+  public static final IRI SOURCE_PROP;
+
+  public static final IRI PATTERN_PROP;
+
+  public static final IRI TEMPLATE_PROP;
+
+  public static final IRI TARGET_PROP;
+
   public static final IRI RESULT_TYPE;
 
   public static final IRI RESULT_TYPE_DEFAULT;
@@ -125,6 +133,11 @@ public final class ELMO {
     NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
     APPEARANCE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "appearance");
     CONTAINS_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "contains");
+
+    SOURCE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "source");
+    PATTERN_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "pattern");
+    TEMPLATE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "template");
+    TARGET_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "target");
   }
 
   private ELMO() {

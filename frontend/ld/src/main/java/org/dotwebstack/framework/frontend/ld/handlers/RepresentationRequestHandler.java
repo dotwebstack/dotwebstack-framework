@@ -8,7 +8,6 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
-import org.dotwebstack.framework.frontend.ld.parameter.QueryParameterMapper;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -23,16 +22,16 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
 
   private Representation representation;
 
-  private QueryParameterMapper queryParameterMapper;
+  private RepresentationRequestParameterMapper representationRequestParameterMapper;
 
   public RepresentationRequestHandler(@NonNull Representation representation,
-      @NonNull QueryParameterMapper queryParameterMapper) {
+      @NonNull RepresentationRequestParameterMapper representationRequestParameterMapper) {
     this.representation = representation;
-    this.queryParameterMapper = queryParameterMapper;
+    this.representationRequestParameterMapper = representationRequestParameterMapper;
   }
 
-  public QueryParameterMapper getQueryParameterMapper() {
-    return queryParameterMapper;
+  public RepresentationRequestParameterMapper getRepresentationRequestParameterMapper() {
+    return representationRequestParameterMapper;
   }
 
   @Override
@@ -43,7 +42,10 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
     InformationProduct informationProduct = representation.getInformationProduct();
 
     Map<String, Object> parameterValues =
-        queryParameterMapper.map(representation, containerRequestContext);
+        representationRequestParameterMapper.map(informationProduct, containerRequestContext);
+
+    representation.getParametersMappers().forEach(
+        parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
 
     Object result = informationProduct.getResult(parameterValues);
 

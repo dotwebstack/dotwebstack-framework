@@ -12,8 +12,7 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UriParameterMapperResourceProvider
-    extends AbstractResourceProvider<UriParameterMapper> {
+public class UriParameterMapperResourceProvider extends AbstractResourceProvider<ParameterMapper> {
 
   public UriParameterMapperResourceProvider(ConfigurationBackend configurationBackend,
       ApplicationProperties applicationProperties) {
@@ -33,8 +32,8 @@ public class UriParameterMapperResourceProvider
   }
 
   @Override
-  protected UriParameterMapper createResource(Model model, IRI identifier) {
-    final UriParameterMapper.Builder builder = UriParameterMapper.Builder.anUriParameterMapper();
+  protected ParameterMapper createResource(Model model, IRI identifier) {
+    final ParameterMapper.Builder builder = ParameterMapper.Builder.anUriParameterMapper();
 
     builder.identifier(identifier);
 

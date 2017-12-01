@@ -4,13 +4,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 
 public class RequestURIParameterSource implements ParameterSource {
 
-  private ContainerRequestContext containerRequestContext;
-
-  public RequestURIParameterSource(ContainerRequestContext containerRequestContext) {
-    this.containerRequestContext = containerRequestContext;
-  }
-
-  public String getValue() {
+  public String getValue(ContainerRequestContext containerRequestContext) {
     return containerRequestContext.getUriInfo().getAbsolutePath().getRawPath();
   }
 }
