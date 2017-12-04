@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
+import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -8,6 +9,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.openapi.entity.Entity;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -27,17 +30,20 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private final RequestParameterMapper requestParameterMapper;
 
+  private final Swagger swagger;
+
   private final ApiRequestValidator apiRequestValidator;
 
   GetRequestHandler(@NonNull ApiOperation apiOperation,
       @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
       @NonNull RequestParameterMapper requestParameterMapper,
-      @NonNull ApiRequestValidator apiRequestValidator) {
+      @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;
     this.informationProduct = informationProduct;
     this.schemaMap = schemaMap;
     this.requestParameterMapper = requestParameterMapper;
+    this.swagger = swagger;
   }
 
   public InformationProduct getInformationProduct() {
@@ -53,17 +59,32 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     String path = context.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
+    RequestParameters requestParameters = apiRequestValidator.validate(apiOperation, context);
+
+    Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
+        informationProduct, requestParameters);
+
+    Response responseOk = null;
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
 
-      RequestParameters requestParameters = apiRequestValidator.validate(apiOperation, context);
 
-      Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
-          informationProduct, requestParameters);
 
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
-      TupleEntity entity = new TupleEntity(schemaMap, result);
+      TupleEntity entity =
+          TupleEntity.builder().withQueryResult(result).withSchemaMap(schemaMap).build();
 
-      return Response.ok(entity).build();
+      responseOk = responseOk(entity);
+    }
+    if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
+      org.eclipse.rdf4j.query.GraphQueryResult result =
+          (org.eclipse.rdf4j.query.GraphQueryResult) informationProduct.getResult(parameterValues);
+      GraphEntity entity =
+          (GraphEntity) GraphEntity.builder().withSchemaProperty(schemaMap).withQueryResult(
+              result).withApiDefinitions(swagger).withLdPathNamespaces(swagger).build();
+      responseOk = responseOk(entity);
+    }
+    if (responseOk != null) {
+      return responseOk;
     } else {
       LOG.error("Result type {} not supported for information product {}",
           informationProduct.getResultType(), informationProduct.getIdentifier());
@@ -72,5 +93,11 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     return Response.serverError().build();
   }
 
+  private Response responseOk(Entity entity) {
+    if (entity != null) {
+      return Response.ok(entity).build();
+    }
+    return null;
+  }
 }
 

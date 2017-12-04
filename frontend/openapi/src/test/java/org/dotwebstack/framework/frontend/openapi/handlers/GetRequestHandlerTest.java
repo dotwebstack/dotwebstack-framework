@@ -37,10 +37,10 @@ public class GetRequestHandlerTest {
   private ApiOperation operationMock;
 
   @Mock
-  private InformationProduct informationProduct;
+  private InformationProduct informationProductMock;
 
   @Mock
-  private ContainerRequestContext containerRequestContext;
+  private ContainerRequestContext containerRequestContextMock;
 
   @Mock
   private ApiRequestValidator apiRequestValidatorMock;
@@ -50,10 +50,13 @@ public class GetRequestHandlerTest {
 
   private GetRequestHandler getRequestHandler;
 
+  @Mock
+  private Swagger swaggerMock;
+
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(operationMock, informationProduct, ImmutableMap.of(),
-        requestParameterMapperMock, apiRequestValidatorMock);
+    getRequestHandler = new GetRequestHandler(operationMock, informationProductMock, ImmutableMap.of(),
+        requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
   }
 
   @Test
@@ -63,7 +66,7 @@ public class GetRequestHandlerTest {
 
     // Act
     new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock,
-        apiRequestValidatorMock);
+        apiRequestValidatorMock, swaggerMock);
   }
 
   @Test
@@ -72,8 +75,8 @@ public class GetRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new GetRequestHandler(operationMock, informationProduct, null, requestParameterMapperMock,
-        apiRequestValidatorMock);
+    new GetRequestHandler(operationMock, informationProductMock, null, requestParameterMapperMock,
+        apiRequestValidatorMock, swaggerMock);
   }
 
   @Test
@@ -90,14 +93,14 @@ public class GetRequestHandlerTest {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
     final Map<String, Property> schemaMap = ImmutableMap.of();
-    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(result);
-    when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
+    when(informationProductMock.getResult(ImmutableMap.of())).thenReturn(result);
+    when(informationProductMock.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContext);
+    Response response = getRequestHandler.apply(containerRequestContextMock);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -110,15 +113,32 @@ public class GetRequestHandlerTest {
   public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForGraphResult() {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);
-    when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
+    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
+    GraphQueryResult result = mock(GraphQueryResult.class);
+    when(informationProductMock.getResult(ImmutableMap.of())).thenReturn(result);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContext);
+    Response response = getRequestHandler.apply(containerRequestContextMock);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    assertThat(response.getEntity(), instanceOf(GraphEntity.class));
+
+  }
+
+  @Test
+  public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForOtherResult() {
+    // Arrange
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(uriInfo.getPath()).thenReturn("/");
+    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+
+    // Act
+    Response response = getRequestHandler.apply(containerRequestContextMock);
+
+    // Assert
+    assertThat(response.getStatus(),
+        equalTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
     assertThat(response.getEntity(), nullValue());
   }
 

@@ -33,7 +33,7 @@ public class HttpConfigurationTest {
   @Before
   public void setUp() throws IOException {
     target = ClientBuilder.newClient(httpConfiguration).target(
-        String.format("http://localhost:%d", this.port));
+        String.format("http://localhost:%d", port));
   }
 
   @Test

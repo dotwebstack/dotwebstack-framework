@@ -20,7 +20,17 @@ class RequestParameterMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestParameterMapper.class);
 
-  private static ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+
+  private static Parameter<?> getParameter(InformationProduct product, IRI iri) {
+    for (Parameter<?> parameter : product.getParameters()) {
+      if (parameter.getIdentifier().equals(iri)) {
+        return parameter;
+      }
+    }
+
+    return null;
+  }
 
   Map<String, String> map(@NonNull Operation operation, @NonNull InformationProduct product,
       @NonNull RequestParameters requestParameters) {
@@ -39,7 +49,7 @@ class RequestParameterMapper {
         continue;
       }
 
-      IRI parameterId = valueFactory.createIRI((String) parameterIdString);
+      IRI parameterId = VALUE_FACTORY.createIRI((String) parameterIdString);
       Parameter<?> parameter = getParameter(product, parameterId);
 
       if (parameter == null) {
@@ -53,16 +63,6 @@ class RequestParameterMapper {
     }
 
     return result;
-  }
-
-  private static Parameter<?> getParameter(InformationProduct product, IRI iri) {
-    for (Parameter<?> parameter : product.getParameters()) {
-      if (parameter.getIdentifier().equals(iri)) {
-        return parameter;
-      }
-    }
-
-    return null;
   }
 
 }

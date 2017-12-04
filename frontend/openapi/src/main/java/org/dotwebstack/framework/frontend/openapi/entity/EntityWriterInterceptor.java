@@ -8,10 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public final class EntityWriterInterceptor implements WriterInterceptor {
 
-  private TupleEntityMapper tupleEntityMapper;
+  private final TupleEntityMapper tupleEntityMapper;
+
+  private final GraphEntityMapper graphEntityMapper;
 
   @Autowired
-  public EntityWriterInterceptor(@NonNull TupleEntityMapper tupleEntityMapper) {
+  public EntityWriterInterceptor(@NonNull GraphEntityMapper graphEntityMapper,
+      @NonNull TupleEntityMapper tupleEntityMapper) {
+    this.graphEntityMapper = graphEntityMapper;
     this.tupleEntityMapper = tupleEntityMapper;
   }
 
@@ -20,6 +24,11 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
     if (context.getEntity() instanceof TupleEntity) {
       TupleEntity entity = (TupleEntity) context.getEntity();
       Object mappedEntity = tupleEntityMapper.map(entity, context.getMediaType());
+      context.setEntity(mappedEntity);
+    }
+    if (context.getEntity() instanceof GraphEntity) {
+      GraphEntity entity = (GraphEntity) context.getEntity();
+      Object mappedEntity = graphEntityMapper.map(entity, context.getMediaType());
       context.setEntity(mappedEntity);
     }
 

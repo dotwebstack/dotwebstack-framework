@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
-import com.google.common.collect.ImmutableList;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.NonNull;
@@ -22,12 +21,15 @@ public class Representation {
 
   private Stage stage;
 
+  private List<Representation> subRepresentations;
+
   private Representation(Builder builder) {
     identifier = builder.identifier;
     urlPatterns = builder.urlPatterns;
     stage = builder.stage;
     informationProduct = builder.informationProduct;
     appearance = builder.appearance;
+    subRepresentations = builder.subRepresentations;
   }
 
   public IRI getIdentifier() {
@@ -50,6 +52,14 @@ public class Representation {
     return stage;
   }
 
+  public List<Representation> getSubRepresentations() {
+    return subRepresentations;
+  }
+
+  public void addSubRepresentation(@NonNull Representation subRepresentation) {
+    this.subRepresentations.add(subRepresentation);
+  }
+
   public static class Builder {
 
     private IRI identifier;
@@ -58,12 +68,23 @@ public class Representation {
 
     private Appearance appearance;
 
-    private List<String> urlPatterns = ImmutableList.of();
+    private List<String> urlPatterns = new ArrayList<>();
 
     private Stage stage;
 
+    private List<Representation> subRepresentations = new ArrayList<>();
+
     public Builder(@NonNull IRI identifier) {
       this.identifier = identifier;
+    }
+
+    public Builder(@NonNull Representation representation) {
+      this.identifier = representation.identifier;
+      this.informationProduct = representation.informationProduct;
+      this.appearance = representation.appearance;
+      this.urlPatterns = representation.urlPatterns;
+      this.stage = representation.stage;
+      this.subRepresentations = representation.subRepresentations;
     }
 
     public Builder informationProduct(InformationProduct informationProduct) {
@@ -81,8 +102,13 @@ public class Representation {
       return this;
     }
 
-    public Builder urlPatterns(String... urlPatterns) {
-      this.urlPatterns = Arrays.asList(urlPatterns);
+    public Builder urlPattern(String urlPattern) {
+      this.urlPatterns.add(urlPattern);
+      return this;
+    }
+
+    public Builder subRepresentation(Representation subRespresentation) {
+      this.subRepresentations.add(subRespresentation);
       return this;
     }
 

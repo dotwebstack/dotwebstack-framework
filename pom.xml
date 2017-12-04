@@ -5,7 +5,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.0.10-SNAPSHOT</version>
+  <version>0.0.11-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -58,6 +58,16 @@
       <name>Rick Fleuren</name>
       <email>dotwebstack@rickfleuren.nl</email>
     </developer>
+    <developer>
+      <id>BertVrh</id>
+      <name>Bert Verhelst</name>
+      <email>b.verhelst@bitunified.nl</email>
+    </developer>
+    <developer>
+      <id>PhilippJuergensenOVSoftware</id>
+      <name>Philipp Jürgensen</name>
+      <email>philipp.juergensen@ovsoftware.com</email>
+    </developer>
   </developers>
 
   <properties>
@@ -66,9 +76,9 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <spring.boot.version>1.5.4.RELEASE</spring.boot.version>
-    <rdf4j.version>2.2.2</rdf4j.version>
+    <rdf4j.version>2.2.4</rdf4j.version>
     <slf4j.version>1.7.25</slf4j.version>
-    <mockito.version>2.8.47</mockito.version>
+    <mockito.version>2.12.0</mockito.version>
   </properties>
 
 
@@ -308,12 +318,7 @@
                         <limit>
                           <counter>INSTRUCTION</counter>
                           <value>COVEREDRATIO</value>
-                          <minimum>0.8</minimum>
-                        </limit>
-                        <limit>
-                          <counter>CLASS</counter>
-                          <value>MISSEDCOUNT</value>
-                          <maximum>0</maximum>
+                          <minimum>0.6</minimum>
                         </limit>
                       </limits>
                       <excludes />
@@ -323,7 +328,7 @@
               </execution>
             </executions>
           </plugin>
-          
+
           <!-- temporarily disabled: plugin>
             <groupId>org.owasp</groupId>
             <artifactId>dependency-check-maven</artifactId>
@@ -339,7 +344,7 @@
               </execution>
             </executions>
           </plugin -->
-          
+
         </plugins>
       </build>
     </profile>

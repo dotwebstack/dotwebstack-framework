@@ -46,6 +46,7 @@ public class InformationProductResourceProvider
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.INFORMATION_PRODUCT);
+
     return graphQuery;
   }
 
@@ -82,5 +83,4 @@ public class InformationProductResourceProvider
 
     return backend.createInformationProduct(identifier, label, builder.build(), statements);
   }
-
 }

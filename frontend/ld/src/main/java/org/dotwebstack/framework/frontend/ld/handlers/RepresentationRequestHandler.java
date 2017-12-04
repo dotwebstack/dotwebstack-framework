@@ -1,12 +1,15 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
@@ -19,8 +22,16 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
 
   private Representation representation;
 
-  public RepresentationRequestHandler(@NonNull Representation representation) {
+  private RepresentationRequestParameterMapper representationRequestParameterMapper;
+
+  public RepresentationRequestHandler(@NonNull Representation representation,
+      @NonNull RepresentationRequestParameterMapper representationRequestParameterMapper) {
     this.representation = representation;
+    this.representationRequestParameterMapper = representationRequestParameterMapper;
+  }
+
+  public RepresentationRequestParameterMapper getRepresentationRequestParameterMapper() {
+    return representationRequestParameterMapper;
   }
 
   @Override
@@ -28,14 +39,23 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
     String path = containerRequestContext.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
-    Object result = representation.getInformationProduct().getResult(ImmutableMap.of());
-    if (result instanceof GraphQueryResult) {
+    InformationProduct informationProduct = representation.getInformationProduct();
+
+    Map<String, Object> parameterValues =
+        representationRequestParameterMapper.map(informationProduct, containerRequestContext);
+
+    Object result = informationProduct.getResult(parameterValues);
+
+    if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
       return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
     }
-    if (result instanceof TupleQueryResult) {
+    if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
       return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
     }
-    throw new IllegalStateException("Received a query result that was not supported: " + result);
+
+    throw new ConfigurationException(
+        String.format("Result type %s not supported for information product %s",
+            informationProduct.getResultType(), informationProduct.getIdentifier()));
   }
 
 }
