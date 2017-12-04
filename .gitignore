@@ -5,5 +5,8 @@
 .idea
 .project
 .settings
-target
+/target
+/*/target
+/*/*/target
+/*/*/*/target
 *.iml
