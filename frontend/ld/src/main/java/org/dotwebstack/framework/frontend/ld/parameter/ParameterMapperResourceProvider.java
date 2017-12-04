@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.ld.parameter;
 
-import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -22,7 +21,6 @@ public class ParameterMapperResourceProvider extends AbstractResourceProvider<Pa
 
   @Autowired
   public ParameterMapperResourceProvider(ConfigurationBackend configurationBackend,
-      @NonNull List<ParameterMapper> parameterMappers,
       @NonNull ParameterMapperFactory parameterMapperFactory,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
@@ -33,7 +31,7 @@ public class ParameterMapperResourceProvider extends AbstractResourceProvider<Pa
   protected GraphQuery getQueryForResources(RepositoryConnection conn) {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o. ?rep ?parametermapper ?s. }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
-    graphQuery.setBinding("backend", ELMO.PARAMETER_MAPPER_PROP);
+    graphQuery.setBinding("parametermapper", ELMO.PARAMETER_MAPPER_PROP);
 
     return graphQuery;
   }

@@ -13,7 +13,6 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.frontend.ld.parameter.QueryParameterMapper;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
@@ -29,7 +28,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class QueryParameterMapperTest {
+public class RepresentationRequestParameterMapperTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -49,7 +48,7 @@ public class QueryParameterMapperTest {
 
   private Parameter<?> optionalParameter;
 
-  private QueryParameterMapper queryParameterMapper;
+  private RepresentationRequestParameterMapper representationRequestParameterMapper;
 
   @Before
   public void setUp() {
@@ -65,7 +64,7 @@ public class QueryParameterMapperTest {
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
         ImmutableList.of(requiredParameter, optionalParameter), templateProcessorMock);
 
-    queryParameterMapper = new QueryParameterMapper();
+    representationRequestParameterMapper = new RepresentationRequestParameterMapper();
 
     uriInfoMock = mock(UriInfo.class);
     when(contextMock.getUriInfo()).thenReturn(uriInfoMock);
@@ -80,7 +79,7 @@ public class QueryParameterMapperTest {
         ResultType.GRAPH, ImmutableList.of(), templateProcessorMock);
 
     // Act
-    Map<String, Object> result = queryParameterMapper.map(product, contextMock);
+    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -97,7 +96,7 @@ public class QueryParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = queryParameterMapper.map(product, contextMock);
+    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -111,7 +110,7 @@ public class QueryParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = queryParameterMapper.map(product, contextMock);
+    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(0));
@@ -128,7 +127,7 @@ public class QueryParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = queryParameterMapper.map(product, contextMock);
+    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -143,7 +142,7 @@ public class QueryParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = queryParameterMapper.map(product, contextMock);
+    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(0));
@@ -161,7 +160,7 @@ public class QueryParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = queryParameterMapper.map(product, contextMock);
+    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(2));

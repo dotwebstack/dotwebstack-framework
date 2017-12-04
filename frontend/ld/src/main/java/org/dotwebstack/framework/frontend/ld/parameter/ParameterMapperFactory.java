@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.ld.parameter;
 
-import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.parameter.source.ParameterSourceFactory;
@@ -9,20 +8,19 @@ import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ParameterMapperFactory {
 
-  private List<ParameterMapper> parameterMappers;
-
   private ParameterSourceFactory parameterSourceFactory;
 
   private TargetFactory parameterTargetFactory;
 
-  public ParameterMapperFactory(List<ParameterMapper> parameterMappers,
-      ParameterSourceFactory parameterSourceFactory, TargetFactory parameterTargetFactory) {
-    this.parameterMappers = parameterMappers;
+  @Autowired
+  public ParameterMapperFactory(ParameterSourceFactory parameterSourceFactory,
+      TargetFactory parameterTargetFactory) {
     this.parameterSourceFactory = parameterSourceFactory;
     this.parameterTargetFactory = parameterTargetFactory;
   }

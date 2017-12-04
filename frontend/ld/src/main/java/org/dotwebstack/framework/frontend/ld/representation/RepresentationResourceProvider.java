@@ -6,7 +6,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvider;
-import org.dotwebstack.framework.frontend.ld.parameter.UriParameterMapperResourceProvider;
+import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -29,20 +29,20 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   private final StageResourceProvider stageResourceProvider;
 
-  private final UriParameterMapperResourceProvider uriParameterMapperResourceProvider;
+  private final ParameterMapperResourceProvider parameterMapperResourceProvider;
 
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull InformationProductResourceProvider informationProductResourceProvider,
       @NonNull AppearanceResourceProvider appearanceResourceProvider,
       @NonNull StageResourceProvider stageResourceProvider,
-      @NonNull UriParameterMapperResourceProvider uriParameterMapperResourceProvider,
+      @NonNull ParameterMapperResourceProvider parameterMapperResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.informationProductResourceProvider = informationProductResourceProvider;
     this.appearanceResourceProvider = appearanceResourceProvider;
     this.stageResourceProvider = stageResourceProvider;
-    this.uriParameterMapperResourceProvider = uriParameterMapperResourceProvider;
+    this.parameterMapperResourceProvider = parameterMapperResourceProvider;
   }
 
   @Override
@@ -65,7 +65,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
         iri -> builder.appearance(appearanceResourceProvider.get(iri)));
     getObjectStrings(model, identifier, ELMO.URL_PATTERN).stream().forEach(builder::urlPattern);
     getObjectIris(model, identifier, ELMO.PARAMETER_MAPPER_PROP).stream().forEach(
-        iri -> builder.parameterMapper(uriParameterMapperResourceProvider.get(iri)));
+        iri -> builder.parameterMapper(parameterMapperResourceProvider.get(iri)));
     getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));
 

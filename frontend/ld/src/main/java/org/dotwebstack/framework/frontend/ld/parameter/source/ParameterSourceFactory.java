@@ -11,7 +11,7 @@ public class ParameterSourceFactory {
 
   public ParameterSource getParameterSource(IRI iri) {
     if (iri.equals(RequestIRI)) {
-      return new RequestURIParameterSource();
+      return new RequestUriParameterSource();
     }
 
     throw new ConfigurationException(String.format("Parameter source %s is not supported", iri));

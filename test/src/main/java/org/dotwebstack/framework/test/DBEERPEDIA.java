@@ -93,6 +93,8 @@ public final class DBEERPEDIA {
 
   public static final IRI ID2DOC_REDIRECTION;
 
+  public static final IRI SUBJECT_FROM_URL;
+
   public static final Literal ID2DOC_URL_PATTERN;
 
   public static final Literal ID2DOC_TARGET_URL;
@@ -222,7 +224,10 @@ public final class DBEERPEDIA {
 
     ID2DOC_TARGET_URL = valueFactory.createLiteral("\\/doc\\/$1");
 
+    SUBJECT_FROM_URL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SubjectFromUrl");
+
     BREWERY_APPEARANCE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryAppearance");
+
     CUSTOM_APPEARANCE_PROP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "customAppearanceProp");
 
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");

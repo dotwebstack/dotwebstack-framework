@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 
-import org.dotwebstack.framework.frontend.ld.parameter.QueryParameterMapper;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,12 +19,12 @@ public class RepresentationRequestHandlerFactoryTest {
   Representation representation;
 
   @Mock
-  QueryParameterMapper queryParameterMapper;
+  RepresentationRequestParameterMapper representationRequestParameterMapper;
 
   @Before
   public void setUp() {
     representationRequestHandlerFactory =
-        new RepresentationRequestHandlerFactory(queryParameterMapper);
+        new RepresentationRequestHandlerFactory(representationRequestParameterMapper);
   }
 
   @Test
@@ -37,8 +36,8 @@ public class RepresentationRequestHandlerFactoryTest {
         representationRequestHandlerFactory.newRepresentationRequestHandler(representation);
 
     // Assert
-    assertThat(representationRequestHandler.getQueryParameterMapper(),
-        sameInstance(queryParameterMapper));
+    assertThat(representationRequestHandler.getRepresentationRequestParameterMapper(),
+        sameInstance(representationRequestParameterMapper));
   }
 
 }

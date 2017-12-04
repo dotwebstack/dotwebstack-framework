@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -19,6 +20,8 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
 import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvider;
+import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
+import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -58,6 +61,12 @@ public class RepresentationResourceProviderTest {
   private StageResourceProvider stageResourceProvider;
 
   @Mock
+  private RepresentationResourceProvider representationResourceProvider;
+
+  @Mock
+  private ParameterMapperResourceProvider parameterMapperResourceProvider;
+
+  @Mock
   private InformationProduct informationProduct;
 
   @Mock
@@ -65,6 +74,9 @@ public class RepresentationResourceProviderTest {
 
   @Mock
   private Appearance appearance;
+
+  @Mock
+  private ParameterMapper parameterMapper;
 
   @Mock
   private ConfigurationBackend configurationBackend;
@@ -80,13 +92,11 @@ public class RepresentationResourceProviderTest {
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-  private RepresentationResourceProvider representationResourceProvider;
-
   @Before
   public void setUp() {
-    representationResourceProvider =
-        new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-            appearanceResourceProvider, stageResourceProvider, applicationProperties);
+    representationResourceProvider = new RepresentationResourceProvider(configurationBackend,
+        informationProductResourceProvider, appearanceResourceProvider, stageResourceProvider,
+        parameterMapperResourceProvider, applicationProperties);
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
@@ -94,6 +104,7 @@ public class RepresentationResourceProviderTest {
     when(informationProductResourceProvider.get(any())).thenReturn(informationProduct);
     when(stageResourceProvider.get(any())).thenReturn(stage);
     when(appearanceResourceProvider.get(any())).thenReturn(appearance);
+    when(parameterMapperResourceProvider.get(any())).thenReturn(parameterMapper);
 
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
@@ -105,7 +116,8 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(null, informationProductResourceProvider,
-        appearanceResourceProvider, stageResourceProvider, applicationProperties);
+        appearanceResourceProvider, stageResourceProvider, parameterMapperResourceProvider,
+        applicationProperties);
   }
 
   @Test
@@ -114,7 +126,7 @@ public class RepresentationResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new RepresentationResourceProvider(configurationBackend, null, null, null,
+    new RepresentationResourceProvider(configurationBackend, null, null, null, null,
         applicationProperties);
   }
 
@@ -125,7 +137,7 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        null, stageResourceProvider, applicationProperties);
+        null, stageResourceProvider, parameterMapperResourceProvider, applicationProperties);
   }
 
   @Test
@@ -135,7 +147,7 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        appearanceResourceProvider, null, applicationProperties);
+        appearanceResourceProvider, null, parameterMapperResourceProvider, applicationProperties);
   }
 
   @Test
@@ -145,7 +157,7 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        appearanceResourceProvider, stageResourceProvider, null);
+        appearanceResourceProvider, stageResourceProvider, parameterMapperResourceProvider, null);
   }
 
   @Test
@@ -162,7 +174,9 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
-                ELMO.APPEARANCE_PROP, DBEERPEDIA.BREWERY_APPEARANCE))));
+                ELMO.APPEARANCE_PROP, DBEERPEDIA.BREWERY_APPEARANCE),
+            valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
+                ELMO.PARAMETER_MAPPER_PROP, DBEERPEDIA.SUBJECT_FROM_URL))));
 
     // Act
     representationResourceProvider.loadResources();
@@ -177,6 +191,7 @@ public class RepresentationResourceProviderTest {
         equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
     assertThat(representation.getStage(), equalTo(stage));
     assertThat(representation.getAppearance(), equalTo(appearance));
+    assertThat(representation.getParametersMappers(), contains(parameterMapper));
   }
 
   @Test

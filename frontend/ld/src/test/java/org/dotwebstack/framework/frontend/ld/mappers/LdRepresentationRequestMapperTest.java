@@ -20,7 +20,7 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
-import org.dotwebstack.framework.frontend.ld.parameter.QueryParameterMapper;
+import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestParameterMapper;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -64,7 +64,7 @@ public class LdRepresentationRequestMapperTest {
   private LdRepresentationRequestMapper ldRepresentationRequestMapper;
 
   @Mock
-  private QueryParameterMapper queryParameterMapper;
+  private RepresentationRequestParameterMapper representationRequestParameterMapper;
 
   private RepresentationRequestHandler representationRequestHandler;
 
@@ -88,7 +88,7 @@ public class LdRepresentationRequestMapperTest {
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
     representationRequestHandler =
-        new RepresentationRequestHandler(representation, queryParameterMapper);
+        new RepresentationRequestHandler(representation, representationRequestParameterMapper);
     ldRepresentationRequestMapper =
         new LdRepresentationRequestMapper(representationResourceProvider,
             supportedMediaTypesScanner, representationRequestHandlerFactory);
