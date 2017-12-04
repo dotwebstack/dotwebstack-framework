@@ -61,6 +61,8 @@ public class TermParameterTest {
     assertThat(result, nullValue());
   }
 
+  // XXX (PvH) Vergeet niet de test method name aan te passen (geldt ook voor overige validate
+  // methods)
   @Test
   public void validate_RejectsNullValue_ForRequiredParameter() {
     // Assert

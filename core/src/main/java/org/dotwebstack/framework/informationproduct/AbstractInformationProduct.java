@@ -51,6 +51,7 @@ public abstract class AbstractInformationProduct implements InformationProduct {
     return parameters;
   }
 
+  // XXX (PvH) Waarom bestaat deze method nog?
   @Override
   public abstract Object getResult(@NonNull Map<String, String> parameterValues);
 }
