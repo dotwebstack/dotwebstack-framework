@@ -9,10 +9,15 @@ GRAPH dbeerpedia:Theatre {
     elmo:name "id";
   .
 
+  dbeerpedia:FteParam a elmo:TermFilter;
+    elmo:name "fte";
+  .
+
   dbeerpedia:TupleBreweries a elmo:InformationProduct;
     rdfs:label "Beer breweries in The Netherlands";
     elmo:backend dbeerpedia:Backend;
     elmo:resultType elmo-resulttype:Tuple;
+    elmo:optionalParameter dbeerpedia:FteParam;
     elmo:query "SELECT ?name WHERE { ?s rdfs:label ?name . ?s a <http://dbeerpedia.org#Brewery> }";
   .
   

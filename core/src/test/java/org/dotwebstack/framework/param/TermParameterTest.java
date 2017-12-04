@@ -61,10 +61,8 @@ public class TermParameterTest {
     assertThat(result, nullValue());
   }
 
-  // XXX (PvH) Vergeet niet de test method name aan te passen (geldt ook voor overige validate
-  // methods)
   @Test
-  public void validate_RejectsNullValue_ForRequiredParameter() {
+  public void handle_RejectsNullValue_ForRequiredParameter() {
     // Assert
     thrown.expect(BackendException.class);
     thrown.expectMessage(
@@ -76,14 +74,14 @@ public class TermParameterTest {
   }
 
   @Test
-  public void validate_AcceptsNonNullValue_ForRequiredParameter() {
+  public void handle_AcceptsNonNullValue_ForRequiredParameter() {
     // Act
     requiredParameter.handle(
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, DBEERPEDIA.BREWERY_DAVO_NAME));
   }
 
   @Test
-  public void validate_AcceptsNullValue_ForOptionalParameter() {
+  public void handle_AcceptsNullValue_ForOptionalParameter() {
     // Act
     optionalParameter.handle(ImmutableMap.of());
   }

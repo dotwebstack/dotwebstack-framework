@@ -2,7 +2,6 @@ package org.dotwebstack.framework.informationproduct;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
-import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
@@ -50,8 +49,4 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   public Collection<Parameter> getParameters() {
     return parameters;
   }
-
-  // XXX (PvH) Waarom bestaat deze method nog?
-  @Override
-  public abstract Object getResult(@NonNull Map<String, String> parameterValues);
 }

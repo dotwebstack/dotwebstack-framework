@@ -46,7 +46,6 @@ public class OpenApiIntegrationTest {
     SparqlHttpStub.start();
   }
 
-  // @Ignore
   @Test
   public void get_GetBreweryCollection_ThroughOpenApi() throws JSONException {
     // Arrange
@@ -83,7 +82,6 @@ public class OpenApiIntegrationTest {
     JSONAssert.assertEquals(expected.toString(), result, true);
   }
 
-  // @Ignore
   @Test
   public void get_GetSingleBreweryWithId_ThroughOpenApi() throws JSONException {
     // Arrange
@@ -113,6 +111,24 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
+  public void get_ValidationFails_WhenWrongParameterType() throws JSONException {
+    // Arrange
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
+            DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
+            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+    SparqlHttpStub.returnTuple(builder);
+
+    // Act
+    Response response =
+        target.path("/dbp/api/v1/breweries").queryParam("fte", "foo").request().accept(
+            MediaType.APPLICATION_JSON_TYPE).get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.BAD_REQUEST.getStatusCode()));
+  }
+
+  @Test
   public void get_GetCorrectOptions_ThroughOpenApi() {
     // Act
     Response response =
@@ -125,7 +141,6 @@ public class OpenApiIntegrationTest {
     assertThat(response.getHeaderString("allow"), equalTo("HEAD,GET,OPTIONS"));
   }
 
-  // @Ignore
   @Test
   public void get_GetCorrectHead_ThroughOpenApi() {
     // Arrange

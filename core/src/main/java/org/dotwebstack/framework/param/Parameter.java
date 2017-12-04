@@ -12,7 +12,11 @@ public interface Parameter<T> {
 
   boolean isRequired();
 
-  // XXX (PvH) Ik had de Javadoc van validate() wel overgenomen en aangepast.
+  /**
+   * Handles and validates the supplied values.
+   * 
+   * @throws BackendException If a supplied value is invalid.
+   */
   T handle(@NonNull Map<String, String> parameterValues);
 
 }

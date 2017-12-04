@@ -10,6 +10,13 @@ paths:
   /breweries:
     get:
       x-dotwebstack-information-product: "http://dbeerpedia.org#TupleBreweries"
+      parameters:
+      - name: fte
+        in: query
+        description: Aantal_fte
+        required: false
+        type: integer
+        x-dotwebstack-parameter: "http://dbeerpedia.org#FteParam"
       responses:
         200:
           description: OK
