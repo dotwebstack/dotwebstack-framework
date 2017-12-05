@@ -1,10 +1,12 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.swagger.models.Model;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
@@ -18,8 +20,9 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
   }
 
   @Override
-  public Object mapGraphValue(RefProperty schema, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+  public Object mapGraphValue(@NonNull RefProperty schema,
+      @NonNull GraphEntityContext graphEntityContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value value) {
 
     Model refModel = graphEntityContext.getSwaggerDefinitions().get(schema.getSimpleRef());
 
@@ -30,8 +33,8 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
 
     Builder<String, Object> builder = ImmutableMap.builder();
     refModel.getProperties().forEach((propKey, propValue) -> builder.put(propKey,
-        com.google.common.base.Optional.fromNullable(schemaMapperAdapter.mapGraphValue(propValue,
-                graphEntityContext, schemaMapperAdapter, value))));
+        Optional.fromNullable(schemaMapperAdapter.mapGraphValue(propValue, graphEntityContext,
+            schemaMapperAdapter, value))));
 
     return builder.build();
   }
