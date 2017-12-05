@@ -21,8 +21,61 @@ public class ShaclValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(ShaclValidator.class);
 
-  public ValidationReport validate(Model dataModel, Model shapesModel) {
-    Resource report = ValidationUtil.validateModel(dataModel, shapesModel, true);
+  public ValidationReport validate(org.eclipse.rdf4j.model.Model dataModel,
+      org.eclipse.rdf4j.model.Model shapesModel) {
+    Resource report =
+        ValidationUtil.validateModel(getJenaModel(dataModel), getJenaModel(shapesModel), true);
     return new ValidationReport(report.getModel());
+  }
+
+  private Model getJenaModel(org.eclipse.rdf4j.model.Model model) {
+    Model jenaModel = ModelFactory.createDefaultModel();
+    java.util.Iterator<org.eclipse.rdf4j.model.Statement> iterator = model.iterator();
+
+    while (iterator.hasNext()) {
+      org.eclipse.rdf4j.model.Statement rdf4jStatement = iterator.next();
+
+      // create resource / subject
+      Resource resource = rdf4jResourceToJenaResource(jenaModel, rdf4jStatement.getSubject());
+      // create property / predicate
+      Property property = rdf4jPropertyToJenaProperty(jenaModel, rdf4jStatement.getPredicate());
+      // create rdfnode / object
+      RDFNode node = rdf4jValueToJenaRdfNode(jenaModel, rdf4jStatement.getObject());
+
+      Statement statement = ResourceFactory.createStatement(resource, property, node);
+      jenaModel.add(statement);
+    }
+    return jenaModel;
+  }
+
+  private Resource rdf4jResourceToJenaResource(Model jenaModel,
+      org.eclipse.rdf4j.model.Resource resource) {
+    if (resource instanceof URI) {
+      return jenaModel.createResource(resource.stringValue());
+    } else {
+      return jenaModel.createResource(new AnonId(resource.stringValue()));
+    }
+  }
+
+  private Property rdf4jPropertyToJenaProperty(Model jenaModel, URI resource) {
+    return jenaModel.createProperty(resource.stringValue());
+  }
+
+  private RDFNode rdf4jValueToJenaRdfNode(Model jenaModel, Value value) {
+    if (value instanceof org.eclipse.rdf4j.model.Resource) {
+      return rdf4jResourceToJenaResource(jenaModel, (org.eclipse.rdf4j.model.Resource) value);
+    } else {
+      return rdf4jLiteralToJenaRdfNode(jenaModel, (Literal) value);
+    }
+  }
+
+  private RDFNode rdf4jLiteralToJenaRdfNode(Model jenaModel, Literal value) {
+    if (value.getDatatype() != null) {
+      return jenaModel.createTypedLiteral(value.stringValue(), value.getDatatype().stringValue());
+    } else if (value.getLanguage() != null && !"".equals(value.getLanguage())) {
+      return jenaModel.createLiteral(value.stringValue(), value.getLanguage().get());
+    } else {
+      return jenaModel.createLiteral(value.stringValue());
+    }
   }
 }
