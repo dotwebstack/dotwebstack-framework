@@ -19,8 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-class StringSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<StringProperty, String> {
+class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
 
   private static final Logger LOG = LoggerFactory.getLogger(StringSchemaMapper.class);
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);

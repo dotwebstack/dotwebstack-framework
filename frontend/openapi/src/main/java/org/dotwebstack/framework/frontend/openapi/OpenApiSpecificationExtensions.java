@@ -26,6 +26,8 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String RESULT_REF = DOTWEBSTACK_PREFIX.concat("result-ref");
 
+  public static final String RESULT_REF_COLLECTION = "collection";
+
   private OpenApiSpecificationExtensions() {
     throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", OpenApiSpecificationExtensions.class));

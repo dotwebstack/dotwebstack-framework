@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.base.Joiner;
+import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
 import lombok.NonNull;
@@ -8,8 +9,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
-
-abstract class AbstractSchemaMapper {
+abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
 
   static Value getSingleStatement(@NonNull Collection<Value> queryResult,
       @NonNull String ldPathQuery) {

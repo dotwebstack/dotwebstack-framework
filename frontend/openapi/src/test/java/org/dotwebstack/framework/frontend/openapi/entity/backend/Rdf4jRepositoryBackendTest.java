@@ -52,7 +52,7 @@ public class Rdf4jRepositoryBackendTest {
   }
 
   @Test
-  public void createÛRI_GetLocalName_KeepStringValue() {
+  public void createUri_GetLocalName_KeepStringValue() {
     IRI iri = backend.createURI("http://www.test.nl");
     assertEquals("www.test.nl", iri.getLocalName());
   }
@@ -88,9 +88,9 @@ public class Rdf4jRepositoryBackendTest {
   public void createLiteralInternal_GivesLiteral_forString() throws Exception {
     // Arrange
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
-    //Act
+    // Act
     Literal literal = backend.createLiteralInternal(valueFactory, "test");
-    //Assert
+    // Assert
     assertThat(literal, is(SimpleValueFactory.getInstance().createLiteral("test")));
   }
 
@@ -113,16 +113,16 @@ public class Rdf4jRepositoryBackendTest {
             queryResult);
     Value subject = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     Value prop = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
-    //Act
+    // Act
     Collection<Value> values = backend.listSubjects(subject, prop);
-    //Assert
+    // Assert
     assertThat(values, hasSize(1));
     assertThat(values.iterator().next(),
         is(SimpleValueFactory.getInstance().createIRI("http://www.test.nl#sub")));
   }
 
   @Test
-  public void CreateUri_ReturnsUri_WhenCreated() throws Exception {
+  public void createUri_ReturnsUri_WhenCreated() throws Exception {
 
     IRI iri = backend.createURI("http://www.test.nl");
     assertThat(iri, is(SimpleValueFactory.getInstance().createIRI("http://www.test.nl")));
@@ -135,11 +135,11 @@ public class Rdf4jRepositoryBackendTest {
   @Test
   public void createLiteral_ReturnsLiteral_WhenCreatedWithLocale() throws Exception {
     // Arrange
-    //Act
-       Literal literal = backend.createLiteral("http://www.test.nl", Locale.CANADA,
-        null);
-   //Assert
-    assertThat(literal, is(SimpleValueFactory.getInstance().createLiteral("http://www.test.nl", "en")));
+    // Act
+    Literal literal = backend.createLiteral("http://www.test.nl", Locale.CANADA, null);
+    // Assert
+    assertThat(literal,
+        is(SimpleValueFactory.getInstance().createLiteral("http://www.test.nl", "en")));
     assertEquals(Locale.CANADA.getLanguage(), literal.getLanguage().get());
 
   }
