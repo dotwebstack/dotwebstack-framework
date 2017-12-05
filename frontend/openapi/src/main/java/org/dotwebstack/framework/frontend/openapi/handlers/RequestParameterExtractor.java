@@ -63,6 +63,7 @@ final class RequestParameterExtractor {
    * }
    * </pre>
    */
+  @SuppressWarnings("unused")
   private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx,
       RequestParameters parameters, ObjectMapper mapper) throws IOException {
 

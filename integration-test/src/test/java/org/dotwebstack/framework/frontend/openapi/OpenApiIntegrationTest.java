@@ -112,6 +112,7 @@ public class OpenApiIntegrationTest {
 
   @Test
   public void get_ValidationFails_WhenWrongParameterType() throws JSONException {
+    // XXX (PvH) Hebben we de arrange stap nodig? Volgens mij komt de test hier niet
     // Arrange
     TupleQueryResultBuilder builder =
         new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(

@@ -109,6 +109,8 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
     swagger.getPaths().forEach((path, pathItem) -> {
 
+      // XXX (PvH) Een IllegalStateException is een fout van de ontwikkelaar. Ik zou dit niet
+      // afvangen. Mocht deze gegooid worden, dan wordt dit elders afgevangen.
       ApiOperation apiOperation = null;
       try {
         apiOperation = SwaggerUtils.extractApiOperation(swagger, path, "get");

@@ -45,6 +45,7 @@ public class GetRequestHandlerTest {
   @Mock
   private ContainerRequestContext containerRequestContextMock;
 
+  // XXX (PvH) Waarom gebruik je deze niet in je testen?
   @Mock
   private ApiRequestValidator apiRequestValidatorMock;
 

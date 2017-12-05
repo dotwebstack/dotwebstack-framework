@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Map;
 import javax.ws.rs.core.MultivaluedMap;
 
+// XXX (PvH) Kan de klasse package-private worden? Dit geldt ook voor de methods.
+// XXX (PvH) Er ontbreekt testdekking op de klasse
 public class RequestParameters {
 
   private final Map<String, Object> parameters = Maps.newHashMap();

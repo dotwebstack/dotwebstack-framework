@@ -10,6 +10,7 @@ import com.atlassian.oai.validator.report.MessageResolver;
 import com.atlassian.oai.validator.schema.SchemaValidator;
 import io.swagger.models.Swagger;
 
+// XXX (PvH) Unit test ontbreekt
 public final class SwaggerUtils {
 
   private SwaggerUtils() {}

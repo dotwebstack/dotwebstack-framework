@@ -13,7 +13,7 @@ paths:
       parameters:
       - name: fte
         in: query
-        description: Aantal_fte
+        description: Aantal FTE
         required: false
         type: integer
         x-dotwebstack-parameter: "http://dbeerpedia.org#FteParam"
