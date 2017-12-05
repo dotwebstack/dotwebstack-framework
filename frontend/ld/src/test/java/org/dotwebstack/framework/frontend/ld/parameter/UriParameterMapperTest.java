@@ -72,7 +72,8 @@ public class UriParameterMapperTest {
 
     // Assert
     assertThat(map.keySet().toArray()[0], equalTo(DBEERPEDIA.SUBJECT_PARAMETER_NAME));
-    assertThat(map.values().toArray()[0], equalTo(uri.getHost() + uri.getPath()));
+    assertThat(map.values().toArray()[0],
+        equalTo(uri.getScheme() + "://" + uri.getHost() + uri.getPath()));
   }
 
   @Test
@@ -87,7 +88,8 @@ public class UriParameterMapperTest {
 
     // Assert
     assertThat(map.keySet().toArray()[0], equalTo(DBEERPEDIA.SUBJECT_PARAMETER_NAME));
-    assertThat(map.values().toArray()[0], equalTo(uri.getHost() + DBEERPEDIA.BREWERY_ID_PATH));
+    assertThat(map.values().toArray()[0],
+        equalTo(uri.getScheme() + "://" + uri.getHost() + DBEERPEDIA.BREWERY_ID_PATH));
   }
 
 }

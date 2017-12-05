@@ -13,6 +13,6 @@ public class RequestUriParameterSource implements ParameterSource {
   public String getValue(ContainerRequestContext containerRequestContext) {
     URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
 
-    return String.format("%s%s", uri.getHost(), uri.getPath());
+    return String.format("%s://%s%s", uri.getScheme(), uri.getHost(), uri.getPath());
   }
 }

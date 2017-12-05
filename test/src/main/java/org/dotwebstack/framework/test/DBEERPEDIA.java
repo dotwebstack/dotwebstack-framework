@@ -236,9 +236,9 @@ public final class DBEERPEDIA {
 
     SUBJECT_FROM_URL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SubjectFromUrl");
 
-    SUBJECT_FROM_URL_PATTERN = valueFactory.createLiteral("{domain}/doc/{reference}");
+    SUBJECT_FROM_URL_PATTERN = valueFactory.createLiteral("http://{domain}/doc/{reference}");
 
-    SUBJECT_FROM_URL_TEMPLATE = valueFactory.createLiteral("dbeerpedia.org/id/{reference}");
+    SUBJECT_FROM_URL_TEMPLATE = valueFactory.createLiteral("http://dbeerpedia.org/id/{reference}");
 
     SUBJECT_PARAMETER = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, SUBJECT_PARAMETER_NAME);
 

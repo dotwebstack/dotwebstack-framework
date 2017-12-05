@@ -40,6 +40,6 @@ public class RequestUriParameterSourceTest {
 
     // Act/Assert
     assertThat(requestUriParameterSource.getValue(containerRequestContext),
-        equalTo(uri.getHost() + uri.getPath()));
+        equalTo(uri.getScheme() + "://" + uri.getHost() + uri.getPath()));
   }
 }
