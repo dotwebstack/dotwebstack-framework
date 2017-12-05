@@ -107,8 +107,10 @@ public class ShaclValidatorTest {
     // Arrange
     final Resource ioExceptionResource = mock(Resource.class);
     when(ioExceptionResource.getInputStream()).thenThrow(IOException.class);
+
     // Assert
     thrown.expect(IOException.class);
+
     // Act
     shaclValidator.validate(
         RdfModelTransformer.mergeResourceWithPrefixes(dataResource.getInputStream(),
@@ -125,10 +127,12 @@ public class ShaclValidatorTest {
     Resource ioExceptionShapesResource = mock(Resource.class);
     when(ioExceptionShapesResource.getInputStream()).thenThrow(IOException.class);
     InputStream resource = mock(InputStream.class);
+
     // Assert
     thrown.expect(IOException.class);
+
     // Act
-    final ValidationReport report = shaclValidator.validate(
+    shaclValidator.validate(
         RdfModelTransformer.mergeResourceWithPrefixes(prefixesResource.getInputStream(), resource),
         RdfModelTransformer.getModel(ioExceptionShapesResource));
   }
@@ -140,6 +144,7 @@ public class ShaclValidatorTest {
         RdfModelTransformer.mergeResourceWithPrefixes(prefixesResource.getInputStream(),
             invalidDataWithoutPrefResource.getInputStream()),
         RdfModelTransformer.getModel(shapesResource));
+
     // Assert
     assertThat(report.isValid(), equalTo(false));
     assertThat(report.getValidationReport(),
@@ -155,6 +160,7 @@ public class ShaclValidatorTest {
         RdfModelTransformer.mergeResourceWithPrefixes(prefixesResource.getInputStream(),
             validDataWithoutPrefResource.getInputStream()),
         RdfModelTransformer.getModel(shapesResource));
+
     // Assert
     assertThat(report.isValid(), equalTo(true));
   }
