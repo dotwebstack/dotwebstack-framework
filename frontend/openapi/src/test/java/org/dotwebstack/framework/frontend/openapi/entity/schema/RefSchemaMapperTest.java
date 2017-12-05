@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Model;
@@ -116,10 +117,8 @@ public class RefSchemaMapperTest {
         entityBuilderContext, propertyHandlerRegistry, context);
 
     assertThat(result.keySet(), hasSize(2));
-    assertEquals(((com.google.common.base.Optional) result.get(KEY_1)).orNull(),
-        VALUE_1.stringValue());
-    assertEquals(((com.google.common.base.Optional) result.get(KEY_2)).orNull(),
-        VALUE_2.intValue());
+    assertEquals(((Optional) result.get(KEY_1)).orNull(), VALUE_1.stringValue());
+    assertEquals(((Optional) result.get(KEY_2)).orNull(), VALUE_2.intValue());
   }
 
 }
