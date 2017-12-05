@@ -70,33 +70,36 @@ public class ShaclValidatorTest {
   @Test
   public void validate_NoError_validConfiguration() throws Exception {
     // Act / Assert
-    shaclValidator.validate(RdfModelTransformer.transformTrigFileToModel(validDataResoource),
-        RdfModelTransformer.transformTrigFileToModel(shapesResource));
+    shaclValidator.validate(RdfModelTransformer.getModel(validDataResoource),
+        RdfModelTransformer.getModel(shapesResource));
   }
 
   @Test
   public void validate_getShaclValidationReport_invalidConfiguration() throws Exception {
     // Act
-    final ValidationReport report = shaclValidator.validate(RdfModelTransformer
-            .transformTrigFileToModel(invalidDataResource),
-        RdfModelTransformer.transformTrigFileToModel(shapesResource));
+    final ValidationReport report =
+        shaclValidator.validate(RdfModelTransformer.getModel(invalidDataResource),
+            RdfModelTransformer.getModel(shapesResource));
+
     // Assert
     assertThat(report.isValid(), equalTo(false));
-    assertThat(report.getValidationReport(), equalTo("Invalid configuration at path "
-        + "[http://example.org#lid] on node [http://example.org#HuwelijkMarcoNanda] "
-        + "with error message [More than 2 values]"));
+    assertThat(report.getValidationReport(),
+        equalTo("Invalid configuration at path "
+            + "[http://example.org#lid] on node [http://example.org#HuwelijkMarcoNanda] "
+            + "with error message [More than 2 values]"));
   }
 
   @Test
   public void validate_throwShaclValidationException_WithIoException() throws Exception {
     // Arrange
     when(dataResource.getInputStream()).thenThrow(IOException.class);
-    InputStream resource = mock(InputStream.class);
+
     // Assert
     thrown.expect(IOException.class);
+
     // Act
-    shaclValidator.validate(RdfModelTransformer.transformInputStreamToModel(resource),
-        RdfModelTransformer.transformTrigFileToModel(shapesResource));
+    shaclValidator.validate(RdfModelTransformer.getModel(dataResource),
+        RdfModelTransformer.getModel(shapesResource));
   }
 
   @Test
@@ -107,9 +110,10 @@ public class ShaclValidatorTest {
     // Assert
     thrown.expect(IOException.class);
     // Act
-    shaclValidator.validate(RdfModelTransformer.mergeResourceWithPrefixes(
-        dataResource.getInputStream(), ioExceptionResource.getInputStream()),
-        RdfModelTransformer.transformTrigFileToModel(shapesResource));
+    shaclValidator.validate(
+        RdfModelTransformer.mergeResourceWithPrefixes(dataResource.getInputStream(),
+            ioExceptionResource.getInputStream()),
+        RdfModelTransformer.getModel(shapesResource));
   }
 
   @Test
@@ -124,32 +128,33 @@ public class ShaclValidatorTest {
     // Assert
     thrown.expect(IOException.class);
     // Act
-    final ValidationReport report = shaclValidator.validate(RdfModelTransformer
-            .mergeResourceWithPrefixes(prefixesResource.getInputStream(), resource),
-        RdfModelTransformer.transformTrigFileToModel(ioExceptionShapesResource));
+    final ValidationReport report = shaclValidator.validate(
+        RdfModelTransformer.mergeResourceWithPrefixes(prefixesResource.getInputStream(), resource),
+        RdfModelTransformer.getModel(ioExceptionShapesResource));
   }
 
   @Test
   public void validate_isNotValid_invalidConfigurationWithPrefixes() throws Exception {
     // Act
-    final ValidationReport report = shaclValidator.validate(RdfModelTransformer
-            .mergeResourceWithPrefixes(prefixesResource.getInputStream(),
-                invalidDataWithoutPrefResource.getInputStream()),
-        RdfModelTransformer.transformTrigFileToModel(shapesResource));
+    final ValidationReport report = shaclValidator.validate(
+        RdfModelTransformer.mergeResourceWithPrefixes(prefixesResource.getInputStream(),
+            invalidDataWithoutPrefResource.getInputStream()),
+        RdfModelTransformer.getModel(shapesResource));
     // Assert
     assertThat(report.isValid(), equalTo(false));
-    assertThat(report.getValidationReport(), equalTo("Invalid configuration at path "
-        + "[http://example.org#lid] on node [http://example.org#HuwelijkMarcoNanda] with error "
-        + "message [More than 2 values]"));
+    assertThat(report.getValidationReport(),
+        equalTo("Invalid configuration at path "
+            + "[http://example.org#lid] on node [http://example.org#HuwelijkMarcoNanda] with error "
+            + "message [More than 2 values]"));
   }
 
   @Test
   public void validate_NoError_validConfigurationWithPrefixes() throws Exception {
     // Act
-    final ValidationReport report = shaclValidator.validate(RdfModelTransformer
-        .mergeResourceWithPrefixes(prefixesResource.getInputStream(),
-            validDataWithoutPrefResource.getInputStream()), RdfModelTransformer
-        .transformTrigFileToModel(shapesResource));
+    final ValidationReport report = shaclValidator.validate(
+        RdfModelTransformer.mergeResourceWithPrefixes(prefixesResource.getInputStream(),
+            validDataWithoutPrefResource.getInputStream()),
+        RdfModelTransformer.getModel(shapesResource));
     // Assert
     assertThat(report.isValid(), equalTo(true));
   }

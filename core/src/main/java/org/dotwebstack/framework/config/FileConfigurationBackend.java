@@ -149,9 +149,8 @@ public class FileConfigurationBackend
     if (configurationStreams.size() > 0) {
       try (InputStream stream =
           new SequenceInputStream(Collections.enumeration(configurationStreams))) {
-        final ValidationReport report =
-            shaclValidator.validate(RdfModelTransformer.transformInputStreamToModel(stream),
-                RdfModelTransformer.transformTrigFileToModel(elmoShapes));
+        final ValidationReport report = shaclValidator.validate(
+            RdfModelTransformer.getModel(stream), RdfModelTransformer.getModel(elmoShapes));
         if (!report.isValid()) {
           throw new ShaclValidationException(report.getValidationReport());
         }

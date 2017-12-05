@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
@@ -92,7 +93,7 @@ public class FileConfigurationBackendTest {
         new ByteArrayInputStream("".getBytes()));
     report = mock(ValidationReport.class);
     when(report.isValid()).thenReturn(true);
-    when(shaclValidator.validate(any(), any())).thenReturn(report);
+    when(shaclValidator.validate((Model) any(), any())).thenReturn(report);
     backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config",
         elmoShapesResource, shaclValidator);
     backend.setResourceLoader(resourceLoader);
