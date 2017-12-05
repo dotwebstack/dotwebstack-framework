@@ -26,7 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class LdPathSchemaMapperTest {
+public class AbstractLdPathSchemaMapperTest {
 
   @Mock
   private GraphEntityContext graphEntityContextMock;
