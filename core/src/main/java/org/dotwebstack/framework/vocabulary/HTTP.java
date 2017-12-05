@@ -4,7 +4,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public class HTTP {
+public final class HTTP {
 
   private static final String NAMESPACE_BASE = "http://www.w3.org/2011/http";
 

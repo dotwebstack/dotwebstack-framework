@@ -30,10 +30,10 @@ public class UriParameterMapper extends ParameterMapper {
     String output = input;
 
     if (pattern != null && template != null) {
-      UriTemplate UriTemplatePattern = new UriTemplate(pattern);
+      UriTemplate uriTemplatePattern = new UriTemplate(pattern);
 
       Map<String, String> map = new HashMap<String, String>();
-      if (UriTemplatePattern.match(input, map)) {
+      if (uriTemplatePattern.match(input, map)) {
         UriTemplate replacement = new UriTemplate(template);
         output = replacement.createURI(map);
       } else {

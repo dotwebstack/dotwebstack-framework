@@ -209,13 +209,13 @@ public class ParameterMapperResourceProviderTest {
 
     // Arrange
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
-    final IRI UNKNOWN_PARAMETER_MAPPER =
+    final IRI unknownParameterMapper =
         valueFactory.createIRI("http://dotwebstack.org/def/elmo", "UnknownParameterMapper");
 
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, RDF.TYPE,
-                UNKNOWN_PARAMETER_MAPPER),
+                unknownParameterMapper),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.SOURCE_PROP,
                 HTTP.REQUEST_URI),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.TARGET_PROP,
