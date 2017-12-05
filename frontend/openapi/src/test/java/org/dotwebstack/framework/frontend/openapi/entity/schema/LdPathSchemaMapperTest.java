@@ -14,6 +14,7 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.junit.Before;
@@ -26,17 +27,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LdPathSchemaMapperTest {
+
   @Mock
   private GraphEntityContext graphEntityContextMock;
 
   @Mock
   private Property propertyMock;
 
-  private class LdPathSchemaMapperMock implements LdPathSchemaMapper {
-  }
-
-  private LdPathSchemaMapper ldPathSchemaMapper = new LdPathSchemaMapperMock();
-
+  private AbstractLdPathSchemaMapper ldPathSchemaMapper = new TestLdPathSchemaMapper();
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -54,10 +52,9 @@ public class LdPathSchemaMapperTest {
     // Arrange
     Map<String, Object> vendorExtensions =
         Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newLinkedHashMap(
-                ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-                    "http://www.test.nl#is", OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
-                    "http://www.test.nl#obj3"))));
+            Maps.newLinkedHashMap(ImmutableMap.of(
+                OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE, "http://www.test.nl#is",
+                OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT, "http://www.test.nl#obj3"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
@@ -69,10 +66,10 @@ public class LdPathSchemaMapperTest {
   @Test
   public void when_Pred_and_Obj__not_matched__then_more_results() {
     // Arrange
-    Model model =
-        new ModelBuilder().add("http://www.test.nl#subj", "http://www.test.nl#is", SimpleValueFactory.getInstance().createIRI("http://www.test.nl#obj1")).add(
+    Model model = new ModelBuilder().add("http://www.test.nl#subj", "http://www.test.nl#is",
+        SimpleValueFactory.getInstance().createIRI("http://www.test.nl#obj1")).add(
             "http://www.test.nl#subj2", "http://www.test.nl#is",
-           SimpleValueFactory.getInstance().createIRI("http://www.test.nl#obj1")).build();
+            SimpleValueFactory.getInstance().createIRI("http://www.test.nl#obj1")).build();
     when(graphEntityContextMock.getModel()).thenReturn(model);
 
     Map<String, Object> vendorExtensions =
@@ -124,4 +121,30 @@ public class LdPathSchemaMapperTest {
     // Act
     ldPathSchemaMapper.applySubjectFilterIfPossible(propertyMock, graphEntityContextMock);
   }
+
+  private static class TestLdPathSchemaMapper extends AbstractLdPathSchemaMapper {
+
+    @Override
+    public Object mapTupleValue(Property schema, Value value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object mapGraphValue(Property schema, GraphEntityContext entityContext,
+        SchemaMapperAdapter schemaMapperAdapter, Value value) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean supports(Property schema) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected Set getSupportedDataTypes() {
+      throw new UnsupportedOperationException();
+    }
+
+  }
+
 }
