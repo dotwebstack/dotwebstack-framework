@@ -26,7 +26,8 @@ public class GetRequestHandlerFactory {
       @NonNull Swagger swagger) {
     return new GetRequestHandler(apiOperation, informationProduct, schemaMap,
         requestParameterMapper,
-        new ApiRequestValidator(SwaggerUtils.createValidator(swagger), new ObjectMapper()), swagger);
+        new ApiRequestValidator(SwaggerUtils.createValidator(swagger), new ObjectMapper()),
+        swagger);
   }
 
 }

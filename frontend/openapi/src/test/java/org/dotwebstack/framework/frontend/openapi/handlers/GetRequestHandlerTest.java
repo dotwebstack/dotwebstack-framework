@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -16,8 +17,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
 import org.junit.Rule;
@@ -55,8 +58,8 @@ public class GetRequestHandlerTest {
 
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(operationMock, informationProductMock, ImmutableMap.of(),
-        requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
+    getRequestHandler = new GetRequestHandler(operationMock, informationProductMock,
+        ImmutableMap.of(), requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
   }
 
   @Test

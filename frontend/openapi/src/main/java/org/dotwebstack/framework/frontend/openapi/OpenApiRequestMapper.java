@@ -86,11 +86,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
           applicationProperties.getResourcePath() + "/openapi/**.y*ml");
-<<<<<<< HEAD
-    } catch (FileNotFoundException ex) {
-=======
     } catch (FileNotFoundException exp) {
->>>>>>> master
       LOG.warn("No Open API resources found in path:{}/openapi",
           applicationProperties.getResourcePath());
       return;
@@ -171,13 +167,8 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
       ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-<<<<<<< HEAD
           getRequestHandlerFactory.newGetRequestHandler(apiOperation, informationProduct, schemaMap,
               swagger));
-=======
-          getRequestHandlerFactory.newGetRequestHandler(getOperation, informationProduct, schemaMap,
-                  swagger));
->>>>>>> master
 
       produces.forEach(methodBuilder::produces);
 

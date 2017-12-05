@@ -58,13 +58,9 @@ public class GetRequestHandlerFactoryTest {
     Map<MediaType, Property> schemaMap = ImmutableMap.of();
 
     // Act
-<<<<<<< HEAD
     GetRequestHandler result = getRequestHandlerFactory.newGetRequestHandler(apiOperation, product,
         schemaMap, swaggerMock);
-=======
-    GetRequestHandler result =
-        getRequestHandlerFactory.newGetRequestHandler(operation, product, schemaMap, mockSwagger);
->>>>>>> master
+
 
     // Assert
     assertThat(result.getInformationProduct(), sameInstance(product));
