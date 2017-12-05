@@ -95,6 +95,14 @@ public final class DBEERPEDIA {
 
   public static final IRI SUBJECT_FROM_URL;
 
+  public static final Literal SUBJECT_FROM_URL_PATTERN;
+
+  public static final Literal SUBJECT_FROM_URL_TEMPLATE;
+
+  public static final String SUBJECT_PARAMETER_NAME = "SubjectParameter";
+
+  public static final IRI SUBJECT_PARAMETER;
+
   public static final Literal ID2DOC_URL_PATTERN;
 
   public static final Literal ID2DOC_TARGET_URL;
@@ -134,6 +142,8 @@ public final class DBEERPEDIA {
 
   public static final IRI SECOND_STAGE;
 
+  public static final String NAME_PARAMETER = "nameParameter";
+
   public static final IRI NAME_PARAMETER_ID;
 
   public static final Literal NAME_PARAMETER_VALUE;
@@ -157,7 +167,7 @@ public final class DBEERPEDIA {
     DOMAIN = valueFactory.createLiteral(ORG_HOST);
     BASE_PATH = valueFactory.createLiteral("/special");
 
-    NAME_PARAMETER_ID = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "nameParameter");
+    NAME_PARAMETER_ID = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, NAME_PARAMETER);
     NAME_PARAMETER_VALUE_STRING = "name";
     NAME_PARAMETER_VALUE = valueFactory.createLiteral(NAME_PARAMETER_VALUE_STRING);
 
@@ -225,6 +235,12 @@ public final class DBEERPEDIA {
     ID2DOC_TARGET_URL = valueFactory.createLiteral("\\/doc\\/$1");
 
     SUBJECT_FROM_URL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SubjectFromUrl");
+
+    SUBJECT_FROM_URL_PATTERN = valueFactory.createLiteral("{domain}/doc/{reference}");
+
+    SUBJECT_FROM_URL_TEMPLATE = valueFactory.createLiteral("dbeerpedia.org/id/{reference}");
+
+    SUBJECT_PARAMETER = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, SUBJECT_PARAMETER_NAME);
 
     BREWERY_APPEARANCE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryAppearance");
 

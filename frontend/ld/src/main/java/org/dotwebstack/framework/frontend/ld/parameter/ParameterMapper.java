@@ -19,6 +19,10 @@ public abstract class ParameterMapper {
 
   private Target target;
 
+  public IRI getIdentifier() {
+    return identifier;
+  }
+
   public Map<String, Object> map(@NonNull ContainerRequestContext containerRequestContext) {
 
     String input = source.getValue(containerRequestContext);
@@ -30,7 +34,7 @@ public abstract class ParameterMapper {
     return result;
   }
 
-  private String parse(String input) {
+  public String parse(String input) {
     return input;
   }
 

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.ld.parameter.target;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.ParameterResourceProvider;
 import org.eclipse.rdf4j.model.IRI;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -10,6 +11,7 @@ public class TargetFactory {
 
   private ParameterResourceProvider parameterResourceProvider;
 
+  @Autowired
   public TargetFactory(ParameterResourceProvider parameterResourceProvider) {
     this.parameterResourceProvider = parameterResourceProvider;
   }

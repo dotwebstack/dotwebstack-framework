@@ -7,13 +7,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class ParameterSourceFactory {
 
-  private static final String RequestIRI = "http://www.w3.org/2011/http#requestURI";
-
   public ParameterSource getParameterSource(IRI iri) {
-    if (iri.equals(RequestIRI)) {
+    if (iri.equals(RequestUriParameterSource.getIRI())) {
       return new RequestUriParameterSource();
     }
 
     throw new ConfigurationException(String.format("Parameter source %s is not supported", iri));
   }
+
 }
