@@ -68,9 +68,11 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
     validateMinItems(property, queryResult);
     validateMaxItems(property, queryResult);
 
-    queryResult.forEach(valueNext -> builder.add(
-        com.google.common.base.Optional.fromNullable(schemaMapperAdapter.mapGraphValue(
-            property.getItems(), graphEntityContext, schemaMapperAdapter, valueNext))));
+    if (isInclusedWhenEmpty(property, queryResult)) {
+      queryResult.forEach(valueNext -> builder.add(
+          com.google.common.base.Optional.fromNullable(schemaMapperAdapter.mapGraphValue(
+              property.getItems(), graphEntityContext, schemaMapperAdapter, valueNext))));
+    }
   }
 
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {

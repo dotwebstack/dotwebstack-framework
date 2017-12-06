@@ -1,9 +1,12 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.base.Joiner;
+import io.swagger.models.properties.ArrayProperty;
+import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -47,6 +50,28 @@ abstract class AbstractSchemaMapper {
     }
 
     return false;
+  }
+
+  boolean isInclusedWhenNull(Property propValue, Object propertyResult) {
+    return !(hasVendorExtensionWithValue(propValue,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true)
+        && (propertyResult == null) && !(propValue instanceof ArrayProperty));
+  }
+
+  boolean isInclusedWhenEmpty(Property propValue, Object propertyResult) {
+    return !(hasVendorExtensionWithValue(propValue,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true)
+        && (propertyResult != null && ((Collection) propertyResult).isEmpty()
+            && (propValue instanceof ArrayProperty)));
+  }
+
+  boolean hasVendorExtensionWithValue(Property property, String extension, Object value) {
+    return hasVendorExtension(property, extension)
+        && property.getVendorExtensions().get(extension).equals(value);
+  }
+
+  boolean hasVendorExtension(Property property, String extension) {
+    return property.getVendorExtensions().containsKey(extension);
   }
 
   /**
