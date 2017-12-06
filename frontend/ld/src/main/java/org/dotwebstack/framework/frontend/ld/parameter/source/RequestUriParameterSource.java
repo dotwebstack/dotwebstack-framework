@@ -6,6 +6,7 @@ import org.dotwebstack.framework.vocabulary.HTTP;
 import org.eclipse.rdf4j.model.IRI;
 
 public class RequestUriParameterSource implements ParameterSource {
+
   public static IRI getIRI() {
     return HTTP.REQUEST_URI;
   }
@@ -13,6 +14,12 @@ public class RequestUriParameterSource implements ParameterSource {
   public String getValue(ContainerRequestContext containerRequestContext) {
     URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
 
-    return String.format("%s://%s%s", uri.getScheme(), uri.getHost(), uri.getPath());
+    /*
+     * Remove first 'domain' part of path that we have added in HostPreMatchingRequestFilter
+     */
+    String path = uri.getPath().replaceAll("^/" + uri.getHost(), "");
+
+    return String.format("%s://%s%s", uri.getScheme(), uri.getHost(), path);
   }
+
 }

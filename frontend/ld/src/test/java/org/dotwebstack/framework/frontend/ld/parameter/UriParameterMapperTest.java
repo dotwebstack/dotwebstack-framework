@@ -8,11 +8,9 @@ import java.net.URI;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
-import org.dotwebstack.framework.frontend.ld.parameter.source.ParameterSourceFactory;
 import org.dotwebstack.framework.frontend.ld.parameter.source.RequestUriParameterSource;
 import org.dotwebstack.framework.frontend.ld.parameter.target.ParameterTarget;
 import org.dotwebstack.framework.frontend.ld.parameter.target.Target;
-import org.dotwebstack.framework.frontend.ld.parameter.target.TargetFactory;
 import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
@@ -26,14 +24,6 @@ public class UriParameterMapperTest {
 
   @Mock
   private ParameterDefinition parameterDefinition;
-
-  private ParameterMapperResourceProvider parameterMapperResourceProvider;
-
-  private ParameterMapperFactory parameterMapperFactory;
-
-  private ParameterSourceFactory parameterSourceFactory;
-
-  private TargetFactory targetFactory;
 
   private RequestUriParameterSource requestUriParameterSource;
 

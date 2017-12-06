@@ -37,7 +37,7 @@ public class UriParameterMapper extends ParameterMapper {
         UriTemplate replacement = new UriTemplate(template);
         output = replacement.createURI(map);
       } else {
-        LOG.debug("pattern not matched");
+        LOG.debug("Pattern %s not matched with value %s", pattern, input);
       }
     }
 
