@@ -22,7 +22,7 @@ public class ParameterTarget implements Target {
 
     result.put(parameter.getName(), value);
 
-    LOG.debug("Set parameter %s: %s", parameter.getName(), value);
+    LOG.debug("Set parameter {}: {}", parameter.getName(), value);
 
     return result;
   }
