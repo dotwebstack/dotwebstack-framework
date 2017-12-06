@@ -28,6 +28,12 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String RESULT_REF_COLLECTION = "collection";
 
+  public static final String EXCLUDE_PROPERTIES_WHEN_EMPTY =
+      DOTWEBSTACK_PREFIX.concat("exclude-properties-when-empty");
+
+  public static final String EXCLUDE_PROPERTIES_WHEN_NULL =
+      DOTWEBSTACK_PREFIX.concat("exclude-properties-when-null");
+
   private OpenApiSpecificationExtensions() {
     throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", OpenApiSpecificationExtensions.class));

@@ -1,10 +1,12 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.base.Joiner;
+import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -30,7 +32,7 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
 
   protected abstract Set<IRI> getSupportedDataTypes();
 
-  String dataTypesAsString() {
+  protected String dataTypesAsString() {
     return Joiner.on(", ").join(getSupportedDataTypes());
   }
 
@@ -49,6 +51,28 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
     return false;
   }
 
+  protected boolean isIncludedWhenNull(Property propValue, Object propertyResult) {
+    return !(hasVendorExtensionWithValue(propValue,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true)
+        && (propertyResult == null) && !(propValue instanceof ArrayProperty));
+  }
+
+  protected boolean isIncludedWhenEmpty(Property propValue, Object propertyResult) {
+    return !(hasVendorExtensionWithValue(propValue,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true)
+        && (propertyResult != null && ((Collection) propertyResult).isEmpty()
+            && (propValue instanceof ArrayProperty)));
+  }
+
+  protected boolean hasVendorExtensionWithValue(Property property, String extension, Object value) {
+    return hasVendorExtension(property, extension)
+        && property.getVendorExtensions().get(extension).equals(value);
+  }
+
+  protected boolean hasVendorExtension(Property property, String extension) {
+    return property.getVendorExtensions().containsKey(extension);
+  }
+
   /**
    * Checks if given value object is instance of {@link Literal} and its data type is one of those
    * provided by {@link #getSupportedDataTypes()}.
@@ -57,7 +81,7 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
    * @return <code>true</code> if given value is literal which supports one of given data types,
    *         <code>false</code> otherwise.
    */
-  boolean isSupportedLiteral(Object value) {
+  protected boolean isSupportedLiteral(Object value) {
     return value instanceof Literal && isDataTypeSupported((Literal) value);
   }
 

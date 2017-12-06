@@ -38,7 +38,7 @@ class ObjectSchemaMapper extends AbstractLdPathSchemaMapper<ObjectProperty, Obje
       contextNew = subjects.iterator().next();
     }
 
-    if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+    if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
       return handleLdPathVendorExtension(property, graphEntityContext, contextNew, ldPath,
@@ -75,6 +75,8 @@ class ObjectSchemaMapper extends AbstractLdPathSchemaMapper<ObjectProperty, Obje
         queryResult.iterator().next());
   }
 
+
+
   private Map<String, Object> handleProperties(ObjectProperty property,
       GraphEntityContext entityBuilderContext, SchemaMapperAdapter schemaMapperAdapter,
       Value context) {
@@ -82,10 +84,15 @@ class ObjectSchemaMapper extends AbstractLdPathSchemaMapper<ObjectProperty, Obje
     property.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
           schemaMapperAdapter, context);
-      builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
+
+      if ((isIncludedWhenNull(propValue, propertyResult)
+          && isIncludedWhenEmpty(propValue, propertyResult))) {
+        builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
+      }
     });
     return builder.build();
   }
+
 
 
   @Override

@@ -68,9 +68,11 @@ public class ArraySchemaMapper extends AbstractLdPathSchemaMapper<ArrayProperty,
     validateMinItems(property, queryResult);
     validateMaxItems(property, queryResult);
 
-    queryResult.forEach(valueNext -> builder.add(
-        Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
-            graphEntityContext, schemaMapperAdapter, valueNext))));
+    if (isIncludedWhenEmpty(property, queryResult)) {
+      queryResult.forEach(valueNext -> builder.add(
+          Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
+              graphEntityContext, schemaMapperAdapter, valueNext))));
+    }
   }
 
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {
