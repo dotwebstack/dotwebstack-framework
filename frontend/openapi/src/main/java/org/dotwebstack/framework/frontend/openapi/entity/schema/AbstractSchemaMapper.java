@@ -13,7 +13,7 @@ import org.eclipse.rdf4j.model.Value;
 
 abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
 
-  static Value getSingleStatement(@NonNull Collection<Value> queryResult,
+  protected static Value getSingleStatement(@NonNull Collection<Value> queryResult,
       @NonNull String ldPathQuery) {
 
     if (queryResult.isEmpty()) {

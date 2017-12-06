@@ -17,7 +17,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ArraySchemaMapper extends AbstractLdPathSchemaMapper<ArrayProperty, Object> {
+public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayProperty, Object> {
 
   @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull Value value) {
@@ -30,28 +30,18 @@ public class ArraySchemaMapper extends AbstractLdPathSchemaMapper<ArrayProperty,
       @NonNull SchemaMapperAdapter schemaMapperAdapter, Value context) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    Set<Resource> subjects = applySubjectFilterIfPossible(property, graphEntityContext);
+    if (hasSubjectFilterVendorExtension(property)) {
+      Set<Resource> subjects = filterSubjects(property, graphEntityContext);
 
-    if (!subjects.isEmpty()) {
-      if (OpenApiSpecificationExtensions.RESULT_REF_COLLECTION.equals(
-          property.getVendorExtensions().get(OpenApiSpecificationExtensions.RESULT_REF))) {
-        subjects.forEach(
-            subject -> builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(),
-                graphEntityContext, schemaMapperAdapter, subject)));
-      } else if (property.getVendorExtensions().containsKey(
-          OpenApiSpecificationExtensions.LDPATH)) {
-        subjects.forEach(subject -> queryAndValidate(property, graphEntityContext,
-            schemaMapperAdapter, subject, builder));
-      }
-    } else {
-      if (context != null) {
-        if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-          queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
-        } else {
-          throw new SchemaMapperRuntimeException(
-              String.format("ArrayProperty must have either a '%s' attribute",
-                  OpenApiSpecificationExtensions.LDPATH));
-        }
+      subjects.forEach(subject -> builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(),
+          graphEntityContext, schemaMapperAdapter, subject)));
+    } else if (context != null) {
+      if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+        queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
+      } else {
+        throw new SchemaMapperRuntimeException(
+            String.format("ArrayProperty must have either a '%s' attribute",
+                OpenApiSpecificationExtensions.LDPATH));
       }
     }
 

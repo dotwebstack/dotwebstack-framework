@@ -13,8 +13,12 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-abstract class AbstractLdPathSchemaMapper<S extends Property, T>
+abstract class AbstractSubjectFilterSchemaMapper<S extends Property, T>
     extends AbstractSchemaMapper<S, T> {
+
+  protected boolean hasSubjectFilterVendorExtension(@NonNull Property property) {
+    return hasVendorExtension(property, OpenApiSpecificationExtensions.SUBJECT_FILTER);
+  }
 
   /**
    * Apply subject filter if possible.
@@ -23,9 +27,9 @@ abstract class AbstractLdPathSchemaMapper<S extends Property, T>
    * @param graphEntityContext context of the entity
    * @return non empty set when no results could be found.
    */
-  protected final Set<Resource> applySubjectFilterIfPossible(@NonNull Property property,
+  protected final Set<Resource> filterSubjects(@NonNull Property property,
       @NonNull GraphEntityContext graphEntityContext) {
-    if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.SUBJECT_FILTER)) {
+    if (hasSubjectFilterVendorExtension(property)) {
 
       Map subjectFilter =
           (Map) property.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT_FILTER);

@@ -26,7 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AbstractLdPathSchemaMapperTest {
+public class AbstractSubjectFilterSchemaMapperTest {
 
   @Mock
   private GraphEntityContext graphEntityContextMock;
@@ -34,7 +34,8 @@ public class AbstractLdPathSchemaMapperTest {
   @Mock
   private Property propertyMock;
 
-  private AbstractLdPathSchemaMapper ldPathSchemaMapper = new TestLdPathSchemaMapper();
+  private AbstractSubjectFilterSchemaMapper subjectFilterSchemaMapper =
+      new TestLdPathSchemaMapper();
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -58,7 +59,7 @@ public class AbstractLdPathSchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
-        ldPathSchemaMapper.applySubjectFilterIfPossible(propertyMock, graphEntityContextMock);
+        subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(0)));
   }
@@ -80,7 +81,7 @@ public class AbstractLdPathSchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
-        ldPathSchemaMapper.applySubjectFilterIfPossible(propertyMock, graphEntityContextMock);
+        subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(2)));
   }
@@ -102,7 +103,7 @@ public class AbstractLdPathSchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
-        ldPathSchemaMapper.applySubjectFilterIfPossible(propertyMock, graphEntityContextMock);
+        subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(1)));
   }
@@ -118,10 +119,10 @@ public class AbstractLdPathSchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     thrown.expect(SchemaMapperRuntimeException.class);
     // Act
-    ldPathSchemaMapper.applySubjectFilterIfPossible(propertyMock, graphEntityContextMock);
+    subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
   }
 
-  private static class TestLdPathSchemaMapper extends AbstractLdPathSchemaMapper {
+  private static class TestLdPathSchemaMapper extends AbstractSubjectFilterSchemaMapper {
 
     @Override
     public Object mapTupleValue(Property schema, Value value) {
