@@ -178,15 +178,18 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void handleObjectWithWithNullResult() {
+  public void isIncludedWhenNull_WhenSetExpectNoResult() {
 
+    // Arrange
     StringProperty stringProperty = new StringProperty();
     stringProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL,
         true);
     objectProperty.setProperties(ImmutableMap.of(KEY_1, stringProperty));
 
+    // Act
     Map result = (ImmutableMap) registry.mapGraphValue(objectProperty, entityBuilderContextMock,
         registry, context1Mock);
+    // Assert
     assertTrue(result.isEmpty());
   }
 
