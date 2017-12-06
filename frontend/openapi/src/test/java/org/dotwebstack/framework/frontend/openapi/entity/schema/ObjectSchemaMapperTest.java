@@ -310,4 +310,21 @@ public class ObjectSchemaMapperTest {
     assertThat(result, empty());
   }
 
+  @Test
+  public void isIncludedWhenNull_WhenSetExpectNoResult() {
+
+    // Arrange
+    StringProperty stringProperty = new StringProperty();
+    stringProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL,
+        true);
+    property.setProperties(ImmutableMap.of(KEY_1, stringProperty));
+
+    // Act
+    Map result = (Map) schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter,
+        value1Mock);
+
+    // Assert
+    assertThat(result.isEmpty(), is(true));
+  }
+
 }

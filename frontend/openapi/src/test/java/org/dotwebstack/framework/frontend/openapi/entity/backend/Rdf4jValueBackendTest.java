@@ -21,19 +21,14 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-// XXX (PvH) Waarom houd je niet de .wsf naamgeving aan voor test methods?
-// XXX (PvH) We missen test coverage op Rdf4jValueBackend, bewust?
 @RunWith(MockitoJUnitRunner.class)
 public class Rdf4jValueBackendTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-
-  // XXX (PvH) Suggestie: hernoemen naar iets met Language
-  // XXX (PvH) Testen we de null case ook ergens?
   @Test
-  public void testGetLiteralLocale() {
+  public void testGetLiteralLanguage() {
     Literal value = SimpleValueFactory.getInstance().createLiteral("value", "nl");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
@@ -43,7 +38,7 @@ public class Rdf4jValueBackendTest {
   }
 
   @Test
-  public void testGetLiteralType() {
+  public void testGetLiteralStringType() {
     Literal value = SimpleValueFactory.getInstance().createLiteral("value");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
@@ -52,10 +47,8 @@ public class Rdf4jValueBackendTest {
         is(XMLSchema.STRING.stringValue()));
   }
 
-  // XXX (PvH) Test method name matched niet met wat je test, in ieder geval niet in relatie tot de
-  // vorige method (testGetLiteralType) waarbij je wel het type test
   @Test
-  public void testGetDecimalType() {
+  public void testGetDecimalValueType() {
     Literal value = SimpleValueFactory.getInstance().createLiteral(BigDecimal.ONE);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
@@ -63,9 +56,8 @@ public class Rdf4jValueBackendTest {
     assertThat(backend.decimalValue(value).toString(), is("1"));
   }
 
-  // XXX (PvH) Duplicate method als je camelCase zou toepassen
   @Test
-  public void testcreateLiteral() {
+  public void testCreateLiteralWithLocaleAndIri() {
     URI uri = URI.create("http://www.test.nl");
     Literal value = SimpleValueFactory.getInstance().createLiteral("test",
         SimpleValueFactory.getInstance().createIRI(uri.toString()));
@@ -75,9 +67,8 @@ public class Rdf4jValueBackendTest {
     assertThat(backend.createLiteral("test", Locale.CANADA, uri), is(value));
   }
 
-  // XXX (PvH) Test method name matched niet met wat je test
   @Test
-  public void testCreateLiteralLanguage() {
+  public void testCreateLiteralLanguageWithNoUri() {
     Literal value = SimpleValueFactory.getInstance().createLiteral("test", "en");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();

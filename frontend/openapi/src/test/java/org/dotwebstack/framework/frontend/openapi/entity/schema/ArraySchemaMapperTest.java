@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,7 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
@@ -203,7 +205,7 @@ public class ArraySchemaMapperTest {
   public void mapGraphValue_ThrowsException_ForMissingLdPathOrResultRef() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage(String.format("ArrayProperty must have either a '%s' attribute",
+    thrown.expectMessage(String.format("ArrayProperty must have a '%s' attribute",
         OpenApiSpecificationExtensions.LDPATH));
 
     // Arrange
@@ -251,6 +253,24 @@ public class ArraySchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock, schemaMapperAdapter, valueMock);
+  }
+
+  @Test
+  public void isIncludedWhenEmpty_WhenSetNoResult() {
+
+    //Arrange
+    ArrayProperty arrayProperty = new ArrayProperty();
+    arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY,
+            true);
+    arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH,
+            "test");
+    objectProperty.setProperties(ImmutableMap.of("key1", arrayProperty));
+
+    //Act
+    List result = (ImmutableList) schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+            schemaMapperAdapter, valueMock);
+    //Assert
+    assertTrue(result.isEmpty());
   }
 
 }

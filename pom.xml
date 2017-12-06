@@ -5,7 +5,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.0.11-GRID-1893-SNAPSHOT</version>
+  <version>0.0.11-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -355,16 +355,10 @@
       <id>ossrh</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
-
-      <!-- <repository>
-         <id>ossrh</id>
-         <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-       </repository>-->
-      <repository>
-        <id>snapshots-repo</id>
-        <name>Artifactory-snapshots</name>
-        <url>http://ota-portal.so.kadaster.nl:80/artifactory/mvn-thirdparty-local</url>
-      </repository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
   </distributionManagement>
 
 </project>

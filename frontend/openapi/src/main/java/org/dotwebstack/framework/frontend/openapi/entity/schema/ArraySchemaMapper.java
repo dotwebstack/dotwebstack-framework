@@ -21,7 +21,7 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
 
   @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull Value value) {
-    throw new UnsupportedOperationException();
+    return SchemaMapperUtils.castLiteralValue(value).integerValue();
   }
 
   @Override
@@ -40,7 +40,7 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
         queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
       } else {
         throw new SchemaMapperRuntimeException(
-            String.format("ArrayProperty must have either a '%s' attribute",
+            String.format("ArrayProperty must have a '%s' attribute",
                 OpenApiSpecificationExtensions.LDPATH));
       }
     }
