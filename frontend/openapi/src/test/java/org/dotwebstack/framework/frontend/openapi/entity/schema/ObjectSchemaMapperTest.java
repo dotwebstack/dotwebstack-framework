@@ -185,10 +185,6 @@ public class ObjectSchemaMapperTest {
         true);
     objectProperty.setProperties(ImmutableMap.of(KEY_1, stringProperty));
 
-    when(ldPathExecutorMock.ldPathQuery(any(), any())).thenReturn(Collections.EMPTY_LIST);
-
-    when(ldPathExecutorMock.ldPathQuery(context1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
-
     Map result = (ImmutableMap) registry.mapGraphValue(objectProperty, entityBuilderContextMock,
         registry, context1Mock);
     assertTrue(result.isEmpty());

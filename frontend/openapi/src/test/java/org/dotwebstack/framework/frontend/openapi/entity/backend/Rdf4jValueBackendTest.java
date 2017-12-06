@@ -57,7 +57,7 @@ public class Rdf4jValueBackendTest {
   }
 
   @Test
-  public void testCreateLiteralWithLocaleAndIRI() {
+  public void testCreateLiteralWithLocaleAndIri() {
     URI uri = URI.create("http://www.test.nl");
     Literal value = SimpleValueFactory.getInstance().createLiteral("test",
         SimpleValueFactory.getInstance().createIRI(uri.toString()));
@@ -68,7 +68,7 @@ public class Rdf4jValueBackendTest {
   }
 
   @Test
-  public void testCreateLiteralLanguageWithNoURI() {
+  public void testCreateLiteralLanguageWithNoUri() {
     Literal value = SimpleValueFactory.getInstance().createLiteral("test", "en");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();

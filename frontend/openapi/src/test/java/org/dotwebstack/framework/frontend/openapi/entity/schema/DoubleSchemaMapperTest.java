@@ -20,11 +20,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DoubleSchemaMapperTest {
 
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
+
   @Mock
   private GraphEntityContext graphEntityContext;
-
-  @Rule
-  private final ExpectedException thrown = ExpectedException.none();
 
   private DoubleSchemaMapper schemaMapper;
 
