@@ -26,7 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class AbstractLdPathSchemaMapperTest {
+public class AbstractSubjectFilterSchemaMapperTest {
 
   @Mock
   private GraphEntityContext graphEntityContextMock;
@@ -34,7 +34,8 @@ public class AbstractLdPathSchemaMapperTest {
   @Mock
   private Property propertyMock;
 
-  private AbstractLdPathSchemaMapper ldPathSchemaMapper = new TestLdPathSchemaMapper();
+  private AbstractSubjectFilterSchemaMapper subjectFilterSchemaMapper =
+      new TestLdPathSchemaMapper();
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -51,14 +52,14 @@ public class AbstractLdPathSchemaMapperTest {
   public void when_No_Obj_exists__then_no_filter_results() {
     // Arrange
     Map<String, Object> vendorExtensions =
-        Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newLinkedHashMap(ImmutableMap.of(
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE, "http://www.test.nl#is",
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT, "http://www.test.nl#obj3"))));
+        Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
+            Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
+                "http://www.test.nl#is", OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
+                "http://www.test.nl#obj3"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
-        ldPathSchemaMapper.applySubjectFilterIfPossible(propertyMock, graphEntityContextMock);
+        subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(0)));
   }
@@ -73,14 +74,14 @@ public class AbstractLdPathSchemaMapperTest {
     when(graphEntityContextMock.getModel()).thenReturn(model);
 
     Map<String, Object> vendorExtensions =
-        Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newLinkedHashMap(ImmutableMap.of(
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE, "http://www.test.nl#is",
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT, "http://www.test.nl#obj1"))));
+        Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
+            Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
+                "http://www.test.nl#is", OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
+                "http://www.test.nl#obj1"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
-        ldPathSchemaMapper.applySubjectFilterIfPossible(propertyMock, graphEntityContextMock);
+        subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(2)));
   }
@@ -95,14 +96,14 @@ public class AbstractLdPathSchemaMapperTest {
     when(graphEntityContextMock.getModel()).thenReturn(model);
 
     Map<String, Object> vendorExtensions =
-        Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newLinkedHashMap(ImmutableMap.of(
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE, "http://www.test.nl#is",
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT, "http://www.test.nl#obj1"))));
+        Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
+            Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
+                "http://www.test.nl#is", OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
+                "http://www.test.nl#obj1"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
-        ldPathSchemaMapper.applySubjectFilterIfPossible(propertyMock, graphEntityContextMock);
+        subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(1)));
   }
@@ -112,17 +113,16 @@ public class AbstractLdPathSchemaMapperTest {
   public void when_No_Object_Or_Predicate_Specified_Then_Exception() {
     // Arrange
     Map<String, Object> vendorExtensions =
-        Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newLinkedHashMap(
-                ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-                    "http://www.test.nl#is"))));
+        Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
+            Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
+                "http://www.test.nl#is"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     thrown.expect(SchemaMapperRuntimeException.class);
     // Act
-    ldPathSchemaMapper.applySubjectFilterIfPossible(propertyMock, graphEntityContextMock);
+    subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
   }
 
-  private static class TestLdPathSchemaMapper extends AbstractLdPathSchemaMapper {
+  private static class TestLdPathSchemaMapper extends AbstractSubjectFilterSchemaMapper {
 
     @Override
     public Object mapTupleValue(Property schema, Value value) {

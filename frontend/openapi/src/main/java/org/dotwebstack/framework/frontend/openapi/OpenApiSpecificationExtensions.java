@@ -24,10 +24,6 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String RELATIVE_LINK = "x-relative-link";
 
-  public static final String RESULT_REF = DOTWEBSTACK_PREFIX.concat("result-ref");
-
-  public static final String RESULT_REF_COLLECTION = "collection";
-
   public static final String EXCLUDE_PROPERTIES_WHEN_EMPTY =
       DOTWEBSTACK_PREFIX.concat("exclude-properties-when-empty");
 

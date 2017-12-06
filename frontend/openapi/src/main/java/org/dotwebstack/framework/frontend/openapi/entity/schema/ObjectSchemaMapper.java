@@ -17,7 +17,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-class ObjectSchemaMapper extends AbstractLdPathSchemaMapper<ObjectProperty, Object> {
+class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectProperty, Object> {
 
   @Override
   public Object mapTupleValue(ObjectProperty schema, Value value) {
@@ -29,12 +29,24 @@ class ObjectSchemaMapper extends AbstractLdPathSchemaMapper<ObjectProperty, Obje
       SchemaMapperAdapter schemaMapperAdapter, Value context) {
 
     Value contextNew = context;
-    Set<Resource> subjects = applySubjectFilterIfPossible(property, graphEntityContext);
-    if (!subjects.isEmpty()) {
+
+    if (hasSubjectFilterVendorExtension(property)) {
+      Set<Resource> subjects = filterSubjects(property, graphEntityContext);
+
+      if (subjects.isEmpty()) {
+        if (property.getRequired()) {
+          throw new SchemaMapperRuntimeException(
+              "Subject filter for a required object property yielded no result.");
+        }
+
+        return null;
+      }
+
       if (subjects.size() > 1) {
         throw new SchemaMapperRuntimeException(
-            "More entrypoint subjects found. Only one is needed.");
+            "More entrypoint subjects found. Only one is required.");
       }
+
       contextNew = subjects.iterator().next();
     }
 
@@ -47,8 +59,6 @@ class ObjectSchemaMapper extends AbstractLdPathSchemaMapper<ObjectProperty, Obje
 
     return handleProperties(property, graphEntityContext, schemaMapperAdapter, contextNew);
   }
-
-
 
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
       GraphEntityContext entityBuilderContext, Value context, String ldPathQuery,
@@ -85,8 +95,8 @@ class ObjectSchemaMapper extends AbstractLdPathSchemaMapper<ObjectProperty, Obje
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
           schemaMapperAdapter, context);
 
-      if ((isInclusedWhenNull(propValue, propertyResult)
-          && isInclusedWhenEmpty(propValue, propertyResult))) {
+      if ((isIncludedWhenNull(propValue, propertyResult)
+          && isIncludedWhenEmpty(propValue, propertyResult))) {
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
       }
     });

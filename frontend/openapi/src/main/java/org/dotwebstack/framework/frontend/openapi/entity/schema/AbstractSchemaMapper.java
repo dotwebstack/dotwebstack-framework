@@ -13,7 +13,7 @@ import org.eclipse.rdf4j.model.Value;
 
 abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
 
-  static Value getSingleStatement(@NonNull Collection<Value> queryResult,
+  protected static Value getSingleStatement(@NonNull Collection<Value> queryResult,
       @NonNull String ldPathQuery) {
 
     if (queryResult.isEmpty()) {
@@ -32,7 +32,7 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
 
   protected abstract Set<IRI> getSupportedDataTypes();
 
-  String dataTypesAsString() {
+  protected String dataTypesAsString() {
     return Joiner.on(", ").join(getSupportedDataTypes());
   }
 
@@ -51,25 +51,25 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
     return false;
   }
 
-  boolean isInclusedWhenNull(Property propValue, Object propertyResult) {
+  protected boolean isIncludedWhenNull(Property propValue, Object propertyResult) {
     return !(hasVendorExtensionWithValue(propValue,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true)
         && (propertyResult == null) && !(propValue instanceof ArrayProperty));
   }
 
-  boolean isInclusedWhenEmpty(Property propValue, Object propertyResult) {
+  protected boolean isIncludedWhenEmpty(Property propValue, Object propertyResult) {
     return !(hasVendorExtensionWithValue(propValue,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true)
         && (propertyResult != null && ((Collection) propertyResult).isEmpty()
             && (propValue instanceof ArrayProperty)));
   }
 
-  boolean hasVendorExtensionWithValue(Property property, String extension, Object value) {
+  protected boolean hasVendorExtensionWithValue(Property property, String extension, Object value) {
     return hasVendorExtension(property, extension)
         && property.getVendorExtensions().get(extension).equals(value);
   }
 
-  boolean hasVendorExtension(Property property, String extension) {
+  protected boolean hasVendorExtension(Property property, String extension) {
     return property.getVendorExtensions().containsKey(extension);
   }
 
@@ -81,7 +81,7 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
    * @return <code>true</code> if given value is literal which supports one of given data types,
    *         <code>false</code> otherwise.
    */
-  boolean isSupportedLiteral(Object value) {
+  protected boolean isSupportedLiteral(Object value) {
     return value instanceof Literal && isDataTypeSupported((Literal) value);
   }
 

@@ -10,7 +10,6 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Locale;
 import org.eclipse.rdf4j.model.IRI;
