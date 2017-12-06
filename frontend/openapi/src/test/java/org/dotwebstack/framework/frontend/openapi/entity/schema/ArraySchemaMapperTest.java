@@ -111,7 +111,7 @@ public class ArraySchemaMapperTest {
     property.setName(DUMMY_NAME);
 
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage(String.format("ArrayProperty must have either a '%s' attribute",
+    thrown.expectMessage(String.format("ArrayProperty must have a '%s' attribute",
         OpenApiSpecificationExtensions.LDPATH));
 
     registry.mapGraphValue(property, entityBuilderContext, registry, context);

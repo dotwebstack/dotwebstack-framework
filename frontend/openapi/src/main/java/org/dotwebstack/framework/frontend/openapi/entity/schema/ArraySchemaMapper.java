@@ -48,7 +48,7 @@ public class ArraySchemaMapper extends AbstractLdPathSchemaMapper<ArrayProperty,
           queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
         } else {
           throw new SchemaMapperRuntimeException(
-              String.format("ArrayProperty must have either a '%s' attribute",
+              String.format("ArrayProperty must have a '%s' attribute",
                   OpenApiSpecificationExtensions.LDPATH));
         }
       }

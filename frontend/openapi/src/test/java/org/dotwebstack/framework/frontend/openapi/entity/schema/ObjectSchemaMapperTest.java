@@ -113,7 +113,7 @@ public class ObjectSchemaMapperTest {
     objectProperty.setProperties(ImmutableMap.of());
 
     Map<String, Object> result = (Map<String, Object>) registry.mapGraphValue(objectProperty,
-            entityBuilderContextMock, registry, context1Mock);
+        entityBuilderContextMock, registry, context1Mock);
 
     assertThat(result.keySet(), hasSize(0));
   }
@@ -126,7 +126,7 @@ public class ObjectSchemaMapperTest {
     when(ldPathExecutorMock.ldPathQuery(any(), eq(STR3_LD_EXP))).thenReturn(ImmutableList.of());
 
     Map<String, Object> result = (Map<String, Object>) registry.mapGraphValue(objectProperty,
-            entityBuilderContextMock, registry, context1Mock);
+        entityBuilderContextMock, registry, context1Mock);
 
     assertThat(result.keySet(), hasSize(4));
     assertThat(result, hasEntry(KEY_1, com.google.common.base.Optional.of(STR_VALUE_1)));
@@ -175,6 +175,23 @@ public class ObjectSchemaMapperTest {
         "LDPath expression for object property ('%s') yielded multiple elements.", DUMMY_EXPR_1));
 
     registry.mapGraphValue(objectProperty, entityBuilderContextMock, registry, context1Mock);
+  }
+
+  @Test
+  public void handleObjectWithWithNullResult() {
+
+    StringProperty stringProperty = new StringProperty();
+    stringProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL,
+        true);
+    objectProperty.setProperties(ImmutableMap.of(KEY_1, stringProperty));
+
+    when(ldPathExecutorMock.ldPathQuery(any(), any())).thenReturn(Collections.EMPTY_LIST);
+
+    when(ldPathExecutorMock.ldPathQuery(context1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
+
+    Map result = (ImmutableMap) registry.mapGraphValue(objectProperty, entityBuilderContextMock,
+        registry, context1Mock);
+    assertTrue(result.isEmpty());
   }
 
 }
