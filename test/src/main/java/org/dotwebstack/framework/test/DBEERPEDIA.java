@@ -146,6 +146,8 @@ public final class DBEERPEDIA {
 
   public static final String URL_PATTERN_VALUE = "/holyBeer";
 
+  public static final IRI BREWERY_TYPE;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
@@ -226,6 +228,8 @@ public final class DBEERPEDIA {
     CUSTOM_APPEARANCE_PROP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "customAppearanceProp");
 
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
+
+    BREWERY_TYPE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Brewery");
   }
 
   private DBEERPEDIA() {

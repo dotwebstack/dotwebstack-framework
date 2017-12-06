@@ -51,10 +51,10 @@ public class AbstractLdPathSchemaMapperTest {
   public void when_No_Obj_exists__then_no_filter_results() {
     // Arrange
     Map<String, Object> vendorExtensions =
-        Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newLinkedHashMap(ImmutableMap.of(
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE, "http://www.test.nl#is",
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT, "http://www.test.nl#obj3"))));
+        Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
+            Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
+                "http://www.test.nl#is", OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
+                "http://www.test.nl#obj3"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
@@ -73,10 +73,10 @@ public class AbstractLdPathSchemaMapperTest {
     when(graphEntityContextMock.getModel()).thenReturn(model);
 
     Map<String, Object> vendorExtensions =
-        Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newLinkedHashMap(ImmutableMap.of(
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE, "http://www.test.nl#is",
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT, "http://www.test.nl#obj1"))));
+        Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
+            Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
+                "http://www.test.nl#is", OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
+                "http://www.test.nl#obj1"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
@@ -95,10 +95,10 @@ public class AbstractLdPathSchemaMapperTest {
     when(graphEntityContextMock.getModel()).thenReturn(model);
 
     Map<String, Object> vendorExtensions =
-        Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newLinkedHashMap(ImmutableMap.of(
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE, "http://www.test.nl#is",
-                OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT, "http://www.test.nl#obj1"))));
+        Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
+            Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
+                "http://www.test.nl#is", OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
+                "http://www.test.nl#obj1"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
     Set<Resource> results =
@@ -112,10 +112,9 @@ public class AbstractLdPathSchemaMapperTest {
   public void when_No_Object_Or_Predicate_Specified_Then_Exception() {
     // Arrange
     Map<String, Object> vendorExtensions =
-        Maps.newLinkedHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newLinkedHashMap(
-                ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-                    "http://www.test.nl#is"))));
+        Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
+            Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
+                "http://www.test.nl#is"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     thrown.expect(SchemaMapperRuntimeException.class);
     // Act

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.ArrayProperty;
@@ -20,7 +21,7 @@ public class ArraySchemaMapper extends AbstractLdPathSchemaMapper<ArrayProperty,
 
   @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull Value value) {
-    return SchemaMapperUtils.castLiteralValue(value).integerValue();
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -68,8 +69,8 @@ public class ArraySchemaMapper extends AbstractLdPathSchemaMapper<ArrayProperty,
     validateMaxItems(property, queryResult);
 
     queryResult.forEach(valueNext -> builder.add(
-        com.google.common.base.Optional.fromNullable(schemaMapperAdapter.mapGraphValue(
-            property.getItems(), graphEntityContext, schemaMapperAdapter, valueNext))));
+        Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
+            graphEntityContext, schemaMapperAdapter, valueNext))));
   }
 
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {

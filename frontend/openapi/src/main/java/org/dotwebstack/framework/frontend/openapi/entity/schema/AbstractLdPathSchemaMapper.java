@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import lombok.NonNull;
@@ -28,8 +27,8 @@ abstract class AbstractLdPathSchemaMapper<S extends Property, T>
       @NonNull GraphEntityContext graphEntityContext) {
     if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.SUBJECT_FILTER)) {
 
-      Map subjectFilter = (LinkedHashMap) property.getVendorExtensions().get(
-          OpenApiSpecificationExtensions.SUBJECT_FILTER);
+      Map subjectFilter =
+          (Map) property.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT_FILTER);
 
       String predicate =
           (String) subjectFilter.get(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE);
@@ -49,6 +48,7 @@ abstract class AbstractLdPathSchemaMapper<S extends Property, T>
 
       return filteredModel.subjects();
     }
+
     return ImmutableSet.of();
   }
 }
