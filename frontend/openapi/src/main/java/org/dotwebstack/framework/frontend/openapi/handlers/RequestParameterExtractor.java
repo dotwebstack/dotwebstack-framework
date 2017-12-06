@@ -32,7 +32,7 @@ final class RequestParameterExtractor {
   }
 
   static RequestParameters extract(@NonNull ContainerRequestContext containerRequestContext,
-      ObjectMapper mapper) {
+      @NonNull ObjectMapper mapper) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
 

@@ -237,16 +237,17 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void map_DoesNotRegisterAnything_NonGetPaths() throws IOException {
+  public void map_ThrowsException_NonGetPaths() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
         new Path().put(new Operation()));
 
+    // Assert
+    thrown.expect(IllegalStateException.class);
+    thrown.expectMessage("No API operation found");
+
     // Act
     requestMapper.map(httpConfigurationMock);
-
-    // Assert
-    verifyZeroInteractions(httpConfigurationMock);
   }
 
   @Test

@@ -1,100 +1,73 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import com.google.common.collect.ImmutableList;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import jersey.repackaged.com.google.common.collect.ImmutableMap;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class RequestParametersTest {
 
   @Test
-  public void testClearParameters() {
+  public void putAll_MapContainsValues_WithMultivaluedMap() {
+    MultivaluedMap<String, String> multivaluedMap = new MultivaluedHashMap<>();
+    multivaluedMap.put("X", ImmutableList.of("A"));
     RequestParameters parameters = new RequestParameters();
-    parameters.put("X", 123);
-    parameters.put("Y", 123);
-    parameters.put("Z", 123);
 
-    parameters.cleanParameters("X", "Z");
+    parameters.putAll(multivaluedMap);
 
-    Assert.assertNull(parameters.get("X"));
-    Assert.assertNull(parameters.get("Z"));
-    Assert.assertEquals(123, parameters.get("Y"));
+    Assert.assertEquals("A", parameters.get("X"));
   }
 
   @Test
-  public void testAsBoolean() {
+  public void putAll_MapContainsValues_WithMap() {
     RequestParameters parameters = new RequestParameters();
 
-    parameters.put("X", true);
+    parameters.putAll(ImmutableMap.of("X", "A"));
 
-    Assert.assertFalse(parameters.asBoolean("Y"));
-    Assert.assertTrue(parameters.asBoolean("X"));
+    Assert.assertEquals("A", parameters.get("X"));
   }
 
   @Test
-  public void testAsInt() {
+  public void asString_ReturnsString_ForExistingEntry() {
     RequestParameters parameters = new RequestParameters();
+    parameters.putAll(ImmutableMap.of("X", "A"));
 
-    parameters.put("X", 1);
+    String result = parameters.asString("X");
 
-    Assert.assertNull(parameters.asInt("Y"));
-    Assert.assertEquals(Integer.valueOf(1), parameters.asInt("X"));
+    Assert.assertEquals("A", result);
   }
 
   @Test
-  public void testAsIntWithDefault() {
+  public void asString_ReturnsNull_ForNonexistentEntry() {
     RequestParameters parameters = new RequestParameters();
+    parameters.putAll(ImmutableMap.of("X", "A"));
 
-    parameters.put("X", 1);
+    String result = parameters.asString("Y");
 
-    Assert.assertEquals(Integer.valueOf(2), parameters.asInt("Y", 2));
-    Assert.assertEquals(Integer.valueOf(1), parameters.asInt("X", 2));
+    Assert.assertNull(result);
   }
 
   @Test
-  public void testAsString() {
+  public void get_ReturnsValue_ForExistentKey() {
     RequestParameters parameters = new RequestParameters();
+    parameters.putAll(ImmutableMap.of("X", "A"));
 
-    parameters.put("X", "A");
+    Object result = parameters.get("X");
 
-    Assert.assertNull(parameters.asString("Y"));
-    Assert.assertEquals("A", parameters.asString("X"));
+    Assert.assertEquals("A", result);
   }
 
   @Test
-  public void testPutIfAbsent() {
+  public void get_ReturnsNull_ForNonexistentKey() {
     RequestParameters parameters = new RequestParameters();
+    parameters.putAll(ImmutableMap.of("X", "A"));
 
-    parameters.put("X", "A");
-    parameters.putIfAbsent("X", "B");
-    parameters.putIfAbsent("Y", "C");
+    Object result = parameters.get("Y");
 
-    Assert.assertEquals("C", parameters.asString("Y"));
-    Assert.assertEquals("A", parameters.asString("X"));
+    Assert.assertNull(result);
   }
-
-  @Test
-  public void testAsMap() {
-    RequestParameters parameters = new RequestParameters();
-
-    parameters.put("X", "A");
-    parameters.put("Y", "B");
-
-    Assert.assertEquals(parameters.asMap(), ImmutableMap.of("X", "A", "Y", "B"));
-  }
-
-  @Test
-  public void testPutAll() {
-    RequestParameters parameters = new RequestParameters();
-    parameters.put("X", "A");
-
-    RequestParameters parameters2 = new RequestParameters();
-    parameters2.putAll(parameters);
-
-    Assert.assertThat(parameters2.asMap(), Matchers.hasEntry("X", "A"));
-  }
-
-
 
 }
 

@@ -33,7 +33,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
   }
 
   @Override
-  public Object getResult(Map<String, String> parameterValues) {
+  public Object getResult(@NonNull Map<String, String> parameterValues) {
     Map<String, Object> templateParameters = new HashMap<>();
     Map<String, Value> bindings = new HashMap<>();
 

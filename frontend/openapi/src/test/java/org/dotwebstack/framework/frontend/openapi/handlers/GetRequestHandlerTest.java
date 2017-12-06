@@ -4,11 +4,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
@@ -45,7 +48,6 @@ public class GetRequestHandlerTest {
   @Mock
   private ContainerRequestContext containerRequestContextMock;
 
-  // XXX (PvH) Waarom gebruik je deze niet in je testen?
   @Mock
   private ApiRequestValidator apiRequestValidatorMock;
 
@@ -61,6 +63,12 @@ public class GetRequestHandlerTest {
   public void setUp() {
     getRequestHandler = new GetRequestHandler(operationMock, informationProductMock,
         ImmutableMap.of(), requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
+
+    when(apiRequestValidatorMock.validate(operationMock, containerRequestContextMock)).thenReturn(
+        new RequestParameters());
+    when(operationMock.getOperation()).thenReturn(new Operation());
+    when(requestParameterMapperMock.map(any(Operation.class), eq(informationProductMock),
+        any(RequestParameters.class))).thenReturn(ImmutableMap.of());
   }
 
   @Test
@@ -81,6 +89,46 @@ public class GetRequestHandlerTest {
     // Act
     new GetRequestHandler(operationMock, informationProductMock, null, requestParameterMapperMock,
         apiRequestValidatorMock, swaggerMock);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingApiOperation() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GetRequestHandler(null, informationProductMock, ImmutableMap.of(),
+        requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingRequestParameterMapper() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GetRequestHandler(operationMock, informationProductMock, ImmutableMap.of(), null,
+        apiRequestValidatorMock, swaggerMock);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingApiRequestValidator() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GetRequestHandler(operationMock, informationProductMock, ImmutableMap.of(),
+        requestParameterMapperMock, null, swaggerMock);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingSwagger() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new GetRequestHandler(operationMock, informationProductMock, ImmutableMap.of(),
+        requestParameterMapperMock, apiRequestValidatorMock, null);
   }
 
   @Test
@@ -145,5 +193,4 @@ public class GetRequestHandlerTest {
         equalTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
     assertThat(response.getEntity(), nullValue());
   }
-
 }

@@ -90,10 +90,9 @@ public class ApiRequestValidatorTest {
   }
 
   @Test
-  public void validateRequest() throws URISyntaxException, IOException {
+  public void validate_DoesNotFail_ForGetRequest() throws URISyntaxException, IOException {
     Swagger swagger = createSwagger("simple-getHeader.yml");
     RequestValidator validator = SwaggerUtils.createValidator(swagger);
-
     ContainerRequestContext mockGet = mockGet();
     ApiRequestValidator requestValidator1 = new ApiRequestValidator(validator, mapper);
 
@@ -102,13 +101,11 @@ public class ApiRequestValidatorTest {
   }
 
   @Test
-  public void testGetRequestRequiredHeader() throws URISyntaxException, IOException {
-
+  public void validate_DoesNotFail_ForRequiredHeader() throws URISyntaxException, IOException {
     exception.expect(WebApplicationException.class);
 
     Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
     RequestValidator validator = SwaggerUtils.createValidator(swagger);
-
     ContainerRequestContext mockGet = mockGet();
     ApiRequestValidator requestValidator1 = new ApiRequestValidator(validator, mapper);
 
@@ -117,28 +114,27 @@ public class ApiRequestValidatorTest {
   }
 
   @Test
-  public void testPostRequest() throws URISyntaxException, IOException {
+  public void validate_DoesNotFail_ForPostRequest() throws URISyntaxException, IOException {
     Swagger swagger = createSwagger("post-request.yml");
     RequestValidator validator = SwaggerUtils.createValidator(swagger);
-
     String body = "{ \"someproperty\": \"one\" }";
     ContainerRequestContext mockPost = mockPost(body);
-
     ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", "post");
     ApiRequestValidator requestValidator = new ApiRequestValidator(validator, mapper);
 
     RequestParameters validatedParams = requestValidator.validate(apiOperation, mockPost);
+
     Assert.assertEquals(body, validatedParams.asString(RequestParameterExtractor.RAW_REQUEST_BODY));
   }
 
-  @Test(expected = WebApplicationException.class)
-  public void testPostRequestMissingProperty() throws URISyntaxException, IOException {
+  @Test
+  public void validate_ThrowsException_ForMissingProperty() throws URISyntaxException, IOException {
+    exception.expect(WebApplicationException.class);
+
     Swagger swagger = createSwagger("post-request.yml");
     RequestValidator validator = SwaggerUtils.createValidator(swagger);
-
     ContainerRequestContext mockPost = mockPost("{ \"prop\": \"one\" }");
     ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", "post");
-
     ApiRequestValidator requestValidator = new ApiRequestValidator(validator, mapper);
 
     requestValidator.validate(apiOperation, mockPost);

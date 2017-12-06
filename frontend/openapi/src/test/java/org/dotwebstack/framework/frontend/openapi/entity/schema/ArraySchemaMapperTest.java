@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import io.swagger.models.properties.ArrayProperty;
@@ -14,7 +15,6 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
@@ -102,9 +102,9 @@ public class ArraySchemaMapperTest {
         entityBuilderContext, registry, context);
 
     assertThat(result, Matchers.hasSize(3));
-    assertThat(result.get(0), is(com.google.common.base.Optional.of(VALUE_1.stringValue())));
-    assertThat(result.get(1), is(com.google.common.base.Optional.of(VALUE_2.stringValue())));
-    assertThat(result.get(2), is(com.google.common.base.Optional.of(VALUE_3.stringValue())));
+    assertThat(result.get(0), is(Optional.of(VALUE_1.stringValue())));
+    assertThat(result.get(1), is(Optional.of(VALUE_2.stringValue())));
+    assertThat(result.get(2), is(Optional.of(VALUE_3.stringValue())));
   }
 
   @Test

@@ -71,7 +71,7 @@ public class RequestParameterExtractorTest {
   }
 
   @Test
-  public void hasPrivateConstructor() throws NoSuchMethodException, InstantiationException,
+  public void constructor_IsPrivate() throws NoSuchMethodException, InstantiationException,
       IllegalAccessException, InvocationTargetException {
     Constructor<?> constructor = RequestParameterExtractor.class.getDeclaredConstructor();
     constructor.setAccessible(true);
@@ -80,7 +80,7 @@ public class RequestParameterExtractorTest {
   }
 
   @Test
-  public void extractsParameterSet() {
+  public void extract_ReturnsRequestParameters_ForValidInput() {
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
     RequestParameters result = RequestParameterExtractor.extract(context, mapper);
@@ -93,7 +93,7 @@ public class RequestParameterExtractorTest {
   }
 
   @Test
-  public void extractBody_ThrowsException_WithNullEntityStream() {
+  public void extract_ThrowsException_WithNullEntityStream() {
     exception.expect(InternalServerErrorException.class);
 
     when(context.getEntityStream()).thenReturn(null);
@@ -102,7 +102,7 @@ public class RequestParameterExtractorTest {
   }
 
   @Test
-  public void doesNotFailWhenNonGeoJsonBodyIsSupplied() {
+  public void extract_DoesNotFail_WhenNonGeoJsonBodyIsSupplied() {
     String body = "{ \"foo\": \"bar\" }";
 
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));

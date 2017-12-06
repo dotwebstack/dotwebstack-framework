@@ -16,14 +16,13 @@ import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// XXX (PvH) Kan de klasse package-private worden?
-public class ApiRequestValidator {
+class ApiRequestValidator {
   private static final Logger LOG = LoggerFactory.getLogger(ApiRequestValidator.class);
 
   private final RequestValidator requestValidator;
   private final ObjectMapper mapper;
 
-  ApiRequestValidator(@NonNull RequestValidator requestValidator, ObjectMapper mapper) {
+  ApiRequestValidator(@NonNull RequestValidator requestValidator, @NonNull ObjectMapper mapper) {
     this.requestValidator = requestValidator;
     this.mapper = mapper;
   }
@@ -36,7 +35,8 @@ public class ApiRequestValidator {
    * @return a map of (validated) parameters
    * @throws WebApplicationException in case validation fails
    */
-  RequestParameters validate(ApiOperation apiOperation, ContainerRequestContext requestContext) {
+  RequestParameters validate(@NonNull ApiOperation apiOperation,
+      @NonNull ContainerRequestContext requestContext) {
     String strMethod = requestContext.getMethod();
     Method method = Method.valueOf(strMethod.toUpperCase());
     Builder builder = new SimpleRequest.Builder(method, requestContext.getUriInfo().getPath());
