@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
-import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import java.util.Set;
@@ -29,30 +28,33 @@ abstract class AbstractSubjectFilterSchemaMapper<S extends Property, T>
    */
   protected final Set<Resource> filterSubjects(@NonNull Property property,
       @NonNull GraphEntityContext graphEntityContext) {
-    if (hasSubjectFilterVendorExtension(property)) {
-
-      Map subjectFilter =
-          (Map) property.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT_FILTER);
-
-      String predicate =
-          (String) subjectFilter.get(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE);
-      String object =
-          (String) subjectFilter.get(OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT);
-
-      if (predicate == null || object == null) {
-        throw new SchemaMapperRuntimeException(
-            "Subject filter cannot work without missing predicate or object.");
-      }
-
-      ValueFactory vf = SimpleValueFactory.getInstance();
-
-      final IRI predicateIri = vf.createIRI(predicate);
-      final IRI objectIri = vf.createIRI(object);
-      Model filteredModel = graphEntityContext.getModel().filter(null, predicateIri, objectIri);
-
-      return filteredModel.subjects();
+    if (!hasSubjectFilterVendorExtension(property)) {
+      throw new IllegalStateException(String.format(
+          "Vendor extension '%s' not defined, "
+              + "please call hasSubjectFilterVendorExtension() before calling filterSubjects()",
+          OpenApiSpecificationExtensions.SUBJECT_FILTER));
     }
 
-    return ImmutableSet.of();
+    Map subjectFilter =
+        (Map) property.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT_FILTER);
+
+    String predicate =
+        (String) subjectFilter.get(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE);
+    String object =
+        (String) subjectFilter.get(OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT);
+
+    if (predicate == null || object == null) {
+      throw new SchemaMapperRuntimeException(
+          "Subject filter cannot work without missing predicate or object.");
+    }
+
+    ValueFactory vf = SimpleValueFactory.getInstance();
+
+    final IRI predicateIri = vf.createIRI(predicate);
+    final IRI objectIri = vf.createIRI(object);
+    Model filteredModel = graphEntityContext.getModel().filter(null, predicateIri, objectIri);
+
+    return filteredModel.subjects();
   }
+
 }

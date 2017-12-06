@@ -36,7 +36,7 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
       subjects.forEach(subject -> builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(),
           graphEntityContext, schemaMapperAdapter, subject)));
     } else if (context != null) {
-      if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+      if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
         queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
       } else {
         throw new SchemaMapperRuntimeException(

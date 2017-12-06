@@ -34,8 +34,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
   @Mock
   private Property propertyMock;
 
-  private AbstractSubjectFilterSchemaMapper subjectFilterSchemaMapper =
-      new TestLdPathSchemaMapper();
+  private AbstractSubjectFilterSchemaMapper mapper = new TestSubjectFilterSchemaMapper();
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -58,8 +57,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
                 "http://www.test.nl#obj3"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
-    Set<Resource> results =
-        subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
+    Set<Resource> results = mapper.filterSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(0)));
   }
@@ -80,8 +78,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
                 "http://www.test.nl#obj1"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
-    Set<Resource> results =
-        subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
+    Set<Resource> results = mapper.filterSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(2)));
   }
@@ -102,8 +99,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
                 "http://www.test.nl#obj1"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
-    Set<Resource> results =
-        subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
+    Set<Resource> results = mapper.filterSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(1)));
   }
@@ -119,10 +115,35 @@ public class AbstractSubjectFilterSchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     thrown.expect(SchemaMapperRuntimeException.class);
     // Act
-    subjectFilterSchemaMapper.filterSubjects(propertyMock, graphEntityContextMock);
+    mapper.filterSubjects(propertyMock, graphEntityContextMock);
   }
 
-  private static class TestLdPathSchemaMapper extends AbstractSubjectFilterSchemaMapper {
+  @Test
+  public void hasSubjectFilterVendorExt_ReturnsFalse_WhenPropDoesNotHaveSubjectFilterVendorExt() {
+    // Arrange
+    when(propertyMock.getVendorExtensions()).thenReturn(ImmutableMap.of());
+
+    // Act
+    boolean result = mapper.hasSubjectFilterVendorExtension(propertyMock);
+
+    // Assert
+    assertThat(result, is(false));
+  }
+
+  @Test
+  public void hasSubjectFilterVendorExt_ReturnsTrue_WhenPropDoesNotHaveSubjectFilterVendorExt() {
+    // Arrange
+    when(propertyMock.getVendorExtensions()).thenReturn(
+        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER, ImmutableMap.of()));
+
+    // Act
+    boolean result = mapper.hasSubjectFilterVendorExtension(propertyMock);
+
+    // Assert
+    assertThat(result, is(true));
+  }
+
+  private static class TestSubjectFilterSchemaMapper extends AbstractSubjectFilterSchemaMapper {
 
     @Override
     public Object mapTupleValue(Property schema, Value value) {

@@ -71,6 +71,8 @@ public class ArraySchemaMapperTest {
   private ObjectProperty objectProperty;
   private ArrayProperty arrayProperty;
 
+  // XXX (PvH) TODO Use Dbeerpedia test data
+
   @Before
   public void setUp() {
     schemaMapper = new ArraySchemaMapper();
@@ -143,6 +145,8 @@ public class ArraySchemaMapperTest {
     // Arrange
     arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     arrayProperty.setItems(new StringProperty());
+    arrayProperty.setMinItems(1);
+    arrayProperty.setMaxItems(3);
 
     when(ldPathExecutorMock.ldPathQuery(any(Value.class), eq(DUMMY_EXPR))).thenReturn(
         ImmutableList.of(VALUE_1, VALUE_2, VALUE_3));
@@ -159,44 +163,12 @@ public class ArraySchemaMapperTest {
     assertThat(result.get(2), is(Optional.of(VALUE_3.stringValue())));
   }
 
-  // @Test
-  public void mapGraphValue_ReturnsArrayOfStrings_WhenSubjectFilterHasBeenDefined() {
-    // Arrange
-    arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-            RDF.TYPE.stringValue(), OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
-            DBEERPEDIA.BREWERY_TYPE.stringValue()),
-        OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR));
-    arrayProperty.setItems(new StringProperty());
-
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
-        DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
-            DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
-                DBEERPEDIA.MAXIMUS_NAME).build();
-    when(contextMock.getModel()).thenReturn(model);
-
-    when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN, DUMMY_EXPR)).thenReturn(
-        ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME));
-    when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.MAXIMUS, DUMMY_EXPR)).thenReturn(
-        ImmutableList.of(DBEERPEDIA.MAXIMUS_NAME));
-
-    // Act
-    Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        schemaMapperAdapter, valueMock);
-
-    // Assert
-    assertThat(result, instanceOf(List.class));
-
-    List<Optional<String>> list = (List) result;
-
-    assertThat(list, contains(Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue()),
-        Optional.of(DBEERPEDIA.MAXIMUS_NAME.stringValue())));
-  }
-
   @Test
   public void mapGraphValue_ReturnsArrayOfObjects_WhenSubjectFilterHasBeenDefined() {
     // Arrange
     arrayProperty.setItems(objectProperty);
+    arrayProperty.setMinItems(1);
+    arrayProperty.setMaxItems(3);
     arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
         ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
             RDF.TYPE.stringValue(), OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
