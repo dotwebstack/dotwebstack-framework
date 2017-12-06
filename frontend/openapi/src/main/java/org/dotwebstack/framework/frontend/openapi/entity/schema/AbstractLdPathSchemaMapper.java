@@ -14,9 +14,8 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-// TODO Should not be an interface, but a utility class. Or move the method the abstract class. Or
-// create a extenstion of the current abstract class.
-public interface LdPathSchemaMapper {
+abstract class AbstractLdPathSchemaMapper<S extends Property, T>
+    extends AbstractSchemaMapper<S, T> {
 
   /**
    * Apply subject filter if possible.
@@ -25,7 +24,7 @@ public interface LdPathSchemaMapper {
    * @param graphEntityContext context of the entity
    * @return non empty set when no results could be found.
    */
-  default Set<Resource> applySubjectFilterIfPossible(@NonNull Property property,
+  protected final Set<Resource> applySubjectFilterIfPossible(@NonNull Property property,
       @NonNull GraphEntityContext graphEntityContext) {
     if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.SUBJECT_FILTER)) {
 

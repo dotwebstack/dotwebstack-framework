@@ -17,8 +17,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-class ObjectSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<ObjectProperty, Object>, LdPathSchemaMapper {
+class ObjectSchemaMapper extends AbstractLdPathSchemaMapper<ObjectProperty, Object> {
 
   @Override
   public Object mapTupleValue(ObjectProperty schema, Value value) {

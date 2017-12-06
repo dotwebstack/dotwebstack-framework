@@ -11,8 +11,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
-
-abstract class AbstractSchemaMapper {
+abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
 
   static Value getSingleStatement(@NonNull Collection<Value> queryResult,
       @NonNull String ldPathQuery) {

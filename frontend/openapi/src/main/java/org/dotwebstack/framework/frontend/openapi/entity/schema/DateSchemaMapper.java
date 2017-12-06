@@ -18,8 +18,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-class DateSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<DateProperty, LocalDate> {
+class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
   @Override

@@ -16,8 +16,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-class IntegerSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<BaseIntegerProperty, Object> {
+class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Object> {
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
 

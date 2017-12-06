@@ -16,8 +16,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ArraySchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<ArrayProperty, Object>, LdPathSchemaMapper {
+public class ArraySchemaMapper extends AbstractLdPathSchemaMapper<ArrayProperty, Object> {
 
   @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull Value value) {
@@ -102,7 +101,6 @@ public class ArraySchemaMapper extends AbstractSchemaMapper
 
   @Override
   protected Set<IRI> getSupportedDataTypes() {
-    // TODO Moet een UnsupportedOperationException gooien?
     return ImmutableSet.of();
   }
 
