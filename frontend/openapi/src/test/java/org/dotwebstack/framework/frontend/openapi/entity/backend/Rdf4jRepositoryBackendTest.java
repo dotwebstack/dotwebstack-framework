@@ -114,7 +114,7 @@ public class Rdf4jRepositoryBackendTest {
   }
 
   @Test
-  public void createLiteral_ReturnsLiteral_WhenCreatedWithLocaleWithoutIRI() throws Exception {
+  public void createLiteral_ReturnsLiteral_WhenCreatedWithLocaleWithoutIri() throws Exception {
     // Arrange
     // Act
     Literal literal = backend.createLiteral("http://www.test.nl", Locale.CANADA, null);
