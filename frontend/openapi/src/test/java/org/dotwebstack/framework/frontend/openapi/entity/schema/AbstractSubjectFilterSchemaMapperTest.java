@@ -131,7 +131,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
   }
 
   @Test
-  public void hasSubjectFilterVendorExt_ReturnsTrue_WhenPropDoesNotHaveSubjectFilterVendorExt() {
+  public void hasSubjectFilterVendorExt_ReturnsTrue_WhenPropDoesHaveSubjectFilterVendorExt() {
     // Arrange
     when(propertyMock.getVendorExtensions()).thenReturn(
         ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER, ImmutableMap.of()));

@@ -19,7 +19,6 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
@@ -219,7 +218,7 @@ public class ArraySchemaMapperTest {
   public void mapGraphValue_ThrowsException_WhenArrayBoundsLowerLimitViolated() {
     // Arrange
     arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
-    arrayProperty.setItems(new StringProperty());
+    arrayProperty.setItems(stringProperty);
     arrayProperty.setMinItems(2);
 
     when(ldPathExecutorMock.ldPathQuery(any(Value.class), eq(DUMMY_EXPR))).thenReturn(
@@ -239,7 +238,7 @@ public class ArraySchemaMapperTest {
   public void mapGraphValue_ThrowsException_WhenArrayBoundsUpperLimitViolated() {
     // Arrange
     arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
-    arrayProperty.setItems(new StringProperty());
+    arrayProperty.setItems(stringProperty);
     arrayProperty.setMaxItems(2);
 
     when(ldPathExecutorMock.ldPathQuery(any(Value.class), eq(DUMMY_EXPR))).thenReturn(
@@ -258,18 +257,17 @@ public class ArraySchemaMapperTest {
   @Test
   public void isIncludedWhenEmpty_WhenSetNoResult() {
 
-    //Arrange
+    // Arrange
     ArrayProperty arrayProperty = new ArrayProperty();
     arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY,
-            true);
-    arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH,
-            "test");
+        true);
+    arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, "test");
     objectProperty.setProperties(ImmutableMap.of("key1", arrayProperty));
 
-    //Act
+    // Act
     List result = (ImmutableList) schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-            schemaMapperAdapter, valueMock);
-    //Assert
+        schemaMapperAdapter, valueMock);
+    // Assert
     assertTrue(result.isEmpty());
   }
 

@@ -82,7 +82,6 @@ public class ObjectSchemaMapperTest {
 
   private ObjectProperty property;
 
-  // XXX (PvH) TODO Use Dbeerpedia test data
   // XXX (PvH) TODO Use .wsf test method naming conventions
 
   @Before
@@ -115,7 +114,6 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void handleObjectWithoutProperties() {
     property.setProperties(ImmutableMap.of());
 
@@ -126,7 +124,6 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void handleObjectProperties() {
     property.setProperties(ImmutableMap.of(KEY_1, STR_PROPERTY_1, KEY_2, STR_PROPERTY_2, KEY_3,
         ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
@@ -215,7 +212,7 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsNull_WhenSubjectFilterYieldsNoResult() {
+  public void mapGraphValue_ReturnsNull_WhenSubjectFilterYieldsNoResultAndPropertyIsOptional() {
     // Arrange
     property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
         ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,

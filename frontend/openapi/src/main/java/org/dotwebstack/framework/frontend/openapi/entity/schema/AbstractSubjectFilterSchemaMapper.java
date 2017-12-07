@@ -20,18 +20,21 @@ abstract class AbstractSubjectFilterSchemaMapper<S extends Property, T>
   }
 
   /**
-   * Apply subject filter if possible.
+   * Apply the subject filter and returns the filtered subjects.
    * 
    * @param property property with subject filter
    * @param graphEntityContext context of the entity
    * @return non empty set when no results could be found.
+   * @throws IllegalStateException If the property does not have the
+   *         {@link OpenApiSpecificationExtensions#SUBJECT_FILTER} vendor extension defined. Please
+   *         call {@link #hasSubjectFilterVendorExtension(Property)} before calling this method.
    */
   protected final Set<Resource> filterSubjects(@NonNull Property property,
       @NonNull GraphEntityContext graphEntityContext) {
     if (!hasSubjectFilterVendorExtension(property)) {
       throw new IllegalStateException(String.format(
           "Vendor extension '%s' not defined, "
-              + "please call hasSubjectFilterVendorExtension() before calling filterSubjects()",
+              + "please call hasSubjectFilterVendorExtension() before calling this method",
           OpenApiSpecificationExtensions.SUBJECT_FILTER));
     }
 
