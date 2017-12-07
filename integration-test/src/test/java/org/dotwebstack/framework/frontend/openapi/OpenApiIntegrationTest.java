@@ -112,14 +112,6 @@ public class OpenApiIntegrationTest {
 
   @Test
   public void get_ValidationFails_WhenWrongParameterType() throws JSONException {
-    // XXX (PvH) Hebben we de arrange stap nodig? Volgens mij komt de test hier niet
-    // Arrange
-    TupleQueryResultBuilder builder =
-        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
-            DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
-            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
-    SparqlHttpStub.returnTuple(builder);
-
     // Act
     Response response =
         target.path("/dbp/api/v1/breweries").queryParam("fte", "foo").request().accept(

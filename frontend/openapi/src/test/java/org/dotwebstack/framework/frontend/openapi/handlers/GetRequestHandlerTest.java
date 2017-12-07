@@ -4,8 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -64,14 +64,16 @@ public class GetRequestHandlerTest {
     getRequestHandler = new GetRequestHandler(operationMock, informationProductMock,
         ImmutableMap.of(), requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
 
+    RequestParameters requestParameters = new RequestParameters();
     when(apiRequestValidatorMock.validate(operationMock, containerRequestContextMock)).thenReturn(
-        new RequestParameters());
-    when(operationMock.getOperation()).thenReturn(new Operation());
+        requestParameters);
+    Operation operation = new Operation();
+    when(operationMock.getOperation()).thenReturn(operation);
 
     // XXX (PvH) Je gebruikt hier any voor de Operation en RequestParameters. Maar verwacht je niet
     // de instanties die je hier boven hebt aangemaakt?
-    when(requestParameterMapperMock.map(any(Operation.class), eq(informationProductMock),
-        any(RequestParameters.class))).thenReturn(ImmutableMap.of());
+    when(requestParameterMapperMock.map(same(operation), eq(informationProductMock),
+        same(requestParameters))).thenReturn(ImmutableMap.of());
   }
 
   @Test

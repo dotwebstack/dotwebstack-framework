@@ -109,14 +109,10 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
     swagger.getPaths().forEach((path, pathItem) -> {
 
-      // XXX (PvH) Ik zou de volgende 2 statements samenvoegen. Het heeft weinig zin een variabele
-      // eerst op null te zetten, en direct daarna een waarde te geven.
-      ApiOperation apiOperation = null;
-      apiOperation = SwaggerUtils.extractApiOperation(swagger, path, "get");
+      ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, "get");
       if (apiOperation == null) {
-        // XXX (PvH) Wil je hier zo maar returnen? Of een exception gooien? Deze situatie mag
-        // tenslotte niet optreden.
-        return;
+        throw new UnsupportedOperationException(
+            String.format("No GET operation found for '%s'", path));
       }
       Operation getOperation = apiOperation.getOperation();
 

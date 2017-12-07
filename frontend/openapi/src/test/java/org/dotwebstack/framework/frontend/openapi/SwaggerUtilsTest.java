@@ -1,10 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import com.atlassian.oai.validator.interaction.RequestValidator;
 import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
@@ -38,46 +39,6 @@ public class SwaggerUtilsTest {
 
   }
 
-  // XXX (PvH) Ik zou NPE 's niet testen (in vervolg). Not worth the effort :-)
-  @Test
-  public void createValidator_ThrowsException_WithMissingSwagger() {
-    thrown.expect(NullPointerException.class);
-
-    SwaggerUtils.createValidator(null);
-  }
-
-  @Test
-  public void createValidator_ReturnsRequestValidator_ForValidSwagger() {
-    RequestValidator requestValidator = SwaggerUtils.createValidator(swagger);
-
-    // XXX (PvH) Dit is een beetje een loze test. Code technisch zal de requestValidator altijd een
-    // RequestValidator zijn.
-    // Ik zou SwaggerUtils.createValidator daarom niet testen
-    assertThat(requestValidator, instanceOf(RequestValidator.class));
-  }
-
-  @Test
-  public void extractApiOperation_ThrowsException_WithMissingSwagger() {
-    thrown.expect(NullPointerException.class);
-
-    SwaggerUtils.extractApiOperation(null, path, method);
-  }
-
-  @Test
-  public void extractApiOperation_ThrowsException_WithMissingPath() {
-    thrown.expect(NullPointerException.class);
-
-    SwaggerUtils.extractApiOperation(swagger, null, method);
-  }
-
-  @Test
-  public void extractApiOperation_ThrowsException_WithMissingMethod() {
-    thrown.expect(NullPointerException.class);
-
-    SwaggerUtils.extractApiOperation(swagger, path, null);
-  }
-
-  // XXX (PvH) Nette test!
   @Test
   public void extractApiOperation_ReturnsValidApiOperation_WithSpecifiedGet() throws IOException {
     path = "/endpoint";
@@ -86,16 +47,10 @@ public class SwaggerUtilsTest {
 
     Operation operation = apiOperation.getOperation();
 
-    // XXX (PvH) Idem. Onnodige assert.
-    assertThat(operation, instanceOf(Operation.class));
-    // XXX (PvH) Gebruik je bewust equalTo ipv org.hamcrest.Matchers.is()?
-    assertThat(apiOperation.getMethod(), equalTo(HttpMethod.GET));
-    assertThat(apiOperation.getApiPath().normalised(), equalTo(path));
-    // XXX (PvH) Je kan hier ook hasSize gebruiken
-    assertThat(operation.getParameters().size(), equalTo(2));
-    // XXX (PvH) Je kan hier ook hasKey gebruiken
-    assertThat(operation.getResponses().containsKey(Integer.toString(Status.OK.getStatusCode())),
-        equalTo(true));
+    assertThat(apiOperation.getMethod(), is(HttpMethod.GET));
+    assertThat(apiOperation.getApiPath().normalised(), is(path));
+    assertThat(operation.getParameters(), hasSize(2));
+    assertThat(operation.getResponses(), hasKey(Integer.toString(Status.OK.getStatusCode())));
   }
 
   @Test
@@ -104,14 +59,12 @@ public class SwaggerUtilsTest {
 
     ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, method);
 
-    // XXX (PvH) Je kan hier ook nullValue() gebruiken
-    assertThat(apiOperation, equalTo(null));
+    assertThat(apiOperation, nullValue());
   }
 
-  // XXX (PvH) Method kan static zijn
-  private Swagger createSwagger() throws IOException {
+  private static Swagger createSwagger() throws IOException {
     String oasSpecContent = StreamUtils.copyToString(
-        getClass().getResourceAsStream(getClass().getSimpleName() + ".yml"),
+        SwaggerUtilsTest.class.getResourceAsStream(SwaggerUtilsTest.class.getSimpleName() + ".yml"),
         Charset.forName("UTF-8"));
     return new SwaggerParser().parse(oasSpecContent);
   }

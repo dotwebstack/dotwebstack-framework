@@ -243,8 +243,8 @@ public class OpenApiRequestMapperTest {
         new Path().put(new Operation()));
 
     // Assert
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("No API operation found");
+    thrown.expect(UnsupportedOperationException.class);
+    thrown.expectMessage("No GET operation found for");
 
     // Act
     requestMapper.map(httpConfigurationMock);
