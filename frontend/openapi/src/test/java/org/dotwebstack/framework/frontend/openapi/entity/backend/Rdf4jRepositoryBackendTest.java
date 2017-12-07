@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Locale;
 import org.eclipse.rdf4j.model.IRI;
@@ -114,7 +115,25 @@ public class Rdf4jRepositoryBackendTest {
   }
 
   @Test
-  public void createLiteral_ReturnsLiteral_WhenCreatedWithLocaleWithoutIRI() throws Exception {
+  public void createLiteral_ReturnsLiteral_WhenCreatedWithLocaleWithoutTypeWithoutLanguage()
+      throws Exception {
+    // Arrange
+    // Act
+    Literal literal = backend.createLiteral("http://www.test.nl", null, null);
+    // Assert
+    assertThat(literal, is(SimpleValueFactory.getInstance().createLiteral("http://www.test.nl")));
+    assertEquals("http://www.w3.org/2001/XMLSchema#string", literal.getDatatype().toString());
+    assertEquals(false, literal.getLanguage().isPresent());
+
+  }
+
+  /**
+   * Language only for type http://www.w3.org/1999/02/22-rdf-syntax-ns#langString see:
+   * https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal
+   *
+   */
+  @Test
+  public void createLiteral_ReturnsLiteral_WhenCreatedWithLocaleWithoutType() throws Exception {
     // Arrange
     // Act
     Literal literal = backend.createLiteral("http://www.test.nl", Locale.CANADA, null);
@@ -122,9 +141,26 @@ public class Rdf4jRepositoryBackendTest {
     assertThat(literal,
         is(SimpleValueFactory.getInstance().createLiteral("http://www.test.nl", "en")));
     assertEquals(Locale.CANADA.getLanguage(), literal.getLanguage().get());
+    assertEquals("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString",
+        literal.getDatatype().toString());
 
   }
 
-
+  /**
+   * Language only for type http://www.w3.org/1999/02/22-rdf-syntax-ns#langString see:
+   * https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal
+   *
+   */
+  @Test
+  public void createLiteral_ReturnsLiteral_WhenCreatedWithLocaleWithTypeLanguageIgnored()
+      throws Exception {
+    // Arrange
+    // Act
+    Literal literal = backend.createLiteral("http://www.test.nl", Locale.CANADA,
+        URI.create("http://www.test.nl"));
+    // Assert
+    assertEquals(false, literal.getLanguage().isPresent());
+    assertEquals("http://www.test.nl", literal.getDatatype().toString());
+  }
 
 }
