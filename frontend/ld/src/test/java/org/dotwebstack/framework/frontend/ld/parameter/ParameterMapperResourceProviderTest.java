@@ -113,7 +113,7 @@ public class ParameterMapperResourceProviderTest {
 
     // Assert
     assertThat(parameterMapperResourceProvider.getAll().entrySet(), hasSize(1));
-    ParameterMapper parameterMapper =
+    AbstractParameterMapper parameterMapper =
         parameterMapperResourceProvider.get(DBEERPEDIA.SUBJECT_FROM_URL);
     assertThat(parameterMapper, is(not(nullValue())));
   }

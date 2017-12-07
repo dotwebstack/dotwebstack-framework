@@ -9,9 +9,9 @@ import org.eclipse.rdf4j.model.IRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class ParameterMapper {
+public abstract class AbstractParameterMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ParameterMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractParameterMapper.class);
 
   private IRI identifier;
 
@@ -19,29 +19,33 @@ public abstract class ParameterMapper {
 
   private Target target;
 
+  protected AbstractParameterMapper(Builder<?> builder) {
+    identifier = builder.identifier;
+    source = builder.source;
+    target = builder.target;
+  }
+
   public IRI getIdentifier() {
     return identifier;
   }
 
   public Map<String, Object> map(@NonNull ContainerRequestContext containerRequestContext) {
-
     String input = source.getValue(containerRequestContext);
 
     String output = parse(input);
 
-    Map<String, Object> result = target.set(output);
-
-    return result;
+    return target.set(output);
   }
 
-  public String parse(String input) {
+  protected String parse(String input) {
     return input;
   }
 
   public static class Builder<T extends Builder<T>> {
-
     private IRI identifier;
+
     private ParameterSource source;
+
     private Target target;
 
     public Builder(@NonNull IRI identifier, @NonNull ParameterSource source,
@@ -50,12 +54,6 @@ public abstract class ParameterMapper {
       this.source = source;
       this.target = target;
     }
-  }
-
-  protected ParameterMapper(Builder<?> builder) {
-    identifier = builder.identifier;
-    source = builder.source;
-    target = builder.target;
   }
 
 }

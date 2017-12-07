@@ -20,7 +20,7 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
 import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvider;
-import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
+import org.dotwebstack.framework.frontend.ld.parameter.AbstractParameterMapper;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -76,7 +76,7 @@ public class RepresentationResourceProviderTest {
   private Appearance appearance;
 
   @Mock
-  private ParameterMapper parameterMapper;
+  private AbstractParameterMapper parameterMapper;
 
   @Mock
   private ConfigurationBackend configurationBackend;
@@ -191,7 +191,7 @@ public class RepresentationResourceProviderTest {
         equalTo(DBEERPEDIA.URL_PATTERN.stringValue()));
     assertThat(representation.getStage(), equalTo(stage));
     assertThat(representation.getAppearance(), equalTo(appearance));
-    assertThat(representation.getParametersMappers(), contains(parameterMapper));
+    assertThat(representation.getParameterMappers(), contains(parameterMapper));
   }
 
   @Test

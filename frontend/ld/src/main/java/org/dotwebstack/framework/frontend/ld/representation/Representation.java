@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
-import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
+import org.dotwebstack.framework.frontend.ld.parameter.AbstractParameterMapper;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -20,7 +20,7 @@ public class Representation {
 
   private List<String> urlPatterns;
 
-  private List<ParameterMapper> parametersMappers;
+  private List<AbstractParameterMapper> parameterMappers;
 
   private Stage stage;
 
@@ -29,7 +29,7 @@ public class Representation {
   private Representation(Builder builder) {
     identifier = builder.identifier;
     urlPatterns = builder.urlPatterns;
-    parametersMappers = builder.parameterMappers;
+    parameterMappers = builder.parameterMappers;
     stage = builder.stage;
     informationProduct = builder.informationProduct;
     appearance = builder.appearance;
@@ -52,8 +52,8 @@ public class Representation {
     return urlPatterns;
   }
 
-  public List<ParameterMapper> getParametersMappers() {
-    return parametersMappers;
+  public List<AbstractParameterMapper> getParameterMappers() {
+    return parameterMappers;
   }
 
   public Stage getStage() {
@@ -78,7 +78,7 @@ public class Representation {
 
     private List<String> urlPatterns = new ArrayList<>();
 
-    private List<ParameterMapper> parameterMappers = new ArrayList<>();
+    private List<AbstractParameterMapper> parameterMappers = new ArrayList<>();
 
     private Stage stage;
 
@@ -93,7 +93,7 @@ public class Representation {
       this.informationProduct = representation.informationProduct;
       this.appearance = representation.appearance;
       this.urlPatterns = representation.urlPatterns;
-      this.parameterMappers = representation.parametersMappers;
+      this.parameterMappers = representation.parameterMappers;
       this.stage = representation.stage;
       this.subRepresentations = representation.subRepresentations;
     }
@@ -118,7 +118,7 @@ public class Representation {
       return this;
     }
 
-    public Builder parameterMapper(ParameterMapper parameterMapper) {
+    public Builder parameterMapper(AbstractParameterMapper parameterMapper) {
       this.parameterMappers.add(parameterMapper);
       return this;
     }

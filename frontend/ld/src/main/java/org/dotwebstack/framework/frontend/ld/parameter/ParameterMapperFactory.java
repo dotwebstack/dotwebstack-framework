@@ -25,7 +25,7 @@ public class ParameterMapperFactory {
     this.parameterTargetFactory = parameterTargetFactory;
   }
 
-  public ParameterMapper create(IRI parameterMapperType, Model model, IRI identifier) {
+  public AbstractParameterMapper create(IRI parameterMapperType, Model model, IRI identifier) {
 
     IRI sourceIri = getObjectIRI(model, identifier, ELMO.SOURCE_PROP).orElseThrow(
         () -> new ConfigurationException(
@@ -61,11 +61,11 @@ public class ParameterMapperFactory {
         String.format("No parametermapper available for type <%s>.", parameterMapperType));
   }
 
-  protected Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
+  private Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
     return Models.objectString(model.filter(subject, predicate, null));
   }
 
-  protected Optional<IRI> getObjectIRI(Model model, IRI subject, IRI predicate) {
+  private Optional<IRI> getObjectIRI(Model model, IRI subject, IRI predicate) {
     return Models.objectIRI(model.filter(subject, predicate, null));
   }
 

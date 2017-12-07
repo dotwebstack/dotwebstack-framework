@@ -39,7 +39,6 @@ public class UriParameterMapperTest {
 
   @Before
   public void setUp() {
-
     // Arange
     uri = URI.create("http://" + DBEERPEDIA.ORG_HOST + DBEERPEDIA.BREWERY_DOC_PATH);
 

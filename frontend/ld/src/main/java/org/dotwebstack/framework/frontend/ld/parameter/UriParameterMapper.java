@@ -11,7 +11,7 @@ import org.glassfish.jersey.uri.UriTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UriParameterMapper extends ParameterMapper {
+public class UriParameterMapper extends AbstractParameterMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(UriParameterMapper.class);
 
@@ -21,12 +21,18 @@ public class UriParameterMapper extends ParameterMapper {
 
   private String template;
 
+  protected UriParameterMapper(Builder builder) {
+    super(builder);
+    template = builder.template;
+    pattern = builder.pattern;
+  }
+
   public static IRI getType() {
     return type;
   }
 
   @Override
-  public String parse(String input) {
+  protected String parse(String input) {
     String output = input;
 
     if (pattern != null && template != null) {
@@ -44,9 +50,9 @@ public class UriParameterMapper extends ParameterMapper {
     return output;
   }
 
-  public static class Builder extends ParameterMapper.Builder<Builder> {
-
+  public static class Builder extends AbstractParameterMapper.Builder<Builder> {
     private String pattern;
+
     private String template;
 
     public Builder(@NonNull IRI identifier, @NonNull ParameterSource source,
@@ -67,12 +73,6 @@ public class UriParameterMapper extends ParameterMapper {
     public UriParameterMapper build() {
       return new UriParameterMapper(this);
     }
-  }
-
-  protected UriParameterMapper(Builder builder) {
-    super(builder);
-    template = builder.template;
-    pattern = builder.pattern;
   }
 
 }

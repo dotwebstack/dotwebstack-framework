@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.parameter.target;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.param.ParameterDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,14 +15,9 @@ public class ParameterTarget implements Target {
     this.parameter = parameter;
   }
 
-  public Map<String, Object> set(String value) {
-
-    Map<String, Object> result = new HashMap<String, Object>();
-
-    result.put(parameter.getName(), value);
-
+  public ImmutableMap<String, Object> set(String value) {
     LOG.debug("Set parameter {}: {}", parameter.getName(), value);
-
-    return result;
+    return ImmutableMap.of(parameter.getName(), value);
   }
+
 }
