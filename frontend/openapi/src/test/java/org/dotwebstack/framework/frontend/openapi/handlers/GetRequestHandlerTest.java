@@ -67,6 +67,9 @@ public class GetRequestHandlerTest {
     when(apiRequestValidatorMock.validate(operationMock, containerRequestContextMock)).thenReturn(
         new RequestParameters());
     when(operationMock.getOperation()).thenReturn(new Operation());
+
+    // XXX (PvH) Je gebruikt hier any voor de Operation en RequestParameters. Maar verwacht je niet
+    // de instanties die je hier boven hebt aangemaakt?
     when(requestParameterMapperMock.map(any(Operation.class), eq(informationProductMock),
         any(RequestParameters.class))).thenReturn(ImmutableMap.of());
   }

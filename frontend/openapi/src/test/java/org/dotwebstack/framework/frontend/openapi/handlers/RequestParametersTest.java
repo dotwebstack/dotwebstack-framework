@@ -11,6 +11,7 @@ public class RequestParametersTest {
 
   @Test
   public void putAll_MapContainsValues_WithMultivaluedMap() {
+    // XXX (PvH) Voor deze test wil je dan toch ook multiple values in de RequestParameters gooien?
     MultivaluedMap<String, String> multivaluedMap = new MultivaluedHashMap<>();
     multivaluedMap.put("X", ImmutableList.of("A"));
     RequestParameters parameters = new RequestParameters();
@@ -24,6 +25,7 @@ public class RequestParametersTest {
   public void putAll_MapContainsValues_WithMap() {
     RequestParameters parameters = new RequestParameters();
 
+    // XXX (PvH) Het lijkt me sterker als de map meerdere key-values heeft
     parameters.putAll(ImmutableMap.of("X", "A"));
 
     Assert.assertEquals("A", parameters.get("X"));
@@ -34,13 +36,14 @@ public class RequestParametersTest {
     RequestParameters parameters = new RequestParameters();
     parameters.putAll(ImmutableMap.of("X", "A"));
 
+    // XXX (PvH) Het lijkt me sterker als de value geen String is
     String result = parameters.asString("X");
 
     Assert.assertEquals("A", result);
   }
 
   @Test
-  public void asString_ReturnsNull_ForNonexistentEntry() {
+  public void asString_ReturnsNull_ForNonExistentEntry() {
     RequestParameters parameters = new RequestParameters();
     parameters.putAll(ImmutableMap.of("X", "A"));
 
@@ -60,7 +63,7 @@ public class RequestParametersTest {
   }
 
   @Test
-  public void get_ReturnsNull_ForNonexistentKey() {
+  public void get_ReturnsNull_ForNonExistentKey() {
     RequestParameters parameters = new RequestParameters();
     parameters.putAll(ImmutableMap.of("X", "A"));
 

@@ -90,7 +90,7 @@ public class ApiRequestValidatorTest {
   }
 
   @Test
-  public void validate_DoesNotFail_ForGetRequest() throws URISyntaxException, IOException {
+  public void validate_DoesNotFail_ForValidGetRequest() throws URISyntaxException, IOException {
     Swagger swagger = createSwagger("simple-getHeader.yml");
     RequestValidator validator = SwaggerUtils.createValidator(swagger);
     ContainerRequestContext mockGet = mockGet();
@@ -101,7 +101,8 @@ public class ApiRequestValidatorTest {
   }
 
   @Test
-  public void validate_DoesNotFail_ForRequiredHeader() throws URISyntaxException, IOException {
+  public void validate_DoesNotFail_WhenRequiredHeaderIsSupplied()
+      throws URISyntaxException, IOException {
     exception.expect(WebApplicationException.class);
 
     Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
@@ -114,7 +115,7 @@ public class ApiRequestValidatorTest {
   }
 
   @Test
-  public void validate_DoesNotFail_ForPostRequest() throws URISyntaxException, IOException {
+  public void validate_DoesNotFail_ForValidPostRequest() throws URISyntaxException, IOException {
     Swagger swagger = createSwagger("post-request.yml");
     RequestValidator validator = SwaggerUtils.createValidator(swagger);
     String body = "{ \"someproperty\": \"one\" }";

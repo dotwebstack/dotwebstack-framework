@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import javax.ws.rs.core.MultivaluedMap;
 
+// XXX (PvH) Missing NonNull parameters
 class RequestParameters {
 
   private final Map<String, Object> parameters = Maps.newHashMap();

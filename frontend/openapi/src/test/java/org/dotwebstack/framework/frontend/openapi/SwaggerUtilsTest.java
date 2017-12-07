@@ -38,6 +38,7 @@ public class SwaggerUtilsTest {
 
   }
 
+  // XXX (PvH) Ik zou NPE 's niet testen (in vervolg). Not worth the effort :-)
   @Test
   public void createValidator_ThrowsException_WithMissingSwagger() {
     thrown.expect(NullPointerException.class);
@@ -49,6 +50,9 @@ public class SwaggerUtilsTest {
   public void createValidator_ReturnsRequestValidator_ForValidSwagger() {
     RequestValidator requestValidator = SwaggerUtils.createValidator(swagger);
 
+    // XXX (PvH) Dit is een beetje een loze test. Code technisch zal de requestValidator altijd een
+    // RequestValidator zijn.
+    // Ik zou SwaggerUtils.createValidator daarom niet testen
     assertThat(requestValidator, instanceOf(RequestValidator.class));
   }
 
@@ -73,6 +77,7 @@ public class SwaggerUtilsTest {
     SwaggerUtils.extractApiOperation(swagger, path, null);
   }
 
+  // XXX (PvH) Nette test!
   @Test
   public void extractApiOperation_ReturnsValidApiOperation_WithSpecifiedGet() throws IOException {
     path = "/endpoint";
@@ -80,10 +85,15 @@ public class SwaggerUtilsTest {
     ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, method);
 
     Operation operation = apiOperation.getOperation();
+
+    // XXX (PvH) Idem. Onnodige assert.
     assertThat(operation, instanceOf(Operation.class));
+    // XXX (PvH) Gebruik je bewust equalTo ipv org.hamcrest.Matchers.is()?
     assertThat(apiOperation.getMethod(), equalTo(HttpMethod.GET));
     assertThat(apiOperation.getApiPath().normalised(), equalTo(path));
+    // XXX (PvH) Je kan hier ook hasSize gebruiken
     assertThat(operation.getParameters().size(), equalTo(2));
+    // XXX (PvH) Je kan hier ook hasKey gebruiken
     assertThat(operation.getResponses().containsKey(Integer.toString(Status.OK.getStatusCode())),
         equalTo(true));
   }
@@ -94,10 +104,11 @@ public class SwaggerUtilsTest {
 
     ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, method);
 
+    // XXX (PvH) Je kan hier ook nullValue() gebruiken
     assertThat(apiOperation, equalTo(null));
   }
 
-
+  // XXX (PvH) Method kan static zijn
   private Swagger createSwagger() throws IOException {
     String oasSpecContent = StreamUtils.copyToString(
         getClass().getResourceAsStream(getClass().getSimpleName() + ".yml"),

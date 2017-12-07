@@ -22,6 +22,8 @@ public final class SwaggerUtils {
     return new RequestValidator(schemaValidator, messageResolver, swagger);
   }
 
+  // XXX (PvH) Het lijkt me goed te Javadoccen dat de methode null teruggeeft, indien het pad niet
+  // gevonden is.
   public static ApiOperation extractApiOperation(@NonNull Swagger swagger, @NonNull String path,
       @NonNull String method) {
     Method realMethod = Method.valueOf(method.toUpperCase());
@@ -29,6 +31,7 @@ public final class SwaggerUtils {
     ApiOperationMatch apiOperationMatch =
         new ApiOperationResolver(swagger, null).findApiOperation(path, realMethod);
 
+    // XXX (PvH) Hoe matched dit met OpenApiRequestMapperTest#map_ThrowsException_NonGetPaths?
     return apiOperationMatch.isPathFound() ? apiOperationMatch.getApiOperation() : null;
   }
 
