@@ -25,7 +25,7 @@ public class ParameterMapperFactory {
     this.parameterTargetFactory = parameterTargetFactory;
   }
 
-  public AbstractParameterMapper create(IRI parameterMapperType, Model model, IRI identifier) {
+  public ParameterMapper create(IRI parameterMapperType, Model model, IRI identifier) {
 
     IRI sourceIri = getObjectIRI(model, identifier, ELMO.SOURCE_PROP).orElseThrow(
         () -> new ConfigurationException(

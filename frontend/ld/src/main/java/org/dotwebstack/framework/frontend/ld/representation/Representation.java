@@ -6,7 +6,7 @@ import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
-import org.dotwebstack.framework.frontend.ld.parameter.AbstractParameterMapper;
+import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -20,7 +20,7 @@ public class Representation {
 
   private List<String> urlPatterns;
 
-  private List<AbstractParameterMapper> parameterMappers;
+  private List<ParameterMapper> parameterMappers;
 
   private Stage stage;
 
@@ -52,7 +52,7 @@ public class Representation {
     return urlPatterns;
   }
 
-  public List<AbstractParameterMapper> getParameterMappers() {
+  public List<ParameterMapper> getParameterMappers() {
     return parameterMappers;
   }
 
@@ -78,7 +78,7 @@ public class Representation {
 
     private List<String> urlPatterns = new ArrayList<>();
 
-    private List<AbstractParameterMapper> parameterMappers = new ArrayList<>();
+    private List<ParameterMapper> parameterMappers = new ArrayList<>();
 
     private Stage stage;
 
@@ -118,7 +118,7 @@ public class Representation {
       return this;
     }
 
-    public Builder parameterMapper(AbstractParameterMapper parameterMapper) {
+    public Builder parameterMapper(ParameterMapper parameterMapper) {
       this.parameterMappers.add(parameterMapper);
       return this;
     }

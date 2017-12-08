@@ -15,8 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ParameterMapperResourceProvider
-    extends AbstractResourceProvider<AbstractParameterMapper> {
+public class ParameterMapperResourceProvider extends AbstractResourceProvider<ParameterMapper> {
 
   private ParameterMapperFactory parameterMapperFactory;
 
@@ -38,7 +37,7 @@ public class ParameterMapperResourceProvider
   }
 
   @Override
-  protected AbstractParameterMapper createResource(Model model, IRI identifier) {
+  protected ParameterMapper createResource(Model model, IRI identifier) {
     IRI parameterMapperType = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for parametermapper <%s>.", RDF.TYPE, identifier)));
