@@ -34,26 +34,6 @@ public class RdfModelTransformer {
     return result;
   }
 
-  public static Model getModel(Resource trigFile) throws IOException {
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    InputStream trigFileInputStream = trigFile.getInputStream();
-    RDFWriter turtleWriter = Rio.createWriter(RDFFormat.TURTLE, byteArrayOutputStream);
-
-    RDFParser trigParser = Rio.createParser(RDFFormat.TRIG);
-    trigParser.setRDFHandler(turtleWriter);
-    if (trigFile instanceof InputStreamResource) {
-      trigParser.parse(trigFileInputStream, "/");
-    } else {
-      trigParser.parse(trigFileInputStream, "");
-    }
-
-    org.eclipse.rdf4j.model.Model result = Rio.parse(
-        new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), "", RDFFormat.TURTLE);
-
-    byteArrayOutputStream.close();
-    return result;
-  }
-
   public static Model getModel(InputStream inputStream) throws IOException {
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
     RDFWriter turtleWriter = Rio.createWriter(RDFFormat.TURTLE, byteArrayOutputStream);
