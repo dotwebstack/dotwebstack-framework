@@ -1,54 +1,73 @@
 package org.dotwebstack.framework.validation;
 
+import java.util.HashMap;
+import java.util.Map;
 import lombok.NonNull;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.impl.PropertyImpl;
 
 public class ValidationReport {
 
   private final Model reportModel;
 
-  private boolean isValid;
+  private final Map<String, ErrorObject> errors;
 
-  private String focusNode;
+  private final String descriptionResultPath = "http://www.w3.org/ns/shacl#resultPath";
 
-  private String resultMessage;
+  private final String descriptionResultMessage = "http://www.w3.org/ns/shacl#resultMessage";
 
-  private String resultPath;
+  private final String descriptionFocusNode = "http://www.w3.org/ns/shacl#focusNode";
+
+  private final String descriptionConforms = "http://www.w3.org/ns/shacl#conforms";
+
+  private final String descriptionResult = "http://www.w3.org/ns/shacl#result";
 
   public ValidationReport(@NonNull Model reportModel) {
     this.reportModel = reportModel;
-    this.isValid = false;
-    this.focusNode = "";
-    this.resultMessage = "";
-    this.resultPath = "";
+    this.errors = new HashMap<>();
     parseValidationResult();
   }
 
-  public boolean isValid() {
-    return isValid;
-  }
-
-  public String getValidationReport() {
-    if (!isValid) {
-      return String.format("Invalid configuration at path [%s] on node [%s] with error "
-          + "message [%s]", resultPath, focusNode, resultMessage);
-    } else {
-      return "Everything is okay.";
-    }
-  }
-
   private void parseValidationResult() {
-    final NodeIterator isValidProperty = reportModel.listObjectsOfProperty(new PropertyImpl("http://www.w3.org/ns/shacl#conforms"));
-    isValid = isValidProperty.next().asLiteral().getBoolean();
+    final NodeIterator isValidProperty =
+        reportModel.listObjectsOfProperty(new PropertyImpl(descriptionConforms));
+    final boolean isValid = isValidProperty.next().asLiteral().getBoolean();
     if (!isValid) {
-      final NodeIterator resultPathProperty = reportModel.listObjectsOfProperty(new PropertyImpl("http://www.w3.org/ns/shacl#resultPath"));
-      resultPath = resultPathProperty.next().toString();
-      final NodeIterator resultMessageProperty = reportModel.listObjectsOfProperty(new PropertyImpl("http://www.w3.org/ns/shacl#resultMessage"));
-      resultMessage = resultMessageProperty.next().asLiteral().getString();
-      final NodeIterator focusNodeProperty = reportModel.listObjectsOfProperty(new PropertyImpl("http://www.w3.org/ns/shacl#focusNode"));
-      focusNode = focusNodeProperty.next().toString();
+      for (Object subject : reportModel.listObjectsOfProperty(
+          new PropertyImpl(descriptionResult)).toSet()) {
+        errors.put(subject.toString(), createErrorObject(reportModel, (Resource) subject));
+      }
     }
+  }
+
+  public Map<String, ErrorObject> getErrors() {
+    return errors;
+  }
+
+  public boolean isValid() {
+    return errors.size() > 0 ? false : true;
+  }
+
+  private ErrorObject createErrorObject(Model model, Resource subject) {
+    final String resultPath = model.listObjectsOfProperty(subject,
+        new PropertyImpl(descriptionResultPath)).next().toString();
+    final String resultMessage = model.listObjectsOfProperty(subject,
+        new PropertyImpl(descriptionResultMessage)).next().toString();
+    final String focusNode = model.listObjectsOfProperty(subject,
+        new PropertyImpl(descriptionFocusNode)).next().toString();
+
+    return new ErrorObject(focusNode, resultMessage, resultPath);
+  }
+
+  public String printReport() {
+    StringBuilder report = new StringBuilder();
+    report.append("--- Validation report ---");
+    for (ErrorObject errorObject : errors.values()) {
+      report.append(errorObject.getErrorReport());
+    }
+    report.append("--- ---");
+    return report.toString();
   }
 }
