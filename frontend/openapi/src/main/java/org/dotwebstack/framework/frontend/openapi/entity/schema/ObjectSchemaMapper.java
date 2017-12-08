@@ -20,15 +20,17 @@ import org.springframework.stereotype.Service;
 class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectProperty, Object> {
 
   @Override
-  public Object mapTupleValue(ObjectProperty schema, Value value) {
+  public Object mapTupleValue(ObjectProperty schema, SchemaMapperContext schemaMapperContext) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public Object mapGraphValue(ObjectProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value context) {
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
 
-    Value contextNew = context;
+    processPropagations(property,schemaMapperContext.getValue(),schemaMapperContext);
+
+
 
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
@@ -47,25 +49,28 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
             "More entrypoint subjects found. Only one is required.");
       }
 
-      contextNew = subjects.iterator().next();
+      schemaMapperContext.setValue(subjects.iterator().next());
     }
 
     if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
-      return handleLdPathVendorExtension(property, graphEntityContext, contextNew, ldPath,
-          schemaMapperAdapter);
+      return handleLdPathVendorExtension(property, graphEntityContext, schemaMapperContext,
+          ldPath, schemaMapperAdapter);
     }
 
-    return handleProperties(property, graphEntityContext, schemaMapperAdapter, contextNew);
+    return handleProperties(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter
+        );
   }
 
+
+
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
-      GraphEntityContext entityBuilderContext, Value context, String ldPathQuery,
-      SchemaMapperAdapter schemaMapperAdapter) {
+      GraphEntityContext entityBuilderContext, SchemaMapperContext schemaMapperContext,
+      String ldPathQuery, SchemaMapperAdapter schemaMapperAdapter) {
 
     LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context, ldPathQuery);
+    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
 
     if (queryResult.isEmpty()) {
       if (!property.getRequired()) {
@@ -80,23 +85,22 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
       throw new SchemaMapperRuntimeException(String.format(
           "LDPath expression for object property ('%s') yielded multiple elements.", ldPathQuery));
     }
-
-    return handleProperties(property, entityBuilderContext, schemaMapperAdapter,
-        queryResult.iterator().next());
+    schemaMapperContext.setValue(queryResult.iterator().next());
+    return handleProperties(property, entityBuilderContext, schemaMapperContext,
+        schemaMapperAdapter);
   }
 
 
 
   private Map<String, Object> handleProperties(ObjectProperty property,
-      GraphEntityContext entityBuilderContext, SchemaMapperAdapter schemaMapperAdapter,
-      Value context) {
+      GraphEntityContext entityBuilderContext, SchemaMapperContext schemaMapperContext,
+      SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
     property.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
-          schemaMapperAdapter, context);
+          schemaMapperContext, schemaMapperAdapter);
 
-      if ((isIncludedWhenNull(propValue, propertyResult)
-          && isIncludedWhenEmpty(propValue, propertyResult))) {
+      if (schemaMapperContext.isExcludedWhenNull()) {
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
       }
     });

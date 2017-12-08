@@ -12,14 +12,14 @@ import org.springframework.stereotype.Service;
 public class LongSchemaMapper implements SchemaMapper<LongProperty, BigInteger> {
 
   @Override
-  public BigInteger mapTupleValue(@NonNull LongProperty schema, @NonNull Value value) {
-    return SchemaMapperUtils.castLiteralValue(value).integerValue();
+  public BigInteger mapTupleValue(@NonNull LongProperty schema, @NonNull SchemaMapperContext schemaMapperContext) {
+    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).integerValue();
   }
 
   @Override
   public BigInteger mapGraphValue(LongProperty schema, GraphEntityContext graphEntityContext,
-       SchemaMapperAdapter schemaMapperAdapter, Value value) {
-    return SchemaMapperUtils.castLiteralValue(value).integerValue();
+                                  SchemaMapperContext schemaMapperContext,SchemaMapperAdapter schemaMapperAdapter) {
+    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).integerValue();
   }
 
   @Override

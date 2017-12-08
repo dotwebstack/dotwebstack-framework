@@ -21,6 +21,7 @@ import java.util.Map;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -98,8 +99,8 @@ public class RefSchemaMapperTest {
     thrown.expectMessage(String.format("Unable to resolve reference to swagger model: '%s'.",
         property.getSimpleRef()));
 
-    refPropertyHandler.mapGraphValue(property, entityBuilderContext, propertyHandlerRegistry,
-        context);
+    refPropertyHandler.mapGraphValue(property, entityBuilderContext,
+        SchemaMapperContextImpl.builder().value(context).build(), propertyHandlerRegistry);
   }
 
   @Test
@@ -113,8 +114,9 @@ public class RefSchemaMapperTest {
         ImmutableMap.of(property.getSimpleRef(), refModel));
     when(ldPathExecutor.ldPathQuery(context, LD_PATH_QUERY)).thenReturn(ImmutableList.of(VALUE_2));
 
-    Map<String, Object> result = (Map<String, Object>) refPropertyHandler.mapGraphValue(property,
-        entityBuilderContext, propertyHandlerRegistry, context);
+    Map<String, Object> result =
+        (Map<String, Object>) refPropertyHandler.mapGraphValue(property, entityBuilderContext,
+            SchemaMapperContextImpl.builder().value(context).build(), propertyHandlerRegistry);
 
     assertThat(result.keySet(), hasSize(2));
     assertEquals(((Optional) result.get(KEY_1)).orNull(), VALUE_1.stringValue());

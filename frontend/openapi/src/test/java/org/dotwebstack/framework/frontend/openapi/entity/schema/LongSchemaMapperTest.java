@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import io.swagger.models.properties.LongProperty;
 import io.swagger.models.properties.StringProperty;
 import java.math.BigInteger;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,7 +37,8 @@ public class LongSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
+    schemaMapper.mapTupleValue(null,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR).build());
   }
 
   @Test
@@ -55,13 +57,15 @@ public class LongSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    BigInteger result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
+    BigInteger result = schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR.integerValue()));

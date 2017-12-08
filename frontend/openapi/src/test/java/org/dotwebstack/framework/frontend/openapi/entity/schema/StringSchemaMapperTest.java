@@ -11,6 +11,7 @@ import io.swagger.models.properties.StringProperty;
 import java.util.Arrays;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Value;
 import org.hamcrest.Matchers;
@@ -58,7 +59,8 @@ public class StringSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
+    schemaMapper.mapTupleValue(null,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
@@ -73,7 +75,8 @@ public class StringSchemaMapperTest {
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    String result = schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME);
+    String result = schemaMapper.mapTupleValue(stringProperty,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
@@ -114,8 +117,8 @@ public class StringSchemaMapperTest {
 
   @Test
   public void handleNoVendorExtensions() {
-    Object result =
-        registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
+    Object result = registry.mapGraphValue(stringProperty, entityBuilderContextMock,
+        SchemaMapperContextImpl.builder().value(contextMock).build(), registry);
 
     assertThat(result, nullValue());
   }
@@ -127,7 +130,8 @@ public class StringSchemaMapperTest {
 
     expectExceptionAboutMultipleVendorExtensions();
 
-    registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
+    registry.mapGraphValue(stringProperty, entityBuilderContextMock,
+        SchemaMapperContextImpl.builder().value(contextMock).build(), registry);
   }
 
   @Test
@@ -137,7 +141,8 @@ public class StringSchemaMapperTest {
 
     expectExceptionAboutMultipleVendorExtensions();
 
-    registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
+    registry.mapGraphValue(stringProperty, entityBuilderContextMock,
+        SchemaMapperContextImpl.builder().value(contextMock).build(), registry);
   }
 
   @Test
@@ -147,7 +152,8 @@ public class StringSchemaMapperTest {
 
     expectExceptionAboutMultipleVendorExtensions();
 
-    registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
+    registry.mapGraphValue(stringProperty, entityBuilderContextMock,
+        SchemaMapperContextImpl.builder().value(contextMock).build(), registry);
   }
 
   @Test
@@ -158,7 +164,8 @@ public class StringSchemaMapperTest {
 
     expectExceptionAboutMultipleVendorExtensions();
 
-    registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
+    registry.mapGraphValue(stringProperty, entityBuilderContextMock,
+        SchemaMapperContextImpl.builder().value(contextMock).build(), registry);
   }
 
   private void expectExceptionAboutMultipleVendorExtensions() {

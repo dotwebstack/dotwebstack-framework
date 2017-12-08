@@ -19,11 +19,11 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -129,8 +129,8 @@ public class ArraySchemaMapperTest {
     Value value = null;
 
     // Act
-    Object result =
-        schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock, schemaMapperAdapter, value);
+    Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+        SchemaMapperContextImpl.builder().value(value).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(List.class));
@@ -152,7 +152,7 @@ public class ArraySchemaMapperTest {
     // Act
     List<Optional<String>> result =
         (List<Optional<String>>) schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-            schemaMapperAdapter, valueMock);
+            SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, Matchers.hasSize(3));
@@ -184,7 +184,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        schemaMapperAdapter, valueMock);
+        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(List.class));
@@ -217,7 +217,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        schemaMapperAdapter, valueMock);
+        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(List.class));
@@ -240,7 +240,8 @@ public class ArraySchemaMapperTest {
     arrayProperty.setName(DUMMY_NAME);
 
     // Act
-    schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock, schemaMapperAdapter, valueMock);
+    schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -260,7 +261,8 @@ public class ArraySchemaMapperTest {
             + " specified in the OpenAPI specification", arrayProperty.getMinItems()));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock, schemaMapperAdapter, valueMock);
+    schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -280,24 +282,24 @@ public class ArraySchemaMapperTest {
             + " specified in the OpenAPI specification", arrayProperty.getMaxItems()));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock, schemaMapperAdapter, valueMock);
+    schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
   @Test
   public void isIncludedWhenEmpty_WhenSetNoResult() {
 
-    //Arrange
+    // Arrange
     ArrayProperty arrayProperty = new ArrayProperty();
     arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY,
-            true);
-    arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH,
-            "test");
+        true);
+    arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, "test");
     objectProperty.setProperties(ImmutableMap.of("key1", arrayProperty));
 
-    //Act
+    // Act
     List result = (ImmutableList) schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-            schemaMapperAdapter, valueMock);
-    //Assert
+        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
+    // Assert
     assertTrue(result.isEmpty());
   }
 

@@ -22,6 +22,7 @@ import java.util.Map;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
@@ -112,8 +113,9 @@ public class ObjectSchemaMapperTest {
   public void handleObjectWithoutProperties() {
     objectProperty.setProperties(ImmutableMap.of());
 
-    Map<String, Object> result = (Map<String, Object>) registry.mapGraphValue(objectProperty,
-        entityBuilderContextMock, registry, context1Mock);
+    Map<String, Object> result =
+        (Map<String, Object>) registry.mapGraphValue(objectProperty, entityBuilderContextMock,
+            SchemaMapperContextImpl.builder().value(context1Mock).build(), registry);
 
     assertThat(result.keySet(), hasSize(0));
   }
@@ -125,8 +127,9 @@ public class ObjectSchemaMapperTest {
         KEY_3, ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
     when(ldPathExecutorMock.ldPathQuery(any(), eq(STR3_LD_EXP))).thenReturn(ImmutableList.of());
 
-    Map<String, Object> result = (Map<String, Object>) registry.mapGraphValue(objectProperty,
-        entityBuilderContextMock, registry, context1Mock);
+    Map<String, Object> result =
+        (Map<String, Object>) registry.mapGraphValue(objectProperty, entityBuilderContextMock,
+            SchemaMapperContextImpl.builder().value(context1Mock).build(), registry);
 
     assertThat(result.keySet(), hasSize(4));
     assertThat(result, hasEntry(KEY_1, com.google.common.base.Optional.of(STR_VALUE_1)));
@@ -142,8 +145,8 @@ public class ObjectSchemaMapperTest {
 
     when(ldPathExecutorMock.ldPathQuery(context1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
 
-    Object result =
-        registry.mapGraphValue(objectProperty, entityBuilderContextMock, registry, context1Mock);
+    Object result = registry.mapGraphValue(objectProperty, entityBuilderContextMock,
+        SchemaMapperContextImpl.builder().value(context1Mock).build(), registry);
 
     assertThat(result, nullValue());
   }
@@ -160,7 +163,8 @@ public class ObjectSchemaMapperTest {
         String.format("LDPath expression for a required object property ('%s') yielded no result.",
             DUMMY_EXPR_1));
 
-    registry.mapGraphValue(objectProperty, entityBuilderContextMock, registry, context1Mock);
+    registry.mapGraphValue(objectProperty, entityBuilderContextMock,
+        SchemaMapperContextImpl.builder().value(context1Mock).build(), registry);
   }
 
   @Test
@@ -174,7 +178,8 @@ public class ObjectSchemaMapperTest {
     expectedException.expectMessage(String.format(
         "LDPath expression for object property ('%s') yielded multiple elements.", DUMMY_EXPR_1));
 
-    registry.mapGraphValue(objectProperty, entityBuilderContextMock, registry, context1Mock);
+    registry.mapGraphValue(objectProperty, entityBuilderContextMock,
+        SchemaMapperContextImpl.builder().value(context1Mock).build(), registry);
   }
 
   @Test
@@ -188,7 +193,7 @@ public class ObjectSchemaMapperTest {
 
     // Act
     Map result = (ImmutableMap) registry.mapGraphValue(objectProperty, entityBuilderContextMock,
-        registry, context1Mock);
+        SchemaMapperContextImpl.builder().value(context1Mock).build(), registry);
     // Assert
     assertTrue(result.isEmpty());
   }

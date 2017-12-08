@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.StringProperty;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,7 +48,8 @@ public class SchemaMapperAdapterTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    schemaMapperAdapter.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
+    schemaMapperAdapter.mapTupleValue(null,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
@@ -56,7 +58,8 @@ public class SchemaMapperAdapterTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    schemaMapperAdapter.mapTupleValue(new StringProperty(), null);
+    schemaMapperAdapter.mapTupleValue(new StringProperty(),
+        SchemaMapperContextImpl.builder().value(null).build());
   }
 
   @Test
@@ -71,7 +74,8 @@ public class SchemaMapperAdapterTest {
         String.format("No schema handler available for '%s'.", schema.getClass().getName()));
 
     // Act
-    schemaMapperAdapter.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
+    schemaMapperAdapter.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
@@ -80,11 +84,13 @@ public class SchemaMapperAdapterTest {
     StringProperty schema = new StringProperty();
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
     when(stringSchemaMapper.supports(schema)).thenReturn(true);
-    when(stringSchemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
-        expectedValue);
+    when(stringSchemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build())).thenReturn(
+            expectedValue);
 
     // Act
-    Object value = schemaMapperAdapter.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
+    Object value = schemaMapperAdapter.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert
     assertThat(value, equalTo(expectedValue));

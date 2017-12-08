@@ -144,8 +144,9 @@ public class TupleEntityMapperTest {
     when(result.hasNext()).thenReturn(true, false);
     when(result.next()).thenReturn(
         new ListBindingSet(ImmutableList.of("name"), ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME)));
-    when(schemaMapper.mapTupleValue(nameProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
-        DBEERPEDIA.BROUWTOREN_NAME.stringValue());
+    when(schemaMapper.mapTupleValue(nameProperty,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build())).thenReturn(
+            DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
     Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
@@ -188,8 +189,9 @@ public class TupleEntityMapperTest {
     QueryBindingSet bindingSet = new QueryBindingSet();
     bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
     when(result.next()).thenReturn(bindingSet);
-    when(schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
-        DBEERPEDIA.BROUWTOREN_NAME.stringValue());
+    when(schemaMapper.mapTupleValue(stringProperty,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build())).thenReturn(
+            DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
     Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
@@ -212,8 +214,9 @@ public class TupleEntityMapperTest {
     QueryBindingSet bindingSet = new QueryBindingSet();
     bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
     when(result.next()).thenReturn(bindingSet, bindingSet);
-    when(schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
-        "firstName").thenReturn("secondName");
+    when(schemaMapper.mapTupleValue(stringProperty,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build())).thenReturn(
+            "firstName").thenReturn("secondName");
 
     // Act
     Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);

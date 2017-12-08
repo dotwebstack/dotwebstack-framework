@@ -6,10 +6,10 @@ import org.eclipse.rdf4j.model.Value;
 
 public interface SchemaMapper<S extends Property, T> {
 
-  T mapTupleValue(S schema, Value value);
+  T mapTupleValue(S schema, SchemaMapperContext schemaMapperContext);
 
   T mapGraphValue(S schema, GraphEntityContext entityContext,
-                  SchemaMapperAdapter schemaMapperAdapter, Value value);
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter);
 
   boolean supports(Property schema);
 

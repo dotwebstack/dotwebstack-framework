@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -65,7 +66,8 @@ public class DateSchemaMapperTest {
 
   @Test
   public void handleValidContextWithoutLdPathQuery() {
-    LocalDate result = handler.mapGraphValue(property, entityBuilderContext, registry, VALUE_1);
+    LocalDate result = handler.mapGraphValue(property, entityBuilderContext,
+        SchemaMapperContextImpl.builder().value(VALUE_1).build(), registry);
 
     assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
     verifyZeroInteractions(ldPathExecutor);
@@ -77,7 +79,8 @@ public class DateSchemaMapperTest {
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    LocalDate result = handler.mapGraphValue(property, entityBuilderContext, registry, context);
+    LocalDate result = handler.mapGraphValue(property, entityBuilderContext,
+        SchemaMapperContextImpl.builder().value(context).build(), registry);
 
     assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
   }
@@ -92,7 +95,8 @@ public class DateSchemaMapperTest {
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         DUMMY_EXPR, XMLSchema.DATE.stringValue()));
 
-    handler.mapGraphValue(property, entityBuilderContext, registry, context);
+    handler.mapGraphValue(property, entityBuilderContext,
+        SchemaMapperContextImpl.builder().value(context).build(), registry);
   }
 
 }

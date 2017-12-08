@@ -20,28 +20,30 @@ import org.springframework.stereotype.Service;
 public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull Value value) {
-    return SchemaMapperUtils.castLiteralValue(value).integerValue();
+  public Object mapTupleValue(@NonNull ArrayProperty schema,
+      @NonNull SchemaMapperContext schemaMapperContext) {
+    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).integerValue();
   }
 
   @Override
   public Object mapGraphValue(@NonNull ArrayProperty property,
       @NonNull GraphEntityContext graphEntityContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value context) {
+      @NonNull SchemaMapperContext schemaMapperContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
 
       subjects.forEach(subject -> builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(),
-          graphEntityContext, schemaMapperAdapter, subject)));
-    } else if (context != null) {
+          graphEntityContext, schemaMapperContext, schemaMapperAdapter)));
+    } else if (schemaMapperContext.getValue() != null) {
       if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
+        queryAndValidate(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter,
+            builder);
       } else {
-        throw new SchemaMapperRuntimeException(
-            String.format("ArrayProperty must have a '%s' attribute",
-                OpenApiSpecificationExtensions.LDPATH));
+        throw new SchemaMapperRuntimeException(String.format(
+            "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
       }
     }
 
@@ -49,20 +51,27 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
   }
 
   private void queryAndValidate(ArrayProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value context,
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter,
       ImmutableList.Builder<Object> builder) {
     LdPathExecutor ldPathExecutor = graphEntityContext.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context,
+    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(),
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH));
 
     validateMinItems(property, queryResult);
     validateMaxItems(property, queryResult);
 
-    if (isIncludedWhenEmpty(property, queryResult)) {
-      queryResult.forEach(valueNext -> builder.add(
+
+    queryResult.forEach(valueNext -> {
+      schemaMapperContext.setValue(valueNext);
+      processPropagations(property, schemaMapperContext.getValue(), schemaMapperContext);
+      Optional innerPropertySolved =
           Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
-              graphEntityContext, schemaMapperAdapter, valueNext))));
-    }
+              graphEntityContext, schemaMapperContext, schemaMapperAdapter));
+      if (schemaMapperContext.isExcludedWhenEmpty()) {
+        builder.add(innerPropertySolved);
+      }
+    });
+
   }
 
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {

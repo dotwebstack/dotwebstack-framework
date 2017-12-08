@@ -51,6 +51,10 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
     return false;
   }
 
+  void processPropagations(Property property,Object propertyValue,SchemaMapperContext schemaMapperContext) {
+    schemaMapperContext.setExcludedWhenNull(isIncludedWhenEmpty(property,propertyValue));
+  }
+
   protected boolean isIncludedWhenNull(Property propValue, Object propertyResult) {
     return !(hasVendorExtensionWithValue(propValue,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true)

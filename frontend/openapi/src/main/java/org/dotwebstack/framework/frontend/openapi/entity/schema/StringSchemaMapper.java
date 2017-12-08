@@ -25,27 +25,29 @@ class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   @Override
-  public String mapTupleValue(@NonNull StringProperty schema, @NonNull Value value) {
-    return value.stringValue();
+  public String mapTupleValue(@NonNull StringProperty schema,
+      @NonNull SchemaMapperContext schemaMapperContext) {
+    return schemaMapperContext.getValue().stringValue();
   }
 
   @Override
   public String mapGraphValue(StringProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
     validateVendorExtensions(property);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
       LdPathExecutor ldPathExecutor = graphEntityContext.getLdPathExecutor();
-      return handleLdPathVendorExtension(property, value, ldPathExecutor);
+      return handleLdPathVendorExtension(property, schemaMapperContext.getValue(), ldPathExecutor);
     }
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
       return handleConstantValueVendorExtension(property);
     }
 
-    if (value != null && isSupportedLiteral(value)) {
-      return value.stringValue();
+    if (schemaMapperContext.getValue() != null
+        && isSupportedLiteral(schemaMapperContext.getValue())) {
+      return schemaMapperContext.getValue().stringValue();
     } else if (property.getRequired()) {
       throw new SchemaMapperRuntimeException("No result for required property.");
     }
