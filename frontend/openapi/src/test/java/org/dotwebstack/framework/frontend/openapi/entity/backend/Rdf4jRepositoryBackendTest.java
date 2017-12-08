@@ -119,10 +119,9 @@ public class Rdf4jRepositoryBackendTest {
     Value object = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     Value prop = SimpleValueFactory.getInstance().createBNode();
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(
-        "Property needs to be a URI node (property type: bNode).");
+    thrown.expectMessage("Property needs to be a URI node (property type: bNode).");
     // Act
-    Collection<Value> values = backend.listSubjects( prop, object);
+    Collection<Value> values = backend.listSubjects(prop, object);
   }
 
 
@@ -134,14 +133,13 @@ public class Rdf4jRepositoryBackendTest {
     when(repository.getConnection()).thenReturn(repositoryConnection);
     Exception dummy = new Exception("x");
 
-    doThrow(new RepositoryLockedException("a","b","c",dummy))
-        .when(repositoryConnection).begin();
+    doThrow(new RepositoryLockedException("a", "b", "c", dummy)).when(repositoryConnection).begin();
     Value object = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     Value prop = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     thrown.expect(Rdf4jBackendRuntimeException.class);
-    thrown.expectMessage(     "Error while querying RDF4J repository.");
+    thrown.expectMessage("Error while querying RDF4J repository.");
     // Act
-    Collection<Value> values = backend.listSubjects( prop, object);
+    Collection<Value> values = backend.listSubjects(prop, object);
   }
 
 
@@ -202,7 +200,6 @@ public class Rdf4jRepositoryBackendTest {
     assertEquals("http://www.test.nl", literal.getDatatype().toString());
   }
 
-
   @Test
   public void listObjects_IllegalArgument_ThrowsExeption() {
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
@@ -210,13 +207,11 @@ public class Rdf4jRepositoryBackendTest {
     Value subject = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     Value prop = SimpleValueFactory.getInstance().createBNode();
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage(
-            "Subject needs to be a URI or blank node, property a URI node (types: [subject: URI, property: bNode]).");
+    thrown.expectMessage("Subject needs to be a URI or blank node, property a URI node"
+        + " (types: [subject: URI, property: bNode]).");
     // Act
     Collection<Value> values = backend.listObjects(subject, prop);
   }
-
-
 
   @Test
   public void listObjects_RepositoryFailedt_ThrowsExeption() {
@@ -225,13 +220,11 @@ public class Rdf4jRepositoryBackendTest {
     when(repository.getConnection()).thenReturn(repositoryConnection);
     Exception dummy = new Exception("x");
 
-    doThrow(new RepositoryLockedException("a","b","c",dummy))
-            .when(repositoryConnection)
-            .begin();
+    doThrow(new RepositoryLockedException("a", "b", "c", dummy)).when(repositoryConnection).begin();
     Value subject = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     Value prop = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     thrown.expect(Rdf4jBackendRuntimeException.class);
-    thrown.expectMessage(     "Error while querying RDF4J repository.");
+    thrown.expectMessage("Error while querying RDF4J repository.");
     // Act
     Collection<Value> values = backend.listObjects(subject, prop);
   }
