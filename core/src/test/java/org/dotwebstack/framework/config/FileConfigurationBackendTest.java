@@ -104,6 +104,7 @@ public class FileConfigurationBackendTest {
   public void constructor_ThrowsException_WithMissingElmoConfiguration() {
     // Assert
     thrown.expect(NullPointerException.class);
+
     // Act
     new FileConfigurationBackend(null, repository, "file:config", elmoShapesResource,
         shaclValidator);
@@ -113,6 +114,7 @@ public class FileConfigurationBackendTest {
   public void constructor_ThrowsException_WithMissingRepository() {
     // Assert
     thrown.expect(NullPointerException.class);
+
     // Act
     new FileConfigurationBackend(elmoConfigurationResource, null, "file:config", elmoShapesResource,
         shaclValidator);
@@ -122,6 +124,7 @@ public class FileConfigurationBackendTest {
   public void constructor_ThrowsException_WithMissingResourcePath() {
     // Assert
     thrown.expect(NullPointerException.class);
+
     // Act
     new FileConfigurationBackend(elmoConfigurationResource, repository, null, elmoShapesResource,
         shaclValidator);
@@ -131,6 +134,7 @@ public class FileConfigurationBackendTest {
   public void constructor_ThrowsException_WithMissingShapesResource() {
     // Assert
     thrown.expect(NullPointerException.class);
+
     // Act
     new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config", null,
         shaclValidator);
@@ -140,6 +144,7 @@ public class FileConfigurationBackendTest {
   public void setResourceLoader_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
+
     // Act
     backend.setResourceLoader(null);
   }
@@ -148,19 +153,20 @@ public class FileConfigurationBackendTest {
   public void setEnvironment_ThrowsException_WithMissingValue() {
     // Assert
     thrown.expect(NullPointerException.class);
+
     // Act
     backend.setEnvironment(null);
   }
 
   @Test
   public void setResourceLoader_DoesNotCrash_WithValue() {
-    // Act
+    // Act / Assert
     backend.setResourceLoader(resourceLoader);
   }
 
   @Test
   public void setEnvironment_DoesNotCrash_WithValue() {
-    // Act
+    // Act / Assert
     backend.setEnvironment(environment);
   }
 
@@ -173,11 +179,11 @@ public class FileConfigurationBackendTest {
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
-    when(report.getValidationReport()).thenReturn("Error");
     when(report.isValid()).thenReturn(false);
+
     // Assert
     thrown.expect(ShaclValidationException.class);
-    thrown.expectMessage("Error");
+
     // Act
     backend.loadResources();
   }
@@ -191,8 +197,10 @@ public class FileConfigurationBackendTest {
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
+
     // Act
     backend.loadResources();
+
     // Assert
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
@@ -206,8 +214,10 @@ public class FileConfigurationBackendTest {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[0]);
+
     // Act
     backend.loadResources();
+
     // Assert
     verifyZeroInteractions(repositoryConnection);
   }
@@ -219,8 +229,10 @@ public class FileConfigurationBackendTest {
     when(resource.getFilename()).thenReturn("not-existing.md");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
+
     // Act
     backend.loadResources();
+
     // Assert
     verify(repositoryConnection).close();
     verifyNoMoreInteractions(repositoryConnection);
@@ -233,9 +245,11 @@ public class FileConfigurationBackendTest {
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
     when(repository.getConnection()).thenThrow(RepositoryException.class);
+
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Error while getting repository connection.");
+
     // Act
     backend.loadResources();
   }
@@ -248,9 +262,11 @@ public class FileConfigurationBackendTest {
     when(resource.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[] {resource});
+
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Error while loading RDF data.");
+
     // Act
     backend.loadResources();
   }
@@ -267,8 +283,10 @@ public class FileConfigurationBackendTest {
     when(elmoConfigurationResource.getInputStream()).thenReturn(
         new ByteArrayInputStream("elmo".getBytes(Charsets.UTF_8)));
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
+
     // Act
     backend.loadResources();
+
     // Assert
     verify(elmoConfigurationResource, atLeastOnce()).getInputStream();
     ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
@@ -300,10 +318,12 @@ public class FileConfigurationBackendTest {
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {resource});
+
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
         "Found multiple declaration <@prefix rdfs: <http://www.have-a-nice-day.com/rdf-schema#> .> at line <5>");
+
     // Act
     backend.loadResources();
   }
@@ -321,9 +341,11 @@ public class FileConfigurationBackendTest {
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {resource});
+
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Found unknown prefix format <this is not a valid prefix> at line <5>");
+
     // Act
     backend.loadResources();
   }
@@ -343,9 +365,11 @@ public class FileConfigurationBackendTest {
     when(config.getFilename()).thenReturn("config.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {prefixes, config});
+
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("Configuration file <config.trig> could not be read");
+
     // Act
     backend.loadResources();
   }
@@ -358,8 +382,10 @@ public class FileConfigurationBackendTest {
     when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {resource});
+
     // Assert
     thrown.expect(ConfigurationException.class);
+
     // Act
     backend.loadResources();
   }
@@ -382,6 +408,7 @@ public class FileConfigurationBackendTest {
             + "}").getBytes(Charsets.UTF_8)));
     when(((ResourcePatternResolver) resourceLoader).getResources(any())).thenReturn(
         new Resource[] {prefixesResource, backendResource, resource, elmoShapesResource});
+
     // Act / Assert
     backend.loadResources();
   }

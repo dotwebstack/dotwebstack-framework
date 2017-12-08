@@ -149,10 +149,11 @@ public class FileConfigurationBackend
     if (configurationStreams.size() > 0) {
       try (InputStream stream =
           new SequenceInputStream(Collections.enumeration(configurationStreams))) {
-        final ValidationReport report = shaclValidator.validate(
-            RdfModelTransformer.getModel(stream), RdfModelTransformer.getModel(elmoShapes));
+        final ValidationReport report =
+            shaclValidator.validate(RdfModelTransformer.getModel(stream),
+                RdfModelTransformer.getModel(elmoShapes.getInputStream()));
         if (!report.isValid()) {
-          throw new ShaclValidationException(report.getValidationReport());
+          throw new ShaclValidationException(report.printReport());
         }
       } catch (IOException ex) {
         new ShaclValidationException("Configuration files could not be read.", ex);
