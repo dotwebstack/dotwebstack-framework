@@ -21,7 +21,7 @@ public class UriParameterMapper extends AbstractParameterMapper {
 
   private String template;
 
-  protected UriParameterMapper(Builder builder) {
+  protected UriParameterMapper(UriParameterMapperBuilder builder) {
     super(builder);
     template = builder.template;
     pattern = builder.pattern;
@@ -38,7 +38,7 @@ public class UriParameterMapper extends AbstractParameterMapper {
     if (pattern != null && template != null) {
       UriTemplate uriTemplatePattern = new UriTemplate(pattern);
 
-      Map<String, String> map = new HashMap<String, String>();
+      Map<String, String> map = new HashMap<>();
       if (uriTemplatePattern.match(input, map)) {
         UriTemplate replacement = new UriTemplate(template);
         output = replacement.createURI(map);
@@ -50,22 +50,23 @@ public class UriParameterMapper extends AbstractParameterMapper {
     return output;
   }
 
-  public static class Builder extends AbstractParameterMapper.Builder<Builder> {
+  public static class UriParameterMapperBuilder
+      extends AbstractParameterMapper.Builder<UriParameterMapperBuilder> {
     private String pattern;
 
     private String template;
 
-    public Builder(@NonNull IRI identifier, @NonNull ParameterSource source,
+    public UriParameterMapperBuilder(@NonNull IRI identifier, @NonNull ParameterSource source,
         @NonNull Target target) {
       super(identifier, source, target);
     }
 
-    public Builder pattern(@NonNull String pattern) {
+    public UriParameterMapperBuilder pattern(@NonNull String pattern) {
       this.pattern = pattern;
       return this;
     }
 
-    public Builder template(@NonNull String template) {
+    public UriParameterMapperBuilder template(@NonNull String template) {
       this.template = template;
       return this;
     }

@@ -54,8 +54,8 @@ public class UriParameterMapperTest {
   public void build_CreateUriParameterMapper_WithSourceAndTarget() {
     // Act
     final UriParameterMapper uriParameterMapper =
-        new UriParameterMapper.Builder(DBEERPEDIA.SUBJECT_FROM_URL, requestUriParameterSource,
-            parameterTarget).build();
+        new UriParameterMapper.UriParameterMapperBuilder(DBEERPEDIA.SUBJECT_FROM_URL,
+            requestUriParameterSource, parameterTarget).build();
 
     Map<String, Object> map = uriParameterMapper.map(containerRequestContext);
 
@@ -69,9 +69,10 @@ public class UriParameterMapperTest {
   public void build_CreateUriParameterMapper_WithPatternAndTemplate() {
     // Act
     final UriParameterMapper uriParameterMapper =
-        new UriParameterMapper.Builder(DBEERPEDIA.SUBJECT_FROM_URL, requestUriParameterSource,
-            parameterTarget).pattern(DBEERPEDIA.SUBJECT_FROM_URL_PATTERN.stringValue()).template(
-                DBEERPEDIA.SUBJECT_FROM_URL_TEMPLATE.stringValue()).build();
+        new UriParameterMapper.UriParameterMapperBuilder(DBEERPEDIA.SUBJECT_FROM_URL,
+            requestUriParameterSource, parameterTarget).pattern(
+                DBEERPEDIA.SUBJECT_FROM_URL_PATTERN.stringValue()).template(
+                    DBEERPEDIA.SUBJECT_FROM_URL_TEMPLATE.stringValue()).build();
 
     Map<String, Object> map = uriParameterMapper.map(containerRequestContext);
 
