@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.validation;
 
+import lombok.NonNull;
 import org.apache.jena.rdf.model.AnonId;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -21,14 +22,14 @@ public class ShaclValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(ShaclValidator.class);
 
-  public ValidationReport validate(org.eclipse.rdf4j.model.Model dataModel,
-      org.eclipse.rdf4j.model.Model shapesModel) {
+  public ValidationReport validate(@NonNull org.eclipse.rdf4j.model.Model dataModel,
+      @NonNull org.eclipse.rdf4j.model.Model shapesModel) {
     Resource report =
         ValidationUtil.validateModel(getJenaModel(dataModel), getJenaModel(shapesModel), true);
     return new ValidationReport(report.getModel());
   }
 
-  private Model getJenaModel(org.eclipse.rdf4j.model.Model model) {
+  private Model getJenaModel(@NonNull org.eclipse.rdf4j.model.Model model) {
     Model jenaModel = ModelFactory.createDefaultModel();
     java.util.Iterator<org.eclipse.rdf4j.model.Statement> iterator = model.iterator();
 
@@ -48,8 +49,8 @@ public class ShaclValidator {
     return jenaModel;
   }
 
-  private Resource rdf4jResourceToJenaResource(Model jenaModel,
-      org.eclipse.rdf4j.model.Resource resource) {
+  private Resource rdf4jResourceToJenaResource(@NonNull Model jenaModel,
+      @NonNull org.eclipse.rdf4j.model.Resource resource) {
     if (resource instanceof URI) {
       return jenaModel.createResource(resource.stringValue());
     } else {
@@ -57,11 +58,11 @@ public class ShaclValidator {
     }
   }
 
-  private Property rdf4jPropertyToJenaProperty(Model jenaModel, URI resource) {
+  private Property rdf4jPropertyToJenaProperty(@NonNull Model jenaModel, @NonNull URI resource) {
     return jenaModel.createProperty(resource.stringValue());
   }
 
-  private RDFNode rdf4jValueToJenaRdfNode(Model jenaModel, Value value) {
+  private RDFNode rdf4jValueToJenaRdfNode(@NonNull Model jenaModel, @NonNull Value value) {
     if (value instanceof org.eclipse.rdf4j.model.Resource) {
       return rdf4jResourceToJenaResource(jenaModel, (org.eclipse.rdf4j.model.Resource) value);
     } else {
@@ -69,7 +70,7 @@ public class ShaclValidator {
     }
   }
 
-  private RDFNode rdf4jLiteralToJenaRdfNode(Model jenaModel, Literal value) {
+  private RDFNode rdf4jLiteralToJenaRdfNode(@NonNull Model jenaModel, @NonNull Literal value) {
     if (value.getDatatype() != null) {
       return jenaModel.createTypedLiteral(value.stringValue(), value.getDatatype().stringValue());
     } else if (value.getLanguage() != null && !"".equals(value.getLanguage())) {
