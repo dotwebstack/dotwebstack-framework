@@ -39,4 +39,17 @@ GRAPH dbeerpedia:Theatre {
     elmo:resultType elmo-resulttype:Graph;
     elmo:query "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a <http://dbeerpedia.org#Brewery> }";
   .
+
+  dbeerpedia:ResourceInformationProduct a elmo:InformationProduct;
+    elmo:requiredParameter dbeerpedia:SubjectParameter;
+    elmo:backend dbeerpedia:Backend;
+    elmo:query '''
+      CONSTRUCT {
+        <{$SUBJECT}> ?p ?o
+      }
+      WHERE {
+        <{$SUBJECT}> ?p ?o
+      }
+    ''';
+  .
 }
