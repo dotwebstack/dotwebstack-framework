@@ -41,7 +41,7 @@ public abstract class AbstractParameterMapper implements ParameterMapper {
     return input;
   }
 
-  public static class Builder<T extends Builder<T>> {
+  protected static class Builder<T extends Builder<T>> {
     private IRI identifier;
 
     private ParameterSource source;
