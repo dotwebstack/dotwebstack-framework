@@ -200,6 +200,19 @@ public class Rdf4jRepositoryBackendTest {
     assertEquals("http://www.test.nl", literal.getDatatype().toString());
   }
 
+
+  @Test
+  public void createLiteral_ReturnsLiteral_WhenCreatedEithoutTypeAndLanguage()
+          throws Exception {
+    // Arrange
+    // Act
+    Literal literal = backend.createLiteral("http://www.test.nl", null, null );
+    // Assert
+    assertEquals(false, literal.getLanguage().isPresent());
+    assertEquals("http://www.w3.org/2001/XMLSchema#string", literal.getDatatype().toString());
+  }
+
+
   @Test
   public void listObjects_IllegalArgument_ThrowsExeption() {
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
