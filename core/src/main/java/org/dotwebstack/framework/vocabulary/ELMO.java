@@ -53,6 +53,10 @@ public final class ELMO {
 
   public static final IRI URL_PATTERN;
 
+  public static final IRI URI_PARAMETER_MAPPER;
+
+  public static final IRI PARAMETER_MAPPER_PROP;
+
   public static final IRI TERM_FILTER;
 
   public static final IRI OPTIONAL_PARAMETER_PROP;
@@ -60,6 +64,14 @@ public final class ELMO {
   public static final IRI REQUIRED_PARAMETER_PROP;
 
   public static final IRI NAME_PROP;
+
+  public static final IRI SOURCE_PROP;
+
+  public static final IRI PATTERN_PROP;
+
+  public static final IRI TEMPLATE_PROP;
+
+  public static final IRI TARGET_PROP;
 
   public static final IRI RESULT_TYPE;
 
@@ -92,6 +104,8 @@ public final class ELMO {
     RESOURCE_APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "ResourceAppearance");
     TABLE_APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "TableAppearance");
 
+    URI_PARAMETER_MAPPER = valueFactory.createIRI(ELMO.NAMESPACE, "UriParameterMapper");
+
     // Properties
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
     DOMAIN = valueFactory.createIRI(ELMO.NAMESPACE, "domain");
@@ -105,6 +119,7 @@ public final class ELMO {
 
     INFORMATION_PRODUCT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "informationProduct");
     URL_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "urlPattern");
+    PARAMETER_MAPPER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "parameterMapper");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
 
@@ -118,6 +133,11 @@ public final class ELMO {
     NAME_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "name");
     APPEARANCE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "appearance");
     CONTAINS_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "contains");
+
+    SOURCE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "source");
+    PATTERN_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "pattern");
+    TEMPLATE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "template");
+    TARGET_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "target");
   }
 
   private ELMO() {

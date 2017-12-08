@@ -6,6 +6,7 @@ import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
+import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -19,6 +20,8 @@ public class Representation {
 
   private List<String> urlPatterns;
 
+  private List<ParameterMapper> parameterMappers;
+
   private Stage stage;
 
   private List<Representation> subRepresentations;
@@ -26,6 +29,7 @@ public class Representation {
   private Representation(Builder builder) {
     identifier = builder.identifier;
     urlPatterns = builder.urlPatterns;
+    parameterMappers = builder.parameterMappers;
     stage = builder.stage;
     informationProduct = builder.informationProduct;
     appearance = builder.appearance;
@@ -46,6 +50,10 @@ public class Representation {
 
   public Collection<String> getUrlPatterns() {
     return urlPatterns;
+  }
+
+  public List<ParameterMapper> getParameterMappers() {
+    return parameterMappers;
   }
 
   public Stage getStage() {
@@ -70,6 +78,8 @@ public class Representation {
 
     private List<String> urlPatterns = new ArrayList<>();
 
+    private List<ParameterMapper> parameterMappers = new ArrayList<>();
+
     private Stage stage;
 
     private List<Representation> subRepresentations = new ArrayList<>();
@@ -83,6 +93,7 @@ public class Representation {
       this.informationProduct = representation.informationProduct;
       this.appearance = representation.appearance;
       this.urlPatterns = representation.urlPatterns;
+      this.parameterMappers = representation.parameterMappers;
       this.stage = representation.stage;
       this.subRepresentations = representation.subRepresentations;
     }
@@ -104,6 +115,11 @@ public class Representation {
 
     public Builder urlPattern(String urlPattern) {
       this.urlPatterns.add(urlPattern);
+      return this;
+    }
+
+    public Builder parameterMapper(ParameterMapper parameterMapper) {
+      this.parameterMappers.add(parameterMapper);
       return this;
     }
 
