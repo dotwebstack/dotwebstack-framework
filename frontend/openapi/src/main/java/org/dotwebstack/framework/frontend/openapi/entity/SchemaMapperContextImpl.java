@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 
+import java.util.Optional;
 import lombok.Builder;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperContext;
 import org.eclipse.rdf4j.model.Value;
@@ -8,19 +9,19 @@ import org.eclipse.rdf4j.model.Value;
 @Builder
 public class SchemaMapperContextImpl implements SchemaMapperContext {
 
-  private boolean isExcludedWhenEmpty;
+  private Optional<Boolean> isExcludedWhenEmpty;
 
-  private boolean isExcludedWhenNull;
+  private Optional<Boolean> isExcludedWhenNull;
 
   private Value value;
 
   @Override
-  public boolean isExcludedWhenEmpty() {
+  public Optional<Boolean> isExcludedWhenEmpty() {
     return isExcludedWhenEmpty;
   }
 
   @Override
-  public boolean isExcludedWhenNull() {
+  public Optional<Boolean> isExcludedWhenNull() {
     return isExcludedWhenNull;
   }
 
@@ -36,6 +37,6 @@ public class SchemaMapperContextImpl implements SchemaMapperContext {
 
   @Override
   public void setExcludedWhenNull(boolean includedWhenNull) {
-    this.isExcludedWhenNull = includedWhenNull;
+    this.isExcludedWhenNull = Optional.of(includedWhenNull);
   }
 }

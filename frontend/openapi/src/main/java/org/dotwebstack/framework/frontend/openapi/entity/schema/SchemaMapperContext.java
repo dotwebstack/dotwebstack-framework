@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 
+import java.util.Optional;
 import org.eclipse.rdf4j.model.Value;
 
 /**
@@ -10,9 +11,9 @@ import org.eclipse.rdf4j.model.Value;
  */
 public interface SchemaMapperContext {
 
-  boolean isExcludedWhenEmpty();
+  Optional<Boolean> isExcludedWhenEmpty();
 
-  boolean isExcludedWhenNull();
+  Optional<Boolean> isExcludedWhenNull();
 
   Value getValue();
 

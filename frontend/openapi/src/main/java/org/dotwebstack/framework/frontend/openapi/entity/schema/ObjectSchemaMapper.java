@@ -99,6 +99,7 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
     property.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
           schemaMapperContext, schemaMapperAdapter);
+      processPropagations(propValue,propertyResult,schemaMapperContext);
 
       if (schemaMapperContext.isExcludedWhenNull()) {
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
