@@ -29,4 +29,11 @@ dbeerpedia:GraphBreweryListRepresentation a elmo:Representation;
     elmo:stage dbeerpedia:Stage;
     elmo:informationProduct dbeerpedia:TupleBrewery;
   .
+
+  dbeerpedia:ResourceRepresentation a elmo:Representation;
+      elmo:urlPattern "/doc/{reference}";
+      elmo:stage dbeerpedia:Stage;
+      elmo:parameterMapper dbeerpedia:SubjectFromUrl;
+      elmo:informationProduct dbeerpedia:ResourceInformationProduct
+  .
 }
