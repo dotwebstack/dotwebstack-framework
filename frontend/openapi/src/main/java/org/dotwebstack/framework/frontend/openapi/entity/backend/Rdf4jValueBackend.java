@@ -220,7 +220,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
    * @return the type as string.
    */
   protected String debugType(Value value) {
-    String namelessNodeType = isBlank(value) ? "bNode" : "literal (" + getLiteralType(value) + ")";
+    String namelessNodeType = isBlank(value) ? "bNode" : "literal (" + value.toString() + ")";
     String nodeType = isURI(value) ? "URI" : namelessNodeType;
     return value == null ? "null" : nodeType;
   }
