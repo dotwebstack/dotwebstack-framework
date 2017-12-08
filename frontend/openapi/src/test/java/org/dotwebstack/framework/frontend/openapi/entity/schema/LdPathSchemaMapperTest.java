@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
@@ -31,13 +32,7 @@ public class LdPathSchemaMapperTest {
   @Mock
   private Property propertyMock;
 
-  private LdPathSchemaMapper ldPathSchemaMapper = new LdPathSchemaMapper() {
-    @Override
-    Set<Resource> applySubjectFilterIfPossible(Property property,
-        GraphEntityContext graphEntityContext) {
-      return super.applySubjectFilterIfPossible(property, graphEntityContext);
-    }
-  };
+  private LdPathSchemaMapper ldPathSchemaMapper = spy(LdPathSchemaMapper.class);
 
   @Before
   public void before() {

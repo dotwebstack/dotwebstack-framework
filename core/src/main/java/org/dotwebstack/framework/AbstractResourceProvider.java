@@ -88,9 +88,7 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
       repositoryConnection.close();
     }
 
-    resources.forEach((key, resource) -> {
-      finalizeResource(model, resource);
-    });
+    resources.forEach((key, resource) -> finalizeResource(model, resource));
   }
 
   protected abstract GraphQuery getQueryForResources(RepositoryConnection conn);

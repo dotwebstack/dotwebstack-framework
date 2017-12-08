@@ -8,3 +8,5 @@
 @prefix sh: <http://www.w3.org/ns/shacl#>.
 @prefix elmo-resulttype: <http://dotwebstack.org/def/elmo/result-type/> .
 @prefix config: <http://dotwebstack.org/configuration/>.
+@prefix http: <http://www.w3.org/2011/http#>.
+

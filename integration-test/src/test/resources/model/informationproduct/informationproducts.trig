@@ -37,10 +37,23 @@ dbeerpedia:TupleBrewery a elmo:InformationProduct;
   """;
 .
 
-dbeerpedia:GraphBreweries a elmo:InformationProduct;
-  rdfs:label "Beer breweries in The Netherlands";
-  elmo:backend dbeerpedia:Backend;
-  elmo:resultType elmo-resulttype:Graph;
-  elmo:query "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a <http://dbeerpedia.org#Brewery> }";
-.
+  dbeerpedia:GraphBreweries a elmo:InformationProduct;
+    rdfs:label "Beer breweries in The Netherlands";
+    elmo:backend dbeerpedia:Backend;
+    elmo:resultType elmo-resulttype:Graph;
+    elmo:query "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a <http://dbeerpedia.org#Brewery> }";
+  .
+
+  dbeerpedia:ResourceInformationProduct a elmo:InformationProduct;
+    elmo:requiredParameter dbeerpedia:SubjectParameter;
+    elmo:backend dbeerpedia:Backend;
+    elmo:query '''
+      CONSTRUCT {
+        <{$SUBJECT}> ?p ?o
+      }
+      WHERE {
+        <{$SUBJECT}> ?p ?o
+      }
+    ''';
+  .
 }
