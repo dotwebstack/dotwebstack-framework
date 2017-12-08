@@ -51,24 +51,44 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
     return false;
   }
 
-  protected boolean isIncludedWhenNull(Property propValue, Object propertyResult) {
-    return !(hasVendorExtensionWithValue(propValue,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true)
-        && (propertyResult == null) && !(propValue instanceof ArrayProperty));
+  // XXX (PvH) Wordt enkel gebruikt door de ObjectSchemaMapper, daar naar toeverplaatsen?
+  // XXX (PvH) Ik vind de implementatie wat verwarrend, en vanuit de afnemer vind ik de method
+  // lastig te interpreteren. De extension heet EXCLUDE_... en de method heet isIncluded... Kunnen
+  // we dit niet synchroon houden, bijvoorbeeld:
+  //
+  // boolean excludeWhenNull(Property property, Object value) {
+  // return value == null && hasVendorExtensionWithValue
+  // }
+  //
+  // XXX (PvH) Waarom verwijzen we naar de ArrayProperty? En kan deze wel null zijn? (en niet enkel
+  // leeg) Is het bijvoorbeeld niet beter dat we de method aanroepen als de property geen
+  // ArrayProperty is?
+  // XXX (PvH) Kunnen we hier een unit test voor schrijven?
+  protected boolean isIncludedWhenNull(Property property, Object value) {
+    return !(hasVendorExtensionWithValue(property,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true) && (value == null)
+        && !(property instanceof ArrayProperty));
   }
 
-  protected boolean isIncludedWhenEmpty(Property propValue, Object propertyResult) {
-    return !(hasVendorExtensionWithValue(propValue,
+  // XXX (PvH) Zie hierboven
+  // XXX (PvH) Waarom verwijzen we naar de ArrayProperty? Is het niet beter dat we de method
+  // aanroepen als de property enkel een ArrayProperty is?
+  protected boolean isIncludedWhenEmpty(Property property, Object value) {
+    return !(hasVendorExtensionWithValue(property,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true)
-        && (propertyResult != null && ((Collection) propertyResult).isEmpty()
-            && (propValue instanceof ArrayProperty)));
+        && (value != null && ((Collection) value).isEmpty()
+            && (property instanceof ArrayProperty)));
   }
 
+  // XXX (PvH) Kunnen we de method private maken? De method wordt tenslotte enkel gebruikt door deze
+  // klasse
+  // XXX (PvH) Kunnen we hier een unit test voor schrijven?
   protected boolean hasVendorExtensionWithValue(Property property, String extension, Object value) {
     return hasVendorExtension(property, extension)
         && property.getVendorExtensions().get(extension).equals(value);
   }
 
+  // XXX (PvH) Kunnen we hier een unit test voor schrijven?
   protected boolean hasVendorExtension(Property property, String extension) {
     return property.getVendorExtensions().containsKey(extension);
   }

@@ -39,9 +39,8 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
       if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
         queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
       } else {
-        throw new SchemaMapperRuntimeException(
-            String.format("ArrayProperty must have a '%s' attribute",
-                OpenApiSpecificationExtensions.LDPATH));
+        throw new SchemaMapperRuntimeException(String.format(
+            "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
       }
     }
 
@@ -58,6 +57,8 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
     validateMinItems(property, queryResult);
     validateMaxItems(property, queryResult);
 
+    // XXX (PvH) Gaat dit goed? Als queryResult leeg is, dan zal de forEach volgens mij ook niets
+    // opleveren
     if (isIncludedWhenEmpty(property, queryResult)) {
       queryResult.forEach(valueNext -> builder.add(
           Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
