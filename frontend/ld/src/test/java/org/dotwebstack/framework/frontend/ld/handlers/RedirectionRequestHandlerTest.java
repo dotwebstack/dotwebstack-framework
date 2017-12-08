@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
@@ -33,6 +32,12 @@ public class RedirectionRequestHandlerTest {
   @Mock
   private ContainerRequestContext containerRequestContext;
 
+  @Mock
+  private UriInfo uriInfo;
+
+  @Mock
+  URI uri;
+
   private RedirectionRequestHandler redirectionRequestHandler;
 
   @Before
@@ -42,14 +47,16 @@ public class RedirectionRequestHandlerTest {
     // Arrange
     when(redirection.getUrlPattern()).thenReturn(DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue());
     when(redirection.getTargetUrl()).thenReturn(DBEERPEDIA.ID2DOC_TARGET_URL.stringValue());
+
+    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(uriInfo.getAbsolutePath()).thenReturn(uri);
+    when(uri.getHost()).thenReturn(DBEERPEDIA.NL_HOST);
   }
 
   @Test
   public void apply_ReturnValidRedirection() throws URISyntaxException {
     // Arrange
-    UriInfo uriInfo = mock(UriInfo.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(uriInfo.getPath()).thenReturn(DBEERPEDIA.BREWERY_ID_PATH);
+    when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + DBEERPEDIA.BREWERY_ID_PATH);
 
     // Act
     Response response = redirectionRequestHandler.apply(containerRequestContext);
@@ -62,9 +69,7 @@ public class RedirectionRequestHandlerTest {
   @Test
   public void apply_ReturnUnchangedRedirection() throws URISyntaxException {
     // Arrange
-    UriInfo uriInfo = mock(UriInfo.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(uriInfo.getPath()).thenReturn(DBEERPEDIA.URL_PATTERN_VALUE);
+    when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + DBEERPEDIA.URL_PATTERN_VALUE);
 
     // Act
     Response response = redirectionRequestHandler.apply(containerRequestContext);
@@ -77,9 +82,7 @@ public class RedirectionRequestHandlerTest {
   @Test
   public void apply_ReturnServerError_WithInvalidPath() {
     // Arrange
-    UriInfo uriInfo = mock(UriInfo.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(uriInfo.getPath()).thenReturn("htt://\\some invalid uri pattern");
+    when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + "some invalid pattern");
 
     // Act
     Response response = redirectionRequestHandler.apply(containerRequestContext);
