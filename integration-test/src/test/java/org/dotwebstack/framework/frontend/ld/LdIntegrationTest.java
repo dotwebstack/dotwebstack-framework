@@ -140,7 +140,7 @@ public class LdIntegrationTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
-    assertThat(response.getLocation().getPath(), equalTo("/localhost/dbp/ld/v1/doc/breweries"));
+    assertThat(response.getLocation().getPath(), equalTo("/dbp/ld/v1/doc/breweries"));
     assertThat(response.readEntity(String.class), isEmptyString());
   }
 

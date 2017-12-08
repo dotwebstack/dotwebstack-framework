@@ -24,7 +24,11 @@ public class RedirectionRequestHandler implements Inflector<ContainerRequestCont
 
   @Override
   public Response apply(ContainerRequestContext containerRequestContext) {
-    String path = containerRequestContext.getUriInfo().getPath();
+    /*
+     * Remove first 'domain' part of path that we have added in HostPreMatchingRequestFilter
+     */
+    URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
+    String path = uri.getPath().replaceAll("^/" + uri.getHost(), "");
 
     LOG.debug("Handling GET redirect for path {}", path);
 
