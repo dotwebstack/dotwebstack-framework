@@ -74,9 +74,12 @@ public class RefSchemaMapperTest {
   public RefSchemaMapperTest() {
     List<SchemaMapper<? extends Property, ?>> handlers = new ArrayList<>();
     refPropertyHandler = new RefSchemaMapper();
+
     handlers.add(refPropertyHandler);
     handlers.add(new IntegerSchemaMapper());
     handlers.add(new StringSchemaMapper());
+    handlers.add(new ObjectSchemaMapper());
+
     propertyHandlerRegistry = new SchemaMapperAdapter(handlers);
   }
 
