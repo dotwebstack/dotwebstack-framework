@@ -21,18 +21,13 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GetRequestHandlerTest {
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private Operation operationMock;

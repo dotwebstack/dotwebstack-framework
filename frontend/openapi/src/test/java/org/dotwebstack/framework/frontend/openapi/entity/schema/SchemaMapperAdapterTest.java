@@ -35,7 +35,7 @@ public class SchemaMapperAdapterTest {
   }
 
   @Test
-  public void mapTupleValue_ThrowsException_WhenNoSupportingHandlerFound() {
+  public void mapTupleValue_ThrowsException_WhenNoSupportingMapperFound() {
     // Arrange
     IntegerProperty schema = new IntegerProperty();
     when(stringSchemaMapper.supports(schema)).thenReturn(false);
@@ -43,7 +43,7 @@ public class SchemaMapperAdapterTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(
-        String.format("No schema handler available for '%s'.", schema.getClass().getName()));
+        String.format("No schema mapper available for '%s'.", schema.getClass().getName()));
 
     // Act
     schemaMapperAdapter.mapTupleValue(schema,
@@ -51,7 +51,7 @@ public class SchemaMapperAdapterTest {
   }
 
   @Test
-  public void mapTupleValue_ReturnsHandledValue_WhenSupportingHandlerFound() {
+  public void mapTupleValue_ReturnsHandledValue_WhenSupportingMapperFound() {
     // Arrange
     StringProperty schema = new StringProperty();
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();

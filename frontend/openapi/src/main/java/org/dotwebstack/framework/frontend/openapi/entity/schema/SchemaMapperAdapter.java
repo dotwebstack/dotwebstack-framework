@@ -23,7 +23,7 @@ public class SchemaMapperAdapter {
     SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
             () -> new SchemaMapperRuntimeException(String.format(
-                "No schema handler available for '%s'.", schema.getClass().getName())));
+                "No schema mapper available for '%s'.", schema.getClass().getName())));
 
     return ((SchemaMapper<S, ?>) schemaMapper).mapTupleValue(schema, schemaMapperContext);
   }
@@ -35,7 +35,7 @@ public class SchemaMapperAdapter {
     SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
             () -> new SchemaMapperRuntimeException(String.format(
-                "No schema handler available for '%s'.", schema.getClass().getName())));
+                "No schema mapper available for '%s'.", schema.getClass().getName())));
 
     return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, graphEntityContext,
         schemaMapperContext, schemaMapperAdapter);

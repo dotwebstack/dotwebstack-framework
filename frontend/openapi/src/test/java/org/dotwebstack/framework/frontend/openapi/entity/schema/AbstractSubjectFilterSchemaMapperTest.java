@@ -47,7 +47,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
   }
 
   @Test
-  public void when_No_Obj_exists__then_no_filter_results() {
+  public void filterSubjects_ReturnsNoResult_WhenFilterDoesNotMatch() {
     // Arrange
     Map<String, Object> vendorExtensions =
         Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
@@ -62,7 +62,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
   }
 
   @Test
-  public void when_Pred_and_Obj__not_matched__then_more_results() {
+  public void filterSubjects_ReturnsResults_WhenFilterDoesMatch() {
     // Arrange
     Model model = new ModelBuilder().add("http://www.test.nl#subj", "http://www.test.nl#is",
         SimpleValueFactory.getInstance().createIRI("http://www.test.nl#obj1")).add(
@@ -83,35 +83,15 @@ public class AbstractSubjectFilterSchemaMapperTest {
   }
 
   @Test
-  public void when_Pred_and_IRIObj__matched__then_one_results() {
-    // Arrange
-    Model model =
-        new ModelBuilder().add("http://www.test.nl#subj", "http://www.test.nl#is", "obj1").add(
-            "http://www.test.nl#subj2", "http://www.test.nl#is",
-            SimpleValueFactory.getInstance().createIRI("http://www.test.nl#obj1")).build();
-    when(graphEntityContextMock.getModel()).thenReturn(model);
-
-    Map<String, Object> vendorExtensions =
-        Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-            Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-                "http://www.test.nl#is", OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
-                "http://www.test.nl#obj1"))));
-    when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
-    // Act
-    Set<Resource> results = mapper.filterSubjects(propertyMock, graphEntityContextMock);
+  public void filterSubjects_ThrowsException_WhenNoPredicateOrObjectHaveBeenDefined() {
     // Assert
-    assertThat(results, hasSize(is(1)));
-  }
-
-  @Test
-  public void when_No_Object_Or_Predicate_Specified_Then_Exception() {
+    thrown.expect(SchemaMapperRuntimeException.class);
     // Arrange
     Map<String, Object> vendorExtensions =
         Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
             Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
                 "http://www.test.nl#is"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
-    thrown.expect(SchemaMapperRuntimeException.class);
     // Act
     mapper.filterSubjects(propertyMock, graphEntityContextMock);
   }

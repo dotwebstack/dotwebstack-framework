@@ -61,7 +61,7 @@ public class DoubleSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForDoubleSchema() {
+  public void supports_ReturnsTrue_ForDoubleProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(schema);
 
@@ -70,7 +70,7 @@ public class DoubleSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsFalse_ForNonDoubleSchema() {
+  public void supports_ReturnsFalse_ForNonDoubleProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(new StringProperty());
 
