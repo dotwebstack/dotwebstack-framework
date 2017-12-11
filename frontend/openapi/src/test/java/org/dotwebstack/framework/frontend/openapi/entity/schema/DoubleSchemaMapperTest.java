@@ -80,7 +80,7 @@ public class DoubleSchemaMapperTest {
 
     // Arrange & Act
     schemaMapper.mapTupleValue(schema,
-        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test

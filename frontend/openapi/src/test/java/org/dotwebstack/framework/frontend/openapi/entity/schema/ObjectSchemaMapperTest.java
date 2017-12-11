@@ -187,9 +187,10 @@ public class ObjectSchemaMapperTest {
 
     // Arrange
     StringProperty stringProperty = new StringProperty();
-    stringProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL,
-        true);
+
     objectProperty.setProperties(ImmutableMap.of(KEY_1, stringProperty));
+    objectProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL,
+        true);
 
     // Act
     Map result = (ImmutableMap) registry.mapGraphValue(objectProperty, entityBuilderContextMock,
