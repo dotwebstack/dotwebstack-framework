@@ -16,6 +16,7 @@ import java.util.Arrays;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -80,14 +81,15 @@ public class IntegerSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Integer result =
-        (Integer) schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
+    Integer result = (Integer) schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue()));
@@ -118,7 +120,8 @@ public class IntegerSchemaMapperTest {
 
   @Test
   public void handleValidContextWithoutLdPathQuery() {
-    Object result = registry.mapGraphValue(property, entityBuilderContext, registry, VALUE_1);
+    Object result = registry.mapGraphValue(property, entityBuilderContext,
+        SchemaMapperContextImpl.builder().value(VALUE_1).build(), registry);
 
     assertThat(result, is(VALUE_1.integerValue().intValue()));
     verifyZeroInteractions(ldPathExecutor);
@@ -130,8 +133,8 @@ public class IntegerSchemaMapperTest {
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    Integer result =
-        (Integer) registry.mapGraphValue(property, entityBuilderContext, registry, context);
+    Integer result = (Integer) registry.mapGraphValue(property, entityBuilderContext,
+        SchemaMapperContextImpl.builder().value(context).build(), registry);
 
     assertThat(result, is(VALUE_1.integerValue().intValue()));
   }
@@ -146,7 +149,8 @@ public class IntegerSchemaMapperTest {
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         DUMMY_EXPR, Joiner.on(", ").join(XMLSchema.INTEGER, XMLSchema.INT)));
 
-    registry.mapGraphValue(property, entityBuilderContext, registry, context);
+    registry.mapGraphValue(property, entityBuilderContext,
+        SchemaMapperContextImpl.builder().value(context).build(), registry);
   }
 
   @Test
@@ -154,7 +158,8 @@ public class IntegerSchemaMapperTest {
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format("Property '%s' must have a '%s' attribute",
         property.getName(), OpenApiSpecificationExtensions.LDPATH));
-    registry.mapGraphValue(property, entityBuilderContext, registry, context);
+    registry.mapGraphValue(property, entityBuilderContext,
+        SchemaMapperContextImpl.builder().value(context).build(), registry);
   }
 
 }

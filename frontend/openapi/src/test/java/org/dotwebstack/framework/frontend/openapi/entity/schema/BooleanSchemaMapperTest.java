@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import io.swagger.models.properties.BooleanProperty;
 import io.swagger.models.properties.StringProperty;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,13 +37,15 @@ public class BooleanSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Boolean result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER);
+    Boolean result = schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
 
     // Assert
     assertThat(result, equalTo(true));

@@ -7,22 +7,22 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 class ResponseSchemaMapper extends AbstractSubjectFilterSchemaMapper<ResponseProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ResponseProperty schema, Value value) {
+  public Object mapTupleValue(@NonNull ResponseProperty schema,
+      @NonNull SchemaMapperContext value) {
     throw new UnsupportedOperationException();
   }
 
   @Override
   public Object mapGraphValue(@NonNull ResponseProperty property,
       @NonNull GraphEntityContext graphEntityContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value context) {
-    Value newContext = context;
+      @NonNull SchemaMapperContext schemaMapperContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
@@ -41,11 +41,11 @@ class ResponseSchemaMapper extends AbstractSubjectFilterSchemaMapper<ResponsePro
             "More entrypoint subjects found. Only one is required.");
       }
 
-      newContext = subjects.iterator().next();
+      schemaMapperContext.setValue(subjects.iterator().next());
     }
 
     return schemaMapperAdapter.mapGraphValue(property.getSchema(), graphEntityContext,
-        schemaMapperAdapter, newContext);
+        schemaMapperContext, schemaMapperAdapter);
   }
 
   @Override

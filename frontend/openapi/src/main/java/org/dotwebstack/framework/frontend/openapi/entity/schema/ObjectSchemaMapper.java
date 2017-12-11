@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
@@ -20,17 +21,26 @@ import org.springframework.stereotype.Service;
 class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ObjectProperty schema, Value value) {
+  public Object mapTupleValue(ObjectProperty schema, SchemaMapperContext schemaMapperContext) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ObjectProperty property,
-      @NonNull GraphEntityContext graphEntityContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value context) {
+  public Object mapGraphValue(ObjectProperty property, GraphEntityContext graphEntityContext,
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
 
-    Value contextNew = context;
+    processPropagationsInitial(property, schemaMapperContext);
 
+    Object result =
+        handleProperty(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter);
+    if (!isExcludedWhenNull(schemaMapperContext, property, result)) {
+      return result;
+    }
+    return null;
+  }
+
+  private Object handleProperty(ObjectProperty property, GraphEntityContext graphEntityContext,
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
 
@@ -48,25 +58,27 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
             "More entrypoint subjects found. Only one is required.");
       }
 
-      contextNew = subjects.iterator().next();
+      schemaMapperContext.setValue(subjects.iterator().next());
     }
 
     if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
-      return handleLdPathVendorExtension(property, graphEntityContext, contextNew, ldPath,
+      return handleLdPathVendorExtension(property, graphEntityContext, schemaMapperContext, ldPath,
           schemaMapperAdapter);
     }
 
-    return handleProperties(property, graphEntityContext, schemaMapperAdapter, contextNew);
+    return handleProperties(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter);
   }
 
+
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
-      GraphEntityContext entityBuilderContext, Value context, String ldPathQuery,
-      SchemaMapperAdapter schemaMapperAdapter) {
+      GraphEntityContext entityBuilderContext, SchemaMapperContext schemaMapperContext,
+      String ldPathQuery, SchemaMapperAdapter schemaMapperAdapter) {
 
     LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context, ldPathQuery);
+    Collection<Value> queryResult =
+        ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
 
     if (queryResult.isEmpty()) {
       if (!property.getRequired()) {
@@ -81,26 +93,36 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
       throw new SchemaMapperRuntimeException(String.format(
           "LDPath expression for object property ('%s') yielded multiple elements.", ldPathQuery));
     }
-
-    return handleProperties(property, entityBuilderContext, schemaMapperAdapter,
-        queryResult.iterator().next());
+    schemaMapperContext.setValue(queryResult.iterator().next());
+    return handleProperties(property, entityBuilderContext, schemaMapperContext,
+        schemaMapperAdapter);
   }
 
+
+
   private Map<String, Object> handleProperties(ObjectProperty property,
-      GraphEntityContext entityBuilderContext, SchemaMapperAdapter schemaMapperAdapter,
-      Value context) {
+      GraphEntityContext entityBuilderContext, SchemaMapperContext schemaMapperContext,
+      SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
     property.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
-          schemaMapperAdapter, context);
+          schemaMapperContext, schemaMapperAdapter);
 
-      if ((isIncludedWhenNull(propValue, propertyResult)
-          && isIncludedWhenEmpty(propValue, propertyResult))) {
+      if (!(propValue instanceof ArrayProperty)
+          && (!isExcludedWhenNull(schemaMapperContext, propValue, propertyResult))) {
+
+        builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
+      }
+      if (((propValue instanceof ArrayProperty)
+          && !isExcludedWhenEmpty(schemaMapperContext, propValue, propertyResult))) {
+
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
       }
     });
     return builder.build();
   }
+
+
 
   @Override
   public boolean supports(@NonNull Property schema) {

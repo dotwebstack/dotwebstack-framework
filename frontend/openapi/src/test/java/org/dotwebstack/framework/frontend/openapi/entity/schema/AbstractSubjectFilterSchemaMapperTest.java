@@ -14,7 +14,6 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.junit.Before;
@@ -145,13 +144,13 @@ public class AbstractSubjectFilterSchemaMapperTest {
   private static class TestSubjectFilterSchemaMapper extends AbstractSubjectFilterSchemaMapper {
 
     @Override
-    public Object mapTupleValue(Property schema, Value value) {
+    public Object mapTupleValue(Property schema, SchemaMapperContext schemaMapperContext) {
       throw new UnsupportedOperationException();
     }
 
     @Override
     public Object mapGraphValue(Property schema, GraphEntityContext entityContext,
-        SchemaMapperAdapter schemaMapperAdapter, Value value) {
+        SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
       throw new UnsupportedOperationException();
     }
 

@@ -22,20 +22,21 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
   @Override
-  public LocalDate mapTupleValue(@NonNull DateProperty schema, @NonNull Value value) {
-    return convertToDate(SchemaMapperUtils.castLiteralValue(value).calendarValue());
+  public LocalDate mapTupleValue(@NonNull DateProperty schema,
+      @NonNull SchemaMapperContext schemaMapperContext) {
+    return convertToDate(
+        SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).calendarValue());
   }
 
   @Override
-  public LocalDate mapGraphValue(@NonNull DateProperty property,
-      @NonNull GraphEntityContext context, @NonNull SchemaMapperAdapter schemaMapperAdapter,
-      Value value) {
+  public LocalDate mapGraphValue(DateProperty property, GraphEntityContext context,
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
 
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
-    if (ldPathQuery == null && isSupportedLiteral(value)) {
-      return convertToDate(((Literal) value).calendarValue());
+    if (ldPathQuery == null && isSupportedLiteral(schemaMapperContext.getValue())) {
+      return convertToDate(((Literal) schemaMapperContext.getValue()).calendarValue());
     }
 
     if (ldPathQuery == null) {
@@ -45,7 +46,8 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
     }
 
     LdPathExecutor ldPathExecutor = context.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(value, ldPathQuery);
+    Collection<Value> queryResult =
+        ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
 
     if (!property.getRequired() && queryResult.isEmpty()) {
       return null;

@@ -26,6 +26,7 @@ import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -115,8 +116,9 @@ public class ObjectSchemaMapperTest {
   public void handleObjectWithoutProperties() {
     property.setProperties(ImmutableMap.of());
 
-    Map<String, Object> result = (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property,
-        contextMock, schemaMapperAdapter, value1Mock);
+    Map<String, Object> result =
+        (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property, contextMock,
+            SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     assertThat(result.keySet(), hasSize(0));
   }
@@ -127,8 +129,9 @@ public class ObjectSchemaMapperTest {
         ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
     when(ldPathExecutorMock.ldPathQuery(any(), eq(STR3_LD_EXP))).thenReturn(ImmutableList.of());
 
-    Map<String, Object> result = (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property,
-        contextMock, schemaMapperAdapter, value1Mock);
+    Map<String, Object> result =
+        (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property, contextMock,
+            SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     assertThat(result.keySet(), hasSize(4));
     assertThat(result, hasEntry(KEY_1, com.google.common.base.Optional.of(STR_VALUE_1)));
@@ -143,8 +146,8 @@ public class ObjectSchemaMapperTest {
 
     when(ldPathExecutorMock.ldPathQuery(value1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
 
-    Object result =
-        schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, value1Mock);
+    Object result = schemaMapperAdapter.mapGraphValue(property, contextMock,
+        SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     assertThat(result, nullValue());
   }
@@ -161,7 +164,8 @@ public class ObjectSchemaMapperTest {
         String.format("LDPath expression for a required object property ('%s') yielded no result.",
             DUMMY_EXPR_1));
 
-    schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, value1Mock);
+    schemaMapperAdapter.mapGraphValue(property, contextMock,
+        SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -175,7 +179,8 @@ public class ObjectSchemaMapperTest {
     expectedException.expectMessage(String.format(
         "LDPath expression for object property ('%s') yielded multiple elements.", DUMMY_EXPR_1));
 
-    schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, value1Mock);
+    schemaMapperAdapter.mapGraphValue(property, contextMock,
+        SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -196,8 +201,8 @@ public class ObjectSchemaMapperTest {
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
-    Object result =
-        schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, null);
+    Object result = schemaMapperAdapter.mapGraphValue(property, contextMock,
+        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(Map.class));
@@ -222,8 +227,8 @@ public class ObjectSchemaMapperTest {
     when(contextMock.getModel()).thenReturn(model);
 
     // Act
-    Object result =
-        schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, null);
+    Object result = schemaMapperAdapter.mapGraphValue(property, contextMock,
+        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, nullValue());
@@ -249,7 +254,8 @@ public class ObjectSchemaMapperTest {
     when(contextMock.getModel()).thenReturn(model);
 
     // Act
-    schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, null);
+    schemaMapperAdapter.mapGraphValue(property, contextMock,
+        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -274,7 +280,8 @@ public class ObjectSchemaMapperTest {
     when(contextMock.getModel()).thenReturn(model);
 
     // Act
-    schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, null);
+    schemaMapperAdapter.mapGraphValue(property, contextMock,
+        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -315,8 +322,8 @@ public class ObjectSchemaMapperTest {
     property.setProperties(ImmutableMap.of(KEY_1, stringProperty));
 
     // Act
-    Map result = (Map) schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter,
-        value1Mock);
+    Map result = (Map) schemaMapperAdapter.mapGraphValue(property, contextMock,
+        SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.isEmpty(), is(true));

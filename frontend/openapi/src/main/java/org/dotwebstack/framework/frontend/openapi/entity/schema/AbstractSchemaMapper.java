@@ -51,46 +51,50 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
     return false;
   }
 
-  // XXX (PvH) Wordt enkel gebruikt door de ObjectSchemaMapper, daar naar toeverplaatsen?
-  // XXX (PvH) Ik vind de implementatie wat verwarrend, en vanuit de afnemer vind ik de method
-  // lastig te interpreteren. De extension heet EXCLUDE_... en de method heet isIncluded... Kunnen
-  // we dit niet synchroon houden, bijvoorbeeld:
-  //
-  // boolean excludeWhenNull(Property property, Object value) {
-  // return value == null && hasVendorExtensionWithValue
-  // }
-  //
-  // XXX (PvH) Waarom verwijzen we naar de ArrayProperty? En kan deze wel null zijn? (en niet enkel
-  // leeg) Is het bijvoorbeeld niet beter dat we de method aanroepen als de property geen
-  // ArrayProperty is?
-  // XXX (PvH) Kunnen we hier een unit test voor schrijven?
-  protected boolean isIncludedWhenNull(@NonNull Property property, Object value) {
-    return !(hasVendorExtensionWithValue(property,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true) && (value == null)
-        && !(property instanceof ArrayProperty));
+  void processPropagationsInitial(Property property, SchemaMapperContext schemaMapperContext) {
+    if (hasVendorExtension(property, OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL)) {
+      schemaMapperContext.setExcludedWhenNull(hasExcludeWhenNull(property));
+    }
+    if (hasVendorExtension(property,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY)) {
+      schemaMapperContext.setExcludedWhenEmpty(hasExcludeWhenEmpty(property));
+    }
   }
 
-  // XXX (PvH) Zie hierboven
-  // XXX (PvH) Waarom verwijzen we naar de ArrayProperty? Is het niet beter dat we de method
-  // aanroepen als de property enkel een ArrayProperty is?
-  protected boolean isIncludedWhenEmpty(@NonNull Property property, Object value) {
-    return !(hasVendorExtensionWithValue(property,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true)
-        && (value != null && ((Collection) value).isEmpty()
-            && (property instanceof ArrayProperty)));
+
+
+  protected boolean isExcludedWhenNull(SchemaMapperContext schemaMapperContext, Property propValue,
+      Object propertyResult) {
+    return (schemaMapperContext.isExcludedWhenNull() && (propertyResult == null)
+        && !(propValue instanceof ArrayProperty));
   }
 
-  // XXX (PvH) Kunnen we de method private maken? De method wordt tenslotte enkel gebruikt door deze
-  // klasse
-  // XXX (PvH) Kunnen we hier een unit test voor schrijven?
-  protected boolean hasVendorExtensionWithValue(@NonNull Property property,
-      @NonNull String extension, Object value) {
+  protected boolean isExcludedWhenEmpty(SchemaMapperContext schemaMapperContext, Property propValue,
+      Object propertyResult) {
+    return (schemaMapperContext.isExcludedWhenEmpty()
+        && (propertyResult == null
+            || (propertyResult != null && ((Collection) propertyResult).isEmpty()))
+        && (propValue instanceof ArrayProperty));
+  }
+
+  private boolean hasExcludeWhenNull(Property propValue) {
+    return (hasVendorExtensionWithValue(propValue,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true));
+
+  }
+
+  private boolean hasExcludeWhenEmpty(Property propValue) {
+    return (hasVendorExtensionWithValue(propValue,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true));
+
+  }
+
+  protected boolean hasVendorExtensionWithValue(Property property, String extension, Object value) {
     return hasVendorExtension(property, extension)
         && property.getVendorExtensions().get(extension).equals(value);
   }
 
-  // XXX (PvH) Kunnen we hier een unit test voor schrijven?
-  protected boolean hasVendorExtension(@NonNull Property property, @NonNull String extension) {
+  protected boolean hasVendorExtension(Property property, String extension) {
     return property.getVendorExtensions().containsKey(extension);
   }
 

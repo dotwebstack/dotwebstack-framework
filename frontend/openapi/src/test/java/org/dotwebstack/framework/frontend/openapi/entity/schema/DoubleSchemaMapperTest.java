@@ -8,6 +8,7 @@ import io.swagger.models.properties.StringProperty;
 import java.util.ArrayList;
 import java.util.List;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,13 +46,15 @@ public class DoubleSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Double result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_FTE);
+    Double result = schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_FTE).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_FTE.doubleValue()));

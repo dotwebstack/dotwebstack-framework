@@ -20,50 +20,65 @@ import org.springframework.stereotype.Service;
 public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull Value value) {
-    return SchemaMapperUtils.castLiteralValue(value).integerValue();
+  public Object mapTupleValue(@NonNull ArrayProperty schema,
+      @NonNull SchemaMapperContext schemaMapperContext) {
+    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).integerValue();
   }
 
   @Override
   public Object mapGraphValue(@NonNull ArrayProperty property,
       @NonNull GraphEntityContext graphEntityContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value context) {
+      @NonNull SchemaMapperContext schemaMapperContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
+
+    processPropagationsInitial(property, schemaMapperContext);
 
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
 
-      subjects.forEach(subject -> builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(),
-          graphEntityContext, schemaMapperAdapter, subject)));
-    } else if (context != null) {
-      if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(property, graphEntityContext, schemaMapperAdapter, context, builder);
+      subjects.forEach(subject -> {
+        schemaMapperContext.setValue(subject);
+        builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntityContext,
+            schemaMapperContext, schemaMapperAdapter));
+      });
+    } else if (schemaMapperContext.getValue() != null) {
+      if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+        queryAndValidate(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter,
+            builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
             "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
       }
     }
 
-    return builder.build();
+    ImmutableList result = builder.build();
+    if (!isExcludedWhenEmpty(schemaMapperContext, property, result)) {
+      return result;
+    }
+    return null;
   }
 
   private void queryAndValidate(ArrayProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value context,
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter,
       ImmutableList.Builder<Object> builder) {
     LdPathExecutor ldPathExecutor = graphEntityContext.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context,
+    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(),
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH));
 
     validateMinItems(property, queryResult);
     validateMaxItems(property, queryResult);
 
-    // XXX (PvH) Gaat dit goed? Als queryResult leeg is, dan zal de forEach volgens mij ook niets
-    // opleveren
-    if (isIncludedWhenEmpty(property, queryResult)) {
-      queryResult.forEach(valueNext -> builder.add(
+
+    queryResult.forEach(valueNext -> {
+      schemaMapperContext.setValue(valueNext);
+      Optional innerPropertySolved =
           Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
-              graphEntityContext, schemaMapperAdapter, valueNext))));
-    }
+              graphEntityContext, schemaMapperContext, schemaMapperAdapter));
+      builder.add(innerPropertySolved);
+
+    });
+
   }
 
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {

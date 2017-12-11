@@ -8,21 +8,21 @@ import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
-import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull RefProperty schema, Value value) {
+  public Object mapTupleValue(RefProperty schema, SchemaMapperContext schemaMapperContext) {
     throw new UnsupportedOperationException("Tuple query not supported.");
   }
 
   @Override
   public Object mapGraphValue(@NonNull RefProperty schema,
       @NonNull GraphEntityContext graphEntityContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value value) {
+      @NonNull SchemaMapperContext schemaMapperContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
     Model refModel = graphEntityContext.getSwaggerDefinitions().get(schema.getSimpleRef());
 
@@ -34,7 +34,7 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
     Builder<String, Object> builder = ImmutableMap.builder();
     refModel.getProperties().forEach((propKey, propValue) -> builder.put(propKey,
         Optional.fromNullable(schemaMapperAdapter.mapGraphValue(propValue, graphEntityContext,
-            schemaMapperAdapter, value))));
+            schemaMapperContext, schemaMapperAdapter))));
 
     return builder.build();
   }

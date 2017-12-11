@@ -4,6 +4,7 @@ import io.swagger.models.properties.Property;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,16 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
     GraphEntityContext graphEntityContext = entity.getEntityContext();
     Property schema = entity.getSchemaMap().get(mediaType);
 
+    SchemaMapperContext schemaMapperContext = SchemaMapperContextImpl.builder().value(null).build();
+
     LOG.debug("Map graph entity to representation.");
     if (schema == null) {
       throw new EntityMapperRuntimeException(
           String.format("No schema found for media type '%s'.", mediaType.toString()));
     }
 
-    return schemaMapperAdapter.mapGraphValue(schema, graphEntityContext, schemaMapperAdapter, null);
+    return schemaMapperAdapter.mapGraphValue(schema, graphEntityContext, schemaMapperContext,
+        schemaMapperAdapter);
   }
 
 }
