@@ -96,7 +96,7 @@ public class LdRedirectionRequestMapperTest {
   }
 
   @Test
-  public void loadRedirction_IgnoreSecondRedirection_WhenAddedTwice() {
+  public void loadRedirection_IgnoreSecondRedirection_WhenAddedTwice() {
     // Arrange
     stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
@@ -108,10 +108,12 @@ public class LdRedirectionRequestMapperTest {
     Map<IRI, Redirection> redirectionMap = new HashMap<>();
     redirectionMap.put(redirection.getIdentifier(), redirection);
 
-    Redirection sameSecondRedirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION,
+    Redirection sameSecondRedirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_DUMMY_REDIRECTION,
         stage, DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
         DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
-    redirectionMap.put(redirection.getIdentifier(), sameSecondRedirection);
+    redirectionMap.put(sameSecondRedirection.getIdentifier(), sameSecondRedirection);
+
+    when(redirectionResourceProvider.getAll()).thenReturn(redirectionMap);
 
     // Act
     ldRedirectionRequestMapper.loadRedirections(httpConfiguration);
