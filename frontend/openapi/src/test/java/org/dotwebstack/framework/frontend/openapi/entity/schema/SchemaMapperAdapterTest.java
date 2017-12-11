@@ -51,15 +51,6 @@ public class SchemaMapperAdapterTest {
   }
 
   @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    schemaMapperAdapter.mapTupleValue(new StringProperty(), null);
-  }
-
-  @Test
   public void mapTupleValue_ThrowsException_WhenNoSupportingHandlerFound() {
     // Arrange
     IntegerProperty schema = new IntegerProperty();

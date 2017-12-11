@@ -16,8 +16,9 @@ class DoubleSchemaMapper implements SchemaMapper<DoubleProperty, Double> {
   }
 
   @Override
-  public Double mapGraphValue(DoubleProperty schema, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+  public Double mapGraphValue(@NonNull DoubleProperty schema,
+      @NonNull GraphEntityContext graphEntityContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value value) {
     throw new UnsupportedOperationException();
   }
 

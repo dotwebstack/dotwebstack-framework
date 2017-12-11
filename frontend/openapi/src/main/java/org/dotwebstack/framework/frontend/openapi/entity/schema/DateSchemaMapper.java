@@ -27,8 +27,9 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   }
 
   @Override
-  public LocalDate mapGraphValue(DateProperty property, GraphEntityContext context,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+  public LocalDate mapGraphValue(@NonNull DateProperty property,
+      @NonNull GraphEntityContext context, @NonNull SchemaMapperAdapter schemaMapperAdapter,
+      Value value) {
 
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);

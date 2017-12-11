@@ -30,26 +30,13 @@ public class DoubleSchemaMapperTest {
 
   private DoubleProperty schema;
 
-  private SchemaMapperAdapter schemaAdapter;
-
   @Before
   public void setUp() {
     schemaMapper = new DoubleSchemaMapper();
     schema = new DoubleProperty();
     List schemaMappers = new ArrayList<>();
     schemaMappers.add(schemaMapper);
-    schemaAdapter = new SchemaMapperAdapter(schemaMappers);
   }
-
-  @Test
-  public void mapGraph_ThrowsException_WithUnsupportedOperation() {
-    // Assert
-    thrown.expect(UnsupportedOperationException.class);
-
-    // Arrange & Act
-    schemaMapper.mapGraphValue(null, graphEntityContext, schemaAdapter, null);
-  }
-
 
   @Test
   public void mapTupleValue_ThrowsException_WithMissingSchema() {

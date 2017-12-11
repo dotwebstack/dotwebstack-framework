@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.swagger.models.Model;
 import java.util.Map;
+import lombok.NonNull;
 
 public class GraphEntityContext implements EntityContext {
 
@@ -12,8 +13,9 @@ public class GraphEntityContext implements EntityContext {
   private final org.eclipse.rdf4j.model.Model model;
   private final LdPathExecutor ldPathExecutor;
 
-  public GraphEntityContext(ImmutableMap<String, String> ldPathNamespaces,
-      Map<String, Model> swaggerDefinitions, org.eclipse.rdf4j.model.Model model) {
+  public GraphEntityContext(@NonNull ImmutableMap<String, String> ldPathNamespaces,
+      @NonNull Map<String, Model> swaggerDefinitions,
+      @NonNull org.eclipse.rdf4j.model.Model model) {
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = Maps.newHashMap(swaggerDefinitions);
     this.model = model;

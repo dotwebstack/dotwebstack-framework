@@ -30,12 +30,12 @@ public final class TupleEntity extends AbstractEntity {
 
     private TupleQueryResult tupleQueryResult;
 
-    public Builder withQueryResult(TupleQueryResult queryResult) {
+    public Builder withQueryResult(@NonNull TupleQueryResult queryResult) {
       this.tupleQueryResult = queryResult;
       return this;
     }
 
-    public Builder withSchemaMap(Map<MediaType, Property> schemaMap) {
+    public Builder withSchemaMap(@NonNull Map<MediaType, Property> schemaMap) {
       this.schemaMap = schemaMap;
       return this;
     }

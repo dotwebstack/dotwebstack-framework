@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
 
   @Override
-  public Object mapTupleValue(RefProperty schema, Value value) {
+  public Object mapTupleValue(@NonNull RefProperty schema, Value value) {
     throw new UnsupportedOperationException("Tuple query not supported.");
   }
 
@@ -39,7 +39,7 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
     return builder.build();
   }
 
-  public boolean supports(Property property) {
+  public boolean supports(@NonNull Property property) {
     return RefProperty.class.isInstance(property);
   }
 

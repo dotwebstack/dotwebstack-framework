@@ -30,8 +30,9 @@ class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
   }
 
   @Override
-  public String mapGraphValue(StringProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+  public String mapGraphValue(@NonNull StringProperty property,
+      @NonNull GraphEntityContext graphEntityContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value value) {
     validateVendorExtensions(property);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 

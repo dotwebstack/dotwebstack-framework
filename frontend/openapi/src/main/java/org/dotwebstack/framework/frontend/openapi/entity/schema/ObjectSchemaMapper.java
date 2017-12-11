@@ -20,13 +20,14 @@ import org.springframework.stereotype.Service;
 class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectProperty, Object> {
 
   @Override
-  public Object mapTupleValue(ObjectProperty schema, Value value) {
+  public Object mapTupleValue(@NonNull ObjectProperty schema, Value value) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Object mapGraphValue(ObjectProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value context) {
+  public Object mapGraphValue(@NonNull ObjectProperty property,
+      @NonNull GraphEntityContext graphEntityContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value context) {
 
     Value contextNew = context;
 

@@ -9,6 +9,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Optional;
 import javax.xml.datatype.XMLGregorianCalendar;
+import lombok.NonNull;
 import org.apache.marmotta.ldpath.api.backend.NodeBackend;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
@@ -68,7 +69,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
    * @throws IllegalArgumentException in case the node is no literal
    */
   @Override
-  public Locale getLiteralLanguage(Value node) {
+  public Locale getLiteralLanguage(@NonNull Value node) {
     try {
       Optional<String> language = ((Literal) node).getLanguage();
       return language.map(Locale::new).orElse(null);
@@ -85,7 +86,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
    * @throws IllegalArgumentException in case the node is no literal
    */
   @Override
-  public URI getLiteralType(Value node) {
+  public URI getLiteralType(@NonNull Value node) {
     try {
       IRI dataTypeIri = ((Literal) node).getDatatype();
       if (dataTypeIri != null) {
@@ -112,12 +113,12 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
    * will be the URI itself, and for a blank node it will be the identifier of the node.
    */
   @Override
-  public String stringValue(Value value) {
+  public String stringValue(@NonNull Value value) {
     return value.stringValue();
   }
 
   @Override
-  public BigDecimal decimalValue(Value node) {
+  public BigDecimal decimalValue(@NonNull Value node) {
     try {
       return ((Literal) node).decimalValue();
     } catch (ClassCastException ex) {
@@ -126,7 +127,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   }
 
   @Override
-  public BigInteger integerValue(Value node) {
+  public BigInteger integerValue(@NonNull Value node) {
     try {
       return ((Literal) node).integerValue();
     } catch (ClassCastException ex) {
@@ -135,7 +136,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   }
 
   @Override
-  public Boolean booleanValue(Value node) {
+  public Boolean booleanValue(@NonNull Value node) {
     try {
       return ((Literal) node).booleanValue();
     } catch (ClassCastException ex) {
@@ -144,7 +145,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   }
 
   @Override
-  public Date dateTimeValue(Value node) {
+  public Date dateTimeValue(@NonNull Value node) {
     try {
       XMLGregorianCalendar cal = ((Literal) node).calendarValue();
       return cal.toGregorianCalendar().getTime();
@@ -154,7 +155,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   }
 
   @Override
-  public Date dateValue(Value node) {
+  public Date dateValue(@NonNull Value node) {
     try {
       XMLGregorianCalendar cal = ((Literal) node).calendarValue();
       return new GregorianCalendar(cal.getYear(), cal.getMonth(), cal.getDay()).getTime();
@@ -164,13 +165,13 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   }
 
   @Override
-  public Date timeValue(Value node) {
+  public Date timeValue(@NonNull Value node) {
     // from a XMLGregorianCalendar
     return dateTimeValue(node);
   }
 
   @Override
-  public Long longValue(Value node) {
+  public Long longValue(@NonNull Value node) {
     try {
       return ((Literal) node).longValue();
     } catch (ClassCastException ex) {
@@ -179,7 +180,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   }
 
   @Override
-  public Double doubleValue(Value node) {
+  public Double doubleValue(@NonNull Value node) {
     try {
       return ((Literal) node).doubleValue();
     } catch (ClassCastException ex) {
@@ -188,7 +189,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   }
 
   @Override
-  public Float floatValue(Value node) {
+  public Float floatValue(@NonNull Value node) {
     try {
       return ((Literal) node).floatValue();
     } catch (ClassCastException ex) {
@@ -197,7 +198,7 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   }
 
   @Override
-  public Integer intValue(Value node) {
+  public Integer intValue(@NonNull Value node) {
     try {
       return ((Literal) node).intValue();
     } catch (ClassCastException ex) {
@@ -226,12 +227,12 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
   }
 
   @Override
-  public Literal createLiteral(String content) {
+  public Literal createLiteral(@NonNull String content) {
     return SimpleValueFactory.getInstance().createLiteral(content);
   }
 
   @Override
-  public Literal createLiteral(String content, Locale language, URI type) {
+  public Literal createLiteral(@NonNull String content, Locale language, URI type) {
     LOG.debug("creating literal with content \"{}\", language {}, datatype {}", content, language,
         type);
     if (language == null && type == null) {

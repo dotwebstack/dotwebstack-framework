@@ -39,15 +39,6 @@ public class BooleanSchemaMapperTest {
   }
 
   @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(schema, null);
-  }
-
-  @Test
   public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);

@@ -60,7 +60,7 @@ public class GraphEntityMapperTest {
   public void map_GraphMapping() {
     // Arrange
     Map<MediaType, Property> schemaMap = new HashMap<>();
-    schemaMap.put(MediaType.TEXT_PLAIN_TYPE,new IntegerProperty());
+    schemaMap.put(MediaType.TEXT_PLAIN_TYPE, new IntegerProperty());
     GraphEntity entity = new GraphEntity(schemaMap, graphEntityContextMock);
 
     when(propertyHandlerRegistryMock.mapGraphValue(any(), any(), any(), any())).thenReturn(

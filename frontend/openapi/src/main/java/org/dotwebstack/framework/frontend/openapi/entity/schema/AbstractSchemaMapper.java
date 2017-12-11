@@ -64,7 +64,7 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
   // leeg) Is het bijvoorbeeld niet beter dat we de method aanroepen als de property geen
   // ArrayProperty is?
   // XXX (PvH) Kunnen we hier een unit test voor schrijven?
-  protected boolean isIncludedWhenNull(Property property, Object value) {
+  protected boolean isIncludedWhenNull(@NonNull Property property, Object value) {
     return !(hasVendorExtensionWithValue(property,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true) && (value == null)
         && !(property instanceof ArrayProperty));
@@ -73,7 +73,7 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
   // XXX (PvH) Zie hierboven
   // XXX (PvH) Waarom verwijzen we naar de ArrayProperty? Is het niet beter dat we de method
   // aanroepen als de property enkel een ArrayProperty is?
-  protected boolean isIncludedWhenEmpty(Property property, Object value) {
+  protected boolean isIncludedWhenEmpty(@NonNull Property property, Object value) {
     return !(hasVendorExtensionWithValue(property,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true)
         && (value != null && ((Collection) value).isEmpty()
@@ -83,13 +83,14 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
   // XXX (PvH) Kunnen we de method private maken? De method wordt tenslotte enkel gebruikt door deze
   // klasse
   // XXX (PvH) Kunnen we hier een unit test voor schrijven?
-  protected boolean hasVendorExtensionWithValue(Property property, String extension, Object value) {
+  protected boolean hasVendorExtensionWithValue(@NonNull Property property,
+      @NonNull String extension, Object value) {
     return hasVendorExtension(property, extension)
         && property.getVendorExtensions().get(extension).equals(value);
   }
 
   // XXX (PvH) Kunnen we hier een unit test voor schrijven?
-  protected boolean hasVendorExtension(Property property, String extension) {
+  protected boolean hasVendorExtension(@NonNull Property property, @NonNull String extension) {
     return property.getVendorExtensions().containsKey(extension);
   }
 

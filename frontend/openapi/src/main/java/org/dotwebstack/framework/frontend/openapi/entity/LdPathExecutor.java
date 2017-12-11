@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
+import lombok.NonNull;
 import org.apache.marmotta.ldpath.LDPath;
 import org.apache.marmotta.ldpath.exception.LDPathParseException;
 import org.dotwebstack.framework.frontend.openapi.entity.backend.Rdf4jRepositoryBackend;
@@ -19,7 +20,7 @@ public class LdPathExecutor {
 
   private final ImmutableMap<String, String> ldpathNamespaces;
 
-  public LdPathExecutor(final GraphEntityContext context) {
+  public LdPathExecutor(@NonNull final GraphEntityContext context) {
     this.ldpathNamespaces = context.getLdPathNamespaces();
     this.ldpath = createLdpath(context.getModel());
   }
@@ -42,7 +43,7 @@ public class LdPathExecutor {
     return new LDPath<>(repositoryBackend);
   }
 
-  public Collection<Value> ldPathQuery(Value context, String query) {
+  public Collection<Value> ldPathQuery(Value context, @NonNull String query) {
     if (context == null) {
       throw new LdPathExecutorRuntimeException(String.format(
           "Unable to execute LDPath expression '%s' because no context has been supplied.", query));

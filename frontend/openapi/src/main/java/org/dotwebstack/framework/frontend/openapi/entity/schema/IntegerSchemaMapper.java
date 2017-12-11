@@ -26,8 +26,9 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
   }
 
   @Override
-  public Object mapGraphValue(BaseIntegerProperty property, GraphEntityContext context,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+  public Object mapGraphValue(@NonNull BaseIntegerProperty property,
+      @NonNull GraphEntityContext context, @NonNull SchemaMapperAdapter schemaMapperAdapter,
+      Value value) {
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 

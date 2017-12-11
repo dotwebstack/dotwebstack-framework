@@ -8,6 +8,7 @@ import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.query.QueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
 
 public final class GraphEntity extends AbstractEntity {
@@ -15,7 +16,7 @@ public final class GraphEntity extends AbstractEntity {
   private final GraphEntityContext graphEntityContext;
 
   GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
-      GraphEntityContext graphEntityContext) {
+      @NonNull GraphEntityContext graphEntityContext) {
     super(schemaMap);
     this.graphEntityContext = graphEntityContext;
 
@@ -35,22 +36,22 @@ public final class GraphEntity extends AbstractEntity {
     private Model model;
     private Map<MediaType, Property> schemaMap;
 
-    public Builder withSchemaMap(Map<MediaType, Property> schemaMap) {
+    public Builder withSchemaMap(@NonNull Map<MediaType, Property> schemaMap) {
       this.schemaMap = schemaMap;
       return this;
     }
 
-    public Builder withQueryResult(org.eclipse.rdf4j.query.QueryResult queryResult) {
+    public Builder withQueryResult(@NonNull QueryResult queryResult) {
       this.model = QueryResults.asModel(queryResult);
       return this;
     }
 
-    public Builder withApiDefinitions(Swagger definitions) {
+    public Builder withApiDefinitions(@NonNull Swagger definitions) {
       this.swaggerDefinitions = extractSwaggerDefinitions(definitions);
       return this;
     }
 
-    public Builder withLdPathNamespaces(Swagger definitions) {
+    public Builder withLdPathNamespaces(@NonNull Swagger definitions) {
       this.ldpathNamespaces = extractLdpathNamespaces(definitions);
       return this;
     }
@@ -79,7 +80,7 @@ public final class GraphEntity extends AbstractEntity {
               OpenApiSpecificationExtensions.LDPATH_NAMESPACES), cce);
         }
       }
-      return null;
+      return ImmutableMap.of();
     }
 
     public Entity build() {

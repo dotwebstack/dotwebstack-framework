@@ -11,13 +11,14 @@ import org.springframework.stereotype.Service;
 class BooleanSchemaMapper implements SchemaMapper<BooleanProperty, Boolean> {
 
   @Override
-  public Boolean mapTupleValue(@NonNull BooleanProperty schema, @NonNull Value value) {
+  public Boolean mapTupleValue(@NonNull BooleanProperty schema, Value value) {
     return SchemaMapperUtils.castLiteralValue(value).booleanValue();
   }
 
   @Override
-  public Boolean mapGraphValue(BooleanProperty schema, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter,Value value) {
+  public Boolean mapGraphValue(@NonNull BooleanProperty schema,
+      @NonNull GraphEntityContext graphEntityContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value value) {
     return SchemaMapperUtils.castLiteralValue(value).booleanValue();
   }
 

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
+import lombok.NonNull;
 import org.apache.marmotta.ldpath.api.backend.RDFBackend;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
@@ -23,20 +24,20 @@ public abstract class AbstractRdf4jBackend extends Rdf4jValueBackend implements 
 
   private static final Logger LOG = LoggerFactory.getLogger(AbstractRdf4jBackend.class);
 
-  protected IRI createUriInternal(final ValueFactory valueFactory, String uri) {
+  protected IRI createUriInternal(@NonNull final ValueFactory valueFactory, @NonNull String uri) {
     return valueFactory.createIRI(uri);
   }
 
-  protected Literal createLiteralInternal(final ValueFactory valueFactory, String content) {
+  protected Literal createLiteralInternal(@NonNull final ValueFactory valueFactory,
+      @NonNull String content) {
     LOG.debug("creating literal with content \"{}\"", content);
     return valueFactory.createLiteral(content);
   }
 
-  protected Literal createLiteralInternal(final ValueFactory valueFactory, String content,
-                                          Locale language, java.net.URI type) {
-    LOG.debug(
-        "creating literal with content \"{}\", language {}, datatype {}",
-        content, language, type);
+  protected Literal createLiteralInternal(@NonNull final ValueFactory valueFactory,
+      @NonNull String content, Locale language, java.net.URI type) {
+    LOG.debug("creating literal with content \"{}\", language {}, datatype {}", content, language,
+        type);
     if (language == null && type == null) {
       return valueFactory.createLiteral(content);
     } else if (type == null) {
@@ -46,17 +47,14 @@ public abstract class AbstractRdf4jBackend extends Rdf4jValueBackend implements 
     }
   }
 
-  protected Collection<Value> listObjectsInternal(RepositoryConnection connection,
-                                                           Resource subject,
-                                                           IRI property, boolean includeInferred,
-                                                           Resource... contexts) {
+  protected Collection<Value> listObjectsInternal(@NonNull RepositoryConnection connection,
+      Resource subject, IRI property, boolean includeInferred, Resource... contexts) {
     final ValueFactory valueFactory = connection.getValueFactory();
 
     Set<Value> result = new HashSet<>();
-    try (RepositoryResult<Statement> queryResult = connection
-        .getStatements(merge(subject, valueFactory),
-            merge(property, valueFactory), null, includeInferred, contexts
-        )) {
+    try (RepositoryResult<Statement> queryResult =
+        connection.getStatements(merge(subject, valueFactory), merge(property, valueFactory), null,
+            includeInferred, contexts)) {
       while (queryResult.hasNext()) {
         result.add(queryResult.next().getObject());
       }
@@ -64,15 +62,13 @@ public abstract class AbstractRdf4jBackend extends Rdf4jValueBackend implements 
     return ImmutableSet.copyOf(result);
   }
 
-  protected Collection<Value> listSubjectsInternal(final RepositoryConnection connection,
-                                                   IRI property, Value object, boolean
-                                                       includeInferred, Resource... contexts) {
+  protected Collection<Value> listSubjectsInternal(@NonNull final RepositoryConnection connection,
+      IRI property, Value object, boolean includeInferred, Resource... contexts) {
     final ValueFactory valueFactory = connection.getValueFactory();
 
     Set<Value> result = new HashSet<>();
     try (RepositoryResult<Statement> queryResult = connection.getStatements(null,
-        merge(property, valueFactory), merge(object, valueFactory), includeInferred, contexts
-    )) {
+        merge(property, valueFactory), merge(object, valueFactory), includeInferred, contexts)) {
       while (queryResult.hasNext()) {
         result.add(queryResult.next().getSubject());
       }
@@ -84,7 +80,7 @@ public abstract class AbstractRdf4jBackend extends Rdf4jValueBackend implements 
    * Merge the value given as argument into the value factory given as argument.
    */
   @SuppressWarnings("unchecked")
-  private <T extends Value> T merge(T value, ValueFactory vf) {
+  private <T extends Value> T merge(T value, @NonNull ValueFactory vf) {
     if (value instanceof IRI) {
       return (T) vf.createIRI(value.stringValue());
     } else if (value instanceof BNode) {

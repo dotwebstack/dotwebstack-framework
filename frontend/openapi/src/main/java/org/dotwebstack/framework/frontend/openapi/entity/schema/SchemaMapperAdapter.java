@@ -19,25 +19,25 @@ public class SchemaMapperAdapter {
     this.schemaMappers = ImmutableList.copyOf(schemaMappers);
   }
 
-  public <S extends Property> Object mapTupleValue(@NonNull S schema, @NonNull Value value) {
-    SchemaMapper<? extends Property,
-        ?> schemaMapper = schemaMappers.stream().filter(
-            candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
-                () -> new SchemaMapperRuntimeException(String.format(
-                    "No schema handler available for '%s'.", schema.getClass().getName())));
+  public <S extends Property> Object mapTupleValue(@NonNull S schema, Value value) {
+    SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
+        candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
+            () -> new SchemaMapperRuntimeException(String.format(
+                "No schema handler available for '%s'.", schema.getClass().getName())));
 
     return ((SchemaMapper<S, ?>) schemaMapper).mapTupleValue(schema, value);
   }
 
   @SuppressWarnings("unchecked")
   public <S extends Property> Object mapGraphValue(@NonNull S schema,
-      GraphEntityContext graphEntityContext, SchemaMapperAdapter schemaMapperAdapter, Value value) {
+      @NonNull GraphEntityContext graphEntityContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter, Value value) {
     SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
             () -> new SchemaMapperRuntimeException(String.format(
                 "No schema handler available for '%s'.", schema.getClass().getName())));
 
     return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, graphEntityContext,
-         schemaMapperAdapter,value);
+        schemaMapperAdapter, value);
   }
 }
