@@ -53,39 +53,12 @@ public class StringSchemaMapperTest {
   }
 
   @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(stringProperty, null);
-  }
-
-  @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
     String result = schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME);
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
-  }
-
-  @Test
-  public void supports_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.supports(null);
   }
 
   @Test

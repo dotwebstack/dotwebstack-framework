@@ -39,24 +39,6 @@ public class DoubleSchemaMapperTest {
   }
 
   @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(schema, null);
-  }
-
-  @Test
   public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
@@ -73,15 +55,6 @@ public class DoubleSchemaMapperTest {
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_FTE.doubleValue()));
-  }
-
-  @Test
-  public void supports_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.supports(null);
   }
 
   @Test

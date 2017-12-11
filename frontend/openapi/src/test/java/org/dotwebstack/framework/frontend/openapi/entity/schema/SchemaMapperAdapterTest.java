@@ -33,24 +33,6 @@ public class SchemaMapperAdapterTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingSchemaHandlers() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new SchemaMapperAdapter(null);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    schemaMapperAdapter.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
-  }
-
-  @Test
   public void mapTupleValue_ThrowsException_WhenNoSupportingHandlerFound() {
     // Arrange
     IntegerProperty schema = new IntegerProperty();

@@ -39,24 +39,6 @@ public class GraphEntityMapperTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingDeps() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GraphEntityMapper(null);
-  }
-
-  @Test
-  public void map_ThrowsException_WithMissingGraphEntity() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    graphEntityMapper.map(null, null);
-  }
-
-  @Test
   public void map_GraphMapping() {
     // Arrange
     Map<MediaType, Property> schemaMap = new HashMap<>();

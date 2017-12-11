@@ -52,34 +52,6 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingSchemaHandlerAdapter() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new TupleEntityMapper(null);
-  }
-
-  @Test
-  public void map_ThrowsException_WithMissingTupleEntity() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    tupleEntityMapper.map(null, MediaType.APPLICATION_JSON_TYPE);
-  }
-
-  @Test
-  public void map_ThrowsException_WithMissingMediaType() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    TupleEntity tupleEntity = new TupleEntity(ImmutableMap.of(), null);
-    tupleEntityMapper.map(tupleEntity, null);
-  }
-
-  @Test
   public void map_ThrowsException_ForUnknownMediaType() {
     // Arrange
     TupleEntity entity = new TupleEntity(

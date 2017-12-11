@@ -59,35 +59,6 @@ public class GetRequestHandlerTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingInformationProduct() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock,
-        swaggerMock);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingSchemaMap() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GetRequestHandler(operationMock, informationProductMock, null, requestParameterMapperMock,
-        swaggerMock);
-  }
-
-  @Test
-  public void apply_ThrowsException_WithMissingContainerRequestContext() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    getRequestHandler.apply(null);
-  }
-
-  @Test
   public void apply_ReturnsOkResponseWithEntityObject_ForTupleResult() {
     // Arrange
     UriInfo uriInfo = mock(UriInfo.class);

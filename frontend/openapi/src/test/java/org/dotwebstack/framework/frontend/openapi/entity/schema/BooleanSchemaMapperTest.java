@@ -30,15 +30,6 @@ public class BooleanSchemaMapperTest {
   }
 
   @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER);
-  }
-
-  @Test
   public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
@@ -55,15 +46,6 @@ public class BooleanSchemaMapperTest {
 
     // Assert
     assertThat(result, equalTo(true));
-  }
-
-  @Test
-  public void supports_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.supports(null);
   }
 
   @Test

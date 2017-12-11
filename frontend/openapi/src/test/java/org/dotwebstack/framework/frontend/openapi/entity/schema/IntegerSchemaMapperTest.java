@@ -74,24 +74,6 @@ public class IntegerSchemaMapperTest {
   }
 
   @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(schema, null);
-  }
-
-  @Test
   public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
@@ -109,15 +91,6 @@ public class IntegerSchemaMapperTest {
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue()));
-  }
-
-  @Test
-  public void supports_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.supports(null);
   }
 
   @Test

@@ -51,25 +51,6 @@ public class EntityWriterInterceptorTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingEntityWriterInterceptor() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new EntityWriterInterceptor(null, null);
-  }
-
-  @Test
-  public void aroundWriteTo_ThrowsException_WithMissingWriterInterceptorContext()
-      throws IOException {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    entityWriterInterceptor.aroundWriteTo(null);
-  }
-
-  @Test
   public void aroundWriteTo_MapsEntity_ForTupleEntity() throws IOException {
     // Arrange
     TupleEntity entity = new TupleEntity(ImmutableMap.of(), mock(TupleQueryResult.class));
