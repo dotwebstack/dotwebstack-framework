@@ -93,6 +93,8 @@ public final class DBEERPEDIA {
 
   public static final IRI ID2DOC_REDIRECTION;
 
+  public static final IRI ID2DOC_DUMMY_REDIRECTION;
+
   public static final IRI SUBJECT_FROM_URL;
 
   public static final Literal SUBJECT_FROM_URL_PATTERN;
@@ -231,6 +233,8 @@ public final class DBEERPEDIA {
     BREWERY_REPRESENTATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BreweryRepresentation");
 
     ID2DOC_REDIRECTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Id2doc");
+
+    ID2DOC_DUMMY_REDIRECTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Id2docDummy");
 
     ID2DOC_URL_PATTERN = valueFactory.createLiteral("^\\/id\\/(.+)$");
 

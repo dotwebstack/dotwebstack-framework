@@ -6,12 +6,8 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.parameter.source.ParameterSource;
 import org.dotwebstack.framework.frontend.ld.parameter.target.Target;
 import org.eclipse.rdf4j.model.IRI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractParameterMapper implements ParameterMapper {
-
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractParameterMapper.class);
 
   private IRI identifier;
 
