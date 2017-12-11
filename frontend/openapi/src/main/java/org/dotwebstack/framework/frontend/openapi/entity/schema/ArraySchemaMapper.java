@@ -32,6 +32,8 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
+    processPropagationsInitial(property, schemaMapperContext);
+
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
 
@@ -47,7 +49,11 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
       }
     }
 
-    return builder.build();
+    ImmutableList result = builder.build();
+    if (!isExcludedWhenEmpty(schemaMapperContext, property, result)) {
+      return result;
+    }
+    return null;
   }
 
   private void queryAndValidate(ArrayProperty property, GraphEntityContext graphEntityContext,
@@ -63,13 +69,11 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
 
     queryResult.forEach(valueNext -> {
       schemaMapperContext.setValue(valueNext);
-      processPropagations(property, schemaMapperContext.getValue(), schemaMapperContext);
       Optional innerPropertySolved =
           Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
               graphEntityContext, schemaMapperContext, schemaMapperAdapter));
-      if (schemaMapperContext.isExcludedWhenEmpty()) {
-        builder.add(innerPropertySolved);
-      }
+      builder.add(innerPropertySolved);
+
     });
 
   }

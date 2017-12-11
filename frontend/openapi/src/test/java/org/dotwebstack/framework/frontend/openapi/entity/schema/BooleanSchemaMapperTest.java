@@ -36,7 +36,8 @@ public class BooleanSchemaMapperTest {
     thrown.expect(NullPointerException.class);
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(null, SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
+    schemaMapper.mapTupleValue(null,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
   }
 
   @Test
@@ -55,13 +56,15 @@ public class BooleanSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN).build());
+    schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Boolean result = schemaMapper.mapTupleValue(schema, SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
+    Boolean result = schemaMapper.mapTupleValue(schema,
+        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
 
     // Assert
     assertThat(result, equalTo(true));

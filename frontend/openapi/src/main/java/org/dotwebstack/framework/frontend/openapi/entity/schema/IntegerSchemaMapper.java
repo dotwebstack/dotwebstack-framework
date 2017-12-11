@@ -21,13 +21,14 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
 
   @Override
-  public Object mapTupleValue(@NonNull BaseIntegerProperty schema, @NonNull SchemaMapperContext schemaMapperContext) {
+  public Object mapTupleValue(@NonNull BaseIntegerProperty schema,
+      @NonNull SchemaMapperContext schemaMapperContext) {
     return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).intValue();
   }
 
   @Override
   public Object mapGraphValue(BaseIntegerProperty property, GraphEntityContext context,
-                              SchemaMapperContext schemaMapperContext,SchemaMapperAdapter schemaMapperAdapter) {
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
@@ -41,7 +42,8 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
               OpenApiSpecificationExtensions.LDPATH));
     }
     LdPathExecutor ldPathExecutor = context.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
+    Collection<Value> queryResult =
+        ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
 
     if (!property.getRequired() && queryResult.isEmpty()) {
       return null;

@@ -22,8 +22,10 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
   @Override
-  public LocalDate mapTupleValue(@NonNull DateProperty schema, @NonNull SchemaMapperContext schemaMapperContext) {
-    return convertToDate(SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).calendarValue());
+  public LocalDate mapTupleValue(@NonNull DateProperty schema,
+      @NonNull SchemaMapperContext schemaMapperContext) {
+    return convertToDate(
+        SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).calendarValue());
   }
 
   @Override
@@ -44,7 +46,8 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
     }
 
     LdPathExecutor ldPathExecutor = context.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
+    Collection<Value> queryResult =
+        ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
 
     if (!property.getRequired() && queryResult.isEmpty()) {
       return null;

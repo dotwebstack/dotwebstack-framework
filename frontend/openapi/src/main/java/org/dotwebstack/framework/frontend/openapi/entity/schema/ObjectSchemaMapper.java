@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
@@ -28,10 +29,18 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
   public Object mapGraphValue(ObjectProperty property, GraphEntityContext graphEntityContext,
       SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
 
-    processPropagations(property,schemaMapperContext.getValue(),schemaMapperContext);
+    processPropagationsInitial(property, schemaMapperContext);
 
+    Object result =
+        handleProperty(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter);
+    if (!isExcludedWhenNull(schemaMapperContext, property, result)) {
+      return result;
+    }
+    return null;
+  }
 
-
+  private Object handleProperty(ObjectProperty property, GraphEntityContext graphEntityContext,
+      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
 
@@ -55,14 +64,12 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
     if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
-      return handleLdPathVendorExtension(property, graphEntityContext, schemaMapperContext,
-          ldPath, schemaMapperAdapter);
+      return handleLdPathVendorExtension(property, graphEntityContext, schemaMapperContext, ldPath,
+          schemaMapperAdapter);
     }
 
-    return handleProperties(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter
-        );
+    return handleProperties(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter);
   }
-
 
 
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
@@ -70,7 +77,8 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
       String ldPathQuery, SchemaMapperAdapter schemaMapperAdapter) {
 
     LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
+    Collection<Value> queryResult =
+        ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
 
     if (queryResult.isEmpty()) {
       if (!property.getRequired()) {
@@ -99,9 +107,13 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
     property.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
           schemaMapperContext, schemaMapperAdapter);
-      processPropagations(propValue,propertyResult,schemaMapperContext);
 
-      if (schemaMapperContext.isExcludedWhenNull()) {
+      if (!(propValue instanceof ArrayProperty)
+          && (!isExcludedWhenNull(schemaMapperContext, propValue, propertyResult))) {
+        builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
+      }
+      if (((propValue instanceof ArrayProperty)
+          && !isExcludedWhenEmpty(schemaMapperContext, propValue, propertyResult))) {
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
       }
     });

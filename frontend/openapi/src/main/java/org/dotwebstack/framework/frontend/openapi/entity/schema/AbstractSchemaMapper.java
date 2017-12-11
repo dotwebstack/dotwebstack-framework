@@ -51,21 +51,41 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
     return false;
   }
 
-  void processPropagations(Property property,Object propertyValue,SchemaMapperContext schemaMapperContext) {
-    schemaMapperContext.setExcludedWhenNull(isIncludedWhenEmpty(property,propertyValue));
+  void processPropagationsInitial(Property property, SchemaMapperContext schemaMapperContext) {
+    if (hasVendorExtension(property, OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL)) {
+      schemaMapperContext.setExcludedWhenNull(hasExcludeWhenNull(property));
+    }
+    if (hasVendorExtension(property,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY)) {
+      schemaMapperContext.setExcludedWhenEmpty(hasExcludeWhenEmpty(property));
+    }
   }
 
-  protected boolean isIncludedWhenNull(Property propValue, Object propertyResult) {
-    return !(hasVendorExtensionWithValue(propValue,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true)
-        && (propertyResult == null) && !(propValue instanceof ArrayProperty));
+
+
+  protected boolean isExcludedWhenNull(SchemaMapperContext schemaMapperContext, Property propValue,
+      Object propertyResult) {
+    return (schemaMapperContext.isExcludedWhenNull() && (propertyResult == null)
+        && !(propValue instanceof ArrayProperty));
   }
 
-  protected boolean isIncludedWhenEmpty(Property propValue, Object propertyResult) {
-    return !(hasVendorExtensionWithValue(propValue,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true)
-        && (propertyResult != null && ((Collection) propertyResult).isEmpty()
-            && (propValue instanceof ArrayProperty)));
+  protected boolean isExcludedWhenEmpty(SchemaMapperContext schemaMapperContext, Property propValue,
+      Object propertyResult) {
+    return (schemaMapperContext.isExcludedWhenEmpty()
+        && ((propertyResult != null && ((Collection) propertyResult).isEmpty()))
+        && (propValue instanceof ArrayProperty));
+  }
+
+  private boolean hasExcludeWhenNull(Property propValue) {
+    return (hasVendorExtensionWithValue(propValue,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true));
+
+  }
+
+  private boolean hasExcludeWhenEmpty(Property propValue) {
+    return (hasVendorExtensionWithValue(propValue,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true));
+
   }
 
   protected boolean hasVendorExtensionWithValue(Property property, String extension, Object value) {
