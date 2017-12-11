@@ -11,12 +11,14 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Response;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.DoubleProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.StringProperty;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -197,6 +199,36 @@ public class TupleEntityMapperTest {
     // Assert
     assertThat(mappedEntity, instanceOf(ImmutableMap.class));
     Map<String, Object> map = (Map<String, Object>) mappedEntity;
+    assertThat(map.values(), hasSize(1));
+    assertThat(map.get("name"), equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
+  }
+
+  @Test
+  public void map_MapsToResponseProperty_ForSingleResult() {
+    // Arrange
+    QueryBindingSet bindingSet = new QueryBindingSet();
+    bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
+
+    when(result.hasNext()).thenReturn(true, false);
+    when(result.next()).thenReturn(bindingSet);
+
+    StringProperty stringProperty = new StringProperty();
+    when(schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
+        DBEERPEDIA.BROUWTOREN_NAME.stringValue());
+
+    TupleEntity entity = new TupleEntity(ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+        new ResponseProperty(new Response().schema(new ObjectProperty().properties(
+            ImmutableMap.of("name", stringProperty.required(false)))))),
+        result);
+
+    // Act
+    Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
+
+    // Assert
+    assertThat(mappedEntity, instanceOf(Map.class));
+
+    Map<String, Object> map = (Map<String, Object>) mappedEntity;
+
     assertThat(map.values(), hasSize(1));
     assertThat(map.get("name"), equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
   }
