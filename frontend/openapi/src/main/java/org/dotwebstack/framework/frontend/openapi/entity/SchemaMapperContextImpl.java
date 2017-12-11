@@ -7,9 +7,9 @@ import org.eclipse.rdf4j.model.Value;
 @Builder
 public class SchemaMapperContextImpl implements SchemaMapperContext {
 
-  private Boolean isExcludedWhenEmpty = true;
+  private boolean isExcludedWhenEmpty = false;
 
-  private Boolean isExcludedWhenNull = true;
+  private boolean isExcludedWhenNull = false;
 
   private Value value;
 

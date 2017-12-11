@@ -4,8 +4,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -300,7 +300,7 @@ public class ArraySchemaMapperTest {
     List result = (ImmutableList) schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
         SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
     // Assert
-    assertTrue(result.isEmpty());
+    assertNull(result);
   }
 
 }
