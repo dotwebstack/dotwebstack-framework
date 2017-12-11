@@ -6,7 +6,7 @@ import io.swagger.models.Model;
 import java.util.Map;
 import lombok.NonNull;
 
-public class GraphEntityContext implements EntityContext {
+public class GraphEntityContext {
 
   private final Map<String, Model> swaggerDefinitions;
   private final ImmutableMap<String, String> ldPathNamespaces;

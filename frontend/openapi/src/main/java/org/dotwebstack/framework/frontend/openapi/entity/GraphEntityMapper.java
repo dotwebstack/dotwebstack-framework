@@ -23,7 +23,7 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
 
   @Override
   public Object map(@NonNull GraphEntity entity, @NonNull MediaType mediaType) {
-    GraphEntityContext graphEntityContext = (GraphEntityContext) entity.getEntityContext();
+    GraphEntityContext graphEntityContext = entity.getEntityContext();
     Property schema = entity.getSchemaMap().get(mediaType);
 
     LOG.debug("Map graph entity to representation.");

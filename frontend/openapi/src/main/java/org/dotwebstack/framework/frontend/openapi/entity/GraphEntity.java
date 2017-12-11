@@ -22,7 +22,7 @@ public final class GraphEntity extends AbstractEntity {
 
   }
 
-  EntityContext getEntityContext() {
+  GraphEntityContext getEntityContext() {
     return graphEntityContext;
   }
 

@@ -82,8 +82,6 @@ public class ObjectSchemaMapperTest {
 
   private ObjectProperty property;
 
-  // XXX (PvH) TODO Use .wsf test method naming conventions
-
   @Before
   public void setUp() {
     schemaMapper = new ObjectSchemaMapper();
