@@ -54,11 +54,11 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
       }
     }
 
-    LOG.debug(String.format("Query before templating: '%s'", query));
+    LOG.debug("Query before templating: '{}'", query);
 
     String modifiedQuery = templateProcessor.processString(query, templateParameters);
 
-    LOG.debug(String.format("Query after templating: '%s'", query));
+    LOG.debug("Query after templating: '{}'", modifiedQuery);
 
     return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery, bindings);
   }
