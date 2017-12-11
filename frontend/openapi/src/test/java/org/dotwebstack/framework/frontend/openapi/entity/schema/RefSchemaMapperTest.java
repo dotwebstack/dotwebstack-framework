@@ -56,7 +56,7 @@ public class RefSchemaMapperTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private final RefSchemaMapper refPropertyHandler;
+  private final RefSchemaMapper schemaMapper;
 
   @Mock
   private GraphEntityContext entityBuilderContext;
@@ -69,15 +69,15 @@ public class RefSchemaMapperTest {
 
   private RefProperty property;
 
-  private SchemaMapperAdapter propertyHandlerRegistry;
+  private SchemaMapperAdapter schemaMapperAdapter;
 
   public RefSchemaMapperTest() {
-    List<SchemaMapper<? extends Property, ?>> handlers = new ArrayList<>();
-    refPropertyHandler = new RefSchemaMapper();
-    handlers.add(refPropertyHandler);
-    handlers.add(new IntegerSchemaMapper());
-    handlers.add(new StringSchemaMapper());
-    propertyHandlerRegistry = new SchemaMapperAdapter(handlers);
+    List<SchemaMapper<? extends Property, ?>> mappers = new ArrayList<>();
+    schemaMapper = new RefSchemaMapper();
+    mappers.add(schemaMapper);
+    mappers.add(new IntegerSchemaMapper());
+    mappers.add(new StringSchemaMapper());
+    schemaMapperAdapter = new SchemaMapperAdapter(mappers);
   }
 
   @Before
@@ -86,24 +86,32 @@ public class RefSchemaMapperTest {
   }
 
   @Test
-  public void supportsObjectProperty() {
-    assertTrue(refPropertyHandler.supports(property));
+  public void supports_ReturnsTrue_ForRefProperty() {
+    // Act
+    boolean result = schemaMapper.supports(property);
+
+    // Assert
+    assertTrue(result);
   }
 
   @Test
-  public void handleDefinitionNotFound() {
+  public void mapGraphValue_ThrowsException_WhenRefCannotBeResolved() {
+    // Arrange
     property.set$ref(DUMMY_REF);
     when(entityBuilderContext.getSwaggerDefinitions()).thenReturn(ImmutableMap.of());
+
+    // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format("Unable to resolve reference to swagger model: '%s'.",
         property.getSimpleRef()));
 
-    refPropertyHandler.mapGraphValue(property, entityBuilderContext, propertyHandlerRegistry,
-        context);
+    // Act
+    schemaMapper.mapGraphValue(property, entityBuilderContext, schemaMapperAdapter, context);
   }
 
   @Test
-  public void handleDefinitionSchemaProperties() {
+  public void mapGraphValue_ReturnsResults_WhenRefCanBeResolved() {
+    // Arrange
     property.set$ref(DUMMY_REF);
     Model refModel = new ModelImpl();
     refModel.setProperties(ImmutableMap.of(KEY_1, PROPERTY_1, KEY_2, PROPERTY_2));
@@ -113,9 +121,11 @@ public class RefSchemaMapperTest {
         ImmutableMap.of(property.getSimpleRef(), refModel));
     when(ldPathExecutor.ldPathQuery(context, LD_PATH_QUERY)).thenReturn(ImmutableList.of(VALUE_2));
 
-    Map<String, Object> result = (Map<String, Object>) refPropertyHandler.mapGraphValue(property,
-        entityBuilderContext, propertyHandlerRegistry, context);
+    // Act
+    Map<String, Object> result = (Map<String, Object>) schemaMapper.mapGraphValue(property,
+        entityBuilderContext, schemaMapperAdapter, context);
 
+    // Assert
     assertThat(result.keySet(), hasSize(2));
     assertEquals(((Optional) result.get(KEY_1)).orNull(), VALUE_1.stringValue());
     assertEquals(((Optional) result.get(KEY_2)).orNull(), VALUE_2.intValue());

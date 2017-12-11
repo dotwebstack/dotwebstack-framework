@@ -108,7 +108,7 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  public void map_MapsToHandlerResult_ForRequiredPropertyWithPresentBinding() {
+  public void map_MapsToMapperResult_ForRequiredPropertyWithPresentBinding() {
     // Assert
     StringProperty nameProperty = new StringProperty().required(true);
     TupleEntity entity = new TupleEntity(

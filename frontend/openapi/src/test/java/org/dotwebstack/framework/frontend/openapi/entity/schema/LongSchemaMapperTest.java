@@ -50,7 +50,7 @@ public class LongSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForLongSchema() {
+  public void supports_ReturnsTrue_ForLongProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(schema);
 
@@ -59,7 +59,7 @@ public class LongSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonLongSchema() {
+  public void supports_ReturnsTrue_ForNonLongProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(new StringProperty());
 

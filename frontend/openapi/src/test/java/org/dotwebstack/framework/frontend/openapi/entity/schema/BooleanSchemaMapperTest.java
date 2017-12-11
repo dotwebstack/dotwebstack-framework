@@ -49,7 +49,7 @@ public class BooleanSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForBooleanSchema() {
+  public void supports_ReturnsTrue_ForBooleanProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(schema);
 
@@ -58,7 +58,7 @@ public class BooleanSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsFalse_ForNonBooleanSchema() {
+  public void supports_ReturnsFalse_ForNonBooleanProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(new StringProperty());
 

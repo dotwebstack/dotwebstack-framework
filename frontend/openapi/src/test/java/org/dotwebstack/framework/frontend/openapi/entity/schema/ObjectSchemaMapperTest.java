@@ -112,24 +112,30 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void handleObjectWithoutProperties() {
+  public void mapGraphValue_ReturnsEmptyMap_WhenObjectHasNoProperties() {
+    // Arrange
     property.setProperties(ImmutableMap.of());
 
+    // Act
     Map<String, Object> result = (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property,
         contextMock, schemaMapperAdapter, value1Mock);
 
+    // Assert
     assertThat(result.keySet(), hasSize(0));
   }
 
   @Test
-  public void handleObjectProperties() {
+  public void mapGraphValue_ReturnsPropertyMap_WhenObjectHasProperties() {
+    // Arrange
     property.setProperties(ImmutableMap.of(KEY_1, STR_PROPERTY_1, KEY_2, STR_PROPERTY_2, KEY_3,
         ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
     when(ldPathExecutorMock.ldPathQuery(any(), eq(STR3_LD_EXP))).thenReturn(ImmutableList.of());
 
+    // Act
     Map<String, Object> result = (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property,
         contextMock, schemaMapperAdapter, value1Mock);
 
+    // Assert
     assertThat(result.keySet(), hasSize(4));
     assertThat(result, hasEntry(KEY_1, com.google.common.base.Optional.of(STR_VALUE_1)));
     assertThat(result, hasEntry(KEY_2, com.google.common.base.Optional.of(STR_VALUE_2)));
@@ -138,43 +144,51 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void handleObjectWithLdPathWithoutResult() {
+  public void mapGraphValue_ReturnsNull_WhenLdPathYieldsNoResults() {
+    // Arrange
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
 
     when(ldPathExecutorMock.ldPathQuery(value1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
 
+    // Act
     Object result =
         schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, value1Mock);
 
+    // Assert
     assertThat(result, nullValue());
   }
 
   @Test
-  public void handleObjectWithLdPathWithoutResultWhenRequiredThrowsException() {
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
-    property.setRequired(true);
-
-    when(ldPathExecutorMock.ldPathQuery(value1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
-
+  public void mapGraphValue_ThrowsException_WhenLdPathYieldsNoResultsForRequiredProperty() {
+    // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(
         String.format("LDPath expression for a required object property ('%s') yielded no result.",
             DUMMY_EXPR_1));
 
+    // Arrange
+    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
+    property.setRequired(true);
+
+    when(ldPathExecutorMock.ldPathQuery(value1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
+
+    // Act
     schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, value1Mock);
   }
 
   @Test
-  public void handleObjectWithLdPathWithMultipleResultsThrowsException() {
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
-
-    when(ldPathExecutorMock.ldPathQuery(value1Mock, DUMMY_EXPR_1)).thenReturn(
-        ImmutableSet.of(value1Mock, value2Mock));
-
+  public void mapGraphValue_ThrowsException_WhenLdPathYieldsMultipleResults() {
+    // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format(
         "LDPath expression for object property ('%s') yielded multiple elements.", DUMMY_EXPR_1));
 
+    // Arrange
+    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
+    when(ldPathExecutorMock.ldPathQuery(value1Mock, DUMMY_EXPR_1)).thenReturn(
+        ImmutableSet.of(value1Mock, value2Mock));
+
+    // Act
     schemaMapperAdapter.mapGraphValue(property, contextMock, schemaMapperAdapter, value1Mock);
   }
 
@@ -278,7 +292,7 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void support_ReturnsTrue_ForObjectProperty() {
+  public void supports_ReturnsTrue_ForObjectProperty() {
     // Act
     boolean result = schemaMapper.supports(property);
 
@@ -287,7 +301,7 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void support_ReturnsFalse_ForNonObjectProperty() {
+  public void supports_ReturnsFalse_ForNonObjectProperty() {
     // Act
     boolean result = schemaMapper.supports(new ArrayProperty());
 

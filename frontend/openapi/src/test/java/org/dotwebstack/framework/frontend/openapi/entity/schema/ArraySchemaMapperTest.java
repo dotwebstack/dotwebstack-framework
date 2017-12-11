@@ -96,7 +96,7 @@ public class ArraySchemaMapperTest {
   }
 
   @Test
-  public void support_ReturnsTrue_ForArrayProperty() {
+  public void supports_ReturnsTrue_ForArrayProperty() {
     // Act
     boolean result = schemaMapper.supports(arrayProperty);
 
@@ -105,9 +105,9 @@ public class ArraySchemaMapperTest {
   }
 
   @Test
-  public void support_ReturnsFalse_ForNonArrayProperty() {
+  public void supports_ReturnsFalse_ForNonArrayProperty() {
     // Act
-    boolean result = schemaMapper.supports(new ObjectProperty());
+    boolean result = schemaMapper.supports(objectProperty);
 
     // Assert
     assertThat(result, is(false));

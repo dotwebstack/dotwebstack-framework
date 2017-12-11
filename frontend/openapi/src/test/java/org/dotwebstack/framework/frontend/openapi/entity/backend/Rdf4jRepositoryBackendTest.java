@@ -50,19 +50,23 @@ public class Rdf4jRepositoryBackendTest {
   }
 
   @Test
-  public void createLiteral_GetStringValue_keepStringValue() {
+  public void createLiteral_GetStringValue_KeepStringValue() {
+    // Act
     Literal literal = backend.createLiteral("test");
+    // Assert
     assertEquals("test", literal.stringValue());
   }
 
   @Test
   public void createUri_GetLocalName_KeepStringValue() {
+    // Act
     IRI iri = backend.createURI("http://www.test.nl");
+    // Assert
     assertEquals("www.test.nl", iri.getLocalName());
   }
 
   @Test
-  public void listObjects_NoDuplicates_WhenSubjectAndPropSimular() throws Exception {
+  public void listObjects_NoDuplicates_WhenSubjectAndPropSimilar() throws Exception {
     // Arrange
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
     when(repository.getConnection()).thenReturn(repositoryConnection);
@@ -87,7 +91,7 @@ public class Rdf4jRepositoryBackendTest {
   }
 
   @Test
-  public void listSubjects_ListOnlySubjects_InmixedModel() throws Exception {
+  public void listSubjects_ListOnlySubjects_InMixedModel() throws Exception {
     // Arrange
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
     when(repository.getConnection()).thenReturn(repositoryConnection);
@@ -113,45 +117,52 @@ public class Rdf4jRepositoryBackendTest {
   }
 
   @Test
-  public void listSubjects_IllegalArgument_ThrowsExeption() {
+  public void listSubjects_ThrowsExeption_ForIllegalProperty() {
+    // Assert
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Property needs to be a URI node (property type: bNode).");
+
+    // Arrange
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
     when(repository.getConnection()).thenReturn(repositoryConnection);
     Value object = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     Value prop = SimpleValueFactory.getInstance().createBNode();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Property needs to be a URI node (property type: bNode).");
+
     // Act
     backend.listSubjects(prop, object);
   }
 
   @Test
-  public void listSubjects_RepositoryFailedt_ThrowsExeption() {
+  public void listSubjects_ThrowsExeption_QueryingRepositoryFailed() {
+    // Assert
+    thrown.expect(Rdf4jBackendRuntimeException.class);
+    thrown.expectMessage("Error while querying RDF4J repository.");
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
 
+    // Arrange
     when(repository.getConnection()).thenReturn(repositoryConnection);
     Exception dummy = new Exception("x");
 
     doThrow(new RepositoryLockedException("a", "b", "c", dummy)).when(repositoryConnection).begin();
     Value object = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     Value prop = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
-    thrown.expect(Rdf4jBackendRuntimeException.class);
-    thrown.expectMessage("Error while querying RDF4J repository.");
+
     // Act
     backend.listSubjects(prop, object);
   }
 
   @Test
   public void createUri_ReturnsUri_WhenCreated() throws Exception {
-
+    // Act
     IRI iri = backend.createURI("http://www.test.nl");
-    assertThat(iri, is(SimpleValueFactory.getInstance().createIRI("http://www.test.nl")));
 
+    // Assert
+    assertThat(iri, is(SimpleValueFactory.getInstance().createIRI("http://www.test.nl")));
   }
 
   @Test
   public void createLiteral_ReturnsLiteral_WhenCreatedWithLocaleWithoutTypeWithoutLanguage()
       throws Exception {
-    // Arrange
     // Act
     Literal literal = backend.createLiteral("http://www.test.nl", null, null);
     // Assert
@@ -168,7 +179,6 @@ public class Rdf4jRepositoryBackendTest {
    */
   @Test
   public void createLiteral_ReturnsLiteral_WhenCreatedWithLocaleWithoutType() throws Exception {
-    // Arrange
     // Act
     Literal literal = backend.createLiteral("http://www.test.nl", Locale.CANADA, null);
     // Assert
@@ -188,7 +198,6 @@ public class Rdf4jRepositoryBackendTest {
   @Test
   public void createLiteral_ReturnsLiteral_WhenCreatedWithLocaleWithTypeLanguageIgnored()
       throws Exception {
-    // Arrange
     // Act
     Literal literal = backend.createLiteral("http://www.test.nl", Locale.CANADA,
         URI.create("http://www.test.nl"));
@@ -199,7 +208,6 @@ public class Rdf4jRepositoryBackendTest {
 
   @Test
   public void createLiteral_ReturnsLiteral_WhenCreatedEithoutTypeAndLanguage() throws Exception {
-    // Arrange
     // Act
     Literal literal = backend.createLiteral("http://www.test.nl", null, null);
     // Assert
@@ -208,20 +216,29 @@ public class Rdf4jRepositoryBackendTest {
   }
 
   @Test
-  public void listObjects_IllegalArgument_ThrowsExeption() {
+  public void listObjects_ThrowsExeption_ForIllegalSubject() {
+    // Assert
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Subject needs to be a URI or blank node, property a URI node"
+        + " (types: [subject: URI, property: bNode]).");
+
+    // Arrange
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
     when(repository.getConnection()).thenReturn(repositoryConnection);
     Value subject = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     Value prop = SimpleValueFactory.getInstance().createBNode();
-    thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Subject needs to be a URI or blank node, property a URI node"
-        + " (types: [subject: URI, property: bNode]).");
+
     // Act
     backend.listObjects(subject, prop);
   }
 
   @Test
-  public void listObjects_RepositoryFailedt_ThrowsExeption() {
+  public void listObjects_ThrowsExeption_QueryingRepositoryFailed() {
+    // Assert
+    thrown.expect(Rdf4jBackendRuntimeException.class);
+    thrown.expectMessage("Error while querying RDF4J repository.");
+
+    // Arrange
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
 
     when(repository.getConnection()).thenReturn(repositoryConnection);
@@ -230,8 +247,6 @@ public class Rdf4jRepositoryBackendTest {
     doThrow(new RepositoryLockedException("a", "b", "c", dummy)).when(repositoryConnection).begin();
     Value subject = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
     Value prop = SimpleValueFactory.getInstance().createIRI("http://www.test.nl#test");
-    thrown.expect(Rdf4jBackendRuntimeException.class);
-    thrown.expectMessage("Error while querying RDF4J repository.");
     // Act
     backend.listObjects(subject, prop);
   }
