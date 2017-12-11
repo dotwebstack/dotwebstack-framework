@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -58,8 +59,7 @@ public class SchemaMapperAdapterTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    schemaMapperAdapter.mapTupleValue(new StringProperty(),
-        SchemaMapperContextImpl.builder().value(null).build());
+    schemaMapperAdapter.mapTupleValue(new StringProperty(), null);
   }
 
   @Test
@@ -84,9 +84,8 @@ public class SchemaMapperAdapterTest {
     StringProperty schema = new StringProperty();
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
     when(stringSchemaMapper.supports(schema)).thenReturn(true);
-    when(stringSchemaMapper.mapTupleValue(schema,
-        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build())).thenReturn(
-            expectedValue);
+    when(stringSchemaMapper.mapTupleValue(any(StringProperty.class),
+        any(SchemaMapperContext.class))).thenReturn(expectedValue);
 
     // Act
     Object value = schemaMapperAdapter.mapTupleValue(schema,
