@@ -9,8 +9,8 @@ abstract class AbstractEntity implements Entity {
 
   private Map<MediaType, Property> schemaMap;
 
-  AbstractEntity(@NonNull Map<MediaType, Property> schemaProperty) {
-    this.schemaMap = schemaProperty;
+  AbstractEntity(@NonNull Map<MediaType, Property> schemaMap) {
+    this.schemaMap = schemaMap;
   }
 
   @Override

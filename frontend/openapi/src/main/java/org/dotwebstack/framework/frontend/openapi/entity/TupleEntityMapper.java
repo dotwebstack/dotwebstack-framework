@@ -9,6 +9,7 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -38,6 +39,9 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
           String.format("No schema found for media type '%s'.", mediaType.toString()));
     }
 
+    if (schema instanceof ResponseProperty) {
+      schema = ((ResponseProperty) schema).getSchema();
+    }
     if (schema instanceof ObjectProperty) {
       return mapObject(entity, (ObjectProperty) schema);
     }

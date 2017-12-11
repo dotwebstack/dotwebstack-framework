@@ -14,9 +14,9 @@ public final class GraphEntity extends AbstractEntity {
 
   private final GraphEntityContext graphEntityContext;
 
-  GraphEntity(@NonNull Map<MediaType, Property> schemaProperty,
+  GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
       GraphEntityContext graphEntityContext) {
-    super(schemaProperty);
+    super(schemaMap);
     this.graphEntityContext = graphEntityContext;
 
   }
@@ -33,10 +33,10 @@ public final class GraphEntity extends AbstractEntity {
     private Map<String, io.swagger.models.Model> swaggerDefinitions;
     private ImmutableMap<String, String> ldpathNamespaces;
     private Model model;
-    private Map<MediaType, Property> schemaProperty;
+    private Map<MediaType, Property> schemaMap;
 
-    public Builder withSchemaProperty(Map<MediaType, Property> schemaProperty) {
-      this.schemaProperty = schemaProperty;
+    public Builder withSchemaMap(Map<MediaType, Property> schemaMap) {
+      this.schemaMap = schemaMap;
       return this;
     }
 
@@ -83,7 +83,7 @@ public final class GraphEntity extends AbstractEntity {
     }
 
     public Entity build() {
-      return new GraphEntity(schemaProperty,
+      return new GraphEntity(schemaMap,
           new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model));
     }
   }
