@@ -63,9 +63,9 @@ public class ValidationReport {
 
   public String printReport() {
     StringBuilder report = new StringBuilder();
-    report.append("--- Validation report ---");
+    report.append("--- Validation report ---\n");
     for (ErrorObject errorObject : errors.values()) {
-      report.append(errorObject.getErrorReport());
+      report.append(errorObject.getErrorReport() + "\n");
     }
     report.append("--- ---");
     return report.toString();
