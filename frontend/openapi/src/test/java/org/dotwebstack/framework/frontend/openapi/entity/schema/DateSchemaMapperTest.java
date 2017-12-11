@@ -19,7 +19,6 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -80,7 +79,7 @@ public class DateSchemaMapperTest {
     verifyZeroInteractions(ldPathExecutor);
   }
 
-  @Ignore
+
   @Test
   public void mapGraphValue_ReturnsValue_ForLdPath() {
     // Arrange
@@ -88,7 +87,7 @@ public class DateSchemaMapperTest {
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    LocalDate result = (LocalDate) registry.mapGraphValue(property, entityBuilderContext,
+    LocalDate result = schemaMapper.mapGraphValue(property, entityBuilderContext,
         SchemaMapperContextImpl.builder().value(context).build(), registry);
 
     // Assert
