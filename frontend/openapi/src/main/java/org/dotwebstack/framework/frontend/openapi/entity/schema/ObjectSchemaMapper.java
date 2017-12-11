@@ -86,8 +86,6 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
         queryResult.iterator().next());
   }
 
-
-
   private Map<String, Object> handleProperties(ObjectProperty property,
       GraphEntityContext entityBuilderContext, SchemaMapperAdapter schemaMapperAdapter,
       Value context) {
@@ -103,8 +101,6 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
     });
     return builder.build();
   }
-
-
 
   @Override
   public boolean supports(@NonNull Property schema) {

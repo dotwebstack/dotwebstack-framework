@@ -139,7 +139,6 @@ public class ObjectSchemaMapperTest {
     assertThat(result, hasEntry(KEY_4, com.google.common.base.Optional.absent()));
   }
 
-
   @Test
   public void handleObjectWithLdPathWithoutResult() {
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);

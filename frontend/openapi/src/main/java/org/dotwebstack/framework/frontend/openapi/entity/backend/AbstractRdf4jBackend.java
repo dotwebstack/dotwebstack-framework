@@ -99,7 +99,6 @@ public abstract class AbstractRdf4jBackend extends Rdf4jValueBackend implements 
   @Override
   public abstract IRI createURI(String uri);
 
-
   @Override
   public boolean supportsThreading() {
     return false;

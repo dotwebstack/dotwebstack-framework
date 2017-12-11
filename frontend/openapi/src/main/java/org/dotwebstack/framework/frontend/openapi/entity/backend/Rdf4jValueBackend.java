@@ -211,7 +211,6 @@ public class Rdf4jValueBackend implements NodeBackend<Value> {
         node.stringValue(), debugType(node)), ex);
   }
 
-
   /**
    * Prints the type (URI,bNode,literal) by inspecting the parsed {@link Value} to improve error
    * messages and other loggings. In case of literals also the {@link #getLiteralType(Value) literal

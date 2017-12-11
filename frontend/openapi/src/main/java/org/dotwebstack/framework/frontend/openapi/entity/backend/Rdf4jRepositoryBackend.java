@@ -47,7 +47,6 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
     return createLiteralInternal(repository.getValueFactory(), content);
   }
 
-
   /**
    * Create a literal node with the content passed as argument.
    *
@@ -58,7 +57,6 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
   public Literal createLiteral(@NonNull String content, Locale language, URI type) {
     return createLiteralInternal(repository.getValueFactory(), content, language, type);
   }
-
 
   /**
    * Create a URI mode with the URI passed as argument.

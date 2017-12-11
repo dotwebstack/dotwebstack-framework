@@ -139,5 +139,4 @@ class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
     return SUPPORTED_TYPES;
   }
 
-
 }

@@ -54,7 +54,6 @@ public class IntegerSchemaMapperTest {
   private SchemaMapper handler;
   private IntegerProperty property;
 
-
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
@@ -139,8 +138,6 @@ public class IntegerSchemaMapperTest {
     assertThat(supported, equalTo(false));
   }
 
-
-
   @Test
   public void supportsIntegerProperty() {
     assertThat(handler.supports(property), is(true));
@@ -158,10 +155,10 @@ public class IntegerSchemaMapperTest {
   public void handleValidLdPathQuery() {
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
-            ImmutableList.of(VALUE_1));
+        ImmutableList.of(VALUE_1));
 
     Integer result =
-            (Integer) registry.mapGraphValue(property, entityBuilderContext, registry, context);
+        (Integer) registry.mapGraphValue(property, entityBuilderContext, registry, context);
 
     assertThat(result, is(VALUE_1.integerValue().intValue()));
   }
@@ -170,11 +167,11 @@ public class IntegerSchemaMapperTest {
   public void handleUnsupportedLiteralDataType() {
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
-            ImmutableList.of(VALUE_3));
+        ImmutableList.of(VALUE_3));
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format(
-            "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
-            DUMMY_EXPR, Joiner.on(", ").join(XMLSchema.INTEGER, XMLSchema.INT)));
+        "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
+        DUMMY_EXPR, Joiner.on(", ").join(XMLSchema.INTEGER, XMLSchema.INT)));
 
     registry.mapGraphValue(property, entityBuilderContext, registry, context);
   }
@@ -183,7 +180,7 @@ public class IntegerSchemaMapperTest {
   public void testEmptyLdPath() {
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format("Property '%s' must have a '%s' attribute",
-            property.getName(), OpenApiSpecificationExtensions.LDPATH));
+        property.getName(), OpenApiSpecificationExtensions.LDPATH));
     registry.mapGraphValue(property, entityBuilderContext, registry, context);
   }
 

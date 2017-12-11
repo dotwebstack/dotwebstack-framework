@@ -122,7 +122,6 @@ public class Rdf4jValueBackendTest {
     assertThat(backend.intValue(value), is(10));
   }
 
-
   @Test
   public void testCreateLiteral() {
     Literal value = SimpleValueFactory.getInstance().createLiteral("http://www.test.nl");

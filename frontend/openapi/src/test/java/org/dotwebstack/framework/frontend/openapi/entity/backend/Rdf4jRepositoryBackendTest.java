@@ -124,8 +124,6 @@ public class Rdf4jRepositoryBackendTest {
     backend.listSubjects(prop, object);
   }
 
-
-
   @Test
   public void listSubjects_RepositoryFailedt_ThrowsExeption() {
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);
@@ -141,7 +139,6 @@ public class Rdf4jRepositoryBackendTest {
     // Act
     backend.listSubjects(prop, object);
   }
-
 
   @Test
   public void createUri_ReturnsUri_WhenCreated() throws Exception {
@@ -200,7 +197,6 @@ public class Rdf4jRepositoryBackendTest {
     assertEquals("http://www.test.nl", literal.getDatatype().toString());
   }
 
-
   @Test
   public void createLiteral_ReturnsLiteral_WhenCreatedEithoutTypeAndLanguage() throws Exception {
     // Arrange
@@ -210,7 +206,6 @@ public class Rdf4jRepositoryBackendTest {
     assertEquals(false, literal.getLanguage().isPresent());
     assertEquals("http://www.w3.org/2001/XMLSchema#string", literal.getDatatype().toString());
   }
-
 
   @Test
   public void listObjects_IllegalArgument_ThrowsExeption() {

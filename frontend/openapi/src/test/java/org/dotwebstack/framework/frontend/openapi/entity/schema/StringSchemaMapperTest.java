@@ -106,7 +106,6 @@ public class StringSchemaMapperTest {
     assertThat(supported, equalTo(false));
   }
 
-
   @Test
   public void supportsStringProperty() {
     assertThat(handler.supports(stringProperty), Matchers.equalTo(true));

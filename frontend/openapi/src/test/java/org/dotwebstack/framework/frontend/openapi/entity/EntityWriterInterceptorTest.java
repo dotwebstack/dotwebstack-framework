@@ -69,7 +69,6 @@ public class EntityWriterInterceptorTest {
     entityWriterInterceptor.aroundWriteTo(null);
   }
 
-
   @Test
   public void aroundWriteTo_MapsEntity_ForTupleEntity() throws IOException {
     // Arrange

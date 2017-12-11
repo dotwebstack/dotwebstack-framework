@@ -104,7 +104,6 @@ public class AbstractSubjectFilterSchemaMapperTest {
     assertThat(results, hasSize(is(1)));
   }
 
-
   @Test
   public void when_No_Object_Or_Predicate_Specified_Then_Exception() {
     // Arrange

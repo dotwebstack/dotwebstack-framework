@@ -274,7 +274,6 @@ public class TupleEntityMapperTest {
     tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
   }
 
-
   @Test
   public void map_ThrowException_ForRequiredPropertyWithAbsentBinding() {
     // Assert
