@@ -12,6 +12,13 @@ dbeerpedia:IdFilter a elmo:TermFilter;
   ];
 .
 
+dbeerpedia:SubjectParameter a elmo:TermFilter;
+  elmo:name "SUBJECT";
+  elmo:shape [
+    sh:datatype xsd:string
+  ];
+.
+
 dbeerpedia:TupleBreweries a elmo:InformationProduct;
   rdfs:label "Beer breweries in The Netherlands";
   elmo:backend dbeerpedia:Backend;
