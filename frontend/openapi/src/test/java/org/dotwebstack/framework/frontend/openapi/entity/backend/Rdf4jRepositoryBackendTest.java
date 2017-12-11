@@ -121,7 +121,7 @@ public class Rdf4jRepositoryBackendTest {
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Property needs to be a URI node (property type: bNode).");
     // Act
-    Collection<Value> values = backend.listSubjects(prop, object);
+    backend.listSubjects(prop, object);
   }
 
 
@@ -139,7 +139,7 @@ public class Rdf4jRepositoryBackendTest {
     thrown.expect(Rdf4jBackendRuntimeException.class);
     thrown.expectMessage("Error while querying RDF4J repository.");
     // Act
-    Collection<Value> values = backend.listSubjects(prop, object);
+    backend.listSubjects(prop, object);
   }
 
 
@@ -202,11 +202,10 @@ public class Rdf4jRepositoryBackendTest {
 
 
   @Test
-  public void createLiteral_ReturnsLiteral_WhenCreatedEithoutTypeAndLanguage()
-          throws Exception {
+  public void createLiteral_ReturnsLiteral_WhenCreatedEithoutTypeAndLanguage() throws Exception {
     // Arrange
     // Act
-    Literal literal = backend.createLiteral("http://www.test.nl", null, null );
+    Literal literal = backend.createLiteral("http://www.test.nl", null, null);
     // Assert
     assertEquals(false, literal.getLanguage().isPresent());
     assertEquals("http://www.w3.org/2001/XMLSchema#string", literal.getDatatype().toString());
@@ -223,7 +222,7 @@ public class Rdf4jRepositoryBackendTest {
     thrown.expectMessage("Subject needs to be a URI or blank node, property a URI node"
         + " (types: [subject: URI, property: bNode]).");
     // Act
-    Collection<Value> values = backend.listObjects(subject, prop);
+    backend.listObjects(subject, prop);
   }
 
   @Test
@@ -239,6 +238,6 @@ public class Rdf4jRepositoryBackendTest {
     thrown.expect(Rdf4jBackendRuntimeException.class);
     thrown.expectMessage("Error while querying RDF4J repository.");
     // Act
-    Collection<Value> values = backend.listObjects(subject, prop);
+    backend.listObjects(subject, prop);
   }
 }
