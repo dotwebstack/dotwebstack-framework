@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -311,22 +312,20 @@ public class ObjectSchemaMapperTest {
     assertThat(result, empty());
   }
 
-  // XXX (PvH) Suggestie: mapGraphValue_ExcludesProperty_WhenVendorExtensionIsSet
   @Test
   public void isIncludedWhenNull_WhenSetExpectNoResult() {
 
     // Arrange
     StringProperty stringProperty = new StringProperty();
-    stringProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL,
-        true);
+
     property.setProperties(ImmutableMap.of(KEY_1, stringProperty));
+    property.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true);
 
     // Act
-    Map result = (Map) schemaMapperAdapter.mapGraphValue(property, contextMock,
-        SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
-
+    Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(property, contextMock,
+        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
     // Assert
-    assertThat(result.isEmpty(), is(true));
+    assertTrue(result.isEmpty());
   }
 
 }
