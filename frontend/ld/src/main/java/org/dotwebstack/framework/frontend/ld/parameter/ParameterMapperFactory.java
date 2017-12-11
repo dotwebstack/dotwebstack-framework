@@ -47,12 +47,13 @@ public class ParameterMapperFactory {
     }
 
     if (UriParameterMapper.getType().equals(parameterMapperType)) {
-      UriParameterMapper.Builder builder = new UriParameterMapper.Builder(identifier,
-          parameterSourceFactory.getParameterSource(sourceIri),
-          parameterTargetFactory.getTarget(targetIri));
+      UriParameterMapper.UriParameterMapperBuilder builder =
+          new UriParameterMapper.UriParameterMapperBuilder(identifier,
+              parameterSourceFactory.getParameterSource(sourceIri),
+              parameterTargetFactory.getTarget(targetIri));
 
-      pattern.ifPresent(p -> builder.pattern(p));
-      template.ifPresent(t -> builder.template(t));
+      pattern.ifPresent(builder::pattern);
+      template.ifPresent(builder::template);
 
       return builder.build();
     }
