@@ -19,6 +19,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -79,6 +80,7 @@ public class DateSchemaMapperTest {
     verifyZeroInteractions(ldPathExecutor);
   }
 
+  @Ignore
   @Test
   public void mapGraphValue_ReturnsValue_ForLdPath() {
     // Arrange
