@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -93,9 +94,9 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
       throw new SchemaMapperRuntimeException(String.format(
           "LDPath expression for object property ('%s') yielded multiple elements.", ldPathQuery));
     }
-    schemaMapperContext.setValue(queryResult.iterator().next());
-    return handleProperties(property, entityBuilderContext, schemaMapperContext,
-        schemaMapperAdapter);
+    SchemaMapperContext newContext =
+        SchemaMapperContextImpl.builder().value(queryResult.iterator().next()).build();
+    return handleProperties(property, entityBuilderContext, newContext, schemaMapperAdapter);
   }
 
 
