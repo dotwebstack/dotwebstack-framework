@@ -29,7 +29,7 @@ public class Violation {
     return resultPath;
   }
 
-  public String getErrorReport() {
+  public String getReport() {
     return String.format(
         "Invalid configuration at path [%s] on node [%s] with error " + "message [%s]", resultPath,
         focusNode, resultMessage);

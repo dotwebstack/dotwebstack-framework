@@ -104,7 +104,7 @@ public class ShaclValidatorTest {
     assertThat(report.isValid(), equalTo(false));
     assertThat(report.getErrors().size(), equalTo(1));
     final String errorKey = report.getErrors().keySet().iterator().next();
-    assertThat(report.getErrors().get(errorKey).getErrorReport(),
+    assertThat(report.getErrors().get(errorKey).getReport(),
         equalTo("Invalid configuration at path [http://example.org#lid] on node "
             + "[http://example.org#HuwelijkMarcoNanda] with error message [More than 2 values]"));
   }
@@ -120,17 +120,17 @@ public class ShaclValidatorTest {
     // Assert
     assertThat(report.isValid(), equalTo(false));
     assertThat(report.getErrors().size(), equalTo(3));
-    assertThat(report.getErrors().values().stream().map(Violation::getErrorReport).filter(
+    assertThat(report.getErrors().values().stream().map(Violation::getReport).filter(
         ("Invalid configuration at path [http://example.org#lid] on node "
             + "[http://example.org#HuwelijkMarcoNanda] with error message "
             + "[More than 2 values]")::equals).findFirst().isPresent(),
         equalTo(true));
-    assertThat(report.getErrors().values().stream().map(Violation::getErrorReport).filter(
+    assertThat(report.getErrors().values().stream().map(Violation::getReport).filter(
         ("Invalid configuration at path [http://example.org#lid] on node "
             + "[http://example.org#HuwelijkMarcoNanda] with error message "
             + "[Value does not have shape <http://example.org/shape#Persoon>]")::equals).findFirst().isPresent(),
         equalTo(true));
-    assertThat(report.getErrors().values().stream().map(Violation::getErrorReport).filter(
+    assertThat(report.getErrors().values().stream().map(Violation::getReport).filter(
         ("Invalid configuration at path [http://example.org#naam] on node [http://example.org#Bobby]"
             + " with error message [More than 1 values]")::equals).findFirst().isPresent(),
         equalTo(true));
@@ -148,7 +148,7 @@ public class ShaclValidatorTest {
     assertThat(report.isValid(), equalTo(false));
     assertThat(report.getErrors().size(), equalTo(1));
     final String errorKey = report.getErrors().keySet().iterator().next();
-    assertThat(report.getErrors().get(errorKey).getErrorReport(),
+    assertThat(report.getErrors().get(errorKey).getReport(),
         equalTo("Invalid configuration at path "
             + "[http://example.org#lid] on node [http://example.org#HuwelijkMarcoNanda] with error "
             + "message [More than 2 values]"));

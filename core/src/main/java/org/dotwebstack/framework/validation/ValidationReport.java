@@ -10,19 +10,20 @@ import org.apache.jena.rdf.model.impl.PropertyImpl;
 
 public class ValidationReport {
 
+  private static final String DESCRIPTION_RESULT_PATH = "http://www.w3.org/ns/shacl#resultPath";
+
+  private static final String DESCRIPTION_RESULT_MESSAGE =
+      "http://www.w3.org/ns/shacl#resultMessage";
+
+  private static final String DESCRIPTION_FOCUS_NODE = "http://www.w3.org/ns/shacl#focusNode";
+
+  private static final String DESCRIPTION_CONFORMS = "http://www.w3.org/ns/shacl#conforms";
+
+  private static final String DESCRIPTION_RESULT = "http://www.w3.org/ns/shacl#result";
+
   private final Model reportModel;
 
   private final Map<String, Violation> errors;
-
-  private final String descriptionResultPath = "http://www.w3.org/ns/shacl#resultPath";
-
-  private final String descriptionResultMessage = "http://www.w3.org/ns/shacl#resultMessage";
-
-  private final String descriptionFocusNode = "http://www.w3.org/ns/shacl#focusNode";
-
-  private final String descriptionConforms = "http://www.w3.org/ns/shacl#conforms";
-
-  private final String descriptionResult = "http://www.w3.org/ns/shacl#result";
 
   public ValidationReport(@NonNull Model reportModel) {
     this.reportModel = reportModel;
@@ -32,11 +33,11 @@ public class ValidationReport {
 
   private void parseValidationResult() {
     final NodeIterator isValidProperty =
-        reportModel.listObjectsOfProperty(new PropertyImpl(descriptionConforms));
+        reportModel.listObjectsOfProperty(new PropertyImpl(DESCRIPTION_CONFORMS));
     final boolean isValid = isValidProperty.next().asLiteral().getBoolean();
     if (!isValid) {
       for (Object subject : reportModel.listObjectsOfProperty(
-          new PropertyImpl(descriptionResult)).toSet()) {
+          new PropertyImpl(DESCRIPTION_RESULT)).toSet()) {
         errors.put(subject.toString(), createErrorObject(reportModel, (Resource) subject));
       }
     }
@@ -52,11 +53,11 @@ public class ValidationReport {
 
   private Violation createErrorObject(Model model, Resource subject) {
     final String resultPath = model.listObjectsOfProperty(subject,
-        new PropertyImpl(descriptionResultPath)).next().toString();
+        new PropertyImpl(DESCRIPTION_RESULT_PATH)).next().toString();
     final String resultMessage = model.listObjectsOfProperty(subject,
-        new PropertyImpl(descriptionResultMessage)).next().toString();
+        new PropertyImpl(DESCRIPTION_RESULT_MESSAGE)).next().toString();
     final String focusNode = model.listObjectsOfProperty(subject,
-        new PropertyImpl(descriptionFocusNode)).next().toString();
+        new PropertyImpl(DESCRIPTION_FOCUS_NODE)).next().toString();
 
     return new Violation(focusNode, resultMessage, resultPath);
   }
@@ -65,7 +66,7 @@ public class ValidationReport {
     StringBuilder report = new StringBuilder();
     report.append("\n--- Validation report ---\n");
     for (Violation violation : errors.values()) {
-      report.append(violation.getErrorReport() + "\n");
+      report.append(violation.getReport() + "\n");
     }
     report.append("\n--- ---");
     return report.toString();
