@@ -12,7 +12,7 @@ public class ValidationReport {
 
   private final Model reportModel;
 
-  private final Map<String, ErrorObject> errors;
+  private final Map<String, Violation> errors;
 
   private final String descriptionResultPath = "http://www.w3.org/ns/shacl#resultPath";
 
@@ -42,7 +42,7 @@ public class ValidationReport {
     }
   }
 
-  public Map<String, ErrorObject> getErrors() {
+  public Map<String, Violation> getErrors() {
     return errors;
   }
 
@@ -50,7 +50,7 @@ public class ValidationReport {
     return errors.size() > 0 ? false : true;
   }
 
-  private ErrorObject createErrorObject(Model model, Resource subject) {
+  private Violation createErrorObject(Model model, Resource subject) {
     final String resultPath = model.listObjectsOfProperty(subject,
         new PropertyImpl(descriptionResultPath)).next().toString();
     final String resultMessage = model.listObjectsOfProperty(subject,
@@ -58,16 +58,16 @@ public class ValidationReport {
     final String focusNode = model.listObjectsOfProperty(subject,
         new PropertyImpl(descriptionFocusNode)).next().toString();
 
-    return new ErrorObject(focusNode, resultMessage, resultPath);
+    return new Violation(focusNode, resultMessage, resultPath);
   }
 
   public String printReport() {
     StringBuilder report = new StringBuilder();
-    report.append("--- Validation report ---\n");
-    for (ErrorObject errorObject : errors.values()) {
-      report.append(errorObject.getErrorReport() + "\n");
+    report.append("\n--- Validation report ---\n");
+    for (Violation violation : errors.values()) {
+      report.append(violation.getErrorReport() + "\n");
     }
-    report.append("--- ---");
+    report.append("\n--- ---");
     return report.toString();
   }
 }

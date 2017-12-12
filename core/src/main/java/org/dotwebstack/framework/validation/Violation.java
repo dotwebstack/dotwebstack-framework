@@ -2,7 +2,7 @@ package org.dotwebstack.framework.validation;
 
 import lombok.NonNull;
 
-public class ErrorObject {
+public class Violation {
 
   private final String focusNode;
 
@@ -10,7 +10,7 @@ public class ErrorObject {
 
   private final String resultPath;
 
-  public ErrorObject(@NonNull String focusNode, @NonNull String resultMessage,
+  public Violation(@NonNull String focusNode, @NonNull String resultMessage,
       @NonNull String resultPath) {
     this.focusNode = focusNode;
     this.resultMessage = resultMessage;
@@ -21,11 +21,11 @@ public class ErrorObject {
     return focusNode;
   }
 
-  public String getResultMessage() {
+  public String getMessage() {
     return resultMessage;
   }
 
-  public String getResultPath() {
+  public String getPath() {
     return resultPath;
   }
 
