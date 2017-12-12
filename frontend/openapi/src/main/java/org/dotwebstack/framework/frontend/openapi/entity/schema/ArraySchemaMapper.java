@@ -11,6 +11,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -71,10 +72,10 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
 
 
     queryResult.forEach(valueNext -> {
-      schemaMapperContext.setValue(valueNext);
+      SchemaMapperContext newContext = SchemaMapperContextImpl.builder().value(valueNext).build();
       Optional innerPropertySolved =
           Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
-              graphEntityContext, schemaMapperContext, schemaMapperAdapter));
+              graphEntityContext, newContext, schemaMapperAdapter));
       builder.add(innerPropertySolved);
 
     });
