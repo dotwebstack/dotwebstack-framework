@@ -52,7 +52,7 @@ public class DateSchemaMapperTest {
   private DateSchemaMapper schemaMapper;
   private DateProperty property;
 
-   @Before
+  @Before
   public void setUp() {
     schemaMapper = new DateSchemaMapper();
     property = new DateProperty();
