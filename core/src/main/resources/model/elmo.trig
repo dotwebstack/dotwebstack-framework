@@ -18,11 +18,11 @@
 @prefix elmo-schemes: <http://dotwebstack.org/def/elmo/>.
 @prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-type/>.
 
-GRAPH dbeerpedia:Theatre {
+GRAPH elmo:Config {
   elmo:SparqlBackend rdfs:subClassOf elmo:Backend .
 }
 
-GRAPH dbeerpedia:Theatre {
+GRAPH elmo:Config {
   # =========
   # Resulttypes
   #
@@ -43,7 +43,7 @@ GRAPH dbeerpedia:Theatre {
 }
 
 
-GRAPH dbeerpedia:Theatre {
+GRAPH elmo:Config {
 # ======
 #
 # Vocabulary and dataset
@@ -891,7 +891,7 @@ elmo:translator		a	owl:ObjectProperty;
 
 }
 
-GRAPH dbeerpedia:Theatre {
+GRAPH elmo:Config {
 ####################################################################################################
 
   # Vocabulary for ELMO version 2.0: Extendable Lightweight Model Ontology. A vocabulary for the dotwebstack framework configuration
