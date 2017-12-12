@@ -1,0 +1,49 @@
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix ex: <http://example.com#> .
+@prefix ro: <http://data.informatiehuisruimte.nl/def/ro#> .
+
+ex:johndoe a foaf:Person ;
+  foaf:name "John Doe" ;
+  foaf:firstName "John" ;
+  foaf:lastName "Doe" ;
+  foaf:gender "male" ;
+  foaf:account ex:account1 ;
+  foaf:knows ex:janedoe ;
+  foaf:knows ex:peterpan .
+
+ex:janedoe a foaf:Person ;
+  foaf:name "Jane Doe" ;
+  foaf:firstName "Jane" ; 
+  foaf:lastName "Doe" ;
+  foaf:gender "female" ;
+  foaf:knows ex:peterpan .
+
+ex:peterpan a foaf:Person ;
+  foaf:name "Peter Pan" ;
+  foaf:firstName "Peter" ;
+  foaf:lastName "Pan" ;
+  foaf:gender "male" .
+
+ex:account1 a foaf:OnlineAccount ; 
+  foaf:accountName "jd" ;
+  foaf:accountServiceHomepage "http://www.freenode.net" .
+
+ex:Text a ro:Tekstobject ;
+  ro:kind ex:Text3 ;
+  ro:kind ex:Text1 ;
+  ro:kind ex:Text2 .
+
+ex:Text2 a ro:Tekstobject ;
+  ro:volgnummer 1 ;
+  ro:titel "aa" ;
+  ro:creatiedatum "01-01-2017" .
+
+ex:Text1 a ro:Tekstobject ;
+  ro:volgnummer 2 ;
+  ro:titel "bee" ;
+  ro:creatiedatum "02-01-2017" .
+
+ex:Text3 a ro:Tekstobject ;
+  ro:volgnummer 4 ;
+  ro:titel "dee" ;
+  ro:creatiedatum "01-02-2017" .
