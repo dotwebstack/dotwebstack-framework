@@ -7,8 +7,12 @@ import org.eclipse.rdf4j.model.Value;
 @Builder
 public class SchemaMapperContextImpl implements SchemaMapperContext {
 
+  // XXX (PvH) Melding Eclipse: @Builder will ignore the initializing expression entirely. If you
+  // want the initializing expression to serve as default, add @Builder.Default. If it is not
+  // supposed to be settable during building, make the field final.
   private boolean isExcludedWhenEmpty = false;
 
+  // XXX (PvH) Idem
   private boolean isExcludedWhenNull = false;
 
   private Value value;

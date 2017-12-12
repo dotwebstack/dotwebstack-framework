@@ -286,14 +286,19 @@ public class ArraySchemaMapperTest {
         SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
+  // XXX (PvH) Suggestie: mapGraphValue_ExcludesProperty_WhenVendorExtensionIsSet
   @Test
   public void isIncludedWhenEmpty_WhenSetNoResult() {
 
     // Arrange
+    // XXX (PvH) Kunnen we gebruik maken van de instance variabele arrayProperty?
     ArrayProperty arrayProperty = new ArrayProperty();
     arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY,
         true);
     arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, "test");
+
+    // XXX (PvH) Kunnen we deze statement weghalen? objectProperty gebruiken we niet in de test
+    // toch?
     objectProperty.setProperties(ImmutableMap.of("key1", arrayProperty));
 
     // Act

@@ -21,11 +21,13 @@ import org.springframework.stereotype.Service;
 @Service
 class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectProperty, Object> {
 
+  // XXX (PvH) @NonNull bewust verwijderd?
   @Override
   public Object mapTupleValue(ObjectProperty schema, SchemaMapperContext schemaMapperContext) {
     throw new UnsupportedOperationException();
   }
 
+  // XXX (PvH) @NonNull bewust verwijderd?
   @Override
   public Object mapGraphValue(ObjectProperty property, GraphEntityContext graphEntityContext,
       SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
@@ -37,6 +39,7 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
     if (!isExcludedWhenNull(schemaMapperContext, property, result)) {
       return result;
     }
+    // XXX (PvH) Geen unit test voor deze branch
     return null;
   }
 
@@ -109,11 +112,15 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
           schemaMapperContext, schemaMapperAdapter);
 
+      // XXX (PvH) Zit de !(propValue instanceof ArrayProperty) check ook niet in de
+      // isExcludedWhenNull?
       if (!(propValue instanceof ArrayProperty)
           && (!isExcludedWhenNull(schemaMapperContext, propValue, propertyResult))) {
 
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
       }
+      // XXX (PvH) Zit de (propValue instanceof ArrayProperty) check ook niet in de
+      // isExcludedWhenEmpty?
       if (((propValue instanceof ArrayProperty)
           && !isExcludedWhenEmpty(schemaMapperContext, propValue, propertyResult))) {
 
