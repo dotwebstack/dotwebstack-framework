@@ -324,6 +324,7 @@ public class ObjectSchemaMapperTest {
     assertThat(result, empty());
   }
 
+  // XXX (PvH) Suggestie: mapGraphValue_ExcludesProperty_WhenVendorExtensionIsSet
   @Test
   public void isIncludedWhenNull_WhenSetExpectNoResult() {
 
