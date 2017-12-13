@@ -145,8 +145,8 @@ public class FileConfigurationBackend
     }
   }
 
-  private void validate(List<InputStream> configurationStreams) throws ShaclValidationException {
-    if (configurationStreams.size() > 0) {
+  private void validate(List<InputStream> configurationStreams) {
+    if (!configurationStreams.isEmpty()) {
       try (InputStream stream =
           new SequenceInputStream(Collections.enumeration(configurationStreams))) {
         final ValidationReport report =
@@ -156,7 +156,7 @@ public class FileConfigurationBackend
           throw new ShaclValidationException(report.printReport());
         }
       } catch (IOException ex) {
-        new ShaclValidationException("Configuration files could not be read.", ex);
+        throw new ShaclValidationException("Configuration files could not be read.", ex);
       }
     } else {
       LOG.error("Found no configuration files");
