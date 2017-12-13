@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.validation;
 
+import java.util.Optional;
 import lombok.NonNull;
 import org.apache.jena.rdf.model.AnonId;
 import org.apache.jena.rdf.model.Model;
@@ -69,10 +70,11 @@ public class ShaclValidator {
   }
 
   private RDFNode rdf4jLiteralToJenaRdfNode(@NonNull Model jenaModel, @NonNull Literal value) {
+    final Optional<String> language = value.getLanguage();
     if (value.getDatatype() != null) {
       return jenaModel.createTypedLiteral(value.stringValue(), value.getDatatype().stringValue());
-    } else if (value.getLanguage().isPresent() && !value.getLanguage().equals("")) {
-      return jenaModel.createLiteral(value.stringValue(), value.getLanguage().get());
+    } else if (language.isPresent()) {
+      return jenaModel.createLiteral(value.stringValue(), language.get());
     } else {
       return jenaModel.createLiteral(value.stringValue());
     }
