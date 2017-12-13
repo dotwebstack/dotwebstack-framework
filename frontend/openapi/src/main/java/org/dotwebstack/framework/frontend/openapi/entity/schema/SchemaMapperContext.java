@@ -22,8 +22,10 @@ public interface SchemaMapperContext {
   // Mogelijk kunnen we een factory method maken?
   void setValue(Value value);
 
+  // XXX (PvH) Idem
   void setExcludedWhenNull(boolean includedWhenNull);
 
+  // XXX (PvH) Idem
   void setExcludedWhenEmpty(boolean includedWhenEmpty);
 
 }
