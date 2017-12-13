@@ -1,0 +1,15 @@
+GRAPH dbeerpedia:Theatre {
+  dbeerpedia:GraphBreweryListRepresentation a elmo:Representation;
+    elmo:urlPattern "/graph-breweries";
+    elmo:stage dbeerpedia:Stage;
+    elmo:informationProduct dbeerpedia:GraphBreweries;
+    elmo:name "This is Sparta!";
+    elmo:name "Nope :("
+  .
+
+  dbeerpedia:TupleBreweryListRepresentation a elmo:Representation;
+    elmo:urlPattern "/tuple-breweries";
+    elmo:stage dbeerpedia:Stage;
+    elmo:informationProduct dbeerpedia:TupleBreweries;
+  .
+}
