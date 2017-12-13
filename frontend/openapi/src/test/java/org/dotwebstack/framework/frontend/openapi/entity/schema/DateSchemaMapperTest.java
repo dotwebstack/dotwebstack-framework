@@ -40,7 +40,7 @@ public class DateSchemaMapperTest {
   private GraphEntityContext entityBuilderContext;
 
   @Mock
-  private SchemaMapperAdapter registry;
+  private SchemaMapperAdapter schemaMapperAdapter;
 
   @Mock
   private Value context;
@@ -71,7 +71,7 @@ public class DateSchemaMapperTest {
   public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
     // Act
     LocalDate result = schemaMapper.mapGraphValue(property, entityBuilderContext,
-        ValueContext.builder().value(VALUE_1).build(), registry);
+        ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
@@ -87,7 +87,7 @@ public class DateSchemaMapperTest {
         ImmutableList.of(VALUE_1));
 
     LocalDate result = schemaMapper.mapGraphValue(property, entityBuilderContext,
-        ValueContext.builder().value(context).build(), registry);
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
@@ -108,7 +108,7 @@ public class DateSchemaMapperTest {
     // Act
 
     schemaMapper.mapGraphValue(property, entityBuilderContext,
-        ValueContext.builder().value(context).build(), registry);
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
 }

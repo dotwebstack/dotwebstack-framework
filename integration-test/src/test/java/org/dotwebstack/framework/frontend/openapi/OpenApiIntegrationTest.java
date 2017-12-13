@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi;
 
-import static org.dotwebstack.framework.test.DBEERPEDIA.BROUWTOREN_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -55,10 +54,15 @@ public class OpenApiIntegrationTest {
     // Arrange
     TupleQueryResultBuilder builder =
         new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
-            BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION, DBEERPEDIA.BROUWTOREN_FTE,
-            DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION, DBEERPEDIA.BROUWTOREN_PLACE).resultSet(
-                DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION,
-                DBEERPEDIA.MAXIMUS_FTE, DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION,
+            DBEERPEDIA.BROUWTOREN_NAME, 
+            DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION, 
+            DBEERPEDIA.BROUWTOREN_FTE,
+            DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION, 
+            DBEERPEDIA.BROUWTOREN_PLACE).resultSet(
+                DBEERPEDIA.MAXIMUS_NAME, 
+                DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION,
+                DBEERPEDIA.MAXIMUS_FTE, 
+                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION,
                 DBEERPEDIA.MAXIMUS_PLACE);
     SparqlHttpStub.returnTuple(builder);
 
@@ -70,7 +74,7 @@ public class OpenApiIntegrationTest {
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
     JSONArray expected = new JSONArray();
-    expected.put(new JSONObject().put("naam", BROUWTOREN_NAME.stringValue()).put("sinds",
+    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
         DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
             DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
                 DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
@@ -202,6 +206,8 @@ public class OpenApiIntegrationTest {
     SparqlHttpStub.returnGraph(model);
 
     // Act
+    // XXX (PvH) Ik vind "notused" als id parameter verwarrend. 
+    // Suggestie: wijzig de IdParameter in een NameParameter en geef hier een echt naam mee
     Response response = target.path("/dbp/api/v1/graph-breweries/notused").request().get();
 
     // Assert
@@ -209,7 +215,7 @@ public class OpenApiIntegrationTest {
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
     JSONArray expected = new JSONArray();
-    expected.put(new JSONObject().put("naam", BROUWTOREN_NAME.stringValue()).put("sinds",
+    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
         DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
             DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
                 DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
