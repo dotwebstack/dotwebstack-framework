@@ -8,7 +8,6 @@ import org.dotwebstack.framework.validation.ShaclValidator;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -39,6 +39,9 @@ public class FileConfigurationBackendIntegrationTest {
 
   @Autowired
   private Environment environment;
+
+  @Autowired
+  private ResourceLoader resourceLoader;
 
   @Autowired
   private ShaclValidator shaclValidator;
@@ -65,7 +68,6 @@ public class FileConfigurationBackendIntegrationTest {
     fileConfigurationBackend.loadResources();
   }
 
-  @Ignore
   @Test
   public void configrateBackend_WithInvalidConfiguration_throwShaclValidationException()
       throws Exception {
