@@ -29,7 +29,7 @@ public class HostPreMatchingRequestFilterTest {
   private HostPreMatchingRequestFilter hostPreMatchingRequestFilter;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     hostPreMatchingRequestFilter = new HostPreMatchingRequestFilter();
 
     // Arrange
@@ -55,6 +55,21 @@ public class HostPreMatchingRequestFilterTest {
     // Arrange
     when(containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST)).thenReturn(
         DBEERPEDIA.NL_HOST);
+
+    // Act
+    hostPreMatchingRequestFilter.filter(containerRequestContext);
+
+    // Assert
+    verify(containerRequestContext).setRequestUri(UriBuilder.fromUri(
+        "http://" + DBEERPEDIA.ORG_HOST + "/" + DBEERPEDIA.NL_HOST + "/beer").build());
+  }
+
+  @Test
+  public void filter_PrefixPathWithXForwaredHeader_WithMultipleHosts() throws Exception {
+
+    // Arrange
+    when(containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST)).thenReturn(
+        DBEERPEDIA.NL_HOST + ", " + DBEERPEDIA.ORG_HOST);
 
     // Act
     hostPreMatchingRequestFilter.filter(containerRequestContext);
