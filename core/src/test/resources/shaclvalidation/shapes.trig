@@ -1,0 +1,43 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix kkg:  <http://bp4mc2.org/def/kkg/id/begrip> .
+@prefix uml: <http://www.omg.org/spec/UML/20131001/>.
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix ex:  <http://example.org#> .
+@prefix exs: <http://example.org/shape#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#>.
+@prefix prov:  <http://www.w3.org/ns/prov#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix dash:   <http://datashapes.org/dash#>.
+
+ex:Persoon a owl:Class;
+  uml:stereotype kkg:ObjectType;
+  skos:prefLabel "Persoon";
+  skos:definition "Een mens van vlees en bloed";
+  prov:generatedAtTime "2017-08-11"^^xsd:datetime;
+.
+
+ex:Huwelijk a owl:Class;
+  uml:stereotype kkg:Relatieklasse;
+.
+
+exs:Persoon a sh:NodeShape;
+  sh:targetClass ex:Persoon;
+  sh:property [
+    sh:name "Naam";
+    sh:path ex:naam;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ]
+.
+
+exs:Huwelijk a sh:NodeShape;
+  sh:targetClass ex:Huwelijk;
+  sh:property [
+      sh:naam "Lid";
+      sh:path ex:lid;
+      sh:node exs:Persoon;
+      sh:minCount 2;
+      sh:maxCount 2;
+  ]
+.

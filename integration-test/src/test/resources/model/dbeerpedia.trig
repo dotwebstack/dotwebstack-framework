@@ -12,5 +12,9 @@ GRAPH dbeerpedia:Theatre {
     elmo:site dbeerpedia:Site;
     elmo:basePath "/dbp/ld/v1";
   .
+
+  dbeerpedia:Theatre a elmo:Theatre;
+    rdfs:label "Theatre"
+  .
 }
 

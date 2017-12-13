@@ -1,0 +1,25 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix kkg: <http://bp4mc2.org/def/kkg/id/begrip> .
+@prefix uml: <http://bp4mc2.org/def/uml#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix ex: <http://example.org#> .
+
+ex:Marco a ex:Persoon;
+  ex:naam "Marco";
+.
+
+ex:Nanda a ex:Persoon;
+  ex:naam "Nanda";
+.
+
+ex:Bobby a ex:Persoon;
+  ex:naam "Bobby";
+  ex:naam "Dieter";
+.
+
+ex:HuwelijkMarcoNanda a ex:Huwelijk;
+  ex:lid ex:Marco;
+  ex:lid ex:Nanda;
+  ex:lid ex:Bobby;
+.

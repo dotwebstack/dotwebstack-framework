@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
+import static org.dotwebstack.framework.test.DBEERPEDIA.BROUWTOREN_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -15,11 +16,11 @@ import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -54,11 +55,11 @@ public class OpenApiIntegrationTest {
     // Arrange
     TupleQueryResultBuilder builder =
         new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
-            DBEERPEDIA.BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION,
-            DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION,
-            DBEERPEDIA.BROUWTOREN_PLACE).resultSet(DBEERPEDIA.MAXIMUS_NAME,
-                DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
-                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+            BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION, DBEERPEDIA.BROUWTOREN_FTE,
+            DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION, DBEERPEDIA.BROUWTOREN_PLACE).resultSet(
+                DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION,
+                DBEERPEDIA.MAXIMUS_FTE, DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION,
+                DBEERPEDIA.MAXIMUS_PLACE);
     SparqlHttpStub.returnTuple(builder);
 
     // Act
@@ -69,7 +70,7 @@ public class OpenApiIntegrationTest {
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
     JSONArray expected = new JSONArray();
-    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
+    expected.put(new JSONObject().put("naam", BROUWTOREN_NAME.stringValue()).put("sinds",
         DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
             DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
                 DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
@@ -170,24 +171,45 @@ public class OpenApiIntegrationTest {
     assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
   }
 
-  @Ignore
   @Test
   public void get_GraphGetBreweryCollection_ThroughOpenApi() throws JSONException {
     // Arrange
-    Model model = new ModelBuilder().add("http://www.test.nl", "http://www.test.nl",
-        "http://www.test.nl").build();
+    Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
+        DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
+          DBEERPEDIA.BROUWTOREN).add(DBEERPEDIA.FTE, DBEERPEDIA.BROUWTOREN_FTE).subject(
+          DBEERPEDIA.BROUWTOREN).add(DBEERPEDIA.FOUNDATION,
+          DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION).subject(DBEERPEDIA.BROUWTOREN).add(
+          DBEERPEDIA.PLACE, DBEERPEDIA.BROUWTOREN_PLACE).subject(
+          DBEERPEDIA.BROUWTOREN).add(DBEERPEDIA.FTE,
+          DBEERPEDIA.BROUWTOREN_FTE).subject(DBEERPEDIA.BROUWTOREN).add(
+          DBEERPEDIA.SINCE,
+          DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).subject(
+          DBEERPEDIA.MAXIMUS).add(RDF.TYPE,
+          DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
+          DBEERPEDIA.MAXIMUS_NAME).subject(
+          DBEERPEDIA.MAXIMUS).add(DBEERPEDIA.FTE,
+          DBEERPEDIA.MAXIMUS_FTE).subject(
+          DBEERPEDIA.MAXIMUS).add(
+          DBEERPEDIA.FOUNDATION,
+          DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION).subject(
+          DBEERPEDIA.MAXIMUS).add(
+          DBEERPEDIA.PLACE,
+          DBEERPEDIA.MAXIMUS_PLACE).subject(
+          DBEERPEDIA.MAXIMUS).add(
+          DBEERPEDIA.SINCE,
+          DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION).build();
 
     SparqlHttpStub.returnGraph(model);
 
     // Act
-    Response response = target.path("/dbp/api/v1/graph-breweries").request().get();
+    Response response = target.path("/dbp/api/v1/graph-breweries/notused").request().get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
     JSONArray expected = new JSONArray();
-    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
+    expected.put(new JSONObject().put("naam", BROUWTOREN_NAME.stringValue()).put("sinds",
         DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
             DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
                 DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
