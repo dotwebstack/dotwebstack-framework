@@ -11,8 +11,4 @@ GRAPH dbeerpedia:Theatre {
       elmo:template "http://{domain}/dbp/ld/v1/id/{reference}";
       elmo:target dbeerpedia:SubjectParameter;
   .
-
-  dbeerpedia:SubjectParameter a elmo:TermFilter;
-      elmo:name "SUBJECT";
-  .
 }
