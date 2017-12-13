@@ -11,7 +11,6 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -21,31 +20,30 @@ import org.springframework.stereotype.Service;
 public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ArrayProperty schema,
-      @NonNull SchemaMapperContext schemaMapperContext) {
-    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).integerValue();
+  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull ValueContext valueContext) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override
   public Object mapGraphValue(@NonNull ArrayProperty property,
-      @NonNull GraphEntityContext graphEntityContext,
-      @NonNull SchemaMapperContext schemaMapperContext,
+      @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    processPropagationsInitial(property, schemaMapperContext);
+    ValueContext newValueContext = processPropagationsInitial(property, valueContext);
 
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
 
       subjects.forEach(subject -> {
-        schemaMapperContext.setValue(subject);
+        ValueContext subjectContext = newValueContext.toBuilder().value(subject).build();
+
         builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntityContext,
-            schemaMapperContext, schemaMapperAdapter));
+            subjectContext, schemaMapperAdapter));
       });
-    } else if (schemaMapperContext.getValue() != null) {
+    } else if (newValueContext.getValue() != null) {
       if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter,
+        queryAndValidate(property, graphEntityContext, newValueContext, schemaMapperAdapter,
             builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
@@ -54,17 +52,17 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
     }
 
     ImmutableList result = builder.build();
-    if (!isExcludedWhenEmpty(schemaMapperContext, property, result)) {
+    if (!isExcludedWhenEmpty(newValueContext, property, result)) {
       return result;
     }
     return null;
   }
 
   private void queryAndValidate(ArrayProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter,
+      ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter,
       ImmutableList.Builder<Object> builder) {
     LdPathExecutor ldPathExecutor = graphEntityContext.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(),
+    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(valueContext.getValue(),
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH));
 
     validateMinItems(property, queryResult);
@@ -72,10 +70,10 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
 
 
     queryResult.forEach(valueNext -> {
-      SchemaMapperContext newContext = SchemaMapperContextImpl.builder().value(valueNext).build();
+      ValueContext newValueContext = valueContext.toBuilder().value(valueNext).build();
       Optional innerPropertySolved =
           Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
-              graphEntityContext, newContext, schemaMapperAdapter));
+              graphEntityContext, newValueContext, schemaMapperAdapter));
       builder.add(innerPropertySolved);
 
     });

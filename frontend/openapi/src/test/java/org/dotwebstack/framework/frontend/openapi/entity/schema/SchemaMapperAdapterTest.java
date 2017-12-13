@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.StringProperty;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,7 +46,7 @@ public class SchemaMapperAdapterTest {
 
     // Act
     schemaMapperAdapter.mapTupleValue(schema,
-        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
@@ -57,11 +56,11 @@ public class SchemaMapperAdapterTest {
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
     when(stringSchemaMapper.supports(schema)).thenReturn(true);
     when(stringSchemaMapper.mapTupleValue(any(StringProperty.class),
-        any(SchemaMapperContext.class))).thenReturn(expectedValue);
+        any(ValueContext.class))).thenReturn(expectedValue);
 
     // Act
     Object value = schemaMapperAdapter.mapTupleValue(schema,
-        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert
     assertThat(value, equalTo(expectedValue));

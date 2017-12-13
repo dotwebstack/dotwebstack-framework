@@ -11,14 +11,14 @@ class BooleanSchemaMapper implements SchemaMapper<BooleanProperty, Boolean> {
 
   @Override
   public Boolean mapTupleValue(@NonNull BooleanProperty schema,
-      @NonNull SchemaMapperContext schemaMapperContext) {
-    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).booleanValue();
+      @NonNull ValueContext valueContext) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).booleanValue();
   }
 
   @Override
   public Boolean mapGraphValue(BooleanProperty schema, GraphEntityContext graphEntityContext,
-      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
-    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).booleanValue();
+      ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).booleanValue();
   }
 
   @Override

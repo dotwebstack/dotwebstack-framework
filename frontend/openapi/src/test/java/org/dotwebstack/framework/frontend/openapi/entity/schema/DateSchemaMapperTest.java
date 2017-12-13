@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -72,7 +71,7 @@ public class DateSchemaMapperTest {
   public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
     // Act
     LocalDate result = schemaMapper.mapGraphValue(property, entityBuilderContext,
-        SchemaMapperContextImpl.builder().value(VALUE_1).build(), registry);
+        ValueContext.builder().value(VALUE_1).build(), registry);
 
     // Assert
     assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
@@ -88,7 +87,7 @@ public class DateSchemaMapperTest {
         ImmutableList.of(VALUE_1));
 
     LocalDate result = schemaMapper.mapGraphValue(property, entityBuilderContext,
-        SchemaMapperContextImpl.builder().value(context).build(), registry);
+        ValueContext.builder().value(context).build(), registry);
 
     // Assert
     assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
@@ -109,7 +108,7 @@ public class DateSchemaMapperTest {
     // Act
 
     schemaMapper.mapGraphValue(property, entityBuilderContext,
-        SchemaMapperContextImpl.builder().value(context).build(), registry);
+        ValueContext.builder().value(context).build(), registry);
   }
 
 }

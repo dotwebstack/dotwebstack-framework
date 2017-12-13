@@ -11,7 +11,6 @@ import io.swagger.models.properties.StringProperty;
 import java.util.Arrays;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Value;
 import org.junit.Before;
@@ -50,7 +49,7 @@ public class StringSchemaMapperTest {
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
     String result = schemaMapper.mapTupleValue(stringProperty,
-        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
@@ -78,7 +77,7 @@ public class StringSchemaMapperTest {
   public void mapGraphValue_ReturnsNull_WhenNoVendorExtensionHasBeenDefined() {
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
-        SchemaMapperContextImpl.builder().value(contextMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, nullValue());
@@ -95,7 +94,7 @@ public class StringSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
-        SchemaMapperContextImpl.builder().value(contextMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -109,7 +108,7 @@ public class StringSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
-        SchemaMapperContextImpl.builder().value(contextMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -123,7 +122,7 @@ public class StringSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
-        SchemaMapperContextImpl.builder().value(contextMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -138,7 +137,7 @@ public class StringSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
-        SchemaMapperContextImpl.builder().value(contextMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
   }
 
   private void expectExceptionAboutMultipleVendorExtensions() {

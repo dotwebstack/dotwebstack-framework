@@ -23,7 +23,6 @@ import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -130,7 +129,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        SchemaMapperContextImpl.builder().value(value).build(), schemaMapperAdapter);
+        ValueContext.builder().value(value).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(List.class));
@@ -152,7 +151,7 @@ public class ArraySchemaMapperTest {
     // Act
     List<Optional<String>> result =
         (List<Optional<String>>) schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-            SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
+            ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, Matchers.hasSize(3));
@@ -184,7 +183,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(List.class));
@@ -217,7 +216,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(List.class));
@@ -241,7 +240,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -262,7 +261,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -283,7 +282,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
   // XXX (PvH) Suggestie: mapGraphValue_ExcludesProperty_WhenVendorExtensionIsSet
@@ -303,7 +302,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     List result = (ImmutableList) schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
-        SchemaMapperContextImpl.builder().value(valueMock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
     // Assert
     assertNull(result);
   }

@@ -13,15 +13,15 @@ public class LongSchemaMapper implements SchemaMapper<LongProperty, BigInteger> 
 
   @Override
   public BigInteger mapTupleValue(@NonNull LongProperty schema,
-      @NonNull SchemaMapperContext schemaMapperContext) {
-    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).integerValue();
+      @NonNull ValueContext valueContext) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override
   public BigInteger mapGraphValue(LongProperty schema,
       @NonNull GraphEntityContext graphEntityContext,
-      @NotNull SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
-    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).integerValue();
+      @NotNull ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override

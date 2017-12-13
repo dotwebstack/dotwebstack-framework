@@ -14,14 +14,14 @@ import org.springframework.stereotype.Service;
 public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
 
   @Override
-  public Object mapTupleValue(RefProperty schema, SchemaMapperContext schemaMapperContext) {
+  public Object mapTupleValue(RefProperty schema, ValueContext valueContext) {
     throw new UnsupportedOperationException("Tuple query not supported.");
   }
 
   @Override
   public Object mapGraphValue(@NonNull RefProperty schema,
       @NonNull GraphEntityContext graphEntityContext,
-      @NonNull SchemaMapperContext schemaMapperContext,
+      @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
     Model refModel = graphEntityContext.getSwaggerDefinitions().get(schema.getSimpleRef());
@@ -34,7 +34,7 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
     Builder<String, Object> builder = ImmutableMap.builder();
     refModel.getProperties().forEach((propKey, propValue) -> builder.put(propKey,
         Optional.fromNullable(schemaMapperAdapter.mapGraphValue(propValue, graphEntityContext,
-            schemaMapperContext, schemaMapperAdapter))));
+            valueContext, schemaMapperAdapter))));
 
     return builder.build();
   }

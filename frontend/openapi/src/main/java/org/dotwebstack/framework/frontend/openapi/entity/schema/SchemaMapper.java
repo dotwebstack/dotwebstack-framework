@@ -6,11 +6,11 @@ import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 
 public interface SchemaMapper<S extends Property, T> {
 
-  T mapTupleValue(S schema, @NonNull SchemaMapperContext schemaMapperContext);
+  T mapTupleValue(S schema, @NonNull ValueContext valueContext);
 
   T mapGraphValue(S schema, GraphEntityContext entityContext,
-                  @NonNull  SchemaMapperContext schemaMapperContext,
-                  @NonNull SchemaMapperAdapter schemaMapperAdapter);
+      @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter);
 
   boolean supports(Property schema);
 

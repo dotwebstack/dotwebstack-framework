@@ -19,18 +19,18 @@ public class SchemaMapperAdapter {
   }
 
   public <S extends Property> Object mapTupleValue(@NonNull S schema,
-      @NonNull SchemaMapperContext schemaMapperContext) {
+      @NonNull ValueContext valueContext) {
     SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
             () -> new SchemaMapperRuntimeException(String.format(
                 "No schema mapper available for '%s'.", schema.getClass().getName())));
 
-    return ((SchemaMapper<S, ?>) schemaMapper).mapTupleValue(schema, schemaMapperContext);
+    return ((SchemaMapper<S, ?>) schemaMapper).mapTupleValue(schema, valueContext);
   }
 
   @SuppressWarnings("unchecked")
   public <S extends Property> Object mapGraphValue(@NonNull S schema,
-      GraphEntityContext graphEntityContext, @NonNull SchemaMapperContext schemaMapperContext,
+      GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
       SchemaMapperAdapter schemaMapperAdapter) {
     SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
@@ -38,6 +38,6 @@ public class SchemaMapperAdapter {
                 "No schema mapper available for '%s'.", schema.getClass().getName())));
 
     return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, graphEntityContext,
-        schemaMapperContext, schemaMapperAdapter);
+        valueContext, schemaMapperAdapter);
   }
 }

@@ -27,7 +27,6 @@ import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -121,7 +120,7 @@ public class ObjectSchemaMapperTest {
     // Act
     Map<String, Object> result =
         (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property, contextMock,
-            SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
+            ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(0));
@@ -136,7 +135,7 @@ public class ObjectSchemaMapperTest {
 
     Map<String, Object> result =
         (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property, contextMock,
-            SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
+            ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(4));
@@ -154,7 +153,7 @@ public class ObjectSchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(property, contextMock,
-        SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, nullValue());
@@ -176,7 +175,7 @@ public class ObjectSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(property, contextMock,
-        SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -193,7 +192,7 @@ public class ObjectSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(property, contextMock,
-        SchemaMapperContextImpl.builder().value(value1Mock).build(), schemaMapperAdapter);
+        ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -215,7 +214,7 @@ public class ObjectSchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(property, contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(Map.class));
@@ -241,7 +240,7 @@ public class ObjectSchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(property, contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, nullValue());
@@ -268,7 +267,7 @@ public class ObjectSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(property, contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -294,7 +293,7 @@ public class ObjectSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(property, contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -336,7 +335,7 @@ public class ObjectSchemaMapperTest {
 
     // Act
     Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(property, contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
     // Assert
     assertTrue(result.isEmpty());
   }

@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext.ValueContextBuilder;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -55,33 +56,34 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
     return false;
   }
 
-  // XXX (PvH) Kan protected worden?
   // XXX (PvH) Kunnen we de naam verbeteren? Suggestie: populateContextWithVendorExtensions
-  void processPropagationsInitial(Property property, SchemaMapperContext schemaMapperContext) {
+  protected ValueContext processPropagationsInitial(Property property, ValueContext valueContext) {
+    ValueContextBuilder builder = valueContext.toBuilder();
+
     if (hasVendorExtension(property, OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL)) {
-      schemaMapperContext.setExcludedWhenNull(hasExcludeWhenNull(property));
+      builder.isExcludedWhenNull(hasExcludeWhenNull(property));
     }
     if (hasVendorExtension(property,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY)) {
-      schemaMapperContext.setExcludedWhenEmpty(hasExcludeWhenEmpty(property));
+      builder.isExcludedWhenEmpty(hasExcludeWhenEmpty(property));
     }
+
+    return builder.build();
   }
 
-
-
-  protected boolean isExcludedWhenNull(SchemaMapperContext schemaMapperContext, Property propValue,
+  protected boolean isExcludedWhenNull(ValueContext valueContext, Property propValue,
       Object propertyResult) {
     // XXX (PvH) Gebruik je bewust teveel () dan noodzakelijk? Dit kan natuurlijk een coding style
     // zijn. Dit zie ik ook terug op andere plekken.
-    return (schemaMapperContext.isExcludedWhenNull() && (propertyResult == null)
+    return (valueContext.isExcludedWhenNull() && (propertyResult == null)
         && !(propValue instanceof ArrayProperty));
   }
 
-  protected boolean isExcludedWhenEmpty(SchemaMapperContext schemaMapperContext, Property propValue,
+  protected boolean isExcludedWhenEmpty(ValueContext valueContext, Property propValue,
       Object propertyResult) {
     // XXX (PvH) propertyResult != null kan weg (zal altijd true zijn)
     // XXX (PvH) Wat gebeurt als propertyResult geen Collection is?
-    return (schemaMapperContext.isExcludedWhenEmpty()
+    return (valueContext.isExcludedWhenEmpty()
         && (propertyResult == null
             || (propertyResult != null && ((Collection) propertyResult).isEmpty()))
         && (propValue instanceof ArrayProperty));

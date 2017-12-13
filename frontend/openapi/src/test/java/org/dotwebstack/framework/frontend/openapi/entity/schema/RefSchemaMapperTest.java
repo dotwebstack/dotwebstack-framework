@@ -21,7 +21,6 @@ import java.util.Map;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -108,7 +107,7 @@ public class RefSchemaMapperTest {
 
     // Act
     schemaMapper.mapGraphValue(property, entityBuilderContext,
-        SchemaMapperContextImpl.builder().value(context).build(), schemaMapperAdapter);
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -126,7 +125,7 @@ public class RefSchemaMapperTest {
     // Act
     Map<String, Object> result =
         (Map<String, Object>) schemaMapper.mapGraphValue(property, entityBuilderContext,
-            SchemaMapperContextImpl.builder().value(context).build(), schemaMapperAdapter);
+            ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(2));

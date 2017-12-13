@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import io.swagger.models.properties.LongProperty;
 import io.swagger.models.properties.StringProperty;
 import java.math.BigInteger;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,14 +38,14 @@ public class LongSchemaMapperTest {
 
     // Arrange & Act
     schemaMapper.mapTupleValue(schema,
-        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN).build());
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
     BigInteger result = schemaMapper.mapTupleValue(schema,
-        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR).build());
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR.integerValue()));

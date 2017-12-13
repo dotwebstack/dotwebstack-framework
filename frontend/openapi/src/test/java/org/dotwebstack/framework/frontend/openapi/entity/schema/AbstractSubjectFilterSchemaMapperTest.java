@@ -124,13 +124,13 @@ public class AbstractSubjectFilterSchemaMapperTest {
   private static class TestSubjectFilterSchemaMapper extends AbstractSubjectFilterSchemaMapper {
 
     @Override
-    public Object mapTupleValue(Property schema, SchemaMapperContext schemaMapperContext) {
+    public Object mapTupleValue(Property schema, ValueContext valueContext) {
       throw new UnsupportedOperationException();
     }
 
     @Override
     public Object mapGraphValue(Property schema, GraphEntityContext entityContext,
-        SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
+        ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
       throw new UnsupportedOperationException();
     }
 

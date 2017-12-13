@@ -54,8 +54,6 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
       }
     }
 
-    LOG.debug("Query before templating: '{}'", query);
-
     String modifiedQuery = templateProcessor.processString(query, templateParameters);
 
     LOG.debug("Query after templating: '{}'", modifiedQuery);

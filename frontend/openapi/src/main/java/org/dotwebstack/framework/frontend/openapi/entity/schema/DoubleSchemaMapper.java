@@ -11,13 +11,13 @@ class DoubleSchemaMapper implements SchemaMapper<DoubleProperty, Double> {
 
   @Override
   public Double mapTupleValue(@NonNull DoubleProperty schema,
-      @NonNull SchemaMapperContext schemaMapperContext) {
-    return SchemaMapperUtils.castLiteralValue(schemaMapperContext.getValue()).doubleValue();
+      @NonNull ValueContext valueContext) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).doubleValue();
   }
 
   @Override
   public Double mapGraphValue(DoubleProperty schema, GraphEntityContext graphEntityContext,
-      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
+      ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
     throw new UnsupportedOperationException();
   }
 

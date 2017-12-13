@@ -16,7 +16,6 @@ import java.util.Arrays;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -82,14 +81,14 @@ public class IntegerSchemaMapperTest {
 
     // Arrange & Act
     integerSchemaMapper.mapTupleValue(schema,
-        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN).build());
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
     Integer result = (Integer) integerSchemaMapper.mapTupleValue(schema,
-        SchemaMapperContextImpl.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue()));
@@ -117,7 +116,7 @@ public class IntegerSchemaMapperTest {
   public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
-        SchemaMapperContextImpl.builder().value(VALUE_1).build(), schemaMapperAdapter);
+        ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, is(VALUE_1.integerValue().intValue()));
@@ -133,7 +132,7 @@ public class IntegerSchemaMapperTest {
 
     // Act
     Integer result = (Integer) schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
-        SchemaMapperContextImpl.builder().value(context).build(), schemaMapperAdapter);
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, is(VALUE_1.integerValue().intValue()));
@@ -154,7 +153,7 @@ public class IntegerSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
-        SchemaMapperContextImpl.builder().value(context).build(), schemaMapperAdapter);
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -166,7 +165,7 @@ public class IntegerSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
-        SchemaMapperContextImpl.builder().value(context).build(), schemaMapperAdapter);
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
 }

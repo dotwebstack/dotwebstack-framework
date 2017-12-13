@@ -20,7 +20,6 @@ import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -88,7 +87,7 @@ public class ResponseSchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(Map.class));
@@ -121,7 +120,7 @@ public class ResponseSchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(Map.class));
@@ -150,7 +149,7 @@ public class ResponseSchemaMapperTest {
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, nullValue());
@@ -180,7 +179,7 @@ public class ResponseSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
   }
 
   @Test
@@ -209,7 +208,7 @@ public class ResponseSchemaMapperTest {
 
     // Act
     schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
-        SchemaMapperContextImpl.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(null).build(), schemaMapperAdapter);
   }
 
   @Test

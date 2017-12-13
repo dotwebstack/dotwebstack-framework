@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.IntegerProperty;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
-import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperContext;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +41,7 @@ public class GraphEntityMapperTest {
 
     Object object = new Object();
     when(schemaMapperAdapterMock.mapGraphValue(any(IntegerProperty.class),
-        any(GraphEntityContext.class), any(SchemaMapperContext.class),
+        any(GraphEntityContext.class), any(ValueContext.class),
         any(SchemaMapperAdapter.class))).thenReturn(object);
 
     // Act

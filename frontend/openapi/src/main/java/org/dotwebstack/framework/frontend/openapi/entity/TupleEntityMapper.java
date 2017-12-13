@@ -11,7 +11,7 @@ import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
-import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperContext;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
   public Object map(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
     Property schema = entity.getSchemaMap().get(mediaType);
 
-    SchemaMapperContext schemaMapperContext = SchemaMapperContextImpl.builder().build();
+    ValueContext valueContext = ValueContext.builder().build();
 
     if (schema == null) {
       throw new EntityMapperRuntimeException(
@@ -46,17 +46,17 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
       schema = ((ResponseProperty) schema).getSchema();
     }
     if (schema instanceof ObjectProperty) {
-      return mapObject(entity, (ObjectProperty) schema, schemaMapperContext);
+      return mapObject(entity, (ObjectProperty) schema, valueContext);
     }
     if (schema instanceof ArrayProperty) {
-      return mapCollection(entity, (ArrayProperty) schema, schemaMapperContext);
+      return mapCollection(entity, (ArrayProperty) schema, valueContext);
     }
 
     return ImmutableMap.of();
   }
 
   private Object mapObject(TupleEntity entity, ObjectProperty schema,
-      SchemaMapperContext schemaMapperContext) {
+      ValueContext valueContext) {
     TupleQueryResult result = entity.getResult();
     if (result.hasNext()) {
       BindingSet bindingSet = result.next();
@@ -64,14 +64,14 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
         LOG.warn("TupleQueryResult yielded several bindingsets. Only parsing the first.");
       }
 
-      return mapBindingSet(bindingSet, schema.getProperties(), schemaMapperContext);
+      return mapBindingSet(bindingSet, schema.getProperties(), valueContext);
     } else {
       throw new EntityMapperRuntimeException("TupleQueryResult did not yield any values.");
     }
   }
 
   private Object mapCollection(TupleEntity entity, ArrayProperty schema,
-      SchemaMapperContext schemaMapperContext) {
+      ValueContext valueContext) {
     Property itemSchema = schema.getItems();
 
     if (itemSchema == null) {
@@ -89,14 +89,14 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
     Map<String, Property> itemProperties = ((ObjectProperty) itemSchema).getProperties();
 
     while (result.hasNext()) {
-      collectionBuilder.add(mapBindingSet(result.next(), itemProperties, schemaMapperContext));
+      collectionBuilder.add(mapBindingSet(result.next(), itemProperties, valueContext));
     }
 
     return collectionBuilder.build();
   }
 
   private ImmutableMap<String, Object> mapBindingSet(BindingSet bindingSet,
-      Map<String, Property> itemProperties, SchemaMapperContext schemaMapperContext) {
+      Map<String, Property> itemProperties, ValueContext valueContext) {
     ImmutableMap.Builder<String, Object> itemBuilder = new ImmutableMap.Builder<>();
 
     itemProperties.forEach((name, property) -> {
@@ -109,8 +109,10 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
         return;
       }
 
-      schemaMapperContext.setValue(bindingSet.getValue(name));
-      itemBuilder.put(name, schemaMapperAdapter.mapTupleValue(property, schemaMapperContext));
+      ValueContext newValueContext =
+          valueContext.toBuilder().value(bindingSet.getValue(name)).build();
+
+      itemBuilder.put(name, schemaMapperAdapter.mapTupleValue(property, newValueContext));
     });
 
     return itemBuilder.build();

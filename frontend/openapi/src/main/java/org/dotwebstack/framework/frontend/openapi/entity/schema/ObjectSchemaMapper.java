@@ -12,7 +12,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.SchemaMapperContextImpl;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext.ValueContextBuilder;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -23,20 +23,20 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
 
   // XXX (PvH) @NonNull bewust verwijderd?
   @Override
-  public Object mapTupleValue(ObjectProperty schema, SchemaMapperContext schemaMapperContext) {
+  public Object mapTupleValue(ObjectProperty schema, ValueContext valueContext) {
     throw new UnsupportedOperationException();
   }
 
   // XXX (PvH) @NonNull bewust verwijderd?
   @Override
   public Object mapGraphValue(ObjectProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
+      ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
 
-    processPropagationsInitial(property, schemaMapperContext);
+    ValueContext newValueContext = processPropagationsInitial(property, valueContext);
 
     Object result =
-        handleProperty(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter);
-    if (!isExcludedWhenNull(schemaMapperContext, property, result)) {
+        handleProperty(property, graphEntityContext, newValueContext, schemaMapperAdapter);
+    if (!isExcludedWhenNull(newValueContext, property, result)) {
       return result;
     }
     // XXX (PvH) Geen unit test voor deze branch
@@ -44,7 +44,9 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
   }
 
   private Object handleProperty(ObjectProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperContext schemaMapperContext, SchemaMapperAdapter schemaMapperAdapter) {
+      ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
+    ValueContextBuilder builder = valueContext.toBuilder();
+
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
 
@@ -62,27 +64,29 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
             "More entrypoint subjects found. Only one is required.");
       }
 
-      schemaMapperContext.setValue(subjects.iterator().next());
+      builder.value(subjects.iterator().next());
     }
+
+    ValueContext newValueContext = builder.build();
 
     if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
-      return handleLdPathVendorExtension(property, graphEntityContext, schemaMapperContext, ldPath,
+      return handleLdPathVendorExtension(property, graphEntityContext, newValueContext, ldPath,
           schemaMapperAdapter);
     }
 
-    return handleProperties(property, graphEntityContext, schemaMapperContext, schemaMapperAdapter);
+    return handleProperties(property, graphEntityContext, newValueContext, schemaMapperAdapter);
   }
 
 
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
-      GraphEntityContext entityBuilderContext, SchemaMapperContext schemaMapperContext,
-      String ldPathQuery, SchemaMapperAdapter schemaMapperAdapter) {
+      GraphEntityContext entityBuilderContext, ValueContext valueContext, String ldPathQuery,
+      SchemaMapperAdapter schemaMapperAdapter) {
 
     LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
     Collection<Value> queryResult =
-        ldPathExecutor.ldPathQuery(schemaMapperContext.getValue(), ldPathQuery);
+        ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
     if (queryResult.isEmpty()) {
       if (!property.getRequired()) {
@@ -97,32 +101,34 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
       throw new SchemaMapperRuntimeException(String.format(
           "LDPath expression for object property ('%s') yielded multiple elements.", ldPathQuery));
     }
-    SchemaMapperContext newContext =
-        SchemaMapperContextImpl.builder().value(queryResult.iterator().next()).build();
-    return handleProperties(property, entityBuilderContext, newContext, schemaMapperAdapter);
+
+    ValueContext newValueContext =
+        valueContext.toBuilder().value(queryResult.iterator().next()).build();
+
+    return handleProperties(property, entityBuilderContext, newValueContext, schemaMapperAdapter);
   }
 
 
 
   private Map<String, Object> handleProperties(ObjectProperty property,
-      GraphEntityContext entityBuilderContext, SchemaMapperContext schemaMapperContext,
+      GraphEntityContext entityBuilderContext, ValueContext valueContext,
       SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
     property.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
-          schemaMapperContext, schemaMapperAdapter);
+          valueContext, schemaMapperAdapter);
 
       // XXX (PvH) Zit de !(propValue instanceof ArrayProperty) check ook niet in de
       // isExcludedWhenNull?
       if (!(propValue instanceof ArrayProperty)
-          && (!isExcludedWhenNull(schemaMapperContext, propValue, propertyResult))) {
+          && (!isExcludedWhenNull(valueContext, propValue, propertyResult))) {
 
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
       }
       // XXX (PvH) Zit de (propValue instanceof ArrayProperty) check ook niet in de
       // isExcludedWhenEmpty?
       if (((propValue instanceof ArrayProperty)
-          && !isExcludedWhenEmpty(schemaMapperContext, propValue, propertyResult))) {
+          && !isExcludedWhenEmpty(valueContext, propValue, propertyResult))) {
 
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
       }
