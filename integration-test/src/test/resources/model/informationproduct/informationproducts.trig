@@ -37,6 +37,7 @@ GRAPH dbeerpedia:Theatre {
     rdfs:label "Beer breweries in The Netherlands";
     elmo:backend dbeerpedia:Backend;
     elmo:resultType elmo-resulttype:Graph;
+    elmo:optionalParameter dbeerpedia:IdFilter;
     elmo:query "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a <http://dbeerpedia.org#Brewery> }";
   .
 

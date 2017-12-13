@@ -10,12 +10,19 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 public final class DBEERPEDIA {
 
-
   public static final String NAMESPACE = "http://dbeerpedia.org#";
 
   public static final Literal BASE_PATH;
 
   public static final IRI NAME;
+
+  public static final IRI FOUNDATION;
+
+  public static final IRI SINCE;
+
+  public static final IRI PLACE;
+
+  public static final IRI FTE;
 
   public static final String BREWERY_DAVO_NAME = "Davo Bieren Deventer";
 
@@ -179,7 +186,12 @@ public final class DBEERPEDIA {
     PLACE_PARAMETER_VALUE_STRING = "place";
     PLACE_PARAMETER_VALUE = valueFactory.createLiteral(PLACE_PARAMETER_VALUE_STRING);
 
+    FOUNDATION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Foundation");
     NAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Name");
+    SINCE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Since");
+    PLACE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Place");
+    FTE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "FTE");
+
     BREWERY_DAVO = valueFactory.createLiteral(BREWERY_DAVO_NAME);
 
     SITE_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SiteNL");

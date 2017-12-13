@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import java.io.IOException;
+import javax.inject.Inject;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import lombok.NonNull;
