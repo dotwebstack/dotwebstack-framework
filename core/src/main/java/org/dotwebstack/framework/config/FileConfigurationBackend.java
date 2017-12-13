@@ -153,7 +153,7 @@ public class FileConfigurationBackend
             shaclValidator.validate(RdfModelTransformer.getModel(stream),
                 RdfModelTransformer.getModel(elmoShapes.getInputStream()));
         if (!report.isValid()) {
-          throw new ShaclValidationException(report.printReport());
+          LOG.warn("Shacl validation returned an error: {}", report.printReport());
         }
       } catch (IOException ex) {
         throw new ShaclValidationException("Configuration files could not be read.", ex);
