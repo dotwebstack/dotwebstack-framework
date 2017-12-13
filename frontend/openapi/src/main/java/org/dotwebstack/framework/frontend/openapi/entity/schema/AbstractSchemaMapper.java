@@ -57,7 +57,8 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
   }
 
   // XXX (PvH) Kunnen we de naam verbeteren? Suggestie: populateContextWithVendorExtensions
-  protected ValueContext processPropagationsInitial(Property property, ValueContext valueContext) {
+  protected ValueContext processPropagationsInitial(@NonNull Property property,
+      @NonNull ValueContext valueContext) {
     ValueContextBuilder builder = valueContext.toBuilder();
 
     if (hasVendorExtension(property,
@@ -69,8 +70,8 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
     return builder.build();
   }
 
-  protected boolean isExcludedWhenEmptyOrNull(ValueContext context, Property property,
-      Object value) {
+  protected boolean isExcludedWhenEmptyOrNull(@NonNull ValueContext context,
+      @NonNull Property property, Object value) {
     return context.isExcludedWhenEmptyOrNull()
         && (value == null || (property instanceof ArrayProperty && ((Collection) value).isEmpty()));
   }
@@ -81,12 +82,13 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
 
   }
 
-  protected boolean hasVendorExtensionWithValue(Property property, String extension, Object value) {
+  protected boolean hasVendorExtensionWithValue(@NonNull Property property,
+      @NonNull String extension, Object value) {
     return hasVendorExtension(property, extension)
         && property.getVendorExtensions().get(extension).equals(value);
   }
 
-  protected boolean hasVendorExtension(Property property, String extension) {
+  protected boolean hasVendorExtension(@NonNull Property property, @NonNull String extension) {
     return property.getVendorExtensions().containsKey(extension);
   }
 

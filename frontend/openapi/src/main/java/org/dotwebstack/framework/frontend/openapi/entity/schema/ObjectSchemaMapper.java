@@ -21,17 +21,15 @@ import org.springframework.stereotype.Service;
 @Service
 class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectProperty, Object> {
 
-  // XXX (PvH) @NonNull bewust verwijderd?
   @Override
-  public Object mapTupleValue(ObjectProperty schema, ValueContext valueContext) {
+  public Object mapTupleValue(@NonNull ObjectProperty schema, @NonNull ValueContext valueContext) {
     throw new UnsupportedOperationException();
   }
 
-  // XXX (PvH) @NonNull bewust verwijderd?
   @Override
-  public Object mapGraphValue(ObjectProperty property, GraphEntityContext graphEntityContext,
-      ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
-
+  public Object mapGraphValue(@NonNull ObjectProperty property,
+      @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext newValueContext = processPropagationsInitial(property, valueContext);
 
     Object result =
@@ -39,6 +37,7 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
     if (!isExcludedWhenEmptyOrNull(newValueContext, property, result)) {
       return result;
     }
+
     // XXX (PvH) Geen unit test voor deze branch
     return null;
   }
@@ -79,7 +78,6 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
     return handleProperties(property, graphEntityContext, newValueContext, schemaMapperAdapter);
   }
 
-
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
       GraphEntityContext entityBuilderContext, ValueContext valueContext, String ldPathQuery,
       SchemaMapperAdapter schemaMapperAdapter) {
@@ -108,8 +106,6 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
     return handleProperties(property, entityBuilderContext, newValueContext, schemaMapperAdapter);
   }
 
-
-
   private Map<String, Object> handleProperties(ObjectProperty property,
       GraphEntityContext entityBuilderContext, ValueContext valueContext,
       SchemaMapperAdapter schemaMapperAdapter) {
@@ -135,8 +131,6 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
     });
     return builder.build();
   }
-
-
 
   @Override
   public boolean supports(@NonNull Property schema) {
