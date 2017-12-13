@@ -1,21 +1,14 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.base.Joiner;
-import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext.ValueContextBuilder;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
-// XXX (PvH) Unit test je de toegevoegde methods bewust niet? (vanaf processPropagationsInitial)
-// Omdat we hier testdekking missen.
-// XXX (PvH) Toegevoegde methods kunnen ook static worden. Hiermee communiceer je richting de
-// afnemers dat dit een utility method is, die geen state gebruikt
 abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
 
   protected static Value getSingleStatement(@NonNull Collection<Value> queryResult,
@@ -56,39 +49,14 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
     return false;
   }
 
-  // XXX (PvH) Kunnen we de naam verbeteren? Suggestie: populateContextWithVendorExtensions
-  protected ValueContext processPropagationsInitial(@NonNull Property property,
-      @NonNull ValueContext valueContext) {
-    ValueContextBuilder builder = valueContext.toBuilder();
-
-    if (hasVendorExtension(property,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL)) {
-      builder.isExcludedWhenEmptyOrNull(
-          hasVendorExtensionExcludePropertiesWhenEmptyOrNull(property));
-    }
-
-    return builder.build();
-  }
-
-  protected boolean isExcludedWhenEmptyOrNull(@NonNull ValueContext context,
-      @NonNull Property property, Object value) {
-    return context.isExcludedWhenEmptyOrNull()
-        && (value == null || (property instanceof ArrayProperty && ((Collection) value).isEmpty()));
-  }
-
-  private boolean hasVendorExtensionExcludePropertiesWhenEmptyOrNull(Property propValue) {
-    return (hasVendorExtensionWithValue(propValue,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true));
-
-  }
-
-  protected boolean hasVendorExtensionWithValue(@NonNull Property property,
+  protected static boolean hasVendorExtensionWithValue(@NonNull Property property,
       @NonNull String extension, Object value) {
     return hasVendorExtension(property, extension)
         && property.getVendorExtensions().get(extension).equals(value);
   }
 
-  protected boolean hasVendorExtension(@NonNull Property property, @NonNull String extension) {
+  protected static boolean hasVendorExtension(@NonNull Property property,
+      @NonNull String extension) {
     return property.getVendorExtensions().containsKey(extension);
   }
 

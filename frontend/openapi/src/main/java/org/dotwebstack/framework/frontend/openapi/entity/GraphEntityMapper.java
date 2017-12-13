@@ -26,9 +26,7 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
   public Object map(@NonNull GraphEntity entity, @NonNull MediaType mediaType) {
     GraphEntityContext graphEntityContext = entity.getEntityContext();
     Property schema = entity.getSchemaMap().get(mediaType);
-
-    // XXX (PvH) Value is null by default?
-    ValueContext valueContext = ValueContext.builder().value(null).build();
+    ValueContext valueContext = ValueContext.builder().build();
 
     LOG.debug("Map graph entity to representation.");
     if (schema == null) {

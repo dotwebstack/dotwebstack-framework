@@ -30,32 +30,25 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    ValueContext newValueContext = processPropagationsInitial(property, valueContext);
-
     if (hasSubjectFilterVendorExtension(property)) {
       Set<Resource> subjects = filterSubjects(property, graphEntityContext);
 
       subjects.forEach(subject -> {
-        ValueContext subjectContext = newValueContext.toBuilder().value(subject).build();
+        ValueContext subjectContext = valueContext.toBuilder().value(subject).build();
 
         builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntityContext,
             subjectContext, schemaMapperAdapter));
       });
-    } else if (newValueContext.getValue() != null) {
+    } else if (valueContext.getValue() != null) {
       if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(property, graphEntityContext, newValueContext, schemaMapperAdapter,
-            builder);
+        queryAndValidate(property, graphEntityContext, valueContext, schemaMapperAdapter, builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
             "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
       }
     }
 
-    ImmutableList result = builder.build();
-    if (!isExcludedWhenEmptyOrNull(newValueContext, property, result)) {
-      return result;
-    }
-    return null;
+    return builder.build();
   }
 
   private void queryAndValidate(ArrayProperty property, GraphEntityContext graphEntityContext,
@@ -67,7 +60,6 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
 
     validateMinItems(property, queryResult);
     validateMaxItems(property, queryResult);
-
 
     queryResult.forEach(valueNext -> {
       ValueContext newValueContext = valueContext.toBuilder().value(valueNext).build();

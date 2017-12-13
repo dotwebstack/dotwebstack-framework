@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.ArrayProperty;
@@ -30,16 +31,28 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
   public Object mapGraphValue(@NonNull ObjectProperty property,
       @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    ValueContext newValueContext = processPropagationsInitial(property, valueContext);
+    ValueContext newValueContext = populateValueContextWithVendorExtensions(property, valueContext);
 
-    Object result =
-        handleProperty(property, graphEntityContext, newValueContext, schemaMapperAdapter);
-    if (!isExcludedWhenEmptyOrNull(newValueContext, property, result)) {
-      return result;
+    return handleProperty(property, graphEntityContext, newValueContext, schemaMapperAdapter);
+  }
+
+  private static ValueContext populateValueContextWithVendorExtensions(@NonNull Property property,
+      @NonNull ValueContext valueContext) {
+    ValueContextBuilder builder = valueContext.toBuilder();
+
+    if (hasVendorExtension(property,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL)) {
+      builder.isExcludedWhenEmptyOrNull(
+          hasVendorExtensionExcludePropertiesWhenEmptyOrNull(property));
     }
 
-    // XXX (PvH) Geen unit test voor deze branch
-    return null;
+    return builder.build();
+  }
+
+  private static boolean hasVendorExtensionExcludePropertiesWhenEmptyOrNull(Property propValue) {
+    return hasVendorExtensionWithValue(propValue,
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+
   }
 
   private Object handleProperty(ObjectProperty property, GraphEntityContext graphEntityContext,
@@ -114,22 +127,17 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
           valueContext, schemaMapperAdapter);
 
-      // XXX (PvH) Zit de !(propValue instanceof ArrayProperty) check ook niet in de
-      // isExcludedWhenNull?
-      if (!(propValue instanceof ArrayProperty)
-          && (!isExcludedWhenEmptyOrNull(valueContext, propValue, propertyResult))) {
-
-        builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
-      }
-      // XXX (PvH) Zit de (propValue instanceof ArrayProperty) check ook niet in de
-      // isExcludedWhenEmpty?
-      if (((propValue instanceof ArrayProperty)
-          && !isExcludedWhenEmptyOrNull(valueContext, propValue, propertyResult))) {
-
-        builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
+      if (!isExcludedWhenEmptyOrNull(valueContext, propValue, propertyResult)) {
+        builder.put(propKey, Optional.fromNullable(propertyResult));
       }
     });
     return builder.build();
+  }
+
+  private static boolean isExcludedWhenEmptyOrNull(@NonNull ValueContext context,
+      @NonNull Property property, Object value) {
+    return context.isExcludedWhenEmptyOrNull()
+        && (value == null || (property instanceof ArrayProperty && ((Collection) value).isEmpty()));
   }
 
   @Override

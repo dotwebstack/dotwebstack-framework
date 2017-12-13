@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -144,7 +143,7 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void handleObjectWithLdPathWithoutResult() {
+  public void mapGraphValue_ReturnsNull_WhenLdPathYieldsNoResults() {
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
 
     when(ldPathExecutorMock.ldPathQuery(value1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
@@ -321,22 +320,98 @@ public class ObjectSchemaMapperTest {
     assertThat(result, empty());
   }
 
-  // XXX (PvH) Rename method
   @Test
-  public void mapGraphValue_ExcludesProperty_WhenVendorExtensionIsSet() {
-
+  public void mapGraphValue_ExcludesStringProperty_WhenVendorExtIsSetAndValueIsNull() {
     // Arrange
-    StringProperty stringProperty = new StringProperty();
+    StringProperty childProperty = new StringProperty();
 
-    property.setProperties(ImmutableMap.of(KEY_1, stringProperty));
+    childProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH,
+        DBEERPEDIA.NAME.stringValue());
+
+    property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), childProperty));
     property.setVendorExtension(
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
 
+    when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
+        DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of());
+
     // Act
     Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(property, contextMock,
-        ValueContext.builder().value(null).build(), schemaMapperAdapter);
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
+
     // Assert
-    assertTrue(result.isEmpty());
+    assertThat(result.isEmpty(), is(true));
+  }
+
+  @Test
+  public void mapGraphValue_IncludesStringProperty_WhenVendorExtIsSetAndValueIsNotNull() {
+    // Arrange
+    StringProperty childProperty = new StringProperty();
+
+    childProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH,
+        DBEERPEDIA.NAME.stringValue());
+
+    property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), childProperty));
+    property.setVendorExtension(
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+
+    when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
+        DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
+
+    // Act
+    Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(property, contextMock,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
+
+    // Assert
+    assertThat(result, is(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(),
+        Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue()))));
+  }
+
+  @Test
+  public void mapGraphValue_ExcludesArrayProperty_WhenVendorExtIsSetAndArrayIsEmpty() {
+    // Arrange
+    ArrayProperty childProperty = new ArrayProperty(new StringProperty());
+
+    childProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH,
+        DBEERPEDIA.NAME.stringValue());
+
+    property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), childProperty));
+    property.setVendorExtension(
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+
+    when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
+        DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of());
+
+    // Act
+    Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(property, contextMock,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
+
+    // Assert
+    assertThat(result.isEmpty(), is(true));
+  }
+
+  @Test
+  public void mapGraphValue_IncludesArrayProperty_WhenVendorExtIsSetAndArrayIsNotEmpty() {
+    // Arrange
+    ArrayProperty childProperty = new ArrayProperty(new StringProperty());
+
+    childProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH,
+        DBEERPEDIA.NAME.stringValue());
+
+    property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), childProperty));
+    property.setVendorExtension(
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+
+    when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
+        DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
+
+    // Act
+    Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(property, contextMock,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
+
+    // Assert
+    assertThat(result, is(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(),
+        Optional.of(ImmutableList.of(Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue()))))));
   }
 
 }

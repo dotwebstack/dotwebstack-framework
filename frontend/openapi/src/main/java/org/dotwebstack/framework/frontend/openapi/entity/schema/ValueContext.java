@@ -10,10 +10,7 @@ import org.eclipse.rdf4j.model.Value;
 @Builder(toBuilder = true)
 public class ValueContext {
 
-  // XXX (PvH) Melding Eclipse: @Builder will ignore the initializing expression entirely. If you
-  // want the initializing expression to serve as default, add @Builder.Default. If it is not
-  // supposed to be settable during building, make the field final.
-  private boolean isExcludedWhenEmptyOrNull = false;
+  private boolean isExcludedWhenEmptyOrNull;
 
   private Value value;
 
