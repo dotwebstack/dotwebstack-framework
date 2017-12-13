@@ -24,12 +24,8 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String RELATIVE_LINK = "x-relative-link";
 
-  // XXX (PvH) Kunnen we deze properties samenvoegen?
-  public static final String EXCLUDE_PROPERTIES_WHEN_EMPTY =
-      DOTWEBSTACK_PREFIX.concat("exclude-properties-when-empty");
-
-  public static final String EXCLUDE_PROPERTIES_WHEN_NULL =
-      DOTWEBSTACK_PREFIX.concat("exclude-properties-when-null");
+  public static final String EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL =
+      DOTWEBSTACK_PREFIX.concat("exclude-properties-when-empty-or-null");
 
   private OpenApiSpecificationExtensions() {
     throw new IllegalStateException(

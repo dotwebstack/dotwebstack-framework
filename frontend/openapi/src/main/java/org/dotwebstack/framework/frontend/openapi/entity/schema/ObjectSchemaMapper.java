@@ -36,7 +36,7 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
 
     Object result =
         handleProperty(property, graphEntityContext, newValueContext, schemaMapperAdapter);
-    if (!isExcludedWhenNull(newValueContext, property, result)) {
+    if (!isExcludedWhenEmptyOrNull(newValueContext, property, result)) {
       return result;
     }
     // XXX (PvH) Geen unit test voor deze branch
@@ -121,14 +121,14 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
       // XXX (PvH) Zit de !(propValue instanceof ArrayProperty) check ook niet in de
       // isExcludedWhenNull?
       if (!(propValue instanceof ArrayProperty)
-          && (!isExcludedWhenNull(valueContext, propValue, propertyResult))) {
+          && (!isExcludedWhenEmptyOrNull(valueContext, propValue, propertyResult))) {
 
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
       }
       // XXX (PvH) Zit de (propValue instanceof ArrayProperty) check ook niet in de
       // isExcludedWhenEmpty?
       if (((propValue instanceof ArrayProperty)
-          && !isExcludedWhenEmpty(valueContext, propValue, propertyResult))) {
+          && !isExcludedWhenEmptyOrNull(valueContext, propValue, propertyResult))) {
 
         builder.put(propKey, com.google.common.base.Optional.fromNullable(propertyResult));
       }

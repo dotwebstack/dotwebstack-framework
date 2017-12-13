@@ -52,7 +52,7 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
     }
 
     ImmutableList result = builder.build();
-    if (!isExcludedWhenEmpty(newValueContext, property, result)) {
+    if (!isExcludedWhenEmptyOrNull(newValueContext, property, result)) {
       return result;
     }
     return null;

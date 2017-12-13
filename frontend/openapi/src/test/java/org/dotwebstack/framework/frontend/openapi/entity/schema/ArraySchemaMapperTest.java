@@ -292,8 +292,8 @@ public class ArraySchemaMapperTest {
     // Arrange
     // XXX (PvH) Kunnen we gebruik maken van de instance variabele arrayProperty?
     ArrayProperty arrayProperty = new ArrayProperty();
-    arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY,
-        true);
+    arrayProperty.setVendorExtension(
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
     arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, "test");
 
     // XXX (PvH) Kunnen we deze statement weghalen? objectProperty gebruiken we niet in de test

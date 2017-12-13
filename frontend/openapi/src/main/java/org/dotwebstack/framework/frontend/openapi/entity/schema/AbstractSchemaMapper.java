@@ -60,46 +60,24 @@ abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapp
   protected ValueContext processPropagationsInitial(Property property, ValueContext valueContext) {
     ValueContextBuilder builder = valueContext.toBuilder();
 
-    if (hasVendorExtension(property, OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL)) {
-      builder.isExcludedWhenNull(hasExcludeWhenNull(property));
-    }
     if (hasVendorExtension(property,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY)) {
-      builder.isExcludedWhenEmpty(hasExcludeWhenEmpty(property));
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL)) {
+      builder.isExcludedWhenEmptyOrNull(
+          hasVendorExtensionExcludePropertiesWhenEmptyOrNull(property));
     }
 
     return builder.build();
   }
 
-  protected boolean isExcludedWhenNull(ValueContext valueContext, Property propValue,
-      Object propertyResult) {
-    // XXX (PvH) Gebruik je bewust teveel () dan noodzakelijk? Dit kan natuurlijk een coding style
-    // zijn. Dit zie ik ook terug op andere plekken.
-    return (valueContext.isExcludedWhenNull() && (propertyResult == null)
-        && !(propValue instanceof ArrayProperty));
+  protected boolean isExcludedWhenEmptyOrNull(ValueContext context, Property property,
+      Object value) {
+    return context.isExcludedWhenEmptyOrNull()
+        && (value == null || (property instanceof ArrayProperty && ((Collection) value).isEmpty()));
   }
 
-  protected boolean isExcludedWhenEmpty(ValueContext valueContext, Property propValue,
-      Object propertyResult) {
-    // XXX (PvH) propertyResult != null kan weg (zal altijd true zijn)
-    // XXX (PvH) Wat gebeurt als propertyResult geen Collection is?
-    return (valueContext.isExcludedWhenEmpty()
-        && (propertyResult == null
-            || (propertyResult != null && ((Collection) propertyResult).isEmpty()))
-        && (propValue instanceof ArrayProperty));
-  }
-
-  // XXX (PvH) Suggestie: hernoemen naar hasExcludePropertiesWhenNullVendorExtensionDefined
-  private boolean hasExcludeWhenNull(Property propValue) {
+  private boolean hasVendorExtensionExcludePropertiesWhenEmptyOrNull(Property propValue) {
     return (hasVendorExtensionWithValue(propValue,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true));
-
-  }
-
-  // XXX (PvH) Suggestie: hernoemen naar hasExcludePropertiesWhenEmptyVendorExtensionDefined
-  private boolean hasExcludeWhenEmpty(Property propValue) {
-    return (hasVendorExtensionWithValue(propValue,
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY, true));
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true));
 
   }
 

@@ -118,9 +118,8 @@ public class ObjectSchemaMapperTest {
     property.setProperties(ImmutableMap.of());
 
     // Act
-    Map<String, Object> result =
-        (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property, contextMock,
-            ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
+    Map<String, Object> result = (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property,
+        contextMock, ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(0));
@@ -133,9 +132,8 @@ public class ObjectSchemaMapperTest {
         ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
     when(ldPathExecutorMock.ldPathQuery(any(), eq(STR3_LD_EXP))).thenReturn(ImmutableList.of());
 
-    Map<String, Object> result =
-        (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property, contextMock,
-            ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
+    Map<String, Object> result = (Map<String, Object>) schemaMapperAdapter.mapGraphValue(property,
+        contextMock, ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(4));
@@ -323,15 +321,16 @@ public class ObjectSchemaMapperTest {
     assertThat(result, empty());
   }
 
-  // XXX (PvH) Suggestie: mapGraphValue_ExcludesProperty_WhenVendorExtensionIsSet
+  // XXX (PvH) Rename method
   @Test
-  public void isIncludedWhenNull_WhenSetExpectNoResult() {
+  public void mapGraphValue_ExcludesProperty_WhenVendorExtensionIsSet() {
 
     // Arrange
     StringProperty stringProperty = new StringProperty();
 
     property.setProperties(ImmutableMap.of(KEY_1, stringProperty));
-    property.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_NULL, true);
+    property.setVendorExtension(
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
 
     // Act
     Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(property, contextMock,
