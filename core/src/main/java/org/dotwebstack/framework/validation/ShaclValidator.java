@@ -10,17 +10,13 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.URI;
 import org.eclipse.rdf4j.model.Value;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
 import org.springframework.stereotype.Service;
 import org.topbraid.shacl.validation.ValidationUtil;
 
 @Service
 public class ShaclValidator {
-
-  private static final Logger LOG = LoggerFactory.getLogger(ShaclValidator.class);
 
   public ValidationReport validate(@NonNull org.eclipse.rdf4j.model.Model dataModel,
       @NonNull org.eclipse.rdf4j.model.Model shapesModel) {
@@ -39,7 +35,8 @@ public class ShaclValidator {
       // create resource / subject
       Resource resource = rdf4jResourceToJenaResource(jenaModel, rdf4jStatement.getSubject());
       // create property / predicate
-      Property property = rdf4jPropertyToJenaProperty(jenaModel, rdf4jStatement.getPredicate());
+      Property property =
+          rdf4jPropertyToJenaProperty(jenaModel, (SimpleIRI) rdf4jStatement.getPredicate());
       // create rdfnode / object
       RDFNode node = rdf4jValueToJenaRdfNode(jenaModel, rdf4jStatement.getObject());
 
@@ -51,14 +48,15 @@ public class ShaclValidator {
 
   private Resource rdf4jResourceToJenaResource(@NonNull Model jenaModel,
       @NonNull org.eclipse.rdf4j.model.Resource resource) {
-    if (resource instanceof URI) {
+    if (resource instanceof SimpleIRI) {
       return jenaModel.createResource(resource.stringValue());
     } else {
       return jenaModel.createResource(new AnonId(resource.stringValue()));
     }
   }
 
-  private Property rdf4jPropertyToJenaProperty(@NonNull Model jenaModel, @NonNull URI resource) {
+  private Property rdf4jPropertyToJenaProperty(@NonNull Model jenaModel,
+      @NonNull SimpleIRI resource) {
     return jenaModel.createProperty(resource.stringValue());
   }
 
@@ -73,7 +71,7 @@ public class ShaclValidator {
   private RDFNode rdf4jLiteralToJenaRdfNode(@NonNull Model jenaModel, @NonNull Literal value) {
     if (value.getDatatype() != null) {
       return jenaModel.createTypedLiteral(value.stringValue(), value.getDatatype().stringValue());
-    } else if (value.getLanguage() != null && !"".equals(value.getLanguage())) {
+    } else if (value.getLanguage().isPresent() && !value.getLanguage().equals("")) {
       return jenaModel.createLiteral(value.stringValue(), value.getLanguage().get());
     } else {
       return jenaModel.createLiteral(value.stringValue());

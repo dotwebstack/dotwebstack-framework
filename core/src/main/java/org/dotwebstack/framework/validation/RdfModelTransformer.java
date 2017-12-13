@@ -15,6 +15,8 @@ import org.springframework.core.io.Resource;
 
 public class RdfModelTransformer {
 
+  private RdfModelTransformer() {}
+
   public static Model mergeResourceWithPrefixes(InputStream inputStreamPrefixes,
       InputStream inputStreamData) throws IOException {
     final Resource mergedDataResource =

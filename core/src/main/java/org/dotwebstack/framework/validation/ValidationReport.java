@@ -7,9 +7,11 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.impl.PropertyImpl;
+import org.springframework.beans.factory.annotation.Value;
 
 public class ValidationReport {
 
+  @Value("#{applicationProperties.shacl.uri.result.path}")
   private static final String DESCRIPTION_RESULT_PATH = "http://www.w3.org/ns/shacl#resultPath";
 
   private static final String DESCRIPTION_RESULT_MESSAGE =
