@@ -206,9 +206,7 @@ public class OpenApiIntegrationTest {
     SparqlHttpStub.returnGraph(model);
 
     // Act
-    // XXX (PvH) Ik vind "notused" als id parameter verwarrend. 
-    // Suggestie: wijzig de IdParameter in een NameParameter en geef hier een echt naam mee
-    Response response = target.path("/dbp/api/v1/graph-breweries/notused").request().get();
+    Response response = target.path("/dbp/api/v1/graph-breweries").request().get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));

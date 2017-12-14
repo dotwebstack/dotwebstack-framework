@@ -8,18 +8,11 @@ import org.eclipse.rdf4j.model.Value;
  * can be propagated into nested or deeper structures.
  */
 @Builder(toBuilder = true)
+@lombok.Value
 public class ValueContext {
 
-  private boolean isExcludedWhenEmptyOrNull;
+  private final boolean isExcludedWhenEmptyOrNull;
 
-  private Value value;
-
-  public boolean isExcludedWhenEmptyOrNull() {
-    return isExcludedWhenEmptyOrNull;
-  }
-
-  public Value getValue() {
-    return value;
-  }
+  private final Value value;
 
 }

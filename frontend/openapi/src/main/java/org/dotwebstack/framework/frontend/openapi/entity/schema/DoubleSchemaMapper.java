@@ -27,8 +27,9 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
   }
 
   @Override
-  public Double mapGraphValue(DoubleProperty property, GraphEntityContext graphEntityContext,
-      ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
+  public Double mapGraphValue(@NonNull DoubleProperty property,
+      @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 

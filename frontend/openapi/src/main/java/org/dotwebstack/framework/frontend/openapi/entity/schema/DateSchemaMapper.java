@@ -22,15 +22,15 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
   @Override
-  public LocalDate mapTupleValue(@NonNull DateProperty schema,
-      @NonNull ValueContext valueContext) {
+  public LocalDate mapTupleValue(@NonNull DateProperty schema, @NonNull ValueContext valueContext) {
     return convertToDate(
         SchemaMapperUtils.castLiteralValue(valueContext.getValue()).calendarValue());
   }
 
   @Override
-  public LocalDate mapGraphValue(DateProperty property, GraphEntityContext context,
-      ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
+  public LocalDate mapGraphValue(@NonNull DateProperty property,
+      @NonNull GraphEntityContext context, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);

@@ -38,7 +38,7 @@ public class IntegerSchemaMapperTest {
   private static final IRI VALUE_3 = SimpleValueFactory.getInstance().createIRI("http://foo");
 
   @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private GraphEntityContext entityBuilderContext;
@@ -51,26 +51,17 @@ public class IntegerSchemaMapperTest {
   @Mock
   private LdPathExecutor ldPathExecutor;
 
-  private SchemaMapper schemaMapper;
+  private IntegerSchemaMapper schemaMapper;
+
   private IntegerProperty property;
-
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
-
-  private IntegerSchemaMapper integerSchemaMapper;
-
-  private IntegerProperty schema;
 
   @Before
   public void setUp() {
-    integerSchemaMapper = new IntegerSchemaMapper();
-    schema = new IntegerProperty();
-
     schemaMapper = new IntegerSchemaMapper();
     property = new IntegerProperty();
+
     when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
     schemaMapperAdapter = new SchemaMapperAdapter(Arrays.asList(schemaMapper));
-
   }
 
   @Test
@@ -80,14 +71,14 @@ public class IntegerSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    integerSchemaMapper.mapTupleValue(schema,
+    schemaMapper.mapTupleValue(property,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Integer result = (Integer) integerSchemaMapper.mapTupleValue(schema,
+    Integer result = (Integer) schemaMapper.mapTupleValue(property,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
 
     // Assert
@@ -97,7 +88,7 @@ public class IntegerSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForIntegerProperty() {
     // Arrange & Act
-    Boolean supported = integerSchemaMapper.supports(schema);
+    Boolean supported = schemaMapper.supports(property);
 
     // Assert
     assertThat(supported, equalTo(true));
@@ -106,7 +97,7 @@ public class IntegerSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForNonIntegerProperty() {
     // Arrange & Act
-    Boolean supported = integerSchemaMapper.supports(new StringProperty());
+    Boolean supported = schemaMapper.supports(new StringProperty());
 
     // Assert
     assertThat(supported, equalTo(false));
@@ -141,8 +132,8 @@ public class IntegerSchemaMapperTest {
   @Test
   public void mapGraphValue_ThrowsException_ForUnsupportedType() {
     // Assert
-    expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(String.format(
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage(String.format(
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         DUMMY_EXPR, Joiner.on(", ").join(XMLSchema.INTEGER, XMLSchema.INT)));
 
@@ -159,8 +150,8 @@ public class IntegerSchemaMapperTest {
   @Test
   public void mapGraphValue_ThrowsException_ForEmptyLdPath() {
     // Assert
-    expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(String.format("Property '%s' must have a '%s' attribute",
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage(String.format("Property '%s' must have a '%s' attribute",
         property.getName(), OpenApiSpecificationExtensions.LDPATH));
 
     // Act

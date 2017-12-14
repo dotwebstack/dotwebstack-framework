@@ -81,7 +81,7 @@ paths:
               plaats:
                 type: string
                 format: string
-  /graph-breweries/{id}:
+  /graph-breweries:
     get:
       x-dotwebstack-information-product: "http://dbeerpedia.org#GraphBreweries"
       parameters:

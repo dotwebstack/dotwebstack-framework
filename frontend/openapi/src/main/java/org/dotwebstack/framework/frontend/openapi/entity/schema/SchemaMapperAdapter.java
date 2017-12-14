@@ -31,7 +31,7 @@ public class SchemaMapperAdapter {
   @SuppressWarnings("unchecked")
   public <S extends Property> Object mapGraphValue(@NonNull S schema,
       GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
-      SchemaMapperAdapter schemaMapperAdapter) {
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
             () -> new SchemaMapperRuntimeException(String.format(

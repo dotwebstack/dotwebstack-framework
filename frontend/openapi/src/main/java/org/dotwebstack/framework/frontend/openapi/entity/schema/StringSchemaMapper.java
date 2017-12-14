@@ -25,14 +25,14 @@ class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   @Override
-  public String mapTupleValue(@NonNull StringProperty schema,
-      @NonNull ValueContext valueContext) {
+  public String mapTupleValue(@NonNull StringProperty schema, @NonNull ValueContext valueContext) {
     return valueContext.getValue().stringValue();
   }
 
   @Override
-  public String mapGraphValue(StringProperty property, GraphEntityContext graphEntityContext,
-      ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
+  public String mapGraphValue(@NonNull StringProperty property,
+      @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     validateVendorExtensions(property);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
@@ -45,8 +45,7 @@ class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
       return handleConstantValueVendorExtension(property);
     }
 
-    if (valueContext.getValue() != null
-        && isSupportedLiteral(valueContext.getValue())) {
+    if (valueContext.getValue() != null && isSupportedLiteral(valueContext.getValue())) {
       return valueContext.getValue().stringValue();
     } else if (property.getRequired()) {
       throw new SchemaMapperRuntimeException("No result for required property.");
