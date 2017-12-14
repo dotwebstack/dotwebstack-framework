@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.backend;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Locale;
+import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
@@ -21,14 +22,14 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
    * Initialise a new RDF4J backend using the repository passed as argument. Queries will include
    * inferred statements and all contexts.
    */
-  public Rdf4jRepositoryBackend(Repository repository) {
+  public Rdf4jRepositoryBackend(@NonNull Repository repository) {
     this(repository, true);
   }
 
   /**
    * Initialise a new RDF4J backend using the repository.
    */
-  private Rdf4jRepositoryBackend(Repository repository, boolean includeInferred,
+  private Rdf4jRepositoryBackend(@NonNull Repository repository, boolean includeInferred,
       Resource... contexts) {
     this.repository = repository;
     this.includeInferred = includeInferred;
@@ -42,10 +43,9 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
    * @return a literal node in using the model used by this backend
    */
   @Override
-  public Literal createLiteral(String content) {
+  public Literal createLiteral(@NonNull String content) {
     return createLiteralInternal(repository.getValueFactory(), content);
   }
-
 
   /**
    * Create a literal node with the content passed as argument.
@@ -54,10 +54,9 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
    * @return a literal node in using the model used by this backend
    */
   @Override
-  public Literal createLiteral(String content, Locale language, URI type) {
+  public Literal createLiteral(@NonNull String content, Locale language, URI type) {
     return createLiteralInternal(repository.getValueFactory(), content, language, type);
   }
-
 
   /**
    * Create a URI mode with the URI passed as argument.
@@ -66,7 +65,7 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
    * @return a URI node using the model used by this backend
    */
   @Override
-  public IRI createURI(String uri) {
+  public IRI createURI(@NonNull String uri) {
     return createUriInternal(repository.getValueFactory(), uri);
   }
 

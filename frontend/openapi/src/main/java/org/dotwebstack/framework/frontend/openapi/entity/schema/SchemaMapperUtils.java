@@ -3,7 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
-public final class SchemaMapperUtils {
+final class SchemaMapperUtils {
 
   private SchemaMapperUtils() {
     throw new IllegalStateException(

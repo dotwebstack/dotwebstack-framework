@@ -13,7 +13,6 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Value;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,73 +22,41 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class StringSchemaMapperTest extends AbstractStringPropertyHandlerTest {
-
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
-
-  private StringSchemaMapper schemaMapper;
+public class StringSchemaMapperTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-  private GraphEntityContext entityBuilderContextMock;
-
   @Mock
   private Value contextMock;
 
-  private SchemaMapperAdapter registry;
+  private GraphEntityContext entityBuilderContextMock;
 
-  private SchemaMapper handler;
+  private SchemaMapperAdapter schemaMapperAdapter;
+
+  private StringSchemaMapper schemaMapper;
   private StringProperty stringProperty;
 
   @Before
   public void setUp() {
-    schemaMapper = new StringSchemaMapper();
     entityBuilderContextMock = mock(GraphEntityContext.class);
-    handler = new StringSchemaMapper();
+    schemaMapper = new StringSchemaMapper();
     stringProperty = new StringProperty();
-    registry = new SchemaMapperAdapter(Arrays.asList(handler));
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(stringProperty, null);
+    schemaMapperAdapter = new SchemaMapperAdapter(Arrays.asList(schemaMapper));
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    String result = schemaMapper.mapTupleValue(stringProperty, DBEERPEDIA.BROUWTOREN_NAME);
+    String result = schemaMapper.mapTupleValue(stringProperty,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_NAME.stringValue()));
   }
 
   @Test
-  public void supports_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.supports(null);
-  }
-
-  @Test
-  public void supports_ReturnsTrue_ForStringSchema() {
+  public void supports_ReturnsTrue_ForStringProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(stringProperty);
 
@@ -98,7 +65,7 @@ public class StringSchemaMapperTest extends AbstractStringPropertyHandlerTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonStringSchema() {
+  public void supports_ReturnsTrue_ForNonStringProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(new IntegerProperty());
 
@@ -106,59 +73,71 @@ public class StringSchemaMapperTest extends AbstractStringPropertyHandlerTest {
     assertThat(supported, equalTo(false));
   }
 
-
   @Test
-  public void supportsStringProperty() {
-    assertThat(handler.supports(stringProperty), Matchers.equalTo(true));
-  }
+  public void mapGraphValue_ReturnsNull_WhenNoVendorExtensionHasBeenDefined() {
+    // Act
+    Object result = schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
 
-  @Test
-  public void handleNoVendorExtensions() {
-    Object result =
-        registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
-
+    // Assert
     assertThat(result, nullValue());
   }
 
   @Test
-  public void handleMultipleVendorExtensionsLdPathQueryAndRelativeLinkThrowsException() {
+  public void mapGraphValue_ThrowsEx_WhenBothLdPathAndRelativeLinkVendorExtensionsAreDefined() {
+    // Assert
+    expectExceptionAboutMultipleVendorExtensions();
+
+    // Arrange
     stringProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "",
         OpenApiSpecificationExtensions.RELATIVE_LINK, ImmutableMap.of()));
 
-    expectExceptionAboutMultipleVendorExtensions();
-
-    registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
+    // Act
+    schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
   }
 
   @Test
-  public void handleMultipleVendorExtensionsLdPathQueryAndConstValueThrowsException() {
+  public void mapGraphValue_ThrowsEx_WhenBothLdPathAndConstantValueVendorExtensionsAreDefined() {
+    // Assert
+    expectExceptionAboutMultipleVendorExtensions();
+
+    // Arrange
     stringProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH,
         ImmutableMap.of(), OpenApiSpecificationExtensions.CONSTANT_VALUE, ImmutableMap.of()));
 
-    expectExceptionAboutMultipleVendorExtensions();
-
-    registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
+    // Act
+    schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
   }
 
   @Test
-  public void handleMultipleVendorExtensionsRelativeLinkAndConstValueThrowsException() {
+  public void mapGraphValue_ThrowsEx_WhenBothConstantValueAndRelativeLinkVendorExtsAreDefined() {
+    // Assert
+    expectExceptionAboutMultipleVendorExtensions();
+
+    // Arrange
     stringProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.RELATIVE_LINK,
         ImmutableMap.of(), OpenApiSpecificationExtensions.CONSTANT_VALUE, ImmutableMap.of()));
 
-    expectExceptionAboutMultipleVendorExtensions();
-
-    registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
+    // Act
+    schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
   }
 
   @Test
-  public void handleThreeVendorExtensionsThrowsException() {
+  public void mapGraphValue_ThrowsEx_WhenConstantValueLdPathAndRelativeLinkVendorExtsAreDefined() {
+    // Assert
+    expectExceptionAboutMultipleVendorExtensions();
+
+    // Arrange
     stringProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.RELATIVE_LINK,
         ImmutableMap.of(), OpenApiSpecificationExtensions.CONSTANT_VALUE, ImmutableMap.of(),
         OpenApiSpecificationExtensions.LDPATH, ImmutableMap.of()));
 
-    expectExceptionAboutMultipleVendorExtensions();
-
-    registry.mapGraphValue(stringProperty, entityBuilderContextMock, registry, contextMock);
+    // Act
+    schemaMapperAdapter.mapGraphValue(stringProperty, entityBuilderContextMock,
+        ValueContext.builder().value(contextMock).build(), schemaMapperAdapter);
   }
 
   private void expectExceptionAboutMultipleVendorExtensions() {

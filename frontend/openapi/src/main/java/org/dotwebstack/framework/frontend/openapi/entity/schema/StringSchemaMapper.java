@@ -19,51 +19,40 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-class StringSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<StringProperty, String> {
+class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LdPathSchemaMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(StringSchemaMapper.class);
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   @Override
-  public String mapTupleValue(@NonNull StringProperty schema, @NonNull Value value) {
-    return value.stringValue();
+  public String mapTupleValue(@NonNull StringProperty schema, @NonNull ValueContext valueContext) {
+    return valueContext.getValue().stringValue();
   }
 
   @Override
-  public String mapGraphValue(StringProperty property, GraphEntityContext graphEntityContext,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+  public String mapGraphValue(@NonNull StringProperty property,
+      @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     validateVendorExtensions(property);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
       LdPathExecutor ldPathExecutor = graphEntityContext.getLdPathExecutor();
-      return handleLdPathVendorExtension(property, value, ldPathExecutor);
+      return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
     }
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
       return handleConstantValueVendorExtension(property);
     }
 
-    if (value != null && isSupported(value)) {
-      return value.stringValue();
+    if (valueContext.getValue() != null && isSupportedLiteral(valueContext.getValue())) {
+      return valueContext.getValue().stringValue();
     } else if (property.getRequired()) {
       throw new SchemaMapperRuntimeException("No result for required property.");
     }
 
     return null;
 
-  }
-
-
-  @Override
-  public boolean supports(@NonNull Property schema) {
-    return schema instanceof StringProperty;
-  }
-
-  @Override
-  protected Set<IRI> getSupportedDataTypes() {
-    return SUPPORTED_TYPES;
   }
 
   /**
@@ -100,7 +89,7 @@ class StringSchemaMapper extends AbstractSchemaMapper
         property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
     if (value != null) {
-      if (isSupported(value)) {
+      if (isSupportedLiteral(value)) {
         return ((Value) value).stringValue();
       }
 
@@ -140,6 +129,14 @@ class StringSchemaMapper extends AbstractSchemaMapper
     return getSingleStatement(queryResult, ldPathQuery).stringValue();
   }
 
+  @Override
+  public boolean supports(@NonNull Property schema) {
+    return schema instanceof StringProperty;
+  }
 
+  @Override
+  protected Set<IRI> getSupportedDataTypes() {
+    return SUPPORTED_TYPES;
+  }
 
 }

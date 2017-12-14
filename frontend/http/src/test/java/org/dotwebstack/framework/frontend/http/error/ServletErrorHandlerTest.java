@@ -63,7 +63,7 @@ public class ServletErrorHandlerTest {
     thrown.expectMessage("Path parameter 'statusCode' is required.");
 
     // Act
-    Response response = servletErrorHandler.apply(context);
+    servletErrorHandler.apply(context);
   }
 
   @Test
@@ -76,7 +76,7 @@ public class ServletErrorHandlerTest {
     thrown.expectMessage("Status code '555' is unknown.");
 
     // Act
-    Response response = servletErrorHandler.apply(context);
+    servletErrorHandler.apply(context);
   }
 
 }

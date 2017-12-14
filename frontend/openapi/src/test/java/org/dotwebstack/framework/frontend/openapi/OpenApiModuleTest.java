@@ -34,24 +34,6 @@ public class OpenApiModuleTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingOpenApiRequestMapper() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new OpenApiModule(null);
-  }
-
-  @Test
-  public void initialize_ThrowsException_WithMissingHttpConfiguration() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    openApiModule.initialize(null);
-  }
-
-  @Test
   public void initialize_ImportDefinitions_WithConfiguration() throws IOException {
     // Act
     openApiModule.initialize(httpConfigurationMock);

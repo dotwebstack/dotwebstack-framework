@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -39,9 +38,6 @@ public class FileConfigurationBackendIntegrationTest {
 
   @Autowired
   private Environment environment;
-
-  @Autowired
-  private ResourceLoader resourceLoader;
 
   @Autowired
   private ShaclValidator shaclValidator;

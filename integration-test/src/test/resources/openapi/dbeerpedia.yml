@@ -6,6 +6,11 @@ host: %{dotwebstack.config.host}
 basePath: /dbp/api/v1
 produces:
   - application/json
+x-dotwebstack-ldpath-namespaces:
+  dbeerpedia: http://dbeerpedia.org#
+  elmo: http://dotwebstack.org/def/elmo#
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  xsd: http://www.w3.org/2001/XMLSchema#
 paths:
   /breweries:
     get:
@@ -76,3 +81,43 @@ paths:
               plaats:
                 type: string
                 format: string
+  /graph-breweries:
+    get:
+      x-dotwebstack-information-product: "http://dbeerpedia.org#GraphBreweries"
+      parameters:
+      - name: id
+        in: path
+        description: Identifier
+        required: false
+        type: string
+        x-dotwebstack-parameter: "http://dbeerpedia.org#IdFilter"
+      responses:
+        200:
+          schema:
+            type: "array"
+            x-dotwebstack-subject-filter:
+              predicate: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+              object: "http://dbeerpedia.org#Brewery"
+            items:
+              type: object
+              properties:
+                naam:
+                  type: string
+                  format: string
+                  x-dotwebstack-ldpath: "dbeerpedia:Name"
+                sinds:
+                  type: integer
+                  format: int32
+                  x-dotwebstack-ldpath: "dbeerpedia:Since"
+                fte:
+                  type: number
+                  format: double
+                  x-dotwebstack-ldpath: "dbeerpedia:FTE"
+                oprichting:
+                  type: string
+                  format: datetime
+                  x-dotwebstack-ldpath: "dbeerpedia:Foundation"
+                plaats:
+                  type: string
+                  format: string
+                  x-dotwebstack-ldpath: "dbeerpedia:Place"

@@ -3,23 +3,25 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import io.swagger.models.properties.LongProperty;
 import io.swagger.models.properties.Property;
 import java.math.BigInteger;
+import javax.validation.constraints.NotNull;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
-import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LongSchemaMapper implements SchemaMapper<LongProperty, BigInteger> {
 
   @Override
-  public BigInteger mapTupleValue(@NonNull LongProperty schema, @NonNull Value value) {
-    return SchemaMapperUtils.castLiteralValue(value).integerValue();
+  public BigInteger mapTupleValue(@NonNull LongProperty schema,
+      @NonNull ValueContext valueContext) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override
-  public BigInteger mapGraphValue(LongProperty schema, GraphEntityContext graphEntityContext,
-       SchemaMapperAdapter schemaMapperAdapter, Value value) {
-    return SchemaMapperUtils.castLiteralValue(value).integerValue();
+  public BigInteger mapGraphValue(@NonNull LongProperty schema,
+      @NonNull GraphEntityContext graphEntityContext, @NotNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override

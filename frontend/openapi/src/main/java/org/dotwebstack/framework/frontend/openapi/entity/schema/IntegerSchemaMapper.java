@@ -16,34 +16,35 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-class IntegerSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<BaseIntegerProperty, Object> {
+class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Object> {
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
 
-
   @Override
-  public Object mapTupleValue(@NonNull BaseIntegerProperty schema, @NonNull Value value) {
-    return SchemaMapperUtils.castLiteralValue(value).intValue();
+  public Object mapTupleValue(@NonNull BaseIntegerProperty schema,
+      @NonNull ValueContext valueContext) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).intValue();
   }
 
   @Override
-  public Object mapGraphValue(BaseIntegerProperty property, GraphEntityContext context,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+  public Object mapGraphValue(@NonNull BaseIntegerProperty property,
+      @NonNull GraphEntityContext context, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     String ldPathQuery =
-            (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
-    if (ldPathQuery == null && isSupported(value)) {
-      return ((Literal) value).integerValue().intValue();
+    if (ldPathQuery == null && isSupportedLiteral(valueContext.getValue())) {
+      return ((Literal) valueContext.getValue()).integerValue().intValue();
     }
 
     if (ldPathQuery == null) {
       throw new SchemaMapperRuntimeException(
-              String.format("Property '%s' must have a '%s' attribute.", property.getName(),
-                      OpenApiSpecificationExtensions.LDPATH));
+          String.format("Property '%s' must have a '%s' attribute.", property.getName(),
+              OpenApiSpecificationExtensions.LDPATH));
     }
     LdPathExecutor ldPathExecutor = context.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(value, ldPathQuery);
+    Collection<Value> queryResult =
+        ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
     if (!property.getRequired() && queryResult.isEmpty()) {
       return null;
@@ -51,10 +52,10 @@ class IntegerSchemaMapper extends AbstractSchemaMapper
 
     Value integerValue = getSingleStatement(queryResult, ldPathQuery);
 
-    if (!isSupported(integerValue)) {
+    if (!isSupportedLiteral(integerValue)) {
       throw new SchemaMapperRuntimeException(String.format(
-              "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>.",
-              ldPathQuery, dataTypesAsString()));
+          "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>.",
+          ldPathQuery, dataTypesAsString()));
     }
 
     return ((Literal) integerValue).integerValue().intValue();

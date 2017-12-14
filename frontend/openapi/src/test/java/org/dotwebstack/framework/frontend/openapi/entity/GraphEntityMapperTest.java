@@ -1,20 +1,17 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.IntegerProperty;
-import io.swagger.models.properties.Property;
-import java.util.HashMap;
-import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -22,54 +19,36 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class GraphEntityMapperTest {
 
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
-
-  private GraphEntityMapper graphEntityMapper;
+  @Mock
+  private GraphEntityContext contextMock;
 
   @Mock
-  private GraphEntityContext graphEntityContextMock;
+  private SchemaMapperAdapter schemaMapperAdapterMock;
 
-  @Mock
-  private SchemaMapperAdapter propertyHandlerRegistryMock;
+  private GraphEntityMapper entityMapper;
 
   @Before
   public void setUp() {
-    graphEntityMapper = new GraphEntityMapper(propertyHandlerRegistryMock);
+    entityMapper = new GraphEntityMapper(schemaMapperAdapterMock);
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingDeps() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GraphEntityMapper(null);
-  }
-
-  @Test
-  public void map_ThrowsException_WithMissingGraphEntity() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    graphEntityMapper.map(null, null);
-  }
-
-  @Test
-  public void map_GraphMapping() {
+  public void map_Returns_SchemaMapperAdapterResult() {
     // Arrange
-    Map<MediaType, Property> schemaMap = new HashMap<>();
-    schemaMap.put(MediaType.TEXT_PLAIN_TYPE,new IntegerProperty());
-    GraphEntity entity = new GraphEntity(schemaMap, graphEntityContextMock);
+    IntegerProperty schema = new IntegerProperty();
+    GraphEntity entity =
+        new GraphEntity(ImmutableMap.of(MediaType.TEXT_PLAIN_TYPE, schema), contextMock);
 
-    when(propertyHandlerRegistryMock.mapGraphValue(any(), any(), any(), any())).thenReturn(
-        new HashMap<>());
+    Object object = new Object();
+    when(schemaMapperAdapterMock.mapGraphValue(any(IntegerProperty.class),
+        any(GraphEntityContext.class), any(ValueContext.class),
+        any(SchemaMapperAdapter.class))).thenReturn(object);
+
     // Act
-    Object mappedEntity = graphEntityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
-    // Assert
-    assertThat(mappedEntity, instanceOf(HashMap.class));
+    Object result = entityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
 
+    // Assert
+    assertThat(result, sameInstance(object));
   }
 
 }

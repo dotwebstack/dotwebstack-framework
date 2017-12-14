@@ -1,15 +1,15 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import io.swagger.models.properties.Property;
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
-import org.eclipse.rdf4j.model.Value;
 
 public interface SchemaMapper<S extends Property, T> {
 
-  T mapTupleValue(S schema, Value value);
+  T mapTupleValue(@NonNull S schema, @NonNull ValueContext valueContext);
 
-  T mapGraphValue(S schema, GraphEntityContext entityContext,
-                  SchemaMapperAdapter schemaMapperAdapter, Value value);
+  T mapGraphValue(@NonNull S schema, @NonNull GraphEntityContext entityContext,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter);
 
   boolean supports(Property schema);
 
