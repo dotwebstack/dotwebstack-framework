@@ -108,65 +108,6 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingInformationProductLoader() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new OpenApiRequestMapper(null, openApiParserMock, applicationPropertiesMock,
-        getRequestHandlerFactoryMock);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingOpenApiParser() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new OpenApiRequestMapper(informationProductResourceProviderMock, null,
-        applicationPropertiesMock, getRequestHandlerFactoryMock);
-  }
-
-  @Test
-  public void setResourceLoader_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    requestMapper.setResourceLoader(null);
-  }
-
-  @Test
-  public void setEnvironment_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    requestMapper.setEnvironment(null);
-  }
-
-  @Test
-  public void setResourceLoader_DoesNotCrash_WithValue() {
-    // Act
-    requestMapper.setResourceLoader(resourceLoader);
-  }
-
-  @Test
-  public void setEnvironment_DoesNotCrash_WithValue() {
-    // Act
-    requestMapper.setEnvironment(environmentMock);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingHttpConfiguration() throws IOException {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    requestMapper.map(null);
-  }
-
-  @Test
   public void map_DoesNotRegisterAnything_NoDefinitionFilesFound() throws IOException {
     // Arrange
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(

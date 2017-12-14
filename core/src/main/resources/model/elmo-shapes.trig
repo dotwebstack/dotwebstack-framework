@@ -1,0 +1,30 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix dc: <http://purl.org/dc/elements/1.1/>.
+@prefix skos: <http://www.w3.org/2004/02/skos/core#>.
+@prefix elmo-shape: <http://dotwebstack.org/def/elmo-shacl#> .
+@prefix elmo-schemes: <http://dotwebstack.org/def/elmo/>.
+@prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-types/>.
+@prefix elmo: <http://dotwebstack.org/def/elmo#>.
+
+elmo-shape:
+	rdfs:label "SHACL for ELMO"@en ;
+	rdfs:comment "This shapes graph can be used to validate dotwebstack configurations. It can also be used to create a visual representation of the structure"@en ;
+	sh:declare [
+		sh:prefix "elmo-shape" ;
+		sh:namespace "http://dotwebstack.org/def/elmo-shacl#" ;
+	] .
+
+elmo-shape:Representation a sh:NodeShape;
+  sh:targetClass elmo:Representation;
+  rdfs:label "Representation shape"@en;
+  sh:name "elmo:Representation";
+  sh:property [
+    sh:name "elmo:name";
+    sh:path elmo:name;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+.

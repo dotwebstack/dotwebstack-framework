@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -27,119 +28,173 @@ public class Rdf4jValueBackendTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
-
   @Test
-  public void testGetLiteralLocale() {
+  public void getLiteralLanguage_RetursLanguage_ForLiteral() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral("value", "nl");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
+    // Act
     Locale locale = backend.getLiteralLanguage(value);
+    // Assert
     assertThat("Locale is incorrect", locale, is(Locale.forLanguageTag("nl")));
   }
 
   @Test
-  public void testGetLiteralType() {
+  public void getLiteralType_ReturnsType_ForLiteral() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral("value");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat("Literal type is incorrect", backend.getLiteralType(value).toString(),
-        is(XMLSchema.STRING.stringValue()));
+    // Act
+    URI result = backend.getLiteralType(value);
+
+    // Assert
+    assertThat("Literal type is incorrect", result.toString(), is(XMLSchema.STRING.stringValue()));
   }
 
   @Test
-  public void testGetDecimalType() {
+  public void decimalValue_ReturnsDecimalValue_ForLiteral() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral(BigDecimal.ONE);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.decimalValue(value).toString(), is("1"));
+    // Act
+    BigDecimal result = backend.decimalValue(value);
+
+    // Assert
+    assertThat(result.toString(), is("1"));
   }
 
   @Test
-  public void testcreateLiteral() {
+  public void createLiteral_ReturnsLiteral_ForContentLocaleAndUri() {
+    // Arrange
     URI uri = URI.create("http://www.test.nl");
     Literal value = SimpleValueFactory.getInstance().createLiteral("test",
         SimpleValueFactory.getInstance().createIRI(uri.toString()));
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.createLiteral("test", Locale.CANADA, uri), is(value));
+    // Act
+    Literal result = backend.createLiteral("test", Locale.CANADA, uri);
+
+    // Assert
+    assertThat(result, is(value));
   }
 
   @Test
-  public void testcreateLiteralLanguage() {
+  public void createLiteral_ReturnsLiteral_ForContentAndLocale() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral("test", "en");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.createLiteral("test", Locale.ENGLISH, null), is(value));
+    // Act
+    Literal result = backend.createLiteral("test", Locale.ENGLISH, null);
+
+    // Assert
+    assertThat(result, is(value));
   }
 
   @Test
-  public void testcreateLiteralClassCast() {
+  public void getLiteralType_ThrowsException_ForIllegalLiteral() {
+    // Assert
     expectedException.expect(IllegalArgumentException.class);
+
+    // Arrange
     BNode value = SimpleValueFactory.getInstance().createBNode("test");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.getLiteralType(value), is(value));
+    // Act
+    backend.getLiteralType(value);
   }
 
   @Test
-  public void testGetBooleanType() {
+  public void booleanValue_ReturnsBooleanValue_ForLiteral() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral(Boolean.TRUE);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.booleanValue(value), is(true));
+    // Act
+    Boolean result = backend.booleanValue(value);
+
+    // Assert
+    assertThat(result, is(true));
   }
 
   @Test
-  public void testGetIntegerType() {
+  public void integerValue_ReturnsIntegerValue_ForLiteral() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral(10);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.integerValue(value), is(BigInteger.TEN));
+    // Act
+    BigInteger result = backend.integerValue(value);
+
+    // Assert
+    assertThat(result, is(BigInteger.TEN));
   }
 
   @Test
-  public void testGetFloatType() {
+  public void floatValue_ReturnsFloatValue_ForLiteral() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral(10.3F);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.floatValue(value), is(10.3F));
+    // Act
+    Float result = backend.floatValue(value);
+
+    // Assert
+    assertThat(result, is(10.3F));
   }
 
   @Test
-  public void testGetIntType() {
+  public void intValue_ReturnsIntValue_ForLiteral() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral(10);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.intValue(value), is(10));
+    // Act
+    Integer result = backend.intValue(value);
+
+    // Assert
+    assertThat(result, is(10));
   }
 
-
   @Test
-  public void testCreateLiteral() {
+  public void createLiteral_ReturnsLiteral_ForContent() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral("http://www.test.nl");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.createLiteral("http://www.test.nl"), is(value));
+    // Act
+    Literal result = backend.createLiteral("http://www.test.nl");
+
+    // Assert
+    assertThat(result, is(value));
   }
 
   @Test
-  public void testGetDoubleType() {
+  public void doubleValue_ReturnsDoubleValue_ForLiteral() {
+    // Arrange
     Literal value = SimpleValueFactory.getInstance().createLiteral(10.0);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.doubleValue(value), is(10.0));
+    // Act
+    Double result = backend.doubleValue(value);
+
+    // Assert
+    assertThat(result, is(10.0));
   }
 
   private XMLGregorianCalendar getCurrentDateTime() {
@@ -154,73 +209,101 @@ public class Rdf4jValueBackendTest {
   }
 
   @Test
-  public void testGetDate() {
+  public void dateTimeValue_ReturnsDateTimeValue_ForLiteral() {
+    // Arrange
     XMLGregorianCalendar currentTime = getCurrentDateTime();
     Literal value = SimpleValueFactory.getInstance().createLiteral(currentTime);
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
-    assertThat(backend.dateTimeValue(value).getTime(),
-        is(currentTime.toGregorianCalendar().getTime().getTime()));
+    // Act
+    Date result = backend.dateTimeValue(value);
+
+    // Assert
+    assertThat(result.getTime(), is(currentTime.toGregorianCalendar().getTime().getTime()));
   }
 
   @Test
-  public void testGetClassCastExceptionDouble() {
+  public void doubleValue_ThrowsException_ForIllegalDoubleValue() {
+    // Assert
     expectedException.expect(IllegalArgumentException.class);
+
+    // Arrange
     BNode value = SimpleValueFactory.getInstance().createBNode("test");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
+    // Act
     backend.doubleValue(value);
   }
 
   @Test
-  public void testGetClassCastExceptionInteger() {
+  public void integerValue_ThrowsException_ForIllegalIntegerValue() {
+    // Assert
     expectedException.expect(IllegalArgumentException.class);
+
+    // Arrange
     BNode value = SimpleValueFactory.getInstance().createBNode("test");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
+    // Act
     backend.integerValue(value);
   }
 
   @Test
-  public void testGetClassCastExceptionDate() {
+  public void dateValue_ThrowsException_ForIllegalDateValue() {
+    // Assert
     expectedException.expect(IllegalArgumentException.class);
+
+    // Arrange
     BNode value = SimpleValueFactory.getInstance().createBNode("test");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
+    // Act
     backend.dateValue(value);
   }
 
   @Test
-  public void testGetClassCastExceptionDateTime() {
+  public void dateTimeValue_ThrowsException_ForIllegalDateTimeValue() {
+    // Assert
     expectedException.expect(IllegalArgumentException.class);
+
+    // Arrange
     BNode value = SimpleValueFactory.getInstance().createBNode("test");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
+    // Act
     backend.dateTimeValue(value);
   }
 
   @Test
-  public void testGetClassCastExceptionInt() {
+  public void intValue_ThrowsException_ForIllegalIntValue() {
+    // Assert
     expectedException.expect(IllegalArgumentException.class);
+
+    // Arrange
     BNode value = SimpleValueFactory.getInstance().createBNode("test");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
+    // Act
     backend.intValue(value);
   }
 
   @Test
-  public void testGetClassCastExceptionFloat() {
+  public void floatValue_ThrowsException_ForIllegalFloatValue() {
+    // Assert
     expectedException.expect(IllegalArgumentException.class);
+
+    // Arrange
     BNode value = SimpleValueFactory.getInstance().createBNode("test");
 
     Rdf4jValueBackend backend = new Rdf4jValueBackend();
 
+    // Act
     backend.floatValue(value);
   }
 

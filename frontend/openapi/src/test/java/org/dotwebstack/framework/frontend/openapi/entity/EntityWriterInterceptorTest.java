@@ -15,9 +15,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -26,9 +24,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EntityWriterInterceptorTest {
-
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private WriterInterceptorContext contextMock;
@@ -49,26 +44,6 @@ public class EntityWriterInterceptorTest {
     entityWriterInterceptor =
         new EntityWriterInterceptor(graphEntityMapperMock, tupleEntityMapperMock);
   }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingEntityWriterInterceptor() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new EntityWriterInterceptor(null, null);
-  }
-
-  @Test
-  public void aroundWriteTo_ThrowsException_WithMissingWriterInterceptorContext()
-      throws IOException {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    entityWriterInterceptor.aroundWriteTo(null);
-  }
-
 
   @Test
   public void aroundWriteTo_MapsEntity_ForTupleEntity() throws IOException {

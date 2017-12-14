@@ -38,7 +38,7 @@ public class IntegerSchemaMapperTest {
   private static final IRI VALUE_3 = SimpleValueFactory.getInstance().createIRI("http://foo");
 
   @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private GraphEntityContext entityBuilderContext;
@@ -46,50 +46,22 @@ public class IntegerSchemaMapperTest {
   @Mock
   private Value context;
 
-  private SchemaMapperAdapter registry;
+  private SchemaMapperAdapter schemaMapperAdapter;
 
   @Mock
   private LdPathExecutor ldPathExecutor;
 
-  private SchemaMapper handler;
-  private IntegerProperty property;
-
-
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
-
   private IntegerSchemaMapper schemaMapper;
 
-  private IntegerProperty schema;
+  private IntegerProperty property;
 
   @Before
   public void setUp() {
     schemaMapper = new IntegerSchemaMapper();
-    schema = new IntegerProperty();
-
-    handler = new IntegerSchemaMapper();
     property = new IntegerProperty();
+
     when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
-    registry = new SchemaMapperAdapter(Arrays.asList(handler));
-
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(schema, null);
+    schemaMapperAdapter = new SchemaMapperAdapter(Arrays.asList(schemaMapper));
   }
 
   @Test
@@ -99,39 +71,31 @@ public class IntegerSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaMapper.mapTupleValue(property,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Integer result =
-        (Integer) schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION);
+    Integer result = (Integer) schemaMapper.mapTupleValue(property,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue()));
   }
 
   @Test
-  public void supports_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
+  public void supports_ReturnsTrue_ForIntegerProperty() {
     // Arrange & Act
-    schemaMapper.supports(null);
-  }
-
-  @Test
-  public void supports_ReturnsTrue_ForIntegerSchema() {
-    // Arrange & Act
-    Boolean supported = schemaMapper.supports(schema);
+    Boolean supported = schemaMapper.supports(property);
 
     // Assert
     assertThat(supported, equalTo(true));
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonIntegerSchema() {
+  public void supports_ReturnsTrue_ForNonIntegerProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(new StringProperty());
 
@@ -139,52 +103,60 @@ public class IntegerSchemaMapperTest {
     assertThat(supported, equalTo(false));
   }
 
-
-
   @Test
-  public void supportsIntegerProperty() {
-    assertThat(handler.supports(property), is(true));
-  }
+  public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
+    // Act
+    Object result = schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+        ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
-  @Test
-  public void handleValidContextWithoutLdPathQuery() {
-    Object result = registry.mapGraphValue(property, entityBuilderContext, registry, VALUE_1);
-
+    // Assert
     assertThat(result, is(VALUE_1.integerValue().intValue()));
     verifyZeroInteractions(ldPathExecutor);
   }
 
   @Test
-  public void handleValidLdPathQuery() {
+  public void mapGraphValue_ReturnsValue_ForLdPath() {
+    // Arrange
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
-            ImmutableList.of(VALUE_1));
+        ImmutableList.of(VALUE_1));
 
-    Integer result =
-            (Integer) registry.mapGraphValue(property, entityBuilderContext, registry, context);
+    // Act
+    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
+    // Assert
     assertThat(result, is(VALUE_1.integerValue().intValue()));
   }
 
   @Test
-  public void handleUnsupportedLiteralDataType() {
+  public void mapGraphValue_ThrowsException_ForUnsupportedType() {
+    // Assert
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage(String.format(
+        "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
+        DUMMY_EXPR, Joiner.on(", ").join(XMLSchema.INTEGER, XMLSchema.INT)));
+
+    // Arrange
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
-            ImmutableList.of(VALUE_3));
-    expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(String.format(
-            "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
-            DUMMY_EXPR, Joiner.on(", ").join(XMLSchema.INTEGER, XMLSchema.INT)));
+        ImmutableList.of(VALUE_3));
 
-    registry.mapGraphValue(property, entityBuilderContext, registry, context);
+    // Act
+    schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
   @Test
-  public void testEmptyLdPath() {
-    expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(String.format("Property '%s' must have a '%s' attribute",
-            property.getName(), OpenApiSpecificationExtensions.LDPATH));
-    registry.mapGraphValue(property, entityBuilderContext, registry, context);
+  public void mapGraphValue_ThrowsException_ForEmptyLdPath() {
+    // Assert
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage(String.format("Property '%s' must have a '%s' attribute",
+        property.getName(), OpenApiSpecificationExtensions.LDPATH));
+
+    // Act
+    schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
 }

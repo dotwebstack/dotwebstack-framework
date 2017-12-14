@@ -40,7 +40,7 @@ public class DateSchemaMapperTest {
   private GraphEntityContext entityBuilderContext;
 
   @Mock
-  private SchemaMapperAdapter registry;
+  private SchemaMapperAdapter schemaMapperAdapter;
 
   @Mock
   private Value context;
@@ -48,51 +48,67 @@ public class DateSchemaMapperTest {
   @Mock
   private LdPathExecutor ldPathExecutor;
 
-  private DateSchemaMapper handler;
+  private DateSchemaMapper schemaMapper;
   private DateProperty property;
 
   @Before
   public void setUp() {
-    handler = new DateSchemaMapper();
+    schemaMapper = new DateSchemaMapper();
     property = new DateProperty();
     when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
 
   @Test
-  public void supportsStringProperty() {
-    assertThat(handler.supports(property), is(true));
+  public void supports_ReturnsTrue_ForDateProperty() {
+    // Act
+    boolean result = schemaMapper.supports(property);
+
+    // Arrange
+    assertThat(result, is(true));
   }
 
   @Test
-  public void handleValidContextWithoutLdPathQuery() {
-    LocalDate result = handler.mapGraphValue(property, entityBuilderContext, registry, VALUE_1);
+  public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
+    // Act
+    LocalDate result = schemaMapper.mapGraphValue(property, entityBuilderContext,
+        ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
+    // Assert
     assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
     verifyZeroInteractions(ldPathExecutor);
   }
 
+
   @Test
-  public void handleValidLdPathQuery() {
+  public void mapGraphValue_ReturnsValue_ForLdPath() {
+    // Arrange
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    LocalDate result = handler.mapGraphValue(property, entityBuilderContext, registry, context);
+    LocalDate result = schemaMapper.mapGraphValue(property, entityBuilderContext,
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
+    // Assert
     assertThat(result.toString(), is(VALUE_1.calendarValue().toString()));
   }
 
   @Test
-  public void handleUnsupportedLiteralDataType() {
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
-    when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
-        ImmutableList.of(VALUE_3));
+  public void mapGraphValue_ThrowsException_ForUnsupportedType() {
+    // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format(
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         DUMMY_EXPR, XMLSchema.DATE.stringValue()));
+    // Arrange
+    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
+        ImmutableList.of(VALUE_3));
 
-    handler.mapGraphValue(property, entityBuilderContext, registry, context);
+    // Act
+
+    schemaMapper.mapGraphValue(property, entityBuilderContext,
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
 }

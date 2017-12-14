@@ -31,53 +31,28 @@ public class LongSchemaMapperTest {
   }
 
   @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(schema, null);
-  }
-
-  @Test
   public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaMapper.mapTupleValue(schema,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    BigInteger result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR);
+    BigInteger result = schemaMapper.mapTupleValue(schema,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR).build());
 
     // Assert
     assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR.integerValue()));
   }
 
   @Test
-  public void supports_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.supports(null);
-  }
-
-  @Test
-  public void supports_ReturnsTrue_ForLongSchema() {
+  public void supports_ReturnsTrue_ForLongProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(schema);
 
@@ -86,7 +61,7 @@ public class LongSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonLongSchema() {
+  public void supports_ReturnsTrue_ForNonLongProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(new StringProperty());
 

@@ -4,4 +4,11 @@ GRAPH dbeerpedia:Theatre {
   		elmo:urlPattern "^\\/id\\/(.+)$";
   		elmo:targetUrl "\\/doc\\/$1"
   .
+
+  dbeerpedia:SubjectFromUrl a elmo:UriParameterMapper;
+      elmo:source http:requestURI;
+      elmo:pattern "http://{domain}/dbp/ld/v1/doc/{reference}";
+      elmo:template "http://{domain}/dbp/ld/v1/id/{reference}";
+      elmo:target dbeerpedia:SubjectParameter;
+  .
 }

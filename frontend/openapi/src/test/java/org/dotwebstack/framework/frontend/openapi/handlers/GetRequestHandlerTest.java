@@ -26,18 +26,13 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GetRequestHandlerTest {
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   @Mock
   private ApiOperation operationMock;
@@ -70,79 +65,8 @@ public class GetRequestHandlerTest {
     Operation operation = new Operation();
     when(operationMock.getOperation()).thenReturn(operation);
 
-    // XXX (PvH) Je gebruikt hier any voor de Operation en RequestParameters. Maar verwacht je niet
-    // de instanties die je hier boven hebt aangemaakt?
     when(requestParameterMapperMock.map(same(operation), eq(informationProductMock),
         same(requestParameters))).thenReturn(ImmutableMap.of());
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingInformationProduct() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GetRequestHandler(operationMock, null, ImmutableMap.of(), requestParameterMapperMock,
-        apiRequestValidatorMock, swaggerMock);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingSchemaMap() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GetRequestHandler(operationMock, informationProductMock, null, requestParameterMapperMock,
-        apiRequestValidatorMock, swaggerMock);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingApiOperation() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GetRequestHandler(null, informationProductMock, ImmutableMap.of(),
-        requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingRequestParameterMapper() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GetRequestHandler(operationMock, informationProductMock, ImmutableMap.of(), null,
-        apiRequestValidatorMock, swaggerMock);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingApiRequestValidator() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GetRequestHandler(operationMock, informationProductMock, ImmutableMap.of(),
-        requestParameterMapperMock, null, swaggerMock);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingSwagger() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new GetRequestHandler(operationMock, informationProductMock, ImmutableMap.of(),
-        requestParameterMapperMock, apiRequestValidatorMock, null);
-  }
-
-  @Test
-  public void apply_ThrowsException_WithMissingContainerRequestContext() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    getRequestHandler.apply(null);
   }
 
   @Test

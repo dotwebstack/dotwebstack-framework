@@ -105,10 +105,11 @@ public class RequestParameterMapperTest {
 
   @Test
   public void map_ThrowsException_ForUnknownParameterName() {
-    // Arrange
+    // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage("No parameter found for vendor extension value:");
 
+    // Arrange
     Operation operation = new Operation();
     PathParameter parameter = new PathParameter();
 

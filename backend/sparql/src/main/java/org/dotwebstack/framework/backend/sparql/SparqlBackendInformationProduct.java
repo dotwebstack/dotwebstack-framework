@@ -11,8 +11,12 @@ import org.dotwebstack.framework.param.BindableParameter;
 import org.dotwebstack.framework.param.Parameter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SparqlBackendInformationProduct extends AbstractInformationProduct {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SparqlBackendInformationProduct.class);
 
   private final SparqlBackend backend;
 
@@ -51,6 +55,8 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
     }
 
     String modifiedQuery = templateProcessor.processString(query, templateParameters);
+
+    LOG.debug("Query after templating: '{}'", modifiedQuery);
 
     return queryEvaluator.evaluate(backend.getConnection(), modifiedQuery, bindings);
   }

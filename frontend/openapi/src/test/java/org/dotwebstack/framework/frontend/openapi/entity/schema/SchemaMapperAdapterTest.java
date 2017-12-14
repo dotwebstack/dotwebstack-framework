@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -33,34 +34,7 @@ public class SchemaMapperAdapterTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingSchemaHandlers() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new SchemaMapperAdapter(null);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    schemaMapperAdapter.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_NAME);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    schemaMapperAdapter.mapTupleValue(new StringProperty(), null);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WhenNoSupportingHandlerFound() {
+  public void mapTupleValue_ThrowsException_WhenNoSupportingMapperFound() {
     // Arrange
     IntegerProperty schema = new IntegerProperty();
     when(stringSchemaMapper.supports(schema)).thenReturn(false);
@@ -68,23 +42,25 @@ public class SchemaMapperAdapterTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(
-        String.format("No schema handler available for '%s'.", schema.getClass().getName()));
+        String.format("No schema mapper available for '%s'.", schema.getClass().getName()));
 
     // Act
-    schemaMapperAdapter.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
+    schemaMapperAdapter.mapTupleValue(schema,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
-  public void mapTupleValue_ReturnsHandledValue_WhenSupportingHandlerFound() {
+  public void mapTupleValue_ReturnsHandledValue_WhenSupportingMapperFound() {
     // Arrange
     StringProperty schema = new StringProperty();
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
     when(stringSchemaMapper.supports(schema)).thenReturn(true);
-    when(stringSchemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME)).thenReturn(
-        expectedValue);
+    when(stringSchemaMapper.mapTupleValue(any(StringProperty.class),
+        any(ValueContext.class))).thenReturn(expectedValue);
 
     // Act
-    Object value = schemaMapperAdapter.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_NAME);
+    Object value = schemaMapperAdapter.mapTupleValue(schema,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert
     assertThat(value, equalTo(expectedValue));

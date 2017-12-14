@@ -140,7 +140,7 @@ public class LdIntegrationTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
-    assertThat(response.getLocation().getPath(), equalTo("/localhost/dbp/ld/v1/doc/breweries"));
+    assertThat(response.getLocation().getPath(), equalTo("/dbp/ld/v1/doc/breweries"));
     assertThat(response.readEntity(String.class), isEmptyString());
   }
 
@@ -176,4 +176,24 @@ public class LdIntegrationTest {
     // Assert
     assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
   }
+
+  @Test
+  public void get_GetDocResource_ThroughLdApi() {
+    // Arrange
+    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
+        DBEERPEDIA.BREWERIES_LABEL).build();
+    SparqlHttpStub.returnGraph(model);
+    MediaType mediaType = MediaType.valueOf("text/turtle");
+
+    // Act
+    Response response = target.path("/dbp/ld/v1/doc/breweries").request().accept(mediaType).get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(mediaType));
+    assertThat(response.getLength(), greaterThan(0));
+    assertThat(response.readEntity(String.class),
+        containsString(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
+  }
+
 }

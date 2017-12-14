@@ -1,16 +1,18 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.base.Joiner;
+import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
-import jersey.repackaged.com.google.common.collect.ImmutableSet;
+import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
-public abstract class AbstractSchemaMapper implements LdPathSchemaMapper {
+abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
 
-  static Value getSingleStatement(Collection<Value> queryResult, String ldPathQuery) {
+  protected static Value getSingleStatement(@NonNull Collection<Value> queryResult,
+      @NonNull String ldPathQuery) {
 
     if (queryResult.isEmpty()) {
       throw new SchemaMapperRuntimeException(
@@ -26,11 +28,9 @@ public abstract class AbstractSchemaMapper implements LdPathSchemaMapper {
     return queryResult.iterator().next();
   }
 
-  protected Set<IRI> getSupportedDataTypes() {
-    return ImmutableSet.of();
-  }
+  protected abstract Set<IRI> getSupportedDataTypes();
 
-  String dataTypesAsString() {
+  protected String dataTypesAsString() {
     return Joiner.on(", ").join(getSupportedDataTypes());
   }
 
@@ -49,18 +49,27 @@ public abstract class AbstractSchemaMapper implements LdPathSchemaMapper {
     return false;
   }
 
+  protected static boolean hasVendorExtensionWithValue(@NonNull Property property,
+      @NonNull String extension, Object value) {
+    return hasVendorExtension(property, extension)
+        && property.getVendorExtensions().get(extension).equals(value);
+  }
+
+  protected static boolean hasVendorExtension(@NonNull Property property,
+      @NonNull String extension) {
+    return property.getVendorExtensions().containsKey(extension);
+  }
+
   /**
    * Checks if given value object is instance of {@link Literal} and its data type is one of those
-   * provided by {@link #isDataTypeSupported(Literal)}.
+   * provided by {@link #getSupportedDataTypes()}.
    *
    * @param value value to check
    * @return <code>true</code> if given value is literal which supports one of given data types,
    *         <code>false</code> otherwise.
    */
-  boolean isSupported(Object value) {
-
+  protected boolean isSupportedLiteral(Object value) {
     return value instanceof Literal && isDataTypeSupported((Literal) value);
   }
-
 
 }

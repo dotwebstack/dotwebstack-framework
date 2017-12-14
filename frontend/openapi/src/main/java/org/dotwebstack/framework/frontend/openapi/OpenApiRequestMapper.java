@@ -4,6 +4,7 @@ import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import io.swagger.models.Operation;
+import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
@@ -23,6 +24,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -140,17 +142,19 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
             String.format("Path '%s' should produce at least one media type.", absolutePath));
       }
 
-      Property schema = getOperation.getResponses().get(okStatusCode).getSchema();
+      Response response = getOperation.getResponses().get(okStatusCode);
 
-      if (schema == null) {
+      if (response.getSchema() == null) {
         throw new ConfigurationException(
             String.format("Resource '%s' does not specify a schema for the status %s response.",
                 absolutePath, okStatusCode));
       }
 
+      Property property = new ResponseProperty(response);
+
       // Will eventually be replaced by OASv3 Content object
       Map<MediaType, Property> schemaMap =
-          produces.stream().collect(Collectors.toMap(MediaType::valueOf, mediaType -> schema));
+          produces.stream().collect(Collectors.toMap(MediaType::valueOf, mediaType -> property));
 
       IRI informationProductIdentifier =
           valueFactory.createIRI((String) getOperation.getVendorExtensions().get(

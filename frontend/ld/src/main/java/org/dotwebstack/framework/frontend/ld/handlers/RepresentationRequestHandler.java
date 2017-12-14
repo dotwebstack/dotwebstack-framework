@@ -44,6 +44,9 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
     Map<String, String> parameterValues =
         representationRequestParameterMapper.map(informationProduct, containerRequestContext);
 
+    representation.getParameterMappers().forEach(
+        parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
+
     Object result = informationProduct.getResult(parameterValues);
 
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {

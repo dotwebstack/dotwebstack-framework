@@ -30,53 +30,28 @@ public class BooleanSchemaMapperTest {
   }
 
   @Test
-  public void mapTupleValue_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(null, DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER);
-  }
-
-  @Test
-  public void mapTupleValue_ThrowsException_WithMissingValue() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.mapTupleValue(schema, null);
-  }
-
-  @Test
   public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN);
+    schemaMapper.mapTupleValue(schema,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Boolean result = schemaMapper.mapTupleValue(schema, DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER);
+    Boolean result = schemaMapper.mapTupleValue(schema,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
 
     // Assert
     assertThat(result, equalTo(true));
   }
 
   @Test
-  public void supports_ThrowsException_WithMissingSchema() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Arrange & Act
-    schemaMapper.supports(null);
-  }
-
-  @Test
-  public void supports_ReturnsTrue_ForBooleanSchema() {
+  public void supports_ReturnsTrue_ForBooleanProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(schema);
 
@@ -85,7 +60,7 @@ public class BooleanSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsFalse_ForNonBooleanSchema() {
+  public void supports_ReturnsFalse_ForNonBooleanProperty() {
     // Arrange & Act
     Boolean supported = schemaMapper.supports(new StringProperty());
 

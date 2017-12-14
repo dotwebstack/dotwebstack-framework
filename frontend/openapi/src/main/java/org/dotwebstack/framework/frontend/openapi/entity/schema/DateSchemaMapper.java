@@ -18,24 +18,25 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-class DateSchemaMapper extends AbstractSchemaMapper
-    implements SchemaMapper<DateProperty, LocalDate> {
+class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
   @Override
-  public LocalDate mapTupleValue(@NonNull DateProperty schema, @NonNull Value value) {
-    return convertToDate(SchemaMapperUtils.castLiteralValue(value).calendarValue());
+  public LocalDate mapTupleValue(@NonNull DateProperty schema, @NonNull ValueContext valueContext) {
+    return convertToDate(
+        SchemaMapperUtils.castLiteralValue(valueContext.getValue()).calendarValue());
   }
 
   @Override
-  public LocalDate mapGraphValue(DateProperty property, GraphEntityContext context,
-      SchemaMapperAdapter schemaMapperAdapter, Value value) {
+  public LocalDate mapGraphValue(@NonNull DateProperty property,
+      @NonNull GraphEntityContext context, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
-    if (ldPathQuery == null && isSupported(value)) {
-      return convertToDate(((Literal) value).calendarValue());
+    if (ldPathQuery == null && isSupportedLiteral(valueContext.getValue())) {
+      return convertToDate(((Literal) valueContext.getValue()).calendarValue());
     }
 
     if (ldPathQuery == null) {
@@ -45,7 +46,8 @@ class DateSchemaMapper extends AbstractSchemaMapper
     }
 
     LdPathExecutor ldPathExecutor = context.getLdPathExecutor();
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(value, ldPathQuery);
+    Collection<Value> queryResult =
+        ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
     if (!property.getRequired() && queryResult.isEmpty()) {
       return null;
@@ -53,7 +55,7 @@ class DateSchemaMapper extends AbstractSchemaMapper
 
     Value dateValue = getSingleStatement(queryResult, ldPathQuery);
 
-    if (!isSupported(dateValue)) {
+    if (!isSupportedLiteral(dateValue)) {
       throw new SchemaMapperRuntimeException(String.format(
           "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>.",
           ldPathQuery, dataTypesAsString()));

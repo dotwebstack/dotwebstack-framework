@@ -1,18 +1,31 @@
-@prefix dbeerpedia: <http://dbeerpedia.org#> .
-@prefix elmo: <http://dotwebstack.org/def/elmo#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix elmo-resulttype: <http://dotwebstack.org/def/elmo/resulttype/> .
-
 GRAPH dbeerpedia:Theatre {
+
+  dbeerpedia:Backend a elmo:SparqlBackend;
+    elmo:endpoint "http://localhost:8900/sparql"^^xsd:anyURI;
+  .
+  
   dbeerpedia:IdFilter a elmo:TermFilter;
     elmo:name "id";
+    elmo:shape [
+      sh:datatype xsd:string;
+      sh:minLength 2;
+    ];
   .
-
+  
+  dbeerpedia:SubjectParameter a elmo:TermFilter;
+    elmo:name "SUBJECT";
+    elmo:shape [
+      sh:datatype xsd:string
+    ];
+  .
+  
   dbeerpedia:FteParam a elmo:TermFilter;
     elmo:name "fte";
+    elmo:shape [
+    	sh:datatype xsd:string;
+    ];
   .
-
+  
   dbeerpedia:TupleBreweries a elmo:InformationProduct;
     rdfs:label "Beer breweries in The Netherlands";
     elmo:backend dbeerpedia:Backend;
@@ -26,22 +39,37 @@ GRAPH dbeerpedia:Theatre {
     elmo:backend dbeerpedia:Backend;
     elmo:resultType elmo-resulttype:Tuple;
     elmo:requiredParameter dbeerpedia:IdFilter;
-    elmo:query   
-      "SELECT ?naam ?sinds ?fte ?oprichting ?plaats
-       WHERE { 
-         BIND(<http://dbeerpedia.org/id/brewery/${id}> as ?s)
-         ?s dbeerpedia:name ?naam ;
+    elmo:query """
+      SELECT ?naam ?sinds ?fte ?oprichting ?plaats
+        WHERE {
+          BIND(<http://dbeerpedia.org/id/brewery/${id}> as ?s)
+            ?s dbeerpedia:name ?naam ;
             dbeerpedia:yearOfFoundation ?sinds ;
             dbeerpedia:fte ?fte ;
             dbeerpedia:dateOfFoundation ?oprichting ;
             dbeerpedia:place ?plaats .
-       }";
+         }
+    """;
   .
 
   dbeerpedia:GraphBreweries a elmo:InformationProduct;
     rdfs:label "Beer breweries in The Netherlands";
     elmo:backend dbeerpedia:Backend;
     elmo:resultType elmo-resulttype:Graph;
+    elmo:optionalParameter dbeerpedia:IdFilter;
     elmo:query "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a <http://dbeerpedia.org#Brewery> }";
+  .
+
+  dbeerpedia:ResourceInformationProduct a elmo:InformationProduct;
+    elmo:requiredParameter dbeerpedia:SubjectParameter;
+    elmo:backend dbeerpedia:Backend;
+    elmo:query '''
+      CONSTRUCT {
+        <{$SUBJECT}> ?p ?o
+      }
+      WHERE {
+        <{$SUBJECT}> ?p ?o
+      }
+    ''';
   .
 }
