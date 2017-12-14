@@ -25,7 +25,7 @@ public abstract class AbstractParameterMapper implements ParameterMapper {
     return identifier;
   }
 
-  public Map<String, Object> map(@NonNull ContainerRequestContext containerRequestContext) {
+  public Map<String, String> map(@NonNull ContainerRequestContext containerRequestContext) {
     String input = source.getValue(containerRequestContext);
 
     String output = parse(input);
