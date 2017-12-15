@@ -110,11 +110,9 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
-
       ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, "get");
       if (apiOperation == null) {
-        throw new UnsupportedOperationException(
-            String.format("No GET operation found for '%s'", path));
+        return;
       }
       Operation getOperation = apiOperation.getOperation();
 

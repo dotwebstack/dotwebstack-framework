@@ -24,8 +24,7 @@ public class GetRequestHandlerFactory {
   public GetRequestHandler newGetRequestHandler(@NonNull ApiOperation apiOperation,
       @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
       @NonNull Swagger swagger) {
-    // XX (PvH) Waarom laat je het creëren van de ApiRequestValidator en de ObjectMapper niet aan
-    // Spring over?
+    // TODO: leave instantiation of ApiRequestValidator and ObjectMapper to Spring
     return new GetRequestHandler(apiOperation, informationProduct, schemaMap,
         requestParameterMapper,
         new ApiRequestValidator(SwaggerUtils.createValidator(swagger), new ObjectMapper()),

@@ -177,19 +177,32 @@ public class OpenApiRequestMapperTest {
     verifyZeroInteractions(httpConfigurationMock);
   }
 
+  // @Test
+  // public void map_ThrowsException_NonGetPaths() throws IOException {
+  // // Arrange
+  // mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
+  // new Path().put(new Operation()));
+  //
+  // // Assert
+  // thrown.expect(UnsupportedOperationException.class);
+  // thrown.expectMessage("No GET operation found for");
+  //
+  // // Act
+  // requestMapper.map(httpConfigurationMock);
+  // }
   @Test
-  public void map_ThrowsException_NonGetPaths() throws IOException {
+  public void map_DoesNotRegisterAnything_NonGetPaths() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
         new Path().put(new Operation()));
 
-    // Assert
-    thrown.expect(UnsupportedOperationException.class);
-    thrown.expectMessage("No GET operation found for");
-
     // Act
     requestMapper.map(httpConfigurationMock);
+
+    // Assert
+    verifyZeroInteractions(httpConfigurationMock);
   }
+
 
   @Test
   public void map_EndpointsCorrectly_WithValidData() throws IOException {
