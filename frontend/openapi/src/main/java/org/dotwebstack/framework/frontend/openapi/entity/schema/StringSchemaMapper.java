@@ -45,14 +45,13 @@ class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
       return handleConstantValueVendorExtension(property);
     }
 
-    if (valueContext.getValue() != null && isSupportedLiteral(valueContext.getValue())) {
+    if (valueContext.getValue() != null) {
       return valueContext.getValue().stringValue();
     } else if (property.getRequired()) {
       throw new SchemaMapperRuntimeException("No result for required property.");
     }
 
     return null;
-
   }
 
   /**
