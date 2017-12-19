@@ -9,9 +9,9 @@ import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class GetRequestHandlerFactory {
 
   private final RequestParameterMapper requestParameterMapper;
