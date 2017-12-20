@@ -2,7 +2,7 @@ GRAPH dbeerpedia:Theatre {
   dbeerpedia:id2doc a elmo:Redirection;
       elmo:stage dbeerpedia:Stage;
   		elmo:urlPattern "^\\/id\\/(.+)$";
-  		elmo:targetUrl "\\/doc\\/$1"
+  		elmo:redirectTemplate "\\/doc\\/$1"
   .
 
   dbeerpedia:SubjectFromUrl a elmo:UriParameterMapper;
