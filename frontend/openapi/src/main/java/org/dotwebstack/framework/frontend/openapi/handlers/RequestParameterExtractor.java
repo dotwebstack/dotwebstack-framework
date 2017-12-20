@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.io.IOException;
@@ -24,15 +23,12 @@ final class RequestParameterExtractor {
   static final String PARAM_PAGE_NUM = "page";
   static final String PARAM_PAGE_SIZE = "size";
 
-  // private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
   private RequestParameterExtractor() {
     throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", RequestParameterExtractor.class));
   }
 
-  static RequestParameters extract(@NonNull ContainerRequestContext containerRequestContext,
-      @NonNull ObjectMapper mapper) {
+  static RequestParameters extract(@NonNull ContainerRequestContext containerRequestContext) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
 
@@ -43,7 +39,7 @@ final class RequestParameterExtractor {
     parameters.putAll(containerRequestContext.getHeaders());
 
     try {
-      parameters.putAll(extractBodyParameter(containerRequestContext, parameters, mapper));
+      parameters.putAll(extractBodyParameter(containerRequestContext));
     } catch (IOException ioe) {
       throw new InternalServerErrorException("Error processing request body.", ioe);
     }
@@ -51,49 +47,18 @@ final class RequestParameterExtractor {
   }
 
   /**
-   * Extracts the body from the supplied request. The body must either be empty or have the
-   * following JSON structure:
-   *
-   * <pre>
-   * _geo: {
-   *   contains: {
-   *     type: Point,
-   *     coordinates: [123.32, 1234.23]
-   *   }
-   * }
-   * </pre>
+   * Extracts the body from the supplied request.
    */
-  @SuppressWarnings("unused")
-  private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx,
-      RequestParameters parameters, ObjectMapper mapper) throws IOException {
+  private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx)
+      throws IOException {
 
     String body = extractBody(ctx);
     if (body == null) {
       return ImmutableMap.of();
     }
 
-    // JSON is validated by the RequestParameterValidator
-    // Therefore, we can safely assume the JSON has the required structure (see Javadoc)
-
     ImmutableMap.Builder<String, Object> builder = new Builder<>();
     builder.put(RAW_REQUEST_BODY, body);
-
-    // The extractGeometry method uses classes defined in grid-commons. Since we can't use that as
-    // a dependency, the method is not usable at the moment.
-
-    // Map<String, Object> json = mapper.readValue(body, Map.class);
-    // Map<String, Object> query = (Map<String, Object>) json.get("_geo");
-    //
-    // if (query != null) {
-    // String queryType = query.keySet().iterator().next();
-    //
-    // builder.put(PARAM_GEOMETRY_QUERYTYPE, queryType);
-    //
-    // Object geoJsonObject = query.get(queryType);
-    // Geometry geometry = extractGeometry(geoJsonObject, parameters);
-    //
-    // builder.put(PARAM_GEOMETRY, geometry);
-    // }
 
     return builder.build();
   }
@@ -126,24 +91,6 @@ final class RequestParameterExtractor {
     IOUtils.copy(inputStream, writer);
     return writer.toString();
   }
-
-
-  // private static Geometry extractGeometry(Object geoJsonObject, RequestParameters parameters)
-  // throws JsonProcessingException {
-  // String geoJsonString = OBJECT_MAPPER.writeValueAsString(geoJsonObject);
-  // GeoJSONReader reader = new GeoJSONReader();
-  // Geometry geometry = reader.read(geoJsonString);
-  //
-  // String contentCrs = parameters.asString(RestConfiguration.PARAM_CONTENT_CRS);
-  //
-  // if (contentCrs != null) {
-  // Projector projector = new Projector();
-  //
-  // return projector.project(geometry, Crs.valueOfEpsgCode(contentCrs), Crs.ETRS89);
-  // }
-  //
-  // return geometry;
-  // }
 
   private static final class IsEmptyCheckInputStream extends PushbackInputStream {
 
