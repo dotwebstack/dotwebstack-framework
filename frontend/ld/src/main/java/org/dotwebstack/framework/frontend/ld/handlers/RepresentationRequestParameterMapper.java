@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepresentationRequestParameterMapper {
 
-  Map<String, Object> map(@NonNull InformationProduct informationProduct,
+  Map<String, String> map(@NonNull InformationProduct informationProduct,
       @NonNull ContainerRequestContext context) {
-    Map<String, Object> result = new HashMap<>();
+    Map<String, String> result = new HashMap<>();
 
     for (Parameter<?> parameter : informationProduct.getParameters()) {
 

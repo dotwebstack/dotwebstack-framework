@@ -34,14 +34,26 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
     return required;
   }
 
+
   /**
-   * Validates the supplied values. Calls {@link #validateRequired(Map)} and
-   * {@link #validateInner(Map)}.
+   * Validates and handles the supplied values. Calls {@link #validateRequired(Map)} and
+   * {@link #validateInner(Map)} for validation. Calls {@link #handleInner(Map)} for handling.
    * 
    * @throws BackendException If a supplied value is invalid.
    */
   @Override
-  public void validate(Map<String, Object> parameterValues) {
+  public final T handle(Map<String, String> parameterValues) {
+    validate(parameterValues);
+
+    return handleInner(parameterValues);
+  }
+
+  /**
+   * Must be implemented by parameter implementations for parameter handling.
+   */
+  protected abstract T handleInner(Map<String, String> parameterValues);
+
+  private void validate(Map<String, String> parameterValues) {
     if (required) {
       validateRequired(parameterValues);
     }
@@ -55,7 +67,7 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
    * 
    * @throws BackendException If a required value is missing.
    */
-  protected abstract void validateRequired(Map<String, Object> parameterValues);
+  protected abstract void validateRequired(Map<String, String> parameterValues);
 
   /**
    * Implement this method if you would like to do parameter implementation specific validation. See
@@ -63,6 +75,6 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
    * 
    * @throws BackendException If a required value is invalid.
    */
-  protected void validateInner(@NonNull Map<String, Object> parameterValues) {}
+  protected void validateInner(@NonNull Map<String, String> parameterValues) {}
 
 }

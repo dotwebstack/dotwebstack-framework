@@ -31,7 +31,7 @@ public class ParameterTargetTest {
   @Test
   public void set_AddParameterNameAndValue_WithValidValue() {
     // Act
-    Map<String, Object> map = parameterTarget.set(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING);
+    Map<String, String> map = parameterTarget.set(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING);
 
     // Assert
     assertThat(map.keySet().toArray()[0], equalTo(DBEERPEDIA.NAME_PARAMETER));

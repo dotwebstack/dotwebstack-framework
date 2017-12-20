@@ -38,7 +38,7 @@ public class TermParameterTest {
   @Test
   public void handle_ReturnsValueForRequiredFilter() {
     // Arrange
-    Map<String, Object> parameterValues =
+    Map<String, String> parameterValues =
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
 
     // Act
@@ -51,7 +51,7 @@ public class TermParameterTest {
   @Test
   public void handle_ReturnsNullForOptionalFilter() {
     // Arrange
-    Map<String, Object> parameterValues =
+    Map<String, String> parameterValues =
         Collections.singletonMap(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, null);
 
     // Act
@@ -62,7 +62,7 @@ public class TermParameterTest {
   }
 
   @Test
-  public void validate_RejectsNullValue_ForRequiredParameter() {
+  public void handle_RejectsNullValue_ForRequiredParameter() {
     // Assert
     thrown.expect(BackendException.class);
     thrown.expectMessage(
@@ -70,38 +70,26 @@ public class TermParameterTest {
             DBEERPEDIA.NAME_PARAMETER_ID));
 
     // Act
-    requiredParameter.validate(ImmutableMap.of());
+    requiredParameter.handle(ImmutableMap.of());
   }
 
   @Test
-  public void validate_AcceptsNonNullValue_ForRequiredParameter() {
+  public void handle_AcceptsNonNullValue_ForRequiredParameter() {
     // Act
-    requiredParameter.validate(
+    requiredParameter.handle(
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, DBEERPEDIA.BREWERY_DAVO_NAME));
   }
 
   @Test
-  public void validate_AcceptsNullValue_ForOptionalParameter() {
+  public void handle_AcceptsNullValue_ForOptionalParameter() {
     // Act
-    optionalParameter.validate(ImmutableMap.of());
-  }
-
-  @Test
-  public void validate_RejectsNonStringValue_ForTermParameter() {
-    // Assert
-    thrown.expect(BackendException.class);
-    thrown.expectMessage(
-        String.format("Value for parameter '%s' not a String:", DBEERPEDIA.NAME_PARAMETER_ID));
-
-    // Act
-    requiredParameter.validate(
-        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, new Object()));
+    optionalParameter.handle(ImmutableMap.of());
   }
 
   @Test
   public void getValue_ReturnsLiteral_ForValue() {
     // Arrange
-    Map<String, Object> parameterValues =
+    Map<String, String> parameterValues =
         ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
 
     // Act

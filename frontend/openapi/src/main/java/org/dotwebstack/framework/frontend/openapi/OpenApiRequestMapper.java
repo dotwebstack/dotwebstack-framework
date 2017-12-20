@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
+import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import io.swagger.models.Operation;
@@ -109,12 +110,13 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
-      String absolutePath = basePath.concat(path);
-      Operation getOperation = pathItem.getGet();
-
-      if (getOperation == null) {
+      ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, "get");
+      if (apiOperation == null) {
         return;
       }
+      Operation getOperation = apiOperation.getOperation();
+
+      String absolutePath = basePath.concat(path);
 
       if (!getOperation.getVendorExtensions().containsKey(
           OpenApiSpecificationExtensions.INFORMATION_PRODUCT)) {
@@ -162,7 +164,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
       ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          getRequestHandlerFactory.newGetRequestHandler(getOperation, informationProduct, schemaMap,
+          getRequestHandlerFactory.newGetRequestHandler(apiOperation, informationProduct, schemaMap,
               swagger));
 
       produces.forEach(methodBuilder::produces);

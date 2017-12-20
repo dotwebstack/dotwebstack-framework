@@ -17,7 +17,7 @@ public interface InformationProduct {
    * @param parameterValues Mapping of parameter name to value.
    * @throws BackendException If no value of for required parameter has been supplied.
    */
-  Object getResult(Map<String, Object> parameterValues);
+  Object getResult(Map<String, String> parameterValues);
 
   ResultType getResultType();
 

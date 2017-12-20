@@ -4,6 +4,6 @@ import java.util.Map;
 
 public interface Target {
 
-  Map<String, Object> set(String value);
+  Map<String, String> set(String value);
 
 }

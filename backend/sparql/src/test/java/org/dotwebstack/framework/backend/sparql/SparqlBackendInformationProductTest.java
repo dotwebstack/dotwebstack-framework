@@ -176,7 +176,7 @@ public class SparqlBackendInformationProductTest {
             originalQuery, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
             ImmutableList.of(requiredParameter1)).build();
 
-    Map<String, Object> parameterValues = ImmutableMap.of("nameOfRequired1", "value1");
+    Map<String, String> parameterValues = ImmutableMap.of("nameOfRequired1", "value1");
 
     // Act
     Object result = source.getResult(parameterValues);
@@ -213,7 +213,7 @@ public class SparqlBackendInformationProductTest {
             ImmutableList.of(requiredParameter1, requiredParameter2, optionalParameter1,
                 optionalParameter2)).build();
 
-    Map<String, Object> parameterValues =
+    Map<String, String> parameterValues =
         ImmutableMap.of("nameOfRequired1", "value1", "nameOfRequired2", "value2");
 
     // Act
@@ -245,7 +245,7 @@ public class SparqlBackendInformationProductTest {
             originalQuery, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
             ImmutableList.of(requiredParameter1)).build();
 
-    Map<String, Object> parameterValues = ImmutableMap.of("nameOfRequired1", "value1");
+    Map<String, String> parameterValues = ImmutableMap.of("nameOfRequired1", "value1");
 
     // Act
     Object result = source.getResult(parameterValues);
@@ -271,7 +271,7 @@ public class SparqlBackendInformationProductTest {
             originalQuery, ResultType.GRAPH, queryEvaluatorMock, templateProcessorMock,
             ImmutableList.of(requiredParameter1, requiredParameter2, optionalParameter1,
                 optionalParameter2)).build();
-    Map<String, Object> parameterValues =
+    Map<String, String> parameterValues =
         ImmutableMap.of("foo", "value1", "nameOfRequired2", "value2");
 
     // Act

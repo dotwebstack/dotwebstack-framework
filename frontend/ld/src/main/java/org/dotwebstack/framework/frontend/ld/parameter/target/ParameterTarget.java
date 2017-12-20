@@ -15,7 +15,7 @@ public class ParameterTarget implements Target {
     this.parameter = parameter;
   }
 
-  public ImmutableMap<String, Object> set(String value) {
+  public ImmutableMap<String, String> set(String value) {
     LOG.debug("Set parameter {}: {}", parameter.getName(), value);
     return ImmutableMap.of(parameter.getName(), value);
   }

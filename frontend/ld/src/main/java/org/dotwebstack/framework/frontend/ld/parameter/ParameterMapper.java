@@ -9,6 +9,6 @@ public interface ParameterMapper {
 
   IRI getIdentifier();
 
-  Map<String, Object> map(@NonNull ContainerRequestContext containerRequestContext);
+  Map<String, String> map(@NonNull ContainerRequestContext containerRequestContext);
 
 }
