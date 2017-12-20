@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
@@ -24,10 +23,8 @@ public class GetRequestHandlerFactory {
   public GetRequestHandler newGetRequestHandler(@NonNull ApiOperation apiOperation,
       @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
       @NonNull Swagger swagger) {
-    // TODO: leave instantiation of ApiRequestValidator and ObjectMapper to Spring
     return new GetRequestHandler(apiOperation, informationProduct, schemaMap,
-        requestParameterMapper,
-        new ApiRequestValidator(SwaggerUtils.createValidator(swagger), new ObjectMapper()),
+        requestParameterMapper, new ApiRequestValidator(SwaggerUtils.createValidator(swagger)),
         swagger);
   }
 
