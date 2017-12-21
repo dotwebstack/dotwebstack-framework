@@ -95,7 +95,6 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
 
   protected abstract R createResource(Model model, IRI identifier);
 
-  @SuppressWarnings("unused")
   protected void finalizeResource(Model model, R resource) {}
 
   protected Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {

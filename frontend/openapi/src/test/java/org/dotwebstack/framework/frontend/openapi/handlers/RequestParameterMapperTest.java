@@ -3,8 +3,6 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.swagger.models.Operation;
@@ -15,7 +13,6 @@ import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -53,6 +50,8 @@ public class RequestParameterMapperTest {
 
   private RequestParameterMapper mapper;
 
+  private RequestParameters requestParameters;
+
   @Before
   public void setUp() {
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -67,6 +66,12 @@ public class RequestParameterMapperTest {
         ImmutableList.of(parameter, parameter2), templateProcessorMock);
 
     mapper = new RequestParameterMapper();
+
+    requestParameters = new RequestParameters();
+    MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
+    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param2", ImmutableList.of("value2"));
+    requestParameters.putAll(mvMap);
   }
 
   @Test
@@ -75,7 +80,7 @@ public class RequestParameterMapperTest {
     Operation operation = new Operation();
 
     // Act
-    Map<String, Object> result = mapper.map(operation, product, contextMock);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -92,7 +97,7 @@ public class RequestParameterMapperTest {
     operation.setParameters(ImmutableList.of(pathParameter));
 
     // Act
-    Map<String, Object> result = mapper.map(operation, product, contextMock);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -112,27 +117,7 @@ public class RequestParameterMapperTest {
     operation.setParameters(ImmutableList.of(parameter));
 
     // Act
-    mapper.map(operation, product, contextMock);
-  }
-
-  @Test
-  public void map_ThrowsException_ForUnknownParameterLocation() {
-    // Assert
-    thrown.expect(ConfigurationException.class);
-    thrown.expectMessage("Unknown parameter location:");
-
-    // Arrange
-    Operation operation = new Operation();
-    PathParameter pathParameter = new PathParameter();
-
-    pathParameter.setIn("unknown");
-    pathParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
-        parameter.getIdentifier().stringValue());
-
-    operation.setParameters(ImmutableList.of(pathParameter));
-
-    // Act
-    mapper.map(operation, product, contextMock);
+    mapper.map(operation, product, requestParameters);
   }
 
   @Test
@@ -140,7 +125,7 @@ public class RequestParameterMapperTest {
     // Arrange
     PathParameter pathParameter = new PathParameter();
 
-    pathParameter.setName("param");
+    pathParameter.setName("param1");
     pathParameter.setIn("path");
 
     // Note this parameter has multiple vendor extensions
@@ -161,19 +146,14 @@ public class RequestParameterMapperTest {
 
     operation.addParameter(pathParameter2);
 
-    UriInfo uriInfoMock = mock(UriInfo.class);
-    when(contextMock.getUriInfo()).thenReturn(uriInfoMock);
-
     MultivaluedMap<String, String> pathParameters = new MultivaluedHashMap<>();
 
     // Note there are multiple values for this parameter, to test that the first value is used only
     pathParameters.put(pathParameter.getName(), ImmutableList.of("value", "valueB"));
     pathParameters.put(pathParameter2.getName(), ImmutableList.of("value2"));
 
-    when(uriInfoMock.getPathParameters()).thenReturn(pathParameters);
-
     // Act
-    Map<String, Object> result = mapper.map(operation, product, contextMock);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.size(), is(2));
@@ -194,17 +174,11 @@ public class RequestParameterMapperTest {
     Operation operation = new Operation();
     operation.addParameter(queryParameter);
 
-    UriInfo uriInfoMock = mock(UriInfo.class);
-
-    when(contextMock.getUriInfo()).thenReturn(uriInfoMock);
-
     MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
     queryParameters.put(queryParameter.getName(), ImmutableList.of("value", "valueB"));
 
-    when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
-
     // Act
-    Map<String, Object> result = mapper.map(operation, product, contextMock);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -227,10 +201,8 @@ public class RequestParameterMapperTest {
     MultivaluedMap<String, String> headerParameters = new MultivaluedHashMap<>();
     headerParameters.put(headerParameter.getName(), ImmutableList.of("value", "valueB"));
 
-    when(contextMock.getHeaders()).thenReturn(headerParameters);
-
     // Act
-    Map<String, Object> result = mapper.map(operation, product, contextMock);
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
     assertThat(result.size(), is(1));

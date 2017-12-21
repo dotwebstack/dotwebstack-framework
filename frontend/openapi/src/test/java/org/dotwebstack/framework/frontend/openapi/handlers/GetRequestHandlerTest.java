@@ -4,15 +4,20 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -30,13 +35,16 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class GetRequestHandlerTest {
 
   @Mock
-  private Operation operationMock;
+  private ApiOperation operationMock;
 
   @Mock
   private InformationProduct informationProductMock;
 
   @Mock
   private ContainerRequestContext containerRequestContextMock;
+
+  @Mock
+  private ApiRequestValidator apiRequestValidatorMock;
 
   @Mock
   private RequestParameterMapper requestParameterMapperMock;
@@ -48,9 +56,17 @@ public class GetRequestHandlerTest {
 
   @Before
   public void setUp() {
-
     getRequestHandler = new GetRequestHandler(operationMock, informationProductMock,
-        ImmutableMap.of(), requestParameterMapperMock, swaggerMock);
+        ImmutableMap.of(), requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
+
+    RequestParameters requestParameters = new RequestParameters();
+    when(apiRequestValidatorMock.validate(operationMock, containerRequestContextMock)).thenReturn(
+        requestParameters);
+    Operation operation = new Operation();
+    when(operationMock.getOperation()).thenReturn(operation);
+
+    when(requestParameterMapperMock.map(same(operation), eq(informationProductMock),
+        same(requestParameters))).thenReturn(ImmutableMap.of());
   }
 
   @Test
@@ -65,10 +81,10 @@ public class GetRequestHandlerTest {
     when(informationProductMock.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act
-    javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContextMock);
+    Response response = getRequestHandler.apply(containerRequestContextMock);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(javax.ws.rs.core.Response.Status.OK.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
     assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
@@ -84,7 +100,7 @@ public class GetRequestHandlerTest {
     when(informationProductMock.getResult(ImmutableMap.of())).thenReturn(result);
 
     // Act
-    javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContextMock);
+    Response response = getRequestHandler.apply(containerRequestContextMock);
 
     // Assert
     assertThat(response.getEntity(), instanceOf(GraphEntity.class));
@@ -99,11 +115,11 @@ public class GetRequestHandlerTest {
     when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
 
     // Act
-    javax.ws.rs.core.Response response = getRequestHandler.apply(containerRequestContextMock);
+    Response response = getRequestHandler.apply(containerRequestContextMock);
 
     // Assert
     assertThat(response.getStatus(),
-        equalTo(javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+        equalTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
     assertThat(response.getEntity(), nullValue());
   }
 }

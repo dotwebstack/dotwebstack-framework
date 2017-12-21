@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import io.swagger.models.Operation;
+import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
@@ -22,19 +22,24 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
 
-  private final Operation operation;
+  private final ApiOperation apiOperation;
 
   private final InformationProduct informationProduct;
 
   private final Map<MediaType, Property> schemaMap;
 
   private final RequestParameterMapper requestParameterMapper;
+
   private final Swagger swagger;
 
-  GetRequestHandler(@NonNull Operation operation, @NonNull InformationProduct informationProduct,
-      @NonNull Map<MediaType, Property> schemaMap,
-      @NonNull RequestParameterMapper requestParameterMapper, @NonNull Swagger swagger) {
-    this.operation = operation;
+  private final ApiRequestValidator apiRequestValidator;
+
+  GetRequestHandler(@NonNull ApiOperation apiOperation,
+      @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
+      @NonNull RequestParameterMapper requestParameterMapper,
+      @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
+    this.apiRequestValidator = apiRequestValidator;
+    this.apiOperation = apiOperation;
     this.informationProduct = informationProduct;
     this.schemaMap = schemaMap;
     this.requestParameterMapper = requestParameterMapper;
@@ -45,13 +50,19 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
     return informationProduct;
   }
 
+  public Map<MediaType, Property> getSchemaMap() {
+    return schemaMap;
+  }
+
   @Override
   public Response apply(@NonNull ContainerRequestContext context) {
     String path = context.getUriInfo().getPath();
     LOG.debug("Handling GET request for path {}", path);
 
-    Map<String, Object> parameterValues =
-        requestParameterMapper.map(operation, informationProduct, context);
+    RequestParameters requestParameters = apiRequestValidator.validate(apiOperation, context);
+
+    Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
+        informationProduct, requestParameters);
 
     Response responseOk = null;
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
@@ -84,10 +95,6 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
       return Response.ok(entity).build();
     }
     return null;
-  }
-
-  public Map<MediaType, Property> getSchemaMap() {
-    return schemaMap;
   }
 }
 

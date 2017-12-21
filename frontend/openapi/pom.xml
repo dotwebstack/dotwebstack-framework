@@ -30,6 +30,11 @@
       <artifactId>swagger-parser</artifactId>
       <version>1.0.32</version>
     </dependency>
+    <dependency>
+      <groupId>com.atlassian.oai</groupId>
+      <artifactId>swagger-request-validator-core</artifactId>
+      <version>1.3.2</version>
+    </dependency>
 
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>

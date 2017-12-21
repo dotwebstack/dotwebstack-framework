@@ -57,7 +57,7 @@ public class UriParameterMapperTest {
         new UriParameterMapper.UriParameterMapperBuilder(DBEERPEDIA.SUBJECT_FROM_URL,
             requestUriParameterSource, parameterTarget).build();
 
-    Map<String, Object> map = uriParameterMapper.map(containerRequestContext);
+    Map<String, String> map = uriParameterMapper.map(containerRequestContext);
 
     // Assert
     assertThat(map.keySet().toArray()[0], equalTo(DBEERPEDIA.SUBJECT_PARAMETER_NAME));
@@ -74,7 +74,7 @@ public class UriParameterMapperTest {
                 DBEERPEDIA.SUBJECT_FROM_URL_PATTERN.stringValue()).template(
                     DBEERPEDIA.SUBJECT_FROM_URL_TEMPLATE.stringValue()).build();
 
-    Map<String, Object> map = uriParameterMapper.map(containerRequestContext);
+    Map<String, String> map = uriParameterMapper.map(containerRequestContext);
 
     // Assert
     assertThat(map.keySet().toArray()[0], equalTo(DBEERPEDIA.SUBJECT_PARAMETER_NAME));

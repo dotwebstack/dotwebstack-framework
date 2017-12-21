@@ -79,7 +79,7 @@ public class RepresentationRequestParameterMapperTest {
         ResultType.GRAPH, ImmutableList.of(), templateProcessorMock);
 
     // Act
-    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -96,7 +96,7 @@ public class RepresentationRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -110,7 +110,7 @@ public class RepresentationRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(0));
@@ -127,7 +127,7 @@ public class RepresentationRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -142,7 +142,7 @@ public class RepresentationRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(0));
@@ -160,7 +160,7 @@ public class RepresentationRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, Object> result = representationRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = representationRequestParameterMapper.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(2));
