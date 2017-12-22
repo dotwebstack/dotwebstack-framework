@@ -56,7 +56,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
                 "http://www.test.nl#obj3"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
-    Set<Resource> results = mapper.filterSubjects(propertyMock, graphEntityContextMock);
+    Set<Resource> results = mapper.getSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(0)));
   }
@@ -77,7 +77,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
                 "http://www.test.nl#obj1"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
-    Set<Resource> results = mapper.filterSubjects(propertyMock, graphEntityContextMock);
+    Set<Resource> results = mapper.getSubjects(propertyMock, graphEntityContextMock);
     // Assert
     assertThat(results, hasSize(is(2)));
   }
@@ -93,7 +93,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
                 "http://www.test.nl#is"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
-    mapper.filterSubjects(propertyMock, graphEntityContextMock);
+    mapper.getSubjects(propertyMock, graphEntityContextMock);
   }
 
   @Test

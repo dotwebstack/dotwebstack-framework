@@ -5,9 +5,8 @@ import io.swagger.models.properties.Property;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
-import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext.ValueContextBuilder;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,26 +21,16 @@ class ResponseSchemaMapper extends AbstractSubjectFilterSchemaMapper<ResponsePro
   public Object mapGraphValue(@NonNull ResponseProperty property,
       @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    ValueContextBuilder builder = valueContext.toBuilder();
+    ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
     if (hasSubjectFilterVendorExtension(property)) {
-      Set<Resource> subjects = filterSubjects(property, graphEntityContext);
+      Value value = getSubject(property, graphEntityContext);
 
-      if (subjects.isEmpty()) {
-        if (property.getRequired()) {
-          throw new SchemaMapperRuntimeException(
-              "Subject filter for a required object property yielded no result.");
-        }
-
+      if (value == null) {
         return null;
       }
 
-      if (subjects.size() > 1) {
-        throw new SchemaMapperRuntimeException(
-            "More entrypoint subjects found. Only one is required.");
-      }
-
-      builder.value(subjects.iterator().next());
+      builder.value(value);
     }
 
     return schemaMapperAdapter.mapGraphValue(property.getSchema(), graphEntityContext,
