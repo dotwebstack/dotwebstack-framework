@@ -1,14 +1,16 @@
-package org.dotwebstack.framework.param;
+package org.dotwebstack.framework.param.types;
 
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
+import org.dotwebstack.framework.param.AbstractParameter;
+import org.dotwebstack.framework.param.BindableParameter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class TermParameter extends AbstractParameter<String> implements BindableParameter<String> {
 
-  private TermParameter(IRI identifier, String name, boolean required) {
+  public TermParameter(IRI identifier, String name, boolean required) {
     super(identifier, name, required);
   }
 

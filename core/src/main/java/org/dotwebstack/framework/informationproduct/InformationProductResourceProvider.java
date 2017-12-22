@@ -9,9 +9,15 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.param.AbstractParameter;
 import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterResourceProvider;
-import org.dotwebstack.framework.param.TermParameter;
+import org.dotwebstack.framework.param.PropertyShape;
+import org.dotwebstack.framework.param.shapes.StringPropertyShape;
+import org.dotwebstack.framework.param.types.IntTermParameter;
+import org.dotwebstack.framework.param.types.StringTermParameter;
+import org.dotwebstack.framework.param.types.TermParameter;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -29,6 +35,8 @@ public class InformationProductResourceProvider
   private final BackendResourceProvider backendResourceProvider;
 
   private final ParameterResourceProvider parameterResourceProvider;
+
+  private final PropertyShape defaultPropertyShape = new StringPropertyShape();
 
   @Autowired
   public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
@@ -74,13 +82,23 @@ public class InformationProductResourceProvider
     ImmutableList.Builder<Parameter> builder = ImmutableList.builder();
 
     requiredParameterIds.stream().map(parameterResourceProvider::get).map(
-        d -> TermParameter.requiredTermParameter(d.getIdentifier(), d.getName())).forEach(
-            builder::add);
-
+        d -> createTermParameter(d, true)).forEach(builder::add);
     optionalParameterIds.stream().map(parameterResourceProvider::get).map(
-        d -> TermParameter.optionalTermParameter(d.getIdentifier(), d.getName())).forEach(
-            builder::add);
+        d -> createTermParameter(d, false)).forEach(builder::add);
 
     return backend.createInformationProduct(identifier, label, builder.build(), statements);
+  }
+
+  private AbstractParameter<?> createTermParameter(ParameterDefinition d, boolean required) {
+    PropertyShape propertyShape = d.getShapeTypes().orElse(defaultPropertyShape);
+    if (propertyShape.getJavaType().equals(String.class)) {
+
+      return new StringTermParameter(d.getIdentifier(), d.getName(), required);
+    }
+    if (propertyShape.getJavaType().equals(Integer.class)) {
+
+      return new IntTermParameter(d.getIdentifier(), d.getName(), required);
+    }
+    return new TermParameter(d.getIdentifier(), d.getName(), required);
   }
 }

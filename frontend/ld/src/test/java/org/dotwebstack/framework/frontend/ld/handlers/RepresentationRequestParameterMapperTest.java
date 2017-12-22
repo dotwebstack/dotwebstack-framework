@@ -16,7 +16,7 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
-import org.dotwebstack.framework.param.TermParameter;
+import org.dotwebstack.framework.param.types.TermParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
@@ -55,10 +55,10 @@ public class RepresentationRequestParameterMapperTest {
     // Arrange
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    requiredParameter = TermParameter.requiredTermParameter(
-        valueFactory.createIRI("http://required-parameter-iri"), "required-parameter-name");
-    optionalParameter = TermParameter.optionalTermParameter(
-        valueFactory.createIRI("http://optional-parameter-iri"), "optional-parameter-name");
+    requiredParameter = new TermParameter(
+        valueFactory.createIRI("http://required-parameter-iri"), "required-parameter-name",true);
+    optionalParameter = new TermParameter(
+        valueFactory.createIRI("http://optional-parameter-iri"), "optional-parameter-name",false);
 
     product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,

@@ -57,7 +57,6 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
     if (required) {
       validateRequired(parameterValues);
     }
-
     validateInner(parameterValues);
   }
 
