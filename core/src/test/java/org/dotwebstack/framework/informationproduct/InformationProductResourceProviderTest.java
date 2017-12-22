@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import java.util.Optional;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
@@ -227,16 +228,20 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.OPTIONAL_PARAMETER_PROP, optParam2Id))));
 
-    ParameterDefinition reqParam1Def = new ParameterDefinition(reqParam1Id, "reqParam1Name",null);
+    ParameterDefinition reqParam1Def =
+        new ParameterDefinition(reqParam1Id, "reqParam1Name", Optional.empty());
     when(parameterResourceProviderMock.get(reqParam1Id)).thenReturn(reqParam1Def);
 
-    ParameterDefinition reqParam2Def = new ParameterDefinition(reqParam2Id, "reqParam2Name",null);
+    ParameterDefinition reqParam2Def =
+        new ParameterDefinition(reqParam2Id, "reqParam2Name", Optional.empty());
     when(parameterResourceProviderMock.get(reqParam2Id)).thenReturn(reqParam2Def);
 
-    ParameterDefinition optParam1Def = new ParameterDefinition(optParam1Id, "optParam1Name",null);
+    ParameterDefinition optParam1Def =
+        new ParameterDefinition(optParam1Id, "optParam1Name", Optional.empty());
     when(parameterResourceProviderMock.get(optParam1Id)).thenReturn(optParam1Def);
 
-    ParameterDefinition optParam2Def = new ParameterDefinition(optParam2Id, "optParam2Name",null);
+    ParameterDefinition optParam2Def =
+        new ParameterDefinition(optParam2Id, "optParam2Name", Optional.empty());
     when(parameterResourceProviderMock.get(optParam2Id)).thenReturn(optParam2Def);
 
     ArgumentCaptor<List<Parameter>> captureParameters = ArgumentCaptor.forClass(List.class);
