@@ -11,12 +11,10 @@
 @prefix xs: <http://www.w3.org/2001/XMLSchema#>.
 @prefix elmoshape: <http://bp4mc2.org/elmo/def/>.
 @prefix yed: <http://bp4mc2.org/yed/def#>.
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix skos: <http://www.w3.org/2004/02/skos/core#>.
-@prefix elmo: <http://dotwebstack.org/def/elmo#>.
 @prefix elmo-schemes: <http://dotwebstack.org/def/elmo/>.
 @prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-type/>.
+@prefix http: <http://www.w3.org/2011/http#>.
 
 GRAPH elmo:Config {
   elmo:SparqlBackend rdfs:subClassOf elmo:Backend .
@@ -470,3 +468,94 @@ elmo:VocabularyAppearance a owl:Class;
   rdfs:comment "Appearance that presents a vocabulary page, describing classes and properties"@en;
 .
 }
+
+GRAPH elmo:Config {
+elmo:CarouselAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:ChartAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:ContentAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+  rdfs:seeAlso elmo:ResourceAppearance;
+  rdfs:label "Content appearance"@en;
+  rdfs:comment "Deprecated name for the resource appearance";
+.
+elmo:FixedAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:FooterAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:FrameAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:GeoAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+  elmo:name "GeoAppearance";
+  rdfs:label "Geospatial appearance";
+  rdfs:comment "Appearance that presents triples with geospatial properties on a map";
+.
+elmo:GeoSelectAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:GraphAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:HeaderAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:HiddenAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+  elmo:name "HiddenAppearance";
+  rdfs:label "Hidden appearance"@en;
+  rdfs:comment "A hidden appearance. The data is not visible as a part of the screen, but can be used as a picklist, glossary or as bare data"@en;
+.
+elmo:HtmlAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:MarkdownAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:ImageAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:IndexAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:ModelAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:NavbarSearchAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:ResourceAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+  elmo:name "ResourceAppearance";
+  rdfs:label "Resource appearance"@en;
+  rdfs:comment "Appearance that presents triples in a property-object layout (two columns, row per property)"@en;
+.
+elmo:ShortTableAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:TableAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+  elmo:name "TableAppearance";
+  rdfs:label "Table appearance"@en;
+  rdfs:comment "Appearance that presents triples or a list of bindingsets as a table"@en;
+.
+elmo:TreeAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:TurtleAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+.
+elmo:VocabularyAppearance a owl:Class;
+  rdfs:subClassOf elmo:Appearance;
+  elmo:name "VocabularyAppearance";
+  rdfs:label "Vocabulary appearance"@en;
+  rdfs:comment "Appearance that presents a vocabulary page, describing classes and properties"@en;
+.
+}
+
