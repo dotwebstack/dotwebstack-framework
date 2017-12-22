@@ -13,6 +13,7 @@ import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -51,13 +52,16 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
                 identifier, ELMO.TERM_FILTER)));
 
-    Set<Value> iriShapeTypes =
-        model.filter((org.eclipse.rdf4j.model.Resource) model.filter(identifier, ELMO.SHAPE_PROP,
-            null).objects().iterator().next(), null, null).objects();
+    Set<Value> objects = model.filter(identifier, ELMO.SHAPE_PROP, null).objects();
+    Optional<PropertyShape> propertyShapeOptional = Optional.empty();
+    if (objects.iterator().hasNext()) {
+      Set<Value> iriShapeTypes =
+          model.filter((Resource) objects.iterator().next(), null, null).objects();
 
-    Optional<PropertyShape> propertyShapeOptional = supportedShapes.stream().filter(
-        propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
-            propertyShape.getDataType())).findFirst();
+      propertyShapeOptional = supportedShapes.stream().filter(
+          propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
+              propertyShape.getDataType())).findFirst();
+    }
 
     return new ParameterDefinition(identifier, name, propertyShapeOptional);
   }
