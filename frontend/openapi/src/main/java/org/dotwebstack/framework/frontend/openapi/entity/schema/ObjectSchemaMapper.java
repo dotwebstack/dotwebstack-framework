@@ -13,9 +13,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
-import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext.ValueContextBuilder;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +36,7 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
 
   private static ValueContext populateValueContextWithVendorExtensions(@NonNull Property property,
       @NonNull ValueContext valueContext) {
-    ValueContextBuilder builder = valueContext.toBuilder();
+    ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
     if (hasVendorExtension(property,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL)) {
@@ -57,26 +55,16 @@ class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<ObjectPropert
 
   private Object handleProperty(ObjectProperty property, GraphEntityContext graphEntityContext,
       ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
-    ValueContextBuilder builder = valueContext.toBuilder();
+    ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
     if (hasSubjectFilterVendorExtension(property)) {
-      Set<Resource> subjects = filterSubjects(property, graphEntityContext);
+      Value value = getSubject(property, graphEntityContext);
 
-      if (subjects.isEmpty()) {
-        if (property.getRequired()) {
-          throw new SchemaMapperRuntimeException(
-              "Subject filter for a required object property yielded no result.");
-        }
-
+      if (value == null) {
         return null;
       }
 
-      if (subjects.size() > 1) {
-        throw new SchemaMapperRuntimeException(
-            "More entrypoint subjects found. Only one is required.");
-      }
-
-      builder.value(subjects.iterator().next());
+      builder.value(value);
     }
 
     ValueContext newValueContext = builder.build();

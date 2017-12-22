@@ -31,7 +31,7 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
     if (hasSubjectFilterVendorExtension(property)) {
-      Set<Resource> subjects = filterSubjects(property, graphEntityContext);
+      Set<Resource> subjects = getSubjects(property, graphEntityContext);
 
       subjects.forEach(subject -> {
         ValueContext subjectContext = valueContext.toBuilder().value(subject).build();

@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
  * "number" or "date"; direction can be one of "asc" or "desc"</li>
  *
  * </ul>
- * <p/>
  * Author: Nathan van Dalen
  */
 public class SortByPropertyFunction<N> extends SelectorFunction<N> {

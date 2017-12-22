@@ -21,6 +21,8 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
   /**
    * Initialise a new RDF4J backend using the repository passed as argument. Queries will include
    * inferred statements and all contexts.
+   * 
+   * @param repository The back-end repository.
    */
   public Rdf4jRepositoryBackend(@NonNull Repository repository) {
     this(repository, true);
