@@ -443,33 +443,7 @@ elmo:uriPattern a owl:DatatypeProperty;
 #
 # The elmo:name property of an appearance is important, because this name is used to link an appearance with the React component
 #
-elmo:ResourceAppearance a owl:Class;
-  rdfs:subClassOf elmo:Appearance;
-  elmo:name "ContentAppearance";
-  rdfs:label "Content appearance"@en;
-  rdfs:comment "Appearance that presents triples in a property-object layout (two columns, row per property)"@en;
-.
-elmo:TableAppearance a owl:Class;
-  rdfs:subClassOf elmo:Appearance;
-  elmo:name "TableAppearance";
-  rdfs:label "Table appearance"@en;
-  rdfs:comment "Appearance that presents triples or a list of bindingsets as a table"@en;
-.
-elmo:GeoAppearance a owl:Class;
-  rdfs:subClassOf elmo:Appearance;
-  elmo:name "GeoAppearance";
-  rdfs:label "Geospatial appearance";
-  rdfs:comment "Appearance that presents triples with geospatial properties on a map";
-.
-elmo:VocabularyAppearance a owl:Class;
-  rdfs:subClassOf elmo:Appearance;
-  elmo:name "VocabularyAppearance";
-  rdfs:label "Vocabulary appearance"@en;
-  rdfs:comment "Appearance that presents a vocabulary page, describing classes and properties"@en;
-.
-}
 
-GRAPH elmo:Config {
 elmo:CarouselAppearance a owl:Class;
   rdfs:subClassOf elmo:Appearance;
 .
@@ -558,4 +532,3 @@ elmo:VocabularyAppearance a owl:Class;
   rdfs:comment "Appearance that presents a vocabulary page, describing classes and properties"@en;
 .
 }
-

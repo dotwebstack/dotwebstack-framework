@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.config;
 
+import static java.util.Comparator.comparing;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
@@ -105,6 +107,7 @@ public class FileConfigurationBackend
     });
     List<InputStream> configurationStreams = new ArrayList<>();
     try {
+      resources.sort(comparing(Resource::getFilename));
       for (Resource resource : resources) {
         String extension = FilenameUtils.getExtension(resource.getFilename());
         if (!FileFormats.containsExtension(extension)) {

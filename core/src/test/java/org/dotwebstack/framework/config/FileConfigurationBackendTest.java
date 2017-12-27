@@ -6,13 +6,10 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
@@ -30,7 +27,6 @@ import org.dotwebstack.framework.validation.ValidationReport;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
-import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.junit.Before;
 import org.junit.Rule;
@@ -84,7 +80,9 @@ public class FileConfigurationBackendTest {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     elmoConfigurationResource = mock(Resource.class);
+    when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
     elmoShapesResource = mock(Resource.class);
+    when(elmoShapesResource.getFilename()).thenReturn("elmo-shapes.trig");
     when(elmoShapesResource.getInputStream()).thenReturn(
         new ByteArrayInputStream("".getBytes(Charsets.UTF_8)));
     shaclValidator = mock(ShaclValidator.class);
@@ -204,9 +202,7 @@ public class FileConfigurationBackendTest {
     // Assert
     assertThat(backend.getRepository(), equalTo(repository));
     verify(repository).initialize();
-    verify(repositoryConnection).add(any(InputStream.class), eq("#"), eq(RDFFormat.TRIG));
     verify(repositoryConnection).close();
-    verifyNoMoreInteractions(repositoryConnection);
   }
 
   @Test
@@ -215,11 +211,9 @@ public class FileConfigurationBackendTest {
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new Resource[0]);
 
-    // Act
+    // Act / Assert
     backend.loadResources();
 
-    // Assert
-    verifyZeroInteractions(repositoryConnection);
   }
 
   @Test
@@ -235,7 +229,6 @@ public class FileConfigurationBackendTest {
 
     // Assert
     verify(repositoryConnection).close();
-    verifyNoMoreInteractions(repositoryConnection);
   }
 
   @Test
@@ -394,9 +387,15 @@ public class FileConfigurationBackendTest {
   public void loadPrefixes_CombinePrefixesWithConfiguration_WhenLoadResources() throws Exception {
     // Arrange
     Resource backendResource = mock(Resource.class);
+    when(backendResource.getFilename()).thenReturn("backend.trig");
+    when(backendResource.getInputStream()).thenReturn(
+        new ByteArrayInputStream("".getBytes(Charsets.UTF_8)));
     Resource resource = mock(Resource.class);
-    when(resource.getFilename()).thenReturn("_prefixes.trig");
     when(resource.getInputStream()).thenReturn(
+        new ByteArrayInputStream("".getBytes(Charsets.UTF_8)));
+    when(resource.getFilename()).thenReturn("temp.trig");
+    when(prefixesResource.getFilename()).thenReturn("_prefixes.trig");
+    when(prefixesResource.getInputStream()).thenReturn(
         new ByteArrayInputStream(new String("@prefix dbeerpedia: <http://dbeerpedia.org#> .\n"
             + "@prefix elmo: <http://dotwebstack.org/def/elmo#> .\n"
             + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
