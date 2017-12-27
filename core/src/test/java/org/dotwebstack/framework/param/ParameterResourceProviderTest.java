@@ -13,6 +13,7 @@ import org.assertj.core.api.Assertions;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.BNode;
@@ -128,6 +129,28 @@ public class ParameterResourceProviderTest {
 
     // Assert
     Assertions.assertThat(parameterDefinition.getShapeTypes()).isEmpty();
+  }
+
+  @Test
+  public void createResources_IntegerFilterRecognition() {
+    // Arrange
+    ModelBuilder modelBuilder = new ModelBuilder();
+
+    BNode head = SimpleValueFactory.getInstance().createBNode();
+    modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER);
+    modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
+    modelBuilder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(ELMO.SHAPE_PROP, head).subject(head).add(
+        ELMO.INT_TERM_FILTER,
+        SimpleValueFactory.getInstance().createIRI("http://www.w3.org/2001/XMLSchema#int"));
+    Model model = modelBuilder.build();
+
+    // Act
+    ParameterDefinition parameterDefinition =
+        provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
+
+    // Assert
+    Assertions.assertThat(parameterDefinition.getShapeTypes().get()).isInstanceOf(
+        IntegerPropertyShape.class);
   }
 
 }
