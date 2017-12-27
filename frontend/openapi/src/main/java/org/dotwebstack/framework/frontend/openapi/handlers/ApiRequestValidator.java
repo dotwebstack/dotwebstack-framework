@@ -6,7 +6,6 @@ import com.atlassian.oai.validator.model.Request.Method;
 import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.model.SimpleRequest.Builder;
 import com.atlassian.oai.validator.report.ValidationReport;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import javax.ws.rs.WebApplicationException;
@@ -20,11 +19,9 @@ class ApiRequestValidator {
   private static final Logger LOG = LoggerFactory.getLogger(ApiRequestValidator.class);
 
   private final RequestValidator requestValidator;
-  private final ObjectMapper mapper;
 
-  ApiRequestValidator(@NonNull RequestValidator requestValidator, @NonNull ObjectMapper mapper) {
+  ApiRequestValidator(@NonNull RequestValidator requestValidator) {
     this.requestValidator = requestValidator;
-    this.mapper = mapper;
   }
 
   /**
@@ -45,8 +42,7 @@ class ApiRequestValidator {
     requestContext.getUriInfo().getPathParameters().forEach(builder::withQueryParam);
     requestContext.getUriInfo().getQueryParameters().forEach(builder::withQueryParam);
 
-    RequestParameters requestParameters =
-        RequestParameterExtractor.extract(requestContext, this.mapper);
+    RequestParameters requestParameters = RequestParameterExtractor.extract(requestContext);
 
     String body = requestParameters.asString(RequestParameterExtractor.RAW_REQUEST_BODY);
     builder.withBody(body);
