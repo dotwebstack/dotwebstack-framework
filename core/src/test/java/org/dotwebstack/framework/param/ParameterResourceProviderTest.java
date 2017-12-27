@@ -9,13 +9,17 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.assertj.core.api.Assertions;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
@@ -103,6 +107,27 @@ public class ParameterResourceProviderTest {
 
     // Act
     provider.loadResources();
+  }
+
+  @Test
+  public void createResources_UnsupportedShape() {
+    // Arrange
+    ModelBuilder modelBuilder = new ModelBuilder();
+
+    BNode head = SimpleValueFactory.getInstance().createBNode();
+    modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER);
+    modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
+    modelBuilder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(ELMO.SHAPE_PROP, head).subject(head).add(
+        SimpleValueFactory.getInstance().createIRI("http://"),
+        SimpleValueFactory.getInstance().createIRI("http://"));
+    Model model = modelBuilder.build();
+
+    // Act
+    ParameterDefinition parameterDefinition =
+        provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
+
+    // Assert
+    Assertions.assertThat(parameterDefinition.getShapeTypes()).isEmpty();
   }
 
 }
