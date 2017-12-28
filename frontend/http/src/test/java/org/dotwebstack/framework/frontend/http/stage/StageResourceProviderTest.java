@@ -15,6 +15,8 @@ import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.http.layout.Layout;
+import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -47,7 +49,13 @@ public class StageResourceProviderTest {
   private SiteResourceProvider siteResourceProvider;
 
   @Mock
+  private LayoutResourceProvider layoutResourceProvider;
+
+  @Mock
   private Site site;
+
+  @Mock
+  private Layout layout;
 
   @Mock
   private ConfigurationBackend configurationBackend;
@@ -68,7 +76,7 @@ public class StageResourceProviderTest {
   @Before
   public void setUp() {
     stageResourceProvider = new StageResourceProvider(configurationBackend, siteResourceProvider,
-        applicationProperties);
+        layoutResourceProvider, applicationProperties);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -85,7 +93,8 @@ public class StageResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new StageResourceProvider(null, siteResourceProvider, applicationProperties);
+    new StageResourceProvider(null, siteResourceProvider, layoutResourceProvider,
+        applicationProperties);
   }
 
   @Test
@@ -94,7 +103,8 @@ public class StageResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new StageResourceProvider(configurationBackend, null, applicationProperties);
+    new StageResourceProvider(configurationBackend, null, layoutResourceProvider,
+        applicationProperties);
   }
 
   @Test
@@ -103,7 +113,8 @@ public class StageResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new StageResourceProvider(configurationBackend, siteResourceProvider, null);
+    new StageResourceProvider(configurationBackend, siteResourceProvider, layoutResourceProvider,
+        null);
   }
 
   @Test
