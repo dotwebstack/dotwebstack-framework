@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.http.stage;
 
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.http.layout.Layout;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -15,6 +16,8 @@ public class Stage {
   private Site site;
 
   private String basePath;
+
+  private Layout layout;
 
   private Stage(Builder builder) {
     this.identifier = builder.identifier;
@@ -42,6 +45,10 @@ public class Stage {
     return "/" + getSite().getDomain() + getBasePath();
   }
 
+  public Layout getLayout() {
+    return layout;
+  }
+
   public static class Builder {
 
     private IRI identifier;
@@ -49,6 +56,8 @@ public class Stage {
     private Site site;
 
     private String basePath = DEFAULT_BASE_PATH;
+
+    private Layout layout;
 
     public Builder(@NonNull IRI identifier, @NonNull Site site) {
       this.identifier = identifier;
@@ -62,6 +71,11 @@ public class Stage {
 
     public Stage build() {
       return new Stage(this);
+    }
+
+    public Builder cssResource(@NonNull Layout layout) {
+      this.layout = layout;
+      return this;
     }
 
   }
