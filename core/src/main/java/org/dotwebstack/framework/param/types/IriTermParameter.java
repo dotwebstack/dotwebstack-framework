@@ -8,26 +8,26 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public class BooleanTermParameter extends AbstractParameter<Boolean>
-    implements BindableParameter<Boolean> {
+public class IriTermParameter extends AbstractParameter<IRI>
+    implements BindableParameter<IRI> {
 
-  public BooleanTermParameter(IRI identifier, String name, boolean required) {
+  public IriTermParameter(IRI identifier, String name, boolean required) {
     super(identifier, name, required);
   }
 
   @Override
-  protected Boolean handleInner(Map<String, String> parameterValues) {
+  protected IRI handleInner(Map<String, String> parameterValues) {
     return parseValue(parameterValues);
   }
 
   @Override
-  protected Boolean parseValue(Map<String, String> parameterValues) {
-    return Boolean.valueOf(parameterValues.get(getName()));
+  protected IRI parseValue(Map<String, String> parameterValues) {
+    return SimpleValueFactory.getInstance().createIRI(parameterValues.get(getName()));
   }
 
   @Override
-  public Literal getValue(Boolean value) {
-    return SimpleValueFactory.getInstance().createLiteral(value);
+  public Literal getValue(IRI value) {
+    return SimpleValueFactory.getInstance().createLiteral(value.stringValue());
   }
 
   @Override

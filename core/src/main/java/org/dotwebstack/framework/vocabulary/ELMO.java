@@ -59,8 +59,6 @@ public final class ELMO {
 
   public static final IRI TERM_FILTER;
 
-  public static final IRI INT_TERM_FILTER;
-
   public static final IRI OPTIONAL_PARAMETER_PROP;
 
   public static final IRI REQUIRED_PARAMETER_PROP;
@@ -130,8 +128,6 @@ public final class ELMO {
     TARGET_URL = valueFactory.createIRI(ELMO.NAMESPACE, "targetUrl");
 
     TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
-    INT_TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "IntTermFilter");
-
     OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
     REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
 

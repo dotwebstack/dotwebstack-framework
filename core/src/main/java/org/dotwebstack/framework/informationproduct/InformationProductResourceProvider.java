@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.informationproduct;
 
 import com.google.common.collect.ImmutableList;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
@@ -15,9 +17,6 @@ import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterResourceProvider;
 import org.dotwebstack.framework.param.PropertyShape;
 import org.dotwebstack.framework.param.shapes.StringPropertyShape;
-import org.dotwebstack.framework.param.types.BooleanTermParameter;
-import org.dotwebstack.framework.param.types.IntTermParameter;
-import org.dotwebstack.framework.param.types.StringTermParameter;
 import org.dotwebstack.framework.param.types.TermParameter;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -92,15 +91,17 @@ public class InformationProductResourceProvider
 
   private AbstractParameter<?> createTermParameter(ParameterDefinition d, boolean required) {
     PropertyShape propertyShape = d.getShapeTypes().orElse(defaultPropertyShape);
-    if (propertyShape.getJavaType().equals(String.class)) {
-      return new StringTermParameter(d.getIdentifier(), d.getName(), required);
+
+    if (propertyShape.getTermClass().getConstructors().length == 1) {
+      Constructor constructor = propertyShape.getTermClass().getConstructors()[0];
+      try {
+        return (AbstractParameter<?>) constructor.newInstance(d.getIdentifier(), d.getName(),
+            required);
+      } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        throw new ConfigurationException("Cannot create TermParameter");
+      }
     }
-    if (propertyShape.getJavaType().equals(Integer.class)) {
-      return new IntTermParameter(d.getIdentifier(), d.getName(), required);
-    }
-    if (propertyShape.getJavaType().equals(Boolean.class)) {
-      return new BooleanTermParameter(d.getIdentifier(), d.getName(), required);
-    }
+
     return new TermParameter(d.getIdentifier(), d.getName(), required);
   }
 }

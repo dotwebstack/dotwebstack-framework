@@ -10,6 +10,7 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.shapes.BooleanPropertyShape;
 import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
+import org.dotwebstack.framework.param.shapes.IriPropertyShape;
 import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -33,6 +34,7 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
     supportedShapes.add(new StringPropertyShape());
     supportedShapes.add(new IntegerPropertyShape());
     supportedShapes.add(new BooleanPropertyShape());
+    supportedShapes.add(new IriPropertyShape());
 
   }
 

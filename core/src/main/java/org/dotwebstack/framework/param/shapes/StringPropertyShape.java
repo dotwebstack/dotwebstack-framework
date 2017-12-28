@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.param.shapes;
 
 import org.dotwebstack.framework.param.PropertyShape;
+import org.dotwebstack.framework.param.types.StringTermParameter;
 
 public class StringPropertyShape implements PropertyShape {
 
@@ -12,5 +13,10 @@ public class StringPropertyShape implements PropertyShape {
   @Override
   public Class<String> getJavaType() {
     return String.class;
+  }
+
+  @Override
+  public Class<?> getTermClass() {
+    return StringTermParameter.class;
   }
 }

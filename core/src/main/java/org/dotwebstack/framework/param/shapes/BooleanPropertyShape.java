@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.param.shapes;
 
 import org.dotwebstack.framework.param.PropertyShape;
+import org.dotwebstack.framework.param.types.BooleanTermParameter;
 
 public class BooleanPropertyShape implements PropertyShape {
 
@@ -12,5 +13,10 @@ public class BooleanPropertyShape implements PropertyShape {
   @Override
   public Class<?> getJavaType() {
     return Boolean.class;
+  }
+
+  @Override
+  public Class<?> getTermClass() {
+    return BooleanTermParameter.class;
   }
 }

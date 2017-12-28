@@ -1,22 +1,23 @@
 package org.dotwebstack.framework.param.shapes;
 
 import org.dotwebstack.framework.param.PropertyShape;
-import org.dotwebstack.framework.param.types.IntTermParameter;
+import org.dotwebstack.framework.param.types.StringTermParameter;
+import org.eclipse.rdf4j.model.IRI;
 
-public class IntegerPropertyShape implements PropertyShape {
+public class IriPropertyShape implements PropertyShape {
 
   @Override
   public String getDataType() {
-    return "http://www.w3.org/2001/XMLSchema#int";
+    return "";
   }
 
   @Override
   public Class<?> getJavaType() {
-    return Integer.class;
+    return IRI.class;
   }
 
   @Override
   public Class<?> getTermClass() {
-    return IntTermParameter.class;
+    return StringTermParameter.class;
   }
 }
