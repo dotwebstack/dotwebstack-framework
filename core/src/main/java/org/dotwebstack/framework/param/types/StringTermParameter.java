@@ -17,7 +17,12 @@ public class StringTermParameter extends AbstractParameter<String>
 
   @Override
   protected String handleInner(Map<String, String> parameterValues) {
-    return getValue(parameterValues);
+    return parseValue(parameterValues);
+  }
+
+  @Override
+  protected String parseValue(Map<String, String> parameterValues) {
+    return parameterValues.get(getName());
   }
 
   @Override
@@ -25,13 +30,9 @@ public class StringTermParameter extends AbstractParameter<String>
     return SimpleValueFactory.getInstance().createLiteral(value);
   }
 
-  private String getValue(Map<String, String> parameterValues) {
-    return parameterValues.get(getName());
-  }
-
   @Override
   protected void validateRequired(Map<String, String> parameterValues) {
-    if (getValue(parameterValues) == null) {
+    if (parseValue(parameterValues) == null) {
       throw new BackendException(
           String.format("No value found for required parameter '%s'. Supplied parameterValues: %s",
               getIdentifier(), parameterValues));

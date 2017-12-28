@@ -8,6 +8,7 @@ import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.param.shapes.BooleanPropertyShape;
 import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
 import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -31,6 +32,7 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
     super(configurationBackend, applicationProperties);
     supportedShapes.add(new StringPropertyShape());
     supportedShapes.add(new IntegerPropertyShape());
+    supportedShapes.add(new BooleanPropertyShape());
 
   }
 

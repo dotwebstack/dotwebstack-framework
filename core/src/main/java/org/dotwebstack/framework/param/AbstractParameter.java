@@ -60,6 +60,8 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
     validateInner(parameterValues);
   }
 
+  protected abstract T parseValue(Map<String, String> parameterValues);
+
   /**
    * Must be implemented by parameter implementations to validate the required case. See
    * implementations of this class for examples.
@@ -74,6 +76,8 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
    * 
    * @throws BackendException If a required value is invalid.
    */
-  protected void validateInner(@NonNull Map<String, String> parameterValues) {}
+  protected void validateInner(@NonNull Map<String, String> parameterValues) {
+    parseValue(parameterValues);
+  }
 
 }
