@@ -8,7 +8,7 @@ public class IriPropertyShape implements PropertyShape {
 
   @Override
   public String getDataType() {
-    return "";
+    return "http://www.w3.org/2001/XMLSchema#anyURI";
   }
 
   @Override

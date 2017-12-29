@@ -1,19 +1,25 @@
 package org.dotwebstack.framework.param;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.param.shapes.BooleanPropertyShape;
 import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
+import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.BNode;
@@ -128,7 +134,7 @@ public class ParameterResourceProviderTest {
         provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
 
     // Assert
-    Assertions.assertThat(parameterDefinition.getShapeTypes()).isEmpty();
+    assertThat(parameterDefinition.getShapeTypes(),is(Optional.empty()));
   }
 
   @Test
@@ -149,8 +155,49 @@ public class ParameterResourceProviderTest {
         provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
 
     // Assert
-    Assertions.assertThat(parameterDefinition.getShapeTypes().get()).isInstanceOf(
-        IntegerPropertyShape.class);
+    assertTrue(parameterDefinition.getShapeTypes().get() instanceof IntegerPropertyShape);
+  }
+
+  @Test
+  public void createResources_BooleanFilterRecognition() {
+    // Arrange
+    ModelBuilder modelBuilder = new ModelBuilder();
+
+    BNode head = SimpleValueFactory.getInstance().createBNode();
+    modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER);
+    modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
+    modelBuilder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(ELMO.SHAPE_PROP, head).subject(head).add(
+        ELMO.TERM_FILTER,
+        SimpleValueFactory.getInstance().createIRI("http://www.w3.org/2001/XMLSchema#boolean"));
+    Model model = modelBuilder.build();
+
+    // Act
+    ParameterDefinition parameterDefinition =
+        provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
+
+    // Assert
+    assertTrue(parameterDefinition.getShapeTypes().get() instanceof BooleanPropertyShape);
+  }
+
+  @Test
+  public void createResources_StringFilterRecognition() {
+    // Arrange
+    ModelBuilder modelBuilder = new ModelBuilder();
+
+    BNode head = SimpleValueFactory.getInstance().createBNode();
+    modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER);
+    modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
+    modelBuilder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(ELMO.SHAPE_PROP, head).subject(head).add(
+        ELMO.TERM_FILTER,
+        SimpleValueFactory.getInstance().createIRI("http://www.w3.org/2001/XMLSchema#string"));
+    Model model = modelBuilder.build();
+
+    // Act
+    ParameterDefinition parameterDefinition =
+        provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
+
+    // Assert
+    assertTrue(parameterDefinition.getShapeTypes().get() instanceof StringPropertyShape);
   }
 
 }
