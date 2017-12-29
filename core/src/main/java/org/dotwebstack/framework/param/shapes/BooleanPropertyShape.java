@@ -11,11 +11,6 @@ public class BooleanPropertyShape implements PropertyShape {
   }
 
   @Override
-  public Class<?> getJavaType() {
-    return Boolean.class;
-  }
-
-  @Override
   public Class<?> getTermClass() {
     return BooleanTermParameter.class;
   }

@@ -11,11 +11,6 @@ public class StringPropertyShape implements PropertyShape {
   }
 
   @Override
-  public Class<String> getJavaType() {
-    return String.class;
-  }
-
-  @Override
   public Class<?> getTermClass() {
     return StringTermParameter.class;
   }

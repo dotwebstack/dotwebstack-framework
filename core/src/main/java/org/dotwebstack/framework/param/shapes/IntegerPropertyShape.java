@@ -11,11 +11,6 @@ public class IntegerPropertyShape implements PropertyShape {
   }
 
   @Override
-  public Class<?> getJavaType() {
-    return Integer.class;
-  }
-
-  @Override
   public Class<?> getTermClass() {
     return IntTermParameter.class;
   }

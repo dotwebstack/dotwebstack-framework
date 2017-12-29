@@ -12,11 +12,6 @@ public class IriPropertyShape implements PropertyShape {
   }
 
   @Override
-  public Class<?> getJavaType() {
-    return IRI.class;
-  }
-
-  @Override
   public Class<?> getTermClass() {
     return StringTermParameter.class;
   }
