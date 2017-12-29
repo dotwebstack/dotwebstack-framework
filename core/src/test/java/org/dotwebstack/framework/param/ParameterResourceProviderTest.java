@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.param;
 
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -11,9 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Collection;
 import java.util.Optional;
-import org.assertj.core.api.Assertions;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -134,7 +131,7 @@ public class ParameterResourceProviderTest {
         provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
 
     // Assert
-    assertThat(parameterDefinition.getShapeTypes(),is(Optional.empty()));
+    assertThat(parameterDefinition.getShapeTypes(), is(Optional.empty()));
   }
 
   @Test
