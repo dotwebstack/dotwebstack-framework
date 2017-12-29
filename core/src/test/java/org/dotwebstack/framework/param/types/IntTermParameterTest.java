@@ -11,12 +11,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-
 public class IntTermParameterTest {
 
   private IRI identifier = SimpleValueFactory.getInstance().createIRI("http://www.test.nl");
   private IntTermParameter intTermParameter = new IntTermParameter(identifier, "test", true);
-
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -42,8 +40,6 @@ public class IntTermParameterTest {
     thrown.expect(BackendException.class);
     // Act
     intTermParameter.validateRequired(parameterValues);
-
-
   }
 
 }
