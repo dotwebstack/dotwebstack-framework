@@ -64,7 +64,7 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
 
       propertyShapeOptional = supportedShapes.stream().filter(
           propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
-              propertyShape.getDataType())).findFirst();
+              propertyShape.getDataType().stringValue())).findFirst();
     }
 
     return new ParameterDefinition(identifier, name, propertyShapeOptional);

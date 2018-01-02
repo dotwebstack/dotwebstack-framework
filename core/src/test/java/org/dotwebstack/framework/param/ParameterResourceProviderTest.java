@@ -25,6 +25,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -143,8 +144,7 @@ public class ParameterResourceProviderTest {
     modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER);
     modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
     modelBuilder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(ELMO.SHAPE_PROP, head).subject(head).add(
-        ELMO.TERM_FILTER,
-        SimpleValueFactory.getInstance().createIRI("http://www.w3.org/2001/XMLSchema#int"));
+        ELMO.TERM_FILTER, XMLSchema.INTEGER);
     Model model = modelBuilder.build();
 
     // Act
@@ -164,8 +164,7 @@ public class ParameterResourceProviderTest {
     modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER);
     modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
     modelBuilder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(ELMO.SHAPE_PROP, head).subject(head).add(
-        ELMO.TERM_FILTER,
-        SimpleValueFactory.getInstance().createIRI("http://www.w3.org/2001/XMLSchema#boolean"));
+        ELMO.TERM_FILTER, XMLSchema.BOOLEAN);
     Model model = modelBuilder.build();
 
     // Act
@@ -185,8 +184,7 @@ public class ParameterResourceProviderTest {
     modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER);
     modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
     modelBuilder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(ELMO.SHAPE_PROP, head).subject(head).add(
-        ELMO.TERM_FILTER,
-        SimpleValueFactory.getInstance().createIRI("http://www.w3.org/2001/XMLSchema#string"));
+        ELMO.TERM_FILTER,XMLSchema.STRING);
     Model model = modelBuilder.build();
 
     // Act

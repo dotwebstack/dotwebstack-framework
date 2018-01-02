@@ -55,10 +55,10 @@ public class RepresentationRequestParameterMapperTest {
     // Arrange
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    requiredParameter = new TermParameter(
-        valueFactory.createIRI("http://required-parameter-iri"), "required-parameter-name",true);
-    optionalParameter = new TermParameter(
-        valueFactory.createIRI("http://optional-parameter-iri"), "optional-parameter-name",false);
+    requiredParameter = TermParameter.requiredTermParameter(
+        valueFactory.createIRI("http://required-parameter-iri"), "required-parameter-name");
+    optionalParameter = TermParameter.optionalTermParameter(
+        valueFactory.createIRI("http://optional-parameter-iri"), "optional-parameter-name");
 
     product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
