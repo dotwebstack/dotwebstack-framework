@@ -17,7 +17,7 @@ Het subject filter heeft een mechanisme om op next links en previous links te ge
 
 ## Voorbeelden OpenAPI specification
 
-Voor Geometry:
+Voor Geometry: 
 ```
 parameters:
   - in: body
