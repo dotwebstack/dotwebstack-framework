@@ -6,6 +6,8 @@ import static org.mockito.Mockito.when;
 import com.atlassian.oai.validator.interaction.RequestValidator;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableList;
+import io.swagger.models.Operation;
+import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,6 +36,15 @@ public class ApiRequestValidatorTest {
   private static final String BPG = "bestemmingsplangebied.1";
   private static final String ID = "id";
   private static final String EPSG = "epsg:4326";
+
+  private Path get = new Path();
+  private Path post = new Path();
+
+  @Before
+  public void before() {
+    get.set("get", new Operation());
+    post.set("post", new Operation());
+  }
 
   @Rule
   public final ExpectedException exception = ExpectedException.none();
@@ -93,7 +105,7 @@ public class ApiRequestValidatorTest {
     ContainerRequestContext mockGet = mockGet();
     ApiRequestValidator requestValidator1 = new ApiRequestValidator(validator);
 
-    requestValidator1.validate(SwaggerUtils.extractApiOperation(swagger, "/endpoint", "get"),
+    requestValidator1.validate(SwaggerUtils.extractApiOperation(swagger, "/endpoint", get),
         mockGet);
   }
 
@@ -107,7 +119,7 @@ public class ApiRequestValidatorTest {
     ContainerRequestContext mockGet = mockGet();
     ApiRequestValidator requestValidator1 = new ApiRequestValidator(validator);
 
-    requestValidator1.validate(SwaggerUtils.extractApiOperation(swagger, "/endpoint", "get"),
+    requestValidator1.validate(SwaggerUtils.extractApiOperation(swagger, "/endpoint", get),
         mockGet);
   }
 
@@ -117,7 +129,7 @@ public class ApiRequestValidatorTest {
     RequestValidator validator = SwaggerUtils.createValidator(swagger);
     String body = "{ \"someproperty\": \"one\" }";
     ContainerRequestContext mockPost = mockPost(body);
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", "post");
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", post);
     ApiRequestValidator requestValidator = new ApiRequestValidator(validator);
 
     RequestParameters validatedParams = requestValidator.validate(apiOperation, mockPost);
@@ -132,7 +144,7 @@ public class ApiRequestValidatorTest {
     Swagger swagger = createSwagger("post-request.yml");
     RequestValidator validator = SwaggerUtils.createValidator(swagger);
     ContainerRequestContext mockPost = mockPost("{ \"prop\": \"one\" }");
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", "post");
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", post);
     ApiRequestValidator requestValidator = new ApiRequestValidator(validator);
 
     requestValidator.validate(apiOperation, mockPost);

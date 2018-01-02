@@ -8,6 +8,7 @@ import com.atlassian.oai.validator.model.Request.Method;
 import com.atlassian.oai.validator.report.LevelResolver;
 import com.atlassian.oai.validator.report.MessageResolver;
 import com.atlassian.oai.validator.schema.SchemaValidator;
+import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import lombok.NonNull;
 
@@ -30,9 +31,15 @@ public final class SwaggerUtils {
    *         provided path, <code>null</code> otherwise
    */
   public static ApiOperation extractApiOperation(@NonNull Swagger swagger, @NonNull String path,
-      @NonNull String method) {
-    Method realMethod = Method.valueOf(method.toUpperCase());
+      @NonNull Path apiPath) {
+    Method realMethod = Method.GET;
 
+    if (apiPath.getGet() != null) {
+      realMethod = Method.GET;
+    }
+    if (apiPath.getPost() != null) {
+      realMethod = Method.POST;
+    }
     ApiOperationMatch apiOperationMatch =
         new ApiOperationResolver(swagger, null).findApiOperation(path, realMethod);
 

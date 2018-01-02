@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
@@ -110,7 +109,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
-      ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, "get");
+      ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, pathItem);
       if (apiOperation == null) {
         return;
       }
@@ -163,15 +162,17 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
-      ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          getRequestHandlerFactory.newGetRequestHandler(apiOperation, informationProduct, schemaMap,
-              swagger));
+      ResourceMethod.Builder methodBuilder =
+          resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
+              getRequestHandlerFactory.newGetRequestHandler(apiOperation, informationProduct,
+                  schemaMap, swagger));
 
       produces.forEach(methodBuilder::produces);
 
       httpConfiguration.registerResources(resourceBuilder.build());
 
-      LOG.debug("Mapped GET operation for request path {}", absolutePath);
+      LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
+          absolutePath);
     });
   }
 
