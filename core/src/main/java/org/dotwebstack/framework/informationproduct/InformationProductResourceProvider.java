@@ -77,17 +77,18 @@ public class InformationProductResourceProvider
     Set<IRI> optionalParameterIds =
         Models.objectIRIs(model.filter(identifier, ELMO.OPTIONAL_PARAMETER_PROP, null));
 
-    Set<IRI> geoFilters =
-            Models.objectIRIs(model.filter(identifier, ELMO.GEOMETRY_FILTER, null));
+    Set<IRI> geoFilters = Models.objectIRIs(model.filter(identifier, ELMO.GEOMETRY_FILTER, null));
 
 
     String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
 
-    return create(backendIRI, requiredParameterIds, optionalParameterIds, identifier, label, model, geoFilters);
+    return create(backendIRI, requiredParameterIds, optionalParameterIds, identifier, label, model,
+        geoFilters);
   }
 
   private InformationProduct create(IRI backendIdentifier, Set<IRI> requiredParameterIds,
-                                    Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements, Set<IRI> geoFilters) {
+      Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements,
+      Set<IRI> geoFilters) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
 
     ImmutableList.Builder<Parameter> builder = ImmutableList.builder();
@@ -97,12 +98,13 @@ public class InformationProductResourceProvider
     optionalParameterIds.stream().map(parameterResourceProvider::get).map(
         d -> createTermParameter(d, false)).forEach(builder::add);
 
-    geoFilters.stream().map(geometryResourceProvider::get).map(d->createGeoFilter(d)).forEach(builder::add);
+    geoFilters.stream().map(geometryResourceProvider::get).map(d -> createGeoFilter(d)).forEach(
+        builder::add);
     return backend.createInformationProduct(identifier, label, builder.build(), statements);
   }
 
   private AbstractParameter<?> createGeoFilter(GeometryDefinition d) {
-    return new GeometryParameter(d.getIdentifier(),d.getName());
+    return new GeometryParameter(d.getIdentifier(), d.getName());
   }
 
   private AbstractParameter<?> createTermParameter(ParameterDefinition d, boolean required) {

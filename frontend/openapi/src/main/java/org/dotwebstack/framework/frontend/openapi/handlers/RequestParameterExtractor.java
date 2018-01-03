@@ -1,7 +1,12 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.geojson.GeoJsonReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -28,7 +33,8 @@ final class RequestParameterExtractor {
         String.format("%s is not meant to be instantiated.", RequestParameterExtractor.class));
   }
 
-  static RequestParameters extract(@NonNull ContainerRequestContext containerRequestContext) {
+  static RequestParameters extract(@NonNull ContainerRequestContext containerRequestContext,
+      @NonNull ObjectMapper objectMapper) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
 
@@ -39,7 +45,7 @@ final class RequestParameterExtractor {
     parameters.putAll(containerRequestContext.getHeaders());
 
     try {
-      parameters.putAll(extractBodyParameter(containerRequestContext));
+      parameters.putAll(extractBodyParameter(containerRequestContext, objectMapper));
     } catch (IOException ioe) {
       throw new InternalServerErrorException("Error processing request body.", ioe);
     }
@@ -49,8 +55,8 @@ final class RequestParameterExtractor {
   /**
    * Extracts the body from the supplied request.
    */
-  private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx)
-      throws IOException {
+  private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx,
+      ObjectMapper objectMapper) throws IOException {
 
     String body = extractBody(ctx);
     if (body == null) {
@@ -60,8 +66,40 @@ final class RequestParameterExtractor {
     ImmutableMap.Builder<String, Object> builder = new Builder<>();
     builder.put(RAW_REQUEST_BODY, body);
 
+    Map<String, Object> json = objectMapper.readValue(body, Map.class);
+
+    Map<String, Object> query = (Map<String, Object>) json.get("_geo");
+
+    if (query != null) {
+      String queryType = query.keySet().iterator().next();
+
+      builder.put(PARAM_GEOMETRY_QUERYTYPE, queryType);
+
+      Object geoJsonObject = query.get(queryType);
+      Geometry geometry = extractGeometry(geoJsonObject);
+
+      builder.put(PARAM_GEOMETRY, geometry);
+    }
+
+
     return builder.build();
   }
+
+
+  private static Geometry extractGeometry(Object geoJsonObject) throws JsonProcessingException {
+    String geoJsonString = new ObjectMapper().writeValueAsString(geoJsonObject);
+    GeoJsonReader reader = new GeoJsonReader();
+    Geometry geometry = null;
+    try {
+      geometry = reader.read(geoJsonString);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+
+
+    return geometry;
+  }
+
 
   /**
    * Extracts body from a provided request context. Note that this method blocks until the body is

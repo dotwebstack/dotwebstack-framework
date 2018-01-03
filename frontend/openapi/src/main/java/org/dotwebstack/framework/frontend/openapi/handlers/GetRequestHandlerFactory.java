@@ -6,6 +6,7 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.http.jackson.ObjectMapperProvider;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,8 @@ public class GetRequestHandlerFactory {
       @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
       @NonNull Swagger swagger) {
     return new GetRequestHandler(apiOperation, informationProduct, schemaMap,
-        requestParameterMapper, new ApiRequestValidator(SwaggerUtils.createValidator(swagger)),
+        requestParameterMapper, new ApiRequestValidator(SwaggerUtils.createValidator(swagger),
+            new ObjectMapperProvider().getContext(Class.class)),
         swagger);
   }
 
