@@ -15,7 +15,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.entity.ContentType;
+import org.apache.http.HttpHeaders;
 
 final class RequestParameterExtractor {
 
@@ -91,8 +91,7 @@ final class RequestParameterExtractor {
      */
     IsEmptyCheckInputStream inputStream = new IsEmptyCheckInputStream(ctx.getEntityStream());
 
-    if (!((ctx.getHeaders().containsValue(ContentType.APPLICATION_JSON)
-        && ctx.getHeaders().containsKey("Content-Type")) || (ctx.getHeaders().isEmpty()))) {
+    if (!(ctx.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE.toString()))) {
       return null;
     }
     if (inputStream.isEmpty()) {
