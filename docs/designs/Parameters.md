@@ -5,9 +5,8 @@
 Het doel is om een een generieke oplossing te maken voor verschillende usecases.
 Meerdere input parameters kunnen properties uit een andere parameter verkrijgen.
 Input parameters hebben dus afhankelijkheden met elkaar. 
-Het GeometryFilter/Paginator object is beschikbaar in de query template.
-Het GeometryFilter object is een wrapper om het JTS Geometry object en bevat de volgende properties:
-- CRS
+Het GeometryParameter/Paginator object is beschikbaar in de query template.
+Het GeometryParameter object is een wrapper om het JTS Geometry object en bevat de volgende properties:
 - Operator (intersects, within, etc.)
 - Geometry
 
