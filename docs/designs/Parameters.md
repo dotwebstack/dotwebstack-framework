@@ -7,7 +7,7 @@ Meerdere input parameters kunnen properties uit een andere parameter verkrijgen.
 Input parameters hebben dus afhankelijkheden met elkaar. 
 Het GeometryParameter/Paginator object is beschikbaar in de query template.
 Het GeometryParameter object is een wrapper om het JTS Geometry object en bevat de volgende properties:
-- Operator (intersects, within, etc.)
+- Operator IRI (intersects, within, etc.)
 - Geometry
 
 ## Use cases
@@ -21,10 +21,8 @@ De parameters krijgen referenties naar andere Parameters:
 ```
 	  ro:GeometryFilter a elmo:GeometryFilter;
             elmo:name "_geo";
-          elmo:refs [
-              elmo:ref ro:CrsParameter;
-              elmo:ref ro:OperationParameter;
-          ]
+          elmo:crsParameter ro:CrsParameter;
+          
           .
 ```
           
