@@ -1085,6 +1085,13 @@ GRAPH elmo:Config {
   	rdfs:range elmo:Parameter;
   .
 
+  elmo:GeometryFilter a owl:Class;
+  	rdfs:subClassOf elmo:Parameter;
+  	rdfs:label "Geometry filter"@en;
+  	rdfs:comment "The class of Geometry information."
+  .
+
+
   # =========
   # Storage protocols
   #

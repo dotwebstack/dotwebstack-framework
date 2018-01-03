@@ -12,11 +12,14 @@ import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.AbstractParameter;
+import org.dotwebstack.framework.param.GeometryDefinition;
+import org.dotwebstack.framework.param.GeometryResourceProvider;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterResourceProvider;
 import org.dotwebstack.framework.param.PropertyShape;
 import org.dotwebstack.framework.param.shapes.StringPropertyShape;
+import org.dotwebstack.framework.param.types.GeometryParameter;
 import org.dotwebstack.framework.param.types.TermParameter;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -36,17 +39,21 @@ public class InformationProductResourceProvider
 
   private final ParameterResourceProvider parameterResourceProvider;
 
+  private final GeometryResourceProvider geometryResourceProvider;
+
   private final PropertyShape defaultPropertyShape = new StringPropertyShape();
 
   @Autowired
   public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull BackendResourceProvider backendResourceProvider,
       @NonNull ParameterResourceProvider parameterResourceProvider,
+      @NonNull GeometryResourceProvider geometryResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
 
     this.backendResourceProvider = backendResourceProvider;
     this.parameterResourceProvider = parameterResourceProvider;
+    this.geometryResourceProvider = geometryResourceProvider;
   }
 
   @Override
@@ -70,13 +77,17 @@ public class InformationProductResourceProvider
     Set<IRI> optionalParameterIds =
         Models.objectIRIs(model.filter(identifier, ELMO.OPTIONAL_PARAMETER_PROP, null));
 
+    Set<IRI> geoFilters =
+            Models.objectIRIs(model.filter(identifier, ELMO.GEOMETRY_FILTER, null));
+
+
     String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
 
-    return create(backendIRI, requiredParameterIds, optionalParameterIds, identifier, label, model);
+    return create(backendIRI, requiredParameterIds, optionalParameterIds, identifier, label, model, geoFilters);
   }
 
   private InformationProduct create(IRI backendIdentifier, Set<IRI> requiredParameterIds,
-      Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements) {
+                                    Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements, Set<IRI> geoFilters) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
 
     ImmutableList.Builder<Parameter> builder = ImmutableList.builder();
@@ -86,7 +97,12 @@ public class InformationProductResourceProvider
     optionalParameterIds.stream().map(parameterResourceProvider::get).map(
         d -> createTermParameter(d, false)).forEach(builder::add);
 
+    geoFilters.stream().map(geometryResourceProvider::get).map(d->createGeoFilter(d)).forEach(builder::add);
     return backend.createInformationProduct(identifier, label, builder.build(), statements);
+  }
+
+  private AbstractParameter<?> createGeoFilter(GeometryDefinition d) {
+    return new GeometryParameter(d.getIdentifier(),d.getName());
   }
 
   private AbstractParameter<?> createTermParameter(ParameterDefinition d, boolean required) {

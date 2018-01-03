@@ -41,33 +41,38 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
   @Override
   protected GraphQuery getQueryForResources(@NonNull RepositoryConnection conn) {
     String query =
-        "PREFIX elmo: <http://dotwebstack.org/def/elmo#> CONSTRUCT { ?s ?p ?o . ?os ?op ?oo . } WHERE { { ?s a ?type . ?s ?p ?o . OPTIONAL { ?s elmo:shape ?os . ?os ?op ?oo} } UNION { ?s1 a ?geotype . ?s1 ?p1 ?o1 . } } ";
+        "PREFIX elmo: <http://dotwebstack.org/def/elmo#> CONSTRUCT { ?s ?p ?o . ?os ?op ?oo . } WHERE { ?s a ?type . ?s ?p ?o . OPTIONAL { ?s elmo:shape ?os . ?os ?op ?oo } } ";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
 
     graphQuery.setBinding("type", ELMO.TERM_FILTER);
-    graphQuery.setBinding("geotype", ELMO.GEOMETRY_FILTER);
     return graphQuery;
   }
 
   @Override
   protected ParameterDefinition createResource(@NonNull Model model, @NonNull IRI identifier) {
+    return createTermFilter(model,identifier);
+  }
+
+  private ParameterDefinition createTermFilter(Model model, IRI identifier) {
     String name = getObjectString(model, identifier, ELMO.NAME_PROP).orElseThrow(
-        () -> new ConfigurationException(
-            String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
-                identifier, ELMO.TERM_FILTER)));
+            () -> new ConfigurationException(
+                    String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
+                            identifier, ELMO.TERM_FILTER)));
 
     Set<Value> objects = model.filter(identifier, ELMO.SHAPE_PROP, null).objects();
     Optional<PropertyShape> propertyShapeOptional = Optional.empty();
     if (objects.iterator().hasNext()) {
       Set<Value> iriShapeTypes =
-          model.filter((Resource) objects.iterator().next(), null, null).objects();
+              model.filter((Resource) objects.iterator().next(), null, null).objects();
 
       propertyShapeOptional = supportedShapes.stream().filter(
-          propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
-              propertyShape.getDataType().stringValue())).findFirst();
+              propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
+                      propertyShape.getDataType().stringValue())).findFirst();
     }
 
     return new ParameterDefinition(identifier, name, propertyShapeOptional);
   }
+
+
 
 }
