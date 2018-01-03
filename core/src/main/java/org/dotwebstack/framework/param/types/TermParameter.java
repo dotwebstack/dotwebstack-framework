@@ -1,14 +1,17 @@
-package org.dotwebstack.framework.param;
+package org.dotwebstack.framework.param.types;
 
 import java.util.Map;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
+import org.dotwebstack.framework.param.AbstractParameter;
+import org.dotwebstack.framework.param.BindableParameter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class TermParameter extends AbstractParameter<String> implements BindableParameter<String> {
 
-  private TermParameter(IRI identifier, String name, boolean required) {
+  public TermParameter(IRI identifier, String name, boolean required) {
     super(identifier, name, required);
   }
 
@@ -22,7 +25,7 @@ public class TermParameter extends AbstractParameter<String> implements Bindable
 
   @Override
   protected String handleInner(Map<String, String> parameterValues) {
-    return getValue(parameterValues);
+    return parseValue(parameterValues);
   }
 
   @Override
@@ -30,17 +33,20 @@ public class TermParameter extends AbstractParameter<String> implements Bindable
     return SimpleValueFactory.getInstance().createLiteral(value);
   }
 
-  private String getValue(Map<String, String> parameterValues) {
+  @Override
+  public String parseValue(Map<String, String> parameterValues) {
     return parameterValues.get(getName());
   }
 
   @Override
   protected void validateRequired(Map<String, String> parameterValues) {
-    if (getValue(parameterValues) == null) {
+    if (parseValue(parameterValues) == null) {
       throw new BackendException(
           String.format("No value found for required parameter '%s'. Supplied parameterValues: %s",
               getIdentifier(), parameterValues));
     }
   }
+
+
 
 }
