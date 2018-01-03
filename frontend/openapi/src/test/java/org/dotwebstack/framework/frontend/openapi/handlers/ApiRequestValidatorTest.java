@@ -122,7 +122,9 @@ public class ApiRequestValidatorTest {
 
     RequestParameters validatedParams = requestValidator.validate(apiOperation, mockPost);
 
-    Assert.assertEquals(body, validatedParams.asString(RequestParameterExtractor.RAW_REQUEST_BODY));
+    Assert.assertEquals(body, validatedParams.getRawBody());
+
+    Assert.assertEquals("one", validatedParams.get("someproperty"));
   }
 
   @Test

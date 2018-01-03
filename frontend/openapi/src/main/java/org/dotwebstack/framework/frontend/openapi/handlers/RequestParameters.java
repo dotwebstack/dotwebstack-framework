@@ -8,6 +8,8 @@ import lombok.NonNull;
 class RequestParameters {
 
   private final Map<String, Object> parameters = Maps.newHashMap();
+  private Map<String, Object> bodyParameters = Maps.newHashMap();
+  private String rawBody;
 
   void putAll(@NonNull MultivaluedMap<String, String> sourceParams) {
     for (String key : sourceParams.keySet()) {
@@ -32,5 +34,18 @@ class RequestParameters {
   @Override
   public String toString() {
     return parameters.toString();
+  }
+
+
+  Map<String, Object> getBodyParameters() {
+    return bodyParameters;
+  }
+
+  public void rawBody(String body) {
+    this.rawBody = body;
+  }
+
+  public String getRawBody() {
+    return rawBody;
   }
 }
