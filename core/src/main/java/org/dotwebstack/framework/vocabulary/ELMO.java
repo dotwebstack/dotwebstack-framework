@@ -63,6 +63,8 @@ public final class ELMO {
 
   public static final IRI REQUIRED_PARAMETER_PROP;
 
+  public static final IRI GEOMETRY_FILTER;
+
   public static final IRI NAME_PROP;
 
   public static final IRI SOURCE_PROP;
@@ -127,6 +129,7 @@ public final class ELMO {
 
     TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
 
+    GEOMETRY_FILTER = valueFactory.createIRI(ELMO.NAMESPACE,"GeometryFilter");
     OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
     REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
 
