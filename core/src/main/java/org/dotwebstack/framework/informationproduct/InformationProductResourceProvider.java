@@ -78,7 +78,6 @@ public class InformationProductResourceProvider
 
     Set<IRI> geoFilters = Models.objectIRIs(model.filter(identifier, ELMO.GEOMETRY_FILTER, null));
 
-
     String label = getObjectString(model, identifier, RDFS.LABEL).orElse(null);
 
     return create(backendIRI, requiredParameterIds, optionalParameterIds, identifier, label, model,
@@ -88,7 +87,6 @@ public class InformationProductResourceProvider
   private InformationProduct create(IRI backendIdentifier, Set<IRI> requiredParameterIds,
       Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements,
       Set<IRI> geoFilters) {
-    Backend backend = backendResourceProvider.get(backendIdentifier);
 
     ImmutableList.Builder<Parameter> builder = ImmutableList.builder();
 
@@ -97,8 +95,9 @@ public class InformationProductResourceProvider
     optionalParameterIds.stream().map(parameterResourceProvider::get).map(
         d -> createTermParameter(d, false)).forEach(builder::add);
 
-    geoFilters.stream().map(geometryResourceProvider::get).map(d -> createGeoFilter(d)).forEach(
+    geoFilters.stream().map(geometryResourceProvider::get).map(this::createGeoFilter).forEach(
         builder::add);
+    Backend backend = backendResourceProvider.get(backendIdentifier);
     return backend.createInformationProduct(identifier, label, builder.build(), statements);
   }
 
