@@ -3,17 +3,37 @@
 ## Doel
 	  
 Het doel is om een een generieke oplossing te maken voor verschillende usecases.
-Meerdere input parameters moeten mappen naar eenzelfde Parameter.
-Het Geometry/Paginator object is beschikbaar in de query template.
-	  
+Meerdere input parameters kunnen properties uit een andere parameter verkrijgen.
+Input parameters hebben dus afhankelijkheden met elkaar. 
+Het GeometryFilter/Paginator object is beschikbaar in de query template.
+Het GeometryFilter object is een wrapper om het JTS Geometry object en bevat de volgende properties:
+- CRS
+- Operator (intersects, within, etc.)
+- Geometry
+
 ## Use cases
 
 De Paginator en de GeometryFilter.
 	  
+## Afhankelijkheden tussen parameters
+	  
+De parameters krijgen referenties naar andere Parameters:
+	  
+```
+	  ro:GeometryFilter a elmo:GeometryFilter;
+            elmo:name "_geo";
+          elmo:refs [
+              elmo:ref ro:CrsParameter;
+              elmo:ref ro:OperationParameter;
+          ]
+          .
+```
+          
+	  
 ## Links
 
-Voor de implementatie van next en previous links moet het Subject filter dit support leveren.
-Het subject filter heeft een mechanisme om op next links en previous links te genereren op basis van de resultset.
+Voor de implementatie van next en previous links moet het Term filter dit support leveren.
+Het term filter heeft een mechanisme om op next links en previous links te genereren op basis van de resultset.
 
 ## Voorbeelden OpenAPI specification
 
@@ -88,7 +108,26 @@ parameters:
 
 Uiteindelijk moet de ERTS 89 als CRS ondersteund worden.
 http://www.opengis.net/def/crs/EPSG/0/4258
-De aanname is dat GraphDB dit support.
+
+Client stuurt een request met een geometrie in RD-projectie
+De parameter afhandeling leest de geometrie in als zijnde geprojecteerd in RD (obv CrsParameter) en transformeert die naar ETRS89.
+De data in GraphDB is geprojecteerd in ETRS89.
+
+```
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX geosparql: <http://www.opengis.net/ont/geosparql#>
+CONSTRUCT {
+    ?s ?p ?o .
+}
+WHERE {
+    {
+        GRAPH ?g {
+            bind(<http://data.informatiehuisruimte.nl/ro/id/geometry/5B6E25AE12AF05F7F2D5B2018BFC6C72> as ?s)
+             ?s geosparql:asWKT ?geometry .
+            FILTER(geof:sfWithin(?geometry,"<http://www.opengis.net/def/crs/EPSG/0/4258>POINT (6.591371722193622 53.26016547820686)"^^geo:wktLiteral))
+              ?s ?p ?o .
+````
 
 ## Conclusie
 
