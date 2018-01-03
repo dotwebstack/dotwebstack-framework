@@ -50,7 +50,6 @@ public class InformationProductResourceProvider
       @NonNull GeometryResourceProvider geometryResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
-
     this.backendResourceProvider = backendResourceProvider;
     this.parameterResourceProvider = parameterResourceProvider;
     this.geometryResourceProvider = geometryResourceProvider;
