@@ -44,7 +44,7 @@ class ApiRequestValidator {
 
     RequestParameters requestParameters = RequestParameterExtractor.extract(requestContext);
 
-    String body = requestParameters.asString(RequestParameterExtractor.RAW_REQUEST_BODY);
+    String body = requestParameters.getRawBody();
     builder.withBody(body);
 
     /*

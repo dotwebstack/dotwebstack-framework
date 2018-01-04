@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.io.IOException;
@@ -14,12 +15,12 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHeaders;
 
 final class RequestParameterExtractor {
 
   static final String PARAM_GEOMETRY_QUERYTYPE = "geometry_querytype";
   static final String PARAM_GEOMETRY = "geometry";
-  static final String RAW_REQUEST_BODY = "raw-request-body";
   static final String PARAM_PAGE_NUM = "page";
   static final String PARAM_PAGE_SIZE = "size";
 
@@ -39,7 +40,7 @@ final class RequestParameterExtractor {
     parameters.putAll(containerRequestContext.getHeaders());
 
     try {
-      parameters.putAll(extractBodyParameter(containerRequestContext));
+      extractBodyParameter(containerRequestContext, parameters);
     } catch (IOException ioe) {
       throw new InternalServerErrorException("Error processing request body.", ioe);
     }
@@ -49,19 +50,27 @@ final class RequestParameterExtractor {
   /**
    * Extracts the body from the supplied request.
    */
-  private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx)
-      throws IOException {
+  private static void extractBodyParameter(ContainerRequestContext ctx,
+      RequestParameters requestParameters) throws IOException {
 
     String body = extractBody(ctx);
+    requestParameters.rawBody(body);
     if (body == null) {
-      return ImmutableMap.of();
+      requestParameters.putAll(ImmutableMap.of());
+      return;
     }
 
     ImmutableMap.Builder<String, Object> builder = new Builder<>();
-    builder.put(RAW_REQUEST_BODY, body);
 
-    return builder.build();
+    Map<String, Object> json = new ObjectMapper().readValue(body, Map.class);
+
+    builder.putAll(json);
+
+
+    requestParameters.putAll(builder.build());
   }
+
+
 
   /**
    * Extracts body from a provided request context. Note that this method blocks until the body is
@@ -82,6 +91,9 @@ final class RequestParameterExtractor {
      */
     IsEmptyCheckInputStream inputStream = new IsEmptyCheckInputStream(ctx.getEntityStream());
 
+    if (!(ctx.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE.toString()))) {
+      return null;
+    }
     if (inputStream.isEmpty()) {
       return null;
     }
