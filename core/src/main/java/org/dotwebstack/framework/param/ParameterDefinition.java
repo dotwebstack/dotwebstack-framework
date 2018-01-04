@@ -4,7 +4,7 @@ import java.util.Optional;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
-public final class ParameterDefinition {
+public class ParameterDefinition {
 
   private final IRI identifier;
 

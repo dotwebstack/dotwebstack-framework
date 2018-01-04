@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
 import java.util.Optional;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -56,7 +57,8 @@ public class ParameterResourceProviderTest {
     ConfigurationBackend configurationBackendMock = mock(ConfigurationBackend.class);
     ApplicationProperties applicationPropertiesMock = mock(ApplicationProperties.class);
 
-    provider = new ParameterResourceProvider(configurationBackendMock, applicationPropertiesMock);
+    provider = new ParameterResourceProvider(configurationBackendMock, applicationPropertiesMock,
+        Collections.emptyList());
 
     SailRepository sailRepositoryMock = mock(SailRepository.class);
     when(configurationBackendMock.getRepository()).thenReturn(sailRepositoryMock);
@@ -184,7 +186,7 @@ public class ParameterResourceProviderTest {
     modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER);
     modelBuilder.add(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
     modelBuilder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(ELMO.SHAPE_PROP, head).subject(head).add(
-        ELMO.TERM_FILTER,XMLSchema.STRING);
+        ELMO.TERM_FILTER, XMLSchema.STRING);
     Model model = modelBuilder.build();
 
     // Act
