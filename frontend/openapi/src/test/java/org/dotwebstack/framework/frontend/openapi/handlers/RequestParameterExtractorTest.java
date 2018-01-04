@@ -52,7 +52,8 @@ public class RequestParameterExtractorTest {
     pathParameters.put(PATH_PARAMETER, ImmutableList.of(PATH_PARAMETER_VALUE));
     queryParameters.put(QUERY_PARAMETER, ImmutableList.of(QUERY_PARAMETER_VALUE));
     headers.put(HttpHeaders.ACCEPT, ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
-    headers.put(HttpHeaders.CONTENT_TYPE, ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
+    headers.put(HttpHeaders.CONTENT_TYPE,
+        ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
 
     String uri = "/endpoint";
     URI requestUri = new URI(uri);
