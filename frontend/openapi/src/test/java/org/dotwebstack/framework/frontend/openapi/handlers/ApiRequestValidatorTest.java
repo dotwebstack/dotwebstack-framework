@@ -21,6 +21,8 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.http.HttpHeaders;
+import org.apache.http.entity.ContentType;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -57,6 +59,7 @@ public class ApiRequestValidatorTest {
 
     MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
     headers.put("random-header-parameter", ImmutableList.of(EPSG));
+    headers.put(HttpHeaders.CONTENT_TYPE,ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
     when(ctx.getHeaders()).thenReturn(headers);
 
     return ctx;
