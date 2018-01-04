@@ -59,7 +59,8 @@ public class ApiRequestValidatorTest {
 
     MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
     headers.put("random-header-parameter", ImmutableList.of(EPSG));
-    headers.put(HttpHeaders.CONTENT_TYPE,ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
+    headers.put(HttpHeaders.CONTENT_TYPE,
+        ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
     when(ctx.getHeaders()).thenReturn(headers);
 
     return ctx;
