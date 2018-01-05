@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Constructor;
@@ -80,7 +81,7 @@ public class RequestParameterExtractorTest {
   public void extract_ReturnsRequestParameters_ForValidInput() {
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
-    RequestParameters result = RequestParameterExtractor.extract(context);
+    RequestParameters result = RequestParameterExtractor.extract(context, new ObjectMapper());
 
     assertThat(result.get(ID), is(BPG));
     assertThat(result.get(PATH_PARAMETER), is(PATH_PARAMETER_VALUE));
@@ -95,7 +96,7 @@ public class RequestParameterExtractorTest {
 
     when(context.getEntityStream()).thenReturn(null);
 
-    RequestParameterExtractor.extract(context);
+    RequestParameterExtractor.extract(context, new ObjectMapper());
   }
 
   @Test
@@ -104,7 +105,7 @@ public class RequestParameterExtractorTest {
 
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));
 
-    RequestParameters result = RequestParameterExtractor.extract(context);
+    RequestParameters result = RequestParameterExtractor.extract(context, new ObjectMapper());
 
     assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY_QUERYTYPE), nullValue());
     assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY), nullValue());
