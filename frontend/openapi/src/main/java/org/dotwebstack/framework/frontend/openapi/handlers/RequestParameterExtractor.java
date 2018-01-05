@@ -1,12 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.geojson.GeoJsonReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
