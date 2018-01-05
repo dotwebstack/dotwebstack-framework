@@ -4,13 +4,13 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Collections;
 import java.util.Optional;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -52,13 +52,22 @@ public class ParameterResourceProviderTest {
 
   private ParameterResourceProvider provider;
 
+  @Mock
+  private TermParameterResourceFactory termParameterResourceFactory;
+
+  private ConfigurationBackend configurationBackendMock;
+
+  private ApplicationProperties applicationPropertiesMock;
+
   @Before
   public void setUp() {
-    ConfigurationBackend configurationBackendMock = mock(ConfigurationBackend.class);
-    ApplicationProperties applicationPropertiesMock = mock(ApplicationProperties.class);
+    configurationBackendMock = mock(ConfigurationBackend.class);
+    applicationPropertiesMock = mock(ApplicationProperties.class);
 
+
+    when(termParameterResourceFactory.supports(any())).thenReturn(true);
     provider = new ParameterResourceProvider(configurationBackendMock, applicationPropertiesMock,
-        Collections.emptyList());
+        ImmutableList.of(termParameterResourceFactory));
 
     SailRepository sailRepositoryMock = mock(SailRepository.class);
     when(configurationBackendMock.getRepository()).thenReturn(sailRepositoryMock);
@@ -73,6 +82,14 @@ public class ParameterResourceProviderTest {
   @Test
   public void loadResources_GetResources_WithValidData() {
     // Arrange
+    TermParameterDefinition termParameter = new TermParameterDefinition(
+        SimpleValueFactory.getInstance().createIRI("http://dbeerpedia.org#nameParameter"), "name",
+        Optional.empty());
+    TermParameterDefinition termParameter2 = new TermParameterDefinition(
+        SimpleValueFactory.getInstance().createIRI("http://dbeerpedia.org#placeParameter"), "place",
+        Optional.empty());
+    when(termParameterResourceFactory.create(any(), any())).thenReturn(termParameter,
+        termParameter2);
     when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER),
@@ -103,6 +120,9 @@ public class ParameterResourceProviderTest {
   @Test
   public void loadResources_ThrowsException_TypeStatementMissing() {
     // Arrange
+    TermParameterResourceFactory termParameterResourceFactory = new TermParameterResourceFactory();
+    provider = new ParameterResourceProvider(configurationBackendMock, applicationPropertiesMock,
+        ImmutableList.of(termParameterResourceFactory));
     when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE,
             ELMO.TERM_FILTER))));
@@ -119,6 +139,10 @@ public class ParameterResourceProviderTest {
   @Test
   public void createResources_UnsupportedShape() {
     // Arrange
+    TermParameterDefinition termParameter = new TermParameterDefinition(
+        SimpleValueFactory.getInstance().createIRI("http://"), "", Optional.empty());
+    when(termParameterResourceFactory.create(any(), any())).thenReturn(termParameter);
+
     ModelBuilder modelBuilder = new ModelBuilder();
 
     BNode head = SimpleValueFactory.getInstance().createBNode();
@@ -140,6 +164,11 @@ public class ParameterResourceProviderTest {
   @Test
   public void createResources_IntegerFilterRecognition() {
     // Arrange
+    TermParameterDefinition termParameter =
+        new TermParameterDefinition(SimpleValueFactory.getInstance().createIRI("http://"), "",
+            Optional.of(new IntegerPropertyShape()));
+    when(termParameterResourceFactory.create(any(), any())).thenReturn(termParameter);
+
     ModelBuilder modelBuilder = new ModelBuilder();
 
     BNode head = SimpleValueFactory.getInstance().createBNode();
@@ -160,6 +189,12 @@ public class ParameterResourceProviderTest {
   @Test
   public void createResources_BooleanFilterRecognition() {
     // Arrange
+
+    TermParameterDefinition termParameter =
+        new TermParameterDefinition(SimpleValueFactory.getInstance().createIRI("http://"), "",
+            Optional.of(new BooleanPropertyShape()));
+    when(termParameterResourceFactory.create(any(), any())).thenReturn(termParameter);
+
     ModelBuilder modelBuilder = new ModelBuilder();
 
     BNode head = SimpleValueFactory.getInstance().createBNode();
@@ -180,6 +215,11 @@ public class ParameterResourceProviderTest {
   @Test
   public void createResources_StringFilterRecognition() {
     // Arrange
+    TermParameterDefinition termParameter =
+        new TermParameterDefinition(SimpleValueFactory.getInstance().createIRI("http://"), "",
+            Optional.of(new StringPropertyShape()));
+    when(termParameterResourceFactory.create(any(), any())).thenReturn(termParameter);
+
     ModelBuilder modelBuilder = new ModelBuilder();
 
     BNode head = SimpleValueFactory.getInstance().createBNode();
