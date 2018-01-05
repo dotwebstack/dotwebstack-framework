@@ -66,40 +66,8 @@ final class RequestParameterExtractor {
     ImmutableMap.Builder<String, Object> builder = new Builder<>();
     builder.put(RAW_REQUEST_BODY, body);
 
-    Map<String, Object> json = objectMapper.readValue(body, Map.class);
-
-    Map<String, Object> query = (Map<String, Object>) json.get("_geo");
-
-    if (query != null) {
-      String queryType = query.keySet().iterator().next();
-
-      builder.put(PARAM_GEOMETRY_QUERYTYPE, queryType);
-
-      Object geoJsonObject = query.get(queryType);
-      Geometry geometry = extractGeometry(geoJsonObject);
-
-      builder.put(PARAM_GEOMETRY, geometry);
-    }
-
-
     return builder.build();
   }
-
-
-  private static Geometry extractGeometry(Object geoJsonObject) throws JsonProcessingException {
-    String geoJsonString = new ObjectMapper().writeValueAsString(geoJsonObject);
-    GeoJsonReader reader = new GeoJsonReader();
-    Geometry geometry = null;
-    try {
-      geometry = reader.read(geoJsonString);
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }
-
-
-    return geometry;
-  }
-
 
   /**
    * Extracts body from a provided request context. Note that this method blocks until the body is

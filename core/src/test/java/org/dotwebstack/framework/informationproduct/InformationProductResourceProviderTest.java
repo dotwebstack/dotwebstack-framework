@@ -19,7 +19,6 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.param.GeometryResourceProvider;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterResourceProvider;
@@ -58,9 +57,6 @@ public class InformationProductResourceProviderTest {
   private ParameterResourceProvider parameterResourceProviderMock;
 
   @Mock
-  private GeometryResourceProvider geometryResourceProviderMock;
-
-  @Mock
   private ConfigurationBackend configurationBackend;
 
   @Mock
@@ -90,7 +86,7 @@ public class InformationProductResourceProviderTest {
   public void setUp() {
     informationProductResourceProvider =
         new InformationProductResourceProvider(configurationBackend, backendResourceProvider,
-            parameterResourceProviderMock, geometryResourceProviderMock, applicationProperties);
+            parameterResourceProviderMock, applicationProperties);
 
     when(backendResourceProvider.get(any())).thenReturn(backend);
 
@@ -108,7 +104,7 @@ public class InformationProductResourceProviderTest {
 
     // Act
     new InformationProductResourceProvider(null, backendResourceProvider,
-        parameterResourceProviderMock, geometryResourceProviderMock, applicationProperties);
+        parameterResourceProviderMock, applicationProperties);
   }
 
   @Test
@@ -118,7 +114,7 @@ public class InformationProductResourceProviderTest {
 
     // Act
     new InformationProductResourceProvider(configurationBackend, null,
-        parameterResourceProviderMock, geometryResourceProviderMock, applicationProperties);
+        parameterResourceProviderMock, applicationProperties);
   }
 
   @Test
@@ -128,7 +124,7 @@ public class InformationProductResourceProviderTest {
 
     // Act
     new InformationProductResourceProvider(configurationBackend, backendResourceProvider,
-        parameterResourceProviderMock, geometryResourceProviderMock, null);
+        parameterResourceProviderMock, null);
   }
 
   @Test
