@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.param;
 
-import java.util.Optional;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
@@ -10,13 +9,10 @@ public class ParameterDefinition {
 
   private final String name;
 
-  private Optional<PropertyShape> shapeType;
 
-  public ParameterDefinition(@NonNull IRI identifier, @NonNull String name,
-      @NonNull Optional<PropertyShape> shapeType) {
+  public ParameterDefinition(@NonNull IRI identifier, @NonNull String name) {
     this.identifier = identifier;
     this.name = name;
-    this.shapeType = shapeType;
   }
 
   public IRI getIdentifier() {
@@ -27,7 +23,4 @@ public class ParameterDefinition {
     return name;
   }
 
-  public Optional<PropertyShape> getShapeTypes() {
-    return this.shapeType;
-  }
 }

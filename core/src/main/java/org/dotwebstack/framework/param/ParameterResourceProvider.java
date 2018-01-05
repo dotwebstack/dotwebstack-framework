@@ -79,7 +79,8 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
   }
 
   private AbstractParameter<?> createTermParameter(ParameterDefinition d, boolean required) {
-    PropertyShape propertyShape = d.getShapeTypes().orElse(defaultPropertyShape);
+    PropertyShape propertyShape =
+        ((TermParameterDefinition) d).getShapeType().orElse(defaultPropertyShape);
 
     if (propertyShape.getTermClass().getConstructors().length == 1) {
       Constructor constructor = propertyShape.getTermClass().getConstructors()[0];

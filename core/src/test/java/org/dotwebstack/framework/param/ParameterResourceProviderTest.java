@@ -154,11 +154,11 @@ public class ParameterResourceProviderTest {
     Model model = modelBuilder.build();
 
     // Act
-    ParameterDefinition parameterDefinition =
-        provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
+    TermParameterDefinition parameterDefinition =
+        (TermParameterDefinition) provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
 
     // Assert
-    assertThat(parameterDefinition.getShapeTypes(), is(Optional.empty()));
+    assertThat(parameterDefinition.getShapeType(), is(Optional.empty()));
   }
 
   @Test
@@ -179,11 +179,11 @@ public class ParameterResourceProviderTest {
     Model model = modelBuilder.build();
 
     // Act
-    ParameterDefinition parameterDefinition =
-        provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
+    TermParameterDefinition parameterDefinition =
+        (TermParameterDefinition) provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
 
     // Assert
-    assertTrue(parameterDefinition.getShapeTypes().get() instanceof IntegerPropertyShape);
+    assertTrue(parameterDefinition.getShapeType().get() instanceof IntegerPropertyShape);
   }
 
   @Test
@@ -205,11 +205,11 @@ public class ParameterResourceProviderTest {
     Model model = modelBuilder.build();
 
     // Act
-    ParameterDefinition parameterDefinition =
-        provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
+    TermParameterDefinition parameterDefinition =
+        (TermParameterDefinition) provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
 
     // Assert
-    assertTrue(parameterDefinition.getShapeTypes().get() instanceof BooleanPropertyShape);
+    assertTrue(parameterDefinition.getShapeType().get() instanceof BooleanPropertyShape);
   }
 
   @Test
@@ -230,11 +230,11 @@ public class ParameterResourceProviderTest {
     Model model = modelBuilder.build();
 
     // Act
-    ParameterDefinition parameterDefinition =
-        provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
+    TermParameterDefinition parameterDefinition =
+        (TermParameterDefinition) provider.createResource(model, DBEERPEDIA.NAME_PARAMETER_ID);
 
     // Assert
-    assertTrue(parameterDefinition.getShapeTypes().get() instanceof StringPropertyShape);
+    assertTrue(parameterDefinition.getShapeType().get() instanceof StringPropertyShape);
   }
 
 }
