@@ -20,12 +20,9 @@ class ApiRequestValidator {
   private static final Logger LOG = LoggerFactory.getLogger(ApiRequestValidator.class);
 
   private final RequestValidator requestValidator;
-  private final ObjectMapper objectMapper;
 
-  ApiRequestValidator(@NonNull RequestValidator requestValidator,
-      @NonNull ObjectMapper objectMapper) {
+  ApiRequestValidator(@NonNull RequestValidator requestValidator) {
     this.requestValidator = requestValidator;
-    this.objectMapper = objectMapper;
   }
 
   /**
@@ -46,8 +43,7 @@ class ApiRequestValidator {
     requestContext.getUriInfo().getPathParameters().forEach(builder::withQueryParam);
     requestContext.getUriInfo().getQueryParameters().forEach(builder::withQueryParam);
 
-    RequestParameters requestParameters =
-        RequestParameterExtractor.extract(requestContext, objectMapper);
+    RequestParameters requestParameters = RequestParameterExtractor.extract(requestContext);
 
     String body = requestParameters.asString(RequestParameterExtractor.RAW_REQUEST_BODY);
     builder.withBody(body);

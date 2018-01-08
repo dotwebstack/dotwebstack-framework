@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.io.IOException;
@@ -29,8 +28,7 @@ final class RequestParameterExtractor {
         String.format("%s is not meant to be instantiated.", RequestParameterExtractor.class));
   }
 
-  static RequestParameters extract(@NonNull ContainerRequestContext containerRequestContext,
-      @NonNull ObjectMapper objectMapper) {
+  static RequestParameters extract(@NonNull ContainerRequestContext containerRequestContext) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
 
@@ -41,7 +39,7 @@ final class RequestParameterExtractor {
     parameters.putAll(containerRequestContext.getHeaders());
 
     try {
-      parameters.putAll(extractBodyParameter(containerRequestContext, objectMapper));
+      parameters.putAll(extractBodyParameter(containerRequestContext));
     } catch (IOException ioe) {
       throw new InternalServerErrorException("Error processing request body.", ioe);
     }
@@ -51,8 +49,8 @@ final class RequestParameterExtractor {
   /**
    * Extracts the body from the supplied request.
    */
-  private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx,
-      ObjectMapper objectMapper) throws IOException {
+  private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx)
+      throws IOException {
 
     String body = extractBody(ctx);
     if (body == null) {

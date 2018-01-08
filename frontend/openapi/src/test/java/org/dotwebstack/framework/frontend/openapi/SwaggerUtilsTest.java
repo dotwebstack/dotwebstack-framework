@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import com.atlassian.oai.validator.model.Request;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
