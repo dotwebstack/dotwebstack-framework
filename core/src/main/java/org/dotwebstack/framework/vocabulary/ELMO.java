@@ -75,6 +75,8 @@ public final class ELMO {
 
   public static final IRI TARGET_PROP;
 
+  public static final IRI SHAPE_PROP;
+
   public static final IRI RESULT_TYPE;
 
   public static final IRI RESULT_TYPE_DEFAULT;
@@ -129,7 +131,6 @@ public final class ELMO {
     REDIRECTION_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 
     TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
-
     OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
     REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
 
@@ -141,6 +142,7 @@ public final class ELMO {
     PATTERN_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "pattern");
     TEMPLATE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "template");
     TARGET_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "target");
+    SHAPE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "shape");
   }
 
   private ELMO() {

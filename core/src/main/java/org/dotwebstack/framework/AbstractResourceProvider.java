@@ -78,9 +78,11 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     try {
       model = QueryResults.asModel(query.evaluate());
       model.subjects().forEach(identifier -> {
-        R resource = createResource(model, (IRI) identifier);
-        resources.put((IRI) identifier, resource);
-        LOG.info("Registered resource: <{}>", identifier);
+        if (identifier instanceof IRI) {
+          R resource = createResource(model, (IRI) identifier);
+          resources.put((IRI) identifier, resource);
+          LOG.info("Registered resource: <{}>", identifier);
+        }
       });
     } catch (QueryEvaluationException e) {
       throw new ConfigurationException("Error while evaluating SPARQL query.", e);
