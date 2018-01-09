@@ -61,6 +61,9 @@ public class RequestParameterExtractorTest {
   @Mock
   private ApiOperation apiOperation;
 
+  @Mock
+  private Operation operation;
+
   @Before
   public void setUp() throws URISyntaxException {
 
@@ -79,7 +82,7 @@ public class RequestParameterExtractorTest {
     when(uriInfo.getPathParameters()).thenReturn(pathParameters);
     when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
 
-    Operation operation = mock(Operation.class);
+
     List<Parameter> parameters = new ArrayList<>();
     BodyParameter parameter = mock(BodyParameter.class);
     ModelImpl schema = mock(ModelImpl.class);
