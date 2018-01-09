@@ -45,7 +45,6 @@ public class RequestParameterExtractorTest {
 
   private static final String BPG = "bestemmingsplangebied.1";
   private static final String ID = "id";
-  private static final String METHOD = "GET";
 
   private final ContainerRequestContext context = mock(ContainerRequestContext.class);
 
@@ -72,7 +71,6 @@ public class RequestParameterExtractorTest {
     headers.put(HttpHeaders.CONTENT_TYPE,
         ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
 
-    String uri = "/endpoint";
     UriInfo uriInfo = mock(UriInfo.class);
 
     when(context.getUriInfo()).thenReturn(uriInfo);
@@ -127,9 +125,6 @@ public class RequestParameterExtractorTest {
   public void extract_DoesNotFail_WhenNonGeoJsonBodyIsSupplied() {
     String body = "{ \"foo\": \"bar\" }";
 
-    Operation operation = mock(Operation.class);
-
-    when(apiOperation.getOperation()).thenReturn(operation);
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));
 
     RequestParameters result = RequestParameterExtractor.extract(apiOperation, swagger, context);
