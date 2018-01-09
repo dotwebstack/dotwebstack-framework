@@ -3,9 +3,11 @@ package org.dotwebstack.framework.frontend.openapi;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
+import io.swagger.models.parameters.BodyParameter;
 import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
 import java.io.FileNotFoundException;
@@ -115,6 +117,8 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       }
       Operation getOperation = apiOperation.getOperation();
 
+      validateOperation(apiOperation);
+
       String absolutePath = basePath.concat(path);
 
       if (!getOperation.getVendorExtensions().containsKey(
@@ -174,6 +178,16 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
           absolutePath);
     });
+  }
+
+  private void validateOperation(ApiOperation apiOperation) {
+    apiOperation.getOperation().getParameters().stream().filter(
+        parameterBody -> "body".equalsIgnoreCase(parameterBody.getIn())).forEach(bodyParameter -> {
+          ModelImpl parameterModel = ((ModelImpl) (((BodyParameter) bodyParameter).getSchema()));
+          if (!"object".equalsIgnoreCase(parameterModel.getType())) {
+            throw new ConfigurationException("No object property in body parameter.");
+          }
+        });
   }
 
   private String createBasePath(Swagger swagger) {

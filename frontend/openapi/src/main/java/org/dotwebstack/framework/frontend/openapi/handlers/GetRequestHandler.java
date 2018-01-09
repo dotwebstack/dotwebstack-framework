@@ -60,7 +60,8 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
     LOG.debug("Handling {} request for path {}", context.getMethod(), path);
 
-    RequestParameters requestParameters = apiRequestValidator.validate(apiOperation, context);
+    RequestParameters requestParameters =
+        apiRequestValidator.validate(apiOperation, swagger, context);
 
     Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
         informationProduct, requestParameters);

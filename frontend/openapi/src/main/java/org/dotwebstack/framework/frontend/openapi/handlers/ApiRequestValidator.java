@@ -6,9 +6,9 @@ import com.atlassian.oai.validator.model.Request.Method;
 import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.model.SimpleRequest.Builder;
 import com.atlassian.oai.validator.report.ValidationReport;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Swagger;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response.Status;
@@ -33,7 +33,7 @@ class ApiRequestValidator {
    * @return a map of (validated) parameters
    * @throws WebApplicationException in case validation fails
    */
-  RequestParameters validate(@NonNull ApiOperation apiOperation,
+  RequestParameters validate(@NonNull ApiOperation apiOperation, @NonNull Swagger swagger,
       @NonNull ContainerRequestContext requestContext) {
     String strMethod = requestContext.getMethod();
     Method method = Method.valueOf(strMethod.toUpperCase());
@@ -43,9 +43,10 @@ class ApiRequestValidator {
     requestContext.getUriInfo().getPathParameters().forEach(builder::withQueryParam);
     requestContext.getUriInfo().getQueryParameters().forEach(builder::withQueryParam);
 
-    RequestParameters requestParameters = RequestParameterExtractor.extract(requestContext);
+    RequestParameters requestParameters =
+        RequestParameterExtractor.extract(apiOperation, swagger, requestContext);
 
-    String body = requestParameters.asString(RequestParameterExtractor.RAW_REQUEST_BODY);
+    String body = requestParameters.getRawBody();
     builder.withBody(body);
 
     /*

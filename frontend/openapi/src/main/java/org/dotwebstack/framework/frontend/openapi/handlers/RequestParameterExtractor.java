@@ -1,25 +1,32 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.atlassian.oai.validator.model.ApiOperation;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.models.ModelImpl;
+import io.swagger.models.RefModel;
+import io.swagger.models.Swagger;
+import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.Parameter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.entity.ContentType;
 
 final class RequestParameterExtractor {
 
   static final String PARAM_GEOMETRY_QUERYTYPE = "geometry_querytype";
   static final String PARAM_GEOMETRY = "geometry";
-  static final String RAW_REQUEST_BODY = "raw-request-body";
   static final String PARAM_PAGE_NUM = "page";
   static final String PARAM_PAGE_SIZE = "size";
 
@@ -28,7 +35,8 @@ final class RequestParameterExtractor {
         String.format("%s is not meant to be instantiated.", RequestParameterExtractor.class));
   }
 
-  static RequestParameters extract(@NonNull ContainerRequestContext containerRequestContext) {
+  static RequestParameters extract(@NonNull ApiOperation apiOperation, @NonNull Swagger swagger,
+      @NonNull ContainerRequestContext containerRequestContext) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
 
@@ -39,7 +47,24 @@ final class RequestParameterExtractor {
     parameters.putAll(containerRequestContext.getHeaders());
 
     try {
-      parameters.putAll(extractBodyParameter(containerRequestContext));
+      Optional<Parameter> parameter =
+          apiOperation.getOperation().getParameters().stream().filter(parameterBody -> {
+            if ((parameterBody instanceof BodyParameter)) {
+              ModelImpl parameterModel = null;
+
+              if (((BodyParameter) parameterBody).getSchema() instanceof ModelImpl) {
+                parameterModel = ((ModelImpl) (((BodyParameter) parameterBody).getSchema()));
+              }
+              if (((BodyParameter) parameterBody).getSchema() instanceof RefModel) {
+                RefModel refModel = ((RefModel) (((BodyParameter) parameterBody).getSchema()));
+                parameterModel = (ModelImpl) swagger.getDefinitions().get(refModel.getSimpleRef());
+              }
+              return "object".equalsIgnoreCase(parameterModel.getType())
+                  && "body".equalsIgnoreCase(parameterBody.getIn());
+            }
+            return false;
+          }).findFirst();
+      extractBodyParameter(parameters, containerRequestContext, parameter);
     } catch (IOException ioe) {
       throw new InternalServerErrorException("Error processing request body.", ioe);
     }
@@ -49,18 +74,28 @@ final class RequestParameterExtractor {
   /**
    * Extracts the body from the supplied request.
    */
-  private static Map<String, Object> extractBodyParameter(ContainerRequestContext ctx)
-      throws IOException {
+  private static void extractBodyParameter(final RequestParameters requestParameters,
+      final ContainerRequestContext ctx, final Optional<Parameter> parameter) throws IOException {
 
+    if (!(ContentType.APPLICATION_JSON.toString().startsWith(
+        ctx.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE)))) {
+      return;
+    }
     String body = extractBody(ctx);
+    requestParameters.setRawBody(body);
     if (body == null) {
-      return ImmutableMap.of();
+      return;
+    }
+    if (!parameter.isPresent()) {
+      return;
     }
 
-    ImmutableMap.Builder<String, Object> builder = new Builder<>();
-    builder.put(RAW_REQUEST_BODY, body);
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map json = objectMapper.readValue(body, Map.class);
+    if (json.keySet().size() == 1) {
+      requestParameters.putAll(json);
+    }
 
-    return builder.build();
   }
 
   /**

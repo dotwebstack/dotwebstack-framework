@@ -80,7 +80,7 @@ public class RequestParameterExtractorTest {
   public void extract_ReturnsRequestParameters_ForValidInput() {
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
-    RequestParameters result = RequestParameterExtractor.extract(context);
+    RequestParameters result = RequestParameterExtractor.extract(null,null,context);
 
     assertThat(result.get(ID), is(BPG));
     assertThat(result.get(PATH_PARAMETER), is(PATH_PARAMETER_VALUE));
@@ -95,7 +95,7 @@ public class RequestParameterExtractorTest {
 
     when(context.getEntityStream()).thenReturn(null);
 
-    RequestParameterExtractor.extract(context);
+    RequestParameterExtractor.extract(null,null,context);
   }
 
   @Test
@@ -104,11 +104,11 @@ public class RequestParameterExtractorTest {
 
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));
 
-    RequestParameters result = RequestParameterExtractor.extract(context);
+    RequestParameters result = RequestParameterExtractor.extract(null,null,context);
 
     assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY_QUERYTYPE), nullValue());
     assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY), nullValue());
-    assertThat(result.get(RequestParameterExtractor.RAW_REQUEST_BODY), is(body));
+    assertThat(result.getRawBody(), is(body));
   }
 
 }
