@@ -41,6 +41,9 @@ public class FormatPreMatchingRequestFilter implements ContainerRequestFilter {
       case ("ttl"):
         mediaTypes.add(MediaTypes.TURTLE);
         break;
+      default:
+        LOG.error("Format parameter %s not supported", format);
+        break;
     }
 
     if (!mediaTypes.isEmpty()) {
