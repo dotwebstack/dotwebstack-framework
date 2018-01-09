@@ -77,19 +77,19 @@ final class RequestParameterExtractor {
   private static void extractBodyParameter(final RequestParameters requestParameters,
       final ContainerRequestContext ctx, final Optional<Parameter> parameter) throws IOException {
 
-    if (!(ContentType.APPLICATION_JSON.toString().startsWith(
-        ctx.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE)))) {
-      return;
-    }
     String body = extractBody(ctx);
-    requestParameters.setRawBody(body);
     if (body == null) {
       return;
     }
+    requestParameters.setRawBody(body);
     if (!parameter.isPresent()) {
       return;
     }
 
+    if (!(ContentType.APPLICATION_JSON.toString().startsWith(
+        ctx.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE)))) {
+      return;
+    }
     ObjectMapper objectMapper = new ObjectMapper();
     Map json = objectMapper.readValue(body, Map.class);
     if (json.keySet().size() == 1) {
