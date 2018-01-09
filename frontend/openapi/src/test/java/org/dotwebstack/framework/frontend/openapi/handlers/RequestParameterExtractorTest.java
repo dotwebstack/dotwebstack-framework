@@ -6,12 +6,20 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableList;
+import io.swagger.models.ModelImpl;
+import io.swagger.models.Operation;
+import io.swagger.models.Swagger;
+import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.Parameter;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -24,7 +32,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class RequestParameterExtractorTest {
 
   private static final String PATH_PARAMETER = "pathParameter";
@@ -45,6 +57,12 @@ public class RequestParameterExtractorTest {
   @Rule
   public final ExpectedException exception = ExpectedException.none();
 
+  @Mock
+  private Swagger swagger;
+
+  @Mock
+  private ApiOperation apiOperation;
+
   @Before
   public void setUp() throws URISyntaxException {
 
@@ -52,19 +70,27 @@ public class RequestParameterExtractorTest {
     pathParameters.put(PATH_PARAMETER, ImmutableList.of(PATH_PARAMETER_VALUE));
     queryParameters.put(QUERY_PARAMETER, ImmutableList.of(QUERY_PARAMETER_VALUE));
     headers.put(HttpHeaders.ACCEPT, ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
+    headers.put(HttpHeaders.CONTENT_TYPE,
+        ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
 
     String uri = "/endpoint";
-    URI requestUri = new URI(uri);
     UriInfo uriInfo = mock(UriInfo.class);
 
     when(context.getUriInfo()).thenReturn(uriInfo);
-    when(context.getMethod()).thenReturn(METHOD);
     when(context.getHeaders()).thenReturn(headers);
 
-    when(uriInfo.getRequestUri()).thenReturn(requestUri);
     when(uriInfo.getPathParameters()).thenReturn(pathParameters);
     when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
-    when(uriInfo.getPath()).thenReturn("/endpoint");
+
+    Operation operation = mock(Operation.class);
+    List<Parameter> parameters = new ArrayList<>();
+    BodyParameter parameter = mock(BodyParameter.class);
+    ModelImpl schema = mock(ModelImpl.class);
+    when(schema.getType()).thenReturn("object");
+    when(parameter.getSchema()).thenReturn(schema);
+    parameters.add(parameter);
+    when(operation.getParameters()).thenReturn(parameters);
+    when(apiOperation.getOperation()).thenReturn(operation);
   }
 
   @Test
@@ -80,7 +106,7 @@ public class RequestParameterExtractorTest {
   public void extract_ReturnsRequestParameters_ForValidInput() {
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
-    RequestParameters result = RequestParameterExtractor.extract(null,null,context);
+    RequestParameters result = RequestParameterExtractor.extract(apiOperation, swagger, context);
 
     assertThat(result.get(ID), is(BPG));
     assertThat(result.get(PATH_PARAMETER), is(PATH_PARAMETER_VALUE));
@@ -95,16 +121,19 @@ public class RequestParameterExtractorTest {
 
     when(context.getEntityStream()).thenReturn(null);
 
-    RequestParameterExtractor.extract(null,null,context);
+    RequestParameterExtractor.extract(apiOperation, swagger, context);
   }
 
   @Test
   public void extract_DoesNotFail_WhenNonGeoJsonBodyIsSupplied() {
     String body = "{ \"foo\": \"bar\" }";
 
+    Operation operation = mock(Operation.class);
+
+    when(apiOperation.getOperation()).thenReturn(operation);
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));
 
-    RequestParameters result = RequestParameterExtractor.extract(null,null,context);
+    RequestParameters result = RequestParameterExtractor.extract(apiOperation, swagger, context);
 
     assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY_QUERYTYPE), nullValue());
     assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY), nullValue());

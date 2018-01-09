@@ -60,8 +60,8 @@ public class GetRequestHandlerTest {
         ImmutableMap.of(), requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
 
     RequestParameters requestParameters = new RequestParameters();
-    when(apiRequestValidatorMock.validate(operationMock, swaggerMock,containerRequestContextMock)).thenReturn(
-        requestParameters);
+    when(apiRequestValidatorMock.validate(operationMock, swaggerMock,
+        containerRequestContextMock)).thenReturn(requestParameters);
     Operation operation = new Operation();
     when(operationMock.getOperation()).thenReturn(operation);
 
