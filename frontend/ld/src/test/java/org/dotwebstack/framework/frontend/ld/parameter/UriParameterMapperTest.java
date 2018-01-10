@@ -11,7 +11,7 @@ import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.frontend.ld.parameter.source.RequestUriParameterSource;
 import org.dotwebstack.framework.frontend.ld.parameter.target.ParameterTarget;
 import org.dotwebstack.framework.frontend.ld.parameter.target.Target;
-import org.dotwebstack.framework.param.ParameterDefinition;
+import org.dotwebstack.framework.param.TermParameterDefinition;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class UriParameterMapperTest {
 
   @Mock
-  private ParameterDefinition parameterDefinition;
+  private TermParameterDefinition parameterDefinition;
 
   private RequestUriParameterSource requestUriParameterSource;
 

@@ -1,26 +1,15 @@
 package org.dotwebstack.framework.param;
 
-import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 
-public class ParameterDefinition {
+public interface ParameterDefinition<T extends Parameter> {
 
-  private final IRI identifier;
+  IRI getIdentifier();
 
-  private final String name;
+  String getName();
 
+  T createOptionalParameter();
 
-  public ParameterDefinition(@NonNull IRI identifier, @NonNull String name) {
-    this.identifier = identifier;
-    this.name = name;
-  }
-
-  public IRI getIdentifier() {
-    return identifier;
-  }
-
-  public String getName() {
-    return name;
-  }
+  T createRequiredParameter();
 
 }

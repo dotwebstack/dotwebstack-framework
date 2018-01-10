@@ -15,8 +15,8 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.parameter.source.ParameterSourceFactory;
 import org.dotwebstack.framework.frontend.ld.parameter.target.TargetFactory;
-import org.dotwebstack.framework.param.ParameterDefinition;
-import org.dotwebstack.framework.param.ParameterResourceProvider;
+import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
+import org.dotwebstack.framework.param.TermParameterDefinition;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.dotwebstack.framework.vocabulary.HTTP;
@@ -43,7 +43,7 @@ public class ParameterMapperResourceProviderTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private ParameterResourceProvider parameterResourceProvider;
+  private ParameterDefinitionResourceProvider parameterDefinitionResourceProvider;
 
   @Mock
   private ApplicationProperties applicationProperties;
@@ -58,7 +58,7 @@ public class ParameterMapperResourceProviderTest {
   private SailRepositoryConnection configurationRepositoryConnection;
 
   @Mock
-  private ParameterDefinition parameterDefinition;
+  private TermParameterDefinition parameterDefinition;
 
   private ParameterMapperResourceProvider parameterMapperResourceProvider;
 
@@ -76,12 +76,12 @@ public class ParameterMapperResourceProviderTest {
   @Before
   public void setUp() {
     parameterSourceFactory = new ParameterSourceFactory();
-    targetFactory = new TargetFactory(parameterResourceProvider);
+    targetFactory = new TargetFactory(parameterDefinitionResourceProvider);
     parameterMapperFactory = new ParameterMapperFactory(parameterSourceFactory, targetFactory);
     parameterMapperResourceProvider = new ParameterMapperResourceProvider(configurationBackend,
         parameterMapperFactory, applicationProperties);
 
-    when(parameterResourceProvider.get(DBEERPEDIA.SUBJECT_PARAMETER)).thenReturn(
+    when(parameterDefinitionResourceProvider.get(DBEERPEDIA.SUBJECT_PARAMETER)).thenReturn(
         parameterDefinition);
     // when(parameterDefinition.getName()).thenReturn(DBEERPEDIA.SUBJECT_PARAMETER_NAME);
 

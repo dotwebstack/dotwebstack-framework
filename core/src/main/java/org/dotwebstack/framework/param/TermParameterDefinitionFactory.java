@@ -3,6 +3,7 @@ package org.dotwebstack.framework.param;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.shapes.BooleanPropertyShape;
 import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
@@ -17,11 +18,11 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TermParameterResourceFactory implements ParameterResourceFactory {
+final class TermParameterDefinitionFactory implements ParameterDefinitionFactory {
 
   private Set<PropertyShape> supportedShapes = new HashSet<>();
 
-  public TermParameterResourceFactory() {
+  public TermParameterDefinitionFactory() {
     supportedShapes.add(new StringPropertyShape());
     supportedShapes.add(new IntegerPropertyShape());
     supportedShapes.add(new BooleanPropertyShape());
@@ -29,13 +30,13 @@ public class TermParameterResourceFactory implements ParameterResourceFactory {
   }
 
   @Override
-  public TermParameterDefinition create(Model model, IRI identifier) {
-    String name = getObjectString(model, identifier, ELMO.NAME_PROP).orElseThrow(
+  public TermParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
+    String name = Models.objectLiteral(model.filter(id, ELMO.NAME_PROP, null)).orElseThrow(
         () -> new ConfigurationException(
-            String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
-                identifier, ELMO.TERM_FILTER)));
+            String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP, id,
+                ELMO.TERM_FILTER))).stringValue();
 
-    Set<Value> objects = model.filter(identifier, ELMO.SHAPE_PROP, null).objects();
+    Set<Value> objects = model.filter(id, ELMO.SHAPE_PROP, null).objects();
     Optional<PropertyShape> propertyShapeOptional = Optional.empty();
     if (objects.iterator().hasNext()) {
       Set<Value> iriShapeTypes =
@@ -46,17 +47,12 @@ public class TermParameterResourceFactory implements ParameterResourceFactory {
               propertyShape.getDataType().stringValue())).findFirst();
     }
 
-    return new TermParameterDefinition(identifier, name, propertyShapeOptional);
+    return new TermParameterDefinition(id, name, propertyShapeOptional);
   }
 
   @Override
-  public boolean supports(IRI backendType) {
-    return backendType.equals(ELMO.TERM_FILTER);
+  public boolean supports(@NonNull IRI type) {
+    return type.equals(ELMO.TERM_FILTER);
   }
-
-  protected Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
-    return Models.objectString(model.filter(subject, predicate, null));
-  }
-
 
 }
