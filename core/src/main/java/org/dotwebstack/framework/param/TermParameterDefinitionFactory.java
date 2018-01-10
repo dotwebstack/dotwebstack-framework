@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 @Service
 final class TermParameterDefinitionFactory implements ParameterDefinitionFactory {
 
-  private Set<PropertyShape> supportedShapes = new HashSet<>();
+  private final Set<PropertyShape> supportedShapes = new HashSet<>();
 
   public TermParameterDefinitionFactory() {
     supportedShapes.add(new StringPropertyShape());
@@ -30,7 +30,7 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
   }
 
   @Override
-  public TermParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
+  public ParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
     String name = Models.objectLiteral(model.filter(id, ELMO.NAME_PROP, null)).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP, id,
@@ -50,6 +50,9 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
     return new TermParameterDefinition(id, name, propertyShapeOptional);
   }
 
+  /**
+   * @return {@code true} if {@link ELMO#TERM_FILTER} is supplied; {@code false} otherwise.
+   */
   @Override
   public boolean supports(@NonNull IRI type) {
     return type.equals(ELMO.TERM_FILTER);

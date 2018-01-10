@@ -12,7 +12,7 @@ public final class TermParameterDefinition extends AbstractParameterDefinition<T
 
   private static final PropertyShape DEFAULT_SHAPE = new StringPropertyShape();
 
-  private Optional<PropertyShape> shapeType;
+  private final Optional<PropertyShape> shapeType;
 
   public TermParameterDefinition(@NonNull IRI identifier, @NonNull String name,
       @NonNull Optional<PropertyShape> shapeType) {
@@ -21,7 +21,6 @@ public final class TermParameterDefinition extends AbstractParameterDefinition<T
     this.shapeType = shapeType;
   }
 
-  // TODO (PvH) Kan weg?
   public Optional<PropertyShape> getShapeType() {
     return this.shapeType;
   }

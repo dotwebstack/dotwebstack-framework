@@ -5,7 +5,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
-import org.dotwebstack.framework.param.TermParameterDefinition;
+import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +19,7 @@ public class ParameterTargetTest {
   private ParameterTarget parameterTarget;
 
   @Mock
-  private TermParameterDefinition parameterDefinitionMock;
+  private ParameterDefinition parameterDefinitionMock;
 
   @Before
   public void setUp() {

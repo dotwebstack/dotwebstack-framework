@@ -20,6 +20,7 @@ import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
 import org.dotwebstack.framework.param.TermParameterDefinition;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -228,19 +229,19 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.OPTIONAL_PARAMETER_PROP, optParam2Id))));
 
-    TermParameterDefinition reqParam1Def =
+    ParameterDefinition reqParam1Def =
         new TermParameterDefinition(reqParam1Id, "reqParam1Name", Optional.empty());
     when(parameterDefinitionResourceProviderMock.get(reqParam1Id)).thenReturn(reqParam1Def);
 
-    TermParameterDefinition reqParam2Def =
+    ParameterDefinition reqParam2Def =
         new TermParameterDefinition(reqParam2Id, "reqParam2Name", Optional.empty());
     when(parameterDefinitionResourceProviderMock.get(reqParam2Id)).thenReturn(reqParam2Def);
 
-    TermParameterDefinition optParam1Def =
+    ParameterDefinition optParam1Def =
         new TermParameterDefinition(optParam1Id, "optParam1Name", Optional.empty());
     when(parameterDefinitionResourceProviderMock.get(optParam1Id)).thenReturn(optParam1Def);
 
-    TermParameterDefinition optParam2Def =
+    ParameterDefinition optParam2Def =
         new TermParameterDefinition(optParam2Id, "optParam2Name", Optional.empty());
     when(parameterDefinitionResourceProviderMock.get(optParam2Id)).thenReturn(optParam2Def);
 

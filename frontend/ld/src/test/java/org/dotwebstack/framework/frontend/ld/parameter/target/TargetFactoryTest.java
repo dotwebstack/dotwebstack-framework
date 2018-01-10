@@ -5,8 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
-import org.dotwebstack.framework.param.TermParameterDefinition;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,7 +28,7 @@ public class TargetFactoryTest {
   private ParameterDefinitionResourceProvider parameterDefinitionResourceProvider;
 
   @Mock
-  private TermParameterDefinition parameterDefinition;
+  private ParameterDefinition parameterDefinition;
 
   @Before
   public void setUp() {

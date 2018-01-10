@@ -15,8 +15,8 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.parameter.source.ParameterSourceFactory;
 import org.dotwebstack.framework.frontend.ld.parameter.target.TargetFactory;
+import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
-import org.dotwebstack.framework.param.TermParameterDefinition;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.dotwebstack.framework.vocabulary.HTTP;
@@ -58,7 +58,7 @@ public class ParameterMapperResourceProviderTest {
   private SailRepositoryConnection configurationRepositoryConnection;
 
   @Mock
-  private TermParameterDefinition parameterDefinition;
+  private ParameterDefinition parameterDefinition;
 
   private ParameterMapperResourceProvider parameterMapperResourceProvider;
 

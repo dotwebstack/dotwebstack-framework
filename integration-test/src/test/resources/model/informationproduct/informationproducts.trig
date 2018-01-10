@@ -3,9 +3,6 @@ GRAPH dbeerpedia:Theatre {
   dbeerpedia:Backend a elmo:SparqlBackend;
     elmo:endpoint "http://localhost:8900/sparql"^^xsd:anyURI;
   .
-  elmo:TermFilter a owl:Class;
-    rdfs:subClassOf elmo:Parameter;
-  .
   
   dbeerpedia:IdFilter a elmo:TermFilter;
     elmo:name "id";
