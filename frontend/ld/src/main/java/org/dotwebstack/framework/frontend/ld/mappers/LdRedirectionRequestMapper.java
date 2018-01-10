@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.ld.mappers;
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.ld.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.ld.handlers.RedirectionRequestHandler;
 import org.dotwebstack.framework.frontend.ld.redirection.Redirection;
 import org.dotwebstack.framework.frontend.ld.redirection.RedirectionResourceProvider;
@@ -42,7 +43,8 @@ public class LdRedirectionRequestMapper {
     String absolutePathRegex = String.format("%s{any: %s}", basePath, urlPattern);
 
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePathRegex);
-    resourceBuilder.addMethod(HttpMethod.GET).handledBy(new RedirectionRequestHandler(redirection));
+    resourceBuilder.addMethod(HttpMethod.GET).handledBy(
+        new RedirectionRequestHandler(redirection)).nameBindings(ExpandFormatParameter.class);
 
     if (!httpConfiguration.resourceAlreadyRegistered(absolutePathRegex)) {
       httpConfiguration.registerResources(resourceBuilder.build());

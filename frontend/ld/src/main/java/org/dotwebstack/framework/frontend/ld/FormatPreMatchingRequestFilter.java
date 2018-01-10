@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 @PreMatching
 @Provider
+@ExpandFormatParameter
 public class FormatPreMatchingRequestFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(FormatPreMatchingRequestFilter.class);
@@ -42,12 +43,12 @@ public class FormatPreMatchingRequestFilter implements ContainerRequestFilter {
         mediaTypes.add(MediaTypes.TURTLE);
         break;
       default:
-        LOG.error("Format parameter %s not supported", format);
+        LOG.error("Format parameter {} not supported -> ignored", format);
         break;
     }
 
     if (!mediaTypes.isEmpty()) {
-      LOG.debug("Format %s set, expand headers with %s", format, mediaTypes);
+      LOG.debug("Format parameter {} set, expand Accept header with {}", format, mediaTypes);
       containerRequestContext.getHeaders().put(HttpHeaders.ACCEPT, mediaTypes);
     }
   }
