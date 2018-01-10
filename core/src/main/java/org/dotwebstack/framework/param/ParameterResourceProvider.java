@@ -50,10 +50,6 @@ public class ParameterResourceProvider extends AbstractResourceProvider<Paramete
 
   @Override
   protected ParameterDefinition createResource(@NonNull Model model, @NonNull IRI identifier) {
-    return createTermFilter(model, identifier);
-  }
-
-  private ParameterDefinition createTermFilter(Model model, IRI identifier) {
     String name = getObjectString(model, identifier, ELMO.NAME_PROP).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP,
