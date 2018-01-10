@@ -26,7 +26,7 @@ public final class SwaggerUtils {
   /**
    * @param swagger Swagger specification
    * @param path path of the requested operation
-   * @param method method of the requested operation
+   *             @param apiPath path of
    * @return {@link ApiOperation} if the provided swagger does contain the requested method at the
    *         provided path, <code>null</code> otherwise
    */
