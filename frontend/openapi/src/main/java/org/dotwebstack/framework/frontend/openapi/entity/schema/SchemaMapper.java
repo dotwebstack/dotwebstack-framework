@@ -13,8 +13,4 @@ public interface SchemaMapper<S extends Property, T> {
 
   boolean supports(Property schema);
 
-  default int getPriority() {
-    return 0;
-  }
-
 }

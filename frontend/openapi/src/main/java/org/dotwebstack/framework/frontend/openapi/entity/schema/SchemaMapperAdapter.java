@@ -33,21 +33,10 @@ public class SchemaMapperAdapter {
       GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
-    SchemaMapper<? extends Property, ?> schemaMapper = null;
-
-    if (schema.getVendorExtensions().containsKey("x-dotwebstack-type")) {
-      schemaMapper =
-          schemaMappers.stream().filter(candidateMapper -> candidateMapper.supports(schema)).filter(
-              s -> s.getPriority() > 0).findFirst().orElseThrow(
-                  () -> new SchemaMapperRuntimeException(String.format(
-                      "No schema mapper available for '%s'.", schema.getClass().getName())));
-    } else {
-      schemaMapper =
-          schemaMappers.stream().filter(candidateMapper -> candidateMapper.supports(schema)).filter(
-              s -> s.getPriority() == 0).findFirst().orElseThrow(
-                  () -> new SchemaMapperRuntimeException(String.format(
-                      "No schema mapper available for '%s'.", schema.getClass().getName())));
-    }
+    SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
+        candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
+            () -> new SchemaMapperRuntimeException(String.format(
+                "No schema mapper available for '%s'.", schema.getClass().getName())));
     return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, graphEntityContext,
         valueContext, schemaMapperAdapter);
   }
