@@ -10,4 +10,8 @@ class SchemaMapperRuntimeException extends RuntimeException {
     super(message);
   }
 
+  public SchemaMapperRuntimeException(String message, Exception ex) {
+    super(message, ex);
+  }
+
 }

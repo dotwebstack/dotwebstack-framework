@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.param.types;
 
 import java.util.Map;
-import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.param.AbstractParameter;
 import org.dotwebstack.framework.param.BindableParameter;
