@@ -1,8 +1,12 @@
 package org.dotwebstack.framework.frontend.ld;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,11 +40,11 @@ public class FormatPreMatchingRequestFilter {
     when(containerRequestContext.getUriInfo().getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    // formatPreMatchingRequestFilter.filter(containerRequestContext);
+    formatPreMatchingRequestFilter.filter(containerRequestContext);
 
     // Assert
-    // verify(containerRequestContext).getHeaders().put(HttpHeaders.ACCEPT,
-    // Arrays.asList(MediaType.APPLICATION_JSON, MediaTypes.LDJSON));
+    verify(containerRequestContext).getHeaders().put(HttpHeaders.ACCEPT,
+        Arrays.asList(MediaType.APPLICATION_JSON, MediaTypes.LDJSON));
   }
 
 }
