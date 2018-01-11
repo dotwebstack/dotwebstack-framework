@@ -1,6 +1,5 @@
 package org.dotwebstack.framework;
 
-import java.io.StringWriter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +19,6 @@ import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.impl.SimpleDataset;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.Rio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,22 +76,15 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     Model model;
 
     try {
-      System.err.println("Query: " + query);
-
       model = QueryResults.asModel(query.evaluate());
-
-      StringWriter writer = new StringWriter();
-
-      Rio.write(model, writer, RDFFormat.NTRIPLES);
-
-      System.err.println("Model: " + writer.toString());
-
       model.subjects().forEach(identifier -> {
         if (identifier instanceof IRI) {
-
           R resource = createResource(model, (IRI) identifier);
-          resources.put((IRI) identifier, resource);
-          LOG.info("Registered resource: <{}>", identifier);
+
+          if (resource != null) {
+            resources.put((IRI) identifier, resource);
+            LOG.info("Registered resource: <{}>", identifier);
+          }
         }
       });
     } catch (QueryEvaluationException e) {

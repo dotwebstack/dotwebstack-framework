@@ -166,6 +166,14 @@ public class InformationProductResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND))));
 
+    InformationProduct percentagesProduct = mock(InformationProduct.class);
+    when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
+        eq(ImmutableList.of()), any())).thenReturn(percentagesProduct);
+
+    InformationProduct originProduct = mock(InformationProduct.class);
+    when(backend.createInformationProduct(eq(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT), eq(null),
+        eq(ImmutableList.of()), any())).thenReturn(originProduct);
+
     // Act
     informationProductResourceProvider.loadResources();
 
@@ -196,6 +204,14 @@ public class InformationProductResourceProviderTest {
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND),
             valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND))));
+
+    InformationProduct percentagesProduct = mock(InformationProduct.class);
+    when(backend.createInformationProduct(eq(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT), eq(null),
+        eq(ImmutableList.of()), any())).thenReturn(percentagesProduct);
+
+    InformationProduct originProduct = mock(InformationProduct.class);
+    when(backend.createInformationProduct(eq(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT), eq(null),
+        eq(ImmutableList.of()), any())).thenReturn(originProduct);
 
     informationProductResourceProvider.loadResources();
 
