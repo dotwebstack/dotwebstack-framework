@@ -181,6 +181,11 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     });
   }
 
+  /**
+   * @throws ConfigurationException If the supplied operation has a body parameter, and it does not
+   *         have a schema of type Object (because a schema of type Object is the only type we are
+   *         currently supporting).
+   */
   private void validateOperation(ApiOperation apiOperation, Swagger swagger) {
     apiOperation.getOperation().getParameters().stream().filter(
         parameterBody -> "body".equalsIgnoreCase(parameterBody.getIn())).forEach(parameterBody -> {
