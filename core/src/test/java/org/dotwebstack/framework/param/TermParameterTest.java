@@ -101,4 +101,17 @@ public class TermParameterTest {
     assertThat(result, is(SimpleValueFactory.getInstance().createLiteral("value")));
   }
 
+  @Test
+  public void getValue_ReturnsEmpty() {
+    // Arrange
+    Map<String, String> parameterValues =
+            ImmutableMap.of();
+
+    // Act
+    optionalParameter.validateInner(parameterValues);
+
+    // Assert
+    //assertThat(result, is(SimpleValueFactory.getInstance().createLiteral("value")));
+  }
+
 }

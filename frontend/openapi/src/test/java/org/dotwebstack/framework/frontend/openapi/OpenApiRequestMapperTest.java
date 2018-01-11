@@ -323,12 +323,7 @@ public class OpenApiRequestMapperTest {
     // Arrange
     Property property = mock(Property.class);
     Operation newOp = new Operation();
-    BodyParameter bodyParameter = new BodyParameter();
-    ModelImpl schema = new ModelImpl();
-    schema.setType("object");
-    bodyParameter.setSchema(schema);
-    List<Parameter> parameters = new ArrayList<>();
-    parameters.add(bodyParameter);
+    List<Parameter> parameters = createBodyParameter("object");
     newOp.setParameters(parameters);
     newOp.vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES.stringValue()));
@@ -346,17 +341,22 @@ public class OpenApiRequestMapperTest {
 
   }
 
+  private List<Parameter> createBodyParameter(String object) {
+    BodyParameter bodyParameter = new BodyParameter();
+    ModelImpl schema = new ModelImpl();
+    schema.setType(object);
+    bodyParameter.setSchema(schema);
+    List<Parameter> parameters = new ArrayList<>();
+    parameters.add(bodyParameter);
+    return parameters;
+  }
+
   @Test
   public void map_BodyParameterNoObject() throws IOException {
     // Arrange
     Property property = mock(Property.class);
     Operation newOp = new Operation();
-    BodyParameter bodyParameter = new BodyParameter();
-    ModelImpl schema = new ModelImpl();
-    schema.setType("object2");
-    bodyParameter.setSchema(schema);
-    List<Parameter> parameters = new ArrayList<>();
-    parameters.add(bodyParameter);
+    List<Parameter> parameters = createBodyParameter("object2");
     newOp.setParameters(parameters);
     newOp.vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES.stringValue()));
