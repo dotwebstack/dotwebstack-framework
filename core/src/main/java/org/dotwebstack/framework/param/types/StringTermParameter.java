@@ -21,8 +21,8 @@ public class StringTermParameter extends AbstractParameter<String>
   }
 
   @Override
-  protected String parseValue(Map<String, String> parameterValues) {
-    return parameterValues.get(getName());
+  protected String parseValue(String value) {
+    return value;
   }
 
   @Override

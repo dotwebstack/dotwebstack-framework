@@ -5,6 +5,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
+import io.swagger.models.RefModel;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.BodyParameter;
@@ -117,7 +118,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       }
       Operation getOperation = apiOperation.getOperation();
 
-      validateOperation(apiOperation);
+      validateOperation(apiOperation, swagger);
 
       String absolutePath = basePath.concat(path);
 
@@ -180,14 +181,28 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     });
   }
 
-  private void validateOperation(ApiOperation apiOperation) {
+  private void validateOperation(ApiOperation apiOperation, Swagger swagger) {
     apiOperation.getOperation().getParameters().stream().filter(
-        parameterBody -> "body".equalsIgnoreCase(parameterBody.getIn())).forEach(bodyParameter -> {
-          ModelImpl parameterModel = ((ModelImpl) (((BodyParameter) bodyParameter).getSchema()));
-          if (!"object".equalsIgnoreCase(parameterModel.getType())) {
-            throw new ConfigurationException("No object property in body parameter.");
+        parameterBody -> "body".equalsIgnoreCase(parameterBody.getIn())).forEach(parameterBody -> {
+          if ((parameterBody instanceof BodyParameter)) {
+            ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
+            if (!"object".equalsIgnoreCase(parameterModel.getType())) {
+              throw new ConfigurationException("No object property in body parameter.");
+            }
           }
         });
+  }
+
+  private ModelImpl getBodyParameter(@NonNull Swagger swagger, BodyParameter parameterBody) {
+    ModelImpl parameterModel = null;
+    if (parameterBody.getSchema() instanceof ModelImpl) {
+      parameterModel = ((ModelImpl) (parameterBody.getSchema()));
+    }
+    if (parameterBody.getSchema() instanceof RefModel) {
+      RefModel refModel = ((RefModel) (parameterBody.getSchema()));
+      parameterModel = (ModelImpl) swagger.getDefinitions().get(refModel.getSimpleRef());
+    }
+    return parameterModel;
   }
 
   private String createBasePath(Swagger swagger) {

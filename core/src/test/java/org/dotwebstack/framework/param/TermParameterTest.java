@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.param.types.TermParameter;
@@ -84,7 +85,9 @@ public class TermParameterTest {
   @Test
   public void handle_AcceptsNullValue_ForOptionalParameter() {
     // Act
-    optionalParameter.handle(ImmutableMap.of());
+    Map<String, String> map = new HashMap<>();
+    map.put("", null);
+    optionalParameter.handle(map);
   }
 
   @Test
@@ -99,19 +102,6 @@ public class TermParameterTest {
 
     // Assert
     assertThat(result, is(SimpleValueFactory.getInstance().createLiteral("value")));
-  }
-
-  @Test
-  public void getValue_ReturnsEmpty() {
-    // Arrange
-    Map<String, String> parameterValues =
-            ImmutableMap.of();
-
-    // Act
-    optionalParameter.validateInner(parameterValues);
-
-    // Assert
-    //assertThat(result, is(SimpleValueFactory.getInstance().createLiteral("value")));
   }
 
 }

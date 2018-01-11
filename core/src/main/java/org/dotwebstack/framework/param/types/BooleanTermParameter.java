@@ -20,9 +20,11 @@ public class BooleanTermParameter extends AbstractParameter<Boolean>
     return parseValue(parameterValues);
   }
 
+
+
   @Override
-  protected Boolean parseValue(Map<String, String> parameterValues) {
-    return Boolean.valueOf(parameterValues.get(getName()));
+  protected Boolean parseValue(String value) {
+    return Boolean.valueOf(value);
   }
 
   @Override

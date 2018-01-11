@@ -24,18 +24,13 @@ public class TermParameter extends AbstractParameter<String> implements Bindable
   }
 
   @Override
-  protected String handleInner(Map<String, String> parameterValues) {
-    return parseValue(parameterValues);
-  }
-
-  @Override
   public Literal getValue(String value) {
     return SimpleValueFactory.getInstance().createLiteral(value);
   }
 
   @Override
-  public String parseValue(Map<String, String> parameterValues) {
-    return parameterValues.get(getName());
+  protected String parseValue(String value) {
+    return value;
   }
 
   @Override

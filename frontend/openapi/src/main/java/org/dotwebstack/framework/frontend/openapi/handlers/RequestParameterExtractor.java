@@ -50,15 +50,7 @@ final class RequestParameterExtractor {
       Optional<Parameter> parameter =
           apiOperation.getOperation().getParameters().stream().filter(parameterBody -> {
             if ((parameterBody instanceof BodyParameter)) {
-              ModelImpl parameterModel = null;
-
-              if (((BodyParameter) parameterBody).getSchema() instanceof ModelImpl) {
-                parameterModel = ((ModelImpl) (((BodyParameter) parameterBody).getSchema()));
-              }
-              if (((BodyParameter) parameterBody).getSchema() instanceof RefModel) {
-                RefModel refModel = ((RefModel) (((BodyParameter) parameterBody).getSchema()));
-                parameterModel = (ModelImpl) swagger.getDefinitions().get(refModel.getSimpleRef());
-              }
+              ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
               return "object".equalsIgnoreCase(parameterModel.getType())
                   && "body".equalsIgnoreCase(parameterBody.getIn());
             }
@@ -69,6 +61,18 @@ final class RequestParameterExtractor {
       throw new InternalServerErrorException("Error processing request body.", ioe);
     }
     return parameters;
+  }
+
+  private static ModelImpl getBodyParameter(@NonNull Swagger swagger, BodyParameter parameterBody) {
+    ModelImpl parameterModel = null;
+    if (parameterBody.getSchema() instanceof ModelImpl) {
+      parameterModel = ((ModelImpl) (parameterBody.getSchema()));
+    }
+    if (parameterBody.getSchema() instanceof RefModel) {
+      RefModel refModel = ((RefModel) (parameterBody.getSchema()));
+      parameterModel = (ModelImpl) swagger.getDefinitions().get(refModel.getSimpleRef());
+    }
+    return parameterModel;
   }
 
   /**

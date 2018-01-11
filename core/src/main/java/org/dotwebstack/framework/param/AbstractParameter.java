@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.param;
 
 import java.util.Map;
+import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
@@ -35,6 +36,14 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
   }
 
 
+  public Optional<T> parseRawValue(Map<String, String> parameterValues) {
+    String value = parameterValues.get(getName());
+    if (value != null) {
+      return Optional.of((T) parseValue(value));
+    }
+    return Optional.empty();
+  }
+
   /**
    * Validates and handles the supplied values. Calls {@link #validateRequired(Map)} and
    * {@link #validateInner(Map)} for validation. Calls {@link #handleInner(Map)} for handling.
@@ -51,7 +60,9 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
   /**
    * Must be implemented by parameter implementations for parameter handling.
    */
-  protected abstract T handleInner(Map<String, String> parameterValues);
+  protected T handleInner(Map<String, String> parameterValues) {
+    return parseValue(parameterValues);
+  }
 
   private void validate(Map<String, String> parameterValues) {
     validateInner(parameterValues);
@@ -60,7 +71,12 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
     }
   }
 
-  protected abstract T parseValue(Map<String, String> parameterValues);
+
+  public T parseValue(Map<String, String> parameterValues) {
+    return parseRawValue(parameterValues).orElse(null);
+  }
+
+  protected abstract T parseValue(String value);
 
   /**
    * Must be implemented by parameter implementations to validate the required case. See

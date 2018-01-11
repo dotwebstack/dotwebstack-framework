@@ -26,8 +26,8 @@ public class IntTermParameter extends AbstractParameter<Integer>
   }
 
   @Override
-  protected Integer parseValue(Map<String, String> parameterValues) {
-    return Integer.parseInt(parameterValues.get(getName()));
+  protected Integer parseValue(String value) {
+    return Integer.parseInt(value);
   }
 
   @Override

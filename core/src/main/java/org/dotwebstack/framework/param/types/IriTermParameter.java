@@ -8,8 +8,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public class IriTermParameter extends AbstractParameter<IRI>
-    implements BindableParameter<IRI> {
+public class IriTermParameter extends AbstractParameter<IRI> implements BindableParameter<IRI> {
 
   public IriTermParameter(IRI identifier, String name, boolean required) {
     super(identifier, name, required);
@@ -21,8 +20,8 @@ public class IriTermParameter extends AbstractParameter<IRI>
   }
 
   @Override
-  protected IRI parseValue(Map<String, String> parameterValues) {
-    return SimpleValueFactory.getInstance().createIRI(parameterValues.get(getName()));
+  protected IRI parseValue(String value) {
+    return SimpleValueFactory.getInstance().createIRI(value);
   }
 
   @Override

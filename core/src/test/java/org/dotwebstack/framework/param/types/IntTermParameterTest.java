@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.param.types;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
@@ -15,6 +17,8 @@ public class IntTermParameterTest {
 
   private IRI identifier = SimpleValueFactory.getInstance().createIRI("http://www.test.nl");
   private IntTermParameter intTermParameter = new IntTermParameter(identifier, "test", true);
+  private IntTermParameter intTermParameterOptional =
+      new IntTermParameter(identifier, "test", false);
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -40,6 +44,18 @@ public class IntTermParameterTest {
     thrown.expect(BackendException.class);
     // Act
     intTermParameter.validateRequired(parameterValues);
+  }
+
+  @Test
+  public void handle_ReturnsNullForOptionalFilter() {
+    // Arrange
+    Map<String, String> parameterValues = Collections.singletonMap("test", null);
+
+    // Act
+    Integer result = intTermParameterOptional.handle(parameterValues);
+
+    // Assert
+    assertNull(result);
   }
 
 }
