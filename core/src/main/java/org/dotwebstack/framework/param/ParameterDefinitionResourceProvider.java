@@ -32,11 +32,10 @@ public class ParameterDefinitionResourceProvider
 
   @Override
   protected GraphQuery getQueryForResources(@NonNull RepositoryConnection connection) {
-    // TODO Alle data opvragen ipv specifiek shape
     String query = "PREFIX elmo: <http://dotwebstack.org/def/elmo#> "
-        + "CONSTRUCT { ?s ?p ?o . ?os ?op ?oo . } "
+        + "CONSTRUCT { ?s ?p ?o . ?o ?op ?oo . } "
         + "WHERE { ?s a ?type . ?type rdfs:subClassOf ?parameter . ?s ?p ?o . "
-        + "OPTIONAL { ?s elmo:shape ?os . ?os ?op ?oo} } ";
+        + "OPTIONAL { ?o ?op ?oo } } ";
 
     GraphQuery graphQuery = connection.prepareGraphQuery(query);
 
