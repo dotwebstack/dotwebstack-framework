@@ -2,8 +2,6 @@ package org.dotwebstack.framework.frontend.ld;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -26,8 +24,6 @@ public class FormatPreMatchingRequestFilter implements ContainerRequestFilter {
     MultivaluedMap<String, String> queryParameters =
         containerRequestContext.getUriInfo().getQueryParameters();
 
-    List<String> str = queryParameters.get("format");
-    Optional<String> opt = str.stream().findFirst();
     queryParameters.get("format").stream().findFirst().ifPresent(
         format -> setHeader(format, containerRequestContext));
   }
