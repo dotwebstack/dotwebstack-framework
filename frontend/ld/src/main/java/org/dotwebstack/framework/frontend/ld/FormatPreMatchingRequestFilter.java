@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -19,7 +20,7 @@ public class FormatPreMatchingRequestFilter implements ContainerRequestFilter {
   private static final Logger LOG = LoggerFactory.getLogger(FormatPreMatchingRequestFilter.class);
 
   @Override
-  public void filter(ContainerRequestContext containerRequestContext) {
+  public void filter(ContainerRequestContext containerRequestContext) throws IOException {
     MultivaluedMap<String, String> queryParameters =
         containerRequestContext.getUriInfo().getQueryParameters();
 
