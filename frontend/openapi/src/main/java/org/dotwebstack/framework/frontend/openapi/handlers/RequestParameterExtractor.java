@@ -90,10 +90,12 @@ final class RequestParameterExtractor {
       return;
     }
 
-    if (!(ContentType.APPLICATION_JSON.toString().startsWith(
-        ctx.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE)))) {
+    if (ctx.getHeaders().get(HttpHeaders.CONTENT_TYPE).stream().filter(
+        header -> ContentType.APPLICATION_JSON.toString().startsWith(header)).findAny().orElse(
+            null) == null) {
       return;
     }
+
     ObjectMapper objectMapper = new ObjectMapper();
     Map json = objectMapper.readValue(body, Map.class);
     if (json.keySet().size() == 1) {
