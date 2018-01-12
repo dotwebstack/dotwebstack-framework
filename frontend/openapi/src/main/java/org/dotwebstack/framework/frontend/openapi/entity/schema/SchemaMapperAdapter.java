@@ -32,11 +32,11 @@ public class SchemaMapperAdapter {
   public <S extends Property> Object mapGraphValue(@NonNull S schema,
       GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-
     SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
             () -> new SchemaMapperRuntimeException(String.format(
                 "No schema mapper available for '%s'.", schema.getClass().getName())));
+
     return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, graphEntityContext,
         valueContext, schemaMapperAdapter);
   }

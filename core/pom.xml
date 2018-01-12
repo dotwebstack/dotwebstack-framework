@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
-    <version>0.0.14-SNAPSHOT</version>
+    <version>0.0.14-SNAPSHOT-GRID-2061-1</version>
   </parent>
 
   <artifactId>dotwebstack-core</artifactId>
