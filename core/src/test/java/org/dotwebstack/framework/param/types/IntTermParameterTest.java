@@ -1,13 +1,17 @@
 package org.dotwebstack.framework.param.types;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +51,7 @@ public class IntTermParameterTest {
   }
 
   @Test
-  public void handle_ReturnsNullForOptionalFilter() {
+  public void handle_ReturnsNull_ForOptionalParameter() {
     // Arrange
     Map<String, String> parameterValues = Collections.singletonMap("test", null);
 
@@ -56,6 +60,42 @@ public class IntTermParameterTest {
 
     // Assert
     assertNull(result);
+  }
+
+  @Test
+  public void handle_ReturnsNonNullValue_ForRequiredParameter() {
+    // Arrange
+    Map<String, String> parameterValues = ImmutableMap.of("test", "123");
+
+    // Act
+    Integer result = intTermParameter.handle(parameterValues);
+
+    // Assert
+    assertThat(result, is(123));
+  }
+
+  @Test
+  public void handle_RejectsNullValue_ForRequiredParameter() {
+    // Assert
+    thrown.expect(BackendException.class);
+    thrown.expectMessage(String.format(
+        "No value found for required parameter '%s'. Supplied parameterValues:", identifier));
+
+    // Act
+    intTermParameter.handle(ImmutableMap.of());
+  }
+
+  @Test
+  public void getValue_ReturnsLiteral_ForValue() {
+    // Arrange
+    Map<String, String> parameterValues = ImmutableMap.of("test", "123");
+
+    // Act
+    Integer value = intTermParameter.handle(parameterValues);
+    Value result = intTermParameter.getValue(value);
+
+    // Assert
+    assertThat(result, is(SimpleValueFactory.getInstance().createLiteral(123)));
   }
 
 }
