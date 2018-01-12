@@ -4,6 +4,8 @@ import static java.util.Comparator.comparing;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -66,6 +68,24 @@ public class FileConfigurationBackend
     repository.initialize();
   }
 
+  private static InputStream clone(final InputStream inputStream) {
+    try {
+      inputStream.mark(0);
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      byte[] buffer = new byte[1024];
+      int readLength = 0;
+      while ((readLength = inputStream.read(buffer)) != -1) {
+        outputStream.write(buffer, 0, readLength);
+      }
+      inputStream.reset();
+      outputStream.flush();
+      return new ByteArrayInputStream(outputStream.toByteArray());
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+    return null;
+  }
+
   @Override
   public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
     this.resourceLoader = resourceLoader;
@@ -114,8 +134,8 @@ public class FileConfigurationBackend
           LOG.debug("File extension not supported, ignoring file: \"{}\"", resource.getFilename());
           continue;
         }
-        addResourceToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource);
-        configurationStreams.add(resource.getInputStream());
+        addResourceToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource,
+            configurationStreams);
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
       validate(configurationStreams);
@@ -127,20 +147,24 @@ public class FileConfigurationBackend
   }
 
   private void addResourceToRepositoryConnection(RepositoryConnection repositoryConnection,
-      Optional<Resource> optionalPrefixesResource, Resource resource) {
+      Optional<Resource> optionalPrefixesResource, Resource resource,
+      List<InputStream> streamList) {
     final String extension = FilenameUtils.getExtension(resource.getFilename());
     try {
-      if (optionalPrefixesResource.isPresent()) {
+      final InputStream inputStreamWithEnv;
+      if (optionalPrefixesResource.isPresent()
+          && !resource.getFilename().equals("_prefixes.trig")) {
         try (SequenceInputStream resourceSequenceInputStream = new SequenceInputStream(
             optionalPrefixesResource.get().getInputStream(), resource.getInputStream())) {
-          repositoryConnection.add(new EnvironmentAwareResource(resourceSequenceInputStream,
-              environment).getInputStream(), "#", FileFormats.getFormat(extension));
+          inputStreamWithEnv = new EnvironmentAwareResource(resourceSequenceInputStream,
+              environment).getInputStream();
         }
       } else {
-        repositoryConnection.add(
-            new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
-            "#", FileFormats.getFormat(extension));
+        inputStreamWithEnv =
+            new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
       }
+      repositoryConnection.add(clone(inputStreamWithEnv), "#", FileFormats.getFormat(extension));
+      streamList.add(clone(inputStreamWithEnv));
     } catch (IOException ex) {
       LOG.error("Configuration file %s could not be read.", resource.getFilename());
       throw new ConfigurationException(
