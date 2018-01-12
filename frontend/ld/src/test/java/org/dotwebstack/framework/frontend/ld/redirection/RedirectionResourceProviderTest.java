@@ -120,7 +120,7 @@ public class RedirectionResourceProviderTest {
                 DBEERPEDIA.ID2DOC_URL_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.REDIRECTION_TEMPLATE,
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.TARGET_URL,
                 DBEERPEDIA.ID2DOC_TARGET_URL))));
 
     // Act
@@ -143,7 +143,7 @@ public class RedirectionResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, RDF.TYPE, ELMO.REDIRECTION),
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.REDIRECTION_TEMPLATE,
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.TARGET_URL,
                 DBEERPEDIA.ID2DOC_TARGET_URL))));
 
     // Assert
@@ -161,7 +161,7 @@ public class RedirectionResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, RDF.TYPE, ELMO.REDIRECTION),
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.URL_PATTERN,
                 DBEERPEDIA.ID2DOC_URL_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.REDIRECTION_TEMPLATE,
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.TARGET_URL,
                 DBEERPEDIA.ID2DOC_TARGET_URL))));
 
     // Assert
