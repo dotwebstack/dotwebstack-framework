@@ -17,7 +17,6 @@ import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterResourceProvider;
 import org.dotwebstack.framework.param.PropertyShape;
 import org.dotwebstack.framework.param.shapes.StringPropertyShape;
-import org.dotwebstack.framework.param.types.TermParameter;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -102,6 +101,8 @@ public class InformationProductResourceProvider
       }
     }
 
-    return new TermParameter(d.getIdentifier(), d.getName(), required);
+    throw new IllegalStateException(
+        String.format("Zero or more than one constructor found in TermParameter class: '%s'",
+            propertyShape.getTermClass()));
   }
 }

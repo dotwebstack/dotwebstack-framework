@@ -1,13 +1,11 @@
 package org.dotwebstack.framework.param.types;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
@@ -26,29 +24,6 @@ public class IntTermParameterTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
-
-  @Test
-  public void parseValue() throws Exception {
-    // Arrange
-    Map<String, String> parameterValues = new HashMap<>();
-    parameterValues.put("test", "123");
-    // Act
-    Integer result = intTermParameter.parseValue(parameterValues);
-    // Assert
-    assertEquals(123, result.intValue());
-  }
-
-  @Test
-  public void validateRequired() throws Exception {
-    // Arrange
-    Map<String, String> parameterValues = new HashMap<>();
-    parameterValues.put("test", "12f3");
-
-    // Assert
-    thrown.expect(BackendException.class);
-    // Act
-    intTermParameter.validateRequired(parameterValues);
-  }
 
   @Test
   public void handle_ReturnsNull_ForOptionalParameter() {
