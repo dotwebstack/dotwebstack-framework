@@ -3,6 +3,8 @@ package org.dotwebstack.framework.frontend.openapi;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import java.io.IOException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -41,10 +43,15 @@ public class OpenApiIntegrationTest {
   @Autowired
   private HttpConfiguration httpConfiguration;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
   @Before
   public void setUp() throws IOException {
     target = ClientBuilder.newClient(httpConfiguration).target(
         String.format("http://localhost:%d", this.port));
+
+    objectMapper.registerModule(new GuavaModule());
 
     SparqlHttpStub.start();
   }

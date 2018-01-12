@@ -12,7 +12,7 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String LDPATH_NAMESPACES = DOTWEBSTACK_PREFIX.concat("ldpath-namespaces");
 
-  public static final String TYPE = DOTWEBSTACK_PREFIX.concat("x-type");
+  public static final String TYPE = DOTWEBSTACK_PREFIX.concat("type");
 
   public static final String CONSTANT_VALUE = "x-constant-value";
 
