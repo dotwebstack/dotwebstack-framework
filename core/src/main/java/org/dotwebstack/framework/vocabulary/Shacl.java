@@ -11,4 +11,7 @@ public final class Shacl {
     DATATYPE =
         SimpleValueFactory.getInstance().createIRI("http://www.w3.org/ns/shacl#", "datatype");
   }
+
+  private Shacl() {}
+
 }
