@@ -55,7 +55,6 @@ public class ParameterDefinitionResourceProvider
       }
     }
 
-    // throw new ConfigurationException(String.format("No factory available for type <%s>.", type));
     return null;
   }
 

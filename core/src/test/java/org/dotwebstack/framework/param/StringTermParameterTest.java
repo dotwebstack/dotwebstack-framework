@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.param.types.StringTermParameter;
-import org.dotwebstack.framework.param.types.TermParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -21,13 +20,13 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TermParameterTest {
+public class StringTermParameterTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private TermParameter<String> requiredParameter;
-  private TermParameter<String> optionalParameter;
+  private StringTermParameter requiredParameter;
+  private StringTermParameter optionalParameter;
 
   @Before
   public void setUp() {

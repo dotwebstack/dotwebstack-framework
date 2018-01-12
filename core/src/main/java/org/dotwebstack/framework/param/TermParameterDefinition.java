@@ -8,7 +8,7 @@ import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.param.types.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
-public final class TermParameterDefinition extends AbstractParameterDefinition<TermParameter> {
+public final class TermParameterDefinition extends AbstractParameterDefinition<TermParameter<?>> {
 
   private static final PropertyShape DEFAULT_SHAPE = new StringPropertyShape();
 
@@ -21,21 +21,17 @@ public final class TermParameterDefinition extends AbstractParameterDefinition<T
     this.shapeType = shapeType;
   }
 
-  public Optional<PropertyShape> getShapeType() {
-    return this.shapeType;
-  }
-
   @Override
-  public TermParameter createOptionalParameter() {
+  public TermParameter<?> createOptionalParameter() {
     return createParameter(false);
   }
 
   @Override
-  public TermParameter createRequiredParameter() {
+  public TermParameter<?> createRequiredParameter() {
     return createParameter(true);
   }
 
-  private TermParameter createParameter(boolean required) {
+  private TermParameter<?> createParameter(boolean required) {
     Class<?> parameterClass = shapeType.orElse(DEFAULT_SHAPE).getTermClass();
 
     if (parameterClass.getConstructors().length == 1) {

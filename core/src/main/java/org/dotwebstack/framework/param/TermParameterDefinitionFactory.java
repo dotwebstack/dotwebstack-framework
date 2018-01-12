@@ -10,6 +10,7 @@ import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
 import org.dotwebstack.framework.param.shapes.IriPropertyShape;
 import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.dotwebstack.framework.vocabulary.Shacl;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -22,7 +23,7 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
 
   private final Set<PropertyShape> supportedShapes = new HashSet<>();
 
-  public TermParameterDefinitionFactory() {
+  TermParameterDefinitionFactory() {
     supportedShapes.add(new StringPropertyShape());
     supportedShapes.add(new IntegerPropertyShape());
     supportedShapes.add(new BooleanPropertyShape());
@@ -40,7 +41,7 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
     Optional<PropertyShape> propertyShapeOptional = Optional.empty();
     if (objects.iterator().hasNext()) {
       Set<Value> iriShapeTypes =
-          model.filter((Resource) objects.iterator().next(), null, null).objects();
+          model.filter((Resource) objects.iterator().next(), Shacl.DATATYPE, null).objects();
 
       propertyShapeOptional = supportedShapes.stream().filter(
           propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
