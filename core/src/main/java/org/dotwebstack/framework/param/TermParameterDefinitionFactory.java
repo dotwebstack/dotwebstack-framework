@@ -1,14 +1,9 @@
 package org.dotwebstack.framework.param;
 
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.param.shapes.BooleanPropertyShape;
-import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
-import org.dotwebstack.framework.param.shapes.IriPropertyShape;
-import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.dotwebstack.framework.vocabulary.Shacl;
 import org.eclipse.rdf4j.model.IRI;
@@ -21,13 +16,10 @@ import org.springframework.stereotype.Service;
 @Service
 final class TermParameterDefinitionFactory implements ParameterDefinitionFactory {
 
-  private final Set<PropertyShape> supportedShapes = new HashSet<>();
+  private final Set<PropertyShape> supportedShapes;
 
-  TermParameterDefinitionFactory() {
-    supportedShapes.add(new StringPropertyShape());
-    supportedShapes.add(new IntegerPropertyShape());
-    supportedShapes.add(new BooleanPropertyShape());
-    supportedShapes.add(new IriPropertyShape());
+  TermParameterDefinitionFactory(@NonNull Set<PropertyShape> supportedShapes) {
+    this.supportedShapes = supportedShapes;
   }
 
   @Override

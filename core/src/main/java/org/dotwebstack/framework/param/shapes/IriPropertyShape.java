@@ -4,7 +4,9 @@ import org.dotwebstack.framework.param.PropertyShape;
 import org.dotwebstack.framework.param.types.IriTermParameter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.springframework.stereotype.Component;
 
+@Component
 public class IriPropertyShape implements PropertyShape {
 
   @Override

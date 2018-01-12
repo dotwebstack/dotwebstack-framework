@@ -4,7 +4,9 @@ import org.dotwebstack.framework.param.PropertyShape;
 import org.dotwebstack.framework.param.types.BooleanTermParameter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.springframework.stereotype.Component;
 
+@Component
 public class BooleanPropertyShape implements PropertyShape {
 
   @Override

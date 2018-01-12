@@ -4,6 +4,11 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableSet;
+import org.dotwebstack.framework.param.shapes.BooleanPropertyShape;
+import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
+import org.dotwebstack.framework.param.shapes.IriPropertyShape;
+import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.dotwebstack.framework.vocabulary.Shacl;
@@ -25,7 +30,9 @@ public class TermParameterDefinitionFactoryTest {
 
   @Before
   public void setUp() {
-    parameterDefinitionFactory = new TermParameterDefinitionFactory();
+    parameterDefinitionFactory =
+        new TermParameterDefinitionFactory(ImmutableSet.of(new BooleanPropertyShape(),
+            new IntegerPropertyShape(), new IriPropertyShape(), new StringPropertyShape()));
   }
 
   @Test
