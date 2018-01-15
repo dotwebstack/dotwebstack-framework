@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
+import org.dotwebstack.framework.frontend.http.layout.Layout;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Rule;
@@ -20,13 +21,16 @@ public class StageTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
+  private Layout layout;
+
+  @Mock
   private Site siteMock;
 
   @Test
   public void build_CreatesStage_WithValidData() {
     // Act
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(
-        DBEERPEDIA.BASE_PATH.stringValue()).build();
+        DBEERPEDIA.BASE_PATH.stringValue()).layout(layout).build();
 
     // Arrange
     when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
@@ -44,7 +48,7 @@ public class StageTest {
   public void build_CreatesStage_WhenMatchAllDomain() {
     // Act
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(
-        DBEERPEDIA.BASE_PATH.stringValue()).build();
+        DBEERPEDIA.BASE_PATH.stringValue()).layout(layout).build();
 
     // Arrange
     when(siteMock.isMatchAllDomain()).thenReturn(Boolean.TRUE);
@@ -60,7 +64,7 @@ public class StageTest {
   @Test
   public void build_CreatesStageDefaults_WhenBasePathNotProvided() {
     // Act
-    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).build();
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).layout(layout).build();
 
     // Arrange
     when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
@@ -98,6 +102,15 @@ public class StageTest {
 
     // Act
     new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(null).build();
+  }
+
+  @Test
+  public void layout_ThrowsException_WithMissingValue() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).layout(null).build();
   }
 
 }

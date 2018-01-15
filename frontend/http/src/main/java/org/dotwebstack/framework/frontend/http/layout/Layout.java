@@ -2,13 +2,12 @@ package org.dotwebstack.framework.frontend.http.layout;
 
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
-import org.springframework.core.io.Resource;
 
 public class Layout {
 
   private IRI identifier;
 
-  private Resource cssResource;
+  private String cssResource;
 
   private String label;
 
@@ -18,15 +17,27 @@ public class Layout {
     this.cssResource = builder.cssResource;
   }
 
+  public IRI getIdentifier() {
+    return identifier;
+  }
+
+  public String getCssResource() {
+    return cssResource;
+  }
+
+  public String getLabel() {
+    return label;
+  }
+
   public static class Builder {
 
     private IRI identifier;
 
-    private Resource cssResource;
+    private String cssResource;
 
     private String label;
 
-    public Builder(@NonNull IRI identifier, @NonNull Resource cssResource) {
+    public Builder(@NonNull IRI identifier, @NonNull String cssResource) {
       this.identifier = identifier;
       this.cssResource = cssResource;
     }

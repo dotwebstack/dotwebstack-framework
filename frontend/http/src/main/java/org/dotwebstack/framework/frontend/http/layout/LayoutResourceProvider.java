@@ -13,8 +13,6 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,21 +37,11 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
 
   @Override
   protected Layout createResource(Model model, IRI identifier) {
-    final String cssResourceLocation =
-        getObjectString(model, identifier, Xhtml.STYLESHEET).orElseThrow(
-            () -> new ConfigurationException(
-                String.format("No file location has been found for " + "layout <%s>",
-                    Xhtml.STYLESHEET, identifier)));
-    try {
-      final Resource cssResource = new ClassPathResource(cssResourceLocation);
-      Layout.Builder builder = new Layout.Builder(identifier, cssResource);
-      // getObjectString of label
-      return builder.build();
-    } catch (Exception ex) {
-      LOG.error(ex.toString());
-      throw new ConfigurationException(
-          String.format("No css file has been found for layout <%s> at location <%s>",
-              ELMO.LAYOUT_PROP, identifier, cssResourceLocation));
-    }
+    final String cssResource = getObjectString(model, identifier, Xhtml.STYLESHEET).orElseThrow(
+        () -> new ConfigurationException(String.format(
+            "No file location has been found for " + "layout <%s>", Xhtml.STYLESHEET, identifier)));
+    Layout.Builder builder = new Layout.Builder(identifier, cssResource);
+    // getObjectString of label
+    return builder.build();
   }
 }

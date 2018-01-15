@@ -50,7 +50,7 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
     Stage.Builder builder = new Stage.Builder(identifier, siteResourceProvider.get(siteIRI));
     getObjectString(model, identifier, ELMO.BASE_PATH).ifPresent(builder::basePath);
     getObjectIRI(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
-        iri -> builder.cssResource(layoutResourceProvider.get(iri)));
+        iri -> builder.layout(layoutResourceProvider.get(iri)));
 
     return builder.build();
   }

@@ -23,6 +23,7 @@ public class Stage {
     this.identifier = builder.identifier;
     this.site = builder.site;
     this.basePath = builder.basePath;
+    this.layout = builder.layout;
   }
 
   public IRI getIdentifier() {
@@ -73,7 +74,7 @@ public class Stage {
       return new Stage(this);
     }
 
-    public Builder cssResource(@NonNull Layout layout) {
+    public Builder layout(@NonNull Layout layout) {
       this.layout = layout;
       return this;
     }

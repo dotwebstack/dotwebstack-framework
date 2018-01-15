@@ -84,6 +84,8 @@ public class StageResourceProviderTest {
 
     when(siteResourceProvider.get(any())).thenReturn(site);
 
+    when(layoutResourceProvider.get(any())).thenReturn(layout);
+
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
@@ -108,6 +110,16 @@ public class StageResourceProviderTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingLayoutResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new StageResourceProvider(configurationBackend, siteResourceProvider, null,
+        applicationProperties);
+  }
+
+  @Test
   public void constructor_ThrowsException_WithMissingApplicationProperties() {
     // Assert
     thrown.expect(NullPointerException.class);
@@ -123,7 +135,8 @@ public class StageResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
             valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
-            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH))));
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.LAYOUT_PROP, DBEERPEDIA.LAYOUT))));
 
     // Act
     stageResourceProvider.loadResources();

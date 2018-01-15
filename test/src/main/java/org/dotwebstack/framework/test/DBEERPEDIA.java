@@ -169,6 +169,8 @@ public final class DBEERPEDIA {
 
   public static final IRI BREWERY_TYPE;
 
+  public static final IRI LAYOUT;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
@@ -267,6 +269,8 @@ public final class DBEERPEDIA {
     URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
 
     BREWERY_TYPE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Brewery");
+
+    LAYOUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayout");
   }
 
   private DBEERPEDIA() {
