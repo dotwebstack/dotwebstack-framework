@@ -132,7 +132,9 @@ public class RequestParameterExtractorTest {
 
     assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY_QUERYTYPE), nullValue());
     assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY), nullValue());
+
     assertThat(result.getRawBody(), is(body));
+    assertThat(result.get("foo"), is("bar"));
   }
 
 }
