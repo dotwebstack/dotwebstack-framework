@@ -131,7 +131,7 @@ public class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<Object
   @Override
   public boolean supports(@NonNull Property schema) {
     return schema instanceof ObjectProperty
-        && !schema.getVendorExtensions().containsKey("x-dotwebstack-type");
+        && !schema.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.TYPE);
   }
 
   @Override
