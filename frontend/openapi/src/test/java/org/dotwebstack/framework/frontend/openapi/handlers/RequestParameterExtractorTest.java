@@ -12,13 +12,10 @@ import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.BodyParameter;
-import io.swagger.models.parameters.Parameter;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -82,14 +79,15 @@ public class RequestParameterExtractorTest {
     when(uriInfo.getPathParameters()).thenReturn(pathParameters);
     when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
 
-
-    List<Parameter> parameters = new ArrayList<>();
-    BodyParameter parameter = mock(BodyParameter.class);
     ModelImpl schema = mock(ModelImpl.class);
     when(schema.getType()).thenReturn("object");
+
+    BodyParameter parameter = mock(BodyParameter.class);
+
     when(parameter.getSchema()).thenReturn(schema);
-    parameters.add(parameter);
-    when(operation.getParameters()).thenReturn(parameters);
+    when(parameter.getIn()).thenReturn("body");
+
+    when(operation.getParameters()).thenReturn(ImmutableList.of(parameter));
     when(apiOperation.getOperation()).thenReturn(operation);
   }
 
