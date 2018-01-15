@@ -11,7 +11,7 @@ import org.dotwebstack.framework.param.shapes.IriPropertyShape;
 import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.dotwebstack.framework.vocabulary.Shacl;
+import org.dotwebstack.framework.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -62,7 +62,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(Shacl.DATATYPE, XMLSchema.STRING);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
 
     Model model = builder.build();
 
@@ -84,7 +84,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(Shacl.DATATYPE, XMLSchema.INTEGER);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.INTEGER);
 
     Model model = builder.build();
 
@@ -106,7 +106,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(Shacl.DATATYPE, XMLSchema.BOOLEAN);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.BOOLEAN);
 
     Model model = builder.build();
 
@@ -128,7 +128,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(Shacl.DATATYPE, XMLSchema.ANYURI);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
 
     Model model = builder.build();
 

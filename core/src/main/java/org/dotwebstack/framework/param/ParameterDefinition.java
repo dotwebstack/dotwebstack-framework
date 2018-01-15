@@ -8,7 +8,7 @@ import org.eclipse.rdf4j.model.IRI;
  * parameter has an identifier and name. The definition is also responsible for creating the
  * parameters with {@link #createRequiredParameter()} or {@link #createOptionalParameter()}.
  * <p/>
- * Implementations can add extra fields if required. For example a {@link TermParameter} has a Shacl
+ * Implementations can add extra fields if required. For example a {@link TermParameter} has a SHACL
  * shape type. Therefore the {@link TermParameterDefinition} has a shape type field to create a term
  * parameter with.
  */

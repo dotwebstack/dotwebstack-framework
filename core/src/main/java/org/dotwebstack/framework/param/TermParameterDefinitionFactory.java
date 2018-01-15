@@ -5,7 +5,7 @@ import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.dotwebstack.framework.vocabulary.Shacl;
+import org.dotwebstack.framework.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -33,7 +33,7 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
     Optional<PropertyShape> propertyShapeOptional = Optional.empty();
     if (objects.iterator().hasNext()) {
       Set<Value> iriShapeTypes =
-          model.filter((Resource) objects.iterator().next(), Shacl.DATATYPE, null).objects();
+          model.filter((Resource) objects.iterator().next(), SHACL.DATATYPE, null).objects();
 
       propertyShapeOptional = supportedShapes.stream().filter(
           propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
