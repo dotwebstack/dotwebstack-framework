@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.informationproduct;
 
 import com.google.common.collect.ImmutableList;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
@@ -11,12 +9,9 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.param.AbstractParameter;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.ParameterDefinition;
-import org.dotwebstack.framework.param.ParameterResourceProvider;
-import org.dotwebstack.framework.param.PropertyShape;
-import org.dotwebstack.framework.param.shapes.StringPropertyShape;
+import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -33,19 +28,17 @@ public class InformationProductResourceProvider
 
   private final BackendResourceProvider backendResourceProvider;
 
-  private final ParameterResourceProvider parameterResourceProvider;
-
-  private final PropertyShape defaultPropertyShape = new StringPropertyShape();
+  private final ParameterDefinitionResourceProvider parameterDefinitionResourceProvider;
 
   @Autowired
   public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull BackendResourceProvider backendResourceProvider,
-      @NonNull ParameterResourceProvider parameterResourceProvider,
+      @NonNull ParameterDefinitionResourceProvider parameterDefinitionResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
 
     this.backendResourceProvider = backendResourceProvider;
-    this.parameterResourceProvider = parameterResourceProvider;
+    this.parameterDefinitionResourceProvider = parameterDefinitionResourceProvider;
   }
 
   @Override
@@ -80,29 +73,12 @@ public class InformationProductResourceProvider
 
     ImmutableList.Builder<Parameter> builder = ImmutableList.builder();
 
-    requiredParameterIds.stream().map(parameterResourceProvider::get).map(
-        d -> createTermParameter(d, true)).forEach(builder::add);
-    optionalParameterIds.stream().map(parameterResourceProvider::get).map(
-        d -> createTermParameter(d, false)).forEach(builder::add);
+    requiredParameterIds.stream().map(parameterDefinitionResourceProvider::get).map(
+        ParameterDefinition::createRequiredParameter).forEach(builder::add);
+    optionalParameterIds.stream().map(parameterDefinitionResourceProvider::get).map(
+        ParameterDefinition::createOptionalParameter).forEach(builder::add);
 
     return backend.createInformationProduct(identifier, label, builder.build(), statements);
   }
 
-  private AbstractParameter<?> createTermParameter(ParameterDefinition d, boolean required) {
-    PropertyShape propertyShape = d.getShapeTypes().orElse(defaultPropertyShape);
-
-    if (propertyShape.getTermClass().getConstructors().length == 1) {
-      Constructor constructor = propertyShape.getTermClass().getConstructors()[0];
-      try {
-        return (AbstractParameter<?>) constructor.newInstance(d.getIdentifier(), d.getName(),
-            required);
-      } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-        throw new ConfigurationException("Cannot create TermParameter");
-      }
-    }
-
-    throw new IllegalStateException(
-        String.format("Zero or more than one constructor found in TermParameter class: '%s'",
-            propertyShape.getTermClass()));
-  }
 }

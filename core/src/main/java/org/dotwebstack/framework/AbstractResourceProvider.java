@@ -80,8 +80,11 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
       model.subjects().forEach(identifier -> {
         if (identifier instanceof IRI) {
           R resource = createResource(model, (IRI) identifier);
-          resources.put((IRI) identifier, resource);
-          LOG.info("Registered resource: <{}>", identifier);
+
+          if (resource != null) {
+            resources.put((IRI) identifier, resource);
+            LOG.info("Registered resource: <{}>", identifier);
+          }
         }
       });
     } catch (QueryEvaluationException e) {
