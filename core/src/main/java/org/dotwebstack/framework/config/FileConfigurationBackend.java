@@ -81,7 +81,7 @@ public class FileConfigurationBackend
       outputStream.flush();
       return new ByteArrayInputStream(outputStream.toByteArray());
     } catch (Exception ex) {
-      ex.printStackTrace();
+      LOG.error(ex.toString());
     }
     return null;
   }
