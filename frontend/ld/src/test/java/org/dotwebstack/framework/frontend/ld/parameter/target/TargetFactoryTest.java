@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.ParameterDefinition;
-import org.dotwebstack.framework.param.ParameterResourceProvider;
+import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,7 +25,7 @@ public class TargetFactoryTest {
   private TargetFactory targetFactory;
 
   @Mock
-  private ParameterResourceProvider parameterResourceProvider;
+  private ParameterDefinitionResourceProvider parameterDefinitionResourceProvider;
 
   @Mock
   private ParameterDefinition parameterDefinition;
@@ -33,9 +33,9 @@ public class TargetFactoryTest {
   @Before
   public void setUp() {
     // Arrange
-    targetFactory = new TargetFactory(parameterResourceProvider);
+    targetFactory = new TargetFactory(parameterDefinitionResourceProvider);
 
-    when(parameterResourceProvider.get(DBEERPEDIA.PLACE_PARAMETER_ID)).thenReturn(
+    when(parameterDefinitionResourceProvider.get(DBEERPEDIA.PLACE_PARAMETER_ID)).thenReturn(
         parameterDefinition);
   }
 
