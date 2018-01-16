@@ -22,8 +22,12 @@ import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.entity.ContentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class RequestParameterExtractor {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RequestParameterExtractor.class);
 
   static final String PARAM_GEOMETRY_QUERYTYPE = "geometry_querytype";
   static final String PARAM_GEOMETRY = "geometry";
@@ -60,6 +64,9 @@ final class RequestParameterExtractor {
     } catch (IOException ioe) {
       throw new InternalServerErrorException("Error processing request body.", ioe);
     }
+
+    LOG.info("Extracted parameters: {}", parameters);
+
     return parameters;
   }
 
