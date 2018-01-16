@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.param.types;
 
-import java.util.Map;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -12,13 +11,13 @@ public class StringTermParameter extends TermParameter<String> {
   }
 
   @Override
-  protected String parseValue(Map<String, String> parameterValues) {
-    return parameterValues.get(getName());
+  public Literal getValue(String value) {
+    return SimpleValueFactory.getInstance().createLiteral(value);
   }
 
   @Override
-  public Literal getValue(String value) {
-    return SimpleValueFactory.getInstance().createLiteral(value);
+  protected String handleInner(String value) {
+    return value;
   }
 
 }

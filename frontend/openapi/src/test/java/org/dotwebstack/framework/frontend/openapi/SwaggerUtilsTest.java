@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
+import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
 import java.io.IOException;
@@ -26,7 +27,7 @@ public class SwaggerUtilsTest {
 
   private String path;
 
-  private String method;
+  private Path method;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -35,7 +36,8 @@ public class SwaggerUtilsTest {
   public void setUp() throws IOException {
     swagger = createSwagger();
     path = "/endpoint";
-    method = "get";
+    method = new Path();
+    method.set("get",new Operation());
 
   }
 

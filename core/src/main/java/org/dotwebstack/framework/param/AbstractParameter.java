@@ -34,7 +34,6 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
     return required;
   }
 
-
   /**
    * Validates and handles the supplied values. Calls {@link #validateRequired(Map)} and
    * {@link #validateInner(Map)} for validation. Calls {@link #handleInner(Map)} for handling.
@@ -55,12 +54,11 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
 
   private void validate(Map<String, String> parameterValues) {
     validateInner(parameterValues);
+
     if (required) {
       validateRequired(parameterValues);
     }
   }
-
-  protected abstract T parseValue(Map<String, String> parameterValues);
 
   /**
    * Must be implemented by parameter implementations to validate the required case. See
@@ -76,12 +74,6 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
    * 
    * @throws BackendException If a required value is invalid.
    */
-  protected void validateInner(@NonNull Map<String, String> parameterValues) {
-    try {
-      parseValue(parameterValues);
-    } catch (NumberFormatException e) {
-      throw new BackendException("Value could not be parsed.");
-    }
-  }
+  protected void validateInner(@NonNull Map<String, String> parameterValues) {}
 
 }

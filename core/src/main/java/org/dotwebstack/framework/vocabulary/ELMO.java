@@ -131,6 +131,7 @@ public final class ELMO {
 
     PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
     TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
+
     OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
     REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
 

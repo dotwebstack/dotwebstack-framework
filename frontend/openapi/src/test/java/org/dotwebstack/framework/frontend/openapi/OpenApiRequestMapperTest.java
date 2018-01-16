@@ -16,15 +16,24 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Info;
+import io.swagger.models.Model;
+import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
+import io.swagger.models.RefModel;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
+import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.Parameter;
 import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
@@ -314,6 +323,93 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
+  public void map_BodyParameter() throws IOException {
+    // Arrange
+    Property property = mock(Property.class);
+    List<Parameter> parameters = createBodyParameter("object");
+    Operation newOp = new Operation();
+    newOp.setParameters(parameters);
+    newOp.vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+        DBEERPEDIA.BREWERIES.stringValue()));
+    newOp.response(200, new Response().schema(property));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.APPLICATION_JSON).path(
+        "/breweries", new Path().get(newOp));
+
+    // Act
+    requestMapper.map(httpConfigurationMock);
+
+    // Assert
+    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
+    Resource resource = resourceCaptor.getValue();
+    assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
+
+  }
+
+  private List<Parameter> createBodyRefParameter() {
+    BodyParameter bodyParameter = new BodyParameter();
+    RefModel schema = new RefModel();
+    schema.set$ref("myref");
+    bodyParameter.setSchema(schema);
+    List<Parameter> parameters = new ArrayList<>();
+    parameters.add(bodyParameter);
+    return parameters;
+  }
+
+  private List<Parameter> createBodyParameter(String object) {
+    BodyParameter bodyParameter = new BodyParameter();
+    ModelImpl schema = new ModelImpl();
+    schema.setType(object);
+    bodyParameter.setSchema(schema);
+    List<Parameter> parameters = new ArrayList<>();
+    parameters.add(bodyParameter);
+    return parameters;
+  }
+
+  @Test
+  public void map_BodyParameterWithRefObject() throws IOException {
+    // Arrange
+    Property property = mock(Property.class);
+    List<Parameter> parameters = createBodyRefParameter();
+    Operation newOp = new Operation();
+    newOp.setParameters(parameters);
+    newOp.vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+        DBEERPEDIA.BREWERIES.stringValue()));
+    newOp.response(200, new Response().schema(property));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.APPLICATION_JSON).path(
+        "/breweries", new Path().post(newOp));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("No object property in body parameter"));
+
+    // Act
+    requestMapper.map(httpConfigurationMock);
+
+  }
+
+  @Test
+  public void map_BodyParameterNoObject() throws IOException {
+    // Arrange
+    Property property = mock(Property.class);
+    List<Parameter> parameters = createBodyParameter("object2");
+    Operation newOp = new Operation();
+    newOp.setParameters(parameters);
+    newOp.vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+        DBEERPEDIA.BREWERIES.stringValue()));
+    newOp.response(200, new Response().schema(property));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.APPLICATION_JSON).path(
+        "/breweries", new Path().get(newOp));
+
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("No object property in body parameter"));
+
+    // Act
+    requestMapper.map(httpConfigurationMock);
+
+  }
+
+  @Test
   public void map_ThrowsException_EndpointWithoutOkResponseSchema() throws IOException {
     // Arrange
     mockDefinition().produces(MediaType.TEXT_PLAIN).host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
@@ -331,6 +427,8 @@ public class OpenApiRequestMapperTest {
     // Act
     requestMapper.map(httpConfigurationMock);
   }
+
+
 
   @Test
   public void map_ProducesPrecedence_WithValidData() throws IOException {
@@ -358,8 +456,14 @@ public class OpenApiRequestMapperTest {
     when(fileResourceMock.getInputStream()).thenReturn(new ByteArrayInputStream(bytes));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[] {fileResourceMock});
+    Map<String, Model> definitions = new HashMap<>();
+    Model myref = new ModelImpl();
+
+    definitions.put("myref", myref);
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
+    swagger.setDefinitions(definitions);
     when(openApiParserMock.parse("spec")).thenReturn(swagger);
+
     return swagger;
   }
 
