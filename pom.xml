@@ -69,6 +69,21 @@
             <name>Philipp Jürgensen</name>
             <email>philipp.juergensen@ovsoftware.com</email>
         </developer>
+        <developer>
+            <id>petervanthof</id>
+            <name>Peter van 't Hof</name>
+            <email>peter@petervanthof.it</email>
+        </developer>
+        <developer>
+            <id>RobinTopper</id>
+            <name>Robin Topper</name>
+            <email>robin.topper@transfer-solutions.com</email>
+        </developer>
+        <developer>
+            <id>JLSchaap</id>
+            <name>John Schaap</name>
+            <email>John.Schaap@Kadaster.nl</email>
+        </developer>
     </developers>
 
     <properties>
