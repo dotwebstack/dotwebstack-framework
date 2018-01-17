@@ -3,6 +3,7 @@ package org.dotwebstack.framework.config;
 import static java.util.Comparator.comparing;
 
 import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -66,24 +67,6 @@ public class FileConfigurationBackend
     this.elmoShapes = elmoShapes;
     this.shaclValidator = shaclValidator;
     repository.initialize();
-  }
-
-  private static InputStream clone(final InputStream inputStream) {
-    try {
-      inputStream.mark(0);
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-      byte[] buffer = new byte[1024];
-      int readLength = 0;
-      while ((readLength = inputStream.read(buffer)) != -1) {
-        outputStream.write(buffer, 0, readLength);
-      }
-      inputStream.reset();
-      outputStream.flush();
-      return new ByteArrayInputStream(outputStream.toByteArray());
-    } catch (Exception ex) {
-      LOG.error(ex.toString());
-    }
-    return null;
   }
 
   @Override
@@ -163,8 +146,11 @@ public class FileConfigurationBackend
         inputStreamWithEnv =
             new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
       }
-      repositoryConnection.add(clone(inputStreamWithEnv), "#", FileFormats.getFormat(extension));
-      streamList.add(clone(inputStreamWithEnv));
+      final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      ByteStreams.copy(inputStreamWithEnv, outputStream);
+      repositoryConnection.add(new ByteArrayInputStream(outputStream.toByteArray()), "#",
+          FileFormats.getFormat(extension));
+      streamList.add(new ByteArrayInputStream(outputStream.toByteArray()));
     } catch (IOException ex) {
       LOG.error("Configuration file %s could not be read.", resource.getFilename());
       throw new ConfigurationException(
