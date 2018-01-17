@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.http.layout;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,25 +16,15 @@ public class LayoutTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Test
-  public void build_CreatesSite_WithValidData() {
+  public void build_CreatesLayout_WithValidData() {
     // Act
-    Site site =
-        new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
+    Layout layout =
+        new Layout.Builder(DBEERPEDIA.LAYOUT, "myStyle.css").label("Hello World!").build();
 
     // Assert
-    assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-    assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN.stringValue()));
-    assertThat(site.isMatchAllDomain(), equalTo(false));
-  }
-
-  @Test
-  public void build_CreatesSiteDefaults_WhenNotProvided() {
-    // Act
-    Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
-
-    // Assert
-    assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-    assertThat(site.isMatchAllDomain(), equalTo(true));
+    assertThat(layout.getCssResource(), equalTo("myStyle.css"));
+    assertThat(layout.getIdentifier(), equalTo(DBEERPEDIA.LAYOUT));
+    assertThat(layout.getLabel(), equalTo("Hello World!"));
   }
 
   @Test
@@ -44,14 +33,23 @@ public class LayoutTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Site.Builder(null).build();
+    new Layout.Builder(null, "myStyle.css").build();
   }
 
   @Test
-  public void domain_ThrowsException_WithMissingValue() {
+  public void build_ThrowsException_WithMissingCssRef() {
+    // Assert
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Site.Builder(DBEERPEDIA.BREWERIES).domain(null).build();
+    new Layout.Builder(DBEERPEDIA.LAYOUT, null).build();
+  }
+
+  @Test
+  public void label_ThrowsException_WithMissingValue() {
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new Layout.Builder(DBEERPEDIA.LAYOUT, "myStyle.css").label(null).build();
   }
 }

@@ -171,6 +171,10 @@ public final class DBEERPEDIA {
 
   public static final IRI LAYOUT;
 
+  public static final IRI LAYOUT_NL;
+
+  public static final Literal LAYOUT_VALUE;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
@@ -233,6 +237,8 @@ public final class DBEERPEDIA {
     MAXIMUS_FTE = valueFactory.createLiteral(2.4);
     MAXIMUS_PLACE = valueFactory.createLiteral("Utrecht");
 
+    LAYOUT_VALUE = valueFactory.createLiteral(DBEERPEDIA.NAMESPACE, "BeerCssStyle.css");
+
     PERCENTAGES_INFORMATION_PRODUCT = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/information/alcohol-percentages");
     ORIGIN_INFORMATION_PRODUCT =
@@ -271,6 +277,8 @@ public final class DBEERPEDIA {
     BREWERY_TYPE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Brewery");
 
     LAYOUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayout");
+
+    LAYOUT_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayoutNL");
   }
 
   private DBEERPEDIA() {

@@ -90,6 +90,15 @@ public class SiteResourceProviderTest {
   }
 
   @Test
+  public void constructor_ThrowsException_WithMissingLayoutResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SiteResourceProvider(configurationBackend, null, applicationProperties);
+  }
+
+  @Test
   public void loadResources_LoadsSite_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
