@@ -65,11 +65,14 @@ public class ValidationReport {
 
   public String printReport() {
     StringBuilder report = new StringBuilder();
-    report.append("\n--- Validation report ---\n");
+    report.append("\n-------------------------\n");
+    report.append("--- Validation report ---\n");
+    report.append("-------------------------\n");
+    report.append("*** Found [" + errors.size() + "] errors\n");
     for (Violation violation : errors.values()) {
       report.append(violation.getReport() + "\n");
     }
-    report.append("\n--- ---");
+    report.append("--- ---");
     return report.toString();
   }
 }
