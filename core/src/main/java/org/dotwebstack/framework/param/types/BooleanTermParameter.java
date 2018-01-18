@@ -10,6 +10,10 @@ public class BooleanTermParameter extends TermParameter<Boolean> {
     super(identifier, name, required);
   }
 
+  public BooleanTermParameter(IRI identifier, String name, boolean required, boolean defaultValue) {
+    super(identifier, name, required, defaultValue);
+  }
+
   @Override
   public Literal getValue(Boolean value) {
     return SimpleValueFactory.getInstance().createLiteral(value);

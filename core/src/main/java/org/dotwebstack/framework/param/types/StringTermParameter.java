@@ -10,6 +10,10 @@ public class StringTermParameter extends TermParameter<String> {
     super(identifier, name, required);
   }
 
+  public StringTermParameter(IRI identifier, String name, boolean required, String defaultValue) {
+    super(identifier, name, required, defaultValue);
+  }
+
   @Override
   public Literal getValue(String value) {
     return SimpleValueFactory.getInstance().createLiteral(value);

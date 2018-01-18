@@ -13,7 +13,6 @@ import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -60,15 +59,13 @@ public class BooleanTermParameterTest {
     assertThat(result, nullValue());
   }
 
-  @Ignore
   @Test
   public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
     // Arrange
     Boolean defaultValue = true;
 
-    // TODO NvD Supply the default value to the parameter
     BindableParameter<Boolean> parameter = new BooleanTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
-        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false);
+        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, defaultValue);
 
     Map<String, String> parameterValues =
         Collections.singletonMap(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, null);

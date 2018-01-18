@@ -13,6 +13,10 @@ public class IriTermParameter extends TermParameter<IRI> {
     super(identifier, name, required);
   }
 
+  public IriTermParameter(IRI identifier, String name, boolean required, IRI defaultValue) {
+    super(identifier, name, required, defaultValue);
+  }
+
   @Override
   public Literal getValue(IRI value) {
     return VALUE_FACTORY.createLiteral(value.stringValue());

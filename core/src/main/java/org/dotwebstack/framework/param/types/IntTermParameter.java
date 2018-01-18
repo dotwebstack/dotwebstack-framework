@@ -10,6 +10,10 @@ public class IntTermParameter extends TermParameter<Integer> {
     super(identifier, name, required);
   }
 
+  public IntTermParameter(IRI identifier, String name, boolean required, int defaultValue) {
+    super(identifier, name, required, defaultValue);
+  }
+
   @Override
   public Literal getValue(Integer value) {
     return SimpleValueFactory.getInstance().createLiteral(value);
