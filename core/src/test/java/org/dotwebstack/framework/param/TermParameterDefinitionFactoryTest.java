@@ -55,7 +55,7 @@ public class TermParameterDefinitionFactoryTest {
   }
 
   @Test
-  public void create_createTermParameterDefinition_ForStringShape() {
+  public void create_createsTermParameterDefinition_ForStringShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
@@ -77,7 +77,7 @@ public class TermParameterDefinitionFactoryTest {
   }
 
   @Test
-  public void create_createTermParameterDefinition_ForIntegerShape() {
+  public void create_createsTermParameterDefinition_ForIntegerShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
@@ -99,7 +99,7 @@ public class TermParameterDefinitionFactoryTest {
   }
 
   @Test
-  public void create_createTermParameterDefinition_ForBooleanShape() {
+  public void create_createsTermParameterDefinition_ForBooleanShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
@@ -121,7 +121,7 @@ public class TermParameterDefinitionFactoryTest {
   }
 
   @Test
-  public void create_createTermParameterDefinition_ForIriShape() {
+  public void create_createsTermParameterDefinition_ForIriShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
@@ -143,7 +143,7 @@ public class TermParameterDefinitionFactoryTest {
   }
 
   @Test
-  public void create_createTermParameterDefinition_ForNoShape() {
+  public void create_createsTermParameterDefinition_ForNoShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
 
@@ -160,6 +160,50 @@ public class TermParameterDefinitionFactoryTest {
     assertThat(result, instanceOf(TermParameterDefinition.class));
     assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
     assertThat(result.getName(), is(DBEERPEDIA.NAME_PARAMETER_VALUE.stringValue()));
+  }
+
+  @Test
+  public void create_createsTermParameterDefinition_WithNullDefaultValue() {
+    // Arrange
+    ModelBuilder builder = new ModelBuilder();
+    BNode blankNode = VALUE_FACTORY.createBNode();
+
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
+            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
+
+    Model model = builder.build();
+
+    // Act
+    TermParameterDefinition result =
+        (TermParameterDefinition) parameterDefinitionFactory.create(model,
+            DBEERPEDIA.NAME_PARAMETER_ID);
+
+    // Assert
+    // TODO NvD Check if the result has a null default value
+    // assertThat(...);
+  }
+
+  @Test
+  public void create_createsTermParameterDefinition_WithProvidedDefaultValue() {
+    // Arrange
+    ModelBuilder builder = new ModelBuilder();
+    BNode blankNode = VALUE_FACTORY.createBNode();
+
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
+            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING).add(SHACL.DEFAULT_VALUE, "foo");;
+
+    Model model = builder.build();
+
+    // Act
+    TermParameterDefinition result =
+        (TermParameterDefinition) parameterDefinitionFactory.create(model,
+            DBEERPEDIA.NAME_PARAMETER_ID);
+
+    // Assert
+    // TODO NvD Check if the result has the provided default value ("foo")
+    // assertThat(...);
   }
 
 }

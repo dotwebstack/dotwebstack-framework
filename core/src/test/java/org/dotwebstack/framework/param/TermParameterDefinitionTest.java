@@ -6,9 +6,12 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Optional;
 import org.dotwebstack.framework.param.shapes.IriPropertyShape;
+import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.param.types.IriTermParameter;
 import org.dotwebstack.framework.param.types.StringTermParameter;
+import org.dotwebstack.framework.param.types.TermParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TermParameterDefinitionTest {
@@ -59,6 +62,38 @@ public class TermParameterDefinitionTest {
     assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
     assertThat(result.getName(), is("name"));
     assertThat(result.isRequired(), is(false));
+  }
+
+  @Ignore
+  @Test
+  public void createOptionalParameter_createsOptionalParameter_WithNullDefaultValue() {
+    // Arrange
+    // TODO NvD Supply a null default value to the shape
+    ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
+        "name", Optional.of(new StringPropertyShape()));
+
+    // Act
+    TermParameter result = (TermParameter) definition.createOptionalParameter();
+
+    // Assert
+    // TODO NvD Check if the result has a null default value
+    // assertThat(...);
+  }
+
+  @Ignore
+  @Test
+  public void createOptionalParameter_createsOptionalParameter_WithProvidedDefaultValue() {
+    // Arrange
+    // TODO NvD Supply the default value to the shape
+    ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
+        "name", Optional.of(new StringPropertyShape()));
+
+    // Act
+    TermParameter result = (TermParameter) definition.createOptionalParameter();
+
+    // Assert
+    // TODO NvD Check if the result has the provided default value
+    // assertThat(...);
   }
 
 }
