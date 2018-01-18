@@ -20,6 +20,7 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TermParameterDefinitionFactoryTest {
@@ -162,6 +163,7 @@ public class TermParameterDefinitionFactoryTest {
     assertThat(result.getName(), is(DBEERPEDIA.NAME_PARAMETER_VALUE.stringValue()));
   }
 
+  @Ignore
   @Test
   public void create_createsTermParameterDefinition_WithNullDefaultValue() {
     // Arrange
@@ -184,6 +186,7 @@ public class TermParameterDefinitionFactoryTest {
     // assertThat(...);
   }
 
+  @Ignore
   @Test
   public void create_createsTermParameterDefinition_WithProvidedDefaultValue() {
     // Arrange
