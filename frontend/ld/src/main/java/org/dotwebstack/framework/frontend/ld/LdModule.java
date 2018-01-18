@@ -28,6 +28,7 @@ public class LdModule implements HttpModule {
 
   @Override
   public void initialize(@NonNull HttpConfiguration httpConfiguration) {
+    httpConfiguration.register(FormatPreMatchingRequestFilter.class);
     ldRepresentationRequestMapper.loadRepresentations(httpConfiguration);
     ldRedirectionRequestMapper.loadRedirections(httpConfiguration);
 
