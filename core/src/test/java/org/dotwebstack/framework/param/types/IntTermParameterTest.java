@@ -8,9 +8,11 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
+import org.dotwebstack.framework.param.BindableParameter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,6 +37,24 @@ public class IntTermParameterTest {
 
     // Assert
     assertNull(result);
+  }
+
+  @Ignore
+  @Test
+  public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
+    // Arrange
+    Integer defaultValue = 3;
+
+    // TODO NvD Supply the default value to the parameter
+    BindableParameter<Integer> parameter = new IntTermParameter(identifier, "test", false);
+
+    Map<String, String> parameterValues = Collections.singletonMap("test", null);
+
+    // Act
+    Integer result = parameter.handle(parameterValues);
+
+    // Assert
+    assertThat(result, is(defaultValue));
   }
 
   @Test
