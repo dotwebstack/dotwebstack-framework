@@ -1,13 +1,12 @@
 package org.dotwebstack.framework.frontend.ld;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +19,11 @@ public class FormatPreMatchingRequestFilter implements ContainerRequestFilter {
   private static final Logger LOG = LoggerFactory.getLogger(FormatPreMatchingRequestFilter.class);
 
   @Override
-  public void filter(ContainerRequestContext containerRequestContext) throws IOException {
-    MultivaluedMap<String, String> queryParameters =
-        containerRequestContext.getUriInfo().getQueryParameters();
-
-    queryParameters.get("format").stream().findFirst().ifPresent(
-        format -> setHeader(format, containerRequestContext));
+  public void filter(ContainerRequestContext containerRequestContext) {
+    List<String> formats = containerRequestContext.getUriInfo().getQueryParameters().get("format");
+    if (formats != null) {
+      formats.stream().findFirst().ifPresent(format -> setHeader(format, containerRequestContext));
+    }
   }
 
   private void setHeader(String format, ContainerRequestContext containerRequestContext) {
