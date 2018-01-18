@@ -2,6 +2,7 @@ package org.dotwebstack.framework.param;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.param.shapes.StringPropertyShape;
@@ -34,8 +35,12 @@ public final class TermParameterDefinition extends AbstractParameterDefinition<T
   private TermParameter<?> createParameter(boolean required) {
     Class<?> parameterClass = shapeType.orElse(DEFAULT_SHAPE).getTermClass();
 
-    if (parameterClass.getConstructors().length == 1) {
-      Constructor constructor = parameterClass.getConstructors()[0];
+    Optional<Constructor<?>> constructorOptional =
+        Arrays.asList(parameterClass.getConstructors()).stream().filter(
+            c -> c.getParameterCount() == 3).findFirst();
+
+    if (constructorOptional.isPresent()) {
+      Constructor constructor = constructorOptional.get();
 
       try {
         return (TermParameter) constructor.newInstance(getIdentifier(), getName(), required);
