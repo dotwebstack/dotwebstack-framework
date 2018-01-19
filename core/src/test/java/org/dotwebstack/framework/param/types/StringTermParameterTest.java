@@ -28,9 +28,9 @@ public class StringTermParameterTest {
   @Before
   public void setUp() {
     requiredParameter = new StringTermParameter(DBEERPEDIA.NAME_PARAMETER_ID,
-        DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, true);
+        DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, true, null);
     optionalParameter = new StringTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
-        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false);
+        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, null);
   }
 
   @Test

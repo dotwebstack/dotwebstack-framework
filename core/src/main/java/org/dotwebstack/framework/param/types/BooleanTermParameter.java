@@ -6,11 +6,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class BooleanTermParameter extends TermParameter<Boolean> {
 
-  public BooleanTermParameter(IRI identifier, String name, boolean required) {
-    super(identifier, name, required);
-  }
-
-  public BooleanTermParameter(IRI identifier, String name, boolean required, boolean defaultValue) {
+  public BooleanTermParameter(IRI identifier, String name, boolean required, String defaultValue) {
     super(identifier, name, required, defaultValue);
   }
 
@@ -21,7 +17,10 @@ public class BooleanTermParameter extends TermParameter<Boolean> {
 
   @Override
   protected Boolean handleInner(String value) {
-    return Boolean.valueOf(value);
+    if (value != null && (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))) {
+      return Boolean.valueOf(value);
+    } else {
+      return null;
+    }
   }
-
 }

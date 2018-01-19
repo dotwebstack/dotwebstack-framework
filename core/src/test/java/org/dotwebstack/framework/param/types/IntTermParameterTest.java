@@ -19,9 +19,9 @@ import org.junit.rules.ExpectedException;
 public class IntTermParameterTest {
 
   private IRI identifier = SimpleValueFactory.getInstance().createIRI("http://www.test.nl");
-  private IntTermParameter intTermParameter = new IntTermParameter(identifier, "test", true);
+  private IntTermParameter intTermParameter = new IntTermParameter(identifier, "test", true, null);
   private IntTermParameter intTermParameterOptional =
-      new IntTermParameter(identifier, "test", false);
+      new IntTermParameter(identifier, "test", false, null);
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -41,7 +41,7 @@ public class IntTermParameterTest {
   @Test
   public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
     // Arrange
-    Integer defaultValue = 3;
+    String defaultValue = "3";
 
     BindableParameter<Integer> parameter =
         new IntTermParameter(identifier, "test", false, defaultValue);
@@ -52,7 +52,7 @@ public class IntTermParameterTest {
     Integer result = parameter.handle(parameterValues);
 
     // Assert
-    assertThat(result, is(defaultValue));
+    assertThat(result, is(Integer.parseInt(defaultValue)));
   }
 
   @Test

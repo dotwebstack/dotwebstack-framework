@@ -8,14 +8,15 @@ import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.param.types.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
-public final class TermParameterDefinition extends AbstractParameterDefinition<TermParameter<?>> {
+public final class TermParameterDefinition<T> extends
+    AbstractParameterDefinition<TermParameter<?>> {
 
   private static final PropertyShape DEFAULT_SHAPE = new StringPropertyShape();
 
-  private final Optional<PropertyShape> shapeType;
+  private final Optional<PropertyShape<T>> shapeType;
 
   public TermParameterDefinition(@NonNull IRI identifier, @NonNull String name,
-      @NonNull Optional<PropertyShape> shapeType) {
+      @NonNull Optional<PropertyShape<T>> shapeType) {
     super(identifier, name);
 
     this.shapeType = shapeType;
@@ -38,7 +39,12 @@ public final class TermParameterDefinition extends AbstractParameterDefinition<T
       Constructor constructor = parameterClass.getConstructors()[0];
 
       try {
-        return (TermParameter) constructor.newInstance(getIdentifier(), getName(), required);
+        T defaultValue = null;
+        if (shapeType.isPresent()) {
+          defaultValue = shapeType.get().getDefaultValue();
+        }
+        return (TermParameter) constructor
+            .newInstance(getIdentifier(), getName(), required, defaultValue);
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
         throw new IllegalStateException(e);
       }

@@ -2,9 +2,12 @@ package org.dotwebstack.framework.param;
 
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.Map;
 import org.dotwebstack.framework.param.shapes.BooleanPropertyShape;
 import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
 import org.dotwebstack.framework.param.shapes.IriPropertyShape;
@@ -20,7 +23,6 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TermParameterDefinitionFactoryTest {
@@ -63,7 +65,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
+        blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
 
     Model model = builder.build();
 
@@ -85,7 +87,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(SHACL.DATATYPE, XMLSchema.INTEGER);
+        blankNode).add(SHACL.DATATYPE, XMLSchema.INTEGER);
 
     Model model = builder.build();
 
@@ -105,9 +107,10 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
-        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(SHACL.DATATYPE, XMLSchema.BOOLEAN);
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID)
+        .add(RDF.TYPE, ELMO.TERM_FILTER)
+        .add(ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE)
+        .add(ELMO.SHAPE_PROP, blankNode).subject(blankNode).add(SHACL.DATATYPE, XMLSchema.BOOLEAN);
 
     Model model = builder.build();
 
@@ -129,7 +132,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
+        blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
 
     Model model = builder.build();
 
@@ -163,39 +166,49 @@ public class TermParameterDefinitionFactoryTest {
     assertThat(result.getName(), is(DBEERPEDIA.NAME_PARAMETER_VALUE.stringValue()));
   }
 
-  @Ignore
   @Test
   public void create_createsTermParameterDefinition_WithNullDefaultValue() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
-        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID)
+        .add(RDF.TYPE, ELMO.TERM_FILTER)
+        .add(ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE)
+        .add(ELMO.SHAPE_PROP, blankNode)
+        .subject(blankNode)
+        .add(SHACL.DATATYPE, XMLSchema.STRING);
 
     Model model = builder.build();
+
+    Map<String, String> parameterValues = ImmutableMap.of();
 
     // Act
     TermParameterDefinition result =
         (TermParameterDefinition) parameterDefinitionFactory.create(model,
             DBEERPEDIA.NAME_PARAMETER_ID);
 
+    Parameter optionalParameter = result.createOptionalParameter();
+    Object handle = optionalParameter.handle(parameterValues);
     // Assert
     // TODO NvD Check if the result has a null default value
-    // assertThat(...);
+    assertThat(result, instanceOf(TermParameterDefinition.class));
+    assertThat(handle, is(nullValue()));
   }
 
-  @Ignore
   @Test
   public void create_createsTermParameterDefinition_WithProvidedDefaultValue() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
-        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING).add(SHACL.DEFAULT_VALUE, "foo");;
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID)
+        .add(RDF.TYPE, ELMO.TERM_FILTER)
+        .add(ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE)
+        .add(ELMO.SHAPE_PROP, blankNode)
+        .subject(blankNode)
+        .add(SHACL.DATATYPE, XMLSchema.STRING)
+        .add(SHACL.DEFAULT_VALUE, "foo");
 
     Model model = builder.build();
 
@@ -204,9 +217,12 @@ public class TermParameterDefinitionFactoryTest {
         (TermParameterDefinition) parameterDefinitionFactory.create(model,
             DBEERPEDIA.NAME_PARAMETER_ID);
 
+    Parameter optionalParameter = result.createOptionalParameter();
+    Object handle = optionalParameter.handle(ImmutableMap.of()); // empty map
+
     // Assert
-    // TODO NvD Check if the result has the provided default value ("foo")
-    // assertThat(...);
+    assertThat(result, instanceOf(TermParameterDefinition.class));
+    assertThat(handle, is("foo"));
   }
 
 }

@@ -29,15 +29,26 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP, id,
                 ELMO.TERM_FILTER))).stringValue();
 
-    Set<Value> objects = model.filter(id, ELMO.SHAPE_PROP, null).objects();
-    Optional<PropertyShape> propertyShapeOptional = Optional.empty();
-    if (objects.iterator().hasNext()) {
-      Set<Value> iriShapeTypes =
-          model.filter((Resource) objects.iterator().next(), SHACL.DATATYPE, null).objects();
+    Optional<AbstractPropertyShape> propertyShapeOptional = Optional.empty();
+    Set<Value> shapeObjects = model.filter(id, ELMO.SHAPE_PROP, null).objects();
+    if (shapeObjects.iterator().hasNext()) {
+      Value next = shapeObjects.iterator().next();
+      Set<Value> iriShapeTypes = model.filter((Resource) next, SHACL.DATATYPE, null).objects();
 
-      propertyShapeOptional = supportedShapes.stream().filter(
-          propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
-              propertyShape.getDataType().stringValue())).findFirst();
+      propertyShapeOptional = supportedShapes.stream()
+          .filter(propertyShape -> iriShapeTypes.iterator().next().stringValue()
+              .equals(propertyShape.getDataType().stringValue()))
+          .map(shape -> ((AbstractPropertyShape) shape))
+          .findFirst();
+      Optional<Value> optionalDefaultValue = model
+          .filter((Resource) next, SHACL.DEFAULT_VALUE, null).objects()
+          .stream().findFirst();
+
+      if (propertyShapeOptional.isPresent()) {
+        if (optionalDefaultValue.isPresent()) {
+          propertyShapeOptional.get().setDefaultValue(optionalDefaultValue.get().stringValue());
+        }
+      }
     }
 
     return new TermParameterDefinition(id, name, propertyShapeOptional);

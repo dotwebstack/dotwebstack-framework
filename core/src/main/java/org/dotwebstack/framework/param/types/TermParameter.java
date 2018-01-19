@@ -9,13 +9,9 @@ import org.eclipse.rdf4j.model.IRI;
 public abstract class TermParameter<T> extends AbstractParameter<T>
     implements BindableParameter<T> {
 
-  private T defaultValue = null;
+  protected final String defaultValue;
 
-  protected TermParameter(IRI identifier, String name, boolean required) {
-    super(identifier, name, required);
-  }
-
-  protected TermParameter(IRI identifier, String name, boolean required, T defaultValue) {
+  protected TermParameter(IRI identifier, String name, boolean required, String defaultValue) {
     super(identifier, name, required);
     this.defaultValue = defaultValue;
   }
@@ -23,7 +19,7 @@ public abstract class TermParameter<T> extends AbstractParameter<T>
   @Override
   protected T handleInner(Map<String, String> parameterValues) {
     String value = parameterValues.get(getName());
-    return value != null ? handleInner(value) : defaultValue;
+    return value != null ? handleInner(value) : handleInner(defaultValue);
   }
 
   protected abstract T handleInner(String value);
