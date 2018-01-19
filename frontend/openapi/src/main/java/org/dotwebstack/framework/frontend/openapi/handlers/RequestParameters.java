@@ -12,17 +12,16 @@ class RequestParameters {
 
   void putAll(@NonNull MultivaluedMap<String, String> sourceParams) {
     for (String key : sourceParams.keySet()) {
-      parameters.put(key, sourceParams.getFirst(key));
+      put(key, sourceParams.getFirst(key));
     }
   }
 
-  RequestParameters putAll(@NonNull Map<String, Object> sourceParams) {
-    parameters.putAll(sourceParams);
-    return this;
+  void put(@NonNull String key, Object value) {
+    parameters.put(key, value);
   }
 
   String asString(@NonNull String paramName) {
-    Object param = this.parameters.get(paramName);
+    Object param = get(paramName);
     return param != null ? param.toString() : null;
   }
 

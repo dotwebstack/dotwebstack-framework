@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -86,6 +85,7 @@ public class RequestParameterExtractorTest {
 
     when(parameter.getSchema()).thenReturn(schema);
     when(parameter.getIn()).thenReturn("body");
+    when(parameter.getName()).thenReturn("name");
 
     when(operation.getParameters()).thenReturn(ImmutableList.of(parameter));
     when(apiOperation.getOperation()).thenReturn(operation);
@@ -123,18 +123,15 @@ public class RequestParameterExtractorTest {
   }
 
   @Test
-  public void extract_DoesNotFail_WhenNonGeoJsonBodyIsSupplied() {
+  public void extract_ExtractsBodyParameter_AsRequestParameter() {
     String body = "{ \"foo\": \"bar\" }";
 
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));
 
     RequestParameters result = RequestParameterExtractor.extract(apiOperation, swagger, context);
 
-    assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY_QUERYTYPE), nullValue());
-    assertThat(result.get(RequestParameterExtractor.PARAM_GEOMETRY), nullValue());
-
     assertThat(result.getRawBody(), is(body));
-    assertThat(result.get("foo"), is("bar"));
+    assertThat(result.get("name"), is(body));
   }
 
 }
