@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param;
+package org.dotwebstack.framework.param.types;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -8,44 +8,42 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
+import org.dotwebstack.framework.param.BindableParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
-import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
-public class TermParameterTest {
+public class BooleanTermParameterTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private TermParameter requiredParameter;
-  private TermParameter optionalParameter;
+  private BindableParameter<Boolean> requiredParameter;
+  private BindableParameter<Boolean> optionalParameter;
 
   @Before
   public void setUp() {
-    requiredParameter = TermParameter.requiredTermParameter(DBEERPEDIA.NAME_PARAMETER_ID,
-        DBEERPEDIA.NAME_PARAMETER_VALUE_STRING);
-    optionalParameter = TermParameter.optionalTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
-        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING);
+    requiredParameter = new BooleanTermParameter(DBEERPEDIA.NAME_PARAMETER_ID,
+        DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, true);
+    optionalParameter = new BooleanTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
+        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false);
   }
 
   @Test
   public void handle_ReturnsValueForRequiredFilter() {
     // Arrange
     Map<String, String> parameterValues =
-        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
+        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "true");
 
     // Act
-    String result = requiredParameter.handle(parameterValues);
+    Boolean result = requiredParameter.handle(parameterValues);
 
     // Assert
-    assertThat(result, is("value"));
+    assertThat(result, is(true));
   }
 
   @Test
@@ -55,7 +53,7 @@ public class TermParameterTest {
         Collections.singletonMap(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, null);
 
     // Act
-    String result = optionalParameter.handle(parameterValues);
+    Boolean result = optionalParameter.handle(parameterValues);
 
     // Assert
     assertThat(result, nullValue());
@@ -74,30 +72,17 @@ public class TermParameterTest {
   }
 
   @Test
-  public void handle_AcceptsNonNullValue_ForRequiredParameter() {
-    // Act
-    requiredParameter.handle(
-        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, DBEERPEDIA.BREWERY_DAVO_NAME));
-  }
-
-  @Test
-  public void handle_AcceptsNullValue_ForOptionalParameter() {
-    // Act
-    optionalParameter.handle(ImmutableMap.of());
-  }
-
-  @Test
   public void getValue_ReturnsLiteral_ForValue() {
     // Arrange
     Map<String, String> parameterValues =
-        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "value");
+        ImmutableMap.of(DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, "false");
 
     // Act
-    String value = requiredParameter.handle(parameterValues);
-    Literal result = requiredParameter.getValue(value);
+    Boolean value = requiredParameter.handle(parameterValues);
+    Value result = requiredParameter.getValue(value);
 
     // Assert
-    assertThat(result, is(SimpleValueFactory.getInstance().createLiteral("value")));
+    assertThat(result, is(SimpleValueFactory.getInstance().createLiteral(false)));
   }
 
 }

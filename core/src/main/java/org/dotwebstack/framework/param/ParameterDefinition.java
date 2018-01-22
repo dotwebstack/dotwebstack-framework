@@ -1,25 +1,25 @@
 package org.dotwebstack.framework.param;
 
-import lombok.NonNull;
+import org.dotwebstack.framework.param.types.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
-public final class ParameterDefinition {
+/**
+ * A {@code ParameterDefinition} contains the data a {@link Parameter} will be created with. Each
+ * parameter has an identifier and name. The definition is also responsible for creating the
+ * parameters with {@link #createRequiredParameter()} or {@link #createOptionalParameter()}.
+ * <p/>
+ * Implementations can add extra fields if required. For example a {@link TermParameter} has a SHACL
+ * shape type. Therefore the {@link TermParameterDefinition} has a shape type field to create a term
+ * parameter with.
+ */
+public interface ParameterDefinition<T extends Parameter<?>> {
 
-  private final IRI identifier;
+  IRI getIdentifier();
 
-  private final String name;
+  String getName();
 
-  public ParameterDefinition(@NonNull IRI identifier, @NonNull String name) {
-    this.identifier = identifier;
-    this.name = name;
-  }
+  T createRequiredParameter();
 
-  public IRI getIdentifier() {
-    return identifier;
-  }
-
-  public String getName() {
-    return name;
-  }
+  T createOptionalParameter();
 
 }

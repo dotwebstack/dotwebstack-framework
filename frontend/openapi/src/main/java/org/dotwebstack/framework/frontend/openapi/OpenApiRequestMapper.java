@@ -3,9 +3,12 @@ package org.dotwebstack.framework.frontend.openapi;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
+import io.swagger.models.RefModel;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
+import io.swagger.models.parameters.BodyParameter;
 import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
 import java.io.FileNotFoundException;
@@ -15,7 +18,6 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
@@ -110,11 +112,13 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
-      ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, "get");
+      ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, pathItem);
       if (apiOperation == null) {
         return;
       }
       Operation getOperation = apiOperation.getOperation();
+
+      validateOperation(apiOperation, swagger);
 
       String absolutePath = basePath.concat(path);
 
@@ -163,16 +167,47 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
-      ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          getRequestHandlerFactory.newGetRequestHandler(apiOperation, informationProduct, schemaMap,
-              swagger));
+      ResourceMethod.Builder methodBuilder =
+          resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
+              getRequestHandlerFactory.newGetRequestHandler(apiOperation, informationProduct,
+                  schemaMap, swagger));
 
       produces.forEach(methodBuilder::produces);
 
       httpConfiguration.registerResources(resourceBuilder.build());
 
-      LOG.debug("Mapped GET operation for request path {}", absolutePath);
+      LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
+          absolutePath);
     });
+  }
+
+  /**
+   * @throws ConfigurationException If the supplied operation has a body parameter, and it does not
+   *         have a schema of type Object (because a schema of type Object is the only type we are
+   *         currently supporting).
+   */
+  private void validateOperation(ApiOperation apiOperation, Swagger swagger) {
+    apiOperation.getOperation().getParameters().stream().filter(
+        parameterBody -> "body".equalsIgnoreCase(parameterBody.getIn())).forEach(parameterBody -> {
+          if ((parameterBody instanceof BodyParameter)) {
+            ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
+            if (!"object".equalsIgnoreCase(parameterModel.getType())) {
+              throw new ConfigurationException("No object property in body parameter.");
+            }
+          }
+        });
+  }
+
+  private ModelImpl getBodyParameter(@NonNull Swagger swagger, BodyParameter parameterBody) {
+    ModelImpl parameterModel = null;
+    if (parameterBody.getSchema() instanceof ModelImpl) {
+      parameterModel = ((ModelImpl) (parameterBody.getSchema()));
+    }
+    if (parameterBody.getSchema() instanceof RefModel) {
+      RefModel refModel = ((RefModel) (parameterBody.getSchema()));
+      parameterModel = (ModelImpl) swagger.getDefinitions().get(refModel.getSimpleRef());
+    }
+    return parameterModel;
   }
 
   private String createBasePath(Swagger swagger) {

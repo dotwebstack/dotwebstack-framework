@@ -10,8 +10,8 @@ import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.Parameter;
-import org.dotwebstack.framework.param.ParameterResourceProvider;
-import org.dotwebstack.framework.param.TermParameter;
+import org.dotwebstack.framework.param.ParameterDefinition;
+import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -28,17 +28,17 @@ public class InformationProductResourceProvider
 
   private final BackendResourceProvider backendResourceProvider;
 
-  private final ParameterResourceProvider parameterResourceProvider;
+  private final ParameterDefinitionResourceProvider parameterDefinitionResourceProvider;
 
   @Autowired
   public InformationProductResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull BackendResourceProvider backendResourceProvider,
-      @NonNull ParameterResourceProvider parameterResourceProvider,
+      @NonNull ParameterDefinitionResourceProvider parameterDefinitionResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
 
     this.backendResourceProvider = backendResourceProvider;
-    this.parameterResourceProvider = parameterResourceProvider;
+    this.parameterDefinitionResourceProvider = parameterDefinitionResourceProvider;
   }
 
   @Override
@@ -73,14 +73,12 @@ public class InformationProductResourceProvider
 
     ImmutableList.Builder<Parameter> builder = ImmutableList.builder();
 
-    requiredParameterIds.stream().map(parameterResourceProvider::get).map(
-        d -> TermParameter.requiredTermParameter(d.getIdentifier(), d.getName())).forEach(
-            builder::add);
-
-    optionalParameterIds.stream().map(parameterResourceProvider::get).map(
-        d -> TermParameter.optionalTermParameter(d.getIdentifier(), d.getName())).forEach(
-            builder::add);
+    requiredParameterIds.stream().map(parameterDefinitionResourceProvider::get).map(
+        ParameterDefinition::createRequiredParameter).forEach(builder::add);
+    optionalParameterIds.stream().map(parameterDefinitionResourceProvider::get).map(
+        ParameterDefinition::createOptionalParameter).forEach(builder::add);
 
     return backend.createInformationProduct(identifier, label, builder.build(), statements);
   }
+
 }

@@ -34,7 +34,6 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
     return required;
   }
 
-
   /**
    * Validates and handles the supplied values. Calls {@link #validateRequired(Map)} and
    * {@link #validateInner(Map)} for validation. Calls {@link #handleInner(Map)} for handling.
@@ -54,11 +53,11 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
   protected abstract T handleInner(Map<String, String> parameterValues);
 
   private void validate(Map<String, String> parameterValues) {
+    validateInner(parameterValues);
+
     if (required) {
       validateRequired(parameterValues);
     }
-
-    validateInner(parameterValues);
   }
 
   /**

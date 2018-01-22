@@ -57,9 +57,11 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
   @Override
   public Response apply(@NonNull ContainerRequestContext context) {
     String path = context.getUriInfo().getPath();
-    LOG.debug("Handling GET request for path {}", path);
 
-    RequestParameters requestParameters = apiRequestValidator.validate(apiOperation, context);
+    LOG.debug("Handling {} request for path {}", context.getMethod(), path);
+
+    RequestParameters requestParameters =
+        apiRequestValidator.validate(apiOperation, swagger, context);
 
     Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
         informationProduct, requestParameters);

@@ -43,6 +43,8 @@ public final class ELMO {
 
   public static final IRI TARGET_URL;
 
+  public static final IRI REDIRECTION_TEMPLATE;
+
   public static final IRI APPEARANCE;
 
   public static final IRI RESOURCE_APPEARANCE;
@@ -56,6 +58,8 @@ public final class ELMO {
   public static final IRI URI_PARAMETER_MAPPER;
 
   public static final IRI PARAMETER_MAPPER_PROP;
+
+  public static final IRI PARAMETER;
 
   public static final IRI TERM_FILTER;
 
@@ -72,6 +76,8 @@ public final class ELMO {
   public static final IRI TEMPLATE_PROP;
 
   public static final IRI TARGET_PROP;
+
+  public static final IRI SHAPE_PROP;
 
   public static final IRI RESULT_TYPE;
 
@@ -130,7 +136,9 @@ public final class ELMO {
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
 
     TARGET_URL = valueFactory.createIRI(ELMO.NAMESPACE, "targetUrl");
+    REDIRECTION_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 
+    PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
     TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
 
     OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
@@ -146,6 +154,7 @@ public final class ELMO {
     TARGET_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "target");
 
     LAYOUT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "layout");
+    SHAPE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "shape");
   }
 
   private ELMO() {

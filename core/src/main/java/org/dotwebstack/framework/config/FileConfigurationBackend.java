@@ -1,7 +1,12 @@
 package org.dotwebstack.framework.config;
 
+import static java.util.Comparator.comparing;
+
 import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -105,14 +110,15 @@ public class FileConfigurationBackend
     });
     List<InputStream> configurationStreams = new ArrayList<>();
     try {
+      resources.sort(comparing(Resource::getFilename));
       for (Resource resource : resources) {
         String extension = FilenameUtils.getExtension(resource.getFilename());
         if (!FileFormats.containsExtension(extension)) {
           LOG.debug("File extension not supported, ignoring file: \"{}\"", resource.getFilename());
           continue;
         }
-        addResourceToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource);
-        configurationStreams.add(resource.getInputStream());
+        addResourceToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource,
+            configurationStreams);
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
       validate(configurationStreams);
@@ -124,20 +130,27 @@ public class FileConfigurationBackend
   }
 
   private void addResourceToRepositoryConnection(RepositoryConnection repositoryConnection,
-      Optional<Resource> optionalPrefixesResource, Resource resource) {
+      Optional<Resource> optionalPrefixesResource, Resource resource,
+      List<InputStream> streamList) {
     final String extension = FilenameUtils.getExtension(resource.getFilename());
     try {
-      if (optionalPrefixesResource.isPresent()) {
+      final InputStream inputStreamWithEnv;
+      if (optionalPrefixesResource.isPresent()
+          && !resource.getFilename().equals("_prefixes.trig")) {
         try (SequenceInputStream resourceSequenceInputStream = new SequenceInputStream(
             optionalPrefixesResource.get().getInputStream(), resource.getInputStream())) {
-          repositoryConnection.add(new EnvironmentAwareResource(resourceSequenceInputStream,
-              environment).getInputStream(), "#", FileFormats.getFormat(extension));
+          inputStreamWithEnv = new EnvironmentAwareResource(resourceSequenceInputStream,
+              environment).getInputStream();
         }
       } else {
-        repositoryConnection.add(
-            new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream(),
-            "#", FileFormats.getFormat(extension));
+        inputStreamWithEnv =
+            new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
       }
+      final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      ByteStreams.copy(inputStreamWithEnv, outputStream);
+      repositoryConnection.add(new ByteArrayInputStream(outputStream.toByteArray()), "#",
+          FileFormats.getFormat(extension));
+      streamList.add(new ByteArrayInputStream(outputStream.toByteArray()));
     } catch (IOException ex) {
       LOG.error("Configuration file %s could not be read.", resource.getFilename());
       throw new ConfigurationException(

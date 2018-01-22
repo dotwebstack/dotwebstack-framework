@@ -3,12 +3,16 @@ package org.dotwebstack.framework.frontend.openapi;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import java.io.IOException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.apache.http.entity.ContentType;
 import org.dotwebstack.framework.SparqlHttpStub;
 import org.dotwebstack.framework.SparqlHttpStub.TupleQueryResultBuilder;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -41,10 +45,15 @@ public class OpenApiIntegrationTest {
   @Autowired
   private HttpConfiguration httpConfiguration;
 
+  @Autowired
+  private ObjectMapper objectMapper;
+
   @Before
   public void setUp() throws IOException {
     target = ClientBuilder.newClient(httpConfiguration).target(
         String.format("http://localhost:%d", this.port));
+
+    objectMapper.registerModule(new GuavaModule());
 
     SparqlHttpStub.start();
   }
@@ -63,7 +72,8 @@ public class OpenApiIntegrationTest {
 
     // Act
     Response response = target.path("/dbp/api/v1/breweries").request().accept(
-        MediaType.APPLICATION_JSON_TYPE).get();
+        MediaType.APPLICATION_JSON_TYPE).header(HttpHeaders.CONTENT_TYPE,
+            ContentType.APPLICATION_JSON.toString()).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));

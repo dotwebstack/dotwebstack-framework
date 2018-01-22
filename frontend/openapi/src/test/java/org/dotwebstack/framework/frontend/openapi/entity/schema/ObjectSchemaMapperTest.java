@@ -312,6 +312,19 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
+  public void supports_ReturnsFalse_ForObjectPropertyWithVendorExtension() {
+    // Arrange
+    property.setVendorExtension(OpenApiSpecificationExtensions.TYPE, "dummy");
+
+    // Act
+    boolean result = schemaMapper.supports(property);
+
+    // Assert
+    assertThat(result, is(false));
+  }
+
+
+  @Test
   public void getSupportedDataTypes_ReturnsEmptySet() {
     // Act
     Set<IRI> result = schemaMapper.getSupportedDataTypes();
