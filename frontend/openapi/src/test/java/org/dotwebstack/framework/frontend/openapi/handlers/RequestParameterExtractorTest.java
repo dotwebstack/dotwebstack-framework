@@ -6,14 +6,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.BodyParameter;
 import java.io.ByteArrayInputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -60,6 +59,8 @@ public class RequestParameterExtractorTest {
   @Mock
   private Operation operation;
 
+  private RequestParameterExtractor requestParameterExtractor;
+
   @Before
   public void setUp() throws URISyntaxException {
 
@@ -88,22 +89,15 @@ public class RequestParameterExtractorTest {
 
     when(operation.getParameters()).thenReturn(ImmutableList.of(parameter));
     when(apiOperation.getOperation()).thenReturn(operation);
-  }
 
-  @Test
-  public void constructor_IsPrivate() throws NoSuchMethodException, InstantiationException,
-      IllegalAccessException, InvocationTargetException {
-    Constructor<?> constructor = RequestParameterExtractor.class.getDeclaredConstructor();
-    constructor.setAccessible(true);
-    exception.expect(InvocationTargetException.class);
-    constructor.newInstance();
+    requestParameterExtractor = new RequestParameterExtractor(new ObjectMapper());
   }
 
   @Test
   public void extract_ReturnsRequestParameters_ForValidInput() {
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
-    RequestParameters result = RequestParameterExtractor.extract(apiOperation, swagger, context);
+    RequestParameters result = requestParameterExtractor.extract(apiOperation, swagger, context);
 
     assertThat(result.get(ID), is(BPG));
     assertThat(result.get(PATH_PARAMETER), is(PATH_PARAMETER_VALUE));
@@ -118,7 +112,7 @@ public class RequestParameterExtractorTest {
 
     when(context.getEntityStream()).thenReturn(null);
 
-    RequestParameterExtractor.extract(apiOperation, swagger, context);
+    requestParameterExtractor.extract(apiOperation, swagger, context);
   }
 
   @Test
@@ -130,7 +124,7 @@ public class RequestParameterExtractorTest {
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));
 
     // Act
-    RequestParameters result = RequestParameterExtractor.extract(apiOperation, swagger, context);
+    RequestParameters result = requestParameterExtractor.extract(apiOperation, swagger, context);
 
     // Assert
     assertThat(result.getRawBody(), is(body));
