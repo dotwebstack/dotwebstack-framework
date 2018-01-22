@@ -31,26 +31,6 @@ public class RequestParametersTest {
   }
 
   @Test
-  public void asString_ReturnsString_ForExistingEntry() {
-    RequestParameters parameters = new RequestParameters();
-    parameters.put("X", 1);
-
-    String result = parameters.asString("X");
-
-    Assert.assertEquals("1", result);
-  }
-
-  @Test
-  public void asString_ReturnsNull_ForNonExistentEntry() {
-    RequestParameters parameters = new RequestParameters();
-    parameters.put("X", "A");
-
-    String result = parameters.asString("Y");
-
-    Assert.assertNull(result);
-  }
-
-  @Test
   public void get_ReturnsValue_ForExistentKey() {
     RequestParameters parameters = new RequestParameters();
     parameters.put("X", "A");

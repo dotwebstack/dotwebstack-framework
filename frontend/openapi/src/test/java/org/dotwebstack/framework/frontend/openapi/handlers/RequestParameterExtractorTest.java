@@ -85,7 +85,6 @@ public class RequestParameterExtractorTest {
 
     when(parameter.getSchema()).thenReturn(schema);
     when(parameter.getIn()).thenReturn("body");
-    when(parameter.getName()).thenReturn("name");
 
     when(operation.getParameters()).thenReturn(ImmutableList.of(parameter));
     when(apiOperation.getOperation()).thenReturn(operation);
@@ -123,15 +122,20 @@ public class RequestParameterExtractorTest {
   }
 
   @Test
-  public void extract_ExtractsBodyParameter_AsRequestParameter() {
-    String body = "{ \"foo\": \"bar\" }";
+  public void extract_ExtractsSingleBodyParameter_AsMultipleRequestParameters() {
+    // Arrange
+    String body =
+        "{ \"intersects\": { \"type\": \"Point\", \"coordinates\": [5.7,52.8]}, \"foo\": \"bar\"}";
 
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));
 
+    // Act
     RequestParameters result = RequestParameterExtractor.extract(apiOperation, swagger, context);
 
+    // Assert
     assertThat(result.getRawBody(), is(body));
-    assertThat(result.get("name"), is(body));
+    assertThat(result.get("intersects"), is("{\"type\":\"Point\",\"coordinates\":[5.7,52.8]}"));
+    assertThat(result.get("foo"), is("\"bar\""));
   }
 
 }

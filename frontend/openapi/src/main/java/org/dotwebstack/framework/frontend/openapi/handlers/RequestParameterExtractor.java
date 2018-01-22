@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.RefModel;
 import io.swagger.models.Swagger;
@@ -11,6 +12,7 @@ import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import javax.ws.rs.InternalServerErrorException;
@@ -101,7 +103,13 @@ final class RequestParameterExtractor {
       return;
     }
 
-    requestParameters.put(parameter.get().getName(), body);
+    // TODO inject
+    ObjectMapper objectMapper = new ObjectMapper();
+    Map<String, Object> json = objectMapper.readValue(body, Map.class);
+
+    for (Map.Entry<String, Object> entry : json.entrySet()) {
+      requestParameters.put(entry.getKey(), objectMapper.writeValueAsString(entry.getValue()));
+    }
   }
 
   /**
