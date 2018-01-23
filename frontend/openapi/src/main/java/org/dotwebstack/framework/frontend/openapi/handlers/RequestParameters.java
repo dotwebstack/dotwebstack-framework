@@ -20,7 +20,7 @@ class RequestParameters {
     parameters.put(key, value);
   }
 
-  Object get(@NonNull String key) {
+  String get(@NonNull String key) {
     return this.parameters.get(key);
   }
 
