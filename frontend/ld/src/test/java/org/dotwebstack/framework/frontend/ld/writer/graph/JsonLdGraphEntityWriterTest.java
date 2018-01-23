@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.OutputStream;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.ld.MediaTypes;
+import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;

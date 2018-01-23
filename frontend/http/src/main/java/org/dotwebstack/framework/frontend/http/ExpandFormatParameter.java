@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld;
+package org.dotwebstack.framework.frontend.http;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld;
+package org.dotwebstack.framework.frontend.http;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;

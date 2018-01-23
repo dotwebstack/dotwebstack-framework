@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld;
+package org.dotwebstack.framework.frontend.http;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,6 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

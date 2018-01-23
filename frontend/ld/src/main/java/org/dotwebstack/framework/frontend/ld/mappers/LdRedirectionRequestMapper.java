@@ -2,8 +2,8 @@ package org.dotwebstack.framework.frontend.ld.mappers;
 
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.ld.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.ld.handlers.RedirectionRequestHandler;
 import org.dotwebstack.framework.frontend.ld.redirection.Redirection;
 import org.dotwebstack.framework.frontend.ld.redirection.RedirectionResourceProvider;
