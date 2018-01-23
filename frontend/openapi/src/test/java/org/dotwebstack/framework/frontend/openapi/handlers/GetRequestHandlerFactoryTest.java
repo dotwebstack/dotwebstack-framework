@@ -31,6 +31,9 @@ public class GetRequestHandlerFactoryTest {
   private RequestParameterMapper requestParameterMapperMock;
 
   @Mock
+  private RequestParameterExtractor requestParameterExtractorMock;
+
+  @Mock
   private Swagger swaggerMock;
 
   @Mock
@@ -43,7 +46,8 @@ public class GetRequestHandlerFactoryTest {
 
   @Before
   public void setUp() {
-    getRequestHandlerFactory = new GetRequestHandlerFactory(requestParameterMapperMock);
+    getRequestHandlerFactory =
+        new GetRequestHandlerFactory(requestParameterMapperMock, requestParameterExtractorMock);
   }
 
   @Test

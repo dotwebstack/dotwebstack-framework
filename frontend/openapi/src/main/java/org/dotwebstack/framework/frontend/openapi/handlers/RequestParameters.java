@@ -7,26 +7,20 @@ import lombok.NonNull;
 
 class RequestParameters {
 
-  private final Map<String, Object> parameters = Maps.newHashMap();
+  private final Map<String, String> parameters = Maps.newHashMap();
   private String rawBody;
 
   void putAll(@NonNull MultivaluedMap<String, String> sourceParams) {
     for (String key : sourceParams.keySet()) {
-      parameters.put(key, sourceParams.getFirst(key));
+      put(key, sourceParams.getFirst(key));
     }
   }
 
-  RequestParameters putAll(@NonNull Map<String, Object> sourceParams) {
-    parameters.putAll(sourceParams);
-    return this;
+  void put(@NonNull String key, String value) {
+    parameters.put(key, value);
   }
 
-  String asString(@NonNull String paramName) {
-    Object param = this.parameters.get(paramName);
-    return param != null ? param.toString() : null;
-  }
-
-  Object get(@NonNull String key) {
+  String get(@NonNull String key) {
     return this.parameters.get(key);
   }
 
