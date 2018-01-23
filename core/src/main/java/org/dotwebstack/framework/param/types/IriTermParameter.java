@@ -9,6 +9,10 @@ public class IriTermParameter extends TermParameter<IRI> {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
+  public IriTermParameter(IRI identifier, String name, boolean required) {
+    super(identifier, name, required, null);
+  }
+
   public IriTermParameter(IRI identifier, String name, boolean required, String defaultValue) {
     super(identifier, name, required, defaultValue);
   }

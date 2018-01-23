@@ -19,9 +19,9 @@ import org.junit.rules.ExpectedException;
 public class IntTermParameterTest {
 
   private IRI identifier = SimpleValueFactory.getInstance().createIRI("http://www.test.nl");
-  private IntTermParameter intTermParameter = new IntTermParameter(identifier, "test", true, null);
+  private IntTermParameter intTermParameter = new IntTermParameter(identifier, "test", true);
   private IntTermParameter intTermParameterOptional =
-      new IntTermParameter(identifier, "test", false, null);
+      new IntTermParameter(identifier, "test", false);
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();

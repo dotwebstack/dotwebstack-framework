@@ -37,8 +37,9 @@ public final class TermParameterDefinition<T> extends
     Class<?> parameterClass = shapeType.orElse(DEFAULT_SHAPE).getTermClass();
 
     Optional<Constructor<?>> constructorOptional =
-        Arrays.asList(parameterClass.getConstructors()).stream().filter(
-            c -> c.getParameterCount() == 3).findFirst();
+        Arrays.stream(parameterClass.getConstructors())
+            .filter(c -> c.getParameterCount() == 4)
+            .findFirst();
 
     if (constructorOptional.isPresent()) {
       Constructor constructor = constructorOptional.get();

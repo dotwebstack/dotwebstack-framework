@@ -32,9 +32,9 @@ public class IriTermParameterTest {
   @Before
   public void setUp() {
     requiredParameter = new IriTermParameter(DBEERPEDIA.NAME_PARAMETER_ID,
-        DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, true, null);
+        DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, true);
     optionalParameter = new IriTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
-        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, null);
+        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false);
   }
 
   @Test
