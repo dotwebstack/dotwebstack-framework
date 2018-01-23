@@ -41,7 +41,6 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
         () -> new ConfigurationException(String.format(
             "No file location has been found for " + "layout <%s>", XHTML.STYLESHEET, identifier)));
     Layout.Builder builder = new Layout.Builder(identifier, cssResource);
-    // getObjectString of label
     return builder.build();
   }
 }
