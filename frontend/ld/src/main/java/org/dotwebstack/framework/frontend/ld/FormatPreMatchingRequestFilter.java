@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @PreMatching
-@Provider
 @ExpandFormatParameter
 public class FormatPreMatchingRequestFilter implements ContainerRequestFilter {
 
