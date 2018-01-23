@@ -14,7 +14,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.dotwebstack.framework.vocabulary.Xhtml;
+import org.dotwebstack.framework.vocabulary.XHTML;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -92,7 +92,7 @@ public class LayoutResourceProviderTest {
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.LAYOUT, RDF.TYPE, ELMO.LAYOUT,
                 DBEERPEDIA.SYSTEM_GRAPH_IRI),
-            valueFactory.createStatement(DBEERPEDIA.LAYOUT, Xhtml.STYLESHEET,
+            valueFactory.createStatement(DBEERPEDIA.LAYOUT, XHTML.STYLESHEET,
                 DBEERPEDIA.LAYOUT_VALUE, DBEERPEDIA.SYSTEM_GRAPH_IRI))));
 
     // Act
@@ -108,11 +108,11 @@ public class LayoutResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.LAYOUT, RDF.TYPE, ELMO.LAYOUT),
-            valueFactory.createStatement(DBEERPEDIA.LAYOUT, Xhtml.STYLESHEET,
+            valueFactory.createStatement(DBEERPEDIA.LAYOUT, XHTML.STYLESHEET,
                 DBEERPEDIA.LAYOUT_VALUE, DBEERPEDIA.SYSTEM_GRAPH_IRI),
             valueFactory.createStatement(DBEERPEDIA.LAYOUT_NL, RDF.TYPE, ELMO.LAYOUT,
                 DBEERPEDIA.SYSTEM_GRAPH_IRI),
-            valueFactory.createStatement(DBEERPEDIA.LAYOUT_NL, Xhtml.STYLESHEET,
+            valueFactory.createStatement(DBEERPEDIA.LAYOUT_NL, XHTML.STYLESHEET,
                 DBEERPEDIA.LAYOUT_VALUE, DBEERPEDIA.SYSTEM_GRAPH_IRI))));
 
     // Act

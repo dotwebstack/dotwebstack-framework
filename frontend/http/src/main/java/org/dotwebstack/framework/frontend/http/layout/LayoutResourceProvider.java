@@ -5,7 +5,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.dotwebstack.framework.vocabulary.Xhtml;
+import org.dotwebstack.framework.vocabulary.XHTML;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.GraphQuery;
@@ -37,9 +37,9 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
 
   @Override
   protected Layout createResource(Model model, IRI identifier) {
-    final String cssResource = getObjectString(model, identifier, Xhtml.STYLESHEET).orElseThrow(
+    final String cssResource = getObjectString(model, identifier, XHTML.STYLESHEET).orElseThrow(
         () -> new ConfigurationException(String.format(
-            "No file location has been found for " + "layout <%s>", Xhtml.STYLESHEET, identifier)));
+            "No file location has been found for " + "layout <%s>", XHTML.STYLESHEET, identifier)));
     Layout.Builder builder = new Layout.Builder(identifier, cssResource);
     // getObjectString of label
     return builder.build();

@@ -4,7 +4,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public final class Xhtml {
+public final class XHTML {
 
   public static final IRI STYLESHEET;
 
@@ -15,12 +15,12 @@ public final class Xhtml {
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    STYLESHEET = valueFactory.createIRI(Xhtml.NAMESPACE, "stylesheet");
+    STYLESHEET = valueFactory.createIRI(XHTML.NAMESPACE, "stylesheet");
   }
 
-  private Xhtml() {
+  private XHTML() {
     throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", Xhtml.class));
+        String.format("%s is not meant to be instantiated.", XHTML.class));
   }
 
 }
