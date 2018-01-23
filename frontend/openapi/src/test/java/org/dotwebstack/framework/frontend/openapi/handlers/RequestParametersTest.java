@@ -35,7 +35,7 @@ public class RequestParametersTest {
     RequestParameters parameters = new RequestParameters();
     parameters.put("X", "A");
 
-    Object result = parameters.get("X");
+    String result = parameters.get("X");
 
     Assert.assertEquals("A", result);
   }
@@ -45,7 +45,7 @@ public class RequestParametersTest {
     RequestParameters parameters = new RequestParameters();
     parameters.put("X", "A");
 
-    Object result = parameters.get("Y");
+    String result = parameters.get("Y");
 
     Assert.assertNull(result);
   }
