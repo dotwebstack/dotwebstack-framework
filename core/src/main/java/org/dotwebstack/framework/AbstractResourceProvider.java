@@ -66,11 +66,12 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
 
-    GraphQuery query = getQueryForResources(repositoryConnection);
-
     SimpleDataset simpleDataset = new SimpleDataset();
     simpleDataset.addDefaultGraph(applicationProperties.getSystemGraph());
     simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
+    simpleDataset.addDefaultGraph(ELMO.SHACL_GRAPHNAME);
+
+    GraphQuery query = getQueryForResources(repositoryConnection);
     query.setDataset(simpleDataset);
 
     Model model;
