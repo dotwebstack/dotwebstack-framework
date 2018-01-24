@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
 
 public class Layout {
 
   private IRI identifier;
 
-  private Map<IRI, String> options;
+  private Map<IRI, Value> options;
 
   private String label;
 
@@ -27,11 +28,11 @@ public class Layout {
     return label;
   }
 
-  public Map<IRI, String> getOptions() {
+  public Map<IRI, Value> getOptions() {
     return options;
   }
 
-  public void addOption(@NonNull IRI key, @NonNull String value) {
+  public void addOption(@NonNull IRI key, @NonNull Value value) {
     options.put(key, value);
   }
 
@@ -41,14 +42,14 @@ public class Layout {
 
     private String label;
 
-    private Map<IRI, String> options;
+    private Map<IRI, Value> options;
 
     public Builder(@NonNull IRI identifier) {
       this.identifier = identifier;
       this.options = new HashMap<>();
     }
 
-    public Builder options(@NonNull Map<IRI, String> options) {
+    public Builder options(@NonNull Map<IRI, Value> options) {
       this.options = options;
       return this;
     }
@@ -62,7 +63,7 @@ public class Layout {
       return new Layout(this);
     }
 
-    public Builder addOption(@NonNull IRI key, @NonNull String value) {
+    public Builder addOption(@NonNull IRI key, @NonNull Value value) {
       this.options.put(key, value);
       return this;
     }
