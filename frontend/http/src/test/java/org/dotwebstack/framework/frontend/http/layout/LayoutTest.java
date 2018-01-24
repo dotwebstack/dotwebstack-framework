@@ -4,7 +4,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.test.DBEERPEDIA;
-import org.dotwebstack.framework.vocabulary.XHTML;
+import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -16,15 +18,18 @@ public class LayoutTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
+  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
   @Test
   public void build_CreatesLayout_WithValidData() {
     // Act
     Layout layout =
-        new Layout.Builder(DBEERPEDIA.LAYOUT).label("Hello World!").addOption(XHTML.STYLESHEET,
-            "myStyle.css").build();
+        new Layout.Builder(DBEERPEDIA.LAYOUT).label("Hello World!").addOption(ELMO.LAYOUT,
+            valueFactory.createLiteral("myStyle.css")).build();
 
     // Assert
-    assertThat(layout.getOptions().get(XHTML.STYLESHEET), equalTo("myStyle.css"));
+    assertThat(layout.getOptions().get(ELMO.LAYOUT),
+        equalTo(valueFactory.createLiteral("myStyle.css")));
     assertThat(layout.getIdentifier(), equalTo(DBEERPEDIA.LAYOUT));
     assertThat(layout.getLabel(), equalTo("Hello World!"));
   }
@@ -35,7 +40,8 @@ public class LayoutTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Layout.Builder(null).addOption(XHTML.STYLESHEET, "myStyle.css").build();
+    new Layout.Builder(null).addOption(ELMO.LAYOUT,
+        valueFactory.createLiteral("myStyle.css")).build();
   }
 
   @Test
