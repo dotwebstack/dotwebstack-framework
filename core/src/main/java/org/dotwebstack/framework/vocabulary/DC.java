@@ -6,7 +6,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public final class DC {
 
-  private static final String NAMESPACE_BASE = "<http://purl.org/dc/elements/1.1>";
+  private static final String NAMESPACE_BASE = "http://purl.org/dc/elements/1.1";
   private static final String NAMESPACE = NAMESPACE_BASE + "/";
 
   public static final IRI TITLE;
