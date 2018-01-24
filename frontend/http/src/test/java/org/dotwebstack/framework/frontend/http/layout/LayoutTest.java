@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.vocabulary.XHTML;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,10 +20,11 @@ public class LayoutTest {
   public void build_CreatesLayout_WithValidData() {
     // Act
     Layout layout =
-        new Layout.Builder(DBEERPEDIA.LAYOUT, "myStyle.css").label("Hello World!").build();
+        new Layout.Builder(DBEERPEDIA.LAYOUT).label("Hello World!").addOption(XHTML.STYLESHEET,
+            "myStyle.css").build();
 
     // Assert
-    assertThat(layout.getCssResource(), equalTo("myStyle.css"));
+    assertThat(layout.getOptions().get(XHTML.STYLESHEET), equalTo("myStyle.css"));
     assertThat(layout.getIdentifier(), equalTo(DBEERPEDIA.LAYOUT));
     assertThat(layout.getLabel(), equalTo("Hello World!"));
   }
@@ -33,7 +35,7 @@ public class LayoutTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Layout.Builder(null, "myStyle.css").build();
+    new Layout.Builder(null).addOption(XHTML.STYLESHEET, "myStyle.css").build();
   }
 
   @Test
@@ -42,7 +44,7 @@ public class LayoutTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Layout.Builder(DBEERPEDIA.LAYOUT, null).build();
+    new Layout.Builder(DBEERPEDIA.LAYOUT).addOption(null, null).build();
   }
 
   @Test
@@ -50,6 +52,6 @@ public class LayoutTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Layout.Builder(DBEERPEDIA.LAYOUT, "myStyle.css").label(null).build();
+    new Layout.Builder(DBEERPEDIA.LAYOUT).label(null).build();
   }
 }

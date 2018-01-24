@@ -40,7 +40,8 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
     final String cssResource = getObjectString(model, identifier, XHTML.STYLESHEET).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No file location has been found for " + "layout <%s>", XHTML.STYLESHEET, identifier)));
-    Layout.Builder builder = new Layout.Builder(identifier, cssResource);
+    Layout.Builder builder = new Layout.Builder(identifier);
+    builder.addOption(XHTML.STYLESHEET, cssResource);
     return builder.build();
   }
 }
