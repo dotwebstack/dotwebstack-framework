@@ -9,6 +9,7 @@ import org.eclipse.rdf4j.model.IRI;
 public abstract class TermParameter<T> extends AbstractParameter<T>
     implements BindableParameter<T> {
 
+  // XXX (PvH) Waarom is de defaultValue een String? (en niet van het type T)?
   protected final String defaultValue;
 
   protected TermParameter(IRI identifier, String name, boolean required, String defaultValue) {
