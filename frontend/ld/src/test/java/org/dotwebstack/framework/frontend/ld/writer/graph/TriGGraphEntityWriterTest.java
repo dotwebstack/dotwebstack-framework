@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.ld.MediaTypes;
+import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;

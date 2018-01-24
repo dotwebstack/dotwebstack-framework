@@ -10,6 +10,7 @@ import java.util.Collections;
 import javax.ws.rs.Produces;
 import javax.ws.rs.ext.MessageBodyWriter;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;

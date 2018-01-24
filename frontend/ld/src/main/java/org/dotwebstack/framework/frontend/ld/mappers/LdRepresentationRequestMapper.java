@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.ld.mappers;
 
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
@@ -55,7 +56,8 @@ public class LdRepresentationRequestMapper {
           representationRequestHandlerFactory.newRepresentationRequestHandler(
               representation)).produces(
                   supportedMediaTypesScanner.getMediaTypes(
-                      representation.getInformationProduct().getResultType()));
+                      representation.getInformationProduct().getResultType())).nameBindings(
+                          ExpandFormatParameter.class);
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
         httpConfiguration.registerResources(resourceBuilder.build());

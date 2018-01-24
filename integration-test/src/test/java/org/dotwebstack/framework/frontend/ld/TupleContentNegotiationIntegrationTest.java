@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.SparqlHttpStub;
 import org.dotwebstack.framework.SparqlHttpStub.TupleQueryResultBuilder;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Test;
