@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.param;
 
-import static org.dotwebstack.framework.test.DBEERPEDIA.NAME_PARAMETER_ID;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -29,7 +28,7 @@ public class TermParameterDefinitionTest {
 
     // Assert
     assertThat(result, instanceOf(StringTermParameter.class));
-    assertThat(result.getIdentifier(), is(NAME_PARAMETER_ID));
+    assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
     assertThat(result.getName(), is("name"));
     assertThat(result.isRequired(), is(true));
   }
@@ -45,7 +44,7 @@ public class TermParameterDefinitionTest {
 
     // Assert
     assertThat(result, instanceOf(IriTermParameter.class));
-    assertThat(result.getIdentifier(), is(NAME_PARAMETER_ID));
+    assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
     assertThat(result.getName(), is("name"));
     assertThat(result.isRequired(), is(true));
   }
@@ -61,7 +60,7 @@ public class TermParameterDefinitionTest {
 
     // Assert
     assertThat(result, instanceOf(IriTermParameter.class));
-    assertThat(result.getIdentifier(), is(NAME_PARAMETER_ID));
+    assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
     assertThat(result.getName(), is("name"));
     assertThat(result.isRequired(), is(false));
   }
@@ -79,7 +78,7 @@ public class TermParameterDefinitionTest {
     // Assert
     // TODO NvD Check if the result has a null default value
     assertThat(result, instanceOf(StringTermParameter.class));
-    assertThat(result.getIdentifier(), is(NAME_PARAMETER_ID));
+    assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
     assertThat(result.getName(), is("name"));
     assertThat(result.isRequired(), is(false));
   }
@@ -90,7 +89,7 @@ public class TermParameterDefinitionTest {
     // TODO NvD Supply the default value to the shape
 
     String defaultValue = "defaultValue";
-    ParameterDefinition definition = new TermParameterDefinition(NAME_PARAMETER_ID,
+    ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
         "name", Optional.of(new StringPropertyShape()));
 
     Map<String, String> parametaiusdhfValues = ImmutableMap.of("name", defaultValue);

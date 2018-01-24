@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.param.types;
 
 import java.util.Map;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.param.AbstractParameter;
 import org.dotwebstack.framework.param.BindableParameter;
@@ -12,9 +13,14 @@ public abstract class TermParameter<T> extends AbstractParameter<T>
   // XXX (PvH) Waarom is de defaultValue een String? (en niet van het type T)?
   protected final String defaultValue;
 
-  protected TermParameter(IRI identifier, String name, boolean required, String defaultValue) {
+  protected TermParameter(@NonNull IRI identifier, @NonNull String name, boolean required,
+      String defaultValue) {
     super(identifier, name, required);
     this.defaultValue = defaultValue;
+  }
+
+  public String getDefaultValue() {
+    return defaultValue;
   }
 
   @Override

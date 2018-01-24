@@ -2,15 +2,15 @@ package org.dotwebstack.framework.param;
 
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Value;
 
 public final class PropertyShape2 {
 
   private final IRI dataType;
 
-  private final Literal defaultValue;
+  private final Value defaultValue;
 
-  public PropertyShape2(@NonNull IRI dataType, @NonNull Literal defaultValue) {
+  public PropertyShape2(@NonNull IRI dataType, Value defaultValue) {
     this.dataType = dataType;
     this.defaultValue = defaultValue;
   }
@@ -19,7 +19,7 @@ public final class PropertyShape2 {
     return dataType;
   }
 
-  public Literal getDefaultValue() {
+  public Value getDefaultValue() {
     return defaultValue;
   }
 
