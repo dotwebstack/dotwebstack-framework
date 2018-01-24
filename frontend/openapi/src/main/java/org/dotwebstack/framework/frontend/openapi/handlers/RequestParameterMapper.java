@@ -47,7 +47,7 @@ class RequestParameterMapper {
         for (Property property : properties) {
           Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
-          LOG.debug("Vendor extensions for property '{}' of parameter '{}': {}", property.getName(),
+          LOG.debug("Vendor extensions for property in parameter '{}': {}", property.getName(),
               openApiParameter.getName(), vendorExtensions);
 
           Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
@@ -57,8 +57,7 @@ class RequestParameterMapper {
             continue;
           }
 
-          fillResult(openApiParameter, (String) parameterIdString, product, requestParameters,
-              result);
+          fillResult((String) parameterIdString, product, requestParameters, result);
         }
       } else {
         Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
@@ -73,16 +72,14 @@ class RequestParameterMapper {
           continue;
         }
 
-        fillResult(openApiParameter, (String) parameterIdString, product, requestParameters,
-            result);
+        fillResult((String) parameterIdString, product, requestParameters, result);
       }
     }
     return result;
   }
 
-  private void fillResult(io.swagger.models.parameters.Parameter openApiParameter,
-      String parameterIdString, InformationProduct product, RequestParameters requestParameters,
-      Map<String, String> result) {
+  private void fillResult(String parameterIdString, InformationProduct product,
+      RequestParameters requestParameters, Map<String, String> result) {
 
     IRI parameterId = VALUE_FACTORY.createIRI((String) parameterIdString);
     Parameter<?> parameter = getParameter(product, parameterId);
@@ -92,7 +89,7 @@ class RequestParameterMapper {
           String.format("No parameter found for vendor extension value: '%s'", parameterIdString));
     }
 
-    String value = requestParameters.get(openApiParameter.getName());
+    String value = requestParameters.get(parameter.getName());
 
     result.put(parameter.getName(), value);
   }
