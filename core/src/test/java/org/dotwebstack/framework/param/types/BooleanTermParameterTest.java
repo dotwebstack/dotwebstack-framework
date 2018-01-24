@@ -12,6 +12,7 @@ import org.dotwebstack.framework.param.BindableParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,7 +63,7 @@ public class BooleanTermParameterTest {
   @Test
   public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
     // Arrange
-    Boolean defaultValue = true;
+    String defaultValue = "true";
 
     BindableParameter<Boolean> parameter = new BooleanTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
         DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, defaultValue);
@@ -74,7 +75,7 @@ public class BooleanTermParameterTest {
     Boolean result = parameter.handle(parameterValues);
 
     // Assert
-    assertThat(result, is(defaultValue));
+    assertThat(result, is(Boolean.valueOf(defaultValue)));
   }
 
   @Test
@@ -100,7 +101,8 @@ public class BooleanTermParameterTest {
     Value result = requiredParameter.getValue(value);
 
     // Assert
-    assertThat(result, is(SimpleValueFactory.getInstance().createLiteral(false)));
+    assertThat(result,
+        is(SimpleValueFactory.getInstance().createLiteral("false", XMLSchema.BOOLEAN)));
   }
 
 }

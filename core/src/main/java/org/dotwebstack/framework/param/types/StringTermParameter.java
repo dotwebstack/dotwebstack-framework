@@ -7,7 +7,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 public class StringTermParameter extends TermParameter<String> {
 
   public StringTermParameter(IRI identifier, String name, boolean required) {
-    super(identifier, name, required);
+    super(identifier, name, required, null);
   }
 
   public StringTermParameter(IRI identifier, String name, boolean required, String defaultValue) {

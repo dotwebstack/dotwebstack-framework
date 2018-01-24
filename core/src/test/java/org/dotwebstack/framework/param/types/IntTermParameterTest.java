@@ -41,7 +41,7 @@ public class IntTermParameterTest {
   @Test
   public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
     // Arrange
-    Integer defaultValue = 3;
+    String defaultValue = "3";
 
     BindableParameter<Integer> parameter =
         new IntTermParameter(identifier, "test", false, defaultValue);
@@ -52,7 +52,7 @@ public class IntTermParameterTest {
     Integer result = parameter.handle(parameterValues);
 
     // Assert
-    assertThat(result, is(defaultValue));
+    assertThat(result, is(Integer.parseInt(defaultValue)));
   }
 
   @Test

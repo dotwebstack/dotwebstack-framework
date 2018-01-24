@@ -7,10 +7,10 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 public class IntTermParameter extends TermParameter<Integer> {
 
   public IntTermParameter(IRI identifier, String name, boolean required) {
-    super(identifier, name, required);
+    super(identifier, name, required, null);
   }
 
-  public IntTermParameter(IRI identifier, String name, boolean required, int defaultValue) {
+  public IntTermParameter(IRI identifier, String name, boolean required, String defaultValue) {
     super(identifier, name, required, defaultValue);
   }
 
@@ -21,7 +21,10 @@ public class IntTermParameter extends TermParameter<Integer> {
 
   @Override
   protected Integer handleInner(String value) {
-    return Integer.parseInt(value);
+    if (value != null) {
+      return Integer.parseInt(value);
+    } else {
+      return null;
+    }
   }
-
 }
