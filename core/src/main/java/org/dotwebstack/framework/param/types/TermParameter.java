@@ -23,6 +23,9 @@ public abstract class TermParameter<T> extends AbstractParameter<T>
     return defaultValue;
   }
 
+  // XXX (PvH) Als defaultValue van het type T is, dan kan je hier direct de defaultValue teruggeven
+  // (ipv hem te wrappen in de handleInner).
+  // Let op dat hiermee de changes op de *TermParameter#handleInner methods kunnen vervallen
   @Override
   protected T handleInner(Map<String, String> parameterValues) {
     String value = parameterValues.get(getName());

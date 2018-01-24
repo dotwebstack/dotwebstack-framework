@@ -9,8 +9,10 @@ import org.dotwebstack.framework.param.shapes.StringPropertyShape;
 import org.dotwebstack.framework.param.types.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
-public final class TermParameterDefinition<T> extends
-    AbstractParameterDefinition<TermParameter<?>> {
+// XXX (PvH) Ik vraag me af of de typing op de TermParameterDefinition nog stand kan / hoeft te
+// houden
+public final class TermParameterDefinition<T>
+    extends AbstractParameterDefinition<TermParameter<?>> {
 
   private static final PropertyShape DEFAULT_SHAPE = new StringPropertyShape();
 
@@ -37,9 +39,8 @@ public final class TermParameterDefinition<T> extends
     Class<?> parameterClass = shapeType.orElse(DEFAULT_SHAPE).getTermClass();
 
     Optional<Constructor<?>> constructorOptional =
-        Arrays.stream(parameterClass.getConstructors())
-            .filter(c -> c.getParameterCount() == 4)
-            .findFirst();
+        Arrays.stream(parameterClass.getConstructors()).filter(
+            c -> c.getParameterCount() == 4).findFirst();
 
     if (constructorOptional.isPresent()) {
       Constructor constructor = constructorOptional.get();
@@ -49,8 +50,8 @@ public final class TermParameterDefinition<T> extends
         if (shapeType.isPresent()) {
           defaultValue = shapeType.get().getDefaultValue();
         }
-        return (TermParameter) constructor
-            .newInstance(getIdentifier(), getName(), required, defaultValue);
+        return (TermParameter) constructor.newInstance(getIdentifier(), getName(), required,
+            defaultValue);
       } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
         throw new IllegalStateException(e);
       }
