@@ -37,11 +37,13 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
 
   @Override
   protected Layout createResource(Model model, IRI identifier) {
-    final String cssResource = getObjectString(model, identifier, XHTML.STYLESHEET).orElseThrow(
-        () -> new ConfigurationException(String.format(
-            "No file location has been found for " + "layout <%s>", XHTML.STYLESHEET, identifier)));
+    ValueFactory valueFactory = SimpleValueFactory.getInstance();
     Layout.Builder builder = new Layout.Builder(identifier);
-    builder.addOption(XHTML.STYLESHEET, cssResource);
+    getObjectStrings(model, identifier).stream().forEach(key -> {
+      getObjectString(model, identifier, SimpleValueFactory.getInstance().createIRI(key)).ifPresent(
+          value -> builder.addOption(valueFactory.createIRI(key),
+              valueFactory.createLiteral(value)));
+    });
     return builder.build();
   }
 }
