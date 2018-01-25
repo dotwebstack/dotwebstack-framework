@@ -77,14 +77,14 @@ public class RequestParameterMapperTest {
   @Test
   public void map_ReturnsEmptyMap_WhenOperationHasNoParameter() {
     // Arrange
-    Operation operation = new Operation();
-
     MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
     mvMap.put("param1", ImmutableList.of("value", "valueB"));
     mvMap.put("param2", ImmutableList.of("value2"));
 
     requestParameters = new RequestParameters();
     requestParameters.putAll(mvMap);
+
+    Operation operation = new Operation();
 
     // Act
     Map<String, String> result = mapper.map(operation, product, requestParameters);
@@ -273,7 +273,7 @@ public class RequestParameterMapperTest {
   }
 
   @Test
-  public void map_ReturnsEmptyMap_WhenBodyParameterHasNoPropertyWithParamaterInputVendorExtension() {
+  public void map_ReturnsEmptyMap_WhenBodyParameterHasNoPropertyWithParamVendorExtension() {
     // Arrange
     Property property = new ObjectProperty();
     property.getVendorExtensions().put("x-dotwebstack-another-vendor-extension", "foo");
