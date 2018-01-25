@@ -1,7 +1,11 @@
 package org.dotwebstack.framework.param;
 
+import static org.eclipse.rdf4j.model.util.Models.object;
+import static org.eclipse.rdf4j.model.util.Models.objectIRI;
+import static org.eclipse.rdf4j.model.util.Models.objectResource;
+
 import java.util.Optional;
-import java.util.Set;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -10,12 +14,15 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.stereotype.Service;
 
 @Service
+@NoArgsConstructor
 final class TermParameterDefinitionFactory implements ParameterDefinitionFactory {
 
+  private static final SimpleValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
   // XXX (PvH) PropertyShapes bevatten nu state (de default value). We kunnen ze daarom niet meer
   // als constante behandelen. Nu kan dezelfde StringPropertyShape op 1 moment geen default value
   // hebben, en op een ander moment wel een default value. Dit is vragen om problemen (denk aan
@@ -31,11 +38,6 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
   // de testen.
   // 3. De TermParameterDefinition kan de nieuwe TermParameterFactory gebruiken voor het maken van
   // TermParameters obv de PropertyShape. De constructie met reflectie vervalt hiermee.
-  private final Set<PropertyShape> supportedShapes;
-
-  TermParameterDefinitionFactory(@NonNull Set<PropertyShape> supportedShapes) {
-    this.supportedShapes = supportedShapes;
-  }
 
   @Override
   public ParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
@@ -44,28 +46,16 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP, id,
                 ELMO.TERM_FILTER))).stringValue();
 
-    Optional<AbstractPropertyShape> propertyShapeOptional = Optional.empty();
+    Optional<Resource> shapeObject = objectResource(model.filter(id, ELMO.SHAPE_PROP, null));
 
-    Set<Value> shapeObjects = model.filter(id, ELMO.SHAPE_PROP, null).objects();
-    if (shapeObjects.iterator().hasNext()) {
-      Value next = shapeObjects.iterator().next();
-      Set<Value> iriShapeTypes = model.filter((Resource) next, SHACL.DATATYPE, null).objects();
+    Resource subj = shapeObject.orElseThrow(() -> new ConfigurationException(
+        String.format("No <%s> property found for <%s> of type <%s>", ELMO.SHAPE_PROP, id,
+            ELMO.TERM_FILTER)));
+    IRI iriShapeType = objectIRI(model.filter(subj, SHACL.DATATYPE, null)).orElse(null);
+    Value defaultValue = object(model.filter(subj, SHACL.DEFAULT_VALUE, null)).orElse(null);
 
-      propertyShapeOptional = supportedShapes.stream().filter(
-          propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
-              propertyShape.getDataType().stringValue())).map(
-                  shape -> ((AbstractPropertyShape) shape)).findFirst();
-      Optional<Value> optionalDefaultValue =
-          model.filter((Resource) next, SHACL.DEFAULT_VALUE, null).objects().stream().findFirst();
-
-      if (propertyShapeOptional.isPresent()) {
-        if (optionalDefaultValue.isPresent()) {
-          propertyShapeOptional.get().setDefaultValue(optionalDefaultValue.get().stringValue());
-        }
-      }
-    }
-
-    return new TermParameterDefinition(id, name, propertyShapeOptional);
+    PropertyShape shape = PropertyShape.of(iriShapeType, defaultValue, null);
+    return new TermParameterDefinition(id, name, shape);
   }
 
   /**

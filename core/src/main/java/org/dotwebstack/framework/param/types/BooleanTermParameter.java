@@ -10,7 +10,7 @@ public class BooleanTermParameter extends TermParameter<Boolean> {
     super(identifier, name, required, null);
   }
 
-  public BooleanTermParameter(IRI identifier, String name, boolean required, String defaultValue) {
+  public BooleanTermParameter(IRI identifier, String name, boolean required, Boolean defaultValue) {
     super(identifier, name, required, defaultValue);
   }
 

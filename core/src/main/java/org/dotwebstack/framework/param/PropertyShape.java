@@ -1,13 +1,20 @@
 package org.dotwebstack.framework.param;
 
+import java.util.Collection;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Value;
 
-public interface PropertyShape<T> {
+@RequiredArgsConstructor(staticName = "of")
+public final class PropertyShape {
 
-  IRI getDataType();
-
-  Class<?> getTermClass();
-
-  T getDefaultValue();
-
+  @Getter
+  @NonNull
+  private final IRI datatype;
+  @Getter
+  private final Value defaultValue;
+  @Getter
+  private final Collection<Value> in;
 }

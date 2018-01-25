@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.param.types;
 
+import static org.dotwebstack.framework.param.types.TermParameterFactory.getTermParameter;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -7,19 +8,17 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.param.PropertyShape2;
+import org.dotwebstack.framework.param.PropertyShape;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-@Ignore
+
 public class TermParameterFactoryTest {
 
   @Rule
@@ -27,18 +26,11 @@ public class TermParameterFactoryTest {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
-  private TermParameterFactory factory;
-
-  @Before
-  public void setUp() {
-    factory = new TermParameterFactory();
-  }
-
   @Test
   public void createTermParameter_CreatesBooleanTermParameter_ForBooleanShape() {
     // Act
-    TermParameter result = factory.createTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
-        new PropertyShape2(XMLSchema.BOOLEAN, null), false);
+    TermParameter result = getTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
+        PropertyShape.of(XMLSchema.BOOLEAN, null, null), false);
 
     // Assert
     assertThat(result, instanceOf(BooleanTermParameter.class));
@@ -51,8 +43,8 @@ public class TermParameterFactoryTest {
   @Test
   public void createTermParameter_CreatesStringTermParameter_ForStringShape() {
     // Act
-    TermParameter result = factory.createTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
-        new PropertyShape2(XMLSchema.STRING, VALUE_FACTORY.createLiteral("foo")), false);
+    TermParameter result = getTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
+        PropertyShape.of(XMLSchema.STRING, VALUE_FACTORY.createLiteral("foo"), null), false);
 
     // Assert
     assertThat(result, instanceOf(StringTermParameter.class));
@@ -65,8 +57,8 @@ public class TermParameterFactoryTest {
   @Test
   public void createTermParameter_CreatesIntTermParameter_ForIntegerShape() {
     // Act
-    TermParameter result = factory.createTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
-        new PropertyShape2(XMLSchema.INTEGER, null), true);
+    TermParameter result = getTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
+        PropertyShape.of(XMLSchema.INTEGER, null, null), true);
 
     // Assert
     assertThat(result, instanceOf(IntTermParameter.class));
@@ -82,8 +74,8 @@ public class TermParameterFactoryTest {
     IRI defaultValue = VALUE_FACTORY.createIRI("http://default-value");
 
     // Act
-    TermParameter result = factory.createTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
-        new PropertyShape2(XMLSchema.ANYURI, defaultValue), true);
+    TermParameter result = getTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
+        PropertyShape.of(XMLSchema.ANYURI, defaultValue, null), true);
 
     // Assert
     assertThat(result, instanceOf(IriTermParameter.class));
@@ -105,8 +97,8 @@ public class TermParameterFactoryTest {
             XMLSchema.INTEGER, XMLSchema.ANYURI)));
 
     // Act
-    factory.createTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
-        new PropertyShape2(unsupportedDataType, null), false);
+    getTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
+        PropertyShape.of(unsupportedDataType, null, null), false);
   }
 
 }

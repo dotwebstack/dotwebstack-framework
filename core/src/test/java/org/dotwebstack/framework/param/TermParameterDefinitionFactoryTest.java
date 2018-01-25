@@ -6,12 +6,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.Map;
-import org.dotwebstack.framework.param.shapes.BooleanPropertyShape;
-import org.dotwebstack.framework.param.shapes.IntegerPropertyShape;
-import org.dotwebstack.framework.param.shapes.IriPropertyShape;
-import org.dotwebstack.framework.param.shapes.StringPropertyShape;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.dotwebstack.framework.vocabulary.SHACL;
@@ -23,7 +19,9 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class TermParameterDefinitionFactoryTest {
 
@@ -31,11 +29,12 @@ public class TermParameterDefinitionFactoryTest {
 
   private ParameterDefinitionFactory parameterDefinitionFactory;
 
+  @Rule
+  public final ExpectedException exception = ExpectedException.none();
+
   @Before
   public void setUp() {
-    parameterDefinitionFactory =
-        new TermParameterDefinitionFactory(ImmutableSet.of(new BooleanPropertyShape(),
-            new IntegerPropertyShape(), new IriPropertyShape(), new StringPropertyShape()));
+    parameterDefinitionFactory = new TermParameterDefinitionFactory();
   }
 
   @Test
@@ -147,7 +146,7 @@ public class TermParameterDefinitionFactoryTest {
   }
 
   @Test
-  public void create_createsTermParameterDefinition_ForNoShape() {
+  public void create_doesNotCreateTermParameterDefinition_ForNoShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
 
@@ -156,14 +155,12 @@ public class TermParameterDefinitionFactoryTest {
 
     Model model = builder.build();
 
+    // Assert
+    exception.expect(ConfigurationException.class);
+
     // Act
     ParameterDefinition result =
         parameterDefinitionFactory.create(model, DBEERPEDIA.NAME_PARAMETER_ID);
-
-    // Assert
-    assertThat(result, instanceOf(TermParameterDefinition.class));
-    assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
-    assertThat(result.getName(), is(DBEERPEDIA.NAME_PARAMETER_VALUE.stringValue()));
   }
 
   @Test

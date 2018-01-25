@@ -63,7 +63,7 @@ public class BooleanTermParameterTest {
   @Test
   public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
     // Arrange
-    String defaultValue = "true";
+    boolean defaultValue = true;
 
     BindableParameter<Boolean> parameter = new BooleanTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
         DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, defaultValue);
@@ -75,7 +75,7 @@ public class BooleanTermParameterTest {
     Boolean result = parameter.handle(parameterValues);
 
     // Assert
-    assertThat(result, is(Boolean.valueOf(defaultValue)));
+    assertThat(result, is(defaultValue));
   }
 
   @Test

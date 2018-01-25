@@ -13,7 +13,7 @@ public class IriTermParameter extends TermParameter<IRI> {
     super(identifier, name, required, null);
   }
 
-  public IriTermParameter(IRI identifier, String name, boolean required, String defaultValue) {
+  public IriTermParameter(IRI identifier, String name, boolean required, IRI defaultValue) {
     super(identifier, name, required, defaultValue);
   }
 

@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
-import java.util.Optional;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
@@ -22,14 +21,17 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
+import org.dotwebstack.framework.param.PropertyShape;
 import org.dotwebstack.framework.param.TermParameterDefinition;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.dotwebstack.framework.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -227,6 +229,8 @@ public class InformationProductResourceProviderTest {
     IRI reqParam2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "required2");
     IRI optParam1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "optional1");
     IRI optParam2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "optional2");
+    PropertyShape emptyShape = PropertyShape
+        .of(XMLSchema.STRING, SHACL.DEFAULT_VALUE, ImmutableList.of());
 
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -246,19 +250,19 @@ public class InformationProductResourceProviderTest {
                 ELMO.OPTIONAL_PARAMETER_PROP, optParam2Id))));
 
     ParameterDefinition reqParam1Def =
-        new TermParameterDefinition(reqParam1Id, "reqParam1Name", Optional.empty());
+        new TermParameterDefinition(reqParam1Id, "reqParam1Name", emptyShape);
     when(parameterDefinitionResourceProviderMock.get(reqParam1Id)).thenReturn(reqParam1Def);
 
     ParameterDefinition reqParam2Def =
-        new TermParameterDefinition(reqParam2Id, "reqParam2Name", Optional.empty());
+        new TermParameterDefinition(reqParam2Id, "reqParam2Name", emptyShape);
     when(parameterDefinitionResourceProviderMock.get(reqParam2Id)).thenReturn(reqParam2Def);
 
     ParameterDefinition optParam1Def =
-        new TermParameterDefinition(optParam1Id, "optParam1Name", Optional.empty());
+        new TermParameterDefinition(optParam1Id, "optParam1Name", emptyShape);
     when(parameterDefinitionResourceProviderMock.get(optParam1Id)).thenReturn(optParam1Def);
 
     ParameterDefinition optParam2Def =
-        new TermParameterDefinition(optParam2Id, "optParam2Name", Optional.empty());
+        new TermParameterDefinition(optParam2Id, "optParam2Name", emptyShape);
     when(parameterDefinitionResourceProviderMock.get(optParam2Id)).thenReturn(optParam2Def);
 
     ArgumentCaptor<List<Parameter>> captureParameters = ArgumentCaptor.forClass(List.class);

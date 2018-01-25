@@ -66,7 +66,7 @@ public class IriTermParameterTest {
   @Test
   public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
     // Arrange
-    String defaultValue = "http://defaultValue";
+    IRI defaultValue = SimpleValueFactory.getInstance().createIRI("http://defaultValue");
 
     BindableParameter<IRI> parameter = new IriTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
         DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, defaultValue);
@@ -78,7 +78,7 @@ public class IriTermParameterTest {
     IRI result = parameter.handle(parameterValues);
 
     // Assert
-    assertThat(result, is(SimpleValueFactory.getInstance().createIRI(defaultValue)));
+    assertThat(result, is(defaultValue));
   }
 
   @Test

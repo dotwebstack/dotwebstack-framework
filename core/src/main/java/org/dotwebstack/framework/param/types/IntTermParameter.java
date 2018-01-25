@@ -10,7 +10,7 @@ public class IntTermParameter extends TermParameter<Integer> {
     super(identifier, name, required, null);
   }
 
-  public IntTermParameter(IRI identifier, String name, boolean required, String defaultValue) {
+  public IntTermParameter(IRI identifier, String name, boolean required, Integer defaultValue) {
     super(identifier, name, required, defaultValue);
   }
 
