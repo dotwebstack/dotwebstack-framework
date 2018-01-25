@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.param;
 
-import static org.dotwebstack.framework.param.types.TermParameterFactory.getTermParameter;
+import static org.dotwebstack.framework.param.term.TermParameterFactory.getTermParameter;
 
 import lombok.NonNull;
-import org.dotwebstack.framework.param.types.TermParameter;
+import org.dotwebstack.framework.param.term.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
 public final class TermParameterDefinition<T> extends

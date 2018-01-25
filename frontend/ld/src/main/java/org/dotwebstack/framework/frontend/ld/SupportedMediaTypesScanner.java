@@ -79,7 +79,7 @@ public class SupportedMediaTypesScanner {
         return tupleMediaTypes.toArray(new MediaType[0]);
       default:
         throw new IllegalArgumentException(
-            String.format("ResultType %s has no supported media types", type));
+            String.format("ResultType %s has no supported media term", type));
     }
   }
 

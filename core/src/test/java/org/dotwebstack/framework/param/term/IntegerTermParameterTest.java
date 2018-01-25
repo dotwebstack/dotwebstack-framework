@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
@@ -16,12 +16,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class IntTermParameterTest {
+public class IntegerTermParameterTest {
 
   private IRI identifier = SimpleValueFactory.getInstance().createIRI("http://www.test.nl");
-  private IntTermParameter intTermParameter = new IntTermParameter(identifier, "test", true);
-  private IntTermParameter intTermParameterOptional =
-      new IntTermParameter(identifier, "test", false);
+  private IntegerTermParameter integerTermParameter = new IntegerTermParameter(identifier, "test",
+      true);
+  private IntegerTermParameter integerTermParameterOptional =
+      new IntegerTermParameter(identifier, "test", false);
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -32,7 +33,7 @@ public class IntTermParameterTest {
     Map<String, String> parameterValues = Collections.singletonMap("test", null);
 
     // Act
-    Integer result = intTermParameterOptional.handle(parameterValues);
+    Integer result = integerTermParameterOptional.handle(parameterValues);
 
     // Assert
     assertNull(result);
@@ -44,7 +45,7 @@ public class IntTermParameterTest {
     Integer defaultValue = 3;
 
     BindableParameter<Integer> parameter =
-        new IntTermParameter(identifier, "test", false, defaultValue);
+        new IntegerTermParameter(identifier, "test", false, defaultValue);
 
     Map<String, String> parameterValues = Collections.singletonMap("test", null);
 
@@ -61,7 +62,7 @@ public class IntTermParameterTest {
     Map<String, String> parameterValues = ImmutableMap.of("test", "123");
 
     // Act
-    Integer result = intTermParameter.handle(parameterValues);
+    Integer result = integerTermParameter.handle(parameterValues);
 
     // Assert
     assertThat(result, is(123));
@@ -75,7 +76,7 @@ public class IntTermParameterTest {
         "No value found for required parameter '%s'. Supplied parameterValues:", identifier));
 
     // Act
-    intTermParameter.handle(ImmutableMap.of());
+    integerTermParameter.handle(ImmutableMap.of());
   }
 
   @Test
@@ -84,8 +85,8 @@ public class IntTermParameterTest {
     Map<String, String> parameterValues = ImmutableMap.of("test", "123");
 
     // Act
-    Integer value = intTermParameter.handle(parameterValues);
-    Value result = intTermParameter.getValue(value);
+    Integer value = integerTermParameter.handle(parameterValues);
+    Value result = integerTermParameter.getValue(value);
 
     // Assert
     assertThat(result, is(SimpleValueFactory.getInstance().createLiteral(123)));

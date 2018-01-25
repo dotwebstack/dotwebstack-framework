@@ -1,6 +1,6 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
-import static org.dotwebstack.framework.param.types.TermParameterFactory.getTermParameter;
+import static org.dotwebstack.framework.param.term.TermParameterFactory.getTermParameter;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -61,7 +61,7 @@ public class TermParameterFactoryTest {
         PropertyShape.of(XMLSchema.INTEGER, null, null), true);
 
     // Assert
-    assertThat(result, instanceOf(IntTermParameter.class));
+    assertThat(result, instanceOf(IntegerTermParameter.class));
     assertThat(result.getDefaultValue(), nullValue());
     assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
     assertThat(result.getName(), is("name"));
@@ -92,7 +92,7 @@ public class TermParameterFactoryTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("Unsupported data type: <%s>. Supported types: %s",
+    thrown.expectMessage(String.format("Unsupported data type: <%s>. Supported term: %s",
         unsupportedDataType, ImmutableList.of(XMLSchema.BOOLEAN, XMLSchema.STRING,
             XMLSchema.INTEGER, XMLSchema.ANYURI)));
 

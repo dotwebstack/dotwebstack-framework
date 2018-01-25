@@ -1,16 +1,16 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public class IntTermParameter extends TermParameter<Integer> {
+public class IntegerTermParameter extends TermParameter<Integer> {
 
-  public IntTermParameter(IRI identifier, String name, boolean required) {
+  public IntegerTermParameter(IRI identifier, String name, boolean required) {
     super(identifier, name, required, null);
   }
 
-  public IntTermParameter(IRI identifier, String name, boolean required, Integer defaultValue) {
+  public IntegerTermParameter(IRI identifier, String name, boolean required, Integer defaultValue) {
     super(identifier, name, required, defaultValue);
   }
 

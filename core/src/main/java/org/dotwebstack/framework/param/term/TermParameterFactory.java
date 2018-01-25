@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
@@ -21,7 +21,7 @@ public final class TermParameterFactory {
       return new StringTermParameter(identifier, name, required, defVal);
     } else if (type.equals(XMLSchema.INTEGER)) {
       Integer defVal = defaultValue != null ? ((Literal) defaultValue).intValue() : null;
-      return new IntTermParameter(identifier, name, required, defVal);
+      return new IntegerTermParameter(identifier, name, required, defVal);
     } else if (type.equals(XMLSchema.BOOLEAN)) {
       Boolean defVal = defaultValue != null ? ((Literal) defaultValue).booleanValue() : null;
       return new BooleanTermParameter(identifier, name, required, defVal);
@@ -35,7 +35,7 @@ public final class TermParameterFactory {
 
   private static void throwConfigException(String type) {
     throw new ConfigurationException(
-        String.format("Unsupported data type: <%s>. Supported types: %s",
+        String.format("Unsupported data type: <%s>. Supported term: %s",
             type, ImmutableList.of(XMLSchema.BOOLEAN, XMLSchema.STRING,
                 XMLSchema.INTEGER, XMLSchema.ANYURI)));
   }

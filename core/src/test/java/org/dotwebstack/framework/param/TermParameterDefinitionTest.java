@@ -7,9 +7,9 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.dotwebstack.framework.param.types.IriTermParameter;
-import org.dotwebstack.framework.param.types.StringTermParameter;
-import org.dotwebstack.framework.param.types.TermParameter;
+import org.dotwebstack.framework.param.term.IriTermParameter;
+import org.dotwebstack.framework.param.term.StringTermParameter;
+import org.dotwebstack.framework.param.term.TermParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;

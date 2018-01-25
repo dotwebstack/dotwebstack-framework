@@ -65,7 +65,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
    * provided by {@link #getSupportedDataTypes()}.
    *
    * @param value value to check
-   * @return <code>true</code> if given value is literal which supports one of given data types,
+   * @return <code>true</code> if given value is literal which supports one of given data term,
    *         <code>false</code> otherwise.
    */
   protected boolean isSupportedLiteral(Object value) {

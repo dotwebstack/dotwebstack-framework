@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
 import java.util.Map;
 import lombok.NonNull;

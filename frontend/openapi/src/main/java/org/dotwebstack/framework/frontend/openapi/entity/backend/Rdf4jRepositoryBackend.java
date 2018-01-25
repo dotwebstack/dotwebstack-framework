@@ -98,7 +98,7 @@ public class Rdf4jRepositoryBackend extends AbstractRdf4jBackend {
       throw new IllegalArgumentException(
           String.format(
               "Subject needs to be a URI or blank node, property a URI node "
-                  + "(types: [subject: %s, property: %s]).",
+                  + "(term: [subject: %s, property: %s]).",
               debugType(subject), debugType(property)),
           exception);
     }
