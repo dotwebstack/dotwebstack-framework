@@ -30,9 +30,10 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
 
     Optional<Resource> shapeObject = objectResource(model.filter(id, ELMO.SHAPE_PROP, null));
 
-    Resource subj = shapeObject.orElseThrow(() -> new ConfigurationException(
-        String.format("No <%s> property found for <%s> of type <%s>", ELMO.SHAPE_PROP, id,
-            ELMO.TERM_FILTER)));
+    Resource subj = shapeObject.orElseThrow(() -> new ConfigurationException(String.format(
+        "No <%s> property found for <%s> of type <%s>", ELMO.SHAPE_PROP, id, ELMO.TERM_FILTER)));
+    // XXX (PvH) Het data type is verplicht toch? Ik zou dan een soortgelijke ConfigurationException
+    // gooien
     IRI iriShapeType = objectIRI(model.filter(subj, SHACL.DATATYPE, null)).orElse(null);
     Value defaultValue = object(model.filter(subj, SHACL.DEFAULT_VALUE, null)).orElse(null);
 

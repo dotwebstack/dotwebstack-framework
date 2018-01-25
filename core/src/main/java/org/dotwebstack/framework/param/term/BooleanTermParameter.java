@@ -21,6 +21,8 @@ public class BooleanTermParameter extends TermParameter<Boolean> {
 
   @Override
   protected Boolean handleInner(String value) {
+    // XXX (PvH) Volgens mij is de null check (en de equalsIgnoreCases) niet (meer) noodzakelijk
+    // toch?
     if (value != null && (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false"))) {
       return Boolean.valueOf(value);
     } else {

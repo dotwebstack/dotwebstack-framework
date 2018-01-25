@@ -229,8 +229,11 @@ public class InformationProductResourceProviderTest {
     IRI reqParam2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "required2");
     IRI optParam1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "optional1");
     IRI optParam2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "optional2");
-    PropertyShape emptyShape = PropertyShape
-        .of(XMLSchema.STRING, SHACL.DEFAULT_VALUE, ImmutableList.of());
+
+    // XXX (PvH) Hoezo is de shape empty? (variabele naam) Suggestie: propertyShape
+    // XXX (PvH) De shape heeft wel een exotische default value :-)
+    PropertyShape emptyShape =
+        PropertyShape.of(XMLSchema.STRING, SHACL.DEFAULT_VALUE, ImmutableList.of());
 
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(

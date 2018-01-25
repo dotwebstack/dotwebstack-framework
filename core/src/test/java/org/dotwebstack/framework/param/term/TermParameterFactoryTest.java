@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 
+// XXX (PvH) Goede test! :-P
 public class TermParameterFactoryTest {
 
   @Rule
@@ -92,7 +93,7 @@ public class TermParameterFactoryTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("Unsupported data type: <%s>. Supported term: %s",
+    thrown.expectMessage(String.format("Unsupported data type: <%s>. Supported types: %s",
         unsupportedDataType, ImmutableList.of(XMLSchema.BOOLEAN, XMLSchema.STRING,
             XMLSchema.INTEGER, XMLSchema.ANYURI)));
 

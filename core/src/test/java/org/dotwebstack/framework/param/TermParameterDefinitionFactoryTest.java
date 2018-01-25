@@ -64,7 +64,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-        blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
 
     Model model = builder.build();
 
@@ -86,7 +86,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-        blankNode).add(SHACL.DATATYPE, XMLSchema.INTEGER);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.INTEGER);
 
     Model model = builder.build();
 
@@ -106,10 +106,9 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID)
-        .add(RDF.TYPE, ELMO.TERM_FILTER)
-        .add(ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE)
-        .add(ELMO.SHAPE_PROP, blankNode).subject(blankNode).add(SHACL.DATATYPE, XMLSchema.BOOLEAN);
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
+            blankNode).add(SHACL.DATATYPE, XMLSchema.BOOLEAN);
 
     Model model = builder.build();
 
@@ -131,7 +130,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-        blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
 
     Model model = builder.build();
 
@@ -146,7 +145,7 @@ public class TermParameterDefinitionFactoryTest {
   }
 
   @Test
-  public void create_doesNotCreateTermParameterDefinition_ForNoShape() {
+  public void create_ThrowsConfigurationException_ForMissingShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
 
@@ -157,10 +156,10 @@ public class TermParameterDefinitionFactoryTest {
 
     // Assert
     exception.expect(ConfigurationException.class);
+    // XXX (PvH) Vergeet ook niet de message te testen. Nu is elke ConfigurationException valide.
 
     // Act
-    ParameterDefinition result =
-        parameterDefinitionFactory.create(model, DBEERPEDIA.NAME_PARAMETER_ID);
+    parameterDefinitionFactory.create(model, DBEERPEDIA.NAME_PARAMETER_ID);
   }
 
   @Test
@@ -169,12 +168,9 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID)
-        .add(RDF.TYPE, ELMO.TERM_FILTER)
-        .add(ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE)
-        .add(ELMO.SHAPE_PROP, blankNode)
-        .subject(blankNode)
-        .add(SHACL.DATATYPE, XMLSchema.STRING);
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
+            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
 
     Model model = builder.build();
 
@@ -185,9 +181,16 @@ public class TermParameterDefinitionFactoryTest {
         (TermParameterDefinition) parameterDefinitionFactory.create(model,
             DBEERPEDIA.NAME_PARAMETER_ID);
 
+    // XXX (PvH) Is het niet mooier om de shape te exposen op de definition, zodat je dit kan doen:
+    // assertThat(result.getShaclShape(), is(PropertyShape.of(...));
+
+    // ...dan hebben we de code die hierna volgt niet meer nodig
+
     Parameter optionalParameter = result.createOptionalParameter();
     Object handle = optionalParameter.handle(parameterValues);
     // Assert
+
+    // XXX (PvH) Dit is overigens altijd waar
     assertThat(result, instanceOf(TermParameterDefinition.class));
     assertThat(handle, is(nullValue()));
   }
@@ -198,13 +201,9 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID)
-        .add(RDF.TYPE, ELMO.TERM_FILTER)
-        .add(ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE)
-        .add(ELMO.SHAPE_PROP, blankNode)
-        .subject(blankNode)
-        .add(SHACL.DATATYPE, XMLSchema.STRING)
-        .add(SHACL.DEFAULT_VALUE, "foo");
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+        ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
+            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING).add(SHACL.DEFAULT_VALUE, "foo");
 
     Model model = builder.build();
 
@@ -212,6 +211,8 @@ public class TermParameterDefinitionFactoryTest {
     TermParameterDefinition result =
         (TermParameterDefinition) parameterDefinitionFactory.create(model,
             DBEERPEDIA.NAME_PARAMETER_ID);
+
+    // XXX (PvH) Zie comments vorige test
 
     Parameter optionalParameter = result.createOptionalParameter();
     Object handle = optionalParameter.handle(ImmutableMap.of()); // empty map

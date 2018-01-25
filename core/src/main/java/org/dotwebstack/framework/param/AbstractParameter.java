@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
 
+// XXX (PvH) Wil je hier ook geen protected access level configureren?
 @RequiredArgsConstructor
 public abstract class AbstractParameter<T> implements Parameter<T> {
 

@@ -220,7 +220,7 @@ public class Rdf4jRepositoryBackendTest {
     // Assert
     thrown.expect(IllegalArgumentException.class);
     thrown.expectMessage("Subject needs to be a URI or blank node, property a URI node"
-        + " (term: [subject: URI, property: bNode]).");
+        + " (types: [subject: URI, property: bNode]).");
 
     // Arrange
     RepositoryConnection repositoryConnection = mock(RepositoryConnection.class);

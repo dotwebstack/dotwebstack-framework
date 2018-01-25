@@ -20,16 +20,26 @@ public class TermParameterDefinitionTest {
 
   public static final SimpleValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
+  // XXX (PvH) Suggestie: hernoemen naar new(Property)Shape
+
+  // XXX (PvH) (2) Overigens wel grappig: het feit dat je een convenience method maakt, zou kunnen
+  // betekenen dat de factory method ontbreekt op de PropertyShape :-)
+
+  // XXX (PvH) (3) Dit is meer een kwestie van stijl, maar je kan je de toegevoegde waarde afvragen
+  // van deze method. Hij wordt tenslotte maar 2x gebruikt.
+  // Belangrijker vind ik: de factory method op de PropertyShape gebruiken in je testen vind ik
+  // duidelijker dan de convenience method aanroepen, simpelweg omdat ik dan direct zie welke test
+  // data je gebruikt.
   private PropertyShape getShape(IRI type, String value) {
     return PropertyShape.of(type, VALUE_FACTORY.createLiteral(value), null);
   }
 
+  // XXX (PvH) Nu we geen default shape meer hebben, kan deze test weg?
   @Test
   public void createRequiredParameter_createsRequiredParameter_ForDefaultShape() {
     // Arrange
-    ParameterDefinition definition =
-        new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID, "name",
-            getShape(XMLSchema.STRING, "foo"));
+    ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
+        "name", getShape(XMLSchema.STRING, "foo"));
 
     // Act
     Parameter result = definition.createRequiredParameter();
@@ -79,8 +89,8 @@ public class TermParameterDefinitionTest {
   public void createOptionalParameter_createsOptionalParameter_WithNullDefaultValue() {
     // Arrange
     PropertyShape shape = PropertyShape.of(XMLSchema.STRING, null, ImmutableList.of());
-    ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
-        "name", shape);
+    ParameterDefinition definition =
+        new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID, "name", shape);
 
     // Act
     TermParameter result = (TermParameter) definition.createOptionalParameter();

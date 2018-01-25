@@ -24,6 +24,7 @@ public class IriTermParameter extends TermParameter<IRI> {
 
   @Override
   protected IRI handleInner(String value) {
+    // XXX (PvH) Volgens mij is de null check niet meer noodzakelijk toch?
     if (value != null) {
       return VALUE_FACTORY.createIRI(value);
     } else {

@@ -21,6 +21,8 @@ public class IntegerTermParameter extends TermParameter<Integer> {
 
   @Override
   protected Integer handleInner(String value) {
+
+    // XXX (PvH) Volgens mij is de null check niet meer noodzakelijk toch?
     if (value != null) {
       return Integer.parseInt(value);
     } else {
