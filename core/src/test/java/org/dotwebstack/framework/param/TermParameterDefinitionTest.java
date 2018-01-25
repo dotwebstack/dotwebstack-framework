@@ -78,7 +78,6 @@ public class TermParameterDefinitionTest {
   @Test
   public void createOptionalParameter_createsOptionalParameter_WithNullDefaultValue() {
     // Arrange
-    // TODO NvD Supply a null default value to the shape
     PropertyShape shape = PropertyShape.of(XMLSchema.STRING, null, ImmutableList.of());
     ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
         "name", shape);
@@ -87,7 +86,6 @@ public class TermParameterDefinitionTest {
     TermParameter result = (TermParameter) definition.createOptionalParameter();
 
     // Assert
-    // TODO NvD Check if the result has a null default value
     assertThat(result, instanceOf(StringTermParameter.class));
     assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
     assertThat(result.getName(), is("name"));
@@ -98,8 +96,6 @@ public class TermParameterDefinitionTest {
   @Test
   public void createOptionalParameter_createsOptionalParameter_WithProvidedDefaultValue() {
     // Arrange
-    // TODO NvD Supply the default value to the shape
-
     ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
         "name", getShape(XMLSchema.STRING, "bar"));
 
@@ -107,7 +103,6 @@ public class TermParameterDefinitionTest {
     TermParameter result = (TermParameter) definition.createOptionalParameter();
 
     // Assert
-    // TODO NvD Check if the result has the provided default value
     assertThat(result.handle(ImmutableMap.of()), is("bar"));
     assertThat(result.getDefaultValue(), is("bar"));
   }

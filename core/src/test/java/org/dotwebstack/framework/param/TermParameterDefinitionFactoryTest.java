@@ -188,7 +188,6 @@ public class TermParameterDefinitionFactoryTest {
     Parameter optionalParameter = result.createOptionalParameter();
     Object handle = optionalParameter.handle(parameterValues);
     // Assert
-    // TODO NvD Check if the result has a null default value
     assertThat(result, instanceOf(TermParameterDefinition.class));
     assertThat(handle, is(nullValue()));
   }

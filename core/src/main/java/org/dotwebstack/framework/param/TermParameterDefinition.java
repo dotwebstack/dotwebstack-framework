@@ -6,7 +6,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.param.term.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
-public final class TermParameterDefinition<T> extends
+public final class TermParameterDefinition extends
     AbstractParameterDefinition<TermParameter<?>> {
 
   private final PropertyShape shapeType;
