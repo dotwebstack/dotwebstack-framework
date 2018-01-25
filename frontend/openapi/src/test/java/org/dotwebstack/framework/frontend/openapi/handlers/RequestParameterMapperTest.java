@@ -72,21 +72,19 @@ public class RequestParameterMapperTest {
         ImmutableList.of(parameter, parameter2), templateProcessorMock);
 
     mapper = new RequestParameterMapper();
-
-    requestParameters = new RequestParameters();
-
-    // XXX (PvH) Ik zou de default vulling uit de requestParameters halen. Zoals we gisteren hebben
-    // gezien is dit verwarrend (testen slagen blijkbaar ook met de default vulling).
-    MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
-    mvMap.put("param1", ImmutableList.of("value", "valueB"));
-    mvMap.put("param2", ImmutableList.of("value2"));
-    requestParameters.putAll(mvMap);
   }
 
   @Test
   public void map_ReturnsEmptyMap_WhenOperationHasNoParameter() {
     // Arrange
     Operation operation = new Operation();
+
+    MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
+    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param2", ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(mvMap);
 
     // Act
     Map<String, String> result = mapper.map(operation, product, requestParameters);
@@ -104,6 +102,13 @@ public class RequestParameterMapperTest {
     pathParameter.setVendorExtension("x-dotwebstack-another-vendor-extension",
         parameter.getIdentifier().stringValue());
     operation.setParameters(ImmutableList.of(pathParameter));
+
+    MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
+    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param2", ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(mvMap);
 
     // Act
     Map<String, String> result = mapper.map(operation, product, requestParameters);
@@ -124,6 +129,13 @@ public class RequestParameterMapperTest {
 
     parameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER, "http://unknown");
     operation.setParameters(ImmutableList.of(parameter));
+
+    MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
+    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param2", ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(mvMap);
 
     // Act
     mapper.map(operation, product, requestParameters);
@@ -158,6 +170,8 @@ public class RequestParameterMapperTest {
     // Note there are multiple values for this parameter, to test that the first value is used only
     pathParameters.put(pathParameter.getName(), ImmutableList.of("value", "valueB"));
     pathParameters.put(pathParameter2.getName(), ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
     requestParameters.putAll(pathParameters);
 
     // Act
@@ -209,6 +223,8 @@ public class RequestParameterMapperTest {
 
     MultivaluedMap<String, String> headerParameters = new MultivaluedHashMap<>();
     headerParameters.put(headerParameter.getName(), ImmutableList.of("value", "valueB"));
+
+    requestParameters = new RequestParameters();
     requestParameters.putAll(headerParameters);
 
     // Act
@@ -222,18 +238,18 @@ public class RequestParameterMapperTest {
   @Test
   public void map_ReturnsCorrectParameterName_ForBodyParameter() {
     // Arrange
-    // XXX (PvH) Ik zou met meerdere properties testen, onder water gebruik je tenslotte een for
-    // loop
     Property property = new ObjectProperty();
     property.getVendorExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
         parameter.getIdentifier().stringValue());
+    Property property2 = new ObjectProperty();
+    property2.getVendorExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
+        parameter2.getIdentifier().stringValue());
 
     Model schema = new ModelImpl();
-    schema.setProperties(ImmutableMap.of("property1", property));
+    schema.setProperties(ImmutableMap.of("param1", property, "param2", property2));
 
     BodyParameter bodyParameter = new BodyParameter();
-    // XXX (PvH) Voor de duidelijkheid zou ik de name op "body" zetten
-    bodyParameter.setName("param1");
+    bodyParameter.setName("body");
     bodyParameter.setIn("body");
     bodyParameter.setSchema(schema);
 
@@ -241,17 +257,50 @@ public class RequestParameterMapperTest {
     operation.addParameter(bodyParameter);
 
     MultivaluedMap<String, String> bodyParameters = new MultivaluedHashMap<>();
-    // XXX (PvH) Waarom gebruik je hier de naam van de body parameter? En niet "property1"?
-    // 1 body parameter zal ook niet meerdere values hebben
-    bodyParameters.put(bodyParameter.getName(), ImmutableList.of("value", "valueB"));
+    bodyParameters.put("param1", ImmutableList.of("value"));
+    bodyParameters.put("param2", ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
     requestParameters.putAll(bodyParameters);
 
     // Act
     Map<String, String> result = mapper.map(operation, product, requestParameters);
 
     // Assert
-    assertThat(result.size(), is(1));
+    assertThat(result.size(), is(2));
     assertThat(result, hasEntry(parameter.getName(), "value"));
+    assertThat(result, hasEntry(parameter2.getName(), "value2"));
   }
+
+  @Test
+  public void map_ReturnsEmptyMap_WhenBodyParameterHasNoPropertyWithParamaterInputVendorExtension() {
+    // Arrange
+    Property property = new ObjectProperty();
+    property.getVendorExtensions().put("x-dotwebstack-another-vendor-extension", "foo");
+
+    Model schema = new ModelImpl();
+    schema.setProperties(ImmutableMap.of("param1", property));
+
+    BodyParameter bodyParameter = new BodyParameter();
+    bodyParameter.setName("body");
+    bodyParameter.setIn("body");
+    bodyParameter.setSchema(schema);
+
+    Operation operation = new Operation();
+    operation.addParameter(bodyParameter);
+
+    MultivaluedMap<String, String> bodyParameters = new MultivaluedHashMap<>();
+    bodyParameters.put("param1", ImmutableList.of("value"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(bodyParameters);
+
+    // Act
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
+
+    // Assert
+    assertThat(result.isEmpty(), is(true));
+  }
+
 
 }

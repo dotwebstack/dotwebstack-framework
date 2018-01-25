@@ -25,14 +25,21 @@ class RequestParameterMapper {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
-  private static Parameter<?> getParameter(InformationProduct product, IRI iri) {
-    for (Parameter<?> parameter : product.getParameters()) {
-      if (parameter.getIdentifier().equals(iri)) {
-        return parameter;
+  private static Parameter<?> getParameter(InformationProduct product, String parameterIdString) {
+    IRI iri = VALUE_FACTORY.createIRI((String) parameterIdString);
+    Parameter<?> parameter = null;
+
+    for (Parameter<?> productParameter : product.getParameters()) {
+      if (productParameter.getIdentifier().equals(iri)) {
+        parameter = productParameter;
       }
     }
 
-    return null;
+    if (parameter == null) {
+      throw new ConfigurationException(
+          String.format("No parameter found for vendor extension value: '%s'", parameterIdString));
+    }
+    return parameter;
   }
 
   Map<String, String> map(@NonNull Operation operation, @NonNull InformationProduct product,
@@ -53,12 +60,15 @@ class RequestParameterMapper {
           Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
 
           if (parameterIdString == null) {
-            // XXX (PvH) Case wordt niet gedekt
             // Vendor extension x-dotwebstack-parameter not found for property
             continue;
           }
 
-          fillResult((String) parameterIdString, product, requestParameters, result);
+          Parameter<?> parameter = getParameter(product, (String) parameterIdString);
+
+          String value = requestParameters.get(parameter.getName());
+
+          result.put(parameter.getName(), value);
         }
       } else {
         Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
@@ -73,32 +83,14 @@ class RequestParameterMapper {
           continue;
         }
 
-        fillResult((String) parameterIdString, product, requestParameters, result);
+        Parameter<?> parameter = getParameter(product, (String) parameterIdString);
+
+        String value = requestParameters.get(parameter.getName());
+
+        result.put(parameter.getName(), value);
       }
     }
     return result;
-  }
-
-  // XXX (PvH) Het is een beetje een bad practice om parameters (in dit geval de result Map) te
-  // manipuleren. Dit komt de eenvoud en het overzicht niet ten goede.
-  // Ik zou in dit geval enkel de code tussen // 1 en // 2 in een aparte method stoppen (de huidige
-  // getParameter methode)
-  private void fillResult(String parameterIdString, InformationProduct product,
-      RequestParameters requestParameters, Map<String, String> result) {
-
-    // 1
-    IRI parameterId = VALUE_FACTORY.createIRI((String) parameterIdString);
-    Parameter<?> parameter = getParameter(product, parameterId);
-
-    if (parameter == null) {
-      throw new ConfigurationException(
-          String.format("No parameter found for vendor extension value: '%s'", parameterIdString));
-    }
-    // 2
-
-    String value = requestParameters.get(parameter.getName());
-
-    result.put(parameter.getName(), value);
   }
 }
 
