@@ -53,6 +53,7 @@ class RequestParameterMapper {
           Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
 
           if (parameterIdString == null) {
+            // XXX (PvH) Case wordt niet gedekt
             // Vendor extension x-dotwebstack-parameter not found for property
             continue;
           }
@@ -78,9 +79,14 @@ class RequestParameterMapper {
     return result;
   }
 
+  // XXX (PvH) Het is een beetje een bad practice om parameters (in dit geval de result Map) te
+  // manipuleren. Dit komt de eenvoud en het overzicht niet ten goede.
+  // Ik zou in dit geval enkel de code tussen // 1 en // 2 in een aparte method stoppen (de huidige
+  // getParameter methode)
   private void fillResult(String parameterIdString, InformationProduct product,
       RequestParameters requestParameters, Map<String, String> result) {
 
+    // 1
     IRI parameterId = VALUE_FACTORY.createIRI((String) parameterIdString);
     Parameter<?> parameter = getParameter(product, parameterId);
 
@@ -88,6 +94,7 @@ class RequestParameterMapper {
       throw new ConfigurationException(
           String.format("No parameter found for vendor extension value: '%s'", parameterIdString));
     }
+    // 2
 
     String value = requestParameters.get(parameter.getName());
 

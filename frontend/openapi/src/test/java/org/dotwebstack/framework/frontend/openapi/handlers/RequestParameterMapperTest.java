@@ -74,6 +74,9 @@ public class RequestParameterMapperTest {
     mapper = new RequestParameterMapper();
 
     requestParameters = new RequestParameters();
+
+    // XXX (PvH) Ik zou de default vulling uit de requestParameters halen. Zoals we gisteren hebben
+    // gezien is dit verwarrend (testen slagen blijkbaar ook met de default vulling).
     MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
     mvMap.put("param1", ImmutableList.of("value", "valueB"));
     mvMap.put("param2", ImmutableList.of("value2"));
@@ -219,6 +222,8 @@ public class RequestParameterMapperTest {
   @Test
   public void map_ReturnsCorrectParameterName_ForBodyParameter() {
     // Arrange
+    // XXX (PvH) Ik zou met meerdere properties testen, onder water gebruik je tenslotte een for
+    // loop
     Property property = new ObjectProperty();
     property.getVendorExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
         parameter.getIdentifier().stringValue());
@@ -227,14 +232,17 @@ public class RequestParameterMapperTest {
     schema.setProperties(ImmutableMap.of("property1", property));
 
     BodyParameter bodyParameter = new BodyParameter();
+    // XXX (PvH) Voor de duidelijkheid zou ik de name op "body" zetten
     bodyParameter.setName("param1");
-    bodyParameter.setIn("header");
+    bodyParameter.setIn("body");
     bodyParameter.setSchema(schema);
 
     Operation operation = new Operation();
     operation.addParameter(bodyParameter);
 
     MultivaluedMap<String, String> bodyParameters = new MultivaluedHashMap<>();
+    // XXX (PvH) Waarom gebruik je hier de naam van de body parameter? En niet "property1"?
+    // 1 body parameter zal ook niet meerdere values hebben
     bodyParameters.put(bodyParameter.getName(), ImmutableList.of("value", "valueB"));
     requestParameters.putAll(bodyParameters);
 
