@@ -5,10 +5,16 @@ import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Model;
+import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
+import io.swagger.models.parameters.BodyParameter;
 import io.swagger.models.parameters.HeaderParameter;
 import io.swagger.models.parameters.PathParameter;
 import io.swagger.models.parameters.QueryParameter;
+import io.swagger.models.properties.ObjectProperty;
+import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -56,27 +62,28 @@ public class RequestParameterMapperTest {
   public void setUp() {
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    parameter = new StringTermParameter(valueFactory.createIRI("http://parameter-iri"),
-        "parameter-name", true);
-    parameter2 = new StringTermParameter(valueFactory.createIRI("http://parameter2-iri"),
-        "parameter2-name", true);
+    parameter =
+        new StringTermParameter(valueFactory.createIRI("http://parameter-iri"), "param1", true);
+    parameter2 =
+        new StringTermParameter(valueFactory.createIRI("http://parameter2-iri"), "param2", true);
 
     product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
         ImmutableList.of(parameter, parameter2), templateProcessorMock);
 
     mapper = new RequestParameterMapper();
-
-    requestParameters = new RequestParameters();
-    MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
-    mvMap.put("param1", ImmutableList.of("value", "valueB"));
-    mvMap.put("param2", ImmutableList.of("value2"));
-    requestParameters.putAll(mvMap);
   }
 
   @Test
   public void map_ReturnsEmptyMap_WhenOperationHasNoParameter() {
     // Arrange
+    MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
+    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param2", ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(mvMap);
+
     Operation operation = new Operation();
 
     // Act
@@ -95,6 +102,13 @@ public class RequestParameterMapperTest {
     pathParameter.setVendorExtension("x-dotwebstack-another-vendor-extension",
         parameter.getIdentifier().stringValue());
     operation.setParameters(ImmutableList.of(pathParameter));
+
+    MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
+    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param2", ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(mvMap);
 
     // Act
     Map<String, String> result = mapper.map(operation, product, requestParameters);
@@ -116,6 +130,13 @@ public class RequestParameterMapperTest {
     parameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER, "http://unknown");
     operation.setParameters(ImmutableList.of(parameter));
 
+    MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
+    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param2", ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(mvMap);
+
     // Act
     mapper.map(operation, product, requestParameters);
   }
@@ -124,7 +145,6 @@ public class RequestParameterMapperTest {
   public void map_ReturnsCorrectParameterName_ForPathParameters() {
     // Arrange
     PathParameter pathParameter = new PathParameter();
-
     pathParameter.setName("param1");
     pathParameter.setIn("path");
 
@@ -138,7 +158,6 @@ public class RequestParameterMapperTest {
     operation.addParameter(pathParameter);
 
     PathParameter pathParameter2 = new PathParameter();
-
     pathParameter2.setName("param2");
     pathParameter2.setIn("path");
     pathParameter2.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
@@ -151,6 +170,9 @@ public class RequestParameterMapperTest {
     // Note there are multiple values for this parameter, to test that the first value is used only
     pathParameters.put(pathParameter.getName(), ImmutableList.of("value", "valueB"));
     pathParameters.put(pathParameter2.getName(), ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(pathParameters);
 
     // Act
     Map<String, String> result = mapper.map(operation, product, requestParameters);
@@ -165,7 +187,6 @@ public class RequestParameterMapperTest {
   public void map_ReturnsCorrectParameterName_ForQueryParameter() {
     // Arrange
     QueryParameter queryParameter = new QueryParameter();
-
     queryParameter.setName("param1");
     queryParameter.setIn("query");
     queryParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
@@ -176,6 +197,9 @@ public class RequestParameterMapperTest {
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
     queryParameters.put(queryParameter.getName(), ImmutableList.of("value", "valueB"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(queryParameters);
 
     // Act
     Map<String, String> result = mapper.map(operation, product, requestParameters);
@@ -189,7 +213,6 @@ public class RequestParameterMapperTest {
   public void map_ReturnsCorrectParameterName_ForHeaderParameter() {
     // Arrange
     HeaderParameter headerParameter = new HeaderParameter();
-
     headerParameter.setName("param1");
     headerParameter.setIn("header");
     headerParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
@@ -201,6 +224,9 @@ public class RequestParameterMapperTest {
     MultivaluedMap<String, String> headerParameters = new MultivaluedHashMap<>();
     headerParameters.put(headerParameter.getName(), ImmutableList.of("value", "valueB"));
 
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(headerParameters);
+
     // Act
     Map<String, String> result = mapper.map(operation, product, requestParameters);
 
@@ -208,5 +234,73 @@ public class RequestParameterMapperTest {
     assertThat(result.size(), is(1));
     assertThat(result, hasEntry(parameter.getName(), "value"));
   }
+
+  @Test
+  public void map_ReturnsCorrectParameterName_ForBodyParameter() {
+    // Arrange
+    Property property = new ObjectProperty();
+    property.getVendorExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
+        parameter.getIdentifier().stringValue());
+    Property property2 = new ObjectProperty();
+    property2.getVendorExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
+        parameter2.getIdentifier().stringValue());
+
+    Model schema = new ModelImpl();
+    schema.setProperties(ImmutableMap.of("param1", property, "param2", property2));
+
+    BodyParameter bodyParameter = new BodyParameter();
+    bodyParameter.setName("body");
+    bodyParameter.setIn("body");
+    bodyParameter.setSchema(schema);
+
+    Operation operation = new Operation();
+    operation.addParameter(bodyParameter);
+
+    MultivaluedMap<String, String> bodyParameters = new MultivaluedHashMap<>();
+    bodyParameters.put("param1", ImmutableList.of("value"));
+    bodyParameters.put("param2", ImmutableList.of("value2"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(bodyParameters);
+
+    // Act
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
+
+    // Assert
+    assertThat(result.size(), is(2));
+    assertThat(result, hasEntry(parameter.getName(), "value"));
+    assertThat(result, hasEntry(parameter2.getName(), "value2"));
+  }
+
+  @Test
+  public void map_ReturnsEmptyMap_WhenBodyParameterHasNoPropertyWithParamVendorExtension() {
+    // Arrange
+    Property property = new ObjectProperty();
+    property.getVendorExtensions().put("x-dotwebstack-another-vendor-extension", "foo");
+
+    Model schema = new ModelImpl();
+    schema.setProperties(ImmutableMap.of("param1", property));
+
+    BodyParameter bodyParameter = new BodyParameter();
+    bodyParameter.setName("body");
+    bodyParameter.setIn("body");
+    bodyParameter.setSchema(schema);
+
+    Operation operation = new Operation();
+    operation.addParameter(bodyParameter);
+
+    MultivaluedMap<String, String> bodyParameters = new MultivaluedHashMap<>();
+    bodyParameters.put("param1", ImmutableList.of("value"));
+
+    requestParameters = new RequestParameters();
+    requestParameters.putAll(bodyParameters);
+
+    // Act
+    Map<String, String> result = mapper.map(operation, product, requestParameters);
+
+    // Assert
+    assertThat(result.isEmpty(), is(true));
+  }
+
 
 }

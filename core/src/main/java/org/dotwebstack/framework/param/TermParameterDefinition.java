@@ -8,8 +8,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.param.term.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
-public final class TermParameterDefinition extends
-    AbstractParameterDefinition<TermParameter<?>> {
+public final class TermParameterDefinition extends AbstractParameterDefinition<TermParameter<?>> {
 
   @Getter(AccessLevel.PACKAGE)
   private final ShaclShape shaclShape;
@@ -33,6 +32,7 @@ public final class TermParameterDefinition extends
 
   private TermParameter<?> createParameter(boolean required) {
     return newTermParameter(getIdentifier(), getName(), shaclShape, required);
+
   }
 
 }

@@ -25,14 +25,21 @@ class RequestParameterMapper {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
-  private static Parameter<?> getParameter(InformationProduct product, IRI iri) {
-    for (Parameter<?> parameter : product.getParameters()) {
-      if (parameter.getIdentifier().equals(iri)) {
-        return parameter;
+  private static Parameter<?> getParameter(InformationProduct product, String parameterIdString) {
+    IRI iri = VALUE_FACTORY.createIRI((String) parameterIdString);
+    Parameter<?> parameter = null;
+
+    for (Parameter<?> productParameter : product.getParameters()) {
+      if (productParameter.getIdentifier().equals(iri)) {
+        parameter = productParameter;
       }
     }
 
-    return null;
+    if (parameter == null) {
+      throw new ConfigurationException(
+          String.format("No parameter found for vendor extension value: '%s'", parameterIdString));
+    }
+    return parameter;
   }
 
   Map<String, String> map(@NonNull Operation operation, @NonNull InformationProduct product,
@@ -47,7 +54,7 @@ class RequestParameterMapper {
         for (Property property : properties) {
           Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
-          LOG.debug("Vendor extensions for property '{}' of parameter '{}': {}", property.getName(),
+          LOG.debug("Vendor extensions for property in parameter '{}': {}", property.getName(),
               openApiParameter.getName(), vendorExtensions);
 
           Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
@@ -57,8 +64,11 @@ class RequestParameterMapper {
             continue;
           }
 
-          fillResult(openApiParameter, (String) parameterIdString, product, requestParameters,
-              result);
+          Parameter<?> parameter = getParameter(product, (String) parameterIdString);
+
+          String value = requestParameters.get(parameter.getName());
+
+          result.put(parameter.getName(), value);
         }
       } else {
         Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
@@ -73,28 +83,14 @@ class RequestParameterMapper {
           continue;
         }
 
-        fillResult(openApiParameter, (String) parameterIdString, product, requestParameters,
-            result);
+        Parameter<?> parameter = getParameter(product, (String) parameterIdString);
+
+        String value = requestParameters.get(parameter.getName());
+
+        result.put(parameter.getName(), value);
       }
     }
     return result;
-  }
-
-  private void fillResult(io.swagger.models.parameters.Parameter openApiParameter,
-      String parameterIdString, InformationProduct product, RequestParameters requestParameters,
-      Map<String, String> result) {
-
-    IRI parameterId = VALUE_FACTORY.createIRI((String) parameterIdString);
-    Parameter<?> parameter = getParameter(product, parameterId);
-
-    if (parameter == null) {
-      throw new ConfigurationException(
-          String.format("No parameter found for vendor extension value: '%s'", parameterIdString));
-    }
-
-    String value = requestParameters.get(openApiParameter.getName());
-
-    result.put(parameter.getName(), value);
   }
 }
 
