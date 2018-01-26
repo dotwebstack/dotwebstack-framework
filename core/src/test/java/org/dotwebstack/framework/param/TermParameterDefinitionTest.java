@@ -18,12 +18,29 @@ import org.junit.Test;
 
 public class TermParameterDefinitionTest {
 
-  private static final SimpleValueFactory FACTORY = SimpleValueFactory.getInstance();
+  private static final SimpleValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+
+  @Test
+  public void createRequiredParameter_createsRequiredParameter_ForProvidedShape() {
+    // Arrange
+    IRI foo = VALUE_FACTORY.createIRI(XMLSchema.NAMESPACE, "foo");
+    ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
+        "name", new ShaclShape(XMLSchema.ANYURI, foo, ImmutableList.of()));
+
+    // Act
+    Parameter result = definition.createRequiredParameter();
+
+    // Assert
+    assertThat(result, instanceOf(IriTermParameter.class));
+    assertThat(result.getIdentifier(), is(DBEERPEDIA.NAME_PARAMETER_ID));
+    assertThat(result.getName(), is("name"));
+    assertThat(result.isRequired(), is(true));
+  }
 
   @Test
   public void createOptionalParameter_createsOptionalParameter_ForProvidedShape() {
     // Arrange
-    IRI foo = FACTORY.createIRI(XMLSchema.NAMESPACE, "foo");
+    IRI foo = VALUE_FACTORY.createIRI(XMLSchema.NAMESPACE, "foo");
     ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
         "name", new ShaclShape(XMLSchema.ANYURI, foo, ImmutableList.of()));
 
@@ -59,7 +76,8 @@ public class TermParameterDefinitionTest {
   public void createOptionalParameter_createsOptionalParameter_WithProvidedDefaultValue() {
     // Arrange
     ParameterDefinition definition = new TermParameterDefinition(DBEERPEDIA.NAME_PARAMETER_ID,
-        "name", new ShaclShape(XMLSchema.STRING, FACTORY.createLiteral("bar"), ImmutableList.of()));
+        "name",
+        new ShaclShape(XMLSchema.STRING, VALUE_FACTORY.createLiteral("bar"), ImmutableList.of()));
 
     // Act
     TermParameter result = (TermParameter) definition.createOptionalParameter();

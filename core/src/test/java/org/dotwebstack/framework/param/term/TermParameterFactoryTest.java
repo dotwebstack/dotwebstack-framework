@@ -24,7 +24,7 @@ public class TermParameterFactoryTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private static final ValueFactory FACTORY = SimpleValueFactory.getInstance();
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   @Test
   public void createTermParameter_CreatesBooleanTermParameter_ForBooleanShape() {
@@ -44,7 +44,8 @@ public class TermParameterFactoryTest {
   public void createTermParameter_CreatesStringTermParameter_ForStringShape() {
     // Act
     TermParameter result = newTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
-        new ShaclShape(XMLSchema.STRING, FACTORY.createLiteral("foo"), ImmutableList.of()), false);
+        new ShaclShape(XMLSchema.STRING, VALUE_FACTORY.createLiteral("foo"), ImmutableList.of()),
+        false);
 
     // Assert
     assertThat(result, instanceOf(StringTermParameter.class));
@@ -71,7 +72,7 @@ public class TermParameterFactoryTest {
   @Test
   public void createTermParameter_CreatesIriTermParameter_ForIriShape() {
     // Arrange
-    IRI defaultValue = FACTORY.createIRI("http://default-value");
+    IRI defaultValue = VALUE_FACTORY.createIRI("http://default-value");
 
     // Act
     TermParameter result = newTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
@@ -88,7 +89,7 @@ public class TermParameterFactoryTest {
   @Test
   public void createTermParameter_ThrowsException_ForUnknownShape() {
     // Arrange
-    IRI unsupportedDataType = FACTORY.createIRI("http://unsupported-data-type");
+    IRI unsupportedDataType = VALUE_FACTORY.createIRI("http://unsupported-data-type");
 
     // Assert
     thrown.expect(ConfigurationException.class);

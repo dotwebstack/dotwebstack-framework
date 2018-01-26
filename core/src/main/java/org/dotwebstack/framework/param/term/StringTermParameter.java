@@ -15,7 +15,7 @@ public class StringTermParameter extends TermParameter<String> {
 
   @Override
   public Literal getValue(String value) {
-    return FACTORY.createLiteral(value);
+    return VALUE_FACTORY.createLiteral(value);
   }
 
   @Override

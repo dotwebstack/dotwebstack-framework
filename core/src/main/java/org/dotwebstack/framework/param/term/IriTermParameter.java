@@ -15,11 +15,11 @@ public class IriTermParameter extends TermParameter<IRI> {
 
   @Override
   public Literal getValue(IRI value) {
-    return FACTORY.createLiteral(value.stringValue());
+    return VALUE_FACTORY.createLiteral(value.stringValue());
   }
 
   @Override
   protected IRI handleInner(String value) {
-    return FACTORY.createIRI(value);
+    return VALUE_FACTORY.createIRI(value);
   }
 }

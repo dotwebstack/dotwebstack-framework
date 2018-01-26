@@ -25,14 +25,13 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
   @Override
   public ParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
     String name = Models.objectLiteral(model.filter(id, ELMO.NAME_PROP, null)).orElseThrow(
-        configurationException(ELMO.NAME_PROP, id, ELMO.TERM_FILTER))
-        .stringValue();
+        newConfigurationException(ELMO.NAME_PROP, id, ELMO.TERM_FILTER)).stringValue();
 
     Resource subj = objectResource(model.filter(id, ELMO.SHAPE_PROP, null)).orElseThrow(
-        configurationException(ELMO.SHAPE_PROP, id, ELMO.TERM_FILTER));
+        newConfigurationException(ELMO.SHAPE_PROP, id, ELMO.TERM_FILTER));
 
     IRI iriShapeType = objectIRI(model.filter(subj, SHACL.DATATYPE, null)).orElseThrow(
-        configurationException(SHACL.DATATYPE, id, ELMO.SHAPE_PROP));
+        newConfigurationException(SHACL.DATATYPE, id, ELMO.SHAPE_PROP));
 
     Value defaultValue = object(model.filter(subj, SHACL.DEFAULT_VALUE, null)).orElse(null);
 
@@ -40,9 +39,9 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
     return new TermParameterDefinition(id, name, shape);
   }
 
-  private Supplier<ConfigurationException> configurationException(Object... placeHolders) {
+  private static Supplier<ConfigurationException> newConfigurationException(Object... arguments) {
     return () -> new ConfigurationException(
-        String.format("No <%s> property found for <%s> of type <%s>", placeHolders));
+        String.format("No <%s> property found for <%s> of type <%s>", arguments));
   }
 
   /**

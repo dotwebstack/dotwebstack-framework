@@ -15,7 +15,7 @@ public class IntegerTermParameter extends TermParameter<Integer> {
 
   @Override
   public Literal getValue(Integer value) {
-    return FACTORY.createLiteral(value);
+    return VALUE_FACTORY.createLiteral(value);
   }
 
   @Override

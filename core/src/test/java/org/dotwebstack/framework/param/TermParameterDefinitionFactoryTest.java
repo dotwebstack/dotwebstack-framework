@@ -24,7 +24,7 @@ import org.junit.rules.ExpectedException;
 
 public class TermParameterDefinitionFactoryTest {
 
-  private static final ValueFactory FACTORY = SimpleValueFactory.getInstance();
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   private ParameterDefinitionFactory parameterDefinitionFactory;
 
@@ -38,27 +38,34 @@ public class TermParameterDefinitionFactoryTest {
 
   @Test
   public void supports_ReturnsTrue_ForSupportedIri() {
-    assertThat(parameterDefinitionFactory.supports(ELMO.TERM_FILTER), is(true));
+    // Act
+    boolean result = parameterDefinitionFactory.supports(ELMO.TERM_FILTER);
+
+    // Assert
+    assertThat(result, is(true));
   }
 
   @Test
   public void supports_ReturnsFalse_ForUnsupportedIri() {
     // Arrange
-    IRI unsupported = FACTORY.createIRI("http://unsupported#", "Filter");
+    IRI unsupported = VALUE_FACTORY.createIRI("http://unsupported#", "Filter");
+
+    // Act
+    boolean result = parameterDefinitionFactory.supports(unsupported);
 
     // Assert
-    assertThat(parameterDefinitionFactory.supports(unsupported), is(false));
+    assertThat(result, is(false));
   }
 
   @Test
   public void create_createsTermParameterDefinition_ForStringShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
-    BNode blankNode = FACTORY.createBNode();
+    BNode blankNode = VALUE_FACTORY.createBNode();
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-        blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
 
     Model model = builder.build();
 
@@ -76,11 +83,11 @@ public class TermParameterDefinitionFactoryTest {
   public void create_createsTermParameterDefinition_ForIntegerShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
-    BNode blankNode = FACTORY.createBNode();
+    BNode blankNode = VALUE_FACTORY.createBNode();
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-        blankNode).add(SHACL.DATATYPE, XMLSchema.INTEGER);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.INTEGER);
 
     Model model = builder.build();
 
@@ -98,11 +105,11 @@ public class TermParameterDefinitionFactoryTest {
   public void create_createsTermParameterDefinition_ForBooleanShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
-    BNode blankNode = FACTORY.createBNode();
+    BNode blankNode = VALUE_FACTORY.createBNode();
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-        blankNode).add(SHACL.DATATYPE, XMLSchema.BOOLEAN);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.BOOLEAN);
 
     Model model = builder.build();
 
@@ -120,11 +127,11 @@ public class TermParameterDefinitionFactoryTest {
   public void create_createsTermParameterDefinition_ForIriShape() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
-    BNode blankNode = FACTORY.createBNode();
+    BNode blankNode = VALUE_FACTORY.createBNode();
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-        blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
 
     Model model = builder.build();
 
@@ -147,9 +154,8 @@ public class TermParameterDefinitionFactoryTest {
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
 
     Model model = builder.build();
-    final String errorMessage = String
-        .format("No <%s> property found for <%s> of type <%s>", ELMO.SHAPE_PROP,
-            DBEERPEDIA.NAME_PARAMETER_ID, ELMO.TERM_FILTER);
+    final String errorMessage = String.format("No <%s> property found for <%s> of type <%s>",
+        ELMO.SHAPE_PROP, DBEERPEDIA.NAME_PARAMETER_ID, ELMO.TERM_FILTER);
 
     // Assert
     exception.expect(ConfigurationException.class);
@@ -163,17 +169,18 @@ public class TermParameterDefinitionFactoryTest {
   public void create_createsTermParameterDefinition_WithNullDefaultValue() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
-    BNode blankNode = FACTORY.createBNode();
+    BNode blankNode = VALUE_FACTORY.createBNode();
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-        blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
+            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
 
     Model model = builder.build();
 
     // Act
-    TermParameterDefinition result = (TermParameterDefinition)
-        parameterDefinitionFactory.create(model, DBEERPEDIA.NAME_PARAMETER_ID);
+    TermParameterDefinition result =
+        (TermParameterDefinition) parameterDefinitionFactory.create(model,
+            DBEERPEDIA.NAME_PARAMETER_ID);
 
     // Assert
     assertThat(result.getShaclShape(),
@@ -184,11 +191,11 @@ public class TermParameterDefinitionFactoryTest {
   public void create_createsTermParameterDefinition_WithProvidedDefaultValue() {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
-    BNode blankNode = FACTORY.createBNode();
+    BNode blankNode = VALUE_FACTORY.createBNode();
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-        blankNode).add(SHACL.DATATYPE, XMLSchema.STRING).add(SHACL.DEFAULT_VALUE, "foo");
+            blankNode).add(SHACL.DATATYPE, XMLSchema.STRING).add(SHACL.DEFAULT_VALUE, "foo");
 
     Model model = builder.build();
 
@@ -199,8 +206,8 @@ public class TermParameterDefinitionFactoryTest {
 
     // Assert
     assertThat(result, instanceOf(TermParameterDefinition.class));
-    assertThat(result.getShaclShape(),
-        is(new ShaclShape(XMLSchema.STRING, FACTORY.createLiteral("foo"), ImmutableList.of())));
+    assertThat(result.getShaclShape(), is(
+        new ShaclShape(XMLSchema.STRING, VALUE_FACTORY.createLiteral("foo"), ImmutableList.of())));
   }
 
 }

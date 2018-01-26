@@ -12,7 +12,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 public abstract class TermParameter<T> extends AbstractParameter<T>
     implements BindableParameter<T> {
 
-  static final SimpleValueFactory FACTORY = SimpleValueFactory.getInstance();
+  protected static final SimpleValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   @Getter
   protected final T defaultValue;

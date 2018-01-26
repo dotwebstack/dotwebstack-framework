@@ -52,6 +52,8 @@ public class InformationProductResourceProviderTest {
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+
   @Mock
   private BackendResourceProvider backendResourceProvider;
 
@@ -75,8 +77,6 @@ public class InformationProductResourceProviderTest {
 
   @Mock
   private Backend backend;
-
-  private static final ValueFactory FACTORY = SimpleValueFactory.getInstance();
 
   private InformationProductResourceProvider informationProductResourceProvider;
 
@@ -134,9 +134,9 @@ public class InformationProductResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND))));
 
     InformationProduct informationProduct = mock(InformationProduct.class);
@@ -158,13 +158,13 @@ public class InformationProductResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND),
-            FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND))));
 
     InformationProduct percentagesProduct = mock(InformationProduct.class);
@@ -184,7 +184,7 @@ public class InformationProductResourceProviderTest {
 
   @Test
   public void get_ThrowsException_ResourceNotFound_WithMultipleOtherInformationProducts() {
-    IRI unknownResource = FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "foo");
+    IRI unknownResource = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "foo");
 
     // Assert
     thrown.expect(IllegalArgumentException.class);
@@ -197,13 +197,13 @@ public class InformationProductResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND),
-            FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND))));
 
     InformationProduct percentagesProduct = mock(InformationProduct.class);
@@ -224,29 +224,29 @@ public class InformationProductResourceProviderTest {
   public void loadResources_CreatesInformationProduct_WithCorrectValues() {
 
     // Arrange
-    IRI reqParam1Id = FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "required1");
-    IRI reqParam2Id = FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "required2");
-    IRI optParam1Id = FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "optional1");
-    IRI optParam2Id = FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "optional2");
+    IRI reqParam1Id = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "required1");
+    IRI reqParam2Id = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "required2");
+    IRI optParam1Id = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "optional1");
+    IRI optParam2Id = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "optional2");
 
     ShaclShape shaclShape =
-        new ShaclShape(XMLSchema.STRING, FACTORY.createLiteral("string"), ImmutableList.of());
+        new ShaclShape(XMLSchema.STRING, VALUE_FACTORY.createLiteral("string"), ImmutableList.of());
 
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND),
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL),
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.REQUIRED_PARAMETER_PROP, reqParam1Id),
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.REQUIRED_PARAMETER_PROP, reqParam2Id),
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.OPTIONAL_PARAMETER_PROP, optParam1Id),
-            FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.OPTIONAL_PARAMETER_PROP, optParam2Id))));
 
     ParameterDefinition reqParam1Def =
@@ -287,7 +287,7 @@ public class InformationProductResourceProviderTest {
   public void loadResources_ThrowsException_WithMissingBackendParameter() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+        ImmutableList.of(VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
             RDF.TYPE, ELMO.INFORMATION_PRODUCT))));
 
     // Assert

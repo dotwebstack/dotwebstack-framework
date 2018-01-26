@@ -15,7 +15,7 @@ public class BooleanTermParameter extends TermParameter<Boolean> {
 
   @Override
   public Literal getValue(Boolean value) {
-    return FACTORY.createLiteral(value);
+    return VALUE_FACTORY.createLiteral(value);
   }
 
   @Override
