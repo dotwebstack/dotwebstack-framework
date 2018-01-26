@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.param.term;
 
-import static org.dotwebstack.framework.param.term.TermParameterFactory.getTermParameter;
+import static org.dotwebstack.framework.param.term.TermParameterFactory.newTermParameter;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -8,7 +8,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.param.PropertyShape;
+import org.dotwebstack.framework.param.ShaclShape;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -19,19 +19,18 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 
-// XXX (PvH) Goede test! :-P
 public class TermParameterFactoryTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+  private static final ValueFactory FACTORY = SimpleValueFactory.getInstance();
 
   @Test
   public void createTermParameter_CreatesBooleanTermParameter_ForBooleanShape() {
     // Act
-    TermParameter result = getTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
-        PropertyShape.of(XMLSchema.BOOLEAN, null, null), false);
+    TermParameter result = newTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
+        new ShaclShape(XMLSchema.BOOLEAN, null, ImmutableList.of()), false);
 
     // Assert
     assertThat(result, instanceOf(BooleanTermParameter.class));
@@ -44,8 +43,8 @@ public class TermParameterFactoryTest {
   @Test
   public void createTermParameter_CreatesStringTermParameter_ForStringShape() {
     // Act
-    TermParameter result = getTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
-        PropertyShape.of(XMLSchema.STRING, VALUE_FACTORY.createLiteral("foo"), null), false);
+    TermParameter result = newTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
+        new ShaclShape(XMLSchema.STRING, FACTORY.createLiteral("foo"), ImmutableList.of()), false);
 
     // Assert
     assertThat(result, instanceOf(StringTermParameter.class));
@@ -58,8 +57,8 @@ public class TermParameterFactoryTest {
   @Test
   public void createTermParameter_CreatesIntTermParameter_ForIntegerShape() {
     // Act
-    TermParameter result = getTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
-        PropertyShape.of(XMLSchema.INTEGER, null, null), true);
+    TermParameter result = newTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
+        new ShaclShape(XMLSchema.INTEGER, null, ImmutableList.of()), true);
 
     // Assert
     assertThat(result, instanceOf(IntegerTermParameter.class));
@@ -72,11 +71,11 @@ public class TermParameterFactoryTest {
   @Test
   public void createTermParameter_CreatesIriTermParameter_ForIriShape() {
     // Arrange
-    IRI defaultValue = VALUE_FACTORY.createIRI("http://default-value");
+    IRI defaultValue = FACTORY.createIRI("http://default-value");
 
     // Act
-    TermParameter result = getTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
-        PropertyShape.of(XMLSchema.ANYURI, defaultValue, null), true);
+    TermParameter result = newTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
+        new ShaclShape(XMLSchema.ANYURI, defaultValue, ImmutableList.of()), true);
 
     // Assert
     assertThat(result, instanceOf(IriTermParameter.class));
@@ -89,7 +88,7 @@ public class TermParameterFactoryTest {
   @Test
   public void createTermParameter_ThrowsException_ForUnknownShape() {
     // Arrange
-    IRI unsupportedDataType = VALUE_FACTORY.createIRI("http://unsupported-data-type");
+    IRI unsupportedDataType = FACTORY.createIRI("http://unsupported-data-type");
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -98,8 +97,8 @@ public class TermParameterFactoryTest {
             XMLSchema.INTEGER, XMLSchema.ANYURI)));
 
     // Act
-    getTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
-        PropertyShape.of(unsupportedDataType, null, null), false);
+    newTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
+        new ShaclShape(unsupportedDataType, null, ImmutableList.of()), false);
   }
 
 }

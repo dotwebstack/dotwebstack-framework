@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.param;
 
-import static org.dotwebstack.framework.param.term.TermParameterFactory.getTermParameter;
+import static org.dotwebstack.framework.param.term.TermParameterFactory.newTermParameter;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.param.term.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
@@ -9,13 +11,14 @@ import org.eclipse.rdf4j.model.IRI;
 public final class TermParameterDefinition extends
     AbstractParameterDefinition<TermParameter<?>> {
 
-  private final PropertyShape shapeType;
+  @Getter(AccessLevel.PACKAGE)
+  private final ShaclShape shaclShape;
 
   public TermParameterDefinition(@NonNull IRI identifier, @NonNull String name,
-      @NonNull PropertyShape shapeType) {
+      @NonNull ShaclShape shaclShape) {
     super(identifier, name);
 
-    this.shapeType = shapeType;
+    this.shaclShape = shaclShape;
   }
 
   @Override
@@ -29,7 +32,7 @@ public final class TermParameterDefinition extends
   }
 
   private TermParameter<?> createParameter(boolean required) {
-    return getTermParameter(getIdentifier(), getName(), shapeType, required);
+    return newTermParameter(getIdentifier(), getName(), shaclShape, required);
   }
 
 }

@@ -7,9 +7,12 @@ import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.param.AbstractParameter;
 import org.dotwebstack.framework.param.BindableParameter;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public abstract class TermParameter<T> extends AbstractParameter<T>
     implements BindableParameter<T> {
+
+  static final SimpleValueFactory FACTORY = SimpleValueFactory.getInstance();
 
   @Getter
   protected final T defaultValue;

@@ -1,14 +1,14 @@
 package org.dotwebstack.framework.param;
 
 import java.util.Map;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
 
-// XXX (PvH) Wil je hier ook geen protected access level configureren?
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class AbstractParameter<T> implements Parameter<T> {
 
   @NonNull

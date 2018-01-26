@@ -4,7 +4,8 @@ import static org.eclipse.rdf4j.model.util.Models.object;
 import static org.eclipse.rdf4j.model.util.Models.objectIRI;
 import static org.eclipse.rdf4j.model.util.Models.objectResource;
 
-import java.util.Optional;
+import com.google.common.collect.ImmutableList;
+import java.util.function.Supplier;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -24,21 +25,24 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
   @Override
   public ParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
     String name = Models.objectLiteral(model.filter(id, ELMO.NAME_PROP, null)).orElseThrow(
-        () -> new ConfigurationException(
-            String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP, id,
-                ELMO.TERM_FILTER))).stringValue();
+        ConfigurationException(ELMO.NAME_PROP, id, ELMO.TERM_FILTER))
+        .stringValue();
 
-    Optional<Resource> shapeObject = objectResource(model.filter(id, ELMO.SHAPE_PROP, null));
+    Resource subj = objectResource(model.filter(id, ELMO.SHAPE_PROP, null)).orElseThrow(
+        ConfigurationException(ELMO.SHAPE_PROP, id, ELMO.TERM_FILTER));
 
-    Resource subj = shapeObject.orElseThrow(() -> new ConfigurationException(String.format(
-        "No <%s> property found for <%s> of type <%s>", ELMO.SHAPE_PROP, id, ELMO.TERM_FILTER)));
-    // XXX (PvH) Het data type is verplicht toch? Ik zou dan een soortgelijke ConfigurationException
-    // gooien
-    IRI iriShapeType = objectIRI(model.filter(subj, SHACL.DATATYPE, null)).orElse(null);
+    IRI iriShapeType = objectIRI(model.filter(subj, SHACL.DATATYPE, null)).orElseThrow(
+        ConfigurationException(SHACL.DATATYPE, id, ELMO.SHAPE_PROP));
+
     Value defaultValue = object(model.filter(subj, SHACL.DEFAULT_VALUE, null)).orElse(null);
 
-    PropertyShape shape = PropertyShape.of(iriShapeType, defaultValue, null);
+    ShaclShape shape = new ShaclShape(iriShapeType, defaultValue, ImmutableList.of());
     return new TermParameterDefinition(id, name, shape);
+  }
+
+  private Supplier<ConfigurationException> ConfigurationException(Object... placeHolders) {
+    return () -> new ConfigurationException(
+        String.format("No <%s> property found for <%s> of type <%s>", placeHolders));
   }
 
   /**
