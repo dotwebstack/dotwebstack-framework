@@ -20,6 +20,6 @@ public class IntegerTermParameter extends TermParameter<Integer> {
 
   @Override
   protected Integer handleInner(String value) {
-      return Integer.parseInt(value);
+    return Integer.parseInt(value);
   }
 }
