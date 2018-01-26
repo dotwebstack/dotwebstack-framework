@@ -5,19 +5,21 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public abstract class AbstractParameter<T> implements Parameter<T> {
 
   @NonNull
   @Getter
-  private final IRI identifier;
+  IRI identifier;
   @NonNull
   @Getter
-  private final String name;
-  private final boolean required;
+  String name;
+  boolean required;
 
   @Override
   public boolean isRequired() {
