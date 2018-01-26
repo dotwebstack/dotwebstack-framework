@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.http.FormatPreMatchingRequestFilter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.HttpModule;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
@@ -28,6 +29,7 @@ public class LdModule implements HttpModule {
 
   @Override
   public void initialize(@NonNull HttpConfiguration httpConfiguration) {
+    httpConfiguration.register(FormatPreMatchingRequestFilter.class);
     ldRepresentationRequestMapper.loadRepresentations(httpConfiguration);
     ldRedirectionRequestMapper.loadRedirections(httpConfiguration);
 
