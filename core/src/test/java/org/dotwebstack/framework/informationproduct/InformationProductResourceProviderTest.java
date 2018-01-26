@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
-import java.util.Optional;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
@@ -22,6 +21,7 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.ParameterDefinition;
 import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
+import org.dotwebstack.framework.param.ShaclShape;
 import org.dotwebstack.framework.param.TermParameterDefinition;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -30,6 +30,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -50,6 +51,8 @@ public class InformationProductResourceProviderTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
+
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   @Mock
   private BackendResourceProvider backendResourceProvider;
@@ -74,8 +77,6 @@ public class InformationProductResourceProviderTest {
 
   @Mock
   private Backend backend;
-
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   private InformationProductResourceProvider informationProductResourceProvider;
 
@@ -133,9 +134,9 @@ public class InformationProductResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND))));
 
     InformationProduct informationProduct = mock(InformationProduct.class);
@@ -157,13 +158,13 @@ public class InformationProductResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND),
-            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND))));
 
     InformationProduct percentagesProduct = mock(InformationProduct.class);
@@ -183,7 +184,7 @@ public class InformationProductResourceProviderTest {
 
   @Test
   public void get_ThrowsException_ResourceNotFound_WithMultipleOtherInformationProducts() {
-    IRI unknownResource = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "foo");
+    IRI unknownResource = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "foo");
 
     // Assert
     thrown.expect(IllegalArgumentException.class);
@@ -196,13 +197,13 @@ public class InformationProductResourceProviderTest {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND),
-            valueFactory.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT, ELMO.BACKEND_PROP,
                 DBEERPEDIA.BACKEND))));
 
     InformationProduct percentagesProduct = mock(InformationProduct.class);
@@ -223,42 +224,45 @@ public class InformationProductResourceProviderTest {
   public void loadResources_CreatesInformationProduct_WithCorrectValues() {
 
     // Arrange
-    IRI reqParam1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "required1");
-    IRI reqParam2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "required2");
-    IRI optParam1Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "optional1");
-    IRI optParam2Id = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "optional2");
+    IRI reqParam1Id = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "required1");
+    IRI reqParam2Id = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "required2");
+    IRI optParam1Id = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "optional1");
+    IRI optParam2Id = VALUE_FACTORY.createIRI(DBEERPEDIA.NAMESPACE, "optional2");
+
+    ShaclShape shaclShape =
+        new ShaclShape(XMLSchema.STRING, VALUE_FACTORY.createLiteral("string"), ImmutableList.of());
 
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDF.TYPE,
                 ELMO.INFORMATION_PRODUCT),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.BACKEND_PROP, DBEERPEDIA.BACKEND),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.REQUIRED_PARAMETER_PROP, reqParam1Id),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.REQUIRED_PARAMETER_PROP, reqParam2Id),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.OPTIONAL_PARAMETER_PROP, optParam1Id),
-            valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+            VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
                 ELMO.OPTIONAL_PARAMETER_PROP, optParam2Id))));
 
     ParameterDefinition reqParam1Def =
-        new TermParameterDefinition(reqParam1Id, "reqParam1Name", Optional.empty());
+        new TermParameterDefinition(reqParam1Id, "reqParam1Name", shaclShape);
     when(parameterDefinitionResourceProviderMock.get(reqParam1Id)).thenReturn(reqParam1Def);
 
     ParameterDefinition reqParam2Def =
-        new TermParameterDefinition(reqParam2Id, "reqParam2Name", Optional.empty());
+        new TermParameterDefinition(reqParam2Id, "reqParam2Name", shaclShape);
     when(parameterDefinitionResourceProviderMock.get(reqParam2Id)).thenReturn(reqParam2Def);
 
     ParameterDefinition optParam1Def =
-        new TermParameterDefinition(optParam1Id, "optParam1Name", Optional.empty());
+        new TermParameterDefinition(optParam1Id, "optParam1Name", shaclShape);
     when(parameterDefinitionResourceProviderMock.get(optParam1Id)).thenReturn(optParam1Def);
 
     ParameterDefinition optParam2Def =
-        new TermParameterDefinition(optParam2Id, "optParam2Name", Optional.empty());
+        new TermParameterDefinition(optParam2Id, "optParam2Name", shaclShape);
     when(parameterDefinitionResourceProviderMock.get(optParam2Id)).thenReturn(optParam2Def);
 
     ArgumentCaptor<List<Parameter>> captureParameters = ArgumentCaptor.forClass(List.class);
@@ -283,7 +287,7 @@ public class InformationProductResourceProviderTest {
   public void loadResources_ThrowsException_WithMissingBackendParameter() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
-        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
+        ImmutableList.of(VALUE_FACTORY.createStatement(DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT,
             RDF.TYPE, ELMO.INFORMATION_PRODUCT))));
 
     // Assert

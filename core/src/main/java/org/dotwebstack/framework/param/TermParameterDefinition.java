@@ -1,28 +1,23 @@
 package org.dotwebstack.framework.param;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.Optional;
+import static org.dotwebstack.framework.param.term.TermParameterFactory.newTermParameter;
+
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
-import org.dotwebstack.framework.param.shapes.StringPropertyShape;
-import org.dotwebstack.framework.param.types.TermParameter;
+import org.dotwebstack.framework.param.term.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
-// XXX (PvH) Ik vraag me af of de typing op de TermParameterDefinition nog stand kan / hoeft te
-// houden
-public final class TermParameterDefinition<T>
-    extends AbstractParameterDefinition<TermParameter<?>> {
+public final class TermParameterDefinition extends AbstractParameterDefinition<TermParameter<?>> {
 
-  private static final PropertyShape DEFAULT_SHAPE = new StringPropertyShape();
-
-  private final Optional<PropertyShape<T>> shapeType;
+  @Getter(AccessLevel.PACKAGE)
+  private final ShaclShape shaclShape;
 
   public TermParameterDefinition(@NonNull IRI identifier, @NonNull String name,
-      @NonNull Optional<PropertyShape<T>> shapeType) {
+      @NonNull ShaclShape shaclShape) {
     super(identifier, name);
 
-    this.shapeType = shapeType;
+    this.shaclShape = shaclShape;
   }
 
   @Override
@@ -36,29 +31,8 @@ public final class TermParameterDefinition<T>
   }
 
   private TermParameter<?> createParameter(boolean required) {
-    Class<?> parameterClass = shapeType.orElse(DEFAULT_SHAPE).getTermClass();
+    return newTermParameter(getIdentifier(), getName(), shaclShape, required);
 
-    Optional<Constructor<?>> constructorOptional =
-        Arrays.stream(parameterClass.getConstructors()).filter(
-            c -> c.getParameterCount() == 4).findFirst();
-
-    if (constructorOptional.isPresent()) {
-      Constructor constructor = constructorOptional.get();
-
-      try {
-        T defaultValue = null;
-        if (shapeType.isPresent()) {
-          defaultValue = shapeType.get().getDefaultValue();
-        }
-        return (TermParameter) constructor.newInstance(getIdentifier(), getName(), required,
-            defaultValue);
-      } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-        throw new IllegalStateException(e);
-      }
-    }
-
-    throw new IllegalStateException(String.format(
-        "Zero or more than one constructor found in TermParameter class: '%s'", parameterClass));
   }
 
 }

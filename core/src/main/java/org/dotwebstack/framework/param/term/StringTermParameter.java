@@ -1,22 +1,21 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public class StringTermParameter extends TermParameter<String> {
 
   public StringTermParameter(IRI identifier, String name, boolean required) {
-    super(identifier, name, required, null);
+    this(identifier, name, required, null);
   }
 
-  public StringTermParameter(IRI identifier, String name, boolean required, String defaultValue) {
+  StringTermParameter(IRI identifier, String name, boolean required, String defaultValue) {
     super(identifier, name, required, defaultValue);
   }
 
   @Override
   public Literal getValue(String value) {
-    return SimpleValueFactory.getInstance().createLiteral(value);
+    return VALUE_FACTORY.createLiteral(value);
   }
 
   @Override

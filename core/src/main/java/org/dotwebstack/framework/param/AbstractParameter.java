@@ -1,33 +1,25 @@
 package org.dotwebstack.framework.param;
 
 import java.util.Map;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.model.IRI;
 
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public abstract class AbstractParameter<T> implements Parameter<T> {
 
-  private final IRI identifier;
-
-  private final String name;
-
-  private final boolean required;
-
-  protected AbstractParameter(@NonNull IRI identifier, @NonNull String name, boolean required) {
-    this.identifier = identifier;
-    this.name = name;
-    this.required = required;
-  }
-
-  @Override
-  public IRI getIdentifier() {
-    return identifier;
-  }
-
-  @Override
-  public String getName() {
-    return name;
-  }
+  @NonNull
+  @Getter
+  IRI identifier;
+  @NonNull
+  @Getter
+  String name;
+  boolean required;
 
   @Override
   public boolean isRequired() {
@@ -35,9 +27,9 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
   }
 
   /**
-   * Validates and handles the supplied values. Calls {@link #validateRequired(Map)} and
-   * {@link #validateInner(Map)} for validation. Calls {@link #handleInner(Map)} for handling.
-   * 
+   * Validates and handles the supplied values. Calls {@link #validateRequired(Map)} and {@link
+   * #validateInner(Map)} for validation. Calls {@link #handleInner(Map)} for handling.
+   *
    * @throws BackendException If a supplied value is invalid.
    */
   @Override
@@ -63,7 +55,7 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
   /**
    * Must be implemented by parameter implementations to validate the required case. See
    * implementations of this class for examples.
-   * 
+   *
    * @throws BackendException If a required value is missing.
    */
   protected abstract void validateRequired(Map<String, String> parameterValues);
@@ -71,7 +63,7 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
   /**
    * Implement this method if you would like to do parameter implementation specific validation. See
    * implementations of this class for examples. By default, does nothing.
-   * 
+   *
    * @throws BackendException If a required value is invalid.
    */
   protected void validateInner(@NonNull Map<String, String> parameterValues) {}

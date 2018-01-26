@@ -1,35 +1,32 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
 import java.util.Map;
+import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.param.AbstractParameter;
 import org.dotwebstack.framework.param.BindableParameter;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public abstract class TermParameter<T> extends AbstractParameter<T>
     implements BindableParameter<T> {
 
-  // XXX (PvH) Waarom is de defaultValue een String? (en niet van het type T)?
-  protected final String defaultValue;
+  protected static final SimpleValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+
+  @Getter
+  protected final T defaultValue;
 
   protected TermParameter(@NonNull IRI identifier, @NonNull String name, boolean required,
-      String defaultValue) {
+      T defaultValue) {
     super(identifier, name, required);
     this.defaultValue = defaultValue;
   }
 
-  public String getDefaultValue() {
-    return defaultValue;
-  }
-
-  // XXX (PvH) Als defaultValue van het type T is, dan kan je hier direct de defaultValue teruggeven
-  // (ipv hem te wrappen in de handleInner).
-  // Let op dat hiermee de changes op de *TermParameter#handleInner methods kunnen vervallen
   @Override
   protected T handleInner(Map<String, String> parameterValues) {
     String value = parameterValues.get(getName());
-    return value != null ? handleInner(value) : handleInner(defaultValue);
+    return value != null ? handleInner(value) : defaultValue;
   }
 
   protected abstract T handleInner(String value);

@@ -84,6 +84,11 @@
             <name>John Schaap</name>
             <email>John.Schaap@Kadaster.nl</email>
         </developer>
+        <developer>
+            <id>Nathan@Kadaster</id>
+            <name>Nathan van Dalen</name>
+            <email>Nathan@headFWD.nl</email>
+        </developer>
     </developers>
 
     <properties>

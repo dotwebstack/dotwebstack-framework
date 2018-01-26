@@ -1,7 +1,12 @@
 package org.dotwebstack.framework.param;
 
-import java.util.Optional;
-import java.util.Set;
+import static org.eclipse.rdf4j.model.util.Models.object;
+import static org.eclipse.rdf4j.model.util.Models.objectIRI;
+import static org.eclipse.rdf4j.model.util.Models.objectResource;
+
+import com.google.common.collect.ImmutableList;
+import java.util.function.Supplier;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -14,58 +19,29 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.stereotype.Service;
 
 @Service
+@NoArgsConstructor
 final class TermParameterDefinitionFactory implements ParameterDefinitionFactory {
-
-  // XXX (PvH) PropertyShapes bevatten nu state (de default value). We kunnen ze daarom niet meer
-  // als constante behandelen. Nu kan dezelfde StringPropertyShape op 1 moment geen default value
-  // hebben, en op een ander moment wel een default value. Dit is vragen om problemen (denk aan
-  // threading).
-  // Dit is overigens niets ten nadele van jou, ik besef me dit nu ook pas :-)
-  //
-  // Voorstel:
-  //
-  // 1. Een concrete implementatie van de PropertyShape. Zie PropertyShape2 als voorbeeld. De shapes
-  // in de shapes package kan hiermee vervallen, evenals de AbstractPropertyShape.
-  // 2. De nieuwe TermParameterFactory maakt de TermParameters obv de PropertyShape. Zie
-  // TermParameterFactory voor het skelet (door jou in te vullen). Zie TermParameterFactoryTest voor
-  // de testen.
-  // 3. De TermParameterDefinition kan de nieuwe TermParameterFactory gebruiken voor het maken van
-  // TermParameters obv de PropertyShape. De constructie met reflectie vervalt hiermee.
-  private final Set<PropertyShape> supportedShapes;
-
-  TermParameterDefinitionFactory(@NonNull Set<PropertyShape> supportedShapes) {
-    this.supportedShapes = supportedShapes;
-  }
 
   @Override
   public ParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
     String name = Models.objectLiteral(model.filter(id, ELMO.NAME_PROP, null)).orElseThrow(
-        () -> new ConfigurationException(
-            String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP, id,
-                ELMO.TERM_FILTER))).stringValue();
+        newConfigurationException(ELMO.NAME_PROP, id, ELMO.TERM_FILTER)).stringValue();
 
-    Optional<AbstractPropertyShape> propertyShapeOptional = Optional.empty();
+    Resource subj = objectResource(model.filter(id, ELMO.SHAPE_PROP, null)).orElseThrow(
+        newConfigurationException(ELMO.SHAPE_PROP, id, ELMO.TERM_FILTER));
 
-    Set<Value> shapeObjects = model.filter(id, ELMO.SHAPE_PROP, null).objects();
-    if (shapeObjects.iterator().hasNext()) {
-      Value next = shapeObjects.iterator().next();
-      Set<Value> iriShapeTypes = model.filter((Resource) next, SHACL.DATATYPE, null).objects();
+    IRI iriShapeType = objectIRI(model.filter(subj, SHACL.DATATYPE, null)).orElseThrow(
+        newConfigurationException(SHACL.DATATYPE, id, ELMO.SHAPE_PROP));
 
-      propertyShapeOptional = supportedShapes.stream().filter(
-          propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
-              propertyShape.getDataType().stringValue())).map(
-                  shape -> ((AbstractPropertyShape) shape)).findFirst();
-      Optional<Value> optionalDefaultValue =
-          model.filter((Resource) next, SHACL.DEFAULT_VALUE, null).objects().stream().findFirst();
+    Value defaultValue = object(model.filter(subj, SHACL.DEFAULT_VALUE, null)).orElse(null);
 
-      if (propertyShapeOptional.isPresent()) {
-        if (optionalDefaultValue.isPresent()) {
-          propertyShapeOptional.get().setDefaultValue(optionalDefaultValue.get().stringValue());
-        }
-      }
-    }
+    ShaclShape shape = new ShaclShape(iriShapeType, defaultValue, ImmutableList.of());
+    return new TermParameterDefinition(id, name, shape);
+  }
 
-    return new TermParameterDefinition(id, name, propertyShapeOptional);
+  private static Supplier<ConfigurationException> newConfigurationException(Object... arguments) {
+    return () -> new ConfigurationException(
+        String.format("No <%s> property found for <%s> of type <%s>", arguments));
   }
 
   /**
