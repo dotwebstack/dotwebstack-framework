@@ -1,53 +1,103 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
+
 import com.google.common.collect.ImmutableList;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class RequestParametersTest {
 
   @Test
-  public void putAll_MapContainsValues_WithMultivaluedMap() {
-    MultivaluedMap<String, String> multivaluedMap = new MultivaluedHashMap<>();
-    multivaluedMap.put("X", ImmutableList.of("A", "B"));
+  public void putAll_StoresValues_ForMultivaluedMap() {
+    // Arrange
+    MultivaluedMap<String, String> input = new MultivaluedHashMap<>();
+
+    input.put("X", ImmutableList.of("A"));
+    input.put("Y", ImmutableList.of("B"));
+    input.put("Z", ImmutableList.of("C"));
+
     RequestParameters parameters = new RequestParameters();
 
-    parameters.putAll(multivaluedMap);
+    // Act
+    parameters.putAll(input);
 
-    Assert.assertEquals("A", parameters.get("X"));
+    // Assert
+    assertThat(parameters.get("X"), is("A"));
+    assertThat(parameters.get("Y"), is("B"));
+    assertThat(parameters.get("Z"), is("C"));
   }
 
   @Test
-  public void put_MapContainsValues_WithKeyValue() {
+  public void putAll_UsesFirstValueForKeyOnly_ForMultivaluedMap() {
+    // Arrange
+    MultivaluedMap<String, String> input = new MultivaluedHashMap<>();
+
+    input.put("X", ImmutableList.of("A", "B", "C"));
+
     RequestParameters parameters = new RequestParameters();
 
+    // Act
+    parameters.putAll(input);
+
+    // Assert
+    assertThat(parameters.get("X"), is("A"));
+  }
+
+  @Test
+  public void put_StoresValue_ForNewValue() {
+    // Arrange
+    RequestParameters parameters = new RequestParameters();
+
+    // Act
     parameters.put("X", "A");
     parameters.put("Y", "B");
     parameters.put("Z", "C");
 
-    Assert.assertEquals("A", parameters.get("X"));
+    // Assert
+    assertThat(parameters.get("X"), is("A"));
+    assertThat(parameters.get("Y"), is("B"));
+    assertThat(parameters.get("Z"), is("C"));
+  }
+
+  @Test
+  public void put_OverwritesExistingValue_ForDuplicateValue() {
+    // Arrange
+    RequestParameters parameters = new RequestParameters();
+
+    // Act
+    parameters.put("X", "A");
+    parameters.put("X", "B");
+
+    // Assert
+    assertThat(parameters.get("X"), is("B"));
   }
 
   @Test
   public void get_ReturnsValue_ForExistentKey() {
+    // Arrange
     RequestParameters parameters = new RequestParameters();
+
+    // Act
     parameters.put("X", "A");
 
-    String result = parameters.get("X");
-
-    Assert.assertEquals("A", result);
+    // Assert
+    assertThat(parameters.get("X"), is("A"));
   }
 
   @Test
   public void get_ReturnsNull_ForNonExistentKey() {
+    // Arrange
     RequestParameters parameters = new RequestParameters();
+
+    // Act
     parameters.put("X", "A");
 
-    String result = parameters.get("Y");
-
-    Assert.assertNull(result);
+    // Assert
+    assertThat(parameters.get("Y"), nullValue());
   }
 
 }

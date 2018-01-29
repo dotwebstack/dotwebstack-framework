@@ -24,15 +24,15 @@ public abstract class TermParameter<T> extends AbstractParameter<T>
   }
 
   @Override
-  protected T handleInner(Map<String, String> parameterValues) {
+  protected T handleInner(@NonNull Map<String, String> parameterValues) {
     String value = parameterValues.get(getName());
     return value != null ? handleInner(value) : defaultValue;
   }
 
-  protected abstract T handleInner(String value);
+  protected abstract T handleInner(@NonNull String value);
 
   @Override
-  protected void validateRequired(Map<String, String> parameterValues) {
+  protected void validateRequired(@NonNull Map<String, String> parameterValues) {
     if (handleInner(parameterValues) == null) {
       throw new BackendException(
           String.format("No value found for required parameter '%s'. Supplied parameterValues: %s",

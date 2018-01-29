@@ -1,18 +1,22 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MultivaluedMap;
 import lombok.NonNull;
 
 class RequestParameters {
 
-  private final Map<String, String> parameters = Maps.newHashMap();
+  private final Map<String, String> parameters;
   private String rawBody;
 
-  void putAll(@NonNull MultivaluedMap<String, String> sourceParams) {
-    for (String key : sourceParams.keySet()) {
-      put(key, sourceParams.getFirst(key));
+  RequestParameters() {
+    parameters = new HashMap<>();
+  }
+
+  void putAll(@NonNull MultivaluedMap<String, String> parameters) {
+    for (String key : parameters.keySet()) {
+      put(key, parameters.getFirst(key));
     }
   }
 

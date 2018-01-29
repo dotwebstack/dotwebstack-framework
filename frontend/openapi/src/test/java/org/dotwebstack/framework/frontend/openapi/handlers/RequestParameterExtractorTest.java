@@ -95,10 +95,13 @@ public class RequestParameterExtractorTest {
 
   @Test
   public void extract_ReturnsRequestParameters_ForValidInput() {
+    // Arrange
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
+    // Act
     RequestParameters result = requestParameterExtractor.extract(apiOperation, swagger, context);
 
+    // Assert
     assertThat(result.get(ID), is(BPG));
     assertThat(result.get(PATH_PARAMETER), is(PATH_PARAMETER_VALUE));
     Assert.assertNull(result.get(RequestParameterExtractor.PARAM_PAGE_NUM));
@@ -108,10 +111,13 @@ public class RequestParameterExtractorTest {
 
   @Test
   public void extract_ThrowsException_WithNullEntityStream() {
+    // Assert
     exception.expect(InternalServerErrorException.class);
 
+    // Arrange
     when(context.getEntityStream()).thenReturn(null);
 
+    // Act
     requestParameterExtractor.extract(apiOperation, swagger, context);
   }
 

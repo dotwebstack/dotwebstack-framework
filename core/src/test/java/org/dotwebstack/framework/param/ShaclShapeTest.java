@@ -28,7 +28,7 @@ public class ShaclShapeTest {
   public ExpectedException exception = ExpectedException.none();
 
   @Test
-  public void create_AllValuesPresent() {
+  public void constructor_CreatesShaclShape_WithAllValuesPresent() {
     // Act
     ShaclShape shape = new ShaclShape(STRING, DEFAULT_VALUE, of(LITERAL1, LITERAL2));
 
@@ -41,7 +41,7 @@ public class ShaclShapeTest {
   }
 
   @Test
-  public void create_TypeAndDefaultValuePresent() {
+  public void constructor_CreatesShaclShape_WithTypeAndDefaultValuePresent() {
     // Act
     ShaclShape shape = new ShaclShape(STRING, DEFAULT_VALUE, ImmutableList.of());
 
@@ -53,7 +53,7 @@ public class ShaclShapeTest {
   }
 
   @Test
-  public void create_TypeAndInValuePresent() {
+  public void constructor_CreatesShaclShape_WithTypeAndInValuePresent() {
     // Act
     ShaclShape shape = new ShaclShape(STRING, null, of(LITERAL1, LITERAL2));
 
@@ -65,7 +65,7 @@ public class ShaclShapeTest {
   }
 
   @Test
-  public void create_OnlyTypePresent() {
+  public void constructor_CreatesShaclShape_WithOnlyTypePresent() {
     // Act
     ShaclShape shape = new ShaclShape(BOOLEAN, null, ImmutableList.of());
 
@@ -76,7 +76,7 @@ public class ShaclShapeTest {
   }
 
   @Test
-  public void create_WrongType() {
+  public void constructor_CreatesShaclShape_WithWrongType() {
     // Arrange
     IRI wrongString = FACTORY.createIRI(SHACL.DEFAULT_VALUE.getNamespace() + "string");
 
@@ -88,7 +88,7 @@ public class ShaclShapeTest {
   }
 
   @Test
-  public void create_TypeMissing_ThrowNpe() {
+  public void constructor_ThrowsException_ForTypeMissing() {
     // ShaclShape should at least have a type
     // Assert
     exception.expect(NullPointerException.class);
