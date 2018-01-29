@@ -606,17 +606,15 @@ elmo-shape:Redirection a sh:NodeShape;
     sh:path elmo:stage
   ];
   sh:property [
-    sh:name "elmo:urlPattern";
-    sh:path elmo:urlPattern;
+    sh:name "elmo:pathPattern";
+    sh:path elmo:pathPattern;
     sh:datatype xsd:string;
     sh:minCount 1;
     sh:maxCount 1;
   ];
   sh:property [
-#    sh:name "elmo:redirectTemplate";
-#    sh:path elmo:redirectTemplate;
-    sh:name "elmo:targetUrl"; #Oude naamgeving, wordt opgelost in LDT-206
-    sh:path elmo:targetUrl;
+    sh:name "elmo:redirectTemplate";
+    sh:path elmo:redirectTemplate;
     sh:datatype xsd:string;
     sh:minCount 1;
     sh:maxCount 1;
@@ -639,8 +637,8 @@ elmo-shape:Representation a sh:NodeShape;
     sh:maxCount 1;
   ];
   sh:property [
-    sh:name "elmo:urlPattern";
-    sh:path elmo:urlPattern;
+    sh:name "elmo:pathPattern";
+    sh:path elmo:pathPattern;
     sh:datatype xsd:string;
   ];
   sh:property [

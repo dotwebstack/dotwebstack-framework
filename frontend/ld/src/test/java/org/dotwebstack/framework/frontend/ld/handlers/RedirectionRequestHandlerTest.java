@@ -10,6 +10,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.redirection.Redirection;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
@@ -38,6 +39,9 @@ public class RedirectionRequestHandlerTest {
   @Mock
   URI uri;
 
+  @Mock
+  Stage stage;
+
   private RedirectionRequestHandler redirectionRequestHandler;
 
   @Before
@@ -45,12 +49,16 @@ public class RedirectionRequestHandlerTest {
     redirectionRequestHandler = new RedirectionRequestHandler(redirection);
 
     // Arrange
-    when(redirection.getUrlPattern()).thenReturn(DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue());
-    when(redirection.getTargetUrl()).thenReturn(DBEERPEDIA.ID2DOC_TARGET_URL.stringValue());
+    when(redirection.getPathPattern()).thenReturn(DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue());
+    when(redirection.getRedirectTemplate()).thenReturn(
+        DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue());
 
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getAbsolutePath()).thenReturn(uri);
     when(uri.getHost()).thenReturn(DBEERPEDIA.NL_HOST);
+
+    when(redirection.getStage()).thenReturn(stage);
+    when(stage.getFullPath()).thenReturn("/" + DBEERPEDIA.NL_HOST);
   }
 
   @Test
@@ -67,16 +75,15 @@ public class RedirectionRequestHandlerTest {
   }
 
   @Test
-  public void apply_ReturnUnchangedRedirection() throws URISyntaxException {
+  public void apply_ReturnServerError_WithUnchangedRedirection() throws URISyntaxException {
     // Arrange
-    when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + DBEERPEDIA.URL_PATTERN_VALUE);
+    when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + DBEERPEDIA.PATH_PATTERN_VALUE);
 
     // Act
     Response response = redirectionRequestHandler.apply(containerRequestContext);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
-    assertThat(response.getLocation(), equalTo(new URI(DBEERPEDIA.URL_PATTERN_VALUE)));
+    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
   }
 
   @Test

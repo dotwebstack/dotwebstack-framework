@@ -58,8 +58,8 @@ public class LdRedirectionRequestMapperTest {
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
     Redirection redirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, stage,
-        DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
-        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+        DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
 
     Map<IRI, Redirection> redirectionMap = new HashMap<>();
     redirectionMap.put(redirection.getIdentifier(), redirection);
@@ -91,7 +91,7 @@ public class LdRedirectionRequestMapperTest {
     ResourceMethod method = resource.getResourceMethods().get(0);
     assertThat(method.getHttpMethod(), equalTo(GET));
     assertThat(httpConfiguration.getResources(), hasSize(1));
-    assertThat(resource.getPath(), equalTo("/dbeerpedia.org/special{any: \\/id\\/(.+)$}"));
+    assertThat(resource.getPath(), equalTo("/dbeerpedia.org/special/id/{resource}"));
     assertThat(resource.getResourceMethods(), hasSize(1));
   }
 
@@ -102,15 +102,15 @@ public class LdRedirectionRequestMapperTest {
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
     Redirection redirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, stage,
-        DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
-        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+        DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
 
     Map<IRI, Redirection> redirectionMap = new HashMap<>();
     redirectionMap.put(redirection.getIdentifier(), redirection);
 
     Redirection sameSecondRedirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_DUMMY_REDIRECTION,
-        stage, DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
-        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+        stage, DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
     redirectionMap.put(sameSecondRedirection.getIdentifier(), sameSecondRedirection);
 
     when(redirectionResourceProvider.getAll()).thenReturn(redirectionMap);
@@ -129,8 +129,8 @@ public class LdRedirectionRequestMapperTest {
 
     // Arrange
     new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, null,
-        DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
-        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+        DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
   }
 
 }

@@ -37,20 +37,17 @@ public class LdRedirectionRequestMapper {
   }
 
   private void mapRedirection(Redirection redirection, HttpConfiguration httpConfiguration) {
-    String basePath = redirection.getStage().getFullPath();
-
-    String urlPattern = redirection.getUrlPattern().replaceAll("^\\^", "");
-    String absolutePathRegex = String.format("%s{any: %s}", basePath, urlPattern);
-
-    Resource.Builder resourceBuilder = Resource.builder().path(absolutePathRegex);
+    String absolutePathPattern = redirection.getStage().getFullPath()
+        + redirection.getPathPattern();
+    Resource.Builder resourceBuilder = Resource.builder().path(absolutePathPattern);
     resourceBuilder.addMethod(HttpMethod.GET).handledBy(
         new RedirectionRequestHandler(redirection)).nameBindings(ExpandFormatParameter.class);
 
-    if (!httpConfiguration.resourceAlreadyRegistered(absolutePathRegex)) {
+    if (!httpConfiguration.resourceAlreadyRegistered(absolutePathPattern)) {
       httpConfiguration.registerResources(resourceBuilder.build());
-      LOG.debug("Mapped GET redirection for request path {}", absolutePathRegex);
+      LOG.debug("Mapped GET redirection for request path {}", absolutePathPattern);
     } else {
-      LOG.error("Resource <%s> is not registered", absolutePathRegex);
+      LOG.error("Resource <%s> is not registered", absolutePathPattern);
     }
   }
 
