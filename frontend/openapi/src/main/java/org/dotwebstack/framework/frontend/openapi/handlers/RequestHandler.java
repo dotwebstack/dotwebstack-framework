@@ -18,9 +18,9 @@ import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class GetRequestHandler implements Inflector<ContainerRequestContext, Response> {
+public final class RequestHandler implements Inflector<ContainerRequestContext, Response> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(GetRequestHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RequestHandler.class);
 
   private final ApiOperation apiOperation;
 
@@ -34,7 +34,7 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
   private final ApiRequestValidator apiRequestValidator;
 
-  GetRequestHandler(@NonNull ApiOperation apiOperation,
+  RequestHandler(@NonNull ApiOperation apiOperation,
       @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
       @NonNull RequestParameterMapper requestParameterMapper,
       @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {

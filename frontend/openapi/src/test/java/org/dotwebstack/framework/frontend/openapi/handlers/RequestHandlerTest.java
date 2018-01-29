@@ -32,7 +32,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GetRequestHandlerTest {
+public class RequestHandlerTest {
 
   @Mock
   private ApiOperation operationMock;
@@ -49,14 +49,14 @@ public class GetRequestHandlerTest {
   @Mock
   private RequestParameterMapper requestParameterMapperMock;
 
-  private GetRequestHandler getRequestHandler;
+  private RequestHandler requestHandler;
 
   @Mock
   private Swagger swaggerMock;
 
   @Before
   public void setUp() {
-    getRequestHandler = new GetRequestHandler(operationMock, informationProductMock,
+    requestHandler = new RequestHandler(operationMock, informationProductMock,
         ImmutableMap.of(), requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
 
     RequestParameters requestParameters = new RequestParameters();
@@ -81,7 +81,7 @@ public class GetRequestHandlerTest {
     when(informationProductMock.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContextMock);
+    Response response = requestHandler.apply(containerRequestContextMock);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -100,7 +100,7 @@ public class GetRequestHandlerTest {
     when(informationProductMock.getResult(ImmutableMap.of())).thenReturn(result);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContextMock);
+    Response response = requestHandler.apply(containerRequestContextMock);
 
     // Assert
     assertThat(response.getEntity(), instanceOf(GraphEntity.class));
@@ -115,7 +115,7 @@ public class GetRequestHandlerTest {
     when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
 
     // Act
-    Response response = getRequestHandler.apply(containerRequestContextMock);
+    Response response = requestHandler.apply(containerRequestContextMock);
 
     // Assert
     assertThat(response.getStatus(),
