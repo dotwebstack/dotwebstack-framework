@@ -124,7 +124,9 @@ public class FileConfigurationBackend
             configurationStreams);
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
-      validate(configurationStreams);
+      Model model = QueryResults.asModel(
+          repositoryConnection.getStatements(null, null, null, ELMO.SHACL_GRAPHNAME));
+      validate(configurationStreams, model);
     } catch (RDF4JException e) {
       throw new ConfigurationException("Error while loading RDF data.", e);
     } finally {
