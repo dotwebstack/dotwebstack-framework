@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
@@ -37,6 +38,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -81,16 +83,16 @@ public class FileConfigurationBackendTest {
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     elmoConfigurationResource = mock(Resource.class);
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
-    elmoShapesResource = mock(Resource.class);
+    elmoShapesResource = new ClassPathResource("/model/elmo-shapes.trig");
     // when(elmoShapesResource.getFilename()).thenReturn("elmo-shapes.trig");
-    when(elmoShapesResource.getInputStream()).thenReturn(new ByteArrayInputStream(
-        "@prefix dbeerpedia: <http://dbeerpedia.org#> .".getBytes(Charsets.UTF_8)));
+    // when(elmoShapesResource.getInputStream()).thenReturn(new ByteArrayInputStream(
+    // "@prefix dbeerpedia: <http://dbeerpedia.org#> .".getBytes(Charsets.UTF_8)));
     shaclValidator = mock(ShaclValidator.class);
     when(elmoConfigurationResource.getInputStream()).thenReturn(
         new ByteArrayInputStream("@prefix dbeerpedia: <http://dbeerpedia.org#> .".getBytes()));
     report = mock(ValidationReport.class);
     when(report.isValid()).thenReturn(true);
-    when(shaclValidator.validate(any(), any())).thenReturn(report);
+    when(shaclValidator.validate(any(), (Model) any())).thenReturn(report);
     backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config",
         elmoShapesResource, shaclValidator);
     backend.setResourceLoader(resourceLoader);
