@@ -10,9 +10,11 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
+import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 import org.springframework.stereotype.Service;
 import org.topbraid.shacl.validation.ValidationUtil;
 
@@ -36,8 +38,7 @@ public class ShaclValidator {
       // create resource / subject
       Resource resource = rdf4jResourceToJenaResource(jenaModel, rdf4jStatement.getSubject());
       // create property / predicate
-      Property property =
-          rdf4jPropertyToJenaProperty(jenaModel, rdf4jStatement.getPredicate().stringValue());
+      Property property = rdf4jPropertyToJenaProperty(jenaModel, rdf4jStatement.getPredicate());
       // create rdfnode / object
       RDFNode node = rdf4jValueToJenaRdfNode(jenaModel, rdf4jStatement.getObject());
 
@@ -49,15 +50,15 @@ public class ShaclValidator {
 
   private Resource rdf4jResourceToJenaResource(@NonNull Model jenaModel,
       @NonNull org.eclipse.rdf4j.model.Resource resource) {
-    if (resource instanceof SimpleIRI) {
+    if (resource instanceof SimpleIRI || resource instanceof MemIRI) {
       return jenaModel.createResource(resource.stringValue());
     } else {
       return jenaModel.createResource(new AnonId(resource.stringValue()));
     }
   }
 
-  private Property rdf4jPropertyToJenaProperty(@NonNull Model jenaModel, @NonNull String resource) {
-    return jenaModel.createProperty(resource);
+  private Property rdf4jPropertyToJenaProperty(@NonNull Model jenaModel, @NonNull IRI resource) {
+    return jenaModel.createProperty(resource.getNamespace(), resource.getLocalName());
   }
 
   private RDFNode rdf4jValueToJenaRdfNode(@NonNull Model jenaModel, @NonNull Value value) {
