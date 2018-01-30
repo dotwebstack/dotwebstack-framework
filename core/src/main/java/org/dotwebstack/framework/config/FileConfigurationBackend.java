@@ -163,13 +163,17 @@ public class FileConfigurationBackend
     }
   }
 
-  private void validate(List<InputStream> configurationStreams) {
+  private void validate(List<InputStream> configurationStreams, Model model) {
     if (!configurationStreams.isEmpty()) {
       try (InputStream stream =
           new SequenceInputStream(Collections.enumeration(configurationStreams))) {
+        // todo old version ***
+        // final ValidationReport report =
+        // shaclValidator.validate(RdfModelTransformer.getModel(stream),
+        // RdfModelTransformer.getModel(elmoShapes.getInputStream()));
+        // todo old version ***
         final ValidationReport report =
-            shaclValidator.validate(RdfModelTransformer.getModel(stream),
-                RdfModelTransformer.getModel(elmoShapes.getInputStream()));
+            shaclValidator.validate(RdfModelTransformer.getModel(stream), model);
         if (!report.isValid()) {
           throw new ShaclValidationException(report.printReport());
         }
