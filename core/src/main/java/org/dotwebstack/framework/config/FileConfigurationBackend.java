@@ -188,6 +188,7 @@ public class FileConfigurationBackend
   private List<Resource> getCombinedResources(Resource[] projectResources) {
     List<Resource> result = new ArrayList<>(Arrays.asList(projectResources));
     result.add(elmoConfiguration);
+    result.add(elmoShapes);
     return result;
   }
 
