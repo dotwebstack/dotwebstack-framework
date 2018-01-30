@@ -25,7 +25,9 @@ import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
 import org.eclipse.rdf4j.rio.RDFParseException;
@@ -98,6 +100,8 @@ public class FileConfigurationBackendTest {
     backend.setResourceLoader(resourceLoader);
     backend.setEnvironment(environment);
     when(repository.getConnection()).thenReturn(repositoryConnection);
+    RepositoryResult<Statement> statements = mock(RepositoryResult.class);
+    when(repositoryConnection.getStatements(any(), any(), any(), any())).thenReturn(statements);
   }
 
   @Test
@@ -285,7 +289,7 @@ public class FileConfigurationBackendTest {
     // Assert
     verify(elmoConfigurationResource, atLeastOnce()).getInputStream();
     ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
-    verify(repositoryConnection, times(2)).add(captor.capture(), any(), any());
+    verify(repositoryConnection, times(3)).add(captor.capture(), any(), any());
     List<InputStream> inputStreams = captor.getAllValues();
     List<String> fileContents = inputStreams.stream().map(stream -> {
       try {
