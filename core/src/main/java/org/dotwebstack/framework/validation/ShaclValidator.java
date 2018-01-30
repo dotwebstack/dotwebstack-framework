@@ -37,7 +37,7 @@ public class ShaclValidator {
       Resource resource = rdf4jResourceToJenaResource(jenaModel, rdf4jStatement.getSubject());
       // create property / predicate
       Property property =
-          rdf4jPropertyToJenaProperty(jenaModel, (SimpleIRI) rdf4jStatement.getPredicate());
+          rdf4jPropertyToJenaProperty(jenaModel, rdf4jStatement.getPredicate().stringValue());
       // create rdfnode / object
       RDFNode node = rdf4jValueToJenaRdfNode(jenaModel, rdf4jStatement.getObject());
 
@@ -56,9 +56,8 @@ public class ShaclValidator {
     }
   }
 
-  private Property rdf4jPropertyToJenaProperty(@NonNull Model jenaModel,
-      @NonNull SimpleIRI resource) {
-    return jenaModel.createProperty(resource.stringValue());
+  private Property rdf4jPropertyToJenaProperty(@NonNull Model jenaModel, @NonNull String resource) {
+    return jenaModel.createProperty(resource);
   }
 
   private RDFNode rdf4jValueToJenaRdfNode(@NonNull Model jenaModel, @NonNull Value value) {
