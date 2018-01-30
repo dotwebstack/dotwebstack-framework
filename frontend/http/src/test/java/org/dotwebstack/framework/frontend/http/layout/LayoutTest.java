@@ -23,9 +23,8 @@ public class LayoutTest {
   @Test
   public void build_CreatesLayout_WithValidData() {
     // Act
-    Layout layout =
-        new Layout.Builder(DBEERPEDIA.LAYOUT).label("Hello World!").addOption(ELMO.LAYOUT,
-            valueFactory.createLiteral("myStyle.css")).build();
+    Layout layout = new Layout.Builder(DBEERPEDIA.LAYOUT).label("Hello World!").option(ELMO.LAYOUT,
+        valueFactory.createLiteral("myStyle.css")).build();
 
     // Assert
     assertThat(layout.getOptions().get(ELMO.LAYOUT),
@@ -40,8 +39,7 @@ public class LayoutTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Layout.Builder(null).addOption(ELMO.LAYOUT,
-        valueFactory.createLiteral("myStyle.css")).build();
+    new Layout.Builder(null).option(ELMO.LAYOUT, valueFactory.createLiteral("myStyle.css")).build();
   }
 
   @Test
@@ -50,7 +48,7 @@ public class LayoutTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Layout.Builder(DBEERPEDIA.LAYOUT).addOption(null, null).build();
+    new Layout.Builder(DBEERPEDIA.LAYOUT).option(null, null).build();
   }
 
   @Test

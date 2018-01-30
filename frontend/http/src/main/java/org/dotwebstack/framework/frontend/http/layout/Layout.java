@@ -63,7 +63,7 @@ public class Layout {
       return new Layout(this);
     }
 
-    public Builder addOption(@NonNull IRI key, @NonNull Value value) {
+    public Builder option(@NonNull IRI key, @NonNull Value value) {
       this.options.put(key, value);
       return this;
     }
