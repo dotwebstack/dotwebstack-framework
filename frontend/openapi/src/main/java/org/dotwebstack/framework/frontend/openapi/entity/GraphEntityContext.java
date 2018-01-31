@@ -16,7 +16,7 @@ public class GraphEntityContext {
 
   public GraphEntityContext(@NonNull ImmutableMap<String, String> ldPathNamespaces,
       @NonNull Map<String, Model> swaggerDefinitions, @NonNull org.eclipse.rdf4j.model.Model model,
-      Map<String, String> requestParameters) {
+      @NonNull Map<String, String> requestParameters) {
     this.requestParameters = requestParameters;
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = Maps.newHashMap(swaggerDefinitions);
