@@ -38,7 +38,7 @@ public class TermParameterDefinitionFactoryTest {
   @Test
   public void supports_ReturnsTrue_ForSupportedIri() {
     // Assert
-    boolean result = parameterDefinitionFactory.supports(ELMO.TERM_FILTER);
+    boolean result = parameterDefinitionFactory.supports(ELMO.TERM_PARAMETER);
 
     // Act
     assertThat(result, is(true));
@@ -60,7 +60,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
 
@@ -82,7 +82,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.INTEGER);
 
@@ -104,7 +104,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.BOOLEAN);
 
@@ -126,7 +126,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
 
@@ -147,7 +147,7 @@ public class TermParameterDefinitionFactoryTest {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
 
     Model model = builder.build();

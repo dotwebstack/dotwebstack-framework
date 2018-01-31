@@ -4,7 +4,7 @@ GRAPH dbeerpedia:Theatre {
     elmo:endpoint "http://localhost:8900/sparql"^^xsd:anyURI;
   .
   
-  dbeerpedia:IdFilter a elmo:TermFilter;
+  dbeerpedia:IdFilter a elmo:TermParameter;
     elmo:name "id";
     elmo:shape [
       sh:datatype xsd:string;
@@ -12,14 +12,14 @@ GRAPH dbeerpedia:Theatre {
     ];
   .
   
-  dbeerpedia:SubjectParameter a elmo:TermFilter;
+  dbeerpedia:SubjectParameter a elmo:TermParameter;
     elmo:name "SUBJECT";
     elmo:shape [
       sh:datatype xsd:string
     ];
   .
   
-  dbeerpedia:FteParam a elmo:TermFilter;
+  dbeerpedia:FteParam a elmo:TermParameter;
     elmo:name "fte";
     elmo:shape [
     	sh:datatype xsd:string;

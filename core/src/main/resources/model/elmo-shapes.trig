@@ -325,9 +325,9 @@ elmo-shape:Parameter a sh:NodeShape;
     sh:datatype xsd:string;
   ];
 .
-elmo-shape:TermFilter a sh:NodeShape;
-  sh:targetClass elmo:TermFilter;
-  sh:name "elmo:TermFilter";
+elmo-shape:TermParameter a sh:NodeShape;
+  sh:targetClass elmo:TermParameter;
+  sh:name "elmo:TermParameter";
   sh:property [
     sh:path elmo:shape;
     sh:name "elmo:shape";

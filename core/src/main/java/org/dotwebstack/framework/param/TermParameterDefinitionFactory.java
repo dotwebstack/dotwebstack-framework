@@ -27,7 +27,7 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
     String name = Models.objectLiteral(model.filter(id, ELMO.NAME_PROP, null)).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP, id,
-                ELMO.TERM_FILTER))).stringValue();
+                ELMO.TERM_PARAMETER))).stringValue();
 
     Set<Value> objects = model.filter(id, ELMO.SHAPE_PROP, null).objects();
     Optional<PropertyShape> propertyShapeOptional = Optional.empty();
@@ -44,11 +44,11 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
   }
 
   /**
-   * @return {@code true} if {@link ELMO#TERM_FILTER} is supplied; {@code false} otherwise.
+   * @return {@code true} if {@link ELMO#TERM_PARAMETER} is supplied; {@code false} otherwise.
    */
   @Override
   public boolean supports(@NonNull IRI type) {
-    return type.equals(ELMO.TERM_FILTER);
+    return type.equals(ELMO.TERM_PARAMETER);
   }
 
 }
