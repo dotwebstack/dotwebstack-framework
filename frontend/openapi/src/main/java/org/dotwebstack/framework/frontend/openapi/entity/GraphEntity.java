@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
@@ -19,7 +20,6 @@ public final class GraphEntity extends AbstractEntity {
       @NonNull GraphEntityContext graphEntityContext) {
     super(schemaMap);
     this.graphEntityContext = graphEntityContext;
-
   }
 
   GraphEntityContext getEntityContext() {
@@ -36,6 +36,7 @@ public final class GraphEntity extends AbstractEntity {
     private Model model;
     private Map<MediaType, Property> schemaMap;
     private Map<String, String> requestParameters;
+    private Map<String, String> responseParameters = Maps.newHashMap();
 
     public Builder withSchemaMap(@NonNull Map<MediaType, Property> schemaMap) {
       this.schemaMap = schemaMap;
@@ -90,8 +91,8 @@ public final class GraphEntity extends AbstractEntity {
     }
 
     public Entity build() {
-      return new GraphEntity(schemaMap,
-          new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model, requestParameters));
+      return new GraphEntity(schemaMap, new GraphEntityContext(ldpathNamespaces, swaggerDefinitions,
+          model, requestParameters, responseParameters));
     }
   }
 

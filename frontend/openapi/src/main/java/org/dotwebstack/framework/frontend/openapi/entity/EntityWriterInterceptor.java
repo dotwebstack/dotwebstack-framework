@@ -30,6 +30,8 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
       GraphEntity entity = (GraphEntity) context.getEntity();
       Object mappedEntity = graphEntityMapper.map(entity, context.getMediaType());
       context.setEntity(mappedEntity);
+
+      entity.getEntityContext().getResponseParameters();
     }
 
     context.proceed();
