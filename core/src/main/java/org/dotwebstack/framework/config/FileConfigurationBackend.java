@@ -26,7 +26,10 @@ import org.dotwebstack.framework.validation.RdfModelTransformer;
 import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
+import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.RDF4JException;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -121,7 +124,9 @@ public class FileConfigurationBackend
             configurationStreams);
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
-      validate(configurationStreams);
+      Model model = QueryResults.asModel(
+          repositoryConnection.getStatements(null, null, null, ELMO.SHACL_GRAPHNAME));
+      validate(configurationStreams, model);
     } catch (RDF4JException e) {
       throw new ConfigurationException("Error while loading RDF data.", e);
     } finally {
@@ -158,13 +163,17 @@ public class FileConfigurationBackend
     }
   }
 
-  private void validate(List<InputStream> configurationStreams) {
+  private void validate(List<InputStream> configurationStreams, Model model) {
     if (!configurationStreams.isEmpty()) {
       try (InputStream stream =
           new SequenceInputStream(Collections.enumeration(configurationStreams))) {
+        // todo old version ***
+        // final ValidationReport report =
+        // shaclValidator.validate(RdfModelTransformer.getModel(stream),
+        // RdfModelTransformer.getModel(elmoShapes.getInputStream()));
+        // todo old version ***
         final ValidationReport report =
-            shaclValidator.validate(RdfModelTransformer.getModel(stream),
-                RdfModelTransformer.getModel(elmoShapes.getInputStream()));
+            shaclValidator.validate(RdfModelTransformer.getModel(stream), model);
         if (!report.isValid()) {
           throw new ShaclValidationException(report.printReport());
         }
@@ -179,6 +188,7 @@ public class FileConfigurationBackend
   private List<Resource> getCombinedResources(Resource[] projectResources) {
     List<Resource> result = new ArrayList<>(Arrays.asList(projectResources));
     result.add(elmoConfiguration);
+    result.add(elmoShapes);
     return result;
   }
 

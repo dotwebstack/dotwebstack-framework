@@ -9,6 +9,8 @@ public final class ELMO {
 
   public static final IRI CONFIG_GRAPHNAME;
 
+  public static final IRI SHACL_GRAPHNAME;
+
   public static final IRI CONTAINS_PROP;
 
   public static final IRI INFORMATION_PRODUCT;
@@ -93,6 +95,8 @@ public final class ELMO {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     CONFIG_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Config");
+
+    SHACL_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Shacl");
 
     // Classes
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");

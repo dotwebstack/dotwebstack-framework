@@ -24,7 +24,10 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
 import org.eclipse.rdf4j.rio.RDFParseException;
@@ -37,6 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -81,21 +85,23 @@ public class FileConfigurationBackendTest {
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     elmoConfigurationResource = mock(Resource.class);
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
-    elmoShapesResource = mock(Resource.class);
+    elmoShapesResource = new ClassPathResource("/model/elmo-shapes.trig");
     // when(elmoShapesResource.getFilename()).thenReturn("elmo-shapes.trig");
-    when(elmoShapesResource.getInputStream()).thenReturn(new ByteArrayInputStream(
-        "@prefix dbeerpedia: <http://dbeerpedia.org#> .".getBytes(Charsets.UTF_8)));
+    // when(elmoShapesResource.getInputStream()).thenReturn(new ByteArrayInputStream(
+    // "@prefix dbeerpedia: <http://dbeerpedia.org#> .".getBytes(Charsets.UTF_8)));
     shaclValidator = mock(ShaclValidator.class);
     when(elmoConfigurationResource.getInputStream()).thenReturn(
         new ByteArrayInputStream("@prefix dbeerpedia: <http://dbeerpedia.org#> .".getBytes()));
     report = mock(ValidationReport.class);
     when(report.isValid()).thenReturn(true);
-    when(shaclValidator.validate(any(), any())).thenReturn(report);
+    when(shaclValidator.validate(any(), (Model) any())).thenReturn(report);
     backend = new FileConfigurationBackend(elmoConfigurationResource, repository, "file:config",
         elmoShapesResource, shaclValidator);
     backend.setResourceLoader(resourceLoader);
     backend.setEnvironment(environment);
     when(repository.getConnection()).thenReturn(repositoryConnection);
+    RepositoryResult<Statement> statements = mock(RepositoryResult.class);
+    when(repositoryConnection.getStatements(any(), any(), any(), any())).thenReturn(statements);
   }
 
   @Test
@@ -283,7 +289,7 @@ public class FileConfigurationBackendTest {
     // Assert
     verify(elmoConfigurationResource, atLeastOnce()).getInputStream();
     ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
-    verify(repositoryConnection, times(2)).add(captor.capture(), any(), any());
+    verify(repositoryConnection, times(3)).add(captor.capture(), any(), any());
     List<InputStream> inputStreams = captor.getAllValues();
     List<String> fileContents = inputStreams.stream().map(stream -> {
       try {

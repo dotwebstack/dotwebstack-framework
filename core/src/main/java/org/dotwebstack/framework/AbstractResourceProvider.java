@@ -65,12 +65,12 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
-
-    GraphQuery query = getQueryForResources(repositoryConnection);
-
     SimpleDataset simpleDataset = new SimpleDataset();
     simpleDataset.addDefaultGraph(applicationProperties.getSystemGraph());
     simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
+    simpleDataset.addNamedGraph(ELMO.SHACL_GRAPHNAME);
+
+    GraphQuery query = getQueryForResources(repositoryConnection);
     query.setDataset(simpleDataset);
 
     Model model;
@@ -92,7 +92,6 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     } finally {
       repositoryConnection.close();
     }
-
     resources.forEach((key, resource) -> finalizeResource(model, resource));
   }
 
