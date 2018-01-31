@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.backend.sparql.SparqlBackend;
+import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
@@ -41,6 +42,9 @@ public class ConfigurationIntegrationTest {
   @Autowired
   private ParameterMapperResourceProvider parameterMapperResourceProvider;
 
+  @Autowired
+  private LayoutResourceProvider layoutResourceProvider;
+
   @Test
   public void resources_ConfigurationLoaded_WhenApplicationStarted() {
     assertThat(siteResourceProvider.getAll().entrySet(), hasSize(1));
@@ -61,6 +65,9 @@ public class ConfigurationIntegrationTest {
         notNullValue());
     assertThat(parameterMapperResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(parameterMapperResourceProvider.get(DBEERPEDIA.SUBJECT_FROM_URL), notNullValue());
+    assertThat(layoutResourceProvider.getAll().entrySet(), hasSize(2));
+    assertThat(layoutResourceProvider.get(DBEERPEDIA.LAYOUT), notNullValue());
+    assertThat(layoutResourceProvider.get(DBEERPEDIA.LAYOUT_NL), notNullValue());
   }
 
 }
