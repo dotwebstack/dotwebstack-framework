@@ -35,6 +35,7 @@ public final class GraphEntity extends AbstractEntity {
     private ImmutableMap<String, String> ldpathNamespaces;
     private Model model;
     private Map<MediaType, Property> schemaMap;
+    private Map<String, String> requestParameters;
 
     public Builder withSchemaMap(@NonNull Map<MediaType, Property> schemaMap) {
       this.schemaMap = schemaMap;
@@ -53,6 +54,11 @@ public final class GraphEntity extends AbstractEntity {
 
     public Builder withLdPathNamespaces(@NonNull Swagger definitions) {
       this.ldpathNamespaces = extractLdpathNamespaces(definitions);
+      return this;
+    }
+
+    public Builder withRequestParameters(@NonNull Map<String, String> requestParameters) {
+      this.requestParameters = requestParameters;
       return this;
     }
 
@@ -85,7 +91,7 @@ public final class GraphEntity extends AbstractEntity {
 
     public Entity build() {
       return new GraphEntity(schemaMap,
-          new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model));
+          new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model, requestParameters));
     }
   }
 

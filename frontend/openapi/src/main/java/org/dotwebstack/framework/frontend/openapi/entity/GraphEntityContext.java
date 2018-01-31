@@ -12,10 +12,12 @@ public class GraphEntityContext {
   private final ImmutableMap<String, String> ldPathNamespaces;
   private final org.eclipse.rdf4j.model.Model model;
   private final LdPathExecutor ldPathExecutor;
+  private Map<String, String> requestParameters;
 
   public GraphEntityContext(@NonNull ImmutableMap<String, String> ldPathNamespaces,
-      @NonNull Map<String, Model> swaggerDefinitions,
-      @NonNull org.eclipse.rdf4j.model.Model model) {
+      @NonNull Map<String, Model> swaggerDefinitions, @NonNull org.eclipse.rdf4j.model.Model model,
+      Map<String, String> requestParameters) {
+    this.requestParameters = requestParameters;
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = Maps.newHashMap(swaggerDefinitions);
     this.model = model;
@@ -36,6 +38,10 @@ public class GraphEntityContext {
 
   public Map<String, Model> getSwaggerDefinitions() {
     return swaggerDefinitions;
+  }
+
+  public Map<String, String> getRequestParameters() {
+    return requestParameters;
   }
 
 }
