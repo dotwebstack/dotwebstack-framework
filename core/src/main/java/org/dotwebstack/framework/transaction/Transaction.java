@@ -17,8 +17,10 @@ public class Transaction {
   public void execute(Model model) {
 
     /*
-        1. load model into transaction repository
-        2. execute flow
+        1. create graph with unique name (random hash) in the transaction repository
+        2. load model into transaction repository into this graph
+        3. execute flow
+        4. remove graph
      */
 
     flow.execute();
