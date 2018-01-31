@@ -104,7 +104,6 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
       Map<String, String> responseParameters = Maps.newHashMap();
       responseParameters.put(parameter.getName(), null);
-      System.out.println(responseParameters);
     }
 
     // ############################################################################################
