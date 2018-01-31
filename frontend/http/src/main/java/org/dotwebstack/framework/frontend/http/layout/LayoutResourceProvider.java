@@ -40,7 +40,7 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     Layout.Builder builder = new Layout.Builder(identifier);
     getObjectStrings(model, identifier).stream().forEach(key -> {
-      getObjectValue(model, identifier, SimpleValueFactory.getInstance().createIRI(key)).ifPresent(
+      getObjectValue(model, identifier, identifier).ifPresent(
           value -> builder.option(valueFactory.createIRI(key), value));
     });
     return builder.build();
