@@ -13,6 +13,7 @@ public abstract class AbstractParameterDefinition<T extends Parameter<?>>
   @NonNull
   @Getter
   private final IRI identifier;
+
   @NonNull
   @Getter
   private final String name;

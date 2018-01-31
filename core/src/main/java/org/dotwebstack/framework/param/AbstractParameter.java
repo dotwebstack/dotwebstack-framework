@@ -16,9 +16,11 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
   @NonNull
   @Getter
   IRI identifier;
+
   @NonNull
   @Getter
   String name;
+
   boolean required;
 
   @Override
