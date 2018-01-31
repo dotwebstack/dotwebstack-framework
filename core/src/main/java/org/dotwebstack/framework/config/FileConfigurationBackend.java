@@ -167,11 +167,6 @@ public class FileConfigurationBackend
     if (!configurationStreams.isEmpty()) {
       try (InputStream stream =
           new SequenceInputStream(Collections.enumeration(configurationStreams))) {
-        // todo old version ***
-        // final ValidationReport report =
-        // shaclValidator.validate(RdfModelTransformer.getModel(stream),
-        // RdfModelTransformer.getModel(elmoShapes.getInputStream()));
-        // todo old version ***
         final ValidationReport report =
             shaclValidator.validate(RdfModelTransformer.getModel(stream), model);
         if (!report.isValid()) {
