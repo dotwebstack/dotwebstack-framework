@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.http.layout;
 
+import java.util.Optional;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -37,12 +38,13 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
 
   @Override
   protected Layout createResource(Model model, IRI identifier) {
+    final String layoutKey = "http://www.w3.org/1999/xhtml/vocab#stylesheet";
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     Layout.Builder builder = new Layout.Builder(identifier);
-    getObjectStrings(model, identifier).stream().forEach(key -> {
-      getObjectValue(model, identifier, identifier).ifPresent(
-          value -> builder.option(valueFactory.createIRI(key), value));
-    });
+    Optional<String> cssResource =
+        getObjectString(model, identifier, valueFactory.createIRI(layoutKey));
+    cssResource.ifPresent(
+        css -> builder.option(valueFactory.createIRI(layoutKey), valueFactory.createLiteral(css)));
     return builder.build();
   }
 }
