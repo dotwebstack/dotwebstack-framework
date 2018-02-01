@@ -14,6 +14,8 @@ public final class DBEERPEDIA {
 
   public static final Literal BASE_PATH;
 
+  public static final String TITLE = "Dbeerpedia";
+
   public static final IRI NAME;
 
   public static final IRI FOUNDATION;

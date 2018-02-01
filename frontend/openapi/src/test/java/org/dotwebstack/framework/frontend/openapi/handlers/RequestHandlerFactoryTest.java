@@ -62,8 +62,8 @@ public class RequestHandlerFactoryTest {
     Map<MediaType, Property> schemaMap = ImmutableMap.of();
 
     // Act
-    RequestHandler result = requestHandlerFactory.newRequestHandler(apiOperation, product,
-        schemaMap, swaggerMock);
+    RequestHandler result =
+        requestHandlerFactory.newRequestHandler(apiOperation, product, schemaMap, swaggerMock);
 
 
     // Assert
