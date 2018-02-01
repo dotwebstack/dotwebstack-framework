@@ -7,8 +7,6 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -39,13 +37,12 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
 
   @Override
   protected Layout createResource(Model model, IRI identifier) {
-    ValueFactory valueFactory = SimpleValueFactory.getInstance();
     Layout.Builder builder = new Layout.Builder(identifier);
     Collection<IRI> iris = getPredicateIris(model, identifier);
     for (IRI key : iris) {
       if (!key.equals(RDF.TYPE)) {
-        getObjectString(model, identifier, key).ifPresent(value -> {
-          builder.option(key, valueFactory.createLiteral(value));
+        getObjectValue(model, identifier, key).ifPresent(value -> {
+          builder.option(key, value);
         });
       }
     }
