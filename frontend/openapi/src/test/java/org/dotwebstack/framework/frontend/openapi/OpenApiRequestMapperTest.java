@@ -40,8 +40,8 @@ import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandler;
-import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandler;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -93,10 +93,10 @@ public class OpenApiRequestMapperTest {
   private ApplicationProperties applicationPropertiesMock;
 
   @Mock
-  private GetRequestHandlerFactory getRequestHandlerFactoryMock;
+  private RequestHandlerFactory requestHandlerFactoryMock;
 
   @Mock
-  private GetRequestHandler getRequestHandlerMock;
+  private RequestHandler requestHandlerMock;
 
   private ResourceLoader resourceLoader;
 
@@ -108,12 +108,12 @@ public class OpenApiRequestMapperTest {
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
     requestMapper = new OpenApiRequestMapper(informationProductResourceProviderMock,
-        openApiParserMock, applicationPropertiesMock, getRequestHandlerFactoryMock);
+        openApiParserMock, applicationPropertiesMock, requestHandlerFactoryMock);
     requestMapper.setResourceLoader(resourceLoader);
     requestMapper.setEnvironment(environmentMock);
 
-    when(getRequestHandlerFactoryMock.newGetRequestHandler(Mockito.any(), Mockito.any(),
-        Mockito.any(), Mockito.any())).thenReturn(getRequestHandlerMock);
+    when(requestHandlerFactoryMock.newRequestHandler(Mockito.any(), Mockito.any(),
+        Mockito.any(), Mockito.any())).thenReturn(requestHandlerMock);
   }
 
   @Test
@@ -244,9 +244,9 @@ public class OpenApiRequestMapperTest {
     assertThat(method.getProducedTypes(),
         contains(MediaType.TEXT_PLAIN_TYPE, MediaType.APPLICATION_JSON_TYPE));
 
-    GetRequestHandler requestHandler =
-        (GetRequestHandler) resource.getHandlerInstances().iterator().next();
-    assertThat(requestHandler, sameInstance(getRequestHandlerMock));
+    RequestHandler requestHandler =
+        (RequestHandler) resource.getHandlerInstances().iterator().next();
+    assertThat(requestHandler, sameInstance(requestHandlerMock));
   }
 
   @Test

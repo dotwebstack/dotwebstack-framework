@@ -21,11 +21,15 @@ class RequestParameters {
   }
 
   void put(@NonNull String key, String value) {
-    parameters.put(key, value);
+    parameters.put(key.toLowerCase(), value);
   }
 
+  /**
+   * @return The String value for the supplied, or {@code null} if no value exist for the key. Key
+   *         comparison is case insensitive.
+   */
   String get(@NonNull String key) {
-    return this.parameters.get(key);
+    return this.parameters.get(key.toLowerCase());
   }
 
   @Override

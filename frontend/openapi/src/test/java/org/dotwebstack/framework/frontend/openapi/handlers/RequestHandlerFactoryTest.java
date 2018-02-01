@@ -25,7 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GetRequestHandlerFactoryTest {
+public class RequestHandlerFactoryTest {
 
   @Mock
   private RequestParameterMapper requestParameterMapperMock;
@@ -39,15 +39,15 @@ public class GetRequestHandlerFactoryTest {
   @Mock
   private TemplateProcessor templateProcessorMock;
 
-  private GetRequestHandlerFactory getRequestHandlerFactory;
+  private RequestHandlerFactory requestHandlerFactory;
 
   @Mock
   private Swagger mockSwagger;
 
   @Before
   public void setUp() {
-    getRequestHandlerFactory =
-        new GetRequestHandlerFactory(requestParameterMapperMock, requestParameterExtractorMock);
+    requestHandlerFactory =
+        new RequestHandlerFactory(requestParameterMapperMock, requestParameterExtractorMock);
   }
 
   @Test
@@ -62,8 +62,8 @@ public class GetRequestHandlerFactoryTest {
     Map<MediaType, Property> schemaMap = ImmutableMap.of();
 
     // Act
-    GetRequestHandler result = getRequestHandlerFactory.newGetRequestHandler(apiOperation, product,
-        schemaMap, swaggerMock);
+    RequestHandler result =
+        requestHandlerFactory.newRequestHandler(apiOperation, product, schemaMap, swaggerMock);
 
 
     // Assert
