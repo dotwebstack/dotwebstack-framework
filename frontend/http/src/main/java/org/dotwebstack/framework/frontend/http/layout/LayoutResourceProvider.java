@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.http.layout;
 
-import java.util.Optional;
+import java.util.Collection;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -9,6 +9,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.slf4j.Logger;
@@ -38,13 +39,16 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
 
   @Override
   protected Layout createResource(Model model, IRI identifier) {
-    final String layoutKey = "http://www.w3.org/1999/xhtml/vocab#stylesheet";
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     Layout.Builder builder = new Layout.Builder(identifier);
-    Optional<String> cssResource =
-        getObjectString(model, identifier, valueFactory.createIRI(layoutKey));
-    cssResource.ifPresent(
-        css -> builder.option(valueFactory.createIRI(layoutKey), valueFactory.createLiteral(css)));
+    Collection<IRI> iris = getPredicateIris(model, identifier);
+    for (IRI key : iris) {
+      if (!key.equals(RDF.TYPE)) {
+        getObjectString(model, identifier, key).ifPresent(value -> {
+          builder.option(key, valueFactory.createLiteral(value));
+        });
+      }
+    }
     return builder.build();
   }
 }
