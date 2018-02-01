@@ -165,6 +165,12 @@ elmo-shape:Layout a sh:NodeShape;
     sh:path rdfs:label;
     sh:datatype xsd:string;
   ];
+  sh:property [
+    sh:name "xhtml:stylesheet";
+    sh:path xhtml:stylesheet;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
 .
 
 # =========

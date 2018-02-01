@@ -1,10 +1,12 @@
 package org.dotwebstack.framework.frontend.http.site;
 
 import java.util.Optional;
+import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -16,10 +18,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class SiteResourceProvider extends AbstractResourceProvider<Site> {
 
+  private LayoutResourceProvider layoutResourceProvider;
+
   @Autowired
   public SiteResourceProvider(ConfigurationBackend configurationBackend,
+      @NonNull LayoutResourceProvider layoutResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
+    this.layoutResourceProvider = layoutResourceProvider;
   }
 
   @Override
@@ -49,6 +55,8 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
         throw new ConfigurationException("Catch all domain found for multiple sites.");
       }
     }
+    getObjectIRI(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
+        iri -> builder.layout(layoutResourceProvider.get(iri)));
 
     return builder.build();
   }

@@ -12,6 +12,7 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -109,12 +110,20 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     return Models.objectStrings(model.filter(subject, predicate, null));
   }
 
+  protected Collection<IRI> getPredicateIris(Model model, IRI subject) {
+    return model.filter(subject, null, null).predicates();
+  }
+
   protected Optional<IRI> getObjectIRI(Model model, IRI subject, IRI predicate) {
     return Models.objectIRI(model.filter(subject, predicate, null));
   }
 
   protected Collection<IRI> getObjectIris(Model model, IRI subject, IRI predicate) {
     return Models.objectIRIs(model.filter(subject, predicate, null));
+  }
+
+  protected Optional<Value> getObjectValue(Model model, IRI subject, IRI predicate) {
+    return Models.getProperty(model, subject, predicate);
   }
 
 }

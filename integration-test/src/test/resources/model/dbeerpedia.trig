@@ -16,5 +16,13 @@ GRAPH dbeerpedia:Theatre {
   dbeerpedia:Theatre a elmo:Theatre;
     rdfs:label "Theatre"
   .
+
+  dbeerpedia:BeerLayout a elmo:Layout;
+    xhtml:stylesheet "stage-layout.css";
+  .
+
+  dbeerpedia:BeerLayoutNL a elmo:Layout;
+    xhtml:stylesheet "stage-nl-layout.css";
+  .
 }
 
