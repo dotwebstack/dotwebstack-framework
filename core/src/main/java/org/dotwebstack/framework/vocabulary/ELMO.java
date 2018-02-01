@@ -9,6 +9,8 @@ public final class ELMO {
 
   public static final IRI CONFIG_GRAPHNAME;
 
+  public static final IRI SHACL_GRAPHNAME;
+
   public static final IRI CONTAINS_PROP;
 
   public static final IRI INFORMATION_PRODUCT;
@@ -83,6 +85,10 @@ public final class ELMO {
 
   public static final IRI RESULT_TYPE_DEFAULT;
 
+  public static final IRI LAYOUT;
+
+  public static final IRI LAYOUT_PROP;
+
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -93,6 +99,8 @@ public final class ELMO {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     CONFIG_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Config");
+
+    SHACL_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Shacl");
 
     // Classes
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
@@ -111,6 +119,8 @@ public final class ELMO {
     TABLE_APPEARANCE = valueFactory.createIRI(ELMO.NAMESPACE, "TableAppearance");
 
     URI_PARAMETER_MAPPER = valueFactory.createIRI(ELMO.NAMESPACE, "UriParameterMapper");
+
+    LAYOUT = valueFactory.createIRI(ELMO.NAMESPACE, "Layout");
 
     // Properties
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
@@ -146,6 +156,8 @@ public final class ELMO {
     PATTERN_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "pattern");
     TEMPLATE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "template");
     TARGET_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "target");
+
+    LAYOUT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "layout");
     SHAPE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "shape");
   }
 

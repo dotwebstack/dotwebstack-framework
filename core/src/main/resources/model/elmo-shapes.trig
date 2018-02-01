@@ -14,6 +14,7 @@
 @prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-types/>.
 @prefix elmo: <http://dotwebstack.org/def/elmo#>.
 
+GRAPH elmo:Shacl {
 elmo-shape:
   rdfs:label "SHACL for ELMO"@en;
   rdfs:comment "This shapes graph can be used to validate dotwebstack configurations. It can also be used to create a visual representation of the structure"@en;
@@ -163,6 +164,12 @@ elmo-shape:Layout a sh:NodeShape;
     sh:name "rdfs:label";
     sh:path rdfs:label;
     sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "xhtml:stylesheet";
+    sh:path xhtml:stylesheet;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
   ];
 .
 
@@ -888,3 +895,4 @@ elmo-shape:Fragment a sh:NodeShape;
     sh:nodeKind sh:IRI;
   ];
 .
+}

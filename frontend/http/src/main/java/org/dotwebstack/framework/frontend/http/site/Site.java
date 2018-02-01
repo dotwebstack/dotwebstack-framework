@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.http.site;
 
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.http.layout.Layout;
 import org.eclipse.rdf4j.model.IRI;
 
 public class Site {
@@ -9,9 +10,12 @@ public class Site {
 
   private String domain = null;
 
+  private Layout layout;
+
   private Site(Builder builder) {
     this.domain = builder.domain;
     this.identifier = builder.identifier;
+    this.layout = builder.layout;
   }
 
   public IRI getIdentifier() {
@@ -26,12 +30,18 @@ public class Site {
     return domain == null;
   }
 
+  public Layout getLayout() {
+    return layout;
+  }
+
   public static class Builder {
 
     private IRI identifier;
 
     // Default is match all domain
     private String domain = null;
+
+    private Layout layout;
 
     public Builder(@NonNull IRI identifier) {
       this.identifier = identifier;
@@ -44,6 +54,11 @@ public class Site {
 
     public Site build() {
       return new Site(this);
+    }
+
+    public Builder layout(@NonNull Layout layout) {
+      this.layout = layout;
+      return this;
     }
 
   }
