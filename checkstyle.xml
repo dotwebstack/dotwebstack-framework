@@ -182,7 +182,7 @@
     <module name="AbbreviationAsWordInName">
       <property name="ignoreFinal" value="false"/>
       <property name="allowedAbbreviationLength" value="1"/>
-      <property name="allowedAbbreviations" value="IRI,ELMO,HTTP,DBEERPEDIA,SHACL,XHTML"/>
+      <property name="allowedAbbreviations" value="IRI,ELMO,HTTP,DBEERPEDIA,SHACL"/>
     </module>
     <module name="OverloadMethodsDeclarationOrder"/>
     <module name="VariableDeclarationUsageDistance"/>
