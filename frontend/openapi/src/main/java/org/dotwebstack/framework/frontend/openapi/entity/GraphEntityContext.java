@@ -3,8 +3,10 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import io.swagger.models.Model;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.NonNull;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 
 public class GraphEntityContext {
 
@@ -14,17 +16,19 @@ public class GraphEntityContext {
   private final LdPathExecutor ldPathExecutor;
   private final Map<String, String> requestParameters;
   private final Map<String, String> responseParameters;
+  private final InformationProduct informationProduct;
 
   public GraphEntityContext(@NonNull ImmutableMap<String, String> ldPathNamespaces,
       @NonNull Map<String, Model> swaggerDefinitions, @NonNull org.eclipse.rdf4j.model.Model model,
       @NonNull Map<String, String> requestParameters,
-      @NonNull Map<String, String> responseParameters) {
-    this.responseParameters = responseParameters;
+      @NonNull InformationProduct informationProduct) {
     this.requestParameters = requestParameters;
+    this.responseParameters = new HashMap<>();
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = Maps.newHashMap(swaggerDefinitions);
     this.model = model;
     this.ldPathExecutor = new LdPathExecutor(this);
+    this.informationProduct = informationProduct;
   }
 
   public LdPathExecutor getLdPathExecutor() {
@@ -47,10 +51,16 @@ public class GraphEntityContext {
     return requestParameters;
   }
 
-  public Map<String, String> getResponseParameters() {
-    return responseParameters;
+  public void addResponseParameter(@NonNull String key, String value) {
+    responseParameters.put(key.toLowerCase(), value);
   }
 
+  public Map<String, String> getResponseParameters() {
+    return ImmutableMap.copyOf(responseParameters);
+  }
 
+  public InformationProduct getInformationProduct() {
+    return informationProduct;
+  }
 
 }

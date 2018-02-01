@@ -1,13 +1,13 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.QueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
@@ -30,13 +30,14 @@ public final class GraphEntity extends AbstractEntity {
     return new Builder();
   }
 
+  // TODO remove builder pattern, because without defaults is it of no use
   public static class Builder {
     private Map<String, io.swagger.models.Model> swaggerDefinitions;
     private ImmutableMap<String, String> ldpathNamespaces;
     private Model model;
     private Map<MediaType, Property> schemaMap;
     private Map<String, String> requestParameters;
-    private Map<String, String> responseParameters = Maps.newHashMap();
+    private InformationProduct informationProduct;
 
     public Builder withSchemaMap(@NonNull Map<MediaType, Property> schemaMap) {
       this.schemaMap = schemaMap;
@@ -60,6 +61,11 @@ public final class GraphEntity extends AbstractEntity {
 
     public Builder withRequestParameters(@NonNull Map<String, String> requestParameters) {
       this.requestParameters = requestParameters;
+      return this;
+    }
+
+    public Builder withInformationProduct(@NonNull InformationProduct informationProduct) {
+      this.informationProduct = informationProduct;
       return this;
     }
 
@@ -92,7 +98,7 @@ public final class GraphEntity extends AbstractEntity {
 
     public Entity build() {
       return new GraphEntity(schemaMap, new GraphEntityContext(ldpathNamespaces, swaggerDefinitions,
-          model, requestParameters, responseParameters));
+          model, requestParameters, informationProduct));
     }
   }
 

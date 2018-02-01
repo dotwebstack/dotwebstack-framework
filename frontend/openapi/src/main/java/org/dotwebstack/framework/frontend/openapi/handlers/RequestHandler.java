@@ -34,8 +34,8 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
   private final ApiRequestValidator apiRequestValidator;
 
-  RequestHandler(@NonNull ApiOperation apiOperation,
-      @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
+  RequestHandler(@NonNull ApiOperation apiOperation, @NonNull InformationProduct informationProduct,
+      @NonNull Map<MediaType, Property> schemaMap,
       @NonNull RequestParameterMapper requestParameterMapper,
       @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
     this.apiRequestValidator = apiRequestValidator;
@@ -66,44 +66,6 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
         informationProduct, requestParameters);
 
-    // ############################################################################################
-
-    // Map<String, io.swagger.models.Response> responses =
-    // apiOperation.getOperation().getResponses();
-    // io.swagger.models.Response response = responses.get("200");
-    // Map<String, Property> headers = response.getHeaders();
-    // for (Property header : headers.values()) {
-    // Map<String, Object> vendorExtensions = header.getVendorExtensions();
-    //
-    // LOG.debug("Vendor extensions for header param '{}': {}", header.getName(), vendorExtensions);
-    //
-    // Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
-    //
-    // if (parameterIdString == null) {
-    // continue;
-    // }
-    //
-    // IRI iri = SimpleValueFactory.getInstance().createIRI((String) parameterIdString);
-    // Parameter<?> parameter = null;
-    //
-    // for (Parameter<?> productParameter : informationProduct.getParameters()) {
-    // if (productParameter.getIdentifier().equals(iri)) {
-    // parameter = productParameter;
-    // }
-    // }
-    //
-    // if (parameter == null) {
-    // throw new ConfigurationException(String.format(
-    // "No parameter found for vendor extension value: '%s'", parameterIdString));
-    // }
-    //
-    // Map<String, String> responseParameters = Maps.newHashMap();
-    // responseParameters.put(parameter.getName(), null);
-    // }
-
-    // ############################################################################################
-
-
     Response responseOk = null;
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
 
@@ -119,7 +81,8 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
       GraphEntity entity =
           (GraphEntity) GraphEntity.builder().withSchemaMap(schemaMap).withQueryResult(
               result).withApiDefinitions(swagger).withLdPathNamespaces(
-                  swagger).withRequestParameters(parameterValues).build();
+                  swagger).withRequestParameters(parameterValues).withInformationProduct(
+                      informationProduct).build();
       responseOk = responseOk(entity);
     }
     if (responseOk != null) {
