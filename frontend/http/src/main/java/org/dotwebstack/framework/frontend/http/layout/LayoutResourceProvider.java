@@ -10,15 +10,11 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(LayoutResourceProvider.class);
 
   @Autowired
   public LayoutResourceProvider(ConfigurationBackend configurationBackend,
@@ -41,9 +37,7 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
     Collection<IRI> iris = getPredicateIris(model, identifier);
     for (IRI key : iris) {
       if (!key.equals(RDF.TYPE)) {
-        getObjectValue(model, identifier, key).ifPresent(value -> {
-          builder.option(key, value);
-        });
+        getObjectValue(model, identifier, key).ifPresent(value -> builder.option(key, value));
       }
     }
     return builder.build();
