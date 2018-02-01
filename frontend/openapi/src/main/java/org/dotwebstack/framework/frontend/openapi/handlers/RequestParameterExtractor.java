@@ -24,8 +24,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-final class RequestParameterExtractor {
+@Service
+class RequestParameterExtractor {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestParameterExtractor.class);
 
@@ -34,12 +36,13 @@ final class RequestParameterExtractor {
   static final String PARAM_PAGE_NUM = "page";
   static final String PARAM_PAGE_SIZE = "size";
 
-  private RequestParameterExtractor() {
-    throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", RequestParameterExtractor.class));
+  private final ObjectMapper objectMapper;
+
+  RequestParameterExtractor(@NonNull ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
   }
 
-  static RequestParameters extract(@NonNull ApiOperation apiOperation, @NonNull Swagger swagger,
+  RequestParameters extract(@NonNull ApiOperation apiOperation, @NonNull Swagger swagger,
       @NonNull ContainerRequestContext containerRequestContext) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
@@ -85,7 +88,7 @@ final class RequestParameterExtractor {
   /**
    * Extracts the body from the supplied request.
    */
-  private static void extractBodyParameter(final RequestParameters requestParameters,
+  private void extractBodyParameter(final RequestParameters requestParameters,
       final ContainerRequestContext ctx, final Optional<Parameter> parameter) throws IOException {
 
     String body = extractBody(ctx);
@@ -103,12 +106,11 @@ final class RequestParameterExtractor {
       return;
     }
 
-    ObjectMapper objectMapper = new ObjectMapper();
-    Map json = objectMapper.readValue(body, Map.class);
-    if (json.keySet().size() == 1) {
-      requestParameters.putAll(json);
-    }
+    Map<String, Object> json = objectMapper.readValue(body, Map.class);
 
+    for (Map.Entry<String, Object> entry : json.entrySet()) {
+      requestParameters.put(entry.getKey(), objectMapper.writeValueAsString(entry.getValue()));
+    }
   }
 
   /**

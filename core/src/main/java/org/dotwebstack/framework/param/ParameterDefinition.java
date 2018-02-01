@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.param;
 
-import org.dotwebstack.framework.param.types.TermParameter;
+import org.dotwebstack.framework.param.term.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
 /**
