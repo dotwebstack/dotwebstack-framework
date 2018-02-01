@@ -75,27 +75,28 @@ public class RedirectionRequestHandlerTest {
   }
 
   @Test
-  public void apply_ReturnServerError_WithUnchangedRedirection() throws URISyntaxException {
+  public void apply_ReturnValidRedirection_WithWithNoPathParameters() throws URISyntaxException {
     // Arrange
-    when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + DBEERPEDIA.PATH_PATTERN_VALUE);
+    when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + DBEERPEDIA.BREWERY_ID_PATH);
 
     // Act
     Response response = redirectionRequestHandler.apply(containerRequestContext);
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
+    assertThat(response.getLocation(), equalTo(new URI(DBEERPEDIA.BREWERY_DOC_PATH)));
   }
 
   @Test
-  public void apply_ReturnServerError_WithInvalidPath() {
+  public void apply_ThrowsException_WithInvalidPath() {
+    // Assert
+    thrown.expect(IllegalArgumentException.class);
+
     // Arrange
     when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + "some invalid pattern");
 
     // Act
     Response response = redirectionRequestHandler.apply(containerRequestContext);
-
-    // Assert
-    assertThat(response.getStatus(), equalTo((Status.INTERNAL_SERVER_ERROR.getStatusCode())));
   }
 
 }

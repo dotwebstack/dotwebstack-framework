@@ -28,9 +28,6 @@ public class RedirectionRequestHandler implements Inflector<ContainerRequestCont
 
   @Override
   public Response apply(ContainerRequestContext containerRequestContext) {
-    /*
-     * Remove first 'domain' part of path that we have added in HostPreMatchingRequestFilter
-     */
     URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
     String path = uri.getPath();
 
@@ -38,22 +35,17 @@ public class RedirectionRequestHandler implements Inflector<ContainerRequestCont
 
     UriTemplate pathPatternTemplate = new UriTemplate(redirection.getStage().getFullPath()
         + redirection.getPathPattern());
+    Map<String, String> pathParameters = pathPatternTemplate.match(path);
 
-    if (pathPatternTemplate.matches(path)) {
-      Map<String, String> map = pathPatternTemplate.match(path);
-      LOG.debug("Matched: " + map);
-      String fullPath =
-          redirection.getStage().getFullPath().replaceAll("^/" + uri.getHost(), "");
-      UriTemplate redirectTemplate = new UriTemplate(fullPath + redirection.getRedirectTemplate());
+    /*
+     * Remove first 'domain' part of path that we have added in HostPreMatchingRequestFilter
+     */
+    String fullPath = redirection.getStage().getFullPath().replaceAll("^/" + uri.getHost(), "");
+    UriTemplate redirectTemplate = new UriTemplate(fullPath + redirection.getRedirectTemplate());
 
-      URI redirectUri = redirectTemplate.expand(map);
+    URI redirectUri = redirectTemplate.expand(pathParameters);
 
-      return Response.seeOther(redirectUri).location(redirectUri).build();
-    } else {
-      LOG.debug("Not matched: " + path);
-    }
-
-    return  Response.serverError().build();
+    return Response.seeOther(redirectUri).location(redirectUri).build();
   }
 
 }
