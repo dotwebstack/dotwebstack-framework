@@ -30,7 +30,7 @@ public class StageTest {
   public void build_CreatesStage_WithValidData() {
     // Act
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(
-        DBEERPEDIA.BASE_PATH.stringValue()).layout(layout).build();
+        DBEERPEDIA.BASE_PATH.stringValue()).layout(layout).title(DBEERPEDIA.TITLE).build();
 
     // Arrange
     when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
@@ -40,6 +40,7 @@ public class StageTest {
     assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(stage.getSite(), equalTo(siteMock));
     assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
+    assertThat(stage.getTitle(), equalTo(DBEERPEDIA.TITLE));
     assertThat(stage.getFullPath(),
         equalTo("/" + DBEERPEDIA.NL_HOST + DBEERPEDIA.BASE_PATH.stringValue()));
   }

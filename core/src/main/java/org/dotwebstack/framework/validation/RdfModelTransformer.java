@@ -44,8 +44,8 @@ public class RdfModelTransformer {
     trigParser.setRDFHandler(turtleWriter);
     trigParser.parse(inputStream, "");
 
-    org.eclipse.rdf4j.model.Model result = Rio.parse(
-        new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), "", RDFFormat.TURTLE);
+    Model result = Rio.parse(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()), "",
+        RDFFormat.TURTLE);
 
     byteArrayOutputStream.close();
     return result;

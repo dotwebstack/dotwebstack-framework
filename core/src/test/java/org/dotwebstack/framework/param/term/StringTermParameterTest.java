@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -28,9 +28,9 @@ public class StringTermParameterTest {
   @Before
   public void setUp() {
     requiredParameter = new StringTermParameter(DBEERPEDIA.NAME_PARAMETER_ID,
-        DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, true);
+        DBEERPEDIA.NAME_PARAMETER_VALUE_STRING, true, null);
     optionalParameter = new StringTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
-        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false);
+        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, null);
   }
 
   @Test
@@ -57,6 +57,24 @@ public class StringTermParameterTest {
 
     // Assert
     assertThat(result, nullValue());
+  }
+
+  @Test
+  public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
+    // Arrange
+    String defaultValue = "Apeldoorn";
+
+    BindableParameter<String> parameter = new StringTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
+        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, defaultValue);
+
+    Map<String, String> parameterValues =
+        Collections.singletonMap(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, null);
+
+    // Act
+    String result = parameter.handle(parameterValues);
+
+    // Assert
+    assertThat(result, is(defaultValue));
   }
 
   @Test

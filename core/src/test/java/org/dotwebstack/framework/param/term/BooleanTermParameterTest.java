@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -12,6 +12,7 @@ import org.dotwebstack.framework.param.BindableParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,6 +61,24 @@ public class BooleanTermParameterTest {
   }
 
   @Test
+  public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
+    // Arrange
+    boolean defaultValue = true;
+
+    BindableParameter<Boolean> parameter = new BooleanTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
+        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, defaultValue);
+
+    Map<String, String> parameterValues =
+        Collections.singletonMap(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, null);
+
+    // Act
+    Boolean result = parameter.handle(parameterValues);
+
+    // Assert
+    assertThat(result, is(defaultValue));
+  }
+
+  @Test
   public void handle_RejectsNullValue_ForRequiredParameter() {
     // Assert
     thrown.expect(BackendException.class);
@@ -82,7 +101,8 @@ public class BooleanTermParameterTest {
     Value result = requiredParameter.getValue(value);
 
     // Assert
-    assertThat(result, is(SimpleValueFactory.getInstance().createLiteral(false)));
+    assertThat(result,
+        is(SimpleValueFactory.getInstance().createLiteral("false", XMLSchema.BOOLEAN)));
   }
 
 }

@@ -15,16 +15,20 @@ public class GetRequestHandlerFactory {
 
   private final RequestParameterMapper requestParameterMapper;
 
-  public GetRequestHandlerFactory(@NonNull RequestParameterMapper requestParameterMapper) {
-    this.requestParameterMapper = requestParameterMapper;
+  private final RequestParameterExtractor requestParameterExtractor;
 
+  public GetRequestHandlerFactory(@NonNull RequestParameterMapper requestParameterMapper,
+      @NonNull RequestParameterExtractor requestParameterExtractor) {
+    this.requestParameterMapper = requestParameterMapper;
+    this.requestParameterExtractor = requestParameterExtractor;
   }
 
   public GetRequestHandler newGetRequestHandler(@NonNull ApiOperation apiOperation,
       @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
       @NonNull Swagger swagger) {
     return new GetRequestHandler(apiOperation, informationProduct, schemaMap,
-        requestParameterMapper, new ApiRequestValidator(SwaggerUtils.createValidator(swagger)),
+        requestParameterMapper,
+        new ApiRequestValidator(SwaggerUtils.createValidator(swagger), requestParameterExtractor),
         swagger);
   }
 

@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import io.swagger.models.Operation;
+import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.properties.Property;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.NonNull;
@@ -22,14 +25,21 @@ class RequestParameterMapper {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
-  private static Parameter<?> getParameter(InformationProduct product, IRI iri) {
-    for (Parameter<?> parameter : product.getParameters()) {
-      if (parameter.getIdentifier().equals(iri)) {
-        return parameter;
+  private static Parameter<?> getParameter(InformationProduct product, String parameterIdString) {
+    IRI iri = VALUE_FACTORY.createIRI((String) parameterIdString);
+    Parameter<?> parameter = null;
+
+    for (Parameter<?> productParameter : product.getParameters()) {
+      if (productParameter.getIdentifier().equals(iri)) {
+        parameter = productParameter;
       }
     }
 
-    return null;
+    if (parameter == null) {
+      throw new ConfigurationException(
+          String.format("No parameter found for vendor extension value: '%s'", parameterIdString));
+    }
+    return parameter;
   }
 
   Map<String, String> map(@NonNull Operation operation, @NonNull InformationProduct product,
@@ -37,32 +47,50 @@ class RequestParameterMapper {
     Map<String, String> result = new HashMap<>();
 
     for (io.swagger.models.parameters.Parameter openApiParameter : operation.getParameters()) {
-      Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
 
-      LOG.debug("Vendor extensions for parameter '{}': {}", openApiParameter.getName(),
-          vendorExtensions);
+      if (openApiParameter instanceof BodyParameter) {
+        Collection<Property> properties =
+            ((BodyParameter) openApiParameter).getSchema().getProperties().values();
+        for (Property property : properties) {
+          Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
-      Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
+          LOG.debug("Vendor extensions for property in parameter '{}': {}", property.getName(),
+              openApiParameter.getName(), vendorExtensions);
 
-      if (parameterIdString == null) {
-        // Vendor extension x-dotwebstack-parameter not found for parameter
-        continue;
+          Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
+
+          if (parameterIdString == null) {
+            // Vendor extension x-dotwebstack-parameter not found for property
+            continue;
+          }
+
+          Parameter<?> parameter = getParameter(product, (String) parameterIdString);
+
+          String value = requestParameters.get(parameter.getName());
+
+          result.put(parameter.getName(), value);
+        }
+      } else {
+        Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
+
+        LOG.debug("Vendor extensions for parameter '{}': {}", openApiParameter.getName(),
+            vendorExtensions);
+
+        Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
+
+        if (parameterIdString == null) {
+          // Vendor extension x-dotwebstack-parameter not found for property
+          continue;
+        }
+
+        Parameter<?> parameter = getParameter(product, (String) parameterIdString);
+
+        String value = requestParameters.get(parameter.getName());
+
+        result.put(parameter.getName(), value);
       }
-
-      IRI parameterId = VALUE_FACTORY.createIRI((String) parameterIdString);
-      Parameter<?> parameter = getParameter(product, parameterId);
-
-      if (parameter == null) {
-        throw new ConfigurationException(String.format(
-            "No parameter found for vendor extension value: '%s'", parameterIdString));
-      }
-
-      String value = (String) requestParameters.get(openApiParameter.getName());
-
-      result.put(parameter.getName(), value);
     }
-
     return result;
   }
-
 }
+

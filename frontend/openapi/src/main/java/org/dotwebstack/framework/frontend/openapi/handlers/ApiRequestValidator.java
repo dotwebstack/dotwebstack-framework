@@ -21,8 +21,12 @@ class ApiRequestValidator {
 
   private final RequestValidator requestValidator;
 
-  ApiRequestValidator(@NonNull RequestValidator requestValidator) {
+  private final RequestParameterExtractor requestParameterExtractor;
+
+  ApiRequestValidator(@NonNull RequestValidator requestValidator,
+      @NonNull RequestParameterExtractor requestParameterExtractor) {
     this.requestValidator = requestValidator;
+    this.requestParameterExtractor = requestParameterExtractor;
   }
 
   /**
@@ -44,7 +48,7 @@ class ApiRequestValidator {
     requestContext.getUriInfo().getQueryParameters().forEach(builder::withQueryParam);
 
     RequestParameters requestParameters =
-        RequestParameterExtractor.extract(apiOperation, swagger, requestContext);
+        requestParameterExtractor.extract(apiOperation, swagger, requestContext);
 
     String body = requestParameters.getRawBody();
     builder.withBody(body);

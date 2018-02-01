@@ -19,11 +19,14 @@ public class Stage {
 
   private Layout layout;
 
+  private String title;
+
   private Stage(Builder builder) {
     this.identifier = builder.identifier;
     this.site = builder.site;
     this.basePath = builder.basePath;
     this.layout = builder.layout;
+    this.title = builder.title;
   }
 
   public IRI getIdentifier() {
@@ -36,6 +39,10 @@ public class Stage {
 
   public String getBasePath() {
     return basePath;
+  }
+
+  public String getTitle() {
+    return title;
   }
 
   public String getFullPath() {
@@ -60,6 +67,8 @@ public class Stage {
 
     private Layout layout;
 
+    private String title;
+
     public Builder(@NonNull IRI identifier, @NonNull Site site) {
       this.identifier = identifier;
       this.site = site;
@@ -67,6 +76,11 @@ public class Stage {
 
     public Builder basePath(@NonNull String basePath) {
       this.basePath = basePath;
+      return this;
+    }
+
+    public Builder title(@NonNull String title) {
+      this.title = title;
       return this;
     }
 
