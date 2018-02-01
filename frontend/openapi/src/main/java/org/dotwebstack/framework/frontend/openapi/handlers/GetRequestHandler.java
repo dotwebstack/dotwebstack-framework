@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import com.google.common.collect.Maps;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
@@ -10,15 +9,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.param.Parameter;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
@@ -74,37 +68,38 @@ public final class GetRequestHandler implements Inflector<ContainerRequestContex
 
     // ############################################################################################
 
-    Map<String, io.swagger.models.Response> responses = apiOperation.getOperation().getResponses();
-    io.swagger.models.Response response = responses.get("200");
-    Map<String, Property> headers = response.getHeaders();
-    for (Property header : headers.values()) {
-      Map<String, Object> vendorExtensions = header.getVendorExtensions();
-
-      LOG.debug("Vendor extensions for header param '{}': {}", header.getName(), vendorExtensions);
-
-      Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
-
-      if (parameterIdString == null) {
-        continue;
-      }
-
-      IRI iri = SimpleValueFactory.getInstance().createIRI((String) parameterIdString);
-      Parameter<?> parameter = null;
-
-      for (Parameter<?> productParameter : informationProduct.getParameters()) {
-        if (productParameter.getIdentifier().equals(iri)) {
-          parameter = productParameter;
-        }
-      }
-
-      if (parameter == null) {
-        throw new ConfigurationException(String.format(
-            "No parameter found for vendor extension value: '%s'", parameterIdString));
-      }
-
-      Map<String, String> responseParameters = Maps.newHashMap();
-      responseParameters.put(parameter.getName(), null);
-    }
+    // Map<String, io.swagger.models.Response> responses =
+    // apiOperation.getOperation().getResponses();
+    // io.swagger.models.Response response = responses.get("200");
+    // Map<String, Property> headers = response.getHeaders();
+    // for (Property header : headers.values()) {
+    // Map<String, Object> vendorExtensions = header.getVendorExtensions();
+    //
+    // LOG.debug("Vendor extensions for header param '{}': {}", header.getName(), vendorExtensions);
+    //
+    // Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
+    //
+    // if (parameterIdString == null) {
+    // continue;
+    // }
+    //
+    // IRI iri = SimpleValueFactory.getInstance().createIRI((String) parameterIdString);
+    // Parameter<?> parameter = null;
+    //
+    // for (Parameter<?> productParameter : informationProduct.getParameters()) {
+    // if (productParameter.getIdentifier().equals(iri)) {
+    // parameter = productParameter;
+    // }
+    // }
+    //
+    // if (parameter == null) {
+    // throw new ConfigurationException(String.format(
+    // "No parameter found for vendor extension value: '%s'", parameterIdString));
+    // }
+    //
+    // Map<String, String> responseParameters = Maps.newHashMap();
+    // responseParameters.put(parameter.getName(), null);
+    // }
 
     // ############################################################################################
 
