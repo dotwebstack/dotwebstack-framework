@@ -17,12 +17,8 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractRdf4jBackend extends Rdf4jValueBackend implements RDFBackend<Value> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractRdf4jBackend.class);
 
   protected IRI createUriInternal(@NonNull final ValueFactory valueFactory, @NonNull String uri) {
     return valueFactory.createIRI(uri);
@@ -30,14 +26,11 @@ public abstract class AbstractRdf4jBackend extends Rdf4jValueBackend implements 
 
   protected Literal createLiteralInternal(@NonNull final ValueFactory valueFactory,
       @NonNull String content) {
-    LOG.debug("creating literal with content \"{}\"", content);
     return valueFactory.createLiteral(content);
   }
 
   protected Literal createLiteralInternal(@NonNull final ValueFactory valueFactory,
       @NonNull String content, Locale language, java.net.URI type) {
-    LOG.debug("creating literal with content \"{}\", language {}, datatype {}", content, language,
-        type);
     if (language == null && type == null) {
       return valueFactory.createLiteral(content);
     } else if (type == null) {
