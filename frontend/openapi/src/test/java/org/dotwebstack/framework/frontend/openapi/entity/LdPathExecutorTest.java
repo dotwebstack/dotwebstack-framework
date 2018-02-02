@@ -21,7 +21,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class LdPathExecutorTest {
 
   @Mock
-  private GraphEntity entityContextMock;
+  private GraphEntity entityMock;
 
   @Before
   public void setUp() {}
@@ -30,16 +30,16 @@ public class LdPathExecutorTest {
   public void ldPathQuery_ReturnsResult_ForQuery() {
 
     // Arrange
-    when(entityContextMock.getLdPathNamespaces()).thenReturn(
+    when(entityMock.getLdPathNamespaces()).thenReturn(
         ImmutableMap.of("beer", "http://dbeerpedia.org#"));
 
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
             DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
                 DBEERPEDIA.MAXIMUS_NAME).build();
-    when(entityContextMock.getModel()).thenReturn(model);
+    when(entityMock.getModel()).thenReturn(model);
 
-    LdPathExecutor executor = new LdPathExecutor(entityContextMock);
+    LdPathExecutor executor = new LdPathExecutor(entityMock);
 
     // Act
     Collection<Value> result = executor.ldPathQuery(DBEERPEDIA.BROUWTOREN, "beer:Name");

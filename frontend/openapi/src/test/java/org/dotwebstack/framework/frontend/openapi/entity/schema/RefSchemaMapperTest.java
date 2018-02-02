@@ -36,7 +36,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class RefSchemaMapperTest {
 
-  private static final String DUMMY_REF = "#/entityBuilderContext/fooModel";
+  private static final String DUMMY_REF = "#/entityMock/fooModel";
   private static final String KEY_1 = "one";
   private static final String KEY_2 = "_two";
 
@@ -59,7 +59,7 @@ public class RefSchemaMapperTest {
   private final RefSchemaMapper schemaMapper;
 
   @Mock
-  private GraphEntity entityBuilderContext;
+  private GraphEntity entityMock;
 
   @Mock
   private Value context;
@@ -98,7 +98,7 @@ public class RefSchemaMapperTest {
   public void mapGraphValue_ThrowsException_WhenRefCannotBeResolved() {
     // Arrange
     property.set$ref(DUMMY_REF);
-    when(entityBuilderContext.getSwaggerDefinitions()).thenReturn(ImmutableMap.of());
+    when(entityMock.getSwaggerDefinitions()).thenReturn(ImmutableMap.of());
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
@@ -106,8 +106,8 @@ public class RefSchemaMapperTest {
         property.getSimpleRef()));
 
     // Act
-    schemaMapper.mapGraphValue(property, entityBuilderContext,
-        ValueContext.builder().value(context).build(), schemaMapperAdapter);
+    schemaMapper.mapGraphValue(property, entityMock, ValueContext.builder().value(context).build(),
+        schemaMapperAdapter);
   }
 
   @Test
@@ -117,15 +117,14 @@ public class RefSchemaMapperTest {
     Model refModel = new ModelImpl();
     refModel.setProperties(ImmutableMap.of(KEY_1, PROPERTY_1, KEY_2, PROPERTY_2));
 
-    when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
-    when(entityBuilderContext.getSwaggerDefinitions()).thenReturn(
+    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
+    when(entityMock.getSwaggerDefinitions()).thenReturn(
         ImmutableMap.of(property.getSimpleRef(), refModel));
     when(ldPathExecutor.ldPathQuery(context, LD_PATH_QUERY)).thenReturn(ImmutableList.of(VALUE_2));
 
     // Act
-    Map<String, Object> result =
-        (Map<String, Object>) schemaMapper.mapGraphValue(property, entityBuilderContext,
-            ValueContext.builder().value(context).build(), schemaMapperAdapter);
+    Map<String, Object> result = (Map<String, Object>) schemaMapper.mapGraphValue(property,
+        entityMock, ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(2));

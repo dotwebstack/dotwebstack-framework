@@ -37,9 +37,9 @@ public class LdPathExecutor {
 
   private final ImmutableMap<String, String> ldpathNamespaces;
 
-  public LdPathExecutor(@NonNull final GraphEntity context) {
-    this.ldpathNamespaces = context.getLdPathNamespaces();
-    this.ldpath = createLdpath(context.getModel());
+  public LdPathExecutor(@NonNull final GraphEntity entity) {
+    this.ldpathNamespaces = entity.getLdPathNamespaces();
+    this.ldpath = createLdpath(entity.getModel());
   }
 
   private LDPath<Value> createLdpath(Model model) {

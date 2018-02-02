@@ -40,7 +40,7 @@ public class ResponseSchemaMapperTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Mock
-  private GraphEntity contextMock;
+  private GraphEntity entityMock;
 
   @Mock
   private LdPathExecutor ldPathExecutorMock;
@@ -63,7 +63,7 @@ public class ResponseSchemaMapperTest {
     schemaMapperAdapter = new SchemaMapperAdapter(
         Arrays.asList(new StringSchemaMapper(), schemaMapper, new ObjectSchemaMapper()));
 
-    when(contextMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
   @Test
@@ -80,13 +80,13 @@ public class ResponseSchemaMapperTest {
 
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).build();
-    when(contextMock.getModel()).thenReturn(model);
+    when(entityMock.getModel()).thenReturn(model);
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
+    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
@@ -113,13 +113,13 @@ public class ResponseSchemaMapperTest {
 
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).build();
-    when(contextMock.getModel()).thenReturn(model);
+    when(entityMock.getModel()).thenReturn(model);
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
+    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
@@ -145,10 +145,10 @@ public class ResponseSchemaMapperTest {
         ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
 
     Model model = new ModelBuilder().build();
-    when(contextMock.getModel()).thenReturn(model);
+    when(entityMock.getModel()).thenReturn(model);
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
+    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
@@ -175,10 +175,10 @@ public class ResponseSchemaMapperTest {
     objectProperty.setRequired(true);
 
     Model model = new ModelBuilder().build();
-    when(contextMock.getModel()).thenReturn(model);
+    when(entityMock.getModel()).thenReturn(model);
 
     // Act
-    schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
+    schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
   }
 
@@ -204,10 +204,10 @@ public class ResponseSchemaMapperTest {
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
             DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
                 DBEERPEDIA.MAXIMUS_NAME).build();
-    when(contextMock.getModel()).thenReturn(model);
+    when(entityMock.getModel()).thenReturn(model);
 
     // Act
-    schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), contextMock,
+    schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
   }
 

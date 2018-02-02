@@ -55,7 +55,7 @@ public class ArraySchemaMapperTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private GraphEntity contextMock;
+  private GraphEntity entityMock;
 
   @Mock
   private Value valueMock;
@@ -83,7 +83,7 @@ public class ArraySchemaMapperTest {
 
     schemaMapperAdapter = new SchemaMapperAdapter(schemaMappers);
 
-    when(contextMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
 
     stringProperty = new StringProperty();
     stringProperty.getVendorExtensions().put(OpenApiSpecificationExtensions.LDPATH, "name");
@@ -127,7 +127,7 @@ public class ArraySchemaMapperTest {
     Value value = null;
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+    Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, entityMock,
         ValueContext.builder().value(value).build(), schemaMapperAdapter);
 
     // Assert
@@ -149,7 +149,7 @@ public class ArraySchemaMapperTest {
 
     // Act
     List<Optional<String>> result =
-        (List<Optional<String>>) schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+        (List<Optional<String>>) schemaMapperAdapter.mapGraphValue(arrayProperty, entityMock,
             ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -173,7 +173,7 @@ public class ArraySchemaMapperTest {
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
             DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
                 DBEERPEDIA.MAXIMUS_NAME).build();
-    when(contextMock.getModel()).thenReturn(model);
+    when(entityMock.getModel()).thenReturn(model);
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN, DUMMY_EXPR)).thenReturn(
         ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME));
@@ -181,7 +181,7 @@ public class ArraySchemaMapperTest {
         ImmutableList.of(DBEERPEDIA.MAXIMUS_NAME));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+    Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, entityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -206,7 +206,7 @@ public class ArraySchemaMapperTest {
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
             DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
                 DBEERPEDIA.MAXIMUS_NAME).build();
-    when(contextMock.getModel()).thenReturn(model);
+    when(entityMock.getModel()).thenReturn(model);
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN, "name")).thenReturn(
         ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME));
@@ -214,7 +214,7 @@ public class ArraySchemaMapperTest {
         ImmutableList.of(DBEERPEDIA.MAXIMUS_NAME));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+    Object result = schemaMapperAdapter.mapGraphValue(arrayProperty, entityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -238,7 +238,7 @@ public class ArraySchemaMapperTest {
     arrayProperty.setName(DUMMY_NAME);
 
     // Act
-    schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+    schemaMapperAdapter.mapGraphValue(arrayProperty, entityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
@@ -259,7 +259,7 @@ public class ArraySchemaMapperTest {
             + " specified in the OpenAPI specification", arrayProperty.getMinItems()));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+    schemaMapperAdapter.mapGraphValue(arrayProperty, entityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
@@ -280,7 +280,7 @@ public class ArraySchemaMapperTest {
             + " specified in the OpenAPI specification", arrayProperty.getMaxItems()));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(arrayProperty, contextMock,
+    schemaMapperAdapter.mapGraphValue(arrayProperty, entityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 

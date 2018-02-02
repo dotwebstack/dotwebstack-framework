@@ -56,7 +56,6 @@ public final class GraphEntity extends AbstractEntity {
         requestParameters, informationProduct);
   }
 
-
   public void addResponseParameter(@NonNull String key, String value) {
     responseParameters.put(key, value);
   }
