@@ -28,7 +28,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class AbstractSubjectFilterSchemaMapperTest {
 
   @Mock
-  private GraphEntity GraphEntityMock;
+  private GraphEntity graphEntityMock;
 
   @Mock
   private Property propertyMock;
@@ -43,7 +43,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
     Model model =
         new ModelBuilder().subject("http://www.test.nl#subj").add("http://www.test.nl#subj",
             "http://www.test.nl#is", "http://www.test.nl#obj").build();
-    when(GraphEntityMock.getModel()).thenReturn(model);
+    when(graphEntityMock.getModel()).thenReturn(model);
   }
 
   @Test
@@ -56,7 +56,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
                 "http://www.test.nl#obj3"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
-    Set<Resource> results = mapper.getSubjects(propertyMock, GraphEntityMock);
+    Set<Resource> results = mapper.getSubjects(propertyMock, graphEntityMock);
     // Assert
     assertThat(results, hasSize(is(0)));
   }
@@ -68,7 +68,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
         SimpleValueFactory.getInstance().createIRI("http://www.test.nl#obj1")).add(
             "http://www.test.nl#subj2", "http://www.test.nl#is",
             SimpleValueFactory.getInstance().createIRI("http://www.test.nl#obj1")).build();
-    when(GraphEntityMock.getModel()).thenReturn(model);
+    when(graphEntityMock.getModel()).thenReturn(model);
 
     Map<String, Object> vendorExtensions =
         Maps.newHashMap(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
@@ -77,7 +77,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
                 "http://www.test.nl#obj1"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
-    Set<Resource> results = mapper.getSubjects(propertyMock, GraphEntityMock);
+    Set<Resource> results = mapper.getSubjects(propertyMock, graphEntityMock);
     // Assert
     assertThat(results, hasSize(is(2)));
   }
@@ -93,7 +93,7 @@ public class AbstractSubjectFilterSchemaMapperTest {
                 "http://www.test.nl#is"))));
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
     // Act
-    mapper.getSubjects(propertyMock, GraphEntityMock);
+    mapper.getSubjects(propertyMock, graphEntityMock);
   }
 
   @Test
