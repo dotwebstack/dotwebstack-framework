@@ -7,13 +7,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.NonNull;
-import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.informationproduct.InformationProductHelper;
 import org.dotwebstack.framework.param.Parameter;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,25 +19,6 @@ import org.springframework.stereotype.Service;
 class RequestParameterMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestParameterMapper.class);
-
-  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
-
-  private static Parameter<?> getParameter(InformationProduct product, String parameterIdString) {
-    IRI iri = VALUE_FACTORY.createIRI((String) parameterIdString);
-    Parameter<?> parameter = null;
-
-    for (Parameter<?> productParameter : product.getParameters()) {
-      if (productParameter.getIdentifier().equals(iri)) {
-        parameter = productParameter;
-      }
-    }
-
-    if (parameter == null) {
-      throw new ConfigurationException(
-          String.format("No parameter found for vendor extension value: '%s'", parameterIdString));
-    }
-    return parameter;
-  }
 
   Map<String, String> map(@NonNull Operation operation, @NonNull InformationProduct product,
       @NonNull RequestParameters requestParameters) {
@@ -64,7 +42,8 @@ class RequestParameterMapper {
             continue;
           }
 
-          Parameter<?> parameter = getParameter(product, (String) parameterIdString);
+          Parameter<?> parameter =
+              InformationProductHelper.getParameter(product, (String) parameterIdString);
 
           String value = requestParameters.get(parameter.getName());
 
@@ -83,7 +62,8 @@ class RequestParameterMapper {
           continue;
         }
 
-        Parameter<?> parameter = getParameter(product, (String) parameterIdString);
+        Parameter<?> parameter =
+            InformationProductHelper.getParameter(product, (String) parameterIdString);
 
         String value = requestParameters.get(parameter.getName());
 

@@ -145,6 +145,26 @@ public class EntityWriterInterceptorTest {
   }
 
   @Test
+  public void aroundWriteTo_DoesNotWriteResponseHeaders_ForNoPropertyForMediaType()
+      throws IOException {
+    // Arrange
+    Map<MediaType, Property> schemaMap = ImmutableMap.of();
+
+    GraphEntity entity = new GraphEntity(schemaMap, mock(GraphEntityContext.class));
+    when(interceptorContextMock.getEntity()).thenReturn(entity);
+
+    Object mappedEntity = ImmutableList.of();
+    when(graphEntityMapperMock.map(entity, MediaType.APPLICATION_JSON_TYPE)).thenReturn(
+        mappedEntity);
+
+    // Act
+    entityWriterInterceptor.aroundWriteTo(interceptorContextMock);
+
+    // Assert
+    verify(interceptorContextMock, never()).getHeaders();
+  }
+
+  @Test
   public void aroundWriteTo_DoesNotWriteResponseHeaders_ForUnknownVendorExtensions()
       throws IOException {
     // Arrange

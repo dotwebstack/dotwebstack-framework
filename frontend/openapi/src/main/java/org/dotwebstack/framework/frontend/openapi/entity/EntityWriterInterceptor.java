@@ -1,22 +1,21 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
+import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Response;
 import io.swagger.models.properties.Property;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import lombok.NonNull;
-import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.informationproduct.InformationProductHelper;
 import org.dotwebstack.framework.param.Parameter;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public final class EntityWriterInterceptor implements WriterInterceptor {
 
   private static final Logger LOG = LoggerFactory.getLogger(EntityWriterInterceptor.class);
-
-  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   private final TupleEntityMapper tupleEntityMapper;
 
@@ -52,49 +49,50 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
       Object mappedEntity = graphEntityMapper.map(entity, mediaType);
       context.setEntity(mappedEntity);
 
-      Response response = ((ResponseProperty) entity.getSchemaMap().get(mediaType)).getResponse();
-      Map<String, Property> headers = response.getHeaders();
+      Map<String, Object> headers = createResponseHeaders(entity, mediaType);
 
-      if (headers != null) {
-        for (Entry<String, Property> header : headers.entrySet()) {
-          Map<String, Object> vendorExtensions = header.getValue().getVendorExtensions();
-
-          LOG.debug("Vendor extensions for header param '{}': {}", header.getKey(),
-              vendorExtensions);
-
-          Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
-
-          if (parameterIdString == null) {
-            continue;
-          }
-
-          InformationProduct product = entity.getEntityContext().getInformationProduct();
-          Parameter<?> parameter = getParameter(product, (String) parameterIdString);
-          Object value = parameter.handle(entity.getEntityContext().getResponseParameters());
-
-          context.getHeaders().add(parameter.getName(), value);
-        }
-      }
+      headers.entrySet().forEach(e -> context.getHeaders().add(e.getKey(), e.getValue()));
     }
 
     context.proceed();
   }
 
-  private static Parameter<?> getParameter(InformationProduct product, String parameterIdString) {
-    IRI iri = VALUE_FACTORY.createIRI((String) parameterIdString);
-    Parameter<?> parameter = null;
+  private Map<String, Object> createResponseHeaders(GraphEntity entity, MediaType mediaType) {
+    Property property = entity.getSchemaMap().get(mediaType);
 
-    for (Parameter<?> productParameter : product.getParameters()) {
-      if (productParameter.getIdentifier().equals(iri)) {
-        parameter = productParameter;
+    if (property == null) {
+      return ImmutableMap.of();
+    }
+
+    Response response = ((ResponseProperty) property).getResponse();
+    Map<String, Property> headers = response.getHeaders();
+
+    if (headers == null) {
+      return ImmutableMap.of();
+    }
+
+    Map<String, Object> result = new HashMap<>();
+
+    for (Entry<String, Property> header : headers.entrySet()) {
+      Map<String, Object> vendorExtensions = header.getValue().getVendorExtensions();
+
+      LOG.debug("Vendor extensions for header param '{}': {}", header.getKey(), vendorExtensions);
+
+      Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
+
+      if (parameterIdString == null) {
+        continue;
       }
+
+      InformationProduct product = entity.getEntityContext().getInformationProduct();
+      Parameter<?> parameter =
+          InformationProductHelper.getParameter(product, (String) parameterIdString);
+      Object value = parameter.handle(entity.getEntityContext().getResponseParameters());
+
+      result.put(parameter.getName(), value);
     }
 
-    if (parameter == null) {
-      throw new ConfigurationException(
-          String.format("No parameter found for vendor extension value: '%s'", parameterIdString));
-    }
-    return parameter;
+    return result;
   }
 
 }
