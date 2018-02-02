@@ -57,7 +57,8 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
     context.proceed();
   }
 
-  private Map<String, Object> createResponseHeaders(GraphEntity entity, MediaType mediaType) {
+  private static Map<String, Object> createResponseHeaders(GraphEntity entity,
+      MediaType mediaType) {
     Property property = entity.getSchemaMap().get(mediaType);
 
     if (property == null) {
