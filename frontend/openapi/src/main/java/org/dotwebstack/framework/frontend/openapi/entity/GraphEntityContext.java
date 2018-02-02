@@ -51,10 +51,17 @@ public class GraphEntityContext {
     return requestParameters;
   }
 
+  /**
+   * @param key Overwrites any existing keys.
+   * @param value Can be {@code null}.
+   */
   public void addResponseParameter(@NonNull String key, String value) {
     responseParameters.put(key, value);
   }
 
+  /**
+   * @return The response parameters as an immutable Map.
+   */
   public Map<String, String> getResponseParameters() {
     return ImmutableMap.copyOf(responseParameters);
   }
