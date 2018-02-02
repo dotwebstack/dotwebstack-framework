@@ -28,11 +28,11 @@ public class GraphEntityMapperTest {
   @Mock
   private Map<String, String> requestParameters;
   @Mock
-  private Swagger definitions;
+  private Swagger definitionsMock;
   @Mock
-  private QueryResult<Statement> queryResult;
+  private QueryResult<Statement> queryResultMock;
   @Mock
-  private InformationProduct informationProduct;
+  private InformationProduct informationProductMock;
   @Mock
   private SchemaMapperAdapter schemaMapperAdapterMock;
 
@@ -48,7 +48,7 @@ public class GraphEntityMapperTest {
     // Arrange
     IntegerProperty schema = new IntegerProperty();
     GraphEntity entity = newGraphEntity(ImmutableMap.of(MediaType.TEXT_PLAIN_TYPE, schema),
-        queryResult, definitions, requestParameters, informationProduct);
+        queryResultMock, definitionsMock, requestParameters, informationProductMock);
 
     Object object = new Object();
     when(schemaMapperAdapterMock.mapGraphValue(any(IntegerProperty.class),

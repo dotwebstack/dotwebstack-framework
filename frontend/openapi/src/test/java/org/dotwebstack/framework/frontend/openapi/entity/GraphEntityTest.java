@@ -19,7 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GraphEntityContextTest {
+public class GraphEntityTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -28,16 +28,16 @@ public class GraphEntityContextTest {
   private InformationProduct productMock;
 
   @Mock
-  private QueryResult<Statement> queryResult;
+  private QueryResult<Statement> queryResultMock;
 
   @Mock
-  private Swagger definitions;
+  private Swagger definitionsMock;
 
   private GraphEntity context;
 
   @Before
   public void setUp() {
-    context = newGraphEntity(ImmutableMap.of(), queryResult, definitions,
+    context = newGraphEntity(ImmutableMap.of(), queryResultMock, definitionsMock,
         ImmutableMap.of(), productMock);
   }
 
