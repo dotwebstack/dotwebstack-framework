@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
+import static org.dotwebstack.framework.informationproduct.InformationProductHelper.getParameter;
+
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Response;
 import io.swagger.models.properties.Property;
@@ -14,7 +16,6 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.informationproduct.InformationProductHelper;
 import org.dotwebstack.framework.param.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,10 +85,10 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
         continue;
       }
 
-      InformationProduct product = entity.getEntityContext().getInformationProduct();
+      InformationProduct product = entity.getInformationProduct();
       Parameter<?> parameter =
-          InformationProductHelper.getParameter(product, (String) parameterIdString);
-      Object value = parameter.handle(entity.getEntityContext().getResponseParameters());
+          getParameter(product, (String) parameterIdString);
+      Object value = parameter.handle(entity.getResponseParameters());
 
       result.put(parameter.getName(), value);
     }

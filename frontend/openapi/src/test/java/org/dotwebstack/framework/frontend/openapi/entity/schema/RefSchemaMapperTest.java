@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -59,7 +59,7 @@ public class RefSchemaMapperTest {
   private final RefSchemaMapper schemaMapper;
 
   @Mock
-  private GraphEntityContext entityBuilderContext;
+  private GraphEntity entityBuilderContext;
 
   @Mock
   private Value context;

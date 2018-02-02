@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
+import static com.google.common.collect.Maps.newHashMap;
 
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Model;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
@@ -15,15 +17,32 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.query.QueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
 
+@Getter
 public final class GraphEntity extends AbstractEntity {
 
-  @Getter
-  private final GraphEntityContext entityContext;
+  private final ImmutableMap<String, String> ldPathNamespaces;
+  private final Map<String, Model> swaggerDefinitions;
+  private final org.eclipse.rdf4j.model.Model model;
+  private final InformationProduct informationProduct;
+  private final Map<String, String> requestParameters;
+  private final Map<String, String> responseParameters;
+  private final LdPathExecutor ldPathExecutor;
 
-  GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
-      @NonNull GraphEntityContext entityContext) {
+  private GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
+      @NonNull ImmutableMap<String, String> ldPathNamespaces,
+      @NonNull Map<String, Model> swaggerDefinitions,
+      @NonNull org.eclipse.rdf4j.model.Model model,
+      @NonNull Map<String, String> requestParameters,
+      @NonNull InformationProduct informationProduct) {
     super(schemaMap);
-    this.entityContext = entityContext;
+
+    this.ldPathNamespaces = ldPathNamespaces;
+    this.swaggerDefinitions = swaggerDefinitions;
+    this.model = model;
+    this.informationProduct = informationProduct;
+    this.requestParameters = requestParameters;
+    this.responseParameters = newHashMap();
+    this.ldPathExecutor = new LdPathExecutor(this);
   }
 
   public static GraphEntity newGraphEntity(@NonNull Map<MediaType, Property> schemaMap,
@@ -32,12 +51,21 @@ public final class GraphEntity extends AbstractEntity {
       @NonNull Map<String, String> requestParameters,
       @NonNull InformationProduct informationProduct) {
 
-    return new GraphEntity(schemaMap, new GraphEntityContext(
-        extractLdpathNamespaces(definitions), extractSwaggerDefinitions(definitions),
-        QueryResults.asModel(queryResult), requestParameters, informationProduct));
+    return new GraphEntity(schemaMap, extractLdpathNamespaces(definitions),
+        extractSwaggerDefinitions(definitions), QueryResults.asModel(queryResult),
+        requestParameters, informationProduct);
   }
 
-  private static Map<String, io.swagger.models.Model> extractSwaggerDefinitions(Swagger swagger) {
+
+  public void addResponseParameter(@NonNull String key, String value) {
+    responseParameters.put(key, value);
+  }
+
+  public Map<String, String> getResponseParameters() {
+    return ImmutableMap.copyOf(responseParameters);
+  }
+
+  private static Map<String, Model> extractSwaggerDefinitions(Swagger swagger) {
     return swagger.getDefinitions() == null ? ImmutableMap.of() : copyOf(swagger.getDefinitions());
   }
 

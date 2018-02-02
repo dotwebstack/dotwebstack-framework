@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.Property;
 import java.util.List;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,14 +30,14 @@ public class SchemaMapperAdapter {
 
   @SuppressWarnings("unchecked")
   public <S extends Property> Object mapGraphValue(@NonNull S schema,
-      GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
+      GraphEntity graphEntity, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
             () -> new SchemaMapperRuntimeException(String.format(
                 "No schema mapper available for '%s'.", schema.getClass().getName())));
 
-    return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, graphEntityContext,
+    return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, graphEntity,
         valueContext, schemaMapperAdapter);
   }
 }

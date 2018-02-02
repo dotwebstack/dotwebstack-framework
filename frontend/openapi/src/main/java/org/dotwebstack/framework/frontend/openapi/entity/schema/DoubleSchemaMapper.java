@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -28,7 +28,7 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
 
   @Override
   public Double mapGraphValue(@NonNull DoubleProperty property,
-      @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
+      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
@@ -42,7 +42,7 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
           String.format("Property '%s' must have a '%s' attribute.", property.getName(),
               OpenApiSpecificationExtensions.LDPATH));
     }
-    LdPathExecutor ldPathExecutor = graphEntityContext.getLdPathExecutor();
+    LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 

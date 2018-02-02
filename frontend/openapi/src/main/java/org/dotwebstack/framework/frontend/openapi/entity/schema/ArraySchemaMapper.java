@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
@@ -26,22 +26,22 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
 
   @Override
   public Object mapGraphValue(@NonNull ArrayProperty property,
-      @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
+      @NonNull GraphEntity GraphEntity, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
     if (hasSubjectFilterVendorExtension(property)) {
-      Set<Resource> subjects = getSubjects(property, graphEntityContext);
+      Set<Resource> subjects = getSubjects(property, GraphEntity);
 
       subjects.forEach(subject -> {
         ValueContext subjectContext = valueContext.toBuilder().value(subject).build();
 
-        builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntityContext,
+        builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), GraphEntity,
             subjectContext, schemaMapperAdapter));
       });
     } else if (valueContext.getValue() != null) {
       if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(property, graphEntityContext, valueContext, schemaMapperAdapter, builder);
+        queryAndValidate(property, GraphEntity, valueContext, schemaMapperAdapter, builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
             "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
@@ -51,10 +51,10 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
     return builder.build();
   }
 
-  private void queryAndValidate(ArrayProperty property, GraphEntityContext graphEntityContext,
+  private void queryAndValidate(ArrayProperty property, GraphEntity GraphEntity,
       ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter,
       ImmutableList.Builder<Object> builder) {
-    LdPathExecutor ldPathExecutor = graphEntityContext.getLdPathExecutor();
+    LdPathExecutor ldPathExecutor = GraphEntity.getLdPathExecutor();
     Collection<Value> queryResult = ldPathExecutor.ldPathQuery(valueContext.getValue(),
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH));
 
@@ -65,7 +65,7 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
       ValueContext newValueContext = valueContext.toBuilder().value(valueNext).build();
       Optional innerPropertySolved =
           Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
-              graphEntityContext, newValueContext, schemaMapperAdapter));
+              GraphEntity, newValueContext, schemaMapperAdapter));
       builder.add(innerPropertySolved);
 
     });

@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.DateProperty;
 import java.time.LocalDate;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -37,7 +37,7 @@ public class DateSchemaMapperTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Mock
-  private GraphEntityContext entityBuilderContext;
+  private GraphEntity entityBuilderContext;
 
   @Mock
   private SchemaMapperAdapter schemaMapperAdapter;

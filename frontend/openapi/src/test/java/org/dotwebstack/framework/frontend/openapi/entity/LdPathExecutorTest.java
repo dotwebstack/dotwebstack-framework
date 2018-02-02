@@ -21,7 +21,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class LdPathExecutorTest {
 
   @Mock
-  private GraphEntityContext entityContextMock;
+  private GraphEntity entityContextMock;
 
   @Before
   public void setUp() {}

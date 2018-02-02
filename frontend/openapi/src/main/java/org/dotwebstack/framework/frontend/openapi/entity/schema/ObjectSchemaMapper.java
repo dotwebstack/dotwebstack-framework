@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
@@ -27,11 +27,11 @@ public class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<Object
 
   @Override
   public Object mapGraphValue(@NonNull ObjectProperty property,
-      @NonNull GraphEntityContext graphEntityContext, @NonNull ValueContext valueContext,
+      @NonNull GraphEntity GraphEntity, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext newValueContext = populateValueContextWithVendorExtensions(property, valueContext);
 
-    return handleProperty(property, graphEntityContext, newValueContext, schemaMapperAdapter);
+    return handleProperty(property, GraphEntity, newValueContext, schemaMapperAdapter);
   }
 
   private static ValueContext populateValueContextWithVendorExtensions(@NonNull Property property,
@@ -53,12 +53,12 @@ public class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<Object
 
   }
 
-  private Object handleProperty(ObjectProperty property, GraphEntityContext graphEntityContext,
+  private Object handleProperty(ObjectProperty property, GraphEntity GraphEntity,
       ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
     if (hasSubjectFilterVendorExtension(property)) {
-      Value value = getSubject(property, graphEntityContext);
+      Value value = getSubject(property, GraphEntity);
 
       if (value == null) {
         return null;
@@ -72,15 +72,15 @@ public class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<Object
     if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
-      return handleLdPathVendorExtension(property, graphEntityContext, newValueContext, ldPath,
+      return handleLdPathVendorExtension(property, GraphEntity, newValueContext, ldPath,
           schemaMapperAdapter);
     }
 
-    return handleProperties(property, graphEntityContext, newValueContext, schemaMapperAdapter);
+    return handleProperties(property, GraphEntity, newValueContext, schemaMapperAdapter);
   }
 
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
-      GraphEntityContext entityBuilderContext, ValueContext valueContext, String ldPathQuery,
+      GraphEntity entityBuilderContext, ValueContext valueContext, String ldPathQuery,
       SchemaMapperAdapter schemaMapperAdapter) {
 
     LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
@@ -108,7 +108,7 @@ public class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<Object
   }
 
   private Map<String, Object> handleProperties(ObjectProperty property,
-      GraphEntityContext entityBuilderContext, ValueContext valueContext,
+      GraphEntity entityBuilderContext, ValueContext valueContext,
       SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
     property.getProperties().forEach((propKey, propValue) -> {

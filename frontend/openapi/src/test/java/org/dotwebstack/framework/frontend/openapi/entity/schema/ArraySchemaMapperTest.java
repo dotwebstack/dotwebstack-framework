@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
@@ -55,7 +55,7 @@ public class ArraySchemaMapperTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private GraphEntityContext contextMock;
+  private GraphEntity contextMock;
 
   @Mock
   private Value valueMock;

@@ -24,7 +24,6 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
 
   @Override
   public Object map(@NonNull GraphEntity entity, @NonNull MediaType mediaType) {
-    GraphEntityContext graphEntityContext = entity.getEntityContext();
     Property schema = entity.getSchemaMap().get(mediaType);
     ValueContext valueContext = ValueContext.builder().build();
 
@@ -34,7 +33,7 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
           String.format("No schema found for media type '%s'.", mediaType.toString()));
     }
 
-    return schemaMapperAdapter.mapGraphValue(schema, graphEntityContext, valueContext,
+    return schemaMapperAdapter.mapGraphValue(schema, entity, valueContext,
         schemaMapperAdapter);
   }
 

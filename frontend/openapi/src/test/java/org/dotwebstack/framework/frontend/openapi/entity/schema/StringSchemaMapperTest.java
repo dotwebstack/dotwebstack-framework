@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Literal;
@@ -39,7 +39,7 @@ public class StringSchemaMapperTest {
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   @Mock
-  private GraphEntityContext entityContextMock;
+  private GraphEntity entityContextMock;
   @Mock
   private LdPathExecutor ldPathExecutorMock;
   @Mock
