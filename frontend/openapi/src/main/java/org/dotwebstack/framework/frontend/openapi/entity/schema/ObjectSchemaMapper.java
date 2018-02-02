@@ -27,11 +27,11 @@ public class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<Object
 
   @Override
   public Object mapGraphValue(@NonNull ObjectProperty property,
-      @NonNull GraphEntity GraphEntity, @NonNull ValueContext valueContext,
+      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext newValueContext = populateValueContextWithVendorExtensions(property, valueContext);
 
-    return handleProperty(property, GraphEntity, newValueContext, schemaMapperAdapter);
+    return handleProperty(property, graphEntity, newValueContext, schemaMapperAdapter);
   }
 
   private static ValueContext populateValueContextWithVendorExtensions(@NonNull Property property,
@@ -53,12 +53,12 @@ public class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<Object
 
   }
 
-  private Object handleProperty(ObjectProperty property, GraphEntity GraphEntity,
+  private Object handleProperty(ObjectProperty property, GraphEntity graphEntity,
       ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
     if (hasSubjectFilterVendorExtension(property)) {
-      Value value = getSubject(property, GraphEntity);
+      Value value = getSubject(property, graphEntity);
 
       if (value == null) {
         return null;
@@ -72,11 +72,11 @@ public class ObjectSchemaMapper extends AbstractSubjectFilterSchemaMapper<Object
     if (hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH)) {
       String ldPath =
           property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH).toString();
-      return handleLdPathVendorExtension(property, GraphEntity, newValueContext, ldPath,
+      return handleLdPathVendorExtension(property, graphEntity, newValueContext, ldPath,
           schemaMapperAdapter);
     }
 
-    return handleProperties(property, GraphEntity, newValueContext, schemaMapperAdapter);
+    return handleProperties(property, graphEntity, newValueContext, schemaMapperAdapter);
   }
 
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,

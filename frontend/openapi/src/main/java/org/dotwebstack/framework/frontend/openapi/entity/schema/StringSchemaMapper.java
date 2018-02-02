@@ -31,13 +31,13 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
 
   @Override
   public String mapGraphValue(@NonNull StringProperty property,
-      @NonNull GraphEntity GraphEntity, @NonNull ValueContext valueContext,
+      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     validateVendorExtensions(property);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-      LdPathExecutor ldPathExecutor = GraphEntity.getLdPathExecutor();
+      LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
       return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
     }
 

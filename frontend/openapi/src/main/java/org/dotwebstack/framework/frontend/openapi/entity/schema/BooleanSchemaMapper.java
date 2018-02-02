@@ -17,7 +17,7 @@ class BooleanSchemaMapper implements SchemaMapper<BooleanProperty, Boolean> {
 
   @Override
   public Boolean mapGraphValue(@NonNull BooleanProperty schema,
-      @NonNull GraphEntity GraphEntity, @NonNull ValueContext valueContext,
+      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).booleanValue();
   }
