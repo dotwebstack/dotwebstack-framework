@@ -4,6 +4,7 @@ import io.swagger.models.Response;
 import io.swagger.models.properties.Property;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
@@ -55,10 +56,10 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
       Map<String, Property> headers = response.getHeaders();
 
       if (headers != null) {
-        for (Property header : headers.values()) {
-          Map<String, Object> vendorExtensions = header.getVendorExtensions();
+        for (Entry<String, Property> header : headers.entrySet()) {
+          Map<String, Object> vendorExtensions = header.getValue().getVendorExtensions();
 
-          LOG.debug("Vendor extensions for header param '{}': {}", header.getName(),
+          LOG.debug("Vendor extensions for header param '{}': {}", header.getKey(),
               vendorExtensions);
 
           Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);

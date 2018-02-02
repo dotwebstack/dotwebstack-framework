@@ -65,6 +65,7 @@ public class RequestHandlerFactoryTest {
     RequestHandler result =
         requestHandlerFactory.newRequestHandler(apiOperation, product, schemaMap, swaggerMock);
 
+
     // Assert
     assertThat(result.getInformationProduct(), sameInstance(product));
     assertThat(result.getSchemaMap(), is(schemaMap));

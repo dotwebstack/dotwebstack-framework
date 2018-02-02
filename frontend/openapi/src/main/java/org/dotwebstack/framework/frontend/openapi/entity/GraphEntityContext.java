@@ -52,7 +52,7 @@ public class GraphEntityContext {
   }
 
   public void addResponseParameter(@NonNull String key, String value) {
-    responseParameters.put(key.toLowerCase(), value);
+    responseParameters.put(key, value);
   }
 
   public Map<String, String> getResponseParameters() {
