@@ -165,7 +165,8 @@ public class EntityWriterInterceptorTest {
     // Arrange
     Map<MediaType, Property> schemaMap = ImmutableMap.of();
 
-    GraphEntity entity = new GraphEntity(schemaMap, mock(GraphEntityContext.class));
+    GraphEntity entity = newGraphEntity(schemaMap, queryResult, definitions, ImmutableMap.of(),
+        informationProduct);
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
