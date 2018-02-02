@@ -16,7 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class InformationProductHelperTest {
+public class InformationProductUtilsTest {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
@@ -39,7 +39,7 @@ public class InformationProductHelperTest {
     when(productMock.getParameters()).thenReturn(ImmutableList.of(contentCrsParam, pageParam));
 
     // Act
-    Parameter result = InformationProductHelper.getParameter(productMock,
+    Parameter result = InformationProductUtils.getParameter(productMock,
         NAMESPACE_RO + "xPaginationPageParameter");
 
     // Assert
@@ -60,7 +60,7 @@ public class InformationProductHelperTest {
         new StringTermParameter(VALUE_FACTORY.createIRI("http://baz#", "qux"), "qux", false)));
 
     // Act
-    InformationProductHelper.getParameter(productMock, NAMESPACE_RO + "ContentCrsParameter");
+    InformationProductUtils.getParameter(productMock, NAMESPACE_RO + "ContentCrsParameter");
   }
 
 }

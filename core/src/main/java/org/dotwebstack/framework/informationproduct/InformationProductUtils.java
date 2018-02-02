@@ -7,11 +7,11 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public final class InformationProductHelper {
+public final class InformationProductUtils {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
-  private InformationProductHelper() {}
+  private InformationProductUtils() {}
 
   /**
    * @throws ConfigurationException If no Parameter can be found within the supplied

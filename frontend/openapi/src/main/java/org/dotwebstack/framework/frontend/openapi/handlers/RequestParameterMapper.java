@@ -9,7 +9,7 @@ import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.informationproduct.InformationProductHelper;
+import org.dotwebstack.framework.informationproduct.InformationProductUtils;
 import org.dotwebstack.framework.param.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +43,7 @@ class RequestParameterMapper {
           }
 
           Parameter<?> parameter =
-              InformationProductHelper.getParameter(product, (String) parameterIdString);
+              InformationProductUtils.getParameter(product, (String) parameterIdString);
 
           String value = requestParameters.get(parameter.getName());
 
@@ -63,7 +63,7 @@ class RequestParameterMapper {
         }
 
         Parameter<?> parameter =
-            InformationProductHelper.getParameter(product, (String) parameterIdString);
+            InformationProductUtils.getParameter(product, (String) parameterIdString);
 
         String value = requestParameters.get(parameter.getName());
 
