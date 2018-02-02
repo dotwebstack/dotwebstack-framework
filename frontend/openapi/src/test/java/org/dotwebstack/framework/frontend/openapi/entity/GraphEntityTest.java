@@ -33,39 +33,39 @@ public class GraphEntityTest {
   @Mock
   private Swagger definitionsMock;
 
-  private GraphEntity context;
+  private GraphEntity entity;
 
   @Before
   public void setUp() {
-    context = newGraphEntity(ImmutableMap.of(), queryResultMock, definitionsMock,
+    entity = newGraphEntity(ImmutableMap.of(), queryResultMock, definitionsMock,
         ImmutableMap.of(), productMock);
   }
 
   @Test
   public void constructor_InitializesResponseParameters_AsEmpty() {
     // Assert
-    assertThat(context.getResponseParameters().isEmpty(), is(true));
+    assertThat(entity.getResponseParameters().isEmpty(), is(true));
   }
 
   @Test
   public void addResponseParameter_StoresValue_ForNewValue() {
     // Act
-    context.addResponseParameter("X", "A");
-    context.addResponseParameter("Y", "B");
-    context.addResponseParameter("Z", "C");
+    entity.addResponseParameter("X", "A");
+    entity.addResponseParameter("Y", "B");
+    entity.addResponseParameter("Z", "C");
 
     // Assert
-    assertThat(context.getResponseParameters(), is(ImmutableMap.of("X", "A", "Y", "B", "Z", "C")));
+    assertThat(entity.getResponseParameters(), is(ImmutableMap.of("X", "A", "Y", "B", "Z", "C")));
   }
 
   @Test
   public void addResponseParameter_OverwritesExistingValue_ForDuplicateValue() {
     // Act
-    context.addResponseParameter("X", "A");
-    context.addResponseParameter("X", "B");
+    entity.addResponseParameter("X", "A");
+    entity.addResponseParameter("X", "B");
 
     // Assert
-    assertThat(context.getResponseParameters(), is(ImmutableMap.of("X", "B")));
+    assertThat(entity.getResponseParameters(), is(ImmutableMap.of("X", "B")));
   }
 
   @Test
@@ -74,7 +74,7 @@ public class GraphEntityTest {
     thrown.expect(UnsupportedOperationException.class);
 
     // Arrange
-    Map<String, String> result = context.getResponseParameters();
+    Map<String, String> result = entity.getResponseParameters();
 
     // Act
     result.put("key", "value");
