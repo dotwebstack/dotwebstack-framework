@@ -1,12 +1,15 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
+import static org.dotwebstack.framework.frontend.openapi.entity.GraphEntity.newGraphEntity;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Swagger;
 import java.util.Map;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.query.QueryResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,11 +27,17 @@ public class GraphEntityContextTest {
   @Mock
   private InformationProduct productMock;
 
-  private GraphEntityContext context;
+  @Mock
+  private QueryResult<Statement> queryResult;
+
+  @Mock
+  private Swagger definitions;
+
+  private GraphEntity context;
 
   @Before
   public void setUp() {
-    context = new GraphEntityContext(ImmutableMap.of(), ImmutableMap.of(), new LinkedHashModel(),
+    context = newGraphEntity(ImmutableMap.of(), queryResult, definitions,
         ImmutableMap.of(), productMock);
   }
 
