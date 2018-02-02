@@ -27,8 +27,8 @@ public class RedirectionTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Redirection.Builder(null, stage, DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
-        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+    new Redirection.Builder(null, stage, DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
   }
 
   @Test
@@ -38,42 +38,43 @@ public class RedirectionTest {
 
     // Act
     new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, null,
-        DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
-        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+        DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
   }
 
   @Test
-  public void build_ThrowsException_WithMissingUrlPattern() {
+  public void build_ThrowsException_WithMissingPathPattern() {
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Act
     new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, stage, null,
-        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+        DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
   }
 
   @Test
-  public void build_ThrowsException_WithMissingTargetUrl() {
+  public void build_ThrowsException_WithMissingRedirectTemplate() {
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Act
     new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, stage,
-        DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(), null).build();
+        DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(), null).build();
   }
 
   @Test
   public void build_CreatesRedirection_WithValidData() {
     // Act
     Redirection redirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_REDIRECTION, stage,
-        DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue(),
-        DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()).build();
+        DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(),
+        DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
 
     // Assert
     assertThat(redirection.getIdentifier(), equalTo(DBEERPEDIA.ID2DOC_REDIRECTION));
     assertThat(redirection.getStage(), equalTo(stage));
-    assertThat(redirection.getUrlPattern(), equalTo(DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue()));
-    assertThat(redirection.getTargetUrl(), equalTo(DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()));
+    assertThat(redirection.getPathPattern(), equalTo(DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue()));
+    assertThat(redirection.getRedirectTemplate(),
+        equalTo(DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()));
   }
 
 }

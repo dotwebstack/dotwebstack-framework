@@ -116,12 +116,12 @@ public class RedirectionResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, RDF.TYPE, ELMO.REDIRECTION),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.URL_PATTERN,
-                DBEERPEDIA.ID2DOC_URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.PATH_PATTERN,
+                DBEERPEDIA.ID2DOC_PATH_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.TARGET_URL,
-                DBEERPEDIA.ID2DOC_TARGET_URL))));
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.REDIRECT_TEMPLATE,
+                DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE))));
 
     // Act
     redirectionResourceProvider.loadResources();
@@ -130,21 +130,22 @@ public class RedirectionResourceProviderTest {
     assertThat(redirectionResourceProvider.getAll().entrySet(), hasSize(1));
     Redirection redirection = redirectionResourceProvider.get(DBEERPEDIA.ID2DOC_REDIRECTION);
     assertThat(redirection, is(not(nullValue())));
-    assertThat(redirection.getUrlPattern(), equalTo(DBEERPEDIA.ID2DOC_URL_PATTERN.stringValue()));
+    assertThat(redirection.getPathPattern(), equalTo(DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue()));
     assertThat(redirection.getStage(), equalTo(stage));
-    assertThat(redirection.getTargetUrl(), equalTo(DBEERPEDIA.ID2DOC_TARGET_URL.stringValue()));
+    assertThat(redirection.getRedirectTemplate(),
+        equalTo(DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()));
   }
 
   @Test
-  public void loadResources_ThrowsException_WithMissingUrlPattern() {
+  public void loadResources_ThrowsException_WithMissingPathPattern() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, RDF.TYPE, ELMO.REDIRECTION),
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.TARGET_URL,
-                DBEERPEDIA.ID2DOC_TARGET_URL))));
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.REDIRECT_TEMPLATE,
+                DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -159,10 +160,10 @@ public class RedirectionResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, RDF.TYPE, ELMO.REDIRECTION),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.URL_PATTERN,
-                DBEERPEDIA.ID2DOC_URL_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.TARGET_URL,
-                DBEERPEDIA.ID2DOC_TARGET_URL))));
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.PATH_PATTERN,
+                DBEERPEDIA.ID2DOC_PATH_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.REDIRECT_TEMPLATE,
+                DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -172,13 +173,13 @@ public class RedirectionResourceProviderTest {
   }
 
   @Test
-  public void loadResources_ThrowsException_WithMissingTargetUrl() {
+  public void loadResources_ThrowsException_WithMissingRedirectTemplate() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, RDF.TYPE, ELMO.REDIRECTION),
-            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.URL_PATTERN,
-                DBEERPEDIA.ID2DOC_URL_PATTERN),
+            valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.PATH_PATTERN,
+                DBEERPEDIA.ID2DOC_PATH_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.ID2DOC_REDIRECTION, ELMO.STAGE_PROP,
                 DBEERPEDIA.STAGE))));
 

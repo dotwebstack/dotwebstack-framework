@@ -102,7 +102,7 @@ public class ParameterMapperResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.SOURCE_PROP,
                 HTTP.REQUEST_URI),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.PATTERN_PROP,
-                DBEERPEDIA.SUBJECT_FROM_URL_PATTERN),
+                DBEERPEDIA.SUBJECT_FROM_PATH_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.TEMPLATE_PROP,
                 DBEERPEDIA.SUBJECT_FROM_URL_TEMPLATE),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.TARGET_PROP,
@@ -129,7 +129,7 @@ public class ParameterMapperResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, RDF.TYPE,
                 ELMO.URI_PARAMETER_MAPPER),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.PATTERN_PROP,
-                DBEERPEDIA.SUBJECT_FROM_URL_PATTERN),
+                DBEERPEDIA.SUBJECT_FROM_PATH_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.TEMPLATE_PROP,
                 DBEERPEDIA.SUBJECT_FROM_URL_TEMPLATE),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.TARGET_PROP,
@@ -173,7 +173,7 @@ public class ParameterMapperResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.SOURCE_PROP,
                 HTTP.REQUEST_URI),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.PATTERN_PROP,
-                DBEERPEDIA.SUBJECT_FROM_URL_PATTERN),
+                DBEERPEDIA.SUBJECT_FROM_PATH_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.TARGET_PROP,
                 DBEERPEDIA.SUBJECT_PARAMETER))));
 
@@ -194,7 +194,7 @@ public class ParameterMapperResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.SOURCE_PROP,
                 HTTP.REQUEST_URI),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.PATTERN_PROP,
-                DBEERPEDIA.SUBJECT_FROM_URL_PATTERN),
+                DBEERPEDIA.SUBJECT_FROM_PATH_PATTERN),
             valueFactory.createStatement(DBEERPEDIA.SUBJECT_FROM_URL, ELMO.TEMPLATE_PROP,
                 DBEERPEDIA.SUBJECT_FROM_URL_TEMPLATE))));
 
