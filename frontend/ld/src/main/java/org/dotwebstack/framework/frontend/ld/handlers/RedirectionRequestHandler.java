@@ -1,14 +1,9 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.redirection.Redirection;
 import org.glassfish.jersey.process.Inflector;

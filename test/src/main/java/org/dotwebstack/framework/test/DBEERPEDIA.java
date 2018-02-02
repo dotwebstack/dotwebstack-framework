@@ -165,6 +165,7 @@ public final class DBEERPEDIA {
 
   public static final String PLACE_PARAMETER_VALUE_STRING;
 
+  @java.lang.SuppressWarnings("squid:S1075")
   public static final String PATH_PATTERN_VALUE = "/holyBeer";
 
   public static final IRI BREWERY_TYPE;
