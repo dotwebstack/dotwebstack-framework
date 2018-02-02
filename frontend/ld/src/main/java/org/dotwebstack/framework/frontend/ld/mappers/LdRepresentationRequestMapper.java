@@ -48,7 +48,7 @@ public class LdRepresentationRequestMapper {
       HttpConfiguration httpConfiguration) {
     String basePath = representation.getStage().getFullPath();
 
-    representation.getUrlPatterns().forEach(path -> {
+    representation.getPathPatterns().forEach(path -> {
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);

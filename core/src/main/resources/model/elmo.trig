@@ -425,10 +425,10 @@ elmo:template a owl:DatatypeProperty;
   rdfs:domain elmo:RequestMapper;
   rdfs:range xsd:string;
 .
-elmo:urlPattern a owl:DatatypeProperty;
+elmo:pathPattern a owl:DatatypeProperty;
   rdfs:label "URL pattern"@en;
   rdfs:comment "Specifies the URL pattern for which this representation should be used. The URL pattern is matched to the part of the http request after removing the domain name of the site and the base path of the stage."@en;
-  # No rdfs:domain, a urlPattern can be used with elmo:Representation and elmo:Redirection
+  # No rdfs:domain, a pathPattern can be used with elmo:Representation and elmo:Redirection
   rdfs:range xsd:string;
 .
 elmo:uriPattern a owl:DatatypeProperty;
