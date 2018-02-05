@@ -25,11 +25,9 @@ import org.junit.rules.ExpectedException;
 public class TermParameterDefinitionFactoryTest {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
-
-  private ParameterDefinitionFactory parameterDefinitionFactory;
-
   @Rule
   public final ExpectedException exception = ExpectedException.none();
+  private ParameterDefinitionFactory parameterDefinitionFactory;
 
   @Before
   public void setUp() {
@@ -39,7 +37,7 @@ public class TermParameterDefinitionFactoryTest {
   @Test
   public void supports_ReturnsTrue_ForSupportedIri() {
     // Act
-    boolean result = parameterDefinitionFactory.supports(ELMO.TERM_FILTER);
+    boolean result = parameterDefinitionFactory.supports(ELMO.TERM_PARAMETER);
 
     // Assert
     assertThat(result, is(true));
@@ -63,7 +61,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
 
@@ -85,7 +83,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.INTEGER);
 
@@ -107,7 +105,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.BOOLEAN);
 
@@ -129,7 +127,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
 
@@ -150,12 +148,12 @@ public class TermParameterDefinitionFactoryTest {
     // Arrange
     ModelBuilder builder = new ModelBuilder();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE);
 
     Model model = builder.build();
     final String errorMessage = String.format("No <%s> property found for <%s> of type <%s>",
-        ELMO.SHAPE_PROP, DBEERPEDIA.NAME_PARAMETER_ID, ELMO.TERM_FILTER);
+        ELMO.SHAPE_PROP, DBEERPEDIA.NAME_PARAMETER_ID, ELMO.TERM_PARAMETER);
 
     // Assert
     exception.expect(ConfigurationException.class);
@@ -171,7 +169,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.STRING);
 
@@ -193,7 +191,7 @@ public class TermParameterDefinitionFactoryTest {
     ModelBuilder builder = new ModelBuilder();
     BNode blankNode = VALUE_FACTORY.createBNode();
 
-    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_FILTER).add(
+    builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
             blankNode).add(SHACL.DATATYPE, XMLSchema.STRING).add(SHACL.DEFAULT_VALUE, "foo");
 

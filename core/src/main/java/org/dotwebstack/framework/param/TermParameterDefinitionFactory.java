@@ -22,13 +22,18 @@ import org.springframework.stereotype.Service;
 @NoArgsConstructor
 final class TermParameterDefinitionFactory implements ParameterDefinitionFactory {
 
+  private static Supplier<ConfigurationException> newConfigurationException(Object... arguments) {
+    return () -> new ConfigurationException(
+        String.format("No <%s> property found for <%s> of type <%s>", arguments));
+  }
+
   @Override
   public ParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
     String name = Models.objectLiteral(model.filter(id, ELMO.NAME_PROP, null)).orElseThrow(
-        newConfigurationException(ELMO.NAME_PROP, id, ELMO.TERM_FILTER)).stringValue();
+        newConfigurationException(ELMO.NAME_PROP, id, ELMO.TERM_PARAMETER)).stringValue();
 
     Resource subj = objectResource(model.filter(id, ELMO.SHAPE_PROP, null)).orElseThrow(
-        newConfigurationException(ELMO.SHAPE_PROP, id, ELMO.TERM_FILTER));
+        newConfigurationException(ELMO.SHAPE_PROP, id, ELMO.TERM_PARAMETER));
 
     IRI iriShapeType = objectIRI(model.filter(subj, SHACL.DATATYPE, null)).orElseThrow(
         newConfigurationException(SHACL.DATATYPE, id, ELMO.SHAPE_PROP));
@@ -39,17 +44,12 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
     return new TermParameterDefinition(id, name, shape);
   }
 
-  private static Supplier<ConfigurationException> newConfigurationException(Object... arguments) {
-    return () -> new ConfigurationException(
-        String.format("No <%s> property found for <%s> of type <%s>", arguments));
-  }
-
   /**
-   * @return {@code true} if {@link ELMO#TERM_FILTER} is supplied; {@code false} otherwise.
+   * @return {@code true} if {@link ELMO#TERM_PARAMETER} is supplied; {@code false} otherwise.
    */
   @Override
   public boolean supports(@NonNull IRI type) {
-    return type.equals(ELMO.TERM_FILTER);
+    return type.equals(ELMO.TERM_PARAMETER);
   }
 
 }

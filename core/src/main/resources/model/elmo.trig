@@ -152,7 +152,7 @@ elmo:Parameter a owl:Class;
   rdfs:label "Parameter"@en;
   rdfs:comment "The class of parameters. A parameter is used as input for an information product. Its value(s) are merged with the query according to a template specification."@en;
 .
-    elmo:TermFilter a owl:Class;
+    elmo:TermParameter a owl:Class;
       rdfs:subClassOf elmo:Parameter;
       rdfs:label "Term filter"@en;
       rdfs:comment "The class of term filters. A term filter is a parameter that can hold one value and can be used to filter the results of an information product. The value might be a URI or a literal with any datatype."

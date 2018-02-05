@@ -69,15 +69,16 @@ public class ParameterDefinitionResourceProviderTest {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE,
+                ELMO.TERM_PARAMETER),
             VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP,
                 DBEERPEDIA.NAME_PARAMETER_VALUE),
             VALUE_FACTORY.createStatement(DBEERPEDIA.PLACE_PARAMETER_ID, RDF.TYPE,
-                ELMO.TERM_FILTER),
+                ELMO.TERM_PARAMETER),
             VALUE_FACTORY.createStatement(DBEERPEDIA.PLACE_PARAMETER_ID, ELMO.NAME_PROP,
                 DBEERPEDIA.PLACE_PARAMETER_VALUE))));
 
-    when(parameterDefinitionFactoryMock.supports(ELMO.TERM_FILTER)).thenReturn(true);
+    when(parameterDefinitionFactoryMock.supports(ELMO.TERM_PARAMETER)).thenReturn(true);
 
     ParameterDefinition nameParameterDefinition = mock(ParameterDefinition.class);
     when(parameterDefinitionFactoryMock.create(Mockito.any(),
@@ -101,11 +102,12 @@ public class ParameterDefinitionResourceProviderTest {
     // Arrange
     when(graphQueryMock.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
-            VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE, ELMO.TERM_FILTER),
+            VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, RDF.TYPE,
+                ELMO.TERM_PARAMETER),
             VALUE_FACTORY.createStatement(DBEERPEDIA.NAME_PARAMETER_ID, ELMO.NAME_PROP,
                 DBEERPEDIA.NAME_PARAMETER_VALUE))));
 
-    when(parameterDefinitionFactoryMock.supports(ELMO.TERM_FILTER)).thenReturn(false);
+    when(parameterDefinitionFactoryMock.supports(ELMO.TERM_PARAMETER)).thenReturn(false);
 
     // Act
     provider.loadResources();

@@ -61,7 +61,7 @@ public final class ELMO {
 
   public static final IRI PARAMETER;
 
-  public static final IRI TERM_FILTER;
+  public static final IRI TERM_PARAMETER;
 
   public static final IRI OPTIONAL_PARAMETER_PROP;
 
@@ -140,7 +140,7 @@ public final class ELMO {
     REDIRECT_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 
     PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
-    TERM_FILTER = valueFactory.createIRI(ELMO.NAMESPACE, "TermFilter");
+    TERM_PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "TermParameter");
 
     OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
     REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");
