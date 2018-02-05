@@ -36,7 +36,7 @@ public class TermParameterDefinitionFactoryTest {
 
   @Test
   public void supports_ReturnsTrue_ForSupportedIri() {
-    // Assert
+    // Act
     boolean result = parameterDefinitionFactory.supports(ELMO.TERM_PARAMETER);
 
     // Assert
