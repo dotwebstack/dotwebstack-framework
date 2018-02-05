@@ -1,4 +1,6 @@
-package org.dotwebstack.framework.transaction.flow.step;
+package org.dotwebstack.framework.transaction.flow.step.update;
+
+import org.dotwebstack.framework.transaction.flow.step.AbstractStep;
 
 public class UpdateStep extends AbstractStep {
 

@@ -1,4 +1,6 @@
-package org.dotwebstack.framework.transaction.flow.step;
+package org.dotwebstack.framework.transaction.flow.step.persistence;
+
+import org.dotwebstack.framework.transaction.flow.step.AbstractStep;
 
 public class PersistenceStep extends AbstractStep {
 

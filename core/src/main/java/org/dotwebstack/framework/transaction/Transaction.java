@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.transaction;
 
 import org.dotwebstack.framework.transaction.flow.Flow;
+import org.dotwebstack.framework.transaction.flow.SequentialFlowExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 
@@ -14,6 +15,8 @@ public class Transaction {
    * Transaction
    */
 
+  private SequentialFlowExecutor sequentialFlowExecutor;
+
   public void execute(Model model) {
 
     /*
@@ -23,6 +26,7 @@ public class Transaction {
         4. remove graph
      */
 
-    flow.execute();
+    sequentialFlowExecutor.execute();
   }
+
 }
