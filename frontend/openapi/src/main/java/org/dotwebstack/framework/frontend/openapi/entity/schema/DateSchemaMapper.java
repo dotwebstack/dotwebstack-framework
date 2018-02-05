@@ -9,7 +9,7 @@ import java.util.Set;
 import javax.xml.datatype.XMLGregorianCalendar;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -29,7 +29,7 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
 
   @Override
   public LocalDate mapGraphValue(@NonNull DateProperty property,
-      @NonNull GraphEntityContext context, @NonNull ValueContext valueContext,
+      @NonNull GraphEntity context, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
     String ldPathQuery =

@@ -96,7 +96,7 @@ public class RedirectionRequestHandlerTest {
     when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + "some invalid pattern");
 
     // Act
-    Response response = redirectionRequestHandler.apply(containerRequestContext);
+    redirectionRequestHandler.apply(containerRequestContext);
   }
 
 }

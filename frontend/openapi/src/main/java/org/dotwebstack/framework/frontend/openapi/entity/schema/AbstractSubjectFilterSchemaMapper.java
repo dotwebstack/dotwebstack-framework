@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -24,14 +24,14 @@ abstract class AbstractSubjectFilterSchemaMapper<S extends Property, T>
    * Apply the subject filter and returns the filtered subjects.
    * 
    * @param property property with subject filter
-   * @param graphEntityContext context of the entity
+   * @param graphEntity context of the entity
    * @return non empty set when no results could be found.
    * @throws IllegalStateException If the property does not have the
    *         {@link OpenApiSpecificationExtensions#SUBJECT_FILTER} vendor extension defined. Please
    *         call {@link #hasSubjectFilterVendorExtension(Property)} before calling this method.
    */
   protected final Set<Resource> getSubjects(@NonNull Property property,
-      @NonNull GraphEntityContext graphEntityContext) {
+      @NonNull GraphEntity graphEntity) {
     if (!hasSubjectFilterVendorExtension(property)) {
       throw new IllegalStateException(String.format(
           "Vendor extension '%s' not defined, "
@@ -56,7 +56,7 @@ abstract class AbstractSubjectFilterSchemaMapper<S extends Property, T>
 
     final IRI predicateIri = vf.createIRI(predicate);
     final IRI objectIri = vf.createIRI(object);
-    Model filteredModel = graphEntityContext.getModel().filter(null, predicateIri, objectIri);
+    Model filteredModel = graphEntity.getModel().filter(null, predicateIri, objectIri);
 
     return filteredModel.subjects();
   }
@@ -73,8 +73,8 @@ abstract class AbstractSubjectFilterSchemaMapper<S extends Property, T>
    * @throws SchemaMapperRuntimeException If more than one subject has been found.
    */
   protected final Value getSubject(@NonNull Property property,
-      @NonNull GraphEntityContext graphEntityContext) {
-    Set<Resource> subjects = getSubjects(property, graphEntityContext);
+      @NonNull GraphEntity graphEntity) {
+    Set<Resource> subjects = getSubjects(property, graphEntity);
 
     if (subjects.isEmpty()) {
       if (property.getRequired()) {

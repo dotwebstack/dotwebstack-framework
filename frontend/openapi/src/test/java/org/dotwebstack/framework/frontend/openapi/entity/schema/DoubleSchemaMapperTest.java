@@ -13,7 +13,7 @@ import io.swagger.models.properties.DoubleProperty;
 import io.swagger.models.properties.StringProperty;
 import java.util.Arrays;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
@@ -40,7 +40,7 @@ public class DoubleSchemaMapperTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private GraphEntityContext entityBuilderContext;
+  private GraphEntity entityMock;
 
   @Mock
   private Value context;
@@ -59,7 +59,7 @@ public class DoubleSchemaMapperTest {
     schemaMapper = new DoubleSchemaMapper();
     property = new DoubleProperty();
 
-    when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
+    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
     schemaMapperAdapter = new SchemaMapperAdapter(Arrays.asList(schemaMapper));
   }
 
@@ -105,7 +105,7 @@ public class DoubleSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+    Object result = schemaMapperAdapter.mapGraphValue(property, entityMock,
         ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
     // Assert
@@ -121,7 +121,7 @@ public class DoubleSchemaMapperTest {
         ImmutableList.of(VALUE_1));
 
     // Act
-    Double result = (Double) schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+    Double result = (Double) schemaMapperAdapter.mapGraphValue(property, entityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
@@ -142,7 +142,7 @@ public class DoubleSchemaMapperTest {
         ImmutableList.of(VALUE_3));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+    schemaMapperAdapter.mapGraphValue(property, entityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
@@ -154,7 +154,7 @@ public class DoubleSchemaMapperTest {
         property.getName(), OpenApiSpecificationExtensions.LDPATH));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+    schemaMapperAdapter.mapGraphValue(property, entityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 

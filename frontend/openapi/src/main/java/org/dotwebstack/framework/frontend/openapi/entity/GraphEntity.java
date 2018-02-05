@@ -1,92 +1,93 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
+import static com.google.common.collect.ImmutableMap.copyOf;
+import static com.google.common.collect.Maps.newHashMap;
+
 import com.google.common.collect.ImmutableMap;
+import io.swagger.models.Model;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
+import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.eclipse.rdf4j.model.Model;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.query.QueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
 
+@Getter
 public final class GraphEntity extends AbstractEntity {
 
-  private final GraphEntityContext graphEntityContext;
+  private final ImmutableMap<String, String> ldPathNamespaces;
+  private final Map<String, Model> swaggerDefinitions;
+  private final org.eclipse.rdf4j.model.Model model;
+  private final InformationProduct informationProduct;
+  private final Map<String, String> requestParameters;
+  private final Map<String, String> responseParameters;
+  private final LdPathExecutor ldPathExecutor;
 
-  GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
-      @NonNull GraphEntityContext graphEntityContext) {
+  private GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
+      @NonNull ImmutableMap<String, String> ldPathNamespaces,
+      @NonNull Map<String, Model> swaggerDefinitions,
+      @NonNull org.eclipse.rdf4j.model.Model model,
+      @NonNull Map<String, String> requestParameters,
+      @NonNull InformationProduct informationProduct) {
     super(schemaMap);
-    this.graphEntityContext = graphEntityContext;
 
+    this.ldPathNamespaces = ldPathNamespaces;
+    this.swaggerDefinitions = swaggerDefinitions;
+    this.model = model;
+    this.informationProduct = informationProduct;
+    this.requestParameters = requestParameters;
+    this.responseParameters = newHashMap();
+    this.ldPathExecutor = new LdPathExecutor(this);
   }
 
-  GraphEntityContext getEntityContext() {
-    return graphEntityContext;
+  public static GraphEntity newGraphEntity(@NonNull Map<MediaType, Property> schemaMap,
+      @NonNull QueryResult<Statement> queryResult,
+      @NonNull Swagger definitions,
+      @NonNull Map<String, String> requestParameters,
+      @NonNull InformationProduct informationProduct) {
+
+    return new GraphEntity(schemaMap, extractLdpathNamespaces(definitions),
+        extractSwaggerDefinitions(definitions), QueryResults.asModel(queryResult),
+        requestParameters, informationProduct);
   }
 
-  public static Builder builder() {
-    return new Builder();
+  public void addResponseParameter(@NonNull String key, String value) {
+    responseParameters.put(key, value);
   }
 
-  public static class Builder {
-    private Map<String, io.swagger.models.Model> swaggerDefinitions;
-    private ImmutableMap<String, String> ldpathNamespaces;
-    private Model model;
-    private Map<MediaType, Property> schemaMap;
+  public Map<String, String> getResponseParameters() {
+    return ImmutableMap.copyOf(responseParameters);
+  }
 
-    public Builder withSchemaMap(@NonNull Map<MediaType, Property> schemaMap) {
-      this.schemaMap = schemaMap;
-      return this;
-    }
+  private static Map<String, Model> extractSwaggerDefinitions(Swagger swagger) {
+    return swagger.getDefinitions() == null ? ImmutableMap.of() : copyOf(swagger.getDefinitions());
+  }
 
-    public Builder withQueryResult(@NonNull QueryResult queryResult) {
-      this.model = QueryResults.asModel(queryResult);
-      return this;
-    }
-
-    public Builder withApiDefinitions(@NonNull Swagger definitions) {
-      this.swaggerDefinitions = extractSwaggerDefinitions(definitions);
-      return this;
-    }
-
-    public Builder withLdPathNamespaces(@NonNull Swagger definitions) {
-      this.ldpathNamespaces = extractLdpathNamespaces(definitions);
-      return this;
-    }
-
-    private static Map<String, io.swagger.models.Model> extractSwaggerDefinitions(Swagger swagger) {
-      if (swagger.getDefinitions() != null) {
-        return ImmutableMap.copyOf(swagger.getDefinitions());
+  private static ImmutableMap<String, String> extractLdpathNamespaces(Swagger swagger) {
+    ImmutableMap<String, Object> vendorExtensions;
+    Map<String, Object> extensions = swagger.getVendorExtensions();
+    vendorExtensions = extensions == null ? ImmutableMap.of() : copyOf(extensions);
+    if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH_NAMESPACES)) {
+      Object ldPathNamespaces =
+          vendorExtensions.get(OpenApiSpecificationExtensions.LDPATH_NAMESPACES);
+      try {
+        @SuppressWarnings("unchecked")
+        Map<String, String> namespaces = (Map<String, String>) ldPathNamespaces;
+        return copyOf(namespaces);
+      } catch (ClassCastException cce) {
+        String jsonExample = "{ \"rdfs\": \"http://www.w3.org/2000/01/rdf-schema#\", "
+            + "\"rdf\": \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"}";
+        throw new LdPathExecutorRuntimeException(String.format(
+            "Vendor extension '%s' should contain a map of namespaces (eg. %s)",
+            OpenApiSpecificationExtensions.LDPATH_NAMESPACES, jsonExample), cce);
       }
-      return ImmutableMap.of();
     }
-
-    private ImmutableMap<String, String> extractLdpathNamespaces(Swagger swagger) {
-      Map<String, Object> extensions = swagger.getVendorExtensions();
-      ImmutableMap<String, Object> vendorExtensions =
-          extensions == null ? ImmutableMap.of() : ImmutableMap.copyOf(extensions);
-      if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH_NAMESPACES)) {
-        Object ldPathNamespaces =
-            vendorExtensions.get(OpenApiSpecificationExtensions.LDPATH_NAMESPACES);
-        try {
-          return ImmutableMap.copyOf((Map<String, String>) ldPathNamespaces);
-        } catch (ClassCastException cce) {
-          throw new LdPathExecutorRuntimeException(String.format(
-              "Vendor extension '%s' should contain a map of namespaces (eg. "
-                  + "{ \"rdfs\": \"http://www.w3.org/2000/01/rdf-schema#\", "
-                  + "\"rdf\": \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"})",
-              OpenApiSpecificationExtensions.LDPATH_NAMESPACES), cce);
-        }
-      }
-      return ImmutableMap.of();
-    }
-
-    public Entity build() {
-      return new GraphEntity(schemaMap,
-          new GraphEntityContext(ldpathNamespaces, swaggerDefinitions, model));
-    }
+    return ImmutableMap.of();
   }
 
 }

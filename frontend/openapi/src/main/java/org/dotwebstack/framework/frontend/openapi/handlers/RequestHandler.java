@@ -13,6 +13,7 @@ import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
@@ -34,8 +35,8 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
   private final ApiRequestValidator apiRequestValidator;
 
-  RequestHandler(@NonNull ApiOperation apiOperation,
-      @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
+  RequestHandler(@NonNull ApiOperation apiOperation, @NonNull InformationProduct informationProduct,
+      @NonNull Map<MediaType, Property> schemaMap,
       @NonNull RequestParameterMapper requestParameterMapper,
       @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
     this.apiRequestValidator = apiRequestValidator;
@@ -76,11 +77,10 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
       responseOk = responseOk(entity);
     }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-      org.eclipse.rdf4j.query.GraphQueryResult result =
-          (org.eclipse.rdf4j.query.GraphQueryResult) informationProduct.getResult(parameterValues);
-      GraphEntity entity =
-          (GraphEntity) GraphEntity.builder().withSchemaMap(schemaMap).withQueryResult(
-              result).withApiDefinitions(swagger).withLdPathNamespaces(swagger).build();
+      GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
+      GraphEntity entity = GraphEntity
+          .newGraphEntity(schemaMap, result, swagger, parameterValues, informationProduct);
+
       responseOk = responseOk(entity);
     }
     if (responseOk != null) {

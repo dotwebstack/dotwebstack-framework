@@ -6,7 +6,7 @@ import org.eclipse.rdf4j.model.Literal;
 
 public class IntegerTermParameter extends TermParameter<Integer> {
 
-  IntegerTermParameter(@NonNull IRI identifier, @NonNull String name, boolean required) {
+  public IntegerTermParameter(@NonNull IRI identifier, @NonNull String name, boolean required) {
     this(identifier, name, required, null);
   }
 

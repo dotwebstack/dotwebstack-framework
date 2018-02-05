@@ -15,6 +15,10 @@ public final class ResponseProperty extends AbstractProperty implements Property
     this.response = response;
   }
 
+  public Response getResponse() {
+    return response;
+  }
+
   /**
    * @return The input {@link Response#getDescription()}.
    */

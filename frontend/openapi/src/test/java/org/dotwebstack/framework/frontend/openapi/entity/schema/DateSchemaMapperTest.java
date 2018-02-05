@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.DateProperty;
 import java.time.LocalDate;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -37,7 +37,7 @@ public class DateSchemaMapperTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Mock
-  private GraphEntityContext entityBuilderContext;
+  private GraphEntity entityMock;
 
   @Mock
   private SchemaMapperAdapter schemaMapperAdapter;
@@ -55,7 +55,7 @@ public class DateSchemaMapperTest {
   public void setUp() {
     schemaMapper = new DateSchemaMapper();
     property = new DateProperty();
-    when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
+    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
 
   @Test
@@ -70,7 +70,7 @@ public class DateSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
     // Act
-    LocalDate result = schemaMapper.mapGraphValue(property, entityBuilderContext,
+    LocalDate result = schemaMapper.mapGraphValue(property, entityMock,
         ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
     // Assert
@@ -86,7 +86,7 @@ public class DateSchemaMapperTest {
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    LocalDate result = schemaMapper.mapGraphValue(property, entityBuilderContext,
+    LocalDate result = schemaMapper.mapGraphValue(property, entityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
@@ -107,8 +107,8 @@ public class DateSchemaMapperTest {
 
     // Act
 
-    schemaMapper.mapGraphValue(property, entityBuilderContext,
-        ValueContext.builder().value(context).build(), schemaMapperAdapter);
+    schemaMapper.mapGraphValue(property, entityMock, ValueContext.builder().value(context).build(),
+        schemaMapperAdapter);
   }
 
 }

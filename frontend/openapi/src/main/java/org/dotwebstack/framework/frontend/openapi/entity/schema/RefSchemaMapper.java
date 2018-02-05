@@ -7,7 +7,7 @@ import io.swagger.models.Model;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,11 +20,11 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
 
   @Override
   public Object mapGraphValue(@NonNull RefProperty schema,
-      @NonNull GraphEntityContext graphEntityContext,
+      @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
-    Model refModel = graphEntityContext.getSwaggerDefinitions().get(schema.getSimpleRef());
+    Model refModel = graphEntity.getSwaggerDefinitions().get(schema.getSimpleRef());
 
     if (refModel == null) {
       throw new SchemaMapperRuntimeException(String.format(
@@ -33,7 +33,7 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
 
     Builder<String, Object> builder = ImmutableMap.builder();
     refModel.getProperties().forEach((propKey, propValue) -> builder.put(propKey,
-        Optional.fromNullable(schemaMapperAdapter.mapGraphValue(propValue, graphEntityContext,
+        Optional.fromNullable(schemaMapperAdapter.mapGraphValue(propValue, graphEntity,
             valueContext, schemaMapperAdapter))));
 
     return builder.build();

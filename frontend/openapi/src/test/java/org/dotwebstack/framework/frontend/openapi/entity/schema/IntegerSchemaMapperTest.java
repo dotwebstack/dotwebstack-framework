@@ -14,7 +14,7 @@ import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.StringProperty;
 import java.util.Arrays;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
@@ -41,7 +41,7 @@ public class IntegerSchemaMapperTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private GraphEntityContext entityBuilderContext;
+  private GraphEntity entityMock;
 
   @Mock
   private Value context;
@@ -60,7 +60,7 @@ public class IntegerSchemaMapperTest {
     schemaMapper = new IntegerSchemaMapper();
     property = new IntegerProperty();
 
-    when(entityBuilderContext.getLdPathExecutor()).thenReturn(ldPathExecutor);
+    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
     schemaMapperAdapter = new SchemaMapperAdapter(Arrays.asList(schemaMapper));
   }
 
@@ -106,7 +106,7 @@ public class IntegerSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+    Object result = schemaMapperAdapter.mapGraphValue(property, entityMock,
         ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
     // Assert
@@ -122,7 +122,7 @@ public class IntegerSchemaMapperTest {
         ImmutableList.of(VALUE_1));
 
     // Act
-    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(property, entityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
@@ -143,7 +143,7 @@ public class IntegerSchemaMapperTest {
         ImmutableList.of(VALUE_3));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+    schemaMapperAdapter.mapGraphValue(property, entityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
@@ -155,7 +155,7 @@ public class IntegerSchemaMapperTest {
         property.getName(), OpenApiSpecificationExtensions.LDPATH));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(property, entityBuilderContext,
+    schemaMapperAdapter.mapGraphValue(property, entityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 

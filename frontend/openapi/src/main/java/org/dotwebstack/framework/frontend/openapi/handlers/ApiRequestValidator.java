@@ -64,9 +64,6 @@ class ApiRequestValidator {
       throw createException(report);
     }
 
-    // at this point all parameters are (considered) valid
-    LOG.debug("Request parameters validated");
-
     return requestParameters;
   }
 

@@ -5,7 +5,7 @@ import io.swagger.models.properties.Property;
 import java.math.BigInteger;
 import javax.validation.constraints.NotNull;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntityContext;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,7 +19,7 @@ public class LongSchemaMapper implements SchemaMapper<LongProperty, BigInteger> 
 
   @Override
   public BigInteger mapGraphValue(@NonNull LongProperty schema,
-      @NonNull GraphEntityContext graphEntityContext, @NotNull ValueContext valueContext,
+      @NonNull GraphEntity graphEntity, @NotNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
