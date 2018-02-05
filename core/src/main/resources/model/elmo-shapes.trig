@@ -14,6 +14,7 @@
 @prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-types/>.
 @prefix elmo: <http://dotwebstack.org/def/elmo#>.
 
+GRAPH elmo:Shacl {
 elmo-shape:
   rdfs:label "SHACL for ELMO"@en;
   rdfs:comment "This shapes graph can be used to validate dotwebstack configurations. It can also be used to create a visual representation of the structure"@en;
@@ -163,6 +164,12 @@ elmo-shape:Layout a sh:NodeShape;
     sh:name "rdfs:label";
     sh:path rdfs:label;
     sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "xhtml:stylesheet";
+    sh:path xhtml:stylesheet;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
   ];
 .
 
@@ -606,17 +613,15 @@ elmo-shape:Redirection a sh:NodeShape;
     sh:path elmo:stage
   ];
   sh:property [
-    sh:name "elmo:urlPattern";
-    sh:path elmo:urlPattern;
+    sh:name "elmo:pathPattern";
+    sh:path elmo:pathPattern;
     sh:datatype xsd:string;
     sh:minCount 1;
     sh:maxCount 1;
   ];
   sh:property [
-#    sh:name "elmo:redirectTemplate";
-#    sh:path elmo:redirectTemplate;
-    sh:name "elmo:targetUrl"; #Oude naamgeving, wordt opgelost in LDT-206
-    sh:path elmo:targetUrl;
+    sh:name "elmo:redirectTemplate";
+    sh:path elmo:redirectTemplate;
     sh:datatype xsd:string;
     sh:minCount 1;
     sh:maxCount 1;
@@ -639,8 +644,8 @@ elmo-shape:Representation a sh:NodeShape;
     sh:maxCount 1;
   ];
   sh:property [
-    sh:name "elmo:urlPattern";
-    sh:path elmo:urlPattern;
+    sh:name "elmo:pathPattern";
+    sh:path elmo:pathPattern;
     sh:datatype xsd:string;
   ];
   sh:property [
@@ -888,3 +893,4 @@ elmo-shape:Fragment a sh:NodeShape;
     sh:nodeKind sh:IRI;
   ];
 .
+}

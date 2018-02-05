@@ -1,7 +1,12 @@
 package org.dotwebstack.framework.param;
 
-import java.util.Optional;
-import java.util.Set;
+import static org.eclipse.rdf4j.model.util.Models.object;
+import static org.eclipse.rdf4j.model.util.Models.objectIRI;
+import static org.eclipse.rdf4j.model.util.Models.objectResource;
+
+import com.google.common.collect.ImmutableList;
+import java.util.function.Supplier;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -14,33 +19,29 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.stereotype.Service;
 
 @Service
+@NoArgsConstructor
 final class TermParameterDefinitionFactory implements ParameterDefinitionFactory {
 
-  private final Set<PropertyShape> supportedShapes;
-
-  TermParameterDefinitionFactory(@NonNull Set<PropertyShape> supportedShapes) {
-    this.supportedShapes = supportedShapes;
+  private static Supplier<ConfigurationException> newConfigurationException(Object... arguments) {
+    return () -> new ConfigurationException(
+        String.format("No <%s> property found for <%s> of type <%s>", arguments));
   }
 
   @Override
   public ParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
     String name = Models.objectLiteral(model.filter(id, ELMO.NAME_PROP, null)).orElseThrow(
-        () -> new ConfigurationException(
-            String.format("No <%s> property found for <%s> of type <%s>", ELMO.NAME_PROP, id,
-                ELMO.TERM_PARAMETER))).stringValue();
+        newConfigurationException(ELMO.NAME_PROP, id, ELMO.TERM_PARAMETER)).stringValue();
 
-    Set<Value> objects = model.filter(id, ELMO.SHAPE_PROP, null).objects();
-    Optional<PropertyShape> propertyShapeOptional = Optional.empty();
-    if (objects.iterator().hasNext()) {
-      Set<Value> iriShapeTypes =
-          model.filter((Resource) objects.iterator().next(), SHACL.DATATYPE, null).objects();
+    Resource subj = objectResource(model.filter(id, ELMO.SHAPE_PROP, null)).orElseThrow(
+        newConfigurationException(ELMO.SHAPE_PROP, id, ELMO.TERM_PARAMETER));
 
-      propertyShapeOptional = supportedShapes.stream().filter(
-          propertyShape -> iriShapeTypes.iterator().next().stringValue().equals(
-              propertyShape.getDataType().stringValue())).findFirst();
-    }
+    IRI iriShapeType = objectIRI(model.filter(subj, SHACL.DATATYPE, null)).orElseThrow(
+        newConfigurationException(SHACL.DATATYPE, id, ELMO.SHAPE_PROP));
 
-    return new TermParameterDefinition(id, name, propertyShapeOptional);
+    Value defaultValue = object(model.filter(subj, SHACL.DEFAULT_VALUE, null)).orElse(null);
+
+    ShaclShape shape = new ShaclShape(iriShapeType, defaultValue, ImmutableList.of());
+    return new TermParameterDefinition(id, name, shape);
   }
 
   /**

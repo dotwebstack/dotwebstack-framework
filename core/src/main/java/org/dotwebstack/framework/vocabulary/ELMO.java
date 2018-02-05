@@ -9,6 +9,8 @@ public final class ELMO {
 
   public static final IRI CONFIG_GRAPHNAME;
 
+  public static final IRI SHACL_GRAPHNAME;
+
   public static final IRI CONTAINS_PROP;
 
   public static final IRI INFORMATION_PRODUCT;
@@ -41,9 +43,7 @@ public final class ELMO {
 
   public static final IRI REDIRECTION;
 
-  public static final IRI TARGET_URL;
-
-  public static final IRI REDIRECTION_TEMPLATE;
+  public static final IRI REDIRECT_TEMPLATE;
 
   public static final IRI APPEARANCE;
 
@@ -53,7 +53,7 @@ public final class ELMO {
 
   public static final IRI APPEARANCE_PROP;
 
-  public static final IRI URL_PATTERN;
+  public static final IRI PATH_PATTERN;
 
   public static final IRI URI_PARAMETER_MAPPER;
 
@@ -83,6 +83,10 @@ public final class ELMO {
 
   public static final IRI RESULT_TYPE_DEFAULT;
 
+  public static final IRI LAYOUT;
+
+  public static final IRI LAYOUT_PROP;
+
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -93,6 +97,8 @@ public final class ELMO {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
     CONFIG_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Config");
+
+    SHACL_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Shacl");
 
     // Classes
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
@@ -112,6 +118,8 @@ public final class ELMO {
 
     URI_PARAMETER_MAPPER = valueFactory.createIRI(ELMO.NAMESPACE, "UriParameterMapper");
 
+    LAYOUT = valueFactory.createIRI(ELMO.NAMESPACE, "Layout");
+
     // Properties
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
     DOMAIN = valueFactory.createIRI(ELMO.NAMESPACE, "domain");
@@ -124,13 +132,12 @@ public final class ELMO {
         valueFactory.createIRI(ELMO.NAMESPACE_EXTENSION_RESULTTYPE, ResultType.GRAPH.name());
 
     INFORMATION_PRODUCT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "informationProduct");
-    URL_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "urlPattern");
+    PATH_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "pathPattern");
     PARAMETER_MAPPER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "parameterMapper");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
 
-    TARGET_URL = valueFactory.createIRI(ELMO.NAMESPACE, "targetUrl");
-    REDIRECTION_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
+    REDIRECT_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 
     PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
     TERM_PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "TermParameter");
@@ -146,6 +153,8 @@ public final class ELMO {
     PATTERN_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "pattern");
     TEMPLATE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "template");
     TARGET_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "target");
+
+    LAYOUT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "layout");
     SHAPE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "shape");
   }
 

@@ -10,15 +10,15 @@ public class Redirection {
 
   private Stage stage;
 
-  private String urlPattern;
+  private String pathPattern;
 
-  private String targetUrl;
+  private String redirectTemplate;
 
   private Redirection(Builder builder) {
     identifier = builder.identifier;
     stage = builder.stage;
-    urlPattern = builder.urlPattern;
-    targetUrl = builder.targetUrl;
+    pathPattern = builder.pathPattern;
+    redirectTemplate = builder.redirectTemplate;
   }
 
   public IRI getIdentifier() {
@@ -29,12 +29,12 @@ public class Redirection {
     return stage;
   }
 
-  public String getUrlPattern() {
-    return urlPattern;
+  public String getPathPattern() {
+    return pathPattern;
   }
 
-  public String getTargetUrl() {
-    return targetUrl;
+  public String getRedirectTemplate() {
+    return redirectTemplate;
   }
 
   public static class Builder {
@@ -43,16 +43,16 @@ public class Redirection {
 
     private Stage stage;
 
-    private String urlPattern;
+    private String pathPattern;
 
-    private String targetUrl;
+    private String redirectTemplate;
 
-    public Builder(@NonNull IRI identifier, @NonNull Stage stage, @NonNull String urlPattern,
-        @NonNull String targetUrl) {
+    public Builder(@NonNull IRI identifier, @NonNull Stage stage, @NonNull String pathPattern,
+        @NonNull String redirectTemplate) {
       this.identifier = identifier;
       this.stage = stage;
-      this.urlPattern = urlPattern;
-      this.targetUrl = targetUrl;
+      this.pathPattern = pathPattern;
+      this.redirectTemplate = redirectTemplate;
     }
 
     public Redirection build() {

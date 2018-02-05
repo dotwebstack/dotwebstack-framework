@@ -27,7 +27,7 @@ import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
-import org.dotwebstack.framework.frontend.openapi.handlers.GetRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.eclipse.rdf4j.model.IRI;
@@ -54,7 +54,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private final SwaggerParser openApiParser;
 
-  private final GetRequestHandlerFactory getRequestHandlerFactory;
+  private final RequestHandlerFactory requestHandlerFactory;
 
   private ApplicationProperties applicationProperties;
 
@@ -67,11 +67,11 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
   @Autowired
   public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull SwaggerParser openApiParser, @NonNull ApplicationProperties applicationProperties,
-      @NonNull GetRequestHandlerFactory getRequestHandlerFactory) {
+      @NonNull RequestHandlerFactory requestHandlerFactory) {
     this.informationProductResourceProvider = informationProductLoader;
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
-    this.getRequestHandlerFactory = getRequestHandlerFactory;
+    this.requestHandlerFactory = requestHandlerFactory;
   }
 
   @Override
@@ -169,7 +169,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
       ResourceMethod.Builder methodBuilder =
           resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
-              getRequestHandlerFactory.newGetRequestHandler(apiOperation, informationProduct,
+              requestHandlerFactory.newRequestHandler(apiOperation, informationProduct,
                   schemaMap, swagger));
 
       produces.forEach(methodBuilder::produces);

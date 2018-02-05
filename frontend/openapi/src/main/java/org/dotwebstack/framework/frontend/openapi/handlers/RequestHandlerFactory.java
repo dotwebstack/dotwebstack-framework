@@ -11,20 +11,23 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.springframework.stereotype.Service;
 
 @Service
-public class GetRequestHandlerFactory {
+public class RequestHandlerFactory {
 
   private final RequestParameterMapper requestParameterMapper;
 
-  public GetRequestHandlerFactory(@NonNull RequestParameterMapper requestParameterMapper) {
-    this.requestParameterMapper = requestParameterMapper;
+  private final RequestParameterExtractor requestParameterExtractor;
 
+  public RequestHandlerFactory(@NonNull RequestParameterMapper requestParameterMapper,
+      @NonNull RequestParameterExtractor requestParameterExtractor) {
+    this.requestParameterMapper = requestParameterMapper;
+    this.requestParameterExtractor = requestParameterExtractor;
   }
 
-  public GetRequestHandler newGetRequestHandler(@NonNull ApiOperation apiOperation,
+  public RequestHandler newRequestHandler(@NonNull ApiOperation apiOperation,
       @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
       @NonNull Swagger swagger) {
-    return new GetRequestHandler(apiOperation, informationProduct, schemaMap,
-        requestParameterMapper, new ApiRequestValidator(SwaggerUtils.createValidator(swagger)),
+    return new RequestHandler(apiOperation, informationProduct, schemaMap, requestParameterMapper,
+        new ApiRequestValidator(SwaggerUtils.createValidator(swagger), requestParameterExtractor),
         swagger);
   }
 

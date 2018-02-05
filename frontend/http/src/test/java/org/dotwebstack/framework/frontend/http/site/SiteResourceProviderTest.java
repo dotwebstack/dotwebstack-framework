@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -37,6 +38,9 @@ public class SiteResourceProviderTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
+  private LayoutResourceProvider layoutResourceProvider;
+
+  @Mock
   private ConfigurationBackend configurationBackend;
 
   @Mock
@@ -57,7 +61,8 @@ public class SiteResourceProviderTest {
 
   @Before
   public void setUp() {
-    siteResourceProvider = new SiteResourceProvider(configurationBackend, applicationProperties);
+    siteResourceProvider = new SiteResourceProvider(configurationBackend, layoutResourceProvider,
+        applicationProperties);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -72,7 +77,7 @@ public class SiteResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SiteResourceProvider(null, applicationProperties);
+    new SiteResourceProvider(null, layoutResourceProvider, applicationProperties);
   }
 
   @Test
@@ -81,7 +86,16 @@ public class SiteResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SiteResourceProvider(configurationBackend, null);
+    new SiteResourceProvider(configurationBackend, layoutResourceProvider, null);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingLayoutResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new SiteResourceProvider(configurationBackend, null, applicationProperties);
   }
 
   @Test

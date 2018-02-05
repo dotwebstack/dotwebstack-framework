@@ -14,6 +14,8 @@ public final class DBEERPEDIA {
 
   public static final Literal BASE_PATH;
 
+  public static final String TITLE = "Dbeerpedia";
+
   public static final IRI NAME;
 
   public static final IRI FOUNDATION;
@@ -30,7 +32,7 @@ public final class DBEERPEDIA {
 
   public static final String OBJECT_NAMESPACE = "http://dbeerpedia.org/id/";
 
-  public static final IRI URL_PATTERN;
+  public static final IRI PATH_PATTERN;
 
   public static final Literal DOMAIN;
 
@@ -104,7 +106,7 @@ public final class DBEERPEDIA {
 
   public static final IRI SUBJECT_FROM_URL;
 
-  public static final Literal SUBJECT_FROM_URL_PATTERN;
+  public static final Literal SUBJECT_FROM_PATH_PATTERN;
 
   public static final Literal SUBJECT_FROM_URL_TEMPLATE;
 
@@ -112,9 +114,9 @@ public final class DBEERPEDIA {
 
   public static final IRI SUBJECT_PARAMETER;
 
-  public static final Literal ID2DOC_URL_PATTERN;
+  public static final Literal ID2DOC_PATH_PATTERN;
 
-  public static final Literal ID2DOC_TARGET_URL;
+  public static final Literal ID2DOC_REDIRECT_TEMPLATE;
 
   @java.lang.SuppressWarnings("squid:S1075")
   public static final String BREWERY_ID_PATH = "/id/brewery";
@@ -165,9 +167,18 @@ public final class DBEERPEDIA {
 
   public static final String PLACE_PARAMETER_VALUE_STRING;
 
-  public static final String URL_PATTERN_VALUE = "/holyBeer";
+  @java.lang.SuppressWarnings("squid:S1075")
+  public static final String PATH_PATTERN_VALUE = "/holyBeer";
 
   public static final IRI BREWERY_TYPE;
+
+  public static final IRI LAYOUT;
+
+  public static final IRI LAYOUT_NL;
+
+  public static final Literal LAYOUT_VALUE;
+
+  public static final Literal LAYOUT_NL_VALUE;
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -231,6 +242,10 @@ public final class DBEERPEDIA {
     MAXIMUS_FTE = valueFactory.createLiteral(2.4);
     MAXIMUS_PLACE = valueFactory.createLiteral("Utrecht");
 
+    LAYOUT_VALUE = valueFactory.createLiteral(DBEERPEDIA.NAMESPACE, "stage-layout.css.css");
+
+    LAYOUT_NL_VALUE = valueFactory.createLiteral(DBEERPEDIA.NAMESPACE, "stage-nl-layout.css.css");
+
     PERCENTAGES_INFORMATION_PRODUCT = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/information/alcohol-percentages");
     ORIGIN_INFORMATION_PRODUCT =
@@ -248,13 +263,13 @@ public final class DBEERPEDIA {
 
     ID2DOC_DUMMY_REDIRECTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Id2docDummy");
 
-    ID2DOC_URL_PATTERN = valueFactory.createLiteral("^\\/id\\/(.+)$");
+    ID2DOC_PATH_PATTERN = valueFactory.createLiteral("/id/{resource}");
 
-    ID2DOC_TARGET_URL = valueFactory.createLiteral("\\/doc\\/$1");
+    ID2DOC_REDIRECT_TEMPLATE = valueFactory.createLiteral("/doc/{resource}");
 
     SUBJECT_FROM_URL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SubjectFromUrl");
 
-    SUBJECT_FROM_URL_PATTERN = valueFactory.createLiteral("http://{domain}/doc/{reference}");
+    SUBJECT_FROM_PATH_PATTERN = valueFactory.createLiteral("http://{domain}/doc/{reference}");
 
     SUBJECT_FROM_URL_TEMPLATE = valueFactory.createLiteral("http://dbeerpedia.org/id/{reference}");
 
@@ -264,9 +279,13 @@ public final class DBEERPEDIA {
 
     CUSTOM_APPEARANCE_PROP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "customAppearanceProp");
 
-    URL_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "urlPattern");
+    PATH_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "pathPattern");
 
     BREWERY_TYPE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Brewery");
+
+    LAYOUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayout");
+
+    LAYOUT_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayoutNL");
   }
 
   private DBEERPEDIA() {

@@ -1,24 +1,23 @@
 package org.dotwebstack.framework.param;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Optional;
+import static org.dotwebstack.framework.param.term.TermParameterFactory.newTermParameter;
+
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
-import org.dotwebstack.framework.param.shapes.StringPropertyShape;
-import org.dotwebstack.framework.param.types.TermParameter;
+import org.dotwebstack.framework.param.term.TermParameter;
 import org.eclipse.rdf4j.model.IRI;
 
 public final class TermParameterDefinition extends AbstractParameterDefinition<TermParameter<?>> {
 
-  private static final PropertyShape DEFAULT_SHAPE = new StringPropertyShape();
-
-  private final Optional<PropertyShape> shapeType;
+  @Getter(AccessLevel.PACKAGE)
+  private final ShaclShape shaclShape;
 
   public TermParameterDefinition(@NonNull IRI identifier, @NonNull String name,
-      @NonNull Optional<PropertyShape> shapeType) {
+      @NonNull ShaclShape shaclShape) {
     super(identifier, name);
 
-    this.shapeType = shapeType;
+    this.shaclShape = shaclShape;
   }
 
   @Override
@@ -32,20 +31,8 @@ public final class TermParameterDefinition extends AbstractParameterDefinition<T
   }
 
   private TermParameter<?> createParameter(boolean required) {
-    Class<?> parameterClass = shapeType.orElse(DEFAULT_SHAPE).getTermClass();
+    return newTermParameter(getIdentifier(), getName(), shaclShape, required);
 
-    if (parameterClass.getConstructors().length == 1) {
-      Constructor constructor = parameterClass.getConstructors()[0];
-
-      try {
-        return (TermParameter) constructor.newInstance(getIdentifier(), getName(), required);
-      } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-        throw new IllegalStateException(e);
-      }
-    }
-
-    throw new IllegalStateException(String.format(
-        "Zero or more than one constructor found in TermParameter class: '%s'", parameterClass));
   }
 
 }

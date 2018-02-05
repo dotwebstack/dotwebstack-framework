@@ -5,10 +5,12 @@ import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +21,16 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
 
   private SiteResourceProvider siteResourceProvider;
 
+  private LayoutResourceProvider layoutResourceProvider;
+
   @Autowired
   public StageResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull SiteResourceProvider siteResourceProvider,
+      @NonNull LayoutResourceProvider layoutResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.siteResourceProvider = siteResourceProvider;
+    this.layoutResourceProvider = layoutResourceProvider;
   }
 
   @Override
@@ -44,6 +50,9 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
 
     Stage.Builder builder = new Stage.Builder(identifier, siteResourceProvider.get(siteIRI));
     getObjectString(model, identifier, ELMO.BASE_PATH).ifPresent(builder::basePath);
+    getObjectIRI(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
+        iri -> builder.layout(layoutResourceProvider.get(iri)));
+    getObjectString(model, identifier, DC.TITLE).ifPresent(builder::title);
 
     return builder.build();
   }

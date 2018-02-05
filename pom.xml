@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
-    <version>0.0.14-SNAPSHOT</version>
+    <version>0.0.15-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>DotWebStack Framework</name>
@@ -83,6 +82,11 @@
             <id>JLSchaap</id>
             <name>John Schaap</name>
             <email>John.Schaap@Kadaster.nl</email>
+        </developer>
+        <developer>
+            <id>Nathan@Kadaster</id>
+            <name>Nathan van Dalen</name>
+            <email>Nathan@headFWD.nl</email>
         </developer>
     </developers>
 
@@ -340,7 +344,7 @@
                                                     <minimum>0.6</minimum>
                                                 </limit>
                                             </limits>
-                                            <excludes/>
+                                            <excludes />
                                         </rule>
                                     </rules>
                                 </configuration>

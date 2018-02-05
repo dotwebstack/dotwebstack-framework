@@ -71,7 +71,7 @@ public class UriParameterMapperTest {
     final UriParameterMapper uriParameterMapper =
         new UriParameterMapper.UriParameterMapperBuilder(DBEERPEDIA.SUBJECT_FROM_URL,
             requestUriParameterSource, parameterTarget).pattern(
-                DBEERPEDIA.SUBJECT_FROM_URL_PATTERN.stringValue()).template(
+                DBEERPEDIA.SUBJECT_FROM_PATH_PATTERN.stringValue()).template(
                     DBEERPEDIA.SUBJECT_FROM_URL_TEMPLATE.stringValue()).build();
 
     Map<String, String> map = uriParameterMapper.map(containerRequestContext);

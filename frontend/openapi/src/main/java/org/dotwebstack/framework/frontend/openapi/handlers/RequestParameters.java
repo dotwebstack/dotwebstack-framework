@@ -1,33 +1,35 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MultivaluedMap;
 import lombok.NonNull;
 
 class RequestParameters {
 
-  private final Map<String, Object> parameters = Maps.newHashMap();
+  private final Map<String, String> parameters;
   private String rawBody;
 
-  void putAll(@NonNull MultivaluedMap<String, String> sourceParams) {
-    for (String key : sourceParams.keySet()) {
-      parameters.put(key, sourceParams.getFirst(key));
+  RequestParameters() {
+    parameters = new HashMap<>();
+  }
+
+  void putAll(@NonNull MultivaluedMap<String, String> parameters) {
+    for (String key : parameters.keySet()) {
+      put(key, parameters.getFirst(key));
     }
   }
 
-  RequestParameters putAll(@NonNull Map<String, Object> sourceParams) {
-    parameters.putAll(sourceParams);
-    return this;
+  void put(@NonNull String key, String value) {
+    parameters.put(key.toLowerCase(), value);
   }
 
-  String asString(@NonNull String paramName) {
-    Object param = this.parameters.get(paramName);
-    return param != null ? param.toString() : null;
-  }
-
-  Object get(@NonNull String key) {
-    return this.parameters.get(key);
+  /**
+   * @return The String value for the supplied, or {@code null} if no value exist for the key. Key
+   *         comparison is case insensitive.
+   */
+  String get(@NonNull String key) {
+    return this.parameters.get(key.toLowerCase());
   }
 
   @Override

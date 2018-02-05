@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.param.types;
+package org.dotwebstack.framework.param.term;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -12,6 +12,7 @@ import org.dotwebstack.framework.param.BindableParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,6 +23,8 @@ public class IriTermParameterTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   private BindableParameter<IRI> requiredParameter;
   private BindableParameter<IRI> optionalParameter;
@@ -44,7 +47,7 @@ public class IriTermParameterTest {
     IRI result = requiredParameter.handle(parameterValues);
 
     // Assert
-    assertThat(result, is(SimpleValueFactory.getInstance().createIRI("http://iri")));
+    assertThat(result, is(VALUE_FACTORY.createIRI("http://iri")));
   }
 
   @Test
@@ -58,6 +61,24 @@ public class IriTermParameterTest {
 
     // Assert
     assertThat(result, nullValue());
+  }
+
+  @Test
+  public void handle_ReturnsDefaultValue_ForOptionalParameterWithNullInput() {
+    // Arrange
+    IRI defaultValue = SimpleValueFactory.getInstance().createIRI("http://defaultValue");
+
+    BindableParameter<IRI> parameter = new IriTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID,
+        DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, false, defaultValue);
+
+    Map<String, String> parameterValues =
+        Collections.singletonMap(DBEERPEDIA.PLACE_PARAMETER_VALUE_STRING, null);
+
+    // Act
+    IRI result = parameter.handle(parameterValues);
+
+    // Assert
+    assertThat(result, is(defaultValue));
   }
 
   @Test

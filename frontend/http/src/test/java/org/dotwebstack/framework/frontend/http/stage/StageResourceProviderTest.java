@@ -15,6 +15,8 @@ import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.http.layout.Layout;
+import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -47,7 +49,13 @@ public class StageResourceProviderTest {
   private SiteResourceProvider siteResourceProvider;
 
   @Mock
+  private LayoutResourceProvider layoutResourceProvider;
+
+  @Mock
   private Site site;
+
+  @Mock
+  private Layout layout;
 
   @Mock
   private ConfigurationBackend configurationBackend;
@@ -68,13 +76,15 @@ public class StageResourceProviderTest {
   @Before
   public void setUp() {
     stageResourceProvider = new StageResourceProvider(configurationBackend, siteResourceProvider,
-        applicationProperties);
+        layoutResourceProvider, applicationProperties);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
 
     when(siteResourceProvider.get(any())).thenReturn(site);
+
+    when(layoutResourceProvider.get(any())).thenReturn(layout);
 
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
@@ -85,7 +95,8 @@ public class StageResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new StageResourceProvider(null, siteResourceProvider, applicationProperties);
+    new StageResourceProvider(null, siteResourceProvider, layoutResourceProvider,
+        applicationProperties);
   }
 
   @Test
@@ -94,7 +105,18 @@ public class StageResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new StageResourceProvider(configurationBackend, null, applicationProperties);
+    new StageResourceProvider(configurationBackend, null, layoutResourceProvider,
+        applicationProperties);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingLayoutResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new StageResourceProvider(configurationBackend, siteResourceProvider, null,
+        applicationProperties);
   }
 
   @Test
@@ -103,7 +125,8 @@ public class StageResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new StageResourceProvider(configurationBackend, siteResourceProvider, null);
+    new StageResourceProvider(configurationBackend, siteResourceProvider, layoutResourceProvider,
+        null);
   }
 
   @Test
@@ -112,7 +135,8 @@ public class StageResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
             valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
-            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH))));
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.LAYOUT_PROP, DBEERPEDIA.LAYOUT))));
 
     // Act
     stageResourceProvider.loadResources();

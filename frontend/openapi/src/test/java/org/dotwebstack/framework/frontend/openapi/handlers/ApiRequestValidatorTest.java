@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,9 +13,6 @@ import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import javax.ws.rs.HttpMethod;
@@ -23,29 +22,34 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import org.apache.commons.io.input.ReaderInputStream;
 import org.apache.http.entity.ContentType;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.util.StreamUtils;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ApiRequestValidatorTest {
 
   private static final String BPG = "bestemmingsplangebied.1";
   private static final String ID = "id";
   private static final String EPSG = "epsg:4326";
 
-  private Path get = new Path();
-  private Path post = new Path();
+  @Mock
+  private RequestParameterExtractor requestParameterExtractorMock;
+
+  private Path getPath = new Path();
+  private Path postPath = new Path();
 
   @Before
   public void before() {
-    get.set("get", new Operation());
-    post.set("post", new Operation());
+    getPath.set("get", new Operation());
+    postPath.set("post", new Operation());
   }
 
   @Rule
@@ -56,11 +60,8 @@ public class ApiRequestValidatorTest {
 
     UriInfo uriInfo = mock(UriInfo.class);
     when(uriInfo.getPath()).thenReturn("/endpoint");
-    URI requestUri = new URI("/endpoint");
-    when(uriInfo.getRequestUri()).thenReturn(requestUri);
 
     when(ctx.getUriInfo()).thenReturn(uriInfo);
-    when(ctx.getEntityStream()).thenReturn(mock(InputStream.class));
 
     MultivaluedMap<String, String> pathParameters = new MultivaluedHashMap<>();
     pathParameters.put(ID, ImmutableList.of(BPG));
@@ -78,11 +79,6 @@ public class ApiRequestValidatorTest {
     return ctx;
   }
 
-  private void mockBody(ContainerRequestContext ctx, String body) {
-    ReaderInputStream bodyStream = new ReaderInputStream(new StringReader(body));
-    when(ctx.getEntityStream()).thenReturn(bodyStream);
-  }
-
   private void mockMethod(ContainerRequestContext ctx, String method) {
     when(ctx.getMethod()).thenReturn(method);
   }
@@ -97,60 +93,100 @@ public class ApiRequestValidatorTest {
   private ContainerRequestContext mockPost(String body) throws URISyntaxException {
     ContainerRequestContext ctx = mockCtx();
     mockMethod(ctx, HttpMethod.POST);
-    mockBody(ctx, body);
 
     return ctx;
   }
 
   @Test
   public void validate_DoesNotFail_ForValidGetRequest() throws URISyntaxException, IOException {
+    // Arrange
     Swagger swagger = createSwagger("simple-getHeader.yml");
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
-    ContainerRequestContext mockGet = mockGet();
-    ApiRequestValidator requestValidator1 = new ApiRequestValidator(validator);
 
-    requestValidator1.validate(SwaggerUtils.extractApiOperation(swagger, "/endpoint", get), swagger,
-        mockGet);
+    ContainerRequestContext mockGet = mockGet();
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", getPath);
+
+    when(requestParameterExtractorMock.extract(apiOperation, swagger, mockGet)).thenReturn(
+        new RequestParameters());
+
+    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    ApiRequestValidator requestValidator =
+        new ApiRequestValidator(validator, requestParameterExtractorMock);
+
+    // Act
+    requestValidator.validate(apiOperation, swagger, mockGet);
   }
 
   @Test
-  public void validate_DoesNotFail_WhenRequiredHeaderIsSupplied()
+  public void validate_Fails_WhenRequiredHeaderIsNotSupplied()
       throws URISyntaxException, IOException {
+    // Assert
     exception.expect(WebApplicationException.class);
 
+    // Arrange
     Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
-    ContainerRequestContext mockGet = mockGet();
-    ApiRequestValidator requestValidator1 = new ApiRequestValidator(validator);
 
-    requestValidator1.validate(SwaggerUtils.extractApiOperation(swagger, "/endpoint", get), swagger,
-        mockGet);
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", getPath);
+    ContainerRequestContext mockGet = mockGet();
+
+    when(requestParameterExtractorMock.extract(apiOperation, swagger, mockGet)).thenReturn(
+        new RequestParameters());
+
+    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    ApiRequestValidator requestValidator =
+        new ApiRequestValidator(validator, requestParameterExtractorMock);
+
+    // Act
+    requestValidator.validate(apiOperation, swagger, mockGet);
   }
 
   @Test
   public void validate_DoesNotFail_ForValidPostRequest() throws URISyntaxException, IOException {
+    // Arrange
     Swagger swagger = createSwagger("post-request.yml");
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+
     String body = "{ \"someproperty\": \"one\" }";
     ContainerRequestContext mockPost = mockPost(body);
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", post);
-    ApiRequestValidator requestValidator = new ApiRequestValidator(validator);
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", postPath);
 
-    RequestParameters validatedParams = requestValidator.validate(apiOperation, swagger, mockPost);
+    RequestParameters requestParameters = new RequestParameters();
+    when(requestParameterExtractorMock.extract(apiOperation, swagger, mockPost)).thenReturn(
+        requestParameters);
 
-    Assert.assertEquals("one", validatedParams.get("someproperty"));
+    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    ApiRequestValidator requestValidator =
+        new ApiRequestValidator(validator, requestParameterExtractorMock);
+
+    // Act
+    RequestParameters result = requestValidator.validate(apiOperation, swagger, mockPost);
+
+    // Assert
+    assertThat(result, sameInstance(requestParameters));
   }
 
   @Test
   public void validate_ThrowsException_ForMissingProperty() throws URISyntaxException, IOException {
+    // Assert
     exception.expect(WebApplicationException.class);
 
+    // Arrange
     Swagger swagger = createSwagger("post-request.yml");
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
-    ContainerRequestContext mockPost = mockPost("{ \"prop\": \"one\" }");
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", post);
-    ApiRequestValidator requestValidator = new ApiRequestValidator(validator);
 
+    ContainerRequestContext mockPost = mockPost("{ \"prop\": \"one\" }");
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", postPath);
+
+    RequestParameters requestParameters = new RequestParameters();
+
+    requestParameters.setRawBody("{ \"prop\": \"one\" }");
+    requestParameters.put("prop", "\"one\"");
+
+    when(requestParameterExtractorMock.extract(apiOperation, swagger, mockPost)).thenReturn(
+        requestParameters);
+
+    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    ApiRequestValidator requestValidator =
+        new ApiRequestValidator(validator, requestParameterExtractorMock);
+
+    // Act
     requestValidator.validate(apiOperation, swagger, mockPost);
   }
 
