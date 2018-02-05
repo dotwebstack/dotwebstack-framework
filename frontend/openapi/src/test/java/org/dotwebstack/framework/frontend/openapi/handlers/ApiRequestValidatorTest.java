@@ -38,7 +38,7 @@ public class ApiRequestValidatorTest {
 
   private static final String BPG = "bestemmingsplangebied.1";
   private static final String ID = "id";
-  private static final String EPSG = "epsg:4326";
+  private static final String EPSG = "epsg:4258";
 
   @Mock
   private RequestParameterExtractor requestParameterExtractorMock;
