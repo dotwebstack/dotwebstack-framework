@@ -10,7 +10,7 @@ import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +52,7 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
     getObjectString(model, identifier, ELMO.BASE_PATH).ifPresent(builder::basePath);
     getObjectIRI(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
         iri -> builder.layout(layoutResourceProvider.get(iri)));
-    getObjectString(model, identifier, DCTERMS.TITLE).ifPresent(builder::title);
+    getObjectString(model, identifier, DC.TITLE).ifPresent(builder::title);
 
     return builder.build();
   }
