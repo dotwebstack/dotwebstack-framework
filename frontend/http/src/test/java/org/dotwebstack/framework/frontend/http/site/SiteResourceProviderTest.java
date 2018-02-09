@@ -16,6 +16,7 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -114,6 +115,25 @@ public class SiteResourceProviderTest {
     // Assert
     assertThat(siteResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(siteResourceProvider.get(DBEERPEDIA.SITE), is(not(nullValue())));
+  }
+
+  @Test
+  public void loadResources_LoadsSite_WithValidDataAndBNode() {
+    // Arrange
+    final BNode blankNode = valueFactory.createBNode();
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(blankNode, RDF.TYPE, ELMO.SITE,
+                DBEERPEDIA.SYSTEM_GRAPH_IRI),
+            valueFactory.createStatement(blankNode, ELMO.DOMAIN, DBEERPEDIA.DOMAIN,
+                DBEERPEDIA.SYSTEM_GRAPH_IRI))));
+
+    // Act
+    siteResourceProvider.loadResources();
+
+    // Assert
+    assertThat(siteResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(siteResourceProvider.get(blankNode), is(not(nullValue())));
   }
 
   @Test

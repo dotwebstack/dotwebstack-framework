@@ -21,6 +21,7 @@ import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -144,6 +145,27 @@ public class StageResourceProviderTest {
     // Assert
     assertThat(stageResourceProvider.getAll().entrySet(), hasSize(1));
     Stage stage = stageResourceProvider.get(DBEERPEDIA.STAGE);
+    assertThat(stage, is(not(nullValue())));
+    assertThat(stage.getSite(), equalTo(site));
+    assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
+  }
+
+  @Test
+  public void loadResources_LoadStage_WithValidDataAndBNode() {
+    // Arrange
+    final BNode blankNode = valueFactory.createBNode();
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(valueFactory.createStatement(blankNode, RDF.TYPE, ELMO.STAGE),
+            valueFactory.createStatement(blankNode, ELMO.SITE_PROP, DBEERPEDIA.SITE),
+            valueFactory.createStatement(blankNode, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH),
+            valueFactory.createStatement(blankNode, ELMO.LAYOUT_PROP, DBEERPEDIA.LAYOUT))));
+
+    // Act
+    stageResourceProvider.loadResources();
+
+    // Assert
+    assertThat(stageResourceProvider.getAll().entrySet(), hasSize(1));
+    Stage stage = stageResourceProvider.get(blankNode);
     assertThat(stage, is(not(nullValue())));
     assertThat(stage.getSite(), equalTo(site));
     assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
