@@ -13,6 +13,7 @@ import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class SparqlBackendInformationProductFactory {
     this.templateProcessor = templateProcessor;
   }
 
-  public InformationProduct create(IRI identifier, String label, Backend backend,
+  public InformationProduct create(Resource identifier, String label, Backend backend,
       Collection<Parameter> parameters, Model statements) {
     String query = getQuery(identifier, statements);
 
@@ -41,14 +42,14 @@ public class SparqlBackendInformationProductFactory {
         resultType, queryEvaluator, templateProcessor, parameters).label(label).build();
   }
 
-  private String getQuery(IRI identifier, Model statements) {
+  private String getQuery(Resource identifier, Model statements) {
     return Models.objectString(statements.filter(identifier, ELMO.QUERY, null)).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> statement has been found for a SPARQL information product <%s>.",
                 ELMO.QUERY, identifier)));
   }
 
-  private ResultType getResultType(IRI identifier, Model statements) {
+  private ResultType getResultType(Resource identifier, Model statements) {
     IRI resultTypeIri =
         Models.objectIRI(statements.filter(identifier, ELMO.RESULT_TYPE, null)).orElse(
             RESULT_TYPE_DEFAULT);

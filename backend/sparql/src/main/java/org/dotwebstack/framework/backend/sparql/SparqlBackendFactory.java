@@ -8,6 +8,7 @@ import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
@@ -26,7 +27,7 @@ class SparqlBackendFactory implements BackendFactory {
   }
 
   @Override
-  public Backend create(Model backendModel, IRI identifier) {
+  public Backend create(Model backendModel, Resource identifier) {
     Literal endpoint =
         Models.objectLiteral(backendModel.filter(identifier, ELMO.ENDPOINT, null)).orElseThrow(
             () -> new ConfigurationException(String.format(

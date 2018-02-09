@@ -2,11 +2,11 @@ package org.dotwebstack.framework.param;
 
 import java.util.Map;
 import lombok.NonNull;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 public interface Parameter<T> {
 
-  IRI getIdentifier();
+  Resource getIdentifier();
 
   String getName();
 

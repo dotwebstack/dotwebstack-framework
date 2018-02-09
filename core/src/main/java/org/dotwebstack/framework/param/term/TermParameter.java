@@ -6,7 +6,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.param.AbstractParameter;
 import org.dotwebstack.framework.param.BindableParameter;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 public abstract class TermParameter<T> extends AbstractParameter<T>
@@ -17,7 +17,7 @@ public abstract class TermParameter<T> extends AbstractParameter<T>
   @Getter
   protected final T defaultValue;
 
-  protected TermParameter(@NonNull IRI identifier, @NonNull String name, boolean required,
+  protected TermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
       T defaultValue) {
     super(identifier, name, required);
     this.defaultValue = defaultValue;

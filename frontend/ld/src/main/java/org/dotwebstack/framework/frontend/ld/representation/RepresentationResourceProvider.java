@@ -9,8 +9,8 @@ import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvid
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.slf4j.Logger;
@@ -56,7 +56,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   }
 
   @Override
-  protected Representation createResource(Model model, IRI identifier) {
+  protected Representation createResource(Model model, Resource identifier) {
     final Representation.Builder builder = new Representation.Builder(identifier);
 
     getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(

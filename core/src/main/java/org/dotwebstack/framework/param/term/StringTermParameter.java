@@ -3,6 +3,7 @@ package org.dotwebstack.framework.param.term;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Resource;
 
 public class StringTermParameter extends TermParameter<String> {
 
@@ -10,7 +11,7 @@ public class StringTermParameter extends TermParameter<String> {
     this(identifier, name, required, null);
   }
 
-  StringTermParameter(@NonNull IRI identifier, @NonNull String name, boolean required,
+  StringTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
       String defaultValue) {
     super(identifier, name, required, defaultValue);
   }

@@ -7,7 +7,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.dotwebstack.framework.backend.BackendException;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -15,7 +15,7 @@ public abstract class AbstractParameter<T> implements Parameter<T> {
 
   @NonNull
   @Getter
-  IRI identifier;
+  Resource identifier;
 
   @NonNull
   @Getter

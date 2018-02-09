@@ -1,16 +1,17 @@
 package org.dotwebstack.framework.param.term;
 
 import lombok.NonNull;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Resource;
 
 public class IntegerTermParameter extends TermParameter<Integer> {
 
-  public IntegerTermParameter(@NonNull IRI identifier, @NonNull String name, boolean required) {
+  public IntegerTermParameter(@NonNull Resource identifier, @NonNull String name,
+      boolean required) {
     this(identifier, name, required, null);
   }
 
-  IntegerTermParameter(@NonNull IRI identifier, @NonNull String name, boolean required,
+  IntegerTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
       Integer defaultValue) {
     super(identifier, name, required, defaultValue);
   }

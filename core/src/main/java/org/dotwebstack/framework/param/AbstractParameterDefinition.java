@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class AbstractParameterDefinition<T extends Parameter<?>>
@@ -12,7 +12,7 @@ public abstract class AbstractParameterDefinition<T extends Parameter<?>>
 
   @NonNull
   @Getter
-  private final IRI identifier;
+  private final Resource identifier;
 
   @NonNull
   @Getter

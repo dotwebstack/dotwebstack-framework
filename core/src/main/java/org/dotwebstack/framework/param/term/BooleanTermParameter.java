@@ -1,16 +1,16 @@
 package org.dotwebstack.framework.param.term;
 
 import lombok.NonNull;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Resource;
 
 public class BooleanTermParameter extends TermParameter<Boolean> {
 
-  BooleanTermParameter(@NonNull IRI identifier, @NonNull String name, boolean required) {
+  BooleanTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required) {
     this(identifier, name, required, null);
   }
 
-  BooleanTermParameter(@NonNull IRI identifier, @NonNull String name, boolean required,
+  BooleanTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
       Boolean defaultValue) {
     super(identifier, name, required, defaultValue);
   }
