@@ -151,6 +151,27 @@ public class StageResourceProviderTest {
   }
 
   @Test
+  public void loadResources_LoadStage_WithValidDataAndBNodeLayout() {
+    // Arrange
+    final BNode blankNode = valueFactory.createBNode();
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.STAGE, RDF.TYPE, ELMO.STAGE),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.SITE_PROP, DBEERPEDIA.SITE),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.BASE_PATH, DBEERPEDIA.BASE_PATH),
+            valueFactory.createStatement(DBEERPEDIA.STAGE, ELMO.LAYOUT_PROP, blankNode))));
+
+    // Act
+    stageResourceProvider.loadResources();
+
+    // Assert
+    assertThat(stageResourceProvider.getAll().entrySet(), hasSize(1));
+    Stage stage = stageResourceProvider.get(DBEERPEDIA.STAGE);
+    assertThat(stage, is(not(nullValue())));
+    assertThat(stage.getSite(), equalTo(site));
+    assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
+  }
+
+  @Test
   public void loadResources_LoadStage_WithValidDataAndBNode() {
     // Arrange
     final BNode blankNode = valueFactory.createBNode();

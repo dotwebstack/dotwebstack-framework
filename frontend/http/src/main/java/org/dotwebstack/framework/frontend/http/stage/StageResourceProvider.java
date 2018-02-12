@@ -8,7 +8,6 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.DC;
@@ -45,13 +44,13 @@ public class StageResourceProvider extends AbstractResourceProvider<Stage> {
 
   @Override
   protected Stage createResource(Model model, Resource identifier) {
-    IRI siteIRI = getObjectIRI(model, identifier, ELMO.SITE_PROP).orElseThrow(
+    Resource siteIRI = getObjectResource(model, identifier, ELMO.SITE_PROP).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for stage <%s>.", ELMO.SITE_PROP, identifier)));
 
     Stage.Builder builder = new Stage.Builder(identifier, siteResourceProvider.get(siteIRI));
     getObjectString(model, identifier, ELMO.BASE_PATH).ifPresent(builder::basePath);
-    getObjectIRI(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
+    getObjectResource(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
         iri -> builder.layout(layoutResourceProvider.get(iri)));
     getObjectString(model, identifier, DC.TITLE).ifPresent(builder::title);
 

@@ -119,8 +119,16 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     return Models.objectIRI(model.filter(subject, predicate, null));
   }
 
+  protected Optional<Resource> getObjectResource(Model model, Resource subject, IRI predicate) {
+    return Models.objectResource(model.filter(subject, predicate, null));
+  }
+
   protected Collection<IRI> getObjectIris(Model model, Resource subject, IRI predicate) {
     return Models.objectIRIs(model.filter(subject, predicate, null));
+  }
+
+  protected Collection<Resource> getObjectResources(Model model, Resource subject, IRI predicate) {
+    return Models.objectResources(model.filter(subject, predicate, null));
   }
 
   protected Optional<Value> getObjectValue(Model model, Resource subject, IRI predicate) {

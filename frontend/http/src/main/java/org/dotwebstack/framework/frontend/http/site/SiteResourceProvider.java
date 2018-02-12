@@ -55,7 +55,7 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
         throw new ConfigurationException("Catch all domain found for multiple sites.");
       }
     }
-    getObjectIRI(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
+    getObjectResource(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
         iri -> builder.layout(layoutResourceProvider.get(iri)));
 
     return builder.build();

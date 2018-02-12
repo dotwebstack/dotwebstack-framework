@@ -7,7 +7,6 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQuery;
@@ -41,7 +40,7 @@ public class RedirectionResourceProvider extends AbstractResourceProvider<Redire
 
   @Override
   protected Redirection createResource(Model model, Resource identifier) {
-    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP).orElseThrow(
+    Resource stageIri = getObjectResource(model, identifier, ELMO.STAGE_PROP).orElseThrow(
         () -> new ConfigurationException(String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION,
             ELMO.STAGE_PROP, identifier)));
 
