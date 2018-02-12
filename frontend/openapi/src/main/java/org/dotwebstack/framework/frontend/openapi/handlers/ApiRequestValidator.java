@@ -60,7 +60,8 @@ class ApiRequestValidator {
     ValidationReport report = requestValidator.validateRequest(builder.build(), apiOperation);
 
     if (report.hasErrors()) {
-      LOG.error("Request parameter validation failed");
+      LOG.error("Request parameter validation failed, with following errors: {}",
+          report.getMessages());
       throw createException(report);
     }
 
