@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.transaction.flow.step.persistance;
+package org.dotwebstack.framework.transaction.flow.step.persistence;
 
 import org.dotwebstack.framework.transaction.flow.step.StepFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -7,7 +7,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PersistanceStepFactory implements StepFactory {
+public class PersistenceStepFactory implements StepFactory {
 
   @Override
   public boolean supports(IRI stepType) {
@@ -15,7 +15,7 @@ public class PersistanceStepFactory implements StepFactory {
   }
 
   @Override
-  public PersistanceStep create(Model stepModel, IRI identifier) {
+  public PersistenceStep create(Model stepModel, IRI identifier) {
     return null;
   }
 }
