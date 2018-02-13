@@ -11,7 +11,7 @@ public class PersistenceStepFactory implements StepFactory {
 
   @Override
   public boolean supports(IRI stepType) {
-    return stepType == ELMO.VALIDATION_STEP;
+    return stepType == ELMO.PERSISTENCE_STEP;
   }
 
   @Override

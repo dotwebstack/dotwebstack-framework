@@ -21,6 +21,8 @@ public final class ELMO {
 
   public static final IRI SEQUENTIAL_FLOW_PROP;
 
+  public static final IRI PERSISTENCE_STEP;
+
   public static final IRI VALIDATION_STEP;
 
   public static final IRI SITE;
@@ -110,6 +112,7 @@ public final class ELMO {
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
 
     TRANSACTION = valueFactory.createIRI(ELMO.NAMESPACE, "Transaction");
+    PERSISTENCE_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "PersistenceStep");
     VALIDATION_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "ValidationStep");
 
     SITE = valueFactory.createIRI(ELMO.NAMESPACE, "Site");
