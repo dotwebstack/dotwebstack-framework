@@ -30,17 +30,21 @@ public class SequentialFlowFactory implements FlowFactory {
   @Override
   public SequentialFlow create(Model model, IRI identifier) {
 
-    Collection<IRI> stepIris = Models.objectIRIs(model.filter(identifier, ELMO.SEQUENTIAL_FLOW_PROP, null));
+    Collection<IRI> stepIris =
+        Models.objectIRIs(model.filter(identifier, ELMO.SEQUENTIAL_FLOW_PROP, null));
 
     if (stepIris.isEmpty()) {
-      throw new ConfigurationException(String.format("No <%s> statement has been found for transaction <%s>.", ELMO.SEQUENTIAL_FLOW_PROP, identifier));
+      throw new ConfigurationException(
+         String.format("No <%s> statement has been found for transaction <%s>.",
+             ELMO.SEQUENTIAL_FLOW_PROP, identifier));
     }
 
     List<Step> stepList = new ArrayList<Step>();
     stepIris.forEach(stepIri -> {
       Step step = stepResourceProvider.get(stepIri);
       if (step == null) {
-        throw new ConfigurationException(String.format("No step definition <%s> found for transaction <%s>.", step, identifier));
+        throw new ConfigurationException(
+            String.format("No step definition <%s> found for transaction <%s>.", step, identifier));
       } else {
         stepList.add(step);
       }

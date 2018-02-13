@@ -51,7 +51,8 @@ public class TransactionResourceProvider extends AbstractResourceProvider<Transa
       }
     }
 
-    throw new ConfigurationException(String.format("No flow statements has been found for transaction <%s>.", identifier));
+    throw new ConfigurationException(
+        String.format("No flow statements has been found for transaction <%s>.", identifier));
   }
 
 }
