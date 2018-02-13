@@ -15,6 +15,7 @@ import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourcePr
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.TransactionResourceProvider;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Test;
@@ -40,6 +41,9 @@ public class ConfigurationIntegrationTest {
   private InformationProductResourceProvider informationProductResourceProvider;
 
   @Autowired
+  private TransactionResourceProvider transactionResourceProvider;
+
+  @Autowired
   private RepresentationResourceProvider representationResourceProvider;
 
   @Autowired
@@ -61,6 +65,7 @@ public class ConfigurationIntegrationTest {
     assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(4));
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.TUPLE_BREWERIES), notNullValue());
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.GRAPH_BREWERIES), notNullValue());
+    assertThat(transactionResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(representationResourceProvider.getAll().entrySet(), hasSize(5));
     assertThat(representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
         notNullValue());

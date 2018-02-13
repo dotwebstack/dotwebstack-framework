@@ -1,0 +1,12 @@
+GRAPH dbeerpedia:Theatre {
+
+  # Transaction: replace resource from graph
+	config:InsertOrReplaceConcept a elmo:Transaction;
+    elmo:sequentialFlow config:PersistenceStep;
+  .
+    config:PersistenceStep; a elmo:PersistenceStep;
+    elmo:persistenceStrategy a elmo-sp:InsertIntoGraph;
+    elmo:backend config:SparqlBackend;
+    elmo:targetGraph <http://dotwebstack.org/all-concepts>;
+  .
+}

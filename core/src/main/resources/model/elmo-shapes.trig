@@ -256,6 +256,12 @@ elmo-shape:Transaction a sh:NodeShape;
     sh:maxCount 1;
   ];
   sh:property [
+      sh:path elmo:sequentialFlow;
+      sh:name "elmo:sequentialFlow";
+      sh:node elmo-shape:FlowList;
+      sh:maxCount 1;
+  ];
+  sh:property [
     sh:name "elmo:backend";
     sh:path elmo:backend;
     sh:class elmo:Backend;

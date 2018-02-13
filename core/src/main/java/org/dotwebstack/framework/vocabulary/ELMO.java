@@ -17,6 +17,12 @@ public final class ELMO {
 
   public static final IRI INFORMATION_PRODUCT_PROP;
 
+  public static final IRI TRANSACTION;
+
+  public static final IRI SEQUENTIAL_FLOW_PROP;
+
+  public static final IRI VALIDATION_STEP;
+
   public static final IRI SITE;
 
   public static final IRI STAGE;
@@ -103,6 +109,9 @@ public final class ELMO {
     // Classes
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
 
+    TRANSACTION = valueFactory.createIRI(ELMO.NAMESPACE, "Transaction");
+    VALIDATION_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "ValidationStep");
+
     SITE = valueFactory.createIRI(ELMO.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(ELMO.NAMESPACE, "Stage");
 
@@ -136,6 +145,8 @@ public final class ELMO {
     PARAMETER_MAPPER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "parameterMapper");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
+
+    SEQUENTIAL_FLOW_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "sequentialFlow");
 
     REDIRECT_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 
