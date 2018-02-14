@@ -97,6 +97,10 @@ public final class ELMO {
 
   public static final IRI LAYOUT_PROP;
 
+  public static final IRI PERSISTENCE_STRATEGY_PROP;
+
+  public static final IRI TARGET_GRAPH_PROP;
+
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -115,6 +119,7 @@ public final class ELMO {
 
     TRANSACTION = valueFactory.createIRI(ELMO.NAMESPACE, "Transaction");
     PERSISTENCE_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "PersistenceStep");
+
     VALIDATION_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "ValidationStep");
 
     SITE = valueFactory.createIRI(ELMO.NAMESPACE, "Site");
@@ -153,6 +158,10 @@ public final class ELMO {
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
 
     SEQUENTIAL_FLOW_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "sequentialFlow");
+
+    TARGET_GRAPH_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "targetGraph");
+
+    PERSISTENCE_STRATEGY_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "persistenceStrategy");
 
     REDIRECT_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 
