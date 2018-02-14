@@ -178,7 +178,7 @@ public class StringSchemaMapperTest {
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(
-        "String property has 'x-constant-value' vendor extension that is null, "
+        "String property has 'x-dotwebstack-constant-value' vendor extension that is null, "
             + "but the property is required");
 
     // Arrange
