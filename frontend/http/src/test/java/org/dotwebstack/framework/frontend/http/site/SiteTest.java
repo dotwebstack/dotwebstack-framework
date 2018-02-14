@@ -4,6 +4,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -16,6 +19,8 @@ public class SiteTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
+  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
   @Test
   public void build_CreatesSite_WithValidData() {
     // Act
@@ -24,6 +29,18 @@ public class SiteTest {
 
     // Assert
     assertThat(site.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN.stringValue()));
+    assertThat(site.isMatchAllDomain(), equalTo(false));
+  }
+
+  @Test
+  public void build_CreatesSite_WithValidDataAndBNode() {
+    // Act
+    final BNode blankNode = valueFactory.createBNode();
+    Site site = new Site.Builder(blankNode).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
+
+    // Assert
+    assertThat(site.getIdentifier(), equalTo(blankNode));
     assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN.stringValue()));
     assertThat(site.isMatchAllDomain(), equalTo(false));
   }

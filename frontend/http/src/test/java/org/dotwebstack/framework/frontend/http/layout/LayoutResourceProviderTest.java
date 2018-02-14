@@ -14,6 +14,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -100,6 +101,25 @@ public class LayoutResourceProviderTest {
     // Assert
     assertThat(layoutResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(layoutResourceProvider.get(DBEERPEDIA.LAYOUT), is(not(nullValue())));
+  }
+
+  @Test
+  public void loadResources_LoadsLayout_WithValidDataAndBNode() {
+    // Arrange
+    final BNode blankNode = valueFactory.createBNode();
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(blankNode, RDF.TYPE, ELMO.LAYOUT,
+                DBEERPEDIA.SYSTEM_GRAPH_IRI),
+            valueFactory.createStatement(blankNode, ELMO.LAYOUT, DBEERPEDIA.LAYOUT_VALUE,
+                DBEERPEDIA.SYSTEM_GRAPH_IRI))));
+
+    // Act
+    layoutResourceProvider.loadResources();
+
+    // Assert
+    assertThat(layoutResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(layoutResourceProvider.get(blankNode), is(not(nullValue())));
   }
 
   @Test

@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.param;
 
 import org.dotwebstack.framework.param.term.TermParameter;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 /**
  * A {@code ParameterDefinition} contains the data a {@link Parameter} will be created with. Each
@@ -14,7 +14,7 @@ import org.eclipse.rdf4j.model.IRI;
  */
 public interface ParameterDefinition<T extends Parameter<?>> {
 
-  IRI getIdentifier();
+  Resource getIdentifier();
 
   String getName();
 

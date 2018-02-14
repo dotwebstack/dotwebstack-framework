@@ -6,11 +6,11 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 public abstract class AbstractInformationProduct implements InformationProduct {
 
-  protected final IRI identifier;
+  protected final Resource identifier;
 
   protected final String label;
 
@@ -20,7 +20,7 @@ public abstract class AbstractInformationProduct implements InformationProduct {
 
   protected final TemplateProcessor templateProcessor;
 
-  protected AbstractInformationProduct(@NonNull IRI identifier, String label,
+  protected AbstractInformationProduct(@NonNull Resource identifier, String label,
       @NonNull ResultType resultType, @NonNull Collection<Parameter> parameters,
       @NonNull TemplateProcessor templateProcessor) {
     this.identifier = identifier;
@@ -31,7 +31,7 @@ public abstract class AbstractInformationProduct implements InformationProduct {
   }
 
   @Override
-  public IRI getIdentifier() {
+  public Resource getIdentifier() {
     return identifier;
   }
 

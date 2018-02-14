@@ -8,6 +8,7 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -37,14 +38,14 @@ public class AppearanceResourceProvider extends AbstractResourceProvider<Appeara
   }
 
   @Override
-  protected Appearance createResource(@NonNull Model model, @NonNull IRI identifier) {
+  protected Appearance createResource(@NonNull Model model, @NonNull Resource identifier) {
     IRI type = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for appearance <%s>.", RDF.TYPE, identifier)));
     return new Appearance.Builder(identifier, type, getModel(identifier)).build();
   }
 
-  private Model getModel(IRI identifier) {
+  private Model getModel(Resource identifier) {
     final RepositoryConnection repositoryConnection;
     final Model model;
 

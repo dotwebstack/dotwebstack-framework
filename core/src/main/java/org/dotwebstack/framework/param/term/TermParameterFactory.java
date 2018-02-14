@@ -8,13 +8,14 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.ShaclShape;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class TermParameterFactory {
 
-  public static TermParameter newTermParameter(@NonNull IRI identifier, @NonNull String name,
+  public static TermParameter newTermParameter(@NonNull Resource identifier, @NonNull String name,
       @NonNull ShaclShape shape, boolean required) {
 
     Value defaultValue = shape.getDefaultValue();
