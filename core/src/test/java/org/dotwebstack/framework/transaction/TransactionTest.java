@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.transaction;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -22,13 +23,30 @@ public class TransactionTest {
   private Flow flow;
 
   @Test
+  public void build_ThrowsException_WithMissingIdentifier() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new Transaction.Builder(null).build();
+  }
+
+  @Test
+  public void build_ThrowsException_NullFlow() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new Transaction.Builder(DBEERPEDIA.TRANSACTION).flow(null).build();
+  }
+
+  @Test
   public void build_CreatesTransaction_WithValidData() {
     // Act
     Transaction transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION).flow(flow).build();
 
     // Assert
     assertThat(transaction.getIdentifier(), equalTo(DBEERPEDIA.TRANSACTION));
-    assertThat(site.getDomain(), equalTo(DBEERPEDIA.DOMAIN.stringValue()));
-    assertThat(site.isMatchAllDomain(), equalTo(false));
+    assertThat(transaction.getFlow(), notNullValue());
   }
 }
