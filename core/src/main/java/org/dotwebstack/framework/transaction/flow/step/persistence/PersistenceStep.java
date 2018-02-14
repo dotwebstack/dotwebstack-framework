@@ -4,11 +4,11 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 public class PersistenceStep implements Step {
 
-  // todo replace IRI by Resource
-  private IRI identifier;
+  private Resource identifier;
 
   // todo replace IRI by Strategy
   private IRI persistenceStrategy;
@@ -26,7 +26,7 @@ public class PersistenceStep implements Step {
 
   public static final class Builder {
 
-    private IRI identifier;
+    private Resource identifier;
 
     private IRI persistenceStrategy;
 
@@ -34,7 +34,7 @@ public class PersistenceStep implements Step {
 
     private IRI targetGraph;
 
-    public Builder(@NonNull IRI identifier) {
+    public Builder(@NonNull Resource identifier) {
       this.identifier = identifier;
     }
 

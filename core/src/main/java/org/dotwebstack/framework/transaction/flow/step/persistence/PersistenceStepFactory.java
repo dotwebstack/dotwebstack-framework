@@ -6,6 +6,7 @@ import org.dotwebstack.framework.transaction.flow.step.StepFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,7 @@ public class PersistenceStepFactory implements StepFactory {
   }
 
   @Override
-  public PersistenceStep create(Model stepModel, IRI identifier) {
+  public PersistenceStep create(Model stepModel, Resource identifier) {
     PersistenceStep.Builder builder = new PersistenceStep.Builder(identifier);
     getObjectIRI(stepModel, identifier, ELMO.PERSISTENCE_STRATEGY_PROP).ifPresent(
         builder::persistenceStrategy);
@@ -35,7 +36,7 @@ public class PersistenceStepFactory implements StepFactory {
     return builder.build();
   }
 
-  private Optional<IRI> getObjectIRI(Model model, IRI subject, IRI predicate) {
+  private Optional<IRI> getObjectIRI(Model model, Resource subject, IRI predicate) {
     return Models.objectIRI(model.filter(subject, predicate, null));
   }
 }

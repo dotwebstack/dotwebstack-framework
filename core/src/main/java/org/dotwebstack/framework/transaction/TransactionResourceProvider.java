@@ -10,6 +10,7 @@ import org.dotwebstack.framework.transaction.flow.FlowFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +39,7 @@ public class TransactionResourceProvider extends AbstractResourceProvider<Transa
   }
 
   @Override
-  protected Transaction createResource(Model model, IRI identifier) {
+  protected Transaction createResource(Model model, Resource identifier) {
     for (IRI predicate : getPredicateIris(model, identifier)) {
       for (FlowFactory flowFactory : flowFactories) {
         if (flowFactory.supports(predicate)) {
