@@ -16,6 +16,7 @@ import org.dotwebstack.framework.frontend.ld.representation.RepresentationResour
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.transaction.TransactionResourceProvider;
+import org.dotwebstack.framework.transaction.flow.step.StepResourceProvider;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Test;
@@ -52,6 +53,9 @@ public class ConfigurationIntegrationTest {
   @Autowired
   private LayoutResourceProvider layoutResourceProvider;
 
+  @Autowired
+  private StepResourceProvider stepResourceProvider;
+
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Test
@@ -81,6 +85,7 @@ public class ConfigurationIntegrationTest {
     String cssResource = layoutResourceProvider.get(DBEERPEDIA.LAYOUT).getOptions().get(
         valueFactory.createIRI("http://www.w3.org/1999/xhtml/vocab#stylesheet")).stringValue();
     assertThat(cssResource, equalTo("stage-layout.css"));
+
   }
 
 }
