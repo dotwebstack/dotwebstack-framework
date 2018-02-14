@@ -42,10 +42,7 @@ abstract class AbstractSubjectQuerySchemaMapper<S extends Property, T>
           OpenApiSpecificationExtensions.SUBJECT_QUERY));
     }
 
-    ImmutableSet.Builder<Resource> builder = ImmutableSet.builder();
-    Repository repository = new SailRepository(new MemoryStore());
-
-    repository.initialize();
+    Repository repository = createRepository();
 
     try (RepositoryConnection connection = repository.getConnection()) {
       connection.add(entity.getModel());
@@ -53,34 +50,58 @@ abstract class AbstractSubjectQuerySchemaMapper<S extends Property, T>
       String queryString =
           (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT_QUERY);
       TupleQuery tupleQuery = connection.prepareTupleQuery(queryString);
-      TupleQueryResult result = tupleQuery.evaluate();
 
+      return evaluateQuery(tupleQuery);
+    } finally {
+      repository.shutDown();
+    }
+  }
+
+  private static Repository createRepository() {
+    Repository repository = new SailRepository(new MemoryStore());
+
+    repository.initialize();
+
+    return repository;
+  }
+
+  private static Set<Resource> evaluateQuery(TupleQuery query) {
+    try (TupleQueryResult result = query.evaluate()) {
       List<String> bindingNames = result.getBindingNames();
 
-      if (bindingNames.size() != 1) {
-        throw new SchemaMapperRuntimeException(
-            String.format("'%s' must define exactly 1 binding: '%s'",
-                OpenApiSpecificationExtensions.SUBJECT_QUERY, queryString));
-      }
+      checkNoBindingNamesEqualTo1(query, bindingNames);
 
       String bindingName = bindingNames.get(0);
+      ImmutableSet.Builder<Resource> builder = ImmutableSet.builder();
 
       while (result.hasNext()) {
         BindingSet bindingSet = result.next();
         Value value = bindingSet.getValue(bindingName);
 
-        if (!(value instanceof Resource)) {
-          throw new SchemaMapperRuntimeException(String.format(
-              "'%s' must return RDF resources (IRIs and blank nodes) only. "
-                  + "Query string: '%s'%nValue returned: '%s'",
-              OpenApiSpecificationExtensions.SUBJECT_QUERY, queryString, value));
-        }
+        checkValueInstanceOfResource(query, value);
 
         builder.add((Resource) value);
       }
-    }
 
-    return builder.build();
+      return builder.build();
+    }
+  }
+
+  private static void checkNoBindingNamesEqualTo1(TupleQuery query, List<String> bindingNames) {
+    if (bindingNames.size() != 1) {
+      throw new SchemaMapperRuntimeException(
+          String.format("'%s' must define exactly 1 binding: '%s'",
+              OpenApiSpecificationExtensions.SUBJECT_QUERY, query));
+    }
+  }
+
+  private static void checkValueInstanceOfResource(TupleQuery query, Value value) {
+    if (!(value instanceof Resource)) {
+      throw new SchemaMapperRuntimeException(String.format(
+          "'%s' must return RDF resources (IRIs and blank nodes) only. "
+              + "Query string: '%s'%nValue returned: '%s'",
+          OpenApiSpecificationExtensions.SUBJECT_QUERY, query, value));
+    }
   }
 
   /**
