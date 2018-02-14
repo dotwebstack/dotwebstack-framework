@@ -8,6 +8,7 @@ import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvider;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
+import org.dotwebstack.framework.transaction.TransactionResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -25,6 +26,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   private final InformationProductResourceProvider informationProductResourceProvider;
 
+  private final TransactionResourceProvider transactionResourceProvider;
+
   private final AppearanceResourceProvider appearanceResourceProvider;
 
   private final StageResourceProvider stageResourceProvider;
@@ -34,12 +37,14 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull InformationProductResourceProvider informationProductResourceProvider,
+      @NonNull TransactionResourceProvider transactionResourceProvider,
       @NonNull AppearanceResourceProvider appearanceResourceProvider,
       @NonNull StageResourceProvider stageResourceProvider,
       @NonNull ParameterMapperResourceProvider parameterMapperResourceProvider,
       ApplicationProperties applicationProperties) {
     super(configurationBackend, applicationProperties);
     this.informationProductResourceProvider = informationProductResourceProvider;
+    this.transactionResourceProvider = transactionResourceProvider;
     this.appearanceResourceProvider = appearanceResourceProvider;
     this.stageResourceProvider = stageResourceProvider;
     this.parameterMapperResourceProvider = parameterMapperResourceProvider;
@@ -61,6 +66,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
     getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(
         iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
+    getObjectIRI(model, identifier, ELMO.TRANSACTION_PROP).ifPresent(
+        iri -> builder.transaction(transactionResourceProvider.get(iri)));
     getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(
         iri -> builder.appearance(appearanceResourceProvider.get(iri)));
     getObjectStrings(model, identifier, ELMO.PATH_PATTERN).stream().forEach(builder::pathPattern);

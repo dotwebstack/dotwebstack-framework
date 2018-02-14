@@ -8,6 +8,7 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.transaction.Transaction;
 import org.eclipse.rdf4j.model.IRI;
 
 public class Representation {
@@ -15,6 +16,8 @@ public class Representation {
   private IRI identifier;
 
   private InformationProduct informationProduct;
+
+  private Transaction transaction;
 
   private Appearance appearance;
 
@@ -32,6 +35,7 @@ public class Representation {
     parameterMappers = builder.parameterMappers;
     stage = builder.stage;
     informationProduct = builder.informationProduct;
+    this.transaction = builder.transaction;
     appearance = builder.appearance;
     subRepresentations = builder.subRepresentations;
   }
@@ -42,6 +46,10 @@ public class Representation {
 
   public InformationProduct getInformationProduct() {
     return informationProduct;
+  }
+
+  public Transaction getTransaction() {
+    return transaction;
   }
 
   public Appearance getAppearance() {
@@ -74,6 +82,8 @@ public class Representation {
 
     private InformationProduct informationProduct;
 
+    private Transaction transaction;
+
     private Appearance appearance;
 
     private List<String> pathPatterns = new ArrayList<>();
@@ -91,6 +101,7 @@ public class Representation {
     public Builder(@NonNull Representation representation) {
       this.identifier = representation.identifier;
       this.informationProduct = representation.informationProduct;
+      this.transaction = representation.transaction;
       this.appearance = representation.appearance;
       this.pathPatterns = representation.pathPatterns;
       this.parameterMappers = representation.parameterMappers;
@@ -100,6 +111,11 @@ public class Representation {
 
     public Builder informationProduct(InformationProduct informationProduct) {
       this.informationProduct = informationProduct;
+      return this;
+    }
+
+    public Builder transaction(Transaction transaction) {
+      this.transaction = transaction;
       return this;
     }
 
