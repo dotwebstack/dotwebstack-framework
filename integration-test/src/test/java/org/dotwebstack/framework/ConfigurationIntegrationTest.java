@@ -70,6 +70,7 @@ public class ConfigurationIntegrationTest {
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.TUPLE_BREWERIES), notNullValue());
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.GRAPH_BREWERIES), notNullValue());
     assertThat(transactionResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(transactionResourceProvider.get(DBEERPEDIA.TRANSACTION), notNullValue());
     assertThat(representationResourceProvider.getAll().entrySet(), hasSize(5));
     assertThat(representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
         notNullValue());
@@ -85,7 +86,8 @@ public class ConfigurationIntegrationTest {
     String cssResource = layoutResourceProvider.get(DBEERPEDIA.LAYOUT).getOptions().get(
         valueFactory.createIRI("http://www.w3.org/1999/xhtml/vocab#stylesheet")).stringValue();
     assertThat(cssResource, equalTo("stage-layout.css"));
-
+    assertThat(stepResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(stepResourceProvider.get(DBEERPEDIA.PERSISTENCE_STEP), notNullValue());
   }
 
 }
