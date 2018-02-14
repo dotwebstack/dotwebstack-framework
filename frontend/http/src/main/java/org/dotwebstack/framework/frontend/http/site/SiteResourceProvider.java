@@ -8,8 +8,8 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
   }
 
   @Override
-  protected Site createResource(Model model, IRI identifier) {
+  protected Site createResource(Model model, Resource identifier) {
     Site.Builder builder = new Site.Builder(identifier);
     Optional<String> domain = getObjectString(model, identifier, ELMO.DOMAIN);
 
@@ -55,7 +55,7 @@ public class SiteResourceProvider extends AbstractResourceProvider<Site> {
         throw new ConfigurationException("Catch all domain found for multiple sites.");
       }
     }
-    getObjectIRI(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
+    getObjectResource(model, identifier, ELMO.LAYOUT_PROP).ifPresent(
         iri -> builder.layout(layoutResourceProvider.get(iri)));
 
     return builder.build();

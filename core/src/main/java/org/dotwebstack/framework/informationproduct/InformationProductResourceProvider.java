@@ -15,6 +15,7 @@ import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQuery;
@@ -51,7 +52,7 @@ public class InformationProductResourceProvider
   }
 
   @Override
-  protected InformationProduct createResource(Model model, IRI identifier) {
+  protected InformationProduct createResource(Model model, Resource identifier) {
     IRI backendIRI =
         Models.objectIRI(model.filter(identifier, ELMO.BACKEND_PROP, null)).orElseThrow(
             () -> new ConfigurationException(
@@ -68,7 +69,7 @@ public class InformationProductResourceProvider
   }
 
   private InformationProduct create(IRI backendIdentifier, Set<IRI> requiredParameterIds,
-      Set<IRI> optionalParameterIds, IRI identifier, String label, Model statements) {
+      Set<IRI> optionalParameterIds, Resource identifier, String label, Model statements) {
     Backend backend = backendResourceProvider.get(backendIdentifier);
 
     ImmutableList.Builder<Parameter> builder = ImmutableList.builder();

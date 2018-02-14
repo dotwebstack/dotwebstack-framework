@@ -28,7 +28,7 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
   }
 
   @Override
-  public ParameterDefinition create(@NonNull Model model, @NonNull IRI id) {
+  public ParameterDefinition create(@NonNull Model model, @NonNull Resource id) {
     String name = Models.objectLiteral(model.filter(id, ELMO.NAME_PROP, null)).orElseThrow(
         newConfigurationException(ELMO.NAME_PROP, id, ELMO.TERM_PARAMETER)).stringValue();
 

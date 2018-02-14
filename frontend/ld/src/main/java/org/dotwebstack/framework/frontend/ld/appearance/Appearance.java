@@ -3,10 +3,11 @@ package org.dotwebstack.framework.frontend.ld.appearance;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 
 public class Appearance {
 
-  private IRI identifier;
+  private Resource identifier;
 
   private IRI type;
 
@@ -18,7 +19,7 @@ public class Appearance {
     model = builder.model;
   }
 
-  public IRI getIdentifier() {
+  public Resource getIdentifier() {
     return identifier;
   }
 
@@ -32,13 +33,13 @@ public class Appearance {
 
   public static class Builder {
 
-    private IRI identifier;
+    private Resource identifier;
 
     private IRI type;
 
     private Model model;
 
-    public Builder(@NonNull IRI identifier, @NonNull IRI type, @NonNull Model model) {
+    public Builder(@NonNull Resource identifier, @NonNull IRI type, @NonNull Model model) {
       this.identifier = identifier;
       this.type = type;
       this.model = model;

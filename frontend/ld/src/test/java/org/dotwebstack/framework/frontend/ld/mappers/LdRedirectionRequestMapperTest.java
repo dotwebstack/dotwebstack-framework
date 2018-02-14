@@ -17,7 +17,6 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.redirection.Redirection;
 import org.dotwebstack.framework.frontend.ld.redirection.RedirectionResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
-import org.eclipse.rdf4j.model.IRI;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
@@ -61,7 +60,7 @@ public class LdRedirectionRequestMapperTest {
         DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(),
         DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
 
-    Map<IRI, Redirection> redirectionMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, Redirection> redirectionMap = new HashMap<>();
     redirectionMap.put(redirection.getIdentifier(), redirection);
 
     when(redirectionResourceProvider.getAll()).thenReturn(redirectionMap);
@@ -105,7 +104,7 @@ public class LdRedirectionRequestMapperTest {
         DBEERPEDIA.ID2DOC_PATH_PATTERN.stringValue(),
         DBEERPEDIA.ID2DOC_REDIRECT_TEMPLATE.stringValue()).build();
 
-    Map<IRI, Redirection> redirectionMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, Redirection> redirectionMap = new HashMap<>();
     redirectionMap.put(redirection.getIdentifier(), redirection);
 
     Redirection sameSecondRedirection = new Redirection.Builder(DBEERPEDIA.ID2DOC_DUMMY_REDIRECTION,

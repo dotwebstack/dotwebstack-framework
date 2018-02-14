@@ -1,12 +1,12 @@
 package org.dotwebstack.framework;
 
 import java.util.Map;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 public interface ResourceProvider<R> {
 
-  R get(IRI iri);
+  R get(Resource iri);
 
-  Map<IRI, R> getAll();
+  Map<Resource, R> getAll();
 
 }
