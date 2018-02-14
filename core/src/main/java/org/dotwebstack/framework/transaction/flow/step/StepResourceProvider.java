@@ -20,10 +20,8 @@ public class StepResourceProvider extends AbstractResourceProvider<Step> {
   private List<StepFactory> stepFactoryList;
 
   @Autowired
-  public StepResourceProvider(
-      ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties,
-      List<StepFactory> stepFactoryList) {
+  public StepResourceProvider(ConfigurationBackend configurationBackend,
+      ApplicationProperties applicationProperties, List<StepFactory> stepFactoryList) {
     super(configurationBackend, applicationProperties);
     this.stepFactoryList = stepFactoryList;
   }

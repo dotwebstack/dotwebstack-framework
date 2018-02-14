@@ -19,8 +19,7 @@ public class SequentialFlowFactory implements FlowFactory {
   private StepResourceProvider stepResourceProvider;
 
   @Autowired
-  public SequentialFlowFactory(
-      StepResourceProvider stepResourceProvider) {
+  public SequentialFlowFactory(StepResourceProvider stepResourceProvider) {
     this.stepResourceProvider = stepResourceProvider;
   }
 
@@ -37,8 +36,8 @@ public class SequentialFlowFactory implements FlowFactory {
 
     if (stepIris.isEmpty()) {
       throw new ConfigurationException(
-         String.format("No <%s> statement has been found for transaction <%s>.",
-             ELMO.SEQUENTIAL_FLOW_PROP, identifier));
+          String.format("No <%s> statement has been found for transaction <%s>.",
+              ELMO.SEQUENTIAL_FLOW_PROP, identifier));
     }
 
     List<Step> stepList = new ArrayList<Step>();

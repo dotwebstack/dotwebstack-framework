@@ -20,10 +20,8 @@ public class TransactionResourceProvider extends AbstractResourceProvider<Transa
   private List<FlowFactory> flowFactories;
 
   @Autowired
-  public TransactionResourceProvider(
-      ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties,
-      List<FlowFactory> flowFactories) {
+  public TransactionResourceProvider(ConfigurationBackend configurationBackend,
+      ApplicationProperties applicationProperties, List<FlowFactory> flowFactories) {
     super(configurationBackend, applicationProperties);
     this.flowFactories = flowFactories;
   }
