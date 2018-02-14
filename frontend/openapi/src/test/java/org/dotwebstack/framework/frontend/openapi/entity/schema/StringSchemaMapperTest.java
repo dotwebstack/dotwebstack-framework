@@ -144,6 +144,54 @@ public class StringSchemaMapperTest {
   }
 
   @Test
+  public void mapGraphValue_ReturnsStringValue_WhenStringConstantValueIsDefined() {
+    // Arrange
+    property.setVendorExtensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.CONSTANT_VALUE, "constant"));
+
+    // Act
+    Object result = mapperAdapter.mapGraphValue(property, entityMock,
+        ValueContext.builder().build(), mapperAdapter);
+
+    // Assert
+    assertThat(result, is("constant"));
+  }
+
+  @Test
+  public void mapGraphValue_ReturnsStringValue_WhenSupportedLiteralConstantValueIsDefined() {
+    // Arrange
+    Literal literal = VALUE_FACTORY.createLiteral("constant", XMLSchema.STRING);
+
+    property.setVendorExtensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.CONSTANT_VALUE, literal));
+
+    // Act
+    Object result = mapperAdapter.mapGraphValue(property, entityMock,
+        ValueContext.builder().build(), mapperAdapter);
+
+    // Assert
+    assertThat(result, is("constant"));
+  }
+
+  @Test
+  public void mapGraphValue_ThrowsException_ForNullConstantAndRequiredProperty() {
+    // Assert
+    expectedException.expect(SchemaMapperRuntimeException.class);
+    expectedException.expectMessage(
+        "String property has 'x-constant-value' vendor extension that is null, "
+            + "but the property is required");
+
+    // Arrange
+    property.setVendorExtensions(
+        nullableMapOf(OpenApiSpecificationExtensions.CONSTANT_VALUE, null));
+    property.setRequired(true);
+
+    // Act
+    mapper.mapGraphValue(property, entityMock, ValueContext.builder().build(), mapperAdapter);
+  }
+
+
+  @Test
   public void mapGraphValue_ReturnsNull_ForNullValue() {
     // Act
     Object result = mapperAdapter.mapGraphValue(property, entityMock,
