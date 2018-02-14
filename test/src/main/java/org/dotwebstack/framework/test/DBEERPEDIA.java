@@ -182,6 +182,8 @@ public final class DBEERPEDIA {
 
   public static final IRI PERSISTENCE_STEP;
 
+  public static final IRI TRANSACTION;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
@@ -290,6 +292,8 @@ public final class DBEERPEDIA {
     LAYOUT_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayoutNL");
 
     PERSISTENCE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PersistenceStep");
+
+    TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertOrReplaceConcept");
   }
 
   private DBEERPEDIA() {
