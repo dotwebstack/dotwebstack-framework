@@ -7,8 +7,10 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -45,16 +47,17 @@ public class ParameterDefinitionResourceProvider
   }
 
   @Override
-  protected ParameterDefinition createResource(@NonNull Model model, @NonNull IRI id) {
+  protected ParameterDefinition createResource(@NonNull Model model, @NonNull Resource id) {
+    if (id instanceof BNode) {
+      return null;
+    }
     IRI type = getObjectIRI(model, id, RDF.TYPE).orElseThrow(() -> new ConfigurationException(
         String.format("No <%s> statement has been found for parameter <%s>.", RDF.TYPE, id)));
-
     for (ParameterDefinitionFactory factory : factories) {
       if (factory.supports(type)) {
         return factory.create(model, id);
       }
     }
-
     return null;
   }
 

@@ -7,6 +7,7 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -32,7 +33,7 @@ public class LayoutResourceProvider extends AbstractResourceProvider<Layout> {
   }
 
   @Override
-  protected Layout createResource(Model model, IRI identifier) {
+  protected Layout createResource(Model model, Resource identifier) {
     Layout.Builder builder = new Layout.Builder(identifier);
     Collection<IRI> iris = getPredicateIris(model, identifier);
     for (IRI key : iris) {

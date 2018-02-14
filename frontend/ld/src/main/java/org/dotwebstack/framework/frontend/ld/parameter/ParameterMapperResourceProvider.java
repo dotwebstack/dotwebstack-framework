@@ -8,6 +8,7 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -37,7 +38,7 @@ public class ParameterMapperResourceProvider extends AbstractResourceProvider<Pa
   }
 
   @Override
-  protected ParameterMapper createResource(Model model, IRI identifier) {
+  protected ParameterMapper createResource(Model model, Resource identifier) {
     IRI parameterMapperType = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for parametermapper <%s>.", RDF.TYPE, identifier)));
