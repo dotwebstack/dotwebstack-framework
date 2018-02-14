@@ -195,10 +195,8 @@ public class ObjectSchemaMapperTest {
   @Test
   public void mapGraphValue_SwitchesContext_WhenSubjectFilterHasBeenDefined() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-            RDF.TYPE.stringValue(), OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
-            DBEERPEDIA.BREWERY_TYPE.stringValue()),
+    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
         OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
     property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
 
@@ -225,10 +223,8 @@ public class ObjectSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsNull_WhenSubjectFilterYieldsNoResultAndPropertyIsOptional() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-            RDF.TYPE.stringValue(), OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
-            DBEERPEDIA.BREWERY_TYPE.stringValue()),
+    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
         OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
     property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
 
@@ -248,13 +244,11 @@ public class ObjectSchemaMapperTest {
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(
-        "Subject filter for a required object property yielded no result");
+        "Subject query for a required object property yielded no result");
 
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-            RDF.TYPE.stringValue(), OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
-            DBEERPEDIA.BREWERY_TYPE.stringValue()),
+    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
         OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
     property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
     property.setRequired(true);
@@ -274,10 +268,8 @@ public class ObjectSchemaMapperTest {
     expectedException.expectMessage("More entrypoint subjects found. Only one is required");
 
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-            RDF.TYPE.stringValue(), OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
-            DBEERPEDIA.BREWERY_TYPE.stringValue()),
+    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
         OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
     property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
     property.setRequired(true);

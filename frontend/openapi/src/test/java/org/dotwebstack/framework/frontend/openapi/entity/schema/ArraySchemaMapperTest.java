@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -162,10 +163,8 @@ public class ArraySchemaMapperTest {
   // @Test
   public void mapGraphValue_ReturnsArrayOfStrings_WhenSubjectFilterHasBeenDefined() {
     // Arrange
-    arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-            RDF.TYPE.stringValue(), OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
-            DBEERPEDIA.BREWERY_TYPE.stringValue()),
+    arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
         OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR));
     arrayProperty.setItems(new StringProperty());
 
@@ -197,10 +196,8 @@ public class ArraySchemaMapperTest {
   public void mapGraphValue_ReturnsArrayOfObjects_WhenSubjectFilterHasBeenDefined() {
     // Arrange
     arrayProperty.setItems(objectProperty);
-    arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER,
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_FILTER_PREDICATE,
-            RDF.TYPE.stringValue(), OpenApiSpecificationExtensions.SUBJECT_FILTER_OBJECT,
-            DBEERPEDIA.BREWERY_TYPE.stringValue())));
+    arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE)));
 
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
@@ -223,7 +220,8 @@ public class ArraySchemaMapperTest {
     List<Optional<String>> list = (List) result;
 
     assertThat(list,
-        contains(ImmutableMap.of("name", Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue())),
+        containsInAnyOrder(
+            ImmutableMap.of("name", Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue())),
             ImmutableMap.of("name", Optional.of(DBEERPEDIA.MAXIMUS_NAME.stringValue()))));
   }
 
