@@ -29,13 +29,9 @@ public class Transaction {
 
     private Flow flow;
 
-    public Builder(@NonNull IRI identifier) {
+    public Builder(@NonNull IRI identifier, @NonNull Flow flow) {
       this.identifier = identifier;
-    }
-
-    public Builder flow(@NonNull Flow flow) {
       this.flow = flow;
-      return this;
     }
 
     public Transaction build() {

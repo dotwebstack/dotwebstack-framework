@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.transaction;
 
 import java.util.List;
+import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -21,7 +22,7 @@ public class TransactionResourceProvider extends AbstractResourceProvider<Transa
 
   @Autowired
   public TransactionResourceProvider(ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties, List<FlowFactory> flowFactories) {
+      ApplicationProperties applicationProperties, @NonNull List<FlowFactory> flowFactories) {
     super(configurationBackend, applicationProperties);
     this.flowFactories = flowFactories;
   }
@@ -38,12 +39,11 @@ public class TransactionResourceProvider extends AbstractResourceProvider<Transa
 
   @Override
   protected Transaction createResource(Model model, IRI identifier) {
-    final Transaction.Builder transactionBuilder = new Transaction.Builder(identifier);
-
     for (IRI predicate : getPredicateIris(model, identifier)) {
       for (FlowFactory flowFactory : flowFactories) {
         if (flowFactory.supports(predicate)) {
-          transactionBuilder.flow(flowFactory.create(model, identifier));
+          final Transaction.Builder transactionBuilder =
+              new Transaction.Builder(identifier, flowFactory.create(model, identifier));
           return transactionBuilder.build();
         }
       }

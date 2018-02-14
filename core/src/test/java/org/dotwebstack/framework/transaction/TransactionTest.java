@@ -28,7 +28,7 @@ public class TransactionTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Transaction.Builder(null).build();
+    new Transaction.Builder(null, flow).build();
   }
 
   @Test
@@ -37,13 +37,13 @@ public class TransactionTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Transaction.Builder(DBEERPEDIA.TRANSACTION).flow(null).build();
+    new Transaction.Builder(DBEERPEDIA.TRANSACTION, null).build();
   }
 
   @Test
   public void build_CreatesTransaction_WithValidData() {
     // Act
-    Transaction transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION).flow(flow).build();
+    Transaction transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION, flow).build();
 
     // Assert
     assertThat(transaction.getIdentifier(), equalTo(DBEERPEDIA.TRANSACTION));
