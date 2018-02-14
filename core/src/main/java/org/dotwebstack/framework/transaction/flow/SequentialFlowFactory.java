@@ -24,7 +24,7 @@ public class SequentialFlowFactory implements FlowFactory {
 
   @Override
   public boolean supports(IRI flowType) {
-    return flowType == ELMO.SEQUENTIAL_FLOW_PROP;
+    return flowType.equals(ELMO.SEQUENTIAL_FLOW_PROP);
   }
 
   @Override

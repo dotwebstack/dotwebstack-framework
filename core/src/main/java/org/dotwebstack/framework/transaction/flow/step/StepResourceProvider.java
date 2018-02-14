@@ -11,6 +11,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,6 +19,7 @@ public class StepResourceProvider extends AbstractResourceProvider<Step> {
 
   private List<StepFactory> stepFactoryList;
 
+  @Autowired
   public StepResourceProvider(
       ConfigurationBackend configurationBackend,
       ApplicationProperties applicationProperties,

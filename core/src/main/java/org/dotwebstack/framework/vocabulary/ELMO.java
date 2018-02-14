@@ -19,6 +19,8 @@ public final class ELMO {
 
   public static final IRI TRANSACTION;
 
+  public static final IRI TRANSACTION_PROP;
+
   public static final IRI SEQUENTIAL_FLOW_PROP;
 
   public static final IRI PERSISTENCE_STEP;
@@ -144,6 +146,7 @@ public final class ELMO {
         valueFactory.createIRI(ELMO.NAMESPACE_EXTENSION_RESULTTYPE, ResultType.GRAPH.name());
 
     INFORMATION_PRODUCT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "informationProduct");
+    TRANSACTION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "transaction");
     PATH_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "pathPattern");
     PARAMETER_MAPPER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "parameterMapper");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
