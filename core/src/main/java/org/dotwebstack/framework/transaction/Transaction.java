@@ -15,9 +15,18 @@ public class Transaction {
     flow = builder.flow;
   }
 
+  public IRI getIdentifier() {
+    return identifier;
+  }
+
+  public Flow getFlow() {
+    return flow;
+  }
+
   public static final class Builder {
 
     private IRI identifier;
+
     private Flow flow;
 
     public Builder(@NonNull IRI identifier) {
