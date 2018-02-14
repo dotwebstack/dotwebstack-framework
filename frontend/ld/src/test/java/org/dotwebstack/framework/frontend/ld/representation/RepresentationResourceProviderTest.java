@@ -25,6 +25,8 @@ import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourcePr
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.Transaction;
+import org.dotwebstack.framework.transaction.TransactionResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -55,6 +57,9 @@ public class RepresentationResourceProviderTest {
   private InformationProductResourceProvider informationProductResourceProvider;
 
   @Mock
+  private TransactionResourceProvider transactionResourceProvider;
+
+  @Mock
   private AppearanceResourceProvider appearanceResourceProvider;
 
   @Mock
@@ -68,6 +73,9 @@ public class RepresentationResourceProviderTest {
 
   @Mock
   private InformationProduct informationProduct;
+
+  @Mock
+  Transaction transaction;
 
   @Mock
   private Stage stage;
@@ -95,8 +103,8 @@ public class RepresentationResourceProviderTest {
   @Before
   public void setUp() {
     representationResourceProvider = new RepresentationResourceProvider(configurationBackend,
-        informationProductResourceProvider, appearanceResourceProvider, stageResourceProvider,
-        parameterMapperResourceProvider, applicationProperties);
+        informationProductResourceProvider, transactionResourceProvider, appearanceResourceProvider,
+        stageResourceProvider, parameterMapperResourceProvider, applicationProperties);
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
@@ -116,8 +124,8 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(null, informationProductResourceProvider,
-        appearanceResourceProvider, stageResourceProvider, parameterMapperResourceProvider,
-        applicationProperties);
+        transactionResourceProvider, appearanceResourceProvider, stageResourceProvider,
+        parameterMapperResourceProvider, applicationProperties);
   }
 
   @Test
@@ -126,7 +134,7 @@ public class RepresentationResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new RepresentationResourceProvider(configurationBackend, null, null, null, null,
+    new RepresentationResourceProvider(configurationBackend, null, null, null, null, null,
         applicationProperties);
   }
 
@@ -137,7 +145,8 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        null, stageResourceProvider, parameterMapperResourceProvider, applicationProperties);
+        transactionResourceProvider,null, stageResourceProvider, parameterMapperResourceProvider,
+        applicationProperties);
   }
 
   @Test
@@ -147,7 +156,8 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        appearanceResourceProvider, null, parameterMapperResourceProvider, applicationProperties);
+        transactionResourceProvider, appearanceResourceProvider, null,
+        parameterMapperResourceProvider, applicationProperties);
   }
 
   @Test
@@ -157,7 +167,8 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        appearanceResourceProvider, stageResourceProvider, parameterMapperResourceProvider, null);
+        transactionResourceProvider, appearanceResourceProvider, stageResourceProvider,
+        parameterMapperResourceProvider, null);
   }
 
   @Test

@@ -21,10 +21,13 @@ import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestParameterMapper;
+import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandler;
+import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.Transaction;
 import org.eclipse.rdf4j.model.IRI;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
@@ -52,6 +55,9 @@ public class LdRepresentationRequestMapperTest {
   private InformationProduct informationProduct;
 
   @Mock
+  private Transaction transaction;
+
+  @Mock
   private Representation representation;
 
   @Mock
@@ -68,8 +74,13 @@ public class LdRepresentationRequestMapperTest {
 
   private RepresentationRequestHandler representationRequestHandler;
 
+  private TransactionRequestHandler transactionRequestHandler;
+
   @Mock
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
+
+  @Mock
+  private TransactionRequestHandlerFactory transactionRequestHandlerFactory;
 
   private HttpConfiguration httpConfiguration;
 
@@ -87,11 +98,15 @@ public class LdRepresentationRequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
+    transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION).build();
+
     representationRequestHandler =
         new RepresentationRequestHandler(representation, representationRequestParameterMapper);
+    transactionRequestHandler = new TransactionRequestHandler(transaction);
     ldRepresentationRequestMapper =
         new LdRepresentationRequestMapper(representationResourceProvider,
-            supportedMediaTypesScanner, representationRequestHandlerFactory);
+            supportedMediaTypesScanner, representationRequestHandlerFactory,
+            transactionRequestHandlerFactory);
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
         isA(Representation.class))).thenReturn(representationRequestHandler);
 
@@ -103,7 +118,8 @@ public class LdRepresentationRequestMapperTest {
     // Arrange / Act
     LdRepresentationRequestMapper ldRepresentationRequestMapper =
         new LdRepresentationRequestMapper(representationResourceProvider,
-            supportedMediaTypesScanner, representationRequestHandlerFactory);
+            supportedMediaTypesScanner, representationRequestHandlerFactory,
+            transactionRequestHandlerFactory);
 
     // Assert
     assertThat(ldRepresentationRequestMapper, not(nullValue()));
