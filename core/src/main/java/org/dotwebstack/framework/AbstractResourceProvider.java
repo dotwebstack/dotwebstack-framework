@@ -10,7 +10,6 @@ import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -81,12 +80,10 @@ public abstract class AbstractResourceProvider<R> implements ResourceProvider<R>
     try {
       model = QueryResults.asModel(query.evaluate());
       model.subjects().forEach(identifier -> {
-        if (identifier instanceof IRI || identifier instanceof BNode) {
-          R resource = createResource(model, identifier);
-          if (resource != null) {
-            resources.put(identifier, resource);
-            LOG.info("Registered resource: <{}>", identifier);
-          }
+        R resource = createResource(model, identifier);
+        if (resource != null) {
+          resources.put(identifier, resource);
+          LOG.info("Registered resource: <{}>", identifier);
         }
       });
     } catch (QueryEvaluationException e) {
