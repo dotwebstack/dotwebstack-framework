@@ -63,7 +63,7 @@ public class LdRepresentationRequestMapper {
             supportedMediaTypesScanner.getMediaTypes(
                 representation.getInformationProduct().getResultType())).nameBindings(
             ExpandFormatParameter.class);
-      } else {
+      } else if (representation.getTransaction() != null) {
         resourceBuilder.addMethod(HttpMethod.POST).handledBy(
             transactionRequestHandlerFactory.newTransactionRequestHandler(
                 representation.getTransaction()));
