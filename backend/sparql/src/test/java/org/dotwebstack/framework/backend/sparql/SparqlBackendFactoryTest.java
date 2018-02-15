@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProductFactory;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;

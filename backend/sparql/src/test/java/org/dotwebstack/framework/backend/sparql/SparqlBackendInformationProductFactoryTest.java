@@ -9,6 +9,8 @@ import static org.mockito.Mockito.mock;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProduct;
+import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProductFactory;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
