@@ -11,7 +11,7 @@
 
 @prefix elmo-shape: <http://dotwebstack.org/def/elmo-shacl#> .
 @prefix elmo-schemes: <http://dotwebstack.org/def/elmo/>.
-@prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-types/>.
+@prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-type/>.
 @prefix elmo: <http://dotwebstack.org/def/elmo#>.
 
 
@@ -293,26 +293,6 @@ elmo-shape:Transaction a sh:NodeShape;
     sh:path [sh:inversePath elmo:transaction ];
     sh:node elmo-shape:TransactionRepresentation;
     sh:class elmo:Representation;
-  ];
-.
-
-elmo-shape:Step a sh:NodeShape;
-  sh:targetClass elmo:Step;
-  rdfs:label "Step shape";
-  sh:name "elmo:Step";
-  sh:property [
-    sh:path rdfs:label;
-    sh:name "rdfs:label";
-    sh:datatype xsd:string;
-  ];
-.
-
-elmo-shape:ValidationStep a sh:NodeShape;
-  sh:closed true;
-  sh:targetClass elmo:ValidationStep;
-  rdfs:label "Validation step shape"@en;
-  sh:name "elmo:ValidationStep";
-  sh:property [
     sh:path rdf:type;
     sh:hasValue elmo:ValidationStep;
   ];
