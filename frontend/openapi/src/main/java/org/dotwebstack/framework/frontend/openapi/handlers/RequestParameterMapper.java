@@ -32,7 +32,7 @@ class RequestParameterMapper {
         for (Property property : properties) {
           Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
-          LOG.debug("Vendor extensions for property in parameter '{}': {}", property.getName(),
+          LOG.debug("Vendor extensions for property '{}' in parameter '{}': {}", property.getName(),
               openApiParameter.getName(), vendorExtensions);
 
           Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
