@@ -3,9 +3,11 @@ package org.dotwebstack.framework.transaction.flow.step.persistence;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.transaction.flow.step.Step;
+import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
-public class PersistenceStep implements Step {
+public class PersistenceStep implements Step<StepExecutor> {
 
   // todo replace IRI by Resource
   private IRI identifier;
@@ -22,6 +24,26 @@ public class PersistenceStep implements Step {
     this.persistenceStrategy = builder.persistenceStrategy;
     this.backend = builder.backend;
     this.targetGraph = builder.targetGraph;
+  }
+
+  public PersistenceStepExecutor getExecutor(RepositoryConnection repositoryConnection) {
+    return new PersistenceStepExecutor(this, repositoryConnection);
+  }
+
+  public IRI getIdentifier() {
+    return identifier;
+  }
+
+  public IRI getPersistenceStrategy() {
+    return persistenceStrategy;
+  }
+
+  public Backend getBackend() {
+    return backend;
+  }
+
+  public IRI getTargetGraph() {
+    return targetGraph;
   }
 
   public static final class Builder {

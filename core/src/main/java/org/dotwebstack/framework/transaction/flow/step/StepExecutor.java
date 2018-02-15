@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.transaction.flow.step;
 
-public interface StepExecuteDefinition<S> {
+public interface StepExecutor<T> {
 
-  S execute();
+  void execute();
 }
