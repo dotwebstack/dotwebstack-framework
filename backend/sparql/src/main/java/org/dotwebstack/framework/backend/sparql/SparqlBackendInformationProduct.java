@@ -9,7 +9,7 @@ import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.BindableParameter;
 import org.dotwebstack.framework.param.Parameter;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +63,7 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
   public static class Builder {
 
-    private final IRI identifier;
+    private final Resource identifier;
 
     private final SparqlBackend backend;
 
@@ -79,9 +79,10 @@ public class SparqlBackendInformationProduct extends AbstractInformationProduct 
 
     private String label;
 
-    public Builder(@NonNull IRI identifier, @NonNull SparqlBackend backend, @NonNull String query,
-        @NonNull ResultType resultType, @NonNull QueryEvaluator queryEvaluator,
-        @NonNull TemplateProcessor templateProcessor, @NonNull Collection<Parameter> parameters) {
+    public Builder(@NonNull Resource identifier, @NonNull SparqlBackend backend,
+        @NonNull String query, @NonNull ResultType resultType,
+        @NonNull QueryEvaluator queryEvaluator, @NonNull TemplateProcessor templateProcessor,
+        @NonNull Collection<Parameter> parameters) {
       this.identifier = identifier;
       this.backend = backend;
       this.query = query;

@@ -7,8 +7,8 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +39,8 @@ public class RedirectionResourceProvider extends AbstractResourceProvider<Redire
   }
 
   @Override
-  protected Redirection createResource(Model model, IRI identifier) {
-    IRI stageIri = getObjectIRI(model, identifier, ELMO.STAGE_PROP).orElseThrow(
+  protected Redirection createResource(Model model, Resource identifier) {
+    Resource stageIri = getObjectResource(model, identifier, ELMO.STAGE_PROP).orElseThrow(
         () -> new ConfigurationException(String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION,
             ELMO.STAGE_PROP, identifier)));
 
@@ -48,10 +48,10 @@ public class RedirectionResourceProvider extends AbstractResourceProvider<Redire
         () -> new ConfigurationException(String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION,
             ELMO.PATH_PATTERN, identifier)));
 
-    String redirectTemplate = getObjectString(model, identifier, ELMO.REDIRECT_TEMPLATE)
-        .orElseThrow(() -> new ConfigurationException(
-            String.format(NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION, ELMO.REDIRECT_TEMPLATE,
-                identifier)));
+    String redirectTemplate =
+        getObjectString(model, identifier, ELMO.REDIRECT_TEMPLATE).orElseThrow(
+            () -> new ConfigurationException(String.format(
+                NO_STATEMENT_FOUND_FOR_REDIRECTION_EXCEPTION, ELMO.REDIRECT_TEMPLATE, identifier)));
 
     Redirection.Builder builder = new Redirection.Builder(identifier,
         stageResourceProvider.get(stageIri), pathPattern, redirectTemplate);

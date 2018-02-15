@@ -9,8 +9,8 @@ import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvid
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.slf4j.Logger;
@@ -56,17 +56,17 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   }
 
   @Override
-  protected Representation createResource(Model model, IRI identifier) {
+  protected Representation createResource(Model model, Resource identifier) {
     final Representation.Builder builder = new Representation.Builder(identifier);
 
-    getObjectIRI(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(
+    getObjectResource(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(
         iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
-    getObjectIRI(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(
+    getObjectResource(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(
         iri -> builder.appearance(appearanceResourceProvider.get(iri)));
     getObjectStrings(model, identifier, ELMO.PATH_PATTERN).stream().forEach(builder::pathPattern);
-    getObjectIris(model, identifier, ELMO.PARAMETER_MAPPER_PROP).stream().forEach(
+    getObjectResources(model, identifier, ELMO.PARAMETER_MAPPER_PROP).stream().forEach(
         iri -> builder.parameterMapper(parameterMapperResourceProvider.get(iri)));
-    getObjectIRI(model, identifier, ELMO.STAGE_PROP).ifPresent(
+    getObjectResource(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));
 
     return builder.build();
@@ -74,7 +74,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Override
   protected void finalizeResource(Model model, Representation resource) {
-    getObjectIris(model, resource.getIdentifier(), ELMO.CONTAINS_PROP).stream().forEach(
+    getObjectResources(model, resource.getIdentifier(), ELMO.CONTAINS_PROP).stream().forEach(
         iri -> resource.addSubRepresentation(this.get(iri)));
 
     LOG.info("Updated resource: <{}>", resource.getIdentifier());

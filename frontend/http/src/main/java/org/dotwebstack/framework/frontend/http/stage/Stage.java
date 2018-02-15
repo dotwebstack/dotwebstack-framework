@@ -3,7 +3,7 @@ package org.dotwebstack.framework.frontend.http.stage;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.layout.Layout;
 import org.dotwebstack.framework.frontend.http.site.Site;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 public class Stage {
 
@@ -11,7 +11,7 @@ public class Stage {
 
   public static final String PATH_DOMAIN_PARAMETER = "{DOMAIN_PARAMETER}";
 
-  private IRI identifier;
+  private Resource identifier;
 
   private Site site;
 
@@ -29,7 +29,7 @@ public class Stage {
     this.title = builder.title;
   }
 
-  public IRI getIdentifier() {
+  public Resource getIdentifier() {
     return identifier;
   }
 
@@ -59,7 +59,7 @@ public class Stage {
 
   public static class Builder {
 
-    private IRI identifier;
+    private Resource identifier;
 
     private Site site;
 
@@ -69,7 +69,7 @@ public class Stage {
 
     private String title;
 
-    public Builder(@NonNull IRI identifier, @NonNull Site site) {
+    public Builder(@NonNull Resource identifier, @NonNull Site site) {
       this.identifier = identifier;
       this.site = site;
     }

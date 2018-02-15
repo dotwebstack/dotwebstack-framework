@@ -44,37 +44,37 @@ public class GraphEntityTest {
   @Test
   public void constructor_InitializesResponseParameters_AsEmpty() {
     // Assert
-    assertThat(entity.getResponseParameters().isEmpty(), is(true));
+    assertThat(entity.getParameters().isEmpty(), is(true));
   }
 
   @Test
-  public void addResponseParameter_StoresValue_ForNewValue() {
+  public void addParameter_StoresValue_ForNewValue() {
     // Act
-    entity.addResponseParameter("X", "A");
-    entity.addResponseParameter("Y", "B");
-    entity.addResponseParameter("Z", "C");
+    entity.addParameter("X", "A");
+    entity.addParameter("Y", "B");
+    entity.addParameter("Z", "C");
 
     // Assert
-    assertThat(entity.getResponseParameters(), is(ImmutableMap.of("X", "A", "Y", "B", "Z", "C")));
+    assertThat(entity.getParameters(), is(ImmutableMap.of("X", "A", "Y", "B", "Z", "C")));
   }
 
   @Test
-  public void addResponseParameter_OverwritesExistingValue_ForDuplicateValue() {
+  public void addParameter_OverwritesExistingValue_ForDuplicateValue() {
     // Act
-    entity.addResponseParameter("X", "A");
-    entity.addResponseParameter("X", "B");
+    entity.addParameter("X", "A");
+    entity.addParameter("X", "B");
 
     // Assert
-    assertThat(entity.getResponseParameters(), is(ImmutableMap.of("X", "B")));
+    assertThat(entity.getParameters(), is(ImmutableMap.of("X", "B")));
   }
 
   @Test
-  public void getResponseParameters_ReturnsResult_AsImmutable() {
+  public void getParameters_ReturnsResult_AsImmutable() {
     // Assert
     thrown.expect(UnsupportedOperationException.class);
 
     // Arrange
-    Map<String, String> result = entity.getResponseParameters();
+    Map<String, String> result = entity.getParameters();
 
     // Act
     result.put("key", "value");

@@ -7,6 +7,9 @@ import static org.mockito.Mockito.when;
 import org.dotwebstack.framework.frontend.http.layout.Layout;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,6 +29,8 @@ public class StageTest {
   @Mock
   private Site siteMock;
 
+  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
   @Test
   public void build_CreatesStage_WithValidData() {
     // Act
@@ -38,6 +43,27 @@ public class StageTest {
 
     // Assert
     assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
+    assertThat(stage.getSite(), equalTo(siteMock));
+    assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
+    assertThat(stage.getTitle(), equalTo(DBEERPEDIA.TITLE));
+    assertThat(stage.getFullPath(),
+        equalTo("/" + DBEERPEDIA.NL_HOST + DBEERPEDIA.BASE_PATH.stringValue()));
+  }
+
+  @Test
+  public void build_CreatesStage_WithValidDataAndBNode() {
+    // Act
+    final BNode blankNode = valueFactory.createBNode();
+    Stage stage =
+        new Stage.Builder(blankNode, siteMock).basePath(DBEERPEDIA.BASE_PATH.stringValue()).layout(
+            layout).title(DBEERPEDIA.TITLE).build();
+
+    // Arrange
+    when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
+    when(siteMock.getDomain()).thenReturn(DBEERPEDIA.NL_HOST);
+
+    // Assert
+    assertThat(stage.getIdentifier(), equalTo(blankNode));
     assertThat(stage.getSite(), equalTo(siteMock));
     assertThat(stage.getBasePath(), equalTo(DBEERPEDIA.BASE_PATH.stringValue()));
     assertThat(stage.getTitle(), equalTo(DBEERPEDIA.TITLE));

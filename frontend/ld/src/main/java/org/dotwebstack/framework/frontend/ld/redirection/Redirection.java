@@ -2,11 +2,11 @@ package org.dotwebstack.framework.frontend.ld.redirection;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 public class Redirection {
 
-  private IRI identifier;
+  private Resource identifier;
 
   private Stage stage;
 
@@ -21,7 +21,7 @@ public class Redirection {
     redirectTemplate = builder.redirectTemplate;
   }
 
-  public IRI getIdentifier() {
+  public Resource getIdentifier() {
     return identifier;
   }
 
@@ -39,7 +39,7 @@ public class Redirection {
 
   public static class Builder {
 
-    private IRI identifier;
+    private Resource identifier;
 
     private Stage stage;
 
@@ -47,7 +47,7 @@ public class Redirection {
 
     private String redirectTemplate;
 
-    public Builder(@NonNull IRI identifier, @NonNull Stage stage, @NonNull String pathPattern,
+    public Builder(@NonNull Resource identifier, @NonNull Stage stage, @NonNull String pathPattern,
         @NonNull String redirectTemplate) {
       this.identifier = identifier;
       this.stage = stage;

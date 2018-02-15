@@ -239,9 +239,9 @@ public class EntityWriterInterceptorTest {
     InformationProduct informationProductMock = mock(InformationProduct.class);
     when(informationProductMock.getParameters()).thenReturn(ImmutableList.of(
         new StringTermParameter(VALUE_FACTORY.createIRI(NAMESPACE_RO, "ContentCrsParameter"),
-            "Content-Crs", false),
+            "contentCrs", false),
         new IntegerTermParameter(VALUE_FACTORY.createIRI(NAMESPACE_RO, "xPaginationPageParameter"),
-            "x-Pagination-Page", false)));
+            "page", false)));
 
     Map<MediaType, Property> schemaMap = ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
         new ResponseProperty(new Response().header("Content-Crs",
@@ -251,10 +251,8 @@ public class EntityWriterInterceptorTest {
                         NAMESPACE_RO + "xPaginationPageParameter"))));
 
     GraphEntity entity = newGraphEntity(schemaMap, queryResultMock, definitionsMock,
-        ImmutableMap.of("Content-Crs", "epsg:28992", "x-Pagination-Page", "3"),
+        ImmutableMap.of("contentCrs", "epsg:28992", "page", "3"),
         informationProductMock);
-    entity.addResponseParameter("Content-Crs", "epsg:28992");
-    entity.addResponseParameter("x-Pagination-Page", "3");
 
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
