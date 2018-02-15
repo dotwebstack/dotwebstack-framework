@@ -64,6 +64,7 @@ public class SortByPropertyFunction<N> extends SelectorFunction<N> {
   public final Collection<N> apply(@NonNull RDFBackend<N> nodeRdfBackend, N context,
       Collection<N>... args) {
     // parse arguments
+    LOG.error("Something Something register");
     Iterator<N> iterator = getIterator(args[OBJECT_ARRAY_INDEX]);
     String property = getProperty(nodeRdfBackend, args);
     Type propertyType = getPropertyType(nodeRdfBackend, args);

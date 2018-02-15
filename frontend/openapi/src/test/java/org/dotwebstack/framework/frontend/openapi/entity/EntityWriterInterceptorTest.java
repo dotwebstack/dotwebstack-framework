@@ -80,6 +80,7 @@ public class EntityWriterInterceptorTest {
 
   @Before
   public void setUp() {
+    when(definitionsMock.getBasePath()).thenReturn("");
     entityWriterInterceptor =
         new EntityWriterInterceptor(graphEntityMapperMock, tupleEntityMapperMock);
 

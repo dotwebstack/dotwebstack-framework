@@ -22,7 +22,7 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String SUBJECT_FILTER_OBJECT = "object";
 
-  public static final String RELATIVE_LINK = "x-relative-link";
+  public static final String RELATIVE_LINK = DOTWEBSTACK_PREFIX.concat("relative-link");
 
   public static final String EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL =
       DOTWEBSTACK_PREFIX.concat("exclude-properties-when-empty-or-null");

@@ -93,6 +93,7 @@ public class RequestHandlerTest {
   @Test
   public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForGraphResult() {
     // Arrange
+    when(swaggerMock.getBasePath()).thenReturn("");
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);

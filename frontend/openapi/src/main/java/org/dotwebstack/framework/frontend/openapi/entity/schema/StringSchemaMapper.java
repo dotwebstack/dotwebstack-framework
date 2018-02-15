@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
+import static org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions.CONSTANT_VALUE;
+import static org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions.LDPATH;
+import static org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions.RELATIVE_LINK;
+
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
@@ -20,6 +24,7 @@ import org.springframework.stereotype.Service;
 public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
+  static final String PATTERN = "pattern";
 
   @Override
   public String mapTupleValue(@NonNull StringProperty schema, @NonNull ValueContext valueContext) {
@@ -32,12 +37,18 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     validateVendorExtensions(property);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
-    if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+    if (vendorExtensions.containsKey(RELATIVE_LINK)) {
+      return handleRelativeLinkVendorExtension(
+          (Map<String, String>) vendorExtensions.get(RELATIVE_LINK),
+          graphEntity, valueContext);
+    }
+
+    if (vendorExtensions.containsKey(LDPATH)) {
       LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
       return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
     }
 
-    if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
+    if (vendorExtensions.containsKey(CONSTANT_VALUE)) {
       return handleConstantValueVendorExtension(property);
     }
 
@@ -48,6 +59,43 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     }
 
     return null;
+  }
+
+  private String handleRelativeLinkVendorExtension(Map<String, String> relativeLinkPropertiesMap,
+      GraphEntity graphEntity, ValueContext valueContext) {
+
+    if (relativeLinkPropertiesMap == null) {
+      throw new SchemaMapperRuntimeException(
+          String.format("Property '%s' can not be null.", RELATIVE_LINK));
+    }
+
+    if (!relativeLinkPropertiesMap.containsKey(PATTERN)) {
+      throw new SchemaMapperRuntimeException(
+          String.format("Property '%s' should have a '%s' property.", RELATIVE_LINK, PATTERN));
+    }
+
+    if (relativeLinkPropertiesMap.containsKey(LDPATH)) {
+      Collection<Value> queryResult =
+          graphEntity.getLdPathExecutor()
+              .ldPathQuery(valueContext.getValue(), relativeLinkPropertiesMap.get(LDPATH));
+
+      if (queryResult.size() > 1) {
+        throw new SchemaMapperRuntimeException(String.format(
+            "LDPath query '%s' yielded multiple results (%d) for a property, which "
+                + "requires a single result.",
+            relativeLinkPropertiesMap.get(LDPATH), queryResult.size()));
+      }
+
+      if (queryResult.isEmpty()) {
+        return null;
+      }
+
+      return graphEntity.getBaseUri() + relativeLinkPropertiesMap.get(PATTERN).replace("$1",
+          queryResult.iterator().next().stringValue());
+
+    }
+
+    return graphEntity.getBaseUri() + relativeLinkPropertiesMap.get(PATTERN);
   }
 
   /**
@@ -64,8 +112,8 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   private void validateVendorExtensions(StringProperty property) {
 
     ImmutableSet<String> supportedVendorExtensions = ImmutableSet.of(
-        OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
-        OpenApiSpecificationExtensions.CONSTANT_VALUE);
+        LDPATH, RELATIVE_LINK,
+        CONSTANT_VALUE);
 
     long nrOfSupportedVendorExtentionsPresent =
         property.getVendorExtensions().keySet().stream().filter(
@@ -74,14 +122,14 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       throw new SchemaMapperRuntimeException(String.format(
           "A string object must have either no, a '%s', '%s' or '%s' property. "
               + "A string object cannot have a combination of these.",
-          OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
-          OpenApiSpecificationExtensions.CONSTANT_VALUE));
+          LDPATH, RELATIVE_LINK,
+          CONSTANT_VALUE));
     }
   }
 
   private String handleConstantValueVendorExtension(StringProperty property) {
     Object value =
-        property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
+        property.getVendorExtensions().get(CONSTANT_VALUE);
 
     if (value != null) {
       if (isSupportedLiteral(value)) {
@@ -94,7 +142,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     if (property.getRequired()) {
       throw new SchemaMapperRuntimeException(String.format(
           "String property has '%s' vendor extension that is null, but the property is required.",
-          OpenApiSpecificationExtensions.CONSTANT_VALUE));
+          CONSTANT_VALUE));
     }
 
     return null;
@@ -103,13 +151,13 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   private String handleLdPathVendorExtension(StringProperty property, Value context,
       LdPathExecutor ldPathExecutor) {
     String ldPathQuery =
-        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+        (String) property.getVendorExtensions().get(LDPATH);
 
     if (ldPathQuery == null) {
       if (property.getRequired()) {
         throw new SchemaMapperRuntimeException(String.format(
             "String property has '%s' vendor extension that is null, but the property is required.",
-            OpenApiSpecificationExtensions.LDPATH));
+            LDPATH));
       }
       return null;
     }

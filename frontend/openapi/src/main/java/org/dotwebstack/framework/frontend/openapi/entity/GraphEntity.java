@@ -27,12 +27,14 @@ public final class GraphEntity extends AbstractEntity {
   private final Map<String, String> requestParameters;
   private final Map<String, String> responseParameters;
   private final LdPathExecutor ldPathExecutor;
+  private final String baseUri;
 
   private GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
       @NonNull ImmutableMap<String, String> ldPathNamespaces,
       @NonNull Map<String, Model> swaggerDefinitions,
       @NonNull org.eclipse.rdf4j.model.Model model,
       @NonNull Map<String, String> requestParameters,
+      @NonNull String baseUri,
       @NonNull InformationProduct informationProduct) {
     super(schemaMap);
 
@@ -42,6 +44,7 @@ public final class GraphEntity extends AbstractEntity {
     this.informationProduct = informationProduct;
     this.requestParameters = requestParameters;
     this.responseParameters = newHashMap();
+    this.baseUri = baseUri;
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 
@@ -53,7 +56,7 @@ public final class GraphEntity extends AbstractEntity {
 
     return new GraphEntity(schemaMap, extractLdpathNamespaces(definitions),
         extractSwaggerDefinitions(definitions), QueryResults.asModel(queryResult),
-        requestParameters, informationProduct);
+        requestParameters, definitions.getBasePath(), informationProduct);
   }
 
   public void addResponseParameter(@NonNull String key, String value) {
