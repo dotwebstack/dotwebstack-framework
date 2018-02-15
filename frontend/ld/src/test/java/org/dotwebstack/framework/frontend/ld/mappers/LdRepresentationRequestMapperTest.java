@@ -28,7 +28,7 @@ import org.dotwebstack.framework.frontend.ld.representation.RepresentationResour
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.transaction.Transaction;
-import org.eclipse.rdf4j.model.IRI;
+import org.dotwebstack.framework.transaction.flow.Flow;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
@@ -56,6 +56,9 @@ public class LdRepresentationRequestMapperTest {
 
   @Mock
   private Transaction transaction;
+
+  @Mock
+  private Flow flow;
 
   @Mock
   private Representation representation;
@@ -93,20 +96,19 @@ public class LdRepresentationRequestMapperTest {
 
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).stage(stage).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<IRI, Representation> representationMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
-    transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION).build();
+    transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION, flow).build();
 
     representationRequestHandler =
         new RepresentationRequestHandler(representation, representationRequestParameterMapper);
     transactionRequestHandler = new TransactionRequestHandler(transaction);
-    ldRepresentationRequestMapper =
-        new LdRepresentationRequestMapper(representationResourceProvider,
-            supportedMediaTypesScanner, representationRequestHandlerFactory,
-            transactionRequestHandlerFactory);
+    ldRepresentationRequestMapper = new LdRepresentationRequestMapper(
+        representationResourceProvider, supportedMediaTypesScanner,
+        representationRequestHandlerFactory, transactionRequestHandlerFactory);
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
         isA(Representation.class))).thenReturn(representationRequestHandler);
 
@@ -116,10 +118,9 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    LdRepresentationRequestMapper ldRepresentationRequestMapper =
-        new LdRepresentationRequestMapper(representationResourceProvider,
-            supportedMediaTypesScanner, representationRequestHandlerFactory,
-            transactionRequestHandlerFactory);
+    LdRepresentationRequestMapper ldRepresentationRequestMapper = new LdRepresentationRequestMapper(
+        representationResourceProvider, supportedMediaTypesScanner,
+        representationRequestHandlerFactory, transactionRequestHandlerFactory);
 
     // Assert
     assertThat(ldRepresentationRequestMapper, not(nullValue()));
@@ -149,7 +150,7 @@ public class LdRepresentationRequestMapperTest {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<IRI, Representation> representationMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
@@ -165,7 +166,7 @@ public class LdRepresentationRequestMapperTest {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
         informationProduct).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).stage(null).build();
-    Map<IRI, Representation> representationMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
@@ -188,7 +189,7 @@ public class LdRepresentationRequestMapperTest {
     Representation samePathRepresentation =
         new Representation.Builder(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION).informationProduct(
             informationProduct).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
-    Map<IRI, Representation> representationMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     representationMap.put(samePathRepresentation.getIdentifier(), samePathRepresentation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
@@ -213,7 +214,7 @@ public class LdRepresentationRequestMapperTest {
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
             informationProduct).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
 
-    Map<IRI, Representation> representationMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 

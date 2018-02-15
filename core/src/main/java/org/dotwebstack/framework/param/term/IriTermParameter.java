@@ -3,14 +3,15 @@ package org.dotwebstack.framework.param.term;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Resource;
 
 public class IriTermParameter extends TermParameter<IRI> {
 
-  IriTermParameter(@NonNull IRI identifier, @NonNull String name, boolean required) {
+  IriTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required) {
     this(identifier, name, required, null);
   }
 
-  IriTermParameter(@NonNull IRI identifier, @NonNull String name, boolean required,
+  IriTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
       IRI defaultValue) {
     super(identifier, name, required, defaultValue);
   }

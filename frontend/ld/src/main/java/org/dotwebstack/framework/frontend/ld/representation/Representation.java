@@ -9,11 +9,11 @@ import org.dotwebstack.framework.frontend.ld.appearance.Appearance;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.transaction.Transaction;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 public class Representation {
 
-  private IRI identifier;
+  private Resource identifier;
 
   private InformationProduct informationProduct;
 
@@ -40,7 +40,7 @@ public class Representation {
     subRepresentations = builder.subRepresentations;
   }
 
-  public IRI getIdentifier() {
+  public Resource getIdentifier() {
     return identifier;
   }
 
@@ -78,7 +78,7 @@ public class Representation {
 
   public static class Builder {
 
-    private IRI identifier;
+    private Resource identifier;
 
     private InformationProduct informationProduct;
 
@@ -94,7 +94,7 @@ public class Representation {
 
     private List<Representation> subRepresentations = new ArrayList<>();
 
-    public Builder(@NonNull IRI identifier) {
+    public Builder(@NonNull Resource identifier) {
       this.identifier = identifier;
     }
 

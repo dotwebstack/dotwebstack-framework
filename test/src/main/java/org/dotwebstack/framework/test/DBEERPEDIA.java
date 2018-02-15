@@ -184,6 +184,8 @@ public final class DBEERPEDIA {
 
   public static final IRI TRANSACTION;
 
+  public static final IRI SEQUENTIAL_FLOW;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
@@ -294,6 +296,8 @@ public final class DBEERPEDIA {
     PERSISTENCE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PersistenceStep");
 
     TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertOrReplaceConcept");
+
+    SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
   }
 
   private DBEERPEDIA() {

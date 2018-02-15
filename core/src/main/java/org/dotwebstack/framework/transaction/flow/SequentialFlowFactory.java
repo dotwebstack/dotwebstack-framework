@@ -9,6 +9,7 @@ import org.dotwebstack.framework.transaction.flow.step.StepResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class SequentialFlowFactory implements FlowFactory {
   }
 
   @Override
-  public SequentialFlow create(Model model, IRI identifier) {
+  public SequentialFlow create(Model model, Resource identifier) {
 
     Collection<IRI> stepIris =
         Models.objectIRIs(model.filter(identifier, ELMO.SEQUENTIAL_FLOW_PROP, null));

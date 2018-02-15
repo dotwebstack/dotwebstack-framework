@@ -6,11 +6,11 @@ import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.model.Resource;
 
 public class PersistenceStep implements Step<StepExecutor> {
 
-  // todo replace IRI by Resource
-  private IRI identifier;
+  private Resource identifier;
 
   // todo replace IRI by Strategy
   private IRI persistenceStrategy;
@@ -30,7 +30,7 @@ public class PersistenceStep implements Step<StepExecutor> {
     return new PersistenceStepExecutor(this, repositoryConnection);
   }
 
-  public IRI getIdentifier() {
+  public Resource getIdentifier() {
     return identifier;
   }
 
@@ -48,7 +48,7 @@ public class PersistenceStep implements Step<StepExecutor> {
 
   public static final class Builder {
 
-    private IRI identifier;
+    private Resource identifier;
 
     private IRI persistenceStrategy;
 
@@ -56,7 +56,7 @@ public class PersistenceStep implements Step<StepExecutor> {
 
     private IRI targetGraph;
 
-    public Builder(@NonNull IRI identifier) {
+    public Builder(@NonNull Resource identifier) {
       this.identifier = identifier;
     }
 

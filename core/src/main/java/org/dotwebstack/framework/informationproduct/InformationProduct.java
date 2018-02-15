@@ -5,11 +5,11 @@ import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.param.Parameter;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Resource;
 
 public interface InformationProduct {
 
-  IRI getIdentifier();
+  Resource getIdentifier();
 
   String getLabel();
 

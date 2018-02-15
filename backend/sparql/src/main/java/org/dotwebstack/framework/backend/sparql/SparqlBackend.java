@@ -5,14 +5,14 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 
 public class SparqlBackend implements Backend {
 
-  private IRI identifier;
+  private Resource identifier;
 
   private SPARQLRepository repository;
 
@@ -27,12 +27,12 @@ public class SparqlBackend implements Backend {
   }
 
   @Override
-  public IRI getIdentifier() {
+  public Resource getIdentifier() {
     return identifier;
   }
 
   @Override
-  public InformationProduct createInformationProduct(IRI identifier, String label,
+  public InformationProduct createInformationProduct(Resource identifier, String label,
       Collection<Parameter> parameters, Model statements) {
     return informationProductFactory.create(identifier, label, this, parameters, statements);
   }
@@ -51,13 +51,13 @@ public class SparqlBackend implements Backend {
 
   public static class Builder {
 
-    private IRI identifier;
+    private Resource identifier;
 
     private SPARQLRepository repository;
 
     private SparqlBackendInformationProductFactory informationProductFactory;
 
-    public Builder(@NonNull IRI identifier, @NonNull SPARQLRepository repository,
+    public Builder(@NonNull Resource identifier, @NonNull SPARQLRepository repository,
         @NonNull SparqlBackendInformationProductFactory informationProductFactory) {
       this.identifier = identifier;
       this.repository = repository;

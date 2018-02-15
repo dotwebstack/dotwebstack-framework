@@ -8,6 +8,7 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -37,7 +38,7 @@ public class StepResourceProvider extends AbstractResourceProvider<Step> {
   }
 
   @Override
-  protected Step createResource(Model model, IRI identifier) {
+  protected Step createResource(Model model, Resource identifier) {
     IRI transactionStep = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for appearance <%s>.", RDF.TYPE, identifier)));

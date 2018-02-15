@@ -7,6 +7,7 @@ import org.dotwebstack.framework.frontend.ld.parameter.target.TargetFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class ParameterMapperFactory {
     this.parameterTargetFactory = parameterTargetFactory;
   }
 
-  public ParameterMapper create(IRI parameterMapperType, Model model, IRI identifier) {
+  public ParameterMapper create(IRI parameterMapperType, Model model, Resource identifier) {
 
     IRI sourceIri = getObjectIRI(model, identifier, ELMO.SOURCE_PROP).orElseThrow(
         () -> new ConfigurationException(
@@ -48,7 +49,7 @@ public class ParameterMapperFactory {
 
     if (UriParameterMapper.getType().equals(parameterMapperType)) {
       UriParameterMapper.UriParameterMapperBuilder builder =
-          new UriParameterMapper.UriParameterMapperBuilder(identifier,
+          new UriParameterMapper.UriParameterMapperBuilder((IRI) identifier,
               parameterSourceFactory.getParameterSource(sourceIri),
               parameterTargetFactory.getTarget(targetIri));
 
@@ -62,11 +63,11 @@ public class ParameterMapperFactory {
         String.format("No parametermapper available for type <%s>.", parameterMapperType));
   }
 
-  private Optional<String> getObjectString(Model model, IRI subject, IRI predicate) {
+  private Optional<String> getObjectString(Model model, Resource subject, IRI predicate) {
     return Models.objectString(model.filter(subject, predicate, null));
   }
 
-  private Optional<IRI> getObjectIRI(Model model, IRI subject, IRI predicate) {
+  private Optional<IRI> getObjectIRI(Model model, Resource subject, IRI predicate) {
     return Models.objectIRI(model.filter(subject, predicate, null));
   }
 
