@@ -30,7 +30,7 @@ abstract class AbstractSubjectQuerySchemaMapper<S extends Property, T>
    * @throws IllegalStateException If the property does not have the
    *         {@link OpenApiSpecificationExtensions#SUBJECT_QUERY} vendor extension defined. Please
    *         call {@link #hasSubjectQueryVendorExtension(Property)} before calling this method.
-   * @throws SchemaMapperRuntimeException If the subject query has &gt; binding defined. Or if the
+   * @throws SchemaMapperRuntimeException If the subject query has &gt; 1 binding defined. Or if the
    *         result contains a non {@link Resource}.
    */
   protected final Set<Resource> getSubjects(@NonNull Property property,
@@ -38,7 +38,7 @@ abstract class AbstractSubjectQuerySchemaMapper<S extends Property, T>
     if (!hasSubjectQueryVendorExtension(property)) {
       throw new IllegalStateException(String.format(
           "Vendor extension '%s' not defined, "
-              + "please call hasSubjectFilterVendorExtension() before calling this method",
+              + "please call hasSubjectQueryVendorExtension() before calling this method",
           OpenApiSpecificationExtensions.SUBJECT_QUERY));
     }
 

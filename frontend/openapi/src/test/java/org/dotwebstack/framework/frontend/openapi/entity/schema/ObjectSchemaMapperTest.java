@@ -193,7 +193,7 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_SwitchesContext_WhenSubjectFilterHasBeenDefined() {
+  public void mapGraphValue_SwitchesContext_WhenSubjectQueryHasBeenDefined() {
     // Arrange
     property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
         String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
@@ -221,7 +221,7 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsNull_WhenSubjectFilterYieldsNoResultAndPropertyIsOptional() {
+  public void mapGraphValue_ReturnsNull_WhenSubjectQueryYieldsNoResultAndPropertyIsOptional() {
     // Arrange
     property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
         String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
@@ -240,7 +240,7 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ThrowsException_WhenSubjectFilterYieldsNoResultAndPropertyIsRequired() {
+  public void mapGraphValue_ThrowsException_WhenSubjectQueryYieldsNoResultAndPropertyIsRequired() {
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(
@@ -262,7 +262,7 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ThrowsException_WhenSubjectFilterYieldsMultipleResults() {
+  public void mapGraphValue_ThrowsException_WhenSubjectQueryYieldsMultipleResults() {
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage("More entrypoint subjects found. Only one is required");

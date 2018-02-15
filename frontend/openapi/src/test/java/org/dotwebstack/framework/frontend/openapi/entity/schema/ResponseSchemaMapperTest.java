@@ -67,7 +67,7 @@ public class ResponseSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_DoesNotSwitchContext_WhenNoSubjectFilterHasBeenDefined() {
+  public void mapGraphValue_DoesNotSwitchContext_WhenNoSubjectQueryHasBeenDefined() {
     // Arrange
     objectProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
         String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
@@ -96,7 +96,7 @@ public class ResponseSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_SwitchesContext_WhenSubjectFilterHasBeenDefined() {
+  public void mapGraphValue_SwitchesContext_WhenSubjectQueryHasBeenDefined() {
     // Arrange
     response.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
         String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE)));
@@ -127,7 +127,7 @@ public class ResponseSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsNull_WhenSubjectFilterYieldsNoResultAndPropertyIsOptional() {
+  public void mapGraphValue_ReturnsNull_WhenSubjectQueryYieldsNoResultAndPropertyIsOptional() {
     // Arrange
     response.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
         String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE)));
@@ -149,7 +149,7 @@ public class ResponseSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ThrowsException_WhenSubjectFilterYieldsNoResultAndPropertyIsRequired() {
+  public void mapGraphValue_ThrowsException_WhenSubjectQueryYieldsNoResultAndPropertyIsRequired() {
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(
@@ -174,7 +174,7 @@ public class ResponseSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ThrowsException_WhenSubjectFilterYieldsMultipleResults() {
+  public void mapGraphValue_ThrowsException_WhenSubjectQueryYieldsMultipleResults() {
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage("More entrypoint subjects found. Only one is required");

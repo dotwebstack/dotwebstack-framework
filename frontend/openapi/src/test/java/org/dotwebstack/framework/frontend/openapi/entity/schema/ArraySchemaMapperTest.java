@@ -140,7 +140,7 @@ public class ArraySchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsArrayOfStrings_WhenNoSubjectFilterHasBeenDefined() {
+  public void mapGraphValue_ReturnsArrayOfStrings_WhenNoSubjectQueryHasBeenDefined() {
     // Arrange
     arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     arrayProperty.setItems(new StringProperty());
@@ -161,7 +161,7 @@ public class ArraySchemaMapperTest {
   }
 
   // @Test
-  public void mapGraphValue_ReturnsArrayOfStrings_WhenSubjectFilterHasBeenDefined() {
+  public void mapGraphValue_ReturnsArrayOfStrings_WhenSubjectQueryHasBeenDefined() {
     // Arrange
     arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
         String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
@@ -193,7 +193,7 @@ public class ArraySchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsArrayOfObjects_WhenSubjectFilterHasBeenDefined() {
+  public void mapGraphValue_ReturnsArrayOfObjects_WhenSubjectQueryHasBeenDefined() {
     // Arrange
     arrayProperty.setItems(objectProperty);
     arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
