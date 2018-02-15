@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;

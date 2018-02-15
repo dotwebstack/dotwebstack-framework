@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.sparql;
+package org.dotwebstack.framework.backend.sparql.informationproduct;
 
 import static org.dotwebstack.framework.vocabulary.ELMO.RESULT_TYPE_DEFAULT;
 
@@ -6,6 +6,8 @@ import java.util.Collection;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
+import org.dotwebstack.framework.backend.sparql.SparqlBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;

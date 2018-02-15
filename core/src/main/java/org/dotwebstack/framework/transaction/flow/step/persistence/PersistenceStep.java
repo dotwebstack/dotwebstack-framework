@@ -2,10 +2,10 @@ package org.dotwebstack.framework.transaction.flow.step.persistence;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
+import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.model.Resource;
 
 public class PersistenceStep implements Step<StepExecutor> {
@@ -17,6 +17,8 @@ public class PersistenceStep implements Step<StepExecutor> {
 
   private Backend backend;
 
+  private BackendResourceProvider backendResourceProvider;
+
   private IRI targetGraph;
 
   public PersistenceStep(Builder builder) {
@@ -24,10 +26,11 @@ public class PersistenceStep implements Step<StepExecutor> {
     this.persistenceStrategy = builder.persistenceStrategy;
     this.backend = builder.backend;
     this.targetGraph = builder.targetGraph;
+    this.backendResourceProvider = builder.backendResourceProvider;
   }
 
-  public PersistenceStepExecutor getExecutor(RepositoryConnection repositoryConnection) {
-    return new PersistenceStepExecutor(this, repositoryConnection);
+  public StepExecutor createStepExecutor() {
+    return backendResourceProvider.get(backend.getIdentifier()).createPersistenceStepExecutor(this);
   }
 
   public Resource getIdentifier() {
@@ -54,10 +57,14 @@ public class PersistenceStep implements Step<StepExecutor> {
 
     private Backend backend;
 
+    private BackendResourceProvider backendResourceProvider;
+
     private IRI targetGraph;
 
-    public Builder(@NonNull Resource identifier) {
+    public Builder(@NonNull Resource identifier,
+        @NonNull BackendResourceProvider backendResourceProvider) {
       this.identifier = identifier;
+      this.backendResourceProvider = backendResourceProvider;
     }
 
     public Builder persistenceStrategy(@NonNull IRI persistenceStrategy) {

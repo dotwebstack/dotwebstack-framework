@@ -3,6 +3,8 @@ package org.dotwebstack.framework.backend.sparql;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendFactory;
+import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProductFactory;
+import org.dotwebstack.framework.backend.sparql.persistencestep.SparqlBackendPersistenceStepFactory;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -20,10 +22,14 @@ class SparqlBackendFactory implements BackendFactory {
 
   private SparqlBackendInformationProductFactory informationProductFactory;
 
+  private SparqlBackendPersistenceStepFactory persistenceStepFactory;
+
   @Autowired
   public SparqlBackendFactory(
-      @NonNull SparqlBackendInformationProductFactory informationProductFactory) {
+      @NonNull SparqlBackendInformationProductFactory informationProductFactory,
+      @NonNull SparqlBackendPersistenceStepFactory persistenceStepFactory) {
     this.informationProductFactory = informationProductFactory;
+    this.persistenceStepFactory = persistenceStepFactory;
   }
 
   @Override
@@ -43,7 +49,8 @@ class SparqlBackendFactory implements BackendFactory {
 
     repository.initialize();
 
-    return new SparqlBackend.Builder(identifier, repository, informationProductFactory).build();
+    return new SparqlBackend.Builder(identifier, repository, informationProductFactory,
+        persistenceStepFactory).build();
   }
 
   @Override
