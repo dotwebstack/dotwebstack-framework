@@ -251,8 +251,7 @@ public class EntityWriterInterceptorTest {
                         NAMESPACE_RO + "xPaginationPageParameter"))));
 
     GraphEntity entity = newGraphEntity(schemaMap, queryResultMock, definitionsMock,
-        ImmutableMap.of("contentCrs", "epsg:28992", "page", "3"),
-        informationProductMock);
+        ImmutableMap.of("contentCrs", "epsg:28992", "page", "3"), informationProductMock);
 
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 

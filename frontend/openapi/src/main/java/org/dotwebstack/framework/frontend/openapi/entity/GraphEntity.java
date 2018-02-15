@@ -1,12 +1,13 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
-import static com.google.common.collect.Maps.newHashMap;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import io.swagger.models.Model;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
+import java.util.Collections;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.Getter;
@@ -34,8 +35,7 @@ public final class GraphEntity extends AbstractEntity {
 
   private GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
       @NonNull ImmutableMap<String, String> ldPathNamespaces,
-      @NonNull Map<String, Model> swaggerDefinitions,
-      @NonNull org.eclipse.rdf4j.model.Model model,
+      @NonNull Map<String, Model> swaggerDefinitions, @NonNull org.eclipse.rdf4j.model.Model model,
       @NonNull Map<String, String> requestParameters,
       @NonNull InformationProduct informationProduct) {
     super(schemaMap);
@@ -44,13 +44,12 @@ public final class GraphEntity extends AbstractEntity {
     this.swaggerDefinitions = swaggerDefinitions;
     this.model = model;
     this.informationProduct = informationProduct;
-    this.parameters = newHashMap(requestParameters);
+    this.parameters = Maps.newHashMap(requestParameters);
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 
   public static GraphEntity newGraphEntity(@NonNull Map<MediaType, Property> schemaMap,
-      @NonNull QueryResult<Statement> queryResult,
-      @NonNull Swagger definitions,
+      @NonNull QueryResult<Statement> queryResult, @NonNull Swagger definitions,
       @NonNull Map<String, String> requestParameters,
       @NonNull InformationProduct informationProduct) {
     return new GraphEntity(schemaMap, extractLdpathNamespaces(definitions),
@@ -63,7 +62,7 @@ public final class GraphEntity extends AbstractEntity {
   }
 
   public Map<String, String> getParameters() {
-    return ImmutableMap.copyOf(parameters);
+    return Collections.unmodifiableMap(parameters);
   }
 
   private static Map<String, Model> extractSwaggerDefinitions(Swagger swagger) {
@@ -85,9 +84,10 @@ public final class GraphEntity extends AbstractEntity {
       } catch (ClassCastException cce) {
         String jsonExample = "{ \"rdfs\": \"http://www.w3.org/2000/01/rdf-schema#\", "
             + "\"rdf\": \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"}";
-        throw new LdPathExecutorRuntimeException(String.format(
-            "Vendor extension '%s' should contain a map of namespaces (eg. %s)",
-            OpenApiSpecificationExtensions.LDPATH_NAMESPACES, jsonExample), cce);
+        throw new LdPathExecutorRuntimeException(
+            String.format("Vendor extension '%s' should contain a map of namespaces (eg. %s)",
+                OpenApiSpecificationExtensions.LDPATH_NAMESPACES, jsonExample),
+            cce);
       }
     }
 

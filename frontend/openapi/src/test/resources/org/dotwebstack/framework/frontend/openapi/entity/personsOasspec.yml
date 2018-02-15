@@ -15,9 +15,7 @@ paths:
           schema:
             title: "bla"
             type: object
-            x-dotwebstack-subject-filter:
-              predicate: "http://xmlns.com/foaf/0.1/account"
-              object: "http://example.com#account1"
+            x-dotwebstack-subject-query: "SELECT ?s WHERE { ?s <http://xmlns.com/foaf/0.1/account> <http://example.com#account1> }"
             properties:
               _links:
                 x-exclude-empty-and-null-value-properties: true

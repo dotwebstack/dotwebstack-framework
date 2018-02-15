@@ -10,7 +10,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-class ResponseSchemaMapper extends AbstractSubjectFilterSchemaMapper<ResponseProperty, Object> {
+class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProperty, Object> {
 
   @Override
   public Object mapTupleValue(@NonNull ResponseProperty schema, @NonNull ValueContext value) {
@@ -23,7 +23,7 @@ class ResponseSchemaMapper extends AbstractSubjectFilterSchemaMapper<ResponsePro
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
-    if (hasSubjectFilterVendorExtension(property)) {
+    if (hasSubjectQueryVendorExtension(property)) {
       Value value = getSubject(property, graphEntity);
 
       if (value == null) {
