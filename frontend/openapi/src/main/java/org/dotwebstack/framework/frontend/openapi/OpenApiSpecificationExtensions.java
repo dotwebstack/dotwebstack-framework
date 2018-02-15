@@ -14,7 +14,7 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String TYPE = DOTWEBSTACK_PREFIX.concat("type");
 
-  public static final String CONSTANT_VALUE = "x-constant-value";
+  public static final String CONSTANT_VALUE = DOTWEBSTACK_PREFIX.concat("constant-value");
 
   public static final String SUBJECT_QUERY = DOTWEBSTACK_PREFIX.concat("subject-query");
 
