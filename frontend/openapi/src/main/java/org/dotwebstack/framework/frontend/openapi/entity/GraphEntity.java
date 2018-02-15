@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Model;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
+import java.util.Collections;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.Getter;
@@ -24,8 +25,9 @@ public final class GraphEntity extends AbstractEntity {
   private final Map<String, Model> swaggerDefinitions;
   private final org.eclipse.rdf4j.model.Model model;
   private final InformationProduct informationProduct;
-  private final Map<String, String> requestParameters;
-  private final Map<String, String> responseParameters;
+
+  private final Map<String, String> parameters;
+
   private final LdPathExecutor ldPathExecutor;
   private final String baseUri;
 
@@ -42,29 +44,26 @@ public final class GraphEntity extends AbstractEntity {
     this.swaggerDefinitions = swaggerDefinitions;
     this.model = model;
     this.informationProduct = informationProduct;
-    this.requestParameters = requestParameters;
-    this.responseParameters = newHashMap();
+    this.parameters = newHashMap(requestParameters);
     this.baseUri = baseUri;
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 
   public static GraphEntity newGraphEntity(@NonNull Map<MediaType, Property> schemaMap,
-      @NonNull QueryResult<Statement> queryResult,
-      @NonNull Swagger definitions,
+      @NonNull QueryResult<Statement> queryResult, @NonNull Swagger definitions,
       @NonNull Map<String, String> requestParameters,
       @NonNull InformationProduct informationProduct) {
-
     return new GraphEntity(schemaMap, extractLdpathNamespaces(definitions),
         extractSwaggerDefinitions(definitions), QueryResults.asModel(queryResult),
         requestParameters, definitions.getBasePath(), informationProduct);
   }
 
-  public void addResponseParameter(@NonNull String key, String value) {
-    responseParameters.put(key, value);
+  public void addParameter(@NonNull String key, String value) {
+    parameters.put(key, value);
   }
 
-  public Map<String, String> getResponseParameters() {
-    return ImmutableMap.copyOf(responseParameters);
+  public Map<String, String> getParameters() {
+    return Collections.unmodifiableMap(parameters);
   }
 
   private static Map<String, Model> extractSwaggerDefinitions(Swagger swagger) {
@@ -75,6 +74,7 @@ public final class GraphEntity extends AbstractEntity {
     ImmutableMap<String, Object> vendorExtensions;
     Map<String, Object> extensions = swagger.getVendorExtensions();
     vendorExtensions = extensions == null ? ImmutableMap.of() : copyOf(extensions);
+
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH_NAMESPACES)) {
       Object ldPathNamespaces =
           vendorExtensions.get(OpenApiSpecificationExtensions.LDPATH_NAMESPACES);
@@ -90,6 +90,7 @@ public final class GraphEntity extends AbstractEntity {
             OpenApiSpecificationExtensions.LDPATH_NAMESPACES, jsonExample), cce);
       }
     }
+
     return ImmutableMap.of();
   }
 
