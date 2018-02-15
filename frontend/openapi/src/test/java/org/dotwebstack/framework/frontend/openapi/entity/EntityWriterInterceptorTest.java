@@ -243,17 +243,12 @@ public class EntityWriterInterceptorTest {
         new IntegerTermParameter(VALUE_FACTORY.createIRI(NAMESPACE_RO, "xPaginationPageParameter"),
             "page", false)));
 
-    StringProperty contentCrsProperty = new StringProperty().vendorExtension(
-        OpenApiSpecificationExtensions.PARAMETER, NAMESPACE_RO + "ContentCrsParameter");
-    contentCrsProperty.setName("Content-Crs");
-
-    IntegerProperty pageProperty = new IntegerProperty().vendorExtension(
-        OpenApiSpecificationExtensions.PARAMETER, NAMESPACE_RO + "xPaginationPageParameter");
-    pageProperty.setName("x-Pagination-Page");
-
     Map<MediaType, Property> schemaMap = ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-        new ResponseProperty(new Response().header("contentCrs", contentCrsProperty).header(
-            "xPaginationPage", pageProperty)));
+        new ResponseProperty(new Response().header("Content-Crs",
+            new StringProperty().vendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+                NAMESPACE_RO + "ContentCrsParameter")).header("x-Pagination-Page",
+                    new IntegerProperty().vendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+                        NAMESPACE_RO + "xPaginationPageParameter"))));
 
     GraphEntity entity = newGraphEntity(schemaMap, queryResultMock, definitionsMock,
         ImmutableMap.of("contentCrs", "epsg:28992", "page", "3"), informationProductMock);
