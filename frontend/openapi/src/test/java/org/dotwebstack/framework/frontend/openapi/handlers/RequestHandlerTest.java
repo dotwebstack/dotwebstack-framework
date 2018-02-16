@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
+import java.net.URI;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
@@ -53,6 +54,9 @@ public class RequestHandlerTest {
 
   @Mock
   private Swagger swaggerMock;
+
+  @Mock
+  private URI uri;
 
   @Before
   public void setUp() {
@@ -96,6 +100,7 @@ public class RequestHandlerTest {
     when(swaggerMock.getBasePath()).thenReturn("");
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    when(uriInfo.getAbsolutePath()).thenReturn(mock(URI.class));
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
     GraphQueryResult result = mock(GraphQueryResult.class);
     when(informationProductMock.getResult(ImmutableMap.of())).thenReturn(result);

@@ -52,10 +52,12 @@ public final class GraphEntity extends AbstractEntity {
   public static GraphEntity newGraphEntity(@NonNull Map<MediaType, Property> schemaMap,
       @NonNull QueryResult<Statement> queryResult, @NonNull Swagger definitions,
       @NonNull Map<String, String> requestParameters,
-      @NonNull InformationProduct informationProduct) {
+      @NonNull InformationProduct informationProduct,
+      @NonNull String baseUri) {
+
     return new GraphEntity(schemaMap, extractLdpathNamespaces(definitions),
         extractSwaggerDefinitions(definitions), QueryResults.asModel(queryResult),
-        requestParameters, definitions.getBasePath(), informationProduct);
+        requestParameters, baseUri, informationProduct);
   }
 
   public void addParameter(@NonNull String key, String value) {

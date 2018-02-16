@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import static org.dotwebstack.framework.frontend.openapi.entity.GraphEntity.newGraphEntity;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Swagger;
@@ -38,9 +37,8 @@ public class GraphEntityTest {
 
   @Before
   public void setUp() {
-    when(definitionsMock.getBasePath()).thenReturn("");
     entity = newGraphEntity(ImmutableMap.of(), queryResultMock, definitionsMock,
-        ImmutableMap.of(), productMock);
+        ImmutableMap.of(), productMock, "");
   }
 
   @Test

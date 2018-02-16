@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import static org.dotwebstack.framework.frontend.openapi.BaseUriFactory.newBaseUri;
+
 import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
@@ -7,6 +9,7 @@ import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
@@ -57,7 +60,8 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
   @Override
   public Response apply(@NonNull ContainerRequestContext context) {
-    String path = context.getUriInfo().getPath();
+    UriInfo uriInfo = context.getUriInfo();
+    String path = uriInfo.getPath();
 
     LOG.debug("Handling {} request for path {}", context.getMethod(), path);
 
@@ -76,10 +80,13 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
       responseOk = responseOk(entity);
     }
+
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
+      String baseUri = newBaseUri(uriInfo.getAbsolutePath(), swagger.getBasePath());
+
       GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
       GraphEntity entity = GraphEntity
-          .newGraphEntity(schemaMap, result, swagger, parameterValues, informationProduct);
+          .newGraphEntity(schemaMap, result, swagger, parameterValues, informationProduct, baseUri);
 
       responseOk = responseOk(entity);
     }
@@ -91,6 +98,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     }
     return Response.serverError().build();
   }
+
 
   private Response responseOk(Entity entity) {
     if (entity != null) {
