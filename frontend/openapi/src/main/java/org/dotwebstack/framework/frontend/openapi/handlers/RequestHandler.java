@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import static org.dotwebstack.framework.frontend.openapi.BaseUriFactory.newBaseUri;
-
 import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
@@ -12,6 +10,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.openapi.BaseUriFactory;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
@@ -82,7 +81,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     }
 
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-      String baseUri = newBaseUri(uriInfo.getAbsolutePath(), swagger.getBasePath());
+      String baseUri = BaseUriFactory.newBaseUri(uriInfo.getAbsolutePath(), swagger.getBasePath());
 
       GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
       GraphEntity entity = GraphEntity
