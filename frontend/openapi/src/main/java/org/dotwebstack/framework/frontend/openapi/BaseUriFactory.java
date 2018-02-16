@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.http.client.utils.URIBuilder;
@@ -22,9 +23,8 @@ public class BaseUriFactory {
           .setPath(basePath)
           .build();
       baseUri = base.toString();
-      LOG.info(baseUri);
-    } catch (Exception exc) {
-      LOG.error("BaseUri could not be made");
+    } catch (URISyntaxException use) {
+      throw new IllegalStateException("BaseUri could not be made", use);
     }
     return baseUri;
   }
