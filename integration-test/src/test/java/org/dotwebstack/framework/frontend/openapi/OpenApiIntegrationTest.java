@@ -229,16 +229,16 @@ public class OpenApiIntegrationTest {
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
     JSONArray expected = new JSONArray();
-    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
-        DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
-            DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
-                DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
-                    DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
     expected.put(new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
         DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue()).put("fte",
             DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
                 DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
                     DBEERPEDIA.MAXIMUS_PLACE.stringValue()));
+    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
+        DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
+            DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
+                DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+                    DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
 
     String result = response.readEntity(String.class);
     JSONAssert.assertEquals(expected.toString(), result, true);

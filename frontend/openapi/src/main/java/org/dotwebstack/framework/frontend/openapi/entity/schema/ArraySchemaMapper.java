@@ -17,7 +17,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayProperty, Object> {
+public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayProperty, Object> {
 
   @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull ValueContext valueContext) {
@@ -30,7 +30,7 @@ public class ArraySchemaMapper extends AbstractSubjectFilterSchemaMapper<ArrayPr
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    if (hasSubjectFilterVendorExtension(property)) {
+    if (hasSubjectQueryVendorExtension(property)) {
       Set<Resource> subjects = getSubjects(property, graphEntity);
 
       subjects.forEach(subject -> {
