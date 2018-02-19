@@ -6,7 +6,7 @@ public abstract class AbstractFlowExecutor<T> implements FlowExecutor<T> {
 
   protected T flow;
 
-  private RepositoryConnection repositoryConnection;
+  RepositoryConnection repositoryConnection;
 
   public AbstractFlowExecutor(T flow,
       RepositoryConnection repositoryConnection) {

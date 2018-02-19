@@ -15,6 +15,7 @@ public interface Backend {
   InformationProduct createInformationProduct(Resource identifier, String label,
       Collection<Parameter> parameters, Model statements);
 
-  StepExecutor createPersistenceStepExecutor(PersistenceStep persistenceStep);
+  StepExecutor createPersistenceStepExecutor(PersistenceStep persistenceStep,
+      Model transactionModel);
 
 }
