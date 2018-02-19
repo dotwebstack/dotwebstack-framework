@@ -27,11 +27,11 @@ public class BaseUriFactoryTest {
   @Test
   public void newBaseUri_returnsBaseUriString_ifAbsoluteNotEmpty() {
     // Arrange
-    String expectedUri = "http://ruimtelijkeplannen.nl:8485/rest/v2";
-    String basePath = "/rest/v2";
     when(absolutePath.getScheme()).thenReturn("http");
     when(absolutePath.getHost()).thenReturn("ruimtelijkeplannen.nl");
     when(absolutePath.getPort()).thenReturn(8485);
+    String basePath = "/rest/v2";
+    String expectedUri = "http://ruimtelijkeplannen.nl:8485/rest/v2";
 
     // Act
     String baseUri = BaseUriFactory.newBaseUri(absolutePath, basePath);
@@ -43,10 +43,10 @@ public class BaseUriFactoryTest {
   @Test
   public void newBaseUri_returnsBaseUriString_ifPortEmpty() {
     // Arrange
-    String expectedUri = "http://ruimtelijkeplannen.nl:0/rest/v2";
-    String basePath = "/rest/v2";
     when(absolutePath.getScheme()).thenReturn("http");
     when(absolutePath.getHost()).thenReturn("ruimtelijkeplannen.nl");
+    String basePath = "/rest/v2";
+    String expectedUri = "http://ruimtelijkeplannen.nl:0/rest/v2";
 
     // Act
     String baseUri = BaseUriFactory.newBaseUri(absolutePath, basePath);
@@ -58,9 +58,9 @@ public class BaseUriFactoryTest {
   @Test
   public void newBaseUri_ThrowsIllegalStateException_whenMalformed() {
     // Arrange
-    String basePath = "/rest/v2";
     when(absolutePath.getScheme()).thenReturn("h t t p ");
     when(absolutePath.getHost()).thenReturn("ruimtelijkeplannen.nl");
+    String basePath = "/rest/v2";
 
     // Assert
     exception.expect(IllegalStateException.class);
