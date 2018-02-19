@@ -41,7 +41,7 @@ public class StepResourceProvider extends AbstractResourceProvider<Step> {
   protected Step createResource(Model model, Resource identifier) {
     IRI transactionStep = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
         () -> new ConfigurationException(String.format(
-            "No <%s> statement has been found for appearance <%s>.", RDF.TYPE, identifier)));
+            "No <%s> statement has been found for step <%s>.", RDF.TYPE, identifier)));
 
     for (StepFactory stepFactory : stepFactoryList) {
       if (stepFactory.supports(transactionStep)) {

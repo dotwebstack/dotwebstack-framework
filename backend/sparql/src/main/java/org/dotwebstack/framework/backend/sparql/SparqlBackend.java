@@ -47,7 +47,7 @@ public class SparqlBackend implements Backend {
   @Override
   public StepExecutor createPersistenceStepExecutor(PersistenceStep persistenceStep,
       Model transactionModel) {
-    return persistenceStepFactory.create(persistenceStep, transactionModel);
+    return persistenceStepFactory.create(persistenceStep, transactionModel, this);
   }
 
   public SPARQLRepository getRepository() {
