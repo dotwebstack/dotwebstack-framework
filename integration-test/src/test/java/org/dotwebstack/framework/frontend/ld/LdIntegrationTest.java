@@ -9,13 +9,16 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import org.apache.http.HttpStatus;
 import org.dotwebstack.framework.SparqlHttpStub;
 import org.dotwebstack.framework.SparqlHttpStub.TupleQueryResultBuilder;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
@@ -194,6 +197,56 @@ public class LdIntegrationTest {
     assertThat(response.getLength(), greaterThan(0));
     assertThat(response.readEntity(String.class),
         containsString(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
+  }
+
+  @Test
+  public void post_PostRdf_ThroughLdApi() {
+    // Arrange
+    String rdf = "<?xml version=\"1.0\"?>\n"
+        + "\n"
+        + "<rdf:RDF\n"
+        + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
+        + "xmlns:si=\"https://www.w3schools.com/rdf/\">\n"
+        + "\n"
+        + "<rdf:Description rdf:about=\"https://www.w3schools.com\">\n"
+        + "  <si:title>W3Schools</si:title>\n"
+        + "  <si:author>Jan Egil Refsnes</si:author>\n"
+        + "</rdf:Description>\n"
+        + "\n"
+        + "</rdf:RDF> ";
+    SparqlHttpStub.setResponseCode(HttpStatus.SC_OK);
+
+    // Act
+    Response response = target.path("/dbp/ld/v1/add-concept").request()
+        .post(Entity.entity(rdf, MediaTypes.RDFXML));
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+  }
+
+  @Test
+  public void post_WhenBackendFails_ThroughLdApi() {
+    // Arrange
+    String rdf = "<?xml version=\"1.0\"?>\n"
+        + "\n"
+        + "<rdf:RDF\n"
+        + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
+        + "xmlns:si=\"https://www.w3schools.com/rdf/\">\n"
+        + "\n"
+        + "<rdf:Description rdf:about=\"https://www.w3schools.com\">\n"
+        + "  <si:title>W3Schools</si:title>\n"
+        + "  <si:author>Jan Egil Refsnes</si:author>\n"
+        + "</rdf:Description>\n"
+        + "\n"
+        + "</rdf:RDF> ";
+    SparqlHttpStub.setResponseCode(HttpStatus.SC_METHOD_FAILURE);
+
+    // Act
+    Response response = target.path("/dbp/ld/v1/add-concept").request()
+        .post(Entity.entity(rdf, MediaTypes.RDFXML));
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.METHOD_NOT_ALLOWED.getStatusCode()));
   }
 
 }

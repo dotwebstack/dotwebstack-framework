@@ -10,10 +10,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class SparqlBackendPersistenceStepFactory {
 
-  public PersistenceInsertOrReplaceStepExecutor create(PersistenceStep persistenceStep,
+  public PersistenceInsertIntoGraphStepExecutor create(PersistenceStep persistenceStep,
       Model transactionModel, SparqlBackend sparqlBackend) {
-    if (persistenceStep.getPersistenceStrategy().equals(ELMO.PERSISTENCE_STRATEGY_PROP)) {
-      return new PersistenceInsertOrReplaceStepExecutor(persistenceStep, transactionModel,
+    if (persistenceStep.getPersistenceStrategy().equals(
+        ELMO.PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH)) {
+      return new PersistenceInsertIntoGraphStepExecutor(persistenceStep, transactionModel,
           sparqlBackend);
     }
 

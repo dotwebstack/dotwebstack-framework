@@ -5,25 +5,25 @@ import org.dotwebstack.framework.transaction.flow.step.AbstractStepExecutor;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.eclipse.rdf4j.model.Model;
 
-public class PersistenceInsertOrReplaceStepExecutor extends AbstractStepExecutor<PersistenceStep> {
+public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor<PersistenceStep> {
 
   private SparqlBackend backend;
 
   private Model transactionModel;
 
-  public PersistenceInsertOrReplaceStepExecutor(PersistenceStep persistenceStep,
+  private PersistenceStep persistenceStep;
+
+  public PersistenceInsertIntoGraphStepExecutor(PersistenceStep persistenceStep,
       Model transactionModel, SparqlBackend backend) {
     super(persistenceStep);
     this.backend = backend;
     this.transactionModel = transactionModel;
+    this.persistenceStep = persistenceStep;
   }
 
-  @Override
   public void execute() {
-    // todo delete statements for subject in graph
-
     // add statements to graph
-    backend.getConnection().add(transactionModel);
+    backend.getConnection().add(transactionModel, persistenceStep.getTargetGraph());
   }
 
 }
