@@ -135,8 +135,6 @@ public class OpenApiIntegrationTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("HEAD, GET, OPTIONS"));
     assertThat(response.getHeaderString("allow"), equalTo("HEAD,GET,OPTIONS"));
   }
 

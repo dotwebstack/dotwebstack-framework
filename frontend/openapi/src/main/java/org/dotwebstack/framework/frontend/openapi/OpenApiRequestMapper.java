@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
@@ -27,6 +28,7 @@ import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
+import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -113,9 +115,11 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
     swagger.getPaths().forEach((path, pathItem) -> {
       ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, pathItem);
+
       if (apiOperation == null) {
         return;
       }
+
       Operation getOperation = apiOperation.getOperation();
 
       validateOperation(apiOperation, swagger);
@@ -169,10 +173,14 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
       ResourceMethod.Builder methodBuilder =
           resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
-              requestHandlerFactory.newRequestHandler(apiOperation, informationProduct,
-                  schemaMap, swagger));
+              requestHandlerFactory.newRequestHandler(apiOperation, informationProduct, schemaMap,
+                  swagger));
 
       produces.forEach(methodBuilder::produces);
+
+      ResourceMethod.Builder optionsMethodBuilder =
+          resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(
+              new OptionsRequestHandler(pathItem));
 
       httpConfiguration.registerResources(resourceBuilder.build());
 
