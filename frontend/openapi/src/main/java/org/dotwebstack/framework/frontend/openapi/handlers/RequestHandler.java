@@ -15,6 +15,7 @@ import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -92,23 +93,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
           OpenApiSpecificationExtensions.SUBJECT_QUERY);
 
       if (queryString != null) {
-        LOG.debug("Evaluating query on model: '{}'", queryString);
-
-        Repository repository = createRepository();
-
-        try (RepositoryConnection connection = repository.getConnection()) {
-          connection.add(entity.getModel());
-
-          BooleanQuery askQuery = connection.prepareBooleanQuery(queryString);
-
-          if (!askQuery.evaluate()) {
-            LOG.debug("Query evaluated to false. Throwing NotFoundException");
-
-            throw new NotFoundException();
-          }
-        } finally {
-          repository.shutDown();
-        }
+        throwExceptionWhenNoResultFound(entity.getModel(), queryString);
       }
 
       responseOk = responseOk(entity);
@@ -120,6 +105,26 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
           informationProduct.getResultType(), informationProduct.getIdentifier());
     }
     return Response.serverError().build();
+  }
+
+  private static void throwExceptionWhenNoResultFound(Model model, String queryString) {
+    LOG.debug("Evaluating query on model: '{}'", queryString);
+
+    Repository repository = createRepository();
+
+    try (RepositoryConnection connection = repository.getConnection()) {
+      connection.add(model);
+
+      BooleanQuery askQuery = connection.prepareBooleanQuery(queryString);
+
+      if (!askQuery.evaluate()) {
+        LOG.debug("Query evaluated to false. Throwing NotFoundException...");
+
+        throw new NotFoundException();
+      }
+    } finally {
+      repository.shutDown();
+    }
   }
 
   private Response responseOk(Entity entity) {
