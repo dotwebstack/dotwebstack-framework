@@ -2,7 +2,7 @@ GRAPH dbeerpedia:Theatre {
 
   # Transaction: replace resource from graph
   dbeerpedia:InsertConcept a elmo:Transaction;
-    elmo:sequentialFlow dbeerpedia:PersistenceStep;
+    elmo:sequentialFlow (dbeerpedia:PersistenceStep);
   .
   dbeerpedia:PersistenceStep a elmo:PersistenceStep;
     elmo:persistenceStrategy elmo-sp:InsertIntoGraph;

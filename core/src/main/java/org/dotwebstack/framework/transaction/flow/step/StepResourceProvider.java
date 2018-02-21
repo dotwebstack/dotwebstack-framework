@@ -29,7 +29,8 @@ public class StepResourceProvider extends AbstractResourceProvider<Step> {
 
   @Override
   protected GraphQuery getQueryForResources(RepositoryConnection conn) {
-    final String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o. ?transaction ?flow ?s. }";
+    final String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o. ?transaction ?flowprop ?flow."
+        + "?flow rdf:rest*/rdf:first ?s}";
 
     final GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("flow", ELMO.SEQUENTIAL_FLOW_PROP);
