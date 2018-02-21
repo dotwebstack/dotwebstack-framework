@@ -13,15 +13,13 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,8 +88,8 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
       String query = getResultFoundQuery();
 
-      if (query != null) {
-        evaluateResultFoundQuery(entity.getRepository(), query);
+      if (query != null && !Rdf4jUtils.evaluateAskQuery(entity.getRepository(), query)) {
+        throw new NotFoundException();
       }
 
       responseOk = responseOk(entity);
@@ -125,20 +123,6 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     }
 
     return query;
-  }
-
-  private static void evaluateResultFoundQuery(Repository repository, String queryString) {
-    LOG.debug("Evaluating query on model: '{}'", queryString);
-
-    try (RepositoryConnection connection = repository.getConnection()) {
-      BooleanQuery askQuery = connection.prepareBooleanQuery(queryString);
-
-      if (!askQuery.evaluate()) {
-        LOG.debug("Query evaluated to false. Throwing NotFoundException...");
-
-        throw new NotFoundException();
-      }
-    }
   }
 
   private Response responseOk(Entity entity) {
