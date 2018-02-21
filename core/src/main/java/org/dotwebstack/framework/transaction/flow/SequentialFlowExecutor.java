@@ -13,7 +13,7 @@ public class SequentialFlowExecutor extends AbstractFlowExecutor<SequentialFlow>
   @Override
   public void execute() {
     for (Step step : flow.getSteps()) {
-
+      step.createStepExecutor(repositoryConnection).execute();
     }
   }
 

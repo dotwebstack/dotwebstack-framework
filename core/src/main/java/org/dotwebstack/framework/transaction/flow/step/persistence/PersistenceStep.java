@@ -6,7 +6,10 @@ import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 public class PersistenceStep implements Step<StepExecutor> {
 
@@ -29,8 +32,11 @@ public class PersistenceStep implements Step<StepExecutor> {
     this.backendResourceProvider = builder.backendResourceProvider;
   }
 
-  public StepExecutor createStepExecutor() {
-    return backendResourceProvider.get(backend.getIdentifier()).createPersistenceStepExecutor(this);
+  public StepExecutor createStepExecutor(RepositoryConnection transactionRepositoryConnection) {
+    Model transactionModel = QueryResults.asModel(transactionRepositoryConnection
+        .getStatements(null, null, null));
+    return backendResourceProvider.get(backend.getIdentifier())
+        .createPersistenceStepExecutor(this, transactionModel);
   }
 
   public Resource getIdentifier() {

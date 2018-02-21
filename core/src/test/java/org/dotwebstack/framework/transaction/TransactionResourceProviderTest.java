@@ -81,7 +81,6 @@ public class TransactionResourceProviderTest {
 
     when(stepResourceProvider.get(any())).thenReturn(step);
 
-    when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
   @Test

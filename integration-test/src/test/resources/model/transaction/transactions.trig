@@ -1,8 +1,8 @@
 GRAPH dbeerpedia:Theatre {
 
   # Transaction: replace resource from graph
-  dbeerpedia:InsertOrReplaceConcept a elmo:Transaction;
-    elmo:sequentialFlow (dbeerpedia:PersistenceStep);
+  dbeerpedia:InsertConcept a elmo:Transaction;
+    elmo:sequentialFlow dbeerpedia:PersistenceStep;
   .
   dbeerpedia:PersistenceStep a elmo:PersistenceStep;
     elmo:persistenceStrategy elmo-sp:InsertIntoGraph;

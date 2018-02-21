@@ -97,6 +97,8 @@ public final class ELMO {
 
   public static final IRI LAYOUT_PROP;
 
+  public static final IRI PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH;
+
   public static final IRI PERSISTENCE_STRATEGY_PROP;
 
   public static final IRI TARGET_GRAPH_PROP;
@@ -162,6 +164,9 @@ public final class ELMO {
     TARGET_GRAPH_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "targetGraph");
 
     PERSISTENCE_STRATEGY_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "persistenceStrategy");
+
+    PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH = valueFactory.createIRI(ELMO.NAMESPACE_BASE,
+        "/persistence-strategy/InsertIntoGraph");
 
     REDIRECT_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 

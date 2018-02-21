@@ -1,32 +1,25 @@
 package org.dotwebstack.framework.backend.sparql.persistencestep;
 
-import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
 import org.dotwebstack.framework.backend.sparql.SparqlBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.eclipse.rdf4j.model.Model;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SparqlBackendPersistenceStepFactory {
 
-  private final QueryEvaluator queryEvaluator;
-
-  @Autowired
-  public SparqlBackendPersistenceStepFactory(
-      QueryEvaluator queryEvaluator) {
-    this.queryEvaluator = queryEvaluator;
-  }
-
-  public PersistenceInsertOrReplaceStepExecutor create(PersistenceStep persistenceStep,
-      SparqlBackend sparqlBackend) {
-    if (persistenceStep.getPersistenceStrategy().equals(ELMO.PERSISTENCE_STRATEGY_PROP)) {
-      return new PersistenceInsertOrReplaceStepExecutor(persistenceStep, sparqlBackend);
+  public PersistenceInsertIntoGraphStepExecutor create(PersistenceStep persistenceStep,
+      Model transactionModel, SparqlBackend sparqlBackend) {
+    if (persistenceStep.getPersistenceStrategy().equals(
+        ELMO.PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH)) {
+      return new PersistenceInsertIntoGraphStepExecutor(persistenceStep, transactionModel,
+          sparqlBackend);
     }
 
-    throw new ConfigurationException(String.format("Strategy %s not support by backend %s",
-        persistenceStep.getPersistenceStrategy(), sparqlBackend.getIdentifier()));
+    throw new ConfigurationException(String.format("Strategy %s not support by %s",
+        persistenceStep.getPersistenceStrategy(), SparqlBackendPersistenceStepFactory.class));
   }
 
 }

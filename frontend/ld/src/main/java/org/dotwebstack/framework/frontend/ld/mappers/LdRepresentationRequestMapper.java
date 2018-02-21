@@ -4,6 +4,7 @@ import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
@@ -66,10 +67,7 @@ public class LdRepresentationRequestMapper {
       } else if (representation.getTransaction() != null) {
         resourceBuilder.addMethod(HttpMethod.POST).handledBy(
             transactionRequestHandlerFactory.newTransactionRequestHandler(
-                representation.getTransaction()));
-        resourceBuilder.addMethod(HttpMethod.PUT).handledBy(
-            transactionRequestHandlerFactory.newTransactionRequestHandler(
-                representation.getTransaction()));
+                representation.getTransaction())).consumes(MediaTypes.RDFXML);
       }
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {

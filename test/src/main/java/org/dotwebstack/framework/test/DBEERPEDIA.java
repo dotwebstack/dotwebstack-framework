@@ -295,7 +295,7 @@ public final class DBEERPEDIA {
 
     PERSISTENCE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PersistenceStep");
 
-    TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertOrReplaceConcept");
+    TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
 
     SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
   }
