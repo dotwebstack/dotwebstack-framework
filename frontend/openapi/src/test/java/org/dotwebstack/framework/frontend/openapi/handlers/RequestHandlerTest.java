@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
@@ -17,6 +18,7 @@ import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
@@ -34,6 +36,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.junit.Before;
@@ -81,6 +84,7 @@ public class RequestHandlerTest {
     RequestParameters requestParameters = new RequestParameters();
     when(apiRequestValidatorMock.validate(apiOperationMock, swaggerMock,
         containerRequestContextMock)).thenReturn(requestParameters);
+
     Operation operation = new Operation();
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
@@ -106,6 +110,7 @@ public class RequestHandlerTest {
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
     assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
+    verify(containerRequestContextMock).setProperty("apiOperation", apiOperationMock);
   }
 
   @Test
@@ -271,4 +276,5 @@ public class RequestHandlerTest {
         equalTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
     assertThat(response.getEntity(), nullValue());
   }
+
 }
