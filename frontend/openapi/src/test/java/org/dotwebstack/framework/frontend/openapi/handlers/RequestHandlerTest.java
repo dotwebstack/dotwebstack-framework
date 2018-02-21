@@ -24,6 +24,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
@@ -119,6 +120,11 @@ public class RequestHandlerTest {
     when(informationProductMock.getResult(parameters)).thenReturn(result);
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
+    Operation operation =
+        new Operation().response(Status.OK.getStatusCode(), new io.swagger.models.Response());
+
+    when(apiOperationMock.getOperation()).thenReturn(operation);
+
     // Act
     Response response = requestHandler.apply(containerRequestContextMock);
 
@@ -149,7 +155,9 @@ public class RequestHandlerTest {
 
     Operation operation = new Operation().vendorExtensions(
         ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
-            String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE)));
+            String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE))).response(
+                Status.OK.getStatusCode(), new io.swagger.models.Response()).response(
+                    Status.NOT_FOUND.getStatusCode(), new io.swagger.models.Response());
 
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
@@ -179,7 +187,68 @@ public class RequestHandlerTest {
 
     Operation operation = new Operation().vendorExtensions(
         ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
-            String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE)));
+            String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE))).response(
+                Status.OK.getStatusCode(), new io.swagger.models.Response()).response(
+                    Status.NOT_FOUND.getStatusCode(), new io.swagger.models.Response());
+
+    when(apiOperationMock.getOperation()).thenReturn(operation);
+
+    // Act
+    requestHandler.apply(containerRequestContextMock);
+  }
+
+  @Test
+  public void apply_ThrowsConfigurationEx_WhenResultFoundQueryHasBeenDefinedWithout404Response() {
+    // Assert
+    exception.expect(ConfigurationException.class);
+    exception.expectMessage("Vendor extension 'x-dotwebstack-subject-query' has been defined, "
+        + "while 404 response is missing");
+
+    // Arrange
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+
+    Model model = new ModelBuilder().build();
+
+    GraphQueryResult result = new IteratingGraphQueryResult(ImmutableMap.of(), model);
+    Map<String, String> parameters = ImmutableMap.of();
+
+    when(informationProductMock.getResult(parameters)).thenReturn(result);
+    when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
+
+    Operation operation = new Operation().vendorExtensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+            String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE))).response(
+                Status.OK.getStatusCode(), new io.swagger.models.Response());
+
+    when(apiOperationMock.getOperation()).thenReturn(operation);
+
+    // Act
+    requestHandler.apply(containerRequestContextMock);
+  }
+
+  @Test
+  public void apply_ThrowsConfigurationEx_When404ResponseHasBeenDefinedWithoutResultFoundQuery() {
+    // Assert
+    exception.expect(ConfigurationException.class);
+    exception.expectMessage("Vendor extension 'x-dotwebstack-subject-query' is missing, "
+        + "while 404 response has been defined");
+
+    // Arrange
+    UriInfo uriInfo = mock(UriInfo.class);
+    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+
+    Model model = new ModelBuilder().build();
+
+    GraphQueryResult result = new IteratingGraphQueryResult(ImmutableMap.of(), model);
+    Map<String, String> parameters = ImmutableMap.of();
+
+    when(informationProductMock.getResult(parameters)).thenReturn(result);
+    when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
+
+    Operation operation = new Operation().response(Status.OK.getStatusCode(),
+        new io.swagger.models.Response()).response(Status.NOT_FOUND.getStatusCode(),
+            new io.swagger.models.Response());
 
     when(apiOperationMock.getOperation()).thenReturn(operation);
 

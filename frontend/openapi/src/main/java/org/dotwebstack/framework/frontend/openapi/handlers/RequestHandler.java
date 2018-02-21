@@ -8,8 +8,10 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -89,11 +91,10 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
       GraphEntity entity = GraphEntity.newGraphEntity(schemaMap, result, swagger, parameterValues,
           informationProduct);
 
-      String queryString = (String) apiOperation.getOperation().getVendorExtensions().get(
-          OpenApiSpecificationExtensions.SUBJECT_QUERY);
+      String query = getResultFoundQuery();
 
-      if (queryString != null) {
-        throwExceptionWhenNoResultFound(entity.getModel(), queryString);
+      if (query != null) {
+        evaluateResultFoundQuery(entity.getModel(), query);
       }
 
       responseOk = responseOk(entity);
@@ -107,7 +108,29 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     return Response.serverError().build();
   }
 
-  private static void throwExceptionWhenNoResultFound(Model model, String queryString) {
+  private String getResultFoundQuery() {
+    String query = (String) apiOperation.getOperation().getVendorExtensions().get(
+        OpenApiSpecificationExtensions.SUBJECT_QUERY);
+    String statusCode = String.valueOf(Status.NOT_FOUND.getStatusCode());
+
+    io.swagger.models.Response response404 =
+        apiOperation.getOperation().getResponses().get(statusCode);
+
+    if (query != null && response404 == null) {
+      throw new ConfigurationException(
+          String.format("Vendor extension '%s' has been defined, while %s response is missing",
+              OpenApiSpecificationExtensions.SUBJECT_QUERY, statusCode));
+    }
+    if (query == null && response404 != null) {
+      throw new ConfigurationException(
+          String.format("Vendor extension '%s' is missing, while %s response has been defined",
+              OpenApiSpecificationExtensions.SUBJECT_QUERY, statusCode));
+    }
+
+    return query;
+  }
+
+  private static void evaluateResultFoundQuery(Model model, String queryString) {
     LOG.debug("Evaluating query on model: '{}'", queryString);
 
     Repository repository = createRepository();
