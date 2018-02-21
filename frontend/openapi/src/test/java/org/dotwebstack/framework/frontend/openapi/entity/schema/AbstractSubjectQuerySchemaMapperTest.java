@@ -10,6 +10,7 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
@@ -44,7 +45,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.FTE, "42").subject(DBEERPEDIA.MAXIMUS).add(RDF.TYPE,
             DBEERPEDIA.BREWERY_TYPE).build();
 
-    when(entityMock.getModel()).thenReturn(model);
+    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
   }
 
   @Test

@@ -17,14 +17,11 @@ import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +91,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
       String query = getResultFoundQuery();
 
       if (query != null) {
-        evaluateResultFoundQuery(entity.getModel(), query);
+        evaluateResultFoundQuery(entity.getRepository(), query);
       }
 
       responseOk = responseOk(entity);
@@ -130,14 +127,10 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     return query;
   }
 
-  private static void evaluateResultFoundQuery(Model model, String queryString) {
+  private static void evaluateResultFoundQuery(Repository repository, String queryString) {
     LOG.debug("Evaluating query on model: '{}'", queryString);
 
-    Repository repository = createRepository();
-
     try (RepositoryConnection connection = repository.getConnection()) {
-      connection.add(model);
-
       BooleanQuery askQuery = connection.prepareBooleanQuery(queryString);
 
       if (!askQuery.evaluate()) {
@@ -145,8 +138,6 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
         throw new NotFoundException();
       }
-    } finally {
-      repository.shutDown();
     }
   }
 
@@ -155,14 +146,6 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
       return Response.ok(entity).build();
     }
     return null;
-  }
-
-  private static Repository createRepository() {
-    Repository repository = new SailRepository(new MemoryStore());
-
-    repository.initialize();
-
-    return repository;
   }
 
 }

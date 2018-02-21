@@ -12,10 +12,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
 abstract class AbstractSubjectQuerySchemaMapper<S extends Property, T>
     extends AbstractSchemaMapper<S, T> {
@@ -42,27 +39,13 @@ abstract class AbstractSubjectQuerySchemaMapper<S extends Property, T>
           OpenApiSpecificationExtensions.SUBJECT_QUERY));
     }
 
-    Repository repository = createRepository();
-
-    try (RepositoryConnection connection = repository.getConnection()) {
-      connection.add(entity.getModel());
-
+    try (RepositoryConnection connection = entity.getRepository().getConnection()) {
       String queryString =
           (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT_QUERY);
       TupleQuery tupleQuery = connection.prepareTupleQuery(queryString);
 
       return evaluateQuery(tupleQuery);
-    } finally {
-      repository.shutDown();
     }
-  }
-
-  private static Repository createRepository() {
-    Repository repository = new SailRepository(new MemoryStore());
-
-    repository.initialize();
-
-    return repository;
   }
 
   private static Set<Resource> evaluateQuery(TupleQuery query) {
