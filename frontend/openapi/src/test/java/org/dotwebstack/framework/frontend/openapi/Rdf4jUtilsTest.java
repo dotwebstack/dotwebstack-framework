@@ -103,7 +103,7 @@ public class Rdf4jUtilsTest {
   public void evaluateSingleBindingSelectQuery_ThrowsEx_WhenMultipleBindingsHaveBeenDefined() {
     // Assert
     thrown.expect(QueryEvaluationException.class);
-    thrown.expectMessage("'x-dotwebstack-subject-query' must define exactly 1 binding:");
+    thrown.expectMessage("Query must define exactly 1 binding:");
 
     // Arrange
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
@@ -121,8 +121,7 @@ public class Rdf4jUtilsTest {
   public void evaluateSingleBindingSelectQuery_ThrowsEx_WhenNonRdfResourceIsReturned() {
     // Assert
     thrown.expect(QueryEvaluationException.class);
-    thrown.expectMessage(
-        "'x-dotwebstack-subject-query' must return RDF resources (IRIs and blank nodes) only");
+    thrown.expectMessage("Query must return RDF resources (IRIs and blank nodes) only");
 
     // Arrange
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,

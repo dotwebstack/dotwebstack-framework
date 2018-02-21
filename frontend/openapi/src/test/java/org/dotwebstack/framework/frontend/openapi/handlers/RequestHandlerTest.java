@@ -154,7 +154,7 @@ public class RequestHandlerTest {
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
     Operation operation = new Operation().vendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+        ImmutableMap.of(OpenApiSpecificationExtensions.RESULT_FOUND_QUERY,
             String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE))).response(
                 Status.OK.getStatusCode(), new io.swagger.models.Response()).response(
                     Status.NOT_FOUND.getStatusCode(), new io.swagger.models.Response());
@@ -186,7 +186,7 @@ public class RequestHandlerTest {
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
     Operation operation = new Operation().vendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+        ImmutableMap.of(OpenApiSpecificationExtensions.RESULT_FOUND_QUERY,
             String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE))).response(
                 Status.OK.getStatusCode(), new io.swagger.models.Response()).response(
                     Status.NOT_FOUND.getStatusCode(), new io.swagger.models.Response());
@@ -201,7 +201,7 @@ public class RequestHandlerTest {
   public void apply_ThrowsConfigurationEx_WhenResultFoundQueryHasBeenDefinedWithout404Response() {
     // Assert
     exception.expect(ConfigurationException.class);
-    exception.expectMessage("Vendor extension 'x-dotwebstack-subject-query' has been defined, "
+    exception.expectMessage("Vendor extension 'x-dotwebstack-result-found-query' has been defined, "
         + "while 404 response is missing");
 
     // Arrange
@@ -217,7 +217,7 @@ public class RequestHandlerTest {
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
     Operation operation = new Operation().vendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+        ImmutableMap.of(OpenApiSpecificationExtensions.RESULT_FOUND_QUERY,
             String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE))).response(
                 Status.OK.getStatusCode(), new io.swagger.models.Response());
 
@@ -231,7 +231,7 @@ public class RequestHandlerTest {
   public void apply_ThrowsConfigurationEx_When404ResponseHasBeenDefinedWithoutResultFoundQuery() {
     // Assert
     exception.expect(ConfigurationException.class);
-    exception.expectMessage("Vendor extension 'x-dotwebstack-subject-query' is missing, "
+    exception.expectMessage("Vendor extension 'x-dotwebstack-result-found-query' is missing, "
         + "while 404 response has been defined");
 
     // Arrange

@@ -82,8 +82,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
   public void getSubjects_ThrowsException_WhenSparqlQueryHasMultipleBindingsDefined() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage(String.format("'%s' must define exactly 1 binding",
-        OpenApiSpecificationExtensions.SUBJECT_QUERY));
+    thrown.expectMessage("Query must define exactly 1 binding");
 
     // Arrange
     Map<String, Object> vendorExtensions =
@@ -99,8 +98,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
   public void getSubjects_ThrowsException_WhenSparqlQueryReturnsNonResource() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage(String.format("'%s' must return RDF resources (IRIs and blank nodes) only",
-        OpenApiSpecificationExtensions.SUBJECT_QUERY));
+    thrown.expectMessage("Query must return RDF resources (IRIs and blank nodes) only");
 
     // Arrange
     Map<String, Object> vendorExtensions =

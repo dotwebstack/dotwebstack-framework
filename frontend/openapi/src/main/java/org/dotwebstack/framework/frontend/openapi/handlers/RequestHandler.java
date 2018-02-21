@@ -105,7 +105,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
   private String getResultFoundQuery() {
     String query = (String) apiOperation.getOperation().getVendorExtensions().get(
-        OpenApiSpecificationExtensions.SUBJECT_QUERY);
+        OpenApiSpecificationExtensions.RESULT_FOUND_QUERY);
     String statusCode = String.valueOf(Status.NOT_FOUND.getStatusCode());
 
     io.swagger.models.Response response404 =
@@ -114,12 +114,12 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     if (query != null && response404 == null) {
       throw new ConfigurationException(
           String.format("Vendor extension '%s' has been defined, while %s response is missing",
-              OpenApiSpecificationExtensions.SUBJECT_QUERY, statusCode));
+              OpenApiSpecificationExtensions.RESULT_FOUND_QUERY, statusCode));
     }
     if (query == null && response404 != null) {
       throw new ConfigurationException(
           String.format("Vendor extension '%s' is missing, while %s response has been defined",
-              OpenApiSpecificationExtensions.SUBJECT_QUERY, statusCode));
+              OpenApiSpecificationExtensions.RESULT_FOUND_QUERY, statusCode));
     }
 
     return query;

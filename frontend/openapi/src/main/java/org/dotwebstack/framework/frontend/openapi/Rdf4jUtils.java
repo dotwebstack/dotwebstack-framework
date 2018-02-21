@@ -74,17 +74,16 @@ public final class Rdf4jUtils {
 
   private static void checkNoBindingNamesEqualTo1(String query, List<String> bindingNames) {
     if (bindingNames.size() != 1) {
-      throw new QueryEvaluationException(String.format("'%s' must define exactly 1 binding: '%s'",
-          OpenApiSpecificationExtensions.SUBJECT_QUERY, query));
+      throw new QueryEvaluationException(
+          String.format("Query must define exactly 1 binding: '%s'", query));
     }
   }
 
   private static void checkValueInstanceOfResource(String query, Value value) {
     if (!(value instanceof Resource)) {
-      throw new QueryEvaluationException(String.format(
-          "'%s' must return RDF resources (IRIs and blank nodes) only. "
-              + "Query string: '%s'%nValue returned: '%s'",
-          OpenApiSpecificationExtensions.SUBJECT_QUERY, query, value));
+      throw new QueryEvaluationException(
+          String.format("Query must return RDF resources (IRIs and blank nodes) only. "
+              + "Query string: '%s'%nValue returned: '%s'", query, value));
     }
   }
 
