@@ -81,7 +81,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     }
 
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-      String baseUri = BaseUriFactory.newBaseUri(uriInfo.getAbsolutePath(), swagger.getBasePath());
+      String baseUri = BaseUriFactory.newBaseUri(swagger);
 
       GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
       GraphEntity entity = GraphEntity
