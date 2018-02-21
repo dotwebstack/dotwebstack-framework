@@ -5,7 +5,7 @@
 
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
-    <version>0.0.16-SNAPSHOT</version>
+    <version>0.0.16-GRID-2124-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>DotWebStack Framework</name>
