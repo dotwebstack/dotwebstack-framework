@@ -7,18 +7,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
+import lombok.NonNull;
 import org.glassfish.jersey.process.Inflector;
 
 public class OptionsRequestHandler implements Inflector<ContainerRequestContext, Response> {
 
   private final Path path;
 
-  public OptionsRequestHandler(Path path) {
+  public OptionsRequestHandler(@NonNull Path path) {
     this.path = path;
   }
 
   @Override
-  public Response apply(ContainerRequestContext containerRequestContext) {
+  public Response apply(@NonNull ContainerRequestContext containerRequestContext) {
     containerRequestContext.setProperty("path", path);
 
     Set<HttpMethod> allowedMethods = Sets.newHashSet(path.getOperationMap().keySet());
