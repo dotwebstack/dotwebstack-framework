@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -202,7 +203,7 @@ public class ObjectSchemaMapperTest {
 
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).build();
-    when(entityMock.getModel()).thenReturn(model);
+    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
@@ -229,7 +230,7 @@ public class ObjectSchemaMapperTest {
     property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
 
     Model model = new ModelBuilder().build();
-    when(entityMock.getModel()).thenReturn(model);
+    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(property, entityMock,
@@ -254,7 +255,7 @@ public class ObjectSchemaMapperTest {
     property.setRequired(true);
 
     Model model = new ModelBuilder().build();
-    when(entityMock.getModel()).thenReturn(model);
+    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     // Act
     schemaMapperAdapter.mapGraphValue(property, entityMock,
@@ -278,7 +279,7 @@ public class ObjectSchemaMapperTest {
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
             DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
                 DBEERPEDIA.MAXIMUS_NAME).build();
-    when(entityMock.getModel()).thenReturn(model);
+    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     // Act
     schemaMapperAdapter.mapGraphValue(property, entityMock,

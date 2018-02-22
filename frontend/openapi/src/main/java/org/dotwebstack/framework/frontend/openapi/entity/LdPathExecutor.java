@@ -13,13 +13,8 @@ import org.dotwebstack.framework.frontend.openapi.ldpath.JoinFunction;
 import org.dotwebstack.framework.frontend.openapi.ldpath.KeepAfterLastFunction;
 import org.dotwebstack.framework.frontend.openapi.ldpath.SortByPropertyFunction;
 import org.dotwebstack.framework.frontend.openapi.ldpath.TrimFunction;
-import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryException;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
 public class LdPathExecutor {
 
@@ -39,24 +34,11 @@ public class LdPathExecutor {
 
   public LdPathExecutor(@NonNull final GraphEntity entity) {
     this.ldpathNamespaces = entity.getLdPathNamespaces();
-    this.ldpath = createLdpath(entity.getModel());
+    this.ldpath = createLdpath(entity.getRepository());
   }
 
-  private LDPath<Value> createLdpath(Model model) {
-    Repository repository = new SailRepository(new MemoryStore());
-    Rdf4jRepositoryBackend repositoryBackend;
-
-    try {
-      repository.initialize();
-      repositoryBackend = new Rdf4jRepositoryBackend(repository);
-
-      final RepositoryConnection connection = repository.getConnection();
-      connection.add(model);
-      connection.close();
-    } catch (RepositoryException re) {
-      throw new LdPathExecutorRuntimeException("Unable to initialize RDF4JRepository.", re);
-    }
-
+  private LDPath<Value> createLdpath(Repository repository) {
+    Rdf4jRepositoryBackend repositoryBackend = new Rdf4jRepositoryBackend(repository);
     LDPath<Value> result = new LDPath<>(repositoryBackend, LD_PATH_CONFIG);
 
     result.registerFunction(new SortByPropertyFunction<>(ldpathNamespaces));
