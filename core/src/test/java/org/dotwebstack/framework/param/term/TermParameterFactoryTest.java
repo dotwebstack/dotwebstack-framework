@@ -21,10 +21,10 @@ import org.junit.rules.ExpectedException;
 
 public class TermParameterFactoryTest {
 
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+
   @Rule
   public ExpectedException thrown = ExpectedException.none();
-
-  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   @Test
   public void createTermParameter_CreatesBooleanTermParameter_ForBooleanShape() {
@@ -70,32 +70,15 @@ public class TermParameterFactoryTest {
   }
 
   @Test
-  public void createTermParameter_CreatesIriTermParameter_ForIriShape() {
-    // Arrange
-    IRI defaultValue = VALUE_FACTORY.createIRI("http://default-value");
-
-    // Act
-    TermParameter result = newTermParameter(DBEERPEDIA.PLACE_PARAMETER_ID, "place",
-        new ShaclShape(XMLSchema.ANYURI, defaultValue, ImmutableList.of()), true);
-
-    // Assert
-    assertThat(result, instanceOf(IriTermParameter.class));
-    assertThat(result.getDefaultValue(), is(defaultValue));
-    assertThat(result.getIdentifier(), is(DBEERPEDIA.PLACE_PARAMETER_ID));
-    assertThat(result.getName(), is("place"));
-    assertThat(result.isRequired(), is(true));
-  }
-
-  @Test
   public void createTermParameter_ThrowsException_ForUnknownShape() {
     // Arrange
     IRI unsupportedDataType = VALUE_FACTORY.createIRI("http://unsupported-data-type");
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(String.format("Unsupported data type: <%s>. Supported types: %s",
-        unsupportedDataType, ImmutableList.of(XMLSchema.BOOLEAN, XMLSchema.STRING,
-            XMLSchema.INTEGER, XMLSchema.ANYURI)));
+    thrown.expectMessage(
+        String.format("Unsupported data type: <%s>. Supported types: %s", unsupportedDataType,
+            ImmutableList.of(XMLSchema.BOOLEAN, XMLSchema.STRING, XMLSchema.INTEGER)));
 
     // Act
     newTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
