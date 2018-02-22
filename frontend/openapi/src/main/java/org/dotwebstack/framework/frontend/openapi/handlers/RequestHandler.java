@@ -60,6 +60,11 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     return schemaMap;
   }
 
+  /**
+   * @throws NotFoundException If the requested resource cannot be found.
+   * @throws ConfigurationException If the {@link OpenApiSpecificationExtensions#RESULT_FOUND_QUERY}
+   *         vendor extension has been defined, but a 404 response is missing (and vice versa).
+   */
   @Override
   public Response apply(@NonNull ContainerRequestContext context) {
     String path = context.getUriInfo().getPath();

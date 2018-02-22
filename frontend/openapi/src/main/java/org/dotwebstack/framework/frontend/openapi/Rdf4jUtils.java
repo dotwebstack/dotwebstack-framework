@@ -42,8 +42,11 @@ public final class Rdf4jUtils {
   }
 
   /**
+   * @return The resources resulting from evaluating the supplied SPARQL SELECT query on the
+   *         specified repository. The query must have defined exactly one binding and must return
+   *         resources (IRIs and blank nodes) only.
    * @throws QueryEvaluationException If the query has &gt; 1 binding defined. Or if the result
-   *         contains a non {@link Resource}.
+   *         contains a non resource.
    */
   public static Set<Resource> evaluateSingleBindingSelectQuery(@NonNull Repository repository,
       @NonNull String query) {
