@@ -93,7 +93,7 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     if (!expectedHeaders.isEmpty()) {
       Set<String> diff = Sets.difference(expectedHeaders, allowedHeaders);
 
-      if (diff.size() > 0) {
+      if (!diff.isEmpty()) {
         return;
       }
     }
@@ -108,7 +108,7 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS,
         Joiner.on(", ").join(allowedMethods));
 
-    if (allowedHeaders.size() > 0) {
+    if (!allowedHeaders.isEmpty()) {
       responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
           Joiner.on(", ").join(allowedHeaders));
     }
