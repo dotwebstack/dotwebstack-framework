@@ -3,20 +3,22 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import static com.google.common.collect.ImmutableMap.copyOf;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import io.swagger.models.Model;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.query.QueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.repository.Repository;
 
 @Getter
 public final class GraphEntity extends AbstractEntity {
@@ -25,7 +27,7 @@ public final class GraphEntity extends AbstractEntity {
 
   private final Map<String, Model> swaggerDefinitions;
 
-  private final org.eclipse.rdf4j.model.Model model;
+  private final Repository repository;
 
   private final InformationProduct informationProduct;
 
@@ -35,16 +37,16 @@ public final class GraphEntity extends AbstractEntity {
 
   private GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
       @NonNull ImmutableMap<String, String> ldPathNamespaces,
-      @NonNull Map<String, Model> swaggerDefinitions, @NonNull org.eclipse.rdf4j.model.Model model,
+      @NonNull Map<String, Model> swaggerDefinitions, @NonNull Repository repository,
       @NonNull Map<String, String> requestParameters,
       @NonNull InformationProduct informationProduct) {
     super(schemaMap);
 
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = swaggerDefinitions;
-    this.model = model;
+    this.repository = repository;
     this.informationProduct = informationProduct;
-    this.parameters = Maps.newHashMap(requestParameters);
+    this.parameters = new HashMap(requestParameters);
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 
@@ -53,8 +55,9 @@ public final class GraphEntity extends AbstractEntity {
       @NonNull Map<String, String> requestParameters,
       @NonNull InformationProduct informationProduct) {
     return new GraphEntity(schemaMap, extractLdpathNamespaces(definitions),
-        extractSwaggerDefinitions(definitions), QueryResults.asModel(queryResult),
-        requestParameters, informationProduct);
+        extractSwaggerDefinitions(definitions),
+        Rdf4jUtils.asRepository(QueryResults.asModel(queryResult)), requestParameters,
+        informationProduct);
   }
 
   public void addParameter(@NonNull String key, String value) {

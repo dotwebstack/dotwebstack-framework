@@ -29,12 +29,10 @@ public final class TermParameterFactory {
     } else if (type.equals(XMLSchema.BOOLEAN)) {
       Boolean defVal = defaultValue != null ? ((Literal) defaultValue).booleanValue() : null;
       return new BooleanTermParameter(identifier, name, required, defVal);
-    } else if (type.equals(XMLSchema.ANYURI)) {
-      return new IriTermParameter(identifier, name, required, (IRI) defaultValue);
     }
     throw new ConfigurationException(
-        String.format("Unsupported data type: <%s>. Supported types: %s", type, ImmutableList.of(
-            XMLSchema.BOOLEAN, XMLSchema.STRING, XMLSchema.INTEGER, XMLSchema.ANYURI)));
+        String.format("Unsupported data type: <%s>. Supported types: %s", type,
+            ImmutableList.of(XMLSchema.BOOLEAN, XMLSchema.STRING, XMLSchema.INTEGER)));
   }
 
 }

@@ -4,11 +4,16 @@ import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Map;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
@@ -55,6 +60,11 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     return schemaMap;
   }
 
+  /**
+   * @throws NotFoundException If the requested resource cannot be found.
+   * @throws ConfigurationException If the {@link OpenApiSpecificationExtensions#RESULT_FOUND_QUERY}
+   *         vendor extension has been defined, but a 404 response is missing (and vice versa).
+   */
   @Override
   public Response apply(@NonNull ContainerRequestContext context) {
     String path = context.getUriInfo().getPath();
@@ -78,8 +88,14 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
       GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
-      GraphEntity entity = GraphEntity
-          .newGraphEntity(schemaMap, result, swagger, parameterValues, informationProduct);
+      GraphEntity entity = GraphEntity.newGraphEntity(schemaMap, result, swagger, parameterValues,
+          informationProduct);
+
+      String query = getResultFoundQuery();
+
+      if (query != null && !Rdf4jUtils.evaluateAskQuery(entity.getRepository(), query)) {
+        throw new NotFoundException();
+      }
 
       responseOk = responseOk(entity);
     }
@@ -92,11 +108,34 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     return Response.serverError().build();
   }
 
+  private String getResultFoundQuery() {
+    String query = (String) apiOperation.getOperation().getVendorExtensions().get(
+        OpenApiSpecificationExtensions.RESULT_FOUND_QUERY);
+    String statusCode = String.valueOf(Status.NOT_FOUND.getStatusCode());
+
+    io.swagger.models.Response response404 =
+        apiOperation.getOperation().getResponses().get(statusCode);
+
+    if (query != null && response404 == null) {
+      throw new ConfigurationException(
+          String.format("Vendor extension '%s' has been defined, while %s response is missing",
+              OpenApiSpecificationExtensions.RESULT_FOUND_QUERY, statusCode));
+    }
+    if (query == null && response404 != null) {
+      throw new ConfigurationException(
+          String.format("Vendor extension '%s' is missing, while %s response has been defined",
+              OpenApiSpecificationExtensions.RESULT_FOUND_QUERY, statusCode));
+    }
+
+    return query;
+  }
+
   private Response responseOk(Entity entity) {
     if (entity != null) {
       return Response.ok(entity).build();
     }
     return null;
   }
+
 }
 

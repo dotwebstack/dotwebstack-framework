@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
+import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
@@ -37,7 +38,7 @@ public class LdPathExecutorTest {
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
             DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
                 DBEERPEDIA.MAXIMUS_NAME).build();
-    when(entityMock.getModel()).thenReturn(model);
+    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     LdPathExecutor executor = new LdPathExecutor(entityMock);
 
