@@ -35,8 +35,10 @@ final class TermParameterDefinitionFactory implements ParameterDefinitionFactory
     Resource subj = objectResource(model.filter(id, ELMO.SHAPE_PROP, null)).orElseThrow(
         newConfigurationException(ELMO.SHAPE_PROP, id, ELMO.TERM_PARAMETER));
 
-    IRI iriShapeType = objectIRI(model.filter(subj, SHACL.NODEKIND, null)).orElseThrow(
-        newConfigurationException(SHACL.NODEKIND, id, ELMO.SHAPE_PROP));
+    IRI iriShapeType = objectIRI(model.filter(subj, SHACL.NODEKIND, null)).orElseGet(() -> {
+      return objectIRI(model.filter(subj, SHACL.DATATYPE, null)).orElseThrow(
+          newConfigurationException(SHACL.DATATYPE, id, ELMO.SHAPE_PROP));
+    });
 
     Value defaultValue = object(model.filter(subj, SHACL.DEFAULT_VALUE, null)).orElse(null);
 
