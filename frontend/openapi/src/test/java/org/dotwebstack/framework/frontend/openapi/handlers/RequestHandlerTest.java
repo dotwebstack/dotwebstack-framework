@@ -20,7 +20,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -36,9 +35,9 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ExtendedUriInfo;
-import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +59,7 @@ public class RequestHandlerTest {
   private InformationProduct informationProductMock;
 
   @Mock
-  private ContainerRequest containerRequestContextMock;
+  private ContainerRequest containerRequestMock;
 
   @Mock
   private ApiRequestValidator apiRequestValidatorMock;
@@ -81,11 +80,11 @@ public class RequestHandlerTest {
     requestHandler = new RequestHandler(apiOperationMock, informationProductMock, schemaMap,
         requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
 
-    when(containerRequestContextMock.getBaseUri()).thenReturn(new URI("http://host:port/path"));
+    when(containerRequestMock.getBaseUri()).thenReturn(new URI("http://host:123/path"));
 
     RequestParameters requestParameters = new RequestParameters();
     when(apiRequestValidatorMock.validate(apiOperationMock, swaggerMock,
-        containerRequestContextMock)).thenReturn(requestParameters);
+        containerRequestMock)).thenReturn(requestParameters);
     Operation operation = new Operation();
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
@@ -98,13 +97,13 @@ public class RequestHandlerTest {
     // Arrange
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
     when(informationProductMock.getResult(ImmutableMap.of())).thenReturn(result);
     when(informationProductMock.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act
-    Response response = requestHandler.apply(containerRequestContextMock);
+    Response response = requestHandler.apply(containerRequestMock);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -118,7 +117,7 @@ public class RequestHandlerTest {
     // Arrange
     when(swaggerMock.getBasePath()).thenReturn("");
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
-    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
     GraphQueryResult result = mock(GraphQueryResult.class);
     Map<String, String> parameters = ImmutableMap.of();
@@ -132,7 +131,7 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    Response response = requestHandler.apply(containerRequestContextMock);
+    Response response = requestHandler.apply(containerRequestMock);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -147,8 +146,8 @@ public class RequestHandlerTest {
   @Test
   public void apply_ReturnsOkResponse_WhenResultFoundQueryHasBeenDefinedAndQueryReturnsTrue() {
     // Arrange
-    UriInfo uriInfo = mock(UriInfo.class);
-    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
+    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
         DBEERPEDIA.BREWERY_TYPE).build();
@@ -168,7 +167,7 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    Response response = requestHandler.apply(containerRequestContextMock);
+    Response response = requestHandler.apply(containerRequestMock);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -180,8 +179,8 @@ public class RequestHandlerTest {
     exception.expect(NotFoundException.class);
 
     // Arrange
-    UriInfo uriInfo = mock(UriInfo.class);
-    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
+    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
     Model model = new ModelBuilder().build();
 
@@ -200,7 +199,7 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    requestHandler.apply(containerRequestContextMock);
+    requestHandler.apply(containerRequestMock);
   }
 
   @Test
@@ -211,8 +210,8 @@ public class RequestHandlerTest {
         + "while 404 response is missing");
 
     // Arrange
-    UriInfo uriInfo = mock(UriInfo.class);
-    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
+    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
     Model model = new ModelBuilder().build();
 
@@ -230,7 +229,7 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    requestHandler.apply(containerRequestContextMock);
+    requestHandler.apply(containerRequestMock);
   }
 
   @Test
@@ -241,8 +240,8 @@ public class RequestHandlerTest {
         + "while 404 response has been defined");
 
     // Arrange
-    UriInfo uriInfo = mock(UriInfo.class);
-    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
+    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
     Model model = new ModelBuilder().build();
 
@@ -259,7 +258,7 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    requestHandler.apply(containerRequestContextMock);
+    requestHandler.apply(containerRequestMock);
   }
 
   @Test
@@ -267,10 +266,10 @@ public class RequestHandlerTest {
     // Arrange
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
+    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
     // Act
-    Response response = requestHandler.apply(containerRequestContextMock);
+    Response response = requestHandler.apply(containerRequestMock);
 
     // Assert
     assertThat(response.getStatus(),
