@@ -54,14 +54,8 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     }
 
     Set<HttpMethod> allowedMethods = Sets.newHashSet(path.getOperationMap().keySet());
-
-    if (!allowedMethods.contains(HttpMethod.HEAD)) {
-      allowedMethods.add(HttpMethod.HEAD);
-    }
-
-    if (!allowedMethods.contains(HttpMethod.OPTIONS)) {
-      allowedMethods.add(HttpMethod.OPTIONS);
-    }
+    allowedMethods.add(HttpMethod.HEAD);
+    allowedMethods.add(HttpMethod.OPTIONS);
 
     if (!allowedMethods.contains(HttpMethod.valueOf(actualRequestMethod))) {
       return;

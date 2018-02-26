@@ -23,14 +23,8 @@ public class OptionsRequestHandler implements Inflector<ContainerRequestContext,
     containerRequestContext.setProperty(RequestHandlerProperties.PATH, path);
 
     Set<HttpMethod> allowedMethods = Sets.newHashSet(path.getOperationMap().keySet());
-
-    if (!allowedMethods.contains(HttpMethod.HEAD)) {
-      allowedMethods.add(HttpMethod.HEAD);
-    }
-
-    if (!allowedMethods.contains(HttpMethod.OPTIONS)) {
-      allowedMethods.add(HttpMethod.OPTIONS);
-    }
+    allowedMethods.add(HttpMethod.HEAD);
+    allowedMethods.add(HttpMethod.OPTIONS);
 
     Set<String> allowHeader =
         allowedMethods.stream().map(Object::toString).collect(Collectors.toSet());
