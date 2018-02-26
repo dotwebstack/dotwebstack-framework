@@ -244,4 +244,23 @@ public class OpenApiIntegrationTest {
     JSONAssert.assertEquals(expected.toString(), result, true);
   }
 
+  @Test
+  public void get_GraphGetBreweryCollection_ThroughOpenApi_Returns404ForEmptyQueryResult()
+      throws JSONException {
+    // Arrange
+    // @formatter:off
+    Model model = new ModelBuilder()
+        .build();
+    // @formatter:on
+
+    SparqlHttpStub.returnGraph(model);
+
+    // Act
+    Response response = target.path("/dbp/api/v1/graph-breweries").request().accept(
+        MediaType.APPLICATION_JSON_TYPE).get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
+  }
+
 }

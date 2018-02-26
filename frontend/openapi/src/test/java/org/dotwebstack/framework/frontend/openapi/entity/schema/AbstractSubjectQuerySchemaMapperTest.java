@@ -10,6 +10,7 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
@@ -44,7 +45,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.FTE, "42").subject(DBEERPEDIA.MAXIMUS).add(RDF.TYPE,
             DBEERPEDIA.BREWERY_TYPE).build();
 
-    when(entityMock.getModel()).thenReturn(model);
+    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
   }
 
   @Test
@@ -81,8 +82,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
   public void getSubjects_ThrowsException_WhenSparqlQueryHasMultipleBindingsDefined() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage(String.format("'%s' must define exactly 1 binding",
-        OpenApiSpecificationExtensions.SUBJECT_QUERY));
+    thrown.expectMessage("Query must define exactly 1 binding");
 
     // Arrange
     Map<String, Object> vendorExtensions =
@@ -98,8 +98,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
   public void getSubjects_ThrowsException_WhenSparqlQueryReturnsNonResource() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage(String.format("'%s' must return RDF resources (IRIs and blank nodes) only",
-        OpenApiSpecificationExtensions.SUBJECT_QUERY));
+    thrown.expectMessage("Query must return RDF resources (IRIs and blank nodes) only");
 
     // Arrange
     Map<String, Object> vendorExtensions =
