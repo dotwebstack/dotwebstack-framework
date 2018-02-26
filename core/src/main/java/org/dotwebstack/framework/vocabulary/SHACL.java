@@ -12,6 +12,8 @@ public final class SHACL {
 
   public static final IRI NODEKIND;
 
+  public static final IRI IRI;
+
   private static final String NAMESPACE_BASE = "http://www.w3.org/ns/shacl";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -23,6 +25,8 @@ public final class SHACL {
     DEFAULT_VALUE = valueFactory.createIRI(SHACL.NAMESPACE, "defaultValue");
 
     NODEKIND = valueFactory.createIRI(SHACL.NAMESPACE, "nodeKind");
+
+    IRI = valueFactory.createIRI(SHACL.NAMESPACE, "IRI");
   }
 
   private SHACL() {
