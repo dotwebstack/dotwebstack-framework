@@ -10,6 +10,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -23,6 +25,7 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +35,10 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
   private final ApiOperation apiOperation;
 
+  @Getter(AccessLevel.PACKAGE)
   private final InformationProduct informationProduct;
 
+  @Getter(AccessLevel.PACKAGE)
   private final Map<MediaType, Property> schemaMap;
 
   private final RequestParameterMapper requestParameterMapper;
@@ -52,14 +57,6 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     this.schemaMap = schemaMap;
     this.requestParameterMapper = requestParameterMapper;
     this.swagger = swagger;
-  }
-
-  InformationProduct getInformationProduct() {
-    return informationProduct;
-  }
-
-  Map<MediaType, Property> getSchemaMap() {
-    return schemaMap;
   }
 
   /**
@@ -91,7 +88,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     }
 
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-      String baseUri = BaseUriFactory.newBaseUri(context, swagger);
+      String baseUri = BaseUriFactory.newBaseUri((ContainerRequest) context, swagger);
 
       GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
       GraphEntity entity = GraphEntity.newGraphEntity(schemaMap, result, swagger, parameterValues,

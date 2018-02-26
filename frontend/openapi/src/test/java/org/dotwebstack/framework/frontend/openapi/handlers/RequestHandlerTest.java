@@ -36,6 +36,7 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
+import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.junit.Before;
@@ -87,6 +88,7 @@ public class RequestHandlerTest {
         containerRequestMock)).thenReturn(requestParameters);
     Operation operation = new Operation();
     when(apiOperationMock.getOperation()).thenReturn(operation);
+    when(containerRequestMock.getRequestHeaders()).thenReturn(mock(MultivaluedStringMap.class));
 
     when(requestParameterMapperMock.map(same(operation), eq(informationProductMock),
         same(requestParameters))).thenReturn(ImmutableMap.of());

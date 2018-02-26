@@ -5,7 +5,7 @@ import io.swagger.models.Swagger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import javax.ws.rs.container.ContainerRequestContext;
+import java.util.Optional;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.http.client.utils.URIBuilder;
@@ -36,14 +36,14 @@ public class BaseUriFactory {
    * </p>
    * @return The base uri for the give request and OpenAPI spec.
    */
-  public static String newBaseUri(@NonNull ContainerRequestContext requestContext,
+  public static String newBaseUri(@NonNull ContainerRequest containerRequest,
       @NonNull Swagger swagger) {
     String baseUri;
     try {
       // @formatter:off
       URI base = new URIBuilder()
           .setScheme(getScheme(swagger))
-          .setHost(getHost(requestContext))
+          .setHost(getHost(containerRequest))
           .setPath(swagger.getBasePath())
           .build();
       // @formatter:on
@@ -70,25 +70,28 @@ public class BaseUriFactory {
 
   /**
    * <p>
-   *   Returns the host and optional port number for the base uri.
+   * Returns the host and optional port number for the base uri.
    * </p>
    * <p>
-   *  <strong>Note:</strong> The port number is considered part of the host, as per the HTTP/1.1
-   *  spec. See
-   *  <a href="https://tools.ietf.org/html/rfc7230#section-5.4">IETF RFC7230, section 5.4, Host</a>.
+   * <strong>Note:</strong> The port number is considered part of the host, as per the HTTP/1.1
+   * spec. See <a href="https://tools.ietf.org/html/rfc7230#section-5.4">IETF RFC7230, section 5.4,
+   * Host</a>.
    * </p>
    *
    * @return The value of the {@code X-Forwarded-Host} header, if set. Otherwise a combination of
-   * {@code <host>[:<port>]} as present on the request.
+   *         {@code <host>[:<port>]} as present on the containerRequest.
    */
-  private static String getHost(ContainerRequestContext requestContext) {
-    ContainerRequest containerRequest = (ContainerRequest) requestContext;
-    List<String> forwardedHostHeader =
-        containerRequest.getRequestHeader("x-forwarded-host");
-    if (forwardedHostHeader != null && !forwardedHostHeader.isEmpty()) {
-      return forwardedHostHeader.get(0);
-    }
+  private static String getHost(ContainerRequest containerRequest) {
+    return getForwardedHostFromRequestHeader(containerRequest).orElse(
+        getHostFromRequest(containerRequest));
+  }
 
+  private static Optional<String> getForwardedHostFromRequestHeader(
+      ContainerRequest containerRequest) {
+    return Optional.ofNullable(containerRequest.getRequestHeaders().getFirst("x-forwarded-host"));
+  }
+
+  private static String getHostFromRequest(ContainerRequest containerRequest) {
     URI baseUri = containerRequest.getBaseUri();
     String host = baseUri.getHost();
     int port = baseUri.getPort();

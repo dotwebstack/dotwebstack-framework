@@ -3,12 +3,13 @@ package org.dotwebstack.framework.frontend.openapi;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.swagger.models.Scheme;
 import io.swagger.models.Swagger;
 import java.net.URI;
-import java.util.Collections;
+import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,19 +29,20 @@ public class BaseUriFactoryTest {
   public ExpectedException exception = ExpectedException.none();
 
   @Mock
-  private ContainerRequest context;
+  private ContainerRequest containerRequestMock;
 
   @Mock
-  private URI baseUri;
+  private URI baseUriMock;
 
   private String basePath = "/rest/v2";
   private String requestHost = "requestHost";
 
   @Before
   public void setUp() {
-    when(baseUri.getHost()).thenReturn(requestHost);
-    when(baseUri.getPort()).thenReturn(-1);
-    when(context.getBaseUri()).thenReturn(baseUri);
+    when(baseUriMock.getHost()).thenReturn(requestHost);
+    when(baseUriMock.getPort()).thenReturn(-1);
+    when(containerRequestMock.getBaseUri()).thenReturn(baseUriMock);
+    when(containerRequestMock.getRequestHeaders()).thenReturn(mock(MultivaluedStringMap.class));
   }
 
   @Test
@@ -52,10 +54,10 @@ public class BaseUriFactoryTest {
         .scheme(Scheme.HTTP)
         .basePath(basePath);
     // @formatter:on
-    when(context.getRequestHeader(any())).thenReturn(Collections.singletonList(forwardedHost));
+    when(containerRequestMock.getRequestHeaders().getFirst(any())).thenReturn(forwardedHost);
 
     // Act
-    String baseUri = BaseUriFactory.newBaseUri(context, swagger);
+    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
 
     // Assert
     assertThat(baseUri, is(getUriString(Scheme.HTTP, forwardedHost, basePath)));
@@ -71,7 +73,7 @@ public class BaseUriFactoryTest {
     // @formatter:on
 
     // Act
-    String baseUri = BaseUriFactory.newBaseUri(context, swagger);
+    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
 
     // Assert
     assertThat(baseUri, is(getUriString(Scheme.HTTP, requestHost, basePath)));
@@ -85,10 +87,10 @@ public class BaseUriFactoryTest {
         .scheme(Scheme.HTTP)
         .basePath(basePath);
     // @formatter:on
-    when(baseUri.getPort()).thenReturn(123);
+    when(baseUriMock.getPort()).thenReturn(123);
 
     //Act
-    String baseUri = BaseUriFactory.newBaseUri(context, swagger);
+    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
 
     // Assert
     assertThat(baseUri, is(getUriString(Scheme.HTTP, requestHost + ":123", basePath)));
@@ -100,7 +102,7 @@ public class BaseUriFactoryTest {
     Swagger swagger = new Swagger().basePath(basePath);
 
     // Act
-    String baseUri = BaseUriFactory.newBaseUri(context, swagger);
+    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
 
     // Assert
     assertThat(baseUri, is(getUriString(Scheme.HTTPS, requestHost, basePath)));
@@ -117,7 +119,7 @@ public class BaseUriFactoryTest {
     // @formatter:on
 
     // Act
-    String baseUri = BaseUriFactory.newBaseUri(context, swagger);
+    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
 
     // Assert
     assertThat(baseUri, is(getUriString(Scheme.HTTPS, requestHost, basePath)));
@@ -134,7 +136,7 @@ public class BaseUriFactoryTest {
     // @formatter:on
 
     // Act
-    String baseUri = BaseUriFactory.newBaseUri(context, swagger);
+    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
 
     // Assert
     assertThat(baseUri, is(getUriString(Scheme.HTTP, requestHost, basePath)));
@@ -143,16 +145,17 @@ public class BaseUriFactoryTest {
   @Test
   public void newBaseUri_ThrowsIllegalStateException_whenMalformed() {
     // Arrange
-    when(context.getRequestHeader(any())).thenReturn(Collections.singletonList("!@#$%^&*()_+"));
+    when(containerRequestMock.getRequestHeaders().getFirst(any())).thenReturn("!@#$%^&*()_+");
 
-    Swagger swagger = new Swagger().basePath(basePath);
+    Swagger swagger = new Swagger().scheme(Scheme.HTTP).basePath(basePath);
 
     // Assert
     exception.expect(IllegalStateException.class);
     exception.expectMessage("BaseUri could not be constructed");
 
     // Act
-    BaseUriFactory.newBaseUri(context, swagger);
+    BaseUriFactory.newBaseUri(containerRequestMock, swagger);
+    System.out.println(BaseUriFactory.newBaseUri(containerRequestMock, swagger));
   }
 
   private String getUriString(Scheme scheme, String host, String path) {
