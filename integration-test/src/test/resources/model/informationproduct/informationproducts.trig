@@ -15,7 +15,7 @@ GRAPH dbeerpedia:Theatre {
   dbeerpedia:SubjectParameter a elmo:TermParameter;
     elmo:name "SUBJECT";
     elmo:shape [
-      sh:datatype xsd:string
+      sh:nodeKind sh:IRI;
     ];
   .
   
