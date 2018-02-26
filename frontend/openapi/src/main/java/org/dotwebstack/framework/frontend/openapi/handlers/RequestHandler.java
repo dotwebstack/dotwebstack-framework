@@ -49,11 +49,11 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     this.swagger = swagger;
   }
 
-  public InformationProduct getInformationProduct() {
+  InformationProduct getInformationProduct() {
     return informationProduct;
   }
 
-  public Map<MediaType, Property> getSchemaMap() {
+  Map<MediaType, Property> getSchemaMap() {
     return schemaMap;
   }
 
@@ -81,7 +81,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     }
 
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-      String baseUri = BaseUriFactory.newBaseUri(swagger);
+      String baseUri = BaseUriFactory.newBaseUri(context, swagger);
 
       GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
       GraphEntity entity = GraphEntity

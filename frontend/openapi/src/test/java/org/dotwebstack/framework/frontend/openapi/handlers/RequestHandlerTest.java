@@ -14,17 +14,19 @@ import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.glassfish.jersey.server.ContainerRequest;
+import org.glassfish.jersey.server.ExtendedUriInfo;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +43,7 @@ public class RequestHandlerTest {
   private InformationProduct informationProductMock;
 
   @Mock
-  private ContainerRequestContext containerRequestContextMock;
+  private ContainerRequest containerRequestContextMock;
 
   @Mock
   private ApiRequestValidator apiRequestValidatorMock;
@@ -56,9 +58,11 @@ public class RequestHandlerTest {
 
 
   @Before
-  public void setUp() {
+  public void setUp() throws URISyntaxException {
     requestHandler = new RequestHandler(operationMock, informationProductMock,
         ImmutableMap.of(), requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
+
+    when(containerRequestContextMock.getBaseUri()).thenReturn(new URI("http://host:port/path"));
 
     RequestParameters requestParameters = new RequestParameters();
     when(apiRequestValidatorMock.validate(operationMock, swaggerMock,
@@ -73,7 +77,7 @@ public class RequestHandlerTest {
   @Test
   public void apply_ReturnsOkResponseWithEntityObject_ForTupleResult() {
     // Arrange
-    UriInfo uriInfo = mock(UriInfo.class);
+    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
     TupleQueryResult result = mock(TupleQueryResult.class);
@@ -95,7 +99,7 @@ public class RequestHandlerTest {
   public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForGraphResult() {
     // Arrange
     when(swaggerMock.getBasePath()).thenReturn("");
-    UriInfo uriInfo = mock(UriInfo.class);
+    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
     GraphQueryResult result = mock(GraphQueryResult.class);
@@ -112,7 +116,7 @@ public class RequestHandlerTest {
   @Test
   public void apply_ReturnsServerErrorResponseWithoutEntityObject_ForOtherResult() {
     // Arrange
-    UriInfo uriInfo = mock(UriInfo.class);
+    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContextMock.getUriInfo()).thenReturn(uriInfo);
 
