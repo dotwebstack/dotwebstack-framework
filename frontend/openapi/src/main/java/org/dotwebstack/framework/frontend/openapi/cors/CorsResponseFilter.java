@@ -131,8 +131,6 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN,
         requestContext.getHeaders().getFirst(HttpHeaders.ORIGIN));
 
-    responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 86400);
-
     Map<String, Property> responseHeaders = operation.getResponses().get(statusCode).getHeaders();
 
     if (responseHeaders != null && responseHeaders.size() > 0) {

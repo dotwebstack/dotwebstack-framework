@@ -71,7 +71,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
     LOG.debug("Handling {} request for path {}", context.getMethod(), path);
 
-    context.setProperty("operation", apiOperation.getOperation());
+    context.setProperty(RequestHandlerProperties.OPERATION, apiOperation.getOperation());
 
     RequestParameters requestParameters =
         apiRequestValidator.validate(apiOperation, swagger, context);

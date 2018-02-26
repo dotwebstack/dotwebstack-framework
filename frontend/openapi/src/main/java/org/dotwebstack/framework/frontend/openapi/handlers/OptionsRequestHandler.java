@@ -20,7 +20,7 @@ public class OptionsRequestHandler implements Inflector<ContainerRequestContext,
 
   @Override
   public Response apply(@NonNull ContainerRequestContext containerRequestContext) {
-    containerRequestContext.setProperty("path", path);
+    containerRequestContext.setProperty(RequestHandlerProperties.PATH, path);
 
     Set<HttpMethod> allowedMethods = Sets.newHashSet(path.getOperationMap().keySet());
 

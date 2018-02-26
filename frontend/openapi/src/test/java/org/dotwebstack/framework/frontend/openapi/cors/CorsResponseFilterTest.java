@@ -21,6 +21,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -85,7 +86,8 @@ public class CorsResponseFilterTest {
   public void filter_DoesNothing_ForAbsentRequestMethodOnPreflightRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.OPTIONS, ORIGIN);
-    when(requestContextMock.getProperty("path")).thenReturn(mock(Path.class));
+    when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(
+        mock(Path.class));
 
     // Act
     corsResponseFilter.filter(requestContextMock, responseContextMock);
@@ -103,7 +105,7 @@ public class CorsResponseFilterTest {
     Path path = mock(Path.class);
     when(path.getOperationMap()).thenReturn(
         ImmutableMap.of(io.swagger.models.HttpMethod.GET, mock(Operation.class)));
-    when(requestContextMock.getProperty("path")).thenReturn(path);
+    when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
     corsResponseFilter.filter(requestContextMock, responseContextMock);
@@ -122,7 +124,7 @@ public class CorsResponseFilterTest {
     Path path = mock(Path.class);
     when(path.getOperationMap()).thenReturn(
         ImmutableMap.of(io.swagger.models.HttpMethod.GET, mock(Operation.class)));
-    when(requestContextMock.getProperty("path")).thenReturn(path);
+    when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
     corsResponseFilter.filter(requestContextMock, responseContextMock);
@@ -149,7 +151,7 @@ public class CorsResponseFilterTest {
     Path path = mock(Path.class);
     when(path.getOperationMap()).thenReturn(
         ImmutableMap.of(io.swagger.models.HttpMethod.GET, mock(Operation.class)));
-    when(requestContextMock.getProperty("path")).thenReturn(path);
+    when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
     corsResponseFilter.filter(requestContextMock, responseContextMock);
@@ -172,7 +174,7 @@ public class CorsResponseFilterTest {
             new HeaderParameter().name("Other-Header"));
     when(path.getOperationMap()).thenReturn(
         ImmutableMap.of(io.swagger.models.HttpMethod.GET, operation));
-    when(requestContextMock.getProperty("path")).thenReturn(path);
+    when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
     corsResponseFilter.filter(requestContextMock, responseContextMock);
@@ -212,7 +214,8 @@ public class CorsResponseFilterTest {
   public void filter_DoesNothing_ForUnknownResponseStatusOnActualRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.GET, ORIGIN);
-    when(requestContextMock.getProperty("operation")).thenReturn(mock(Operation.class));
+    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(
+        mock(Operation.class));
     when(responseContextMock.getStatus()).thenReturn(HttpStatus.OK.value());
 
     // Act
@@ -227,7 +230,7 @@ public class CorsResponseFilterTest {
     // Arrange
     prepareRequest(HttpMethod.GET, ORIGIN);
     Operation operation = new Operation().response(HttpStatus.OK.value(), new Response());
-    when(requestContextMock.getProperty("operation")).thenReturn(operation);
+    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(operation);
     when(responseContextMock.getStatus()).thenReturn(HttpStatus.OK.value());
 
     // Act
@@ -235,7 +238,6 @@ public class CorsResponseFilterTest {
 
     // Assert
     assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), equalTo(ORIGIN));
-    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_MAX_AGE), equalTo(86400));
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS), is(false));
   }
 
@@ -247,7 +249,7 @@ public class CorsResponseFilterTest {
     Operation operation = new Operation().response(HttpStatus.OK.value(),
         new Response().headers(ImmutableMap.of("Some-Header", new StringProperty(), "Other-Header",
             new StringProperty())));
-    when(requestContextMock.getProperty("operation")).thenReturn(operation);
+    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(operation);
     when(responseContextMock.getStatus()).thenReturn(HttpStatus.OK.value());
 
     // Act
@@ -255,7 +257,6 @@ public class CorsResponseFilterTest {
 
     // Assert
     assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), equalTo(ORIGIN));
-    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_MAX_AGE), equalTo(86400));
     List<String> exposedHeaders = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS).toString());
     assertThat(exposedHeaders, containsInAnyOrder("some-header", "other-header"));
