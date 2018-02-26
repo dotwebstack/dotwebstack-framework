@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
@@ -81,6 +82,7 @@ public class RequestHandlerTest {
     RequestParameters requestParameters = new RequestParameters();
     when(apiRequestValidatorMock.validate(apiOperationMock, swaggerMock,
         containerRequestContextMock)).thenReturn(requestParameters);
+
     Operation operation = new Operation();
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
@@ -106,6 +108,7 @@ public class RequestHandlerTest {
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
     assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
+    verify(containerRequestContextMock).setProperty("operation", apiOperationMock.getOperation());
   }
 
   @Test
@@ -271,4 +274,5 @@ public class RequestHandlerTest {
         equalTo(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
     assertThat(response.getEntity(), nullValue());
   }
+
 }

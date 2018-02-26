@@ -40,6 +40,7 @@ import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -112,8 +113,8 @@ public class OpenApiRequestMapperTest {
     requestMapper.setResourceLoader(resourceLoader);
     requestMapper.setEnvironment(environmentMock);
 
-    when(requestHandlerFactoryMock.newRequestHandler(Mockito.any(), Mockito.any(),
-        Mockito.any(), Mockito.any())).thenReturn(requestHandlerMock);
+    when(requestHandlerFactoryMock.newRequestHandler(Mockito.any(), Mockito.any(), Mockito.any(),
+        Mockito.any())).thenReturn(requestHandlerMock);
   }
 
   @Test
@@ -237,16 +238,19 @@ public class OpenApiRequestMapperTest {
     assertThat(resourceCaptor.getAllValues(), hasSize(1));
     assertThat(resource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/breweries"));
-    assertThat(resource.getResourceMethods(), hasSize(1));
+    assertThat(resource.getResourceMethods(), hasSize(2));
 
-    ResourceMethod method = resource.getResourceMethods().get(0);
-    assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
-    assertThat(method.getProducedTypes(),
+    ResourceMethod getMethod = resource.getResourceMethods().get(0);
+    assertThat(getMethod.getHttpMethod(), equalTo(HttpMethod.GET));
+    assertThat(getMethod.getProducedTypes(),
         contains(MediaType.TEXT_PLAIN_TYPE, MediaType.APPLICATION_JSON_TYPE));
+    assertThat(getMethod.getInvocable().getHandler().getInstance(null),
+        sameInstance(requestHandlerMock));
 
-    RequestHandler requestHandler =
-        (RequestHandler) resource.getHandlerInstances().iterator().next();
-    assertThat(requestHandler, sameInstance(requestHandlerMock));
+    ResourceMethod optionsMethod = resource.getResourceMethods().get(1);
+    assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));
+    assertThat(optionsMethod.getInvocable().getHandler().getHandlerClass(),
+        equalTo(OptionsRequestHandler.class));
   }
 
   @Test
