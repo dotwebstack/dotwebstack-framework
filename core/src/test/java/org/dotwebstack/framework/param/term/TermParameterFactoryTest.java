@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.ShaclShape;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -78,7 +79,7 @@ public class TermParameterFactoryTest {
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(
         String.format("Unsupported data type: <%s>. Supported types: %s", unsupportedDataType,
-            ImmutableList.of(XMLSchema.BOOLEAN, XMLSchema.STRING, XMLSchema.INTEGER)));
+            ImmutableList.of(XMLSchema.BOOLEAN, XMLSchema.STRING, XMLSchema.INTEGER, SHACL.IRI)));
 
     // Act
     newTermParameter(DBEERPEDIA.NAME_PARAMETER_ID, "name",
