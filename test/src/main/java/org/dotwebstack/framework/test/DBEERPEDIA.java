@@ -180,6 +180,10 @@ public final class DBEERPEDIA {
 
   public static final Literal LAYOUT_NL_VALUE;
 
+  public static final IRI DOC_ENDPOINT;
+
+  public static final IRI DEFAULT_ENDPOINT;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
@@ -286,6 +290,10 @@ public final class DBEERPEDIA {
     LAYOUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayout");
 
     LAYOUT_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayoutNL");
+
+    DOC_ENDPOINT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "DocEndpoint");
+
+    DEFAULT_ENDPOINT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "DefaultEndpoint");
   }
 
   private DBEERPEDIA() {
