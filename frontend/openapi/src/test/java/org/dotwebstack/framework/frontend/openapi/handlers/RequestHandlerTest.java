@@ -113,7 +113,7 @@ public class RequestHandlerTest {
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
     assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
-    verify(containerRequestContextMock).setProperty("operation", apiOperationMock.getOperation());
+    verify(containerRequestMock).setProperty("operation", apiOperationMock.getOperation());
   }
 
   @Test
