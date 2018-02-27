@@ -1,0 +1,12 @@
+GRAPH dbeerpedia:Theatre {
+
+  dbeerpedia:DocEndpoint a elmo:Endpoint;
+    elmo:pathPattern "/doc/{reference}";
+    elmo:parameterMapper dbeerpedia:SubjectFromUrl;
+  .
+
+  dbeerpedia:DefaultEndpoint a elmo:Endpoint;
+    elmo:pathPattern "/resource";
+  .
+
+}
