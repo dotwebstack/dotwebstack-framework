@@ -25,6 +25,26 @@ public class EndPoint {
     parameterMapper = builder.parameterMapper;
   }
 
+  public Resource getIdentifier() {
+    return identifier;
+  }
+
+  public String getLabel() {
+    return label;
+  }
+
+  public Stage getStage() {
+    return stage;
+  }
+
+  public ParameterMapper getParameterMapper() {
+    return parameterMapper;
+  }
+
+  public String getPathPattern() {
+    return pathPattern;
+  }
+
   public static class Builder {
 
     private Resource identifier;
