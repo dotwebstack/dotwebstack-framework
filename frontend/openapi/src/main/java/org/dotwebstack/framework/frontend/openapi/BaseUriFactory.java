@@ -18,22 +18,20 @@ import org.glassfish.jersey.server.ContainerRequest;
 public class BaseUriFactory {
 
   /**
-   * <p>
-   * Constructs a URI:
-   * {@code <scheme>://<host>[:<port>]/<basePath>}<br />
+   * Constructs a URI: {@code <scheme>://<host>[:<port>]/<basePath>}<br />
    * <br />
    * Where:
    *
    * <ul>
-   *   <li>{@code <scheme>} is taken from the OpenAPI spec. It is the first scheme listed
-   *   in the spec. Defaults to {@code https}.</li>
-   *   <li>{@code <host>[:<port>]} The host, and optional port number are taken from the
-   *   {@code X-Forwarded-Host} header or from the request. If the {@code X-Forwarded-Host} header
-   *   is set, it's first value is used as host and port combination. If the header is not set, the
-   *   host and port number are taken from the request.</li>
-   *   <li>{@code <basePath>} The base path is taken from the OpenAPI spec.</li>
+   * <li>{@code <scheme>} is taken from the OpenAPI spec. It is the first scheme listed in the spec.
+   * Defaults to {@code https}.</li>
+   * <li>{@code <host>[:<port>]} The host, and optional port number are taken from the
+   * {@code X-Forwarded-Host} header or from the request. If the {@code X-Forwarded-Host} header is
+   * set, it's first value is used as host and port combination. If the header is not set, the host
+   * and port number are taken from the request.</li>
+   * <li>{@code <basePath>} The base path is taken from the OpenAPI spec.</li>
    * </ul>
-   * </p>
+   * 
    * @return The base uri for the give request and OpenAPI spec.
    */
   public static String newBaseUri(@NonNull ContainerRequest containerRequest,
@@ -58,7 +56,7 @@ public class BaseUriFactory {
    * Returns the scheme for the base uri.
    *
    * @return The first scheme listed in the provided Open API spec, or {@code "https"}, if no scheme
-   *     is present in the spec.
+   *         is present in the spec.
    */
   private static String getScheme(@NonNull Swagger swagger) {
     List<Scheme> schemes = swagger.getSchemes();
