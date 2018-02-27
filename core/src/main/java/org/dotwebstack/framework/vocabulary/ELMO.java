@@ -87,6 +87,8 @@ public final class ELMO {
 
   public static final IRI LAYOUT_PROP;
 
+  public static final IRI ENDPOINT_PROP;
+
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -119,13 +121,14 @@ public final class ELMO {
     URI_PARAMETER_MAPPER = valueFactory.createIRI(ELMO.NAMESPACE, "UriParameterMapper");
 
     LAYOUT = valueFactory.createIRI(ELMO.NAMESPACE, "Layout");
+    ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "Endpoint");
 
     // Properties
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
     DOMAIN = valueFactory.createIRI(ELMO.NAMESPACE, "domain");
     SITE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "site");
 
-    ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "endpoint");
+    ENDPOINT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "endpoint");
     QUERY = valueFactory.createIRI(ELMO.NAMESPACE, "query");
     RESULT_TYPE = valueFactory.createIRI(ELMO.NAMESPACE, "resultType");
     RESULT_TYPE_DEFAULT =
