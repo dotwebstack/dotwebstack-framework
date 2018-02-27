@@ -11,6 +11,7 @@ import org.dotwebstack.framework.backend.sparql.SparqlBackend;
 import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
+import org.dotwebstack.framework.frontend.ld.endpoint.EndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -48,6 +49,9 @@ public class ConfigurationIntegrationTest {
   @Autowired
   private LayoutResourceProvider layoutResourceProvider;
 
+  @Autowired
+  private EndPointResourceProvider endPointResourceProvider;
+
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Test
@@ -76,6 +80,9 @@ public class ConfigurationIntegrationTest {
     String cssResource = layoutResourceProvider.get(DBEERPEDIA.LAYOUT).getOptions().get(
         valueFactory.createIRI("http://www.w3.org/1999/xhtml/vocab#stylesheet")).stringValue();
     assertThat(cssResource, equalTo("stage-layout.css"));
+    assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(2));
+    assertThat(endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT), notNullValue());
+    assertThat(endPointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
   }
 
 }
