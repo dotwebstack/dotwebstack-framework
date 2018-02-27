@@ -89,7 +89,7 @@ public final class GraphEntity extends AbstractEntity {
     return ImmutableMap.of();
   }
 
-  void addParameter(@NonNull String key, String value) {
+  public void addParameter(@NonNull String key, String value) {
     parameters.put(key, value);
   }
 
