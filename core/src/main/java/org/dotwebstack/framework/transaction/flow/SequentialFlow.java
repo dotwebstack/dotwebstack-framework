@@ -2,18 +2,26 @@ package org.dotwebstack.framework.transaction.flow;
 
 import java.util.List;
 import org.dotwebstack.framework.transaction.flow.step.Step;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 public class SequentialFlow implements Flow {
 
+  private Resource identifier;
+
   private List<Step> steps;
 
   public SequentialFlow(Builder builder) {
+    this.identifier = builder.identifier;
     this.steps = builder.steps;
   }
 
   public SequentialFlowExecutor getExecutor(RepositoryConnection repositoryConnection) {
     return new SequentialFlowExecutor(this, repositoryConnection);
+  }
+
+  public Resource getIdentifier() {
+    return identifier;
   }
 
   public List<Step> getSteps() {
@@ -22,9 +30,12 @@ public class SequentialFlow implements Flow {
 
   public static final class Builder {
 
+    private Resource identifier;
+
     private List<Step> steps;
 
-    public Builder(List<Step> steps) {
+    public Builder(Resource identifier, List<Step> steps) {
+      this.identifier = identifier;
       this.steps = steps;
     }
 

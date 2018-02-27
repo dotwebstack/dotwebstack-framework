@@ -15,9 +15,9 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.transaction.flow.FlowFactory;
+import org.dotwebstack.framework.transaction.flow.SequentialFlow;
 import org.dotwebstack.framework.transaction.flow.SequentialFlowFactory;
-import org.dotwebstack.framework.transaction.flow.step.Step;
-import org.dotwebstack.framework.transaction.flow.step.StepResourceProvider;
+import org.dotwebstack.framework.transaction.flow.SequentialFlowResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -53,13 +53,13 @@ public class TransactionResourceProviderTest {
   private SailRepositoryConnection configurationRepositoryConnection;
 
   @Mock
-  private Step step;
+  private SequentialFlow sequentialFlow;
 
   @Mock
   private GraphQuery graphQuery;
 
   @Mock
-  private StepResourceProvider stepResourceProvider;
+  private SequentialFlowResourceProvider sequentialFlowResourceProvider;
 
   private List<FlowFactory> flowFactories;
 
@@ -70,7 +70,7 @@ public class TransactionResourceProviderTest {
   @Before
   public void setUp() {
     flowFactories = new ArrayList<>();
-    flowFactories.add(new SequentialFlowFactory(stepResourceProvider));
+    flowFactories.add(new SequentialFlowFactory(sequentialFlowResourceProvider));
 
     transactionResourceProvider =
         new TransactionResourceProvider(configurationBackend, applicationProperties, flowFactories);
@@ -79,7 +79,7 @@ public class TransactionResourceProviderTest {
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
 
-    when(stepResourceProvider.get(any())).thenReturn(step);
+    when(sequentialFlowResourceProvider.get(any())).thenReturn(sequentialFlow);
 
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }

@@ -101,7 +101,7 @@ public class LdRepresentationRequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
-    transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION, flow).build();
+    transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION).flow(flow).build();
 
     representationRequestHandler =
         new RepresentationRequestHandler(representation, representationRequestParameterMapper);

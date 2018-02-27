@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.dotwebstack.framework.transaction.flow.step.Step;
-import org.dotwebstack.framework.transaction.flow.step.StepResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -23,7 +22,7 @@ public class SequentialFlowFactoryTest {
   public final ExpectedException exception = ExpectedException.none();
 
   @Mock
-  private StepResourceProvider stepResourceProvider;
+  private SequentialFlowResourceProvider sequentialFlowResourceProvider;
 
   @Mock
   private Step step;
@@ -32,7 +31,7 @@ public class SequentialFlowFactoryTest {
 
   @Before
   public void setUp() {
-    flowFactory = new SequentialFlowFactory(stepResourceProvider);
+    flowFactory = new SequentialFlowFactory(sequentialFlowResourceProvider);
     // when(stepResourceProvider.get(any())).thenReturn(step);
   }
 

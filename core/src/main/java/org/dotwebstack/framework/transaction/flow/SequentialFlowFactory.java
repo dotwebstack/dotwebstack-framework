@@ -1,27 +1,19 @@
 package org.dotwebstack.framework.transaction.flow;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.transaction.flow.step.Step;
-import org.dotwebstack.framework.transaction.flow.step.StepResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SequentialFlowFactory implements FlowFactory {
 
-  private StepResourceProvider stepResourceProvider;
+  private SequentialFlowResourceProvider sequentialFlowResourceProvider;
 
   @Autowired
-  public SequentialFlowFactory(StepResourceProvider stepResourceProvider) {
-    this.stepResourceProvider = stepResourceProvider;
+  public SequentialFlowFactory(SequentialFlowResourceProvider sequentialFlowResourceProvider) {
+    this.sequentialFlowResourceProvider = sequentialFlowResourceProvider;
   }
 
   @Override
@@ -30,31 +22,8 @@ public class SequentialFlowFactory implements FlowFactory {
   }
 
   @Override
-  public SequentialFlow create(Model model, Resource identifier) {
-
-    Collection<IRI> stepIris =
-        Models.objectIRIs(model.filter(identifier, ELMO.SEQUENTIAL_FLOW_PROP, null));
-
-    if (stepIris.isEmpty()) {
-      throw new ConfigurationException(
-          String.format("No <%s> statement has been found for transaction <%s>.",
-              ELMO.SEQUENTIAL_FLOW_PROP, identifier));
-    }
-
-    List<Step> stepList = new ArrayList<Step>();
-    stepIris.forEach(stepIri -> {
-      Step step = stepResourceProvider.get(stepIri);
-      if (step == null) {
-        throw new ConfigurationException(
-            String.format("No step definition <%s> found for transaction <%s>.", step, identifier));
-      } else {
-        stepList.add(step);
-      }
-    });
-
-    SequentialFlow.Builder sequentialFlowBuilder = new SequentialFlow.Builder(stepList);
-    return sequentialFlowBuilder.build();
-
+  public Flow getResource(Resource identifier) {
+    return sequentialFlowResourceProvider.get(identifier);
   }
 
 }

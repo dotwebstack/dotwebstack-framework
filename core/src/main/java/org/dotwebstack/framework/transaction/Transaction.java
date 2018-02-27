@@ -29,9 +29,13 @@ public class Transaction {
 
     private Flow flow;
 
-    public Builder(@NonNull Resource identifier, @NonNull Flow flow) {
+    public Builder(@NonNull Resource identifier) {
       this.identifier = identifier;
+    }
+
+    public Builder flow(@NonNull Flow flow) {
       this.flow = flow;
+      return this;
     }
 
     public Transaction build() {

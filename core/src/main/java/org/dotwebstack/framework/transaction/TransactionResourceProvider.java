@@ -40,18 +40,21 @@ public class TransactionResourceProvider extends AbstractResourceProvider<Transa
 
   @Override
   protected Transaction createResource(Model model, Resource identifier) {
+
     for (IRI predicate : getPredicateIris(model, identifier)) {
       for (FlowFactory flowFactory : flowFactories) {
         if (flowFactory.supports(predicate)) {
-          final Transaction.Builder transactionBuilder =
-              new Transaction.Builder(identifier, flowFactory.create(model, identifier));
+          final Transaction.Builder transactionBuilder = new Transaction.Builder(identifier);
+          getObjectResource(model, identifier, predicate).ifPresent(flowIndentifier -> {
+            transactionBuilder.flow(flowFactory.getResource(flowIndentifier));
+          });
           return transactionBuilder.build();
         }
       }
     }
 
     throw new ConfigurationException(
-        String.format("No flow statements has been found for transaction <%s>.", identifier));
+        String.format("No flow statement has been found for transaction <%s>.", identifier));
   }
 
 }
