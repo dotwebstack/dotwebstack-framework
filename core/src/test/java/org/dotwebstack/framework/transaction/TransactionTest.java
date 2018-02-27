@@ -40,5 +40,5 @@ public class TransactionTest {
     assertThat(transaction.getIdentifier(), equalTo(DBEERPEDIA.TRANSACTION));
     assertThat(transaction.getFlow(), notNullValue());
   }
-  
+
 }

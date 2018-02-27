@@ -81,7 +81,6 @@ public class TransactionResourceProviderTest {
 
     when(sequentialFlowResourceProvider.get(any())).thenReturn(sequentialFlow);
 
-    when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
   @Test
