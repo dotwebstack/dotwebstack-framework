@@ -71,20 +71,20 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
     LOG.debug("Handling {} request for path {}", context.getMethod(), path);
 
+    context.setProperty(RequestHandlerProperties.OPERATION, apiOperation.getOperation());
+
     RequestParameters requestParameters =
         apiRequestValidator.validate(apiOperation, swagger, context);
 
     Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
         informationProduct, requestParameters);
 
-    Response responseOk = null;
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
       TupleEntity entity =
           TupleEntity.builder().withQueryResult(result).withSchemaMap(schemaMap).build();
 
-      responseOk = responseOk(entity);
+      return responseOk(entity);
     }
 
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
@@ -100,14 +100,12 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
         throw new NotFoundException();
       }
 
-      responseOk = responseOk(entity);
+      return responseOk(entity);
     }
-    if (responseOk != null) {
-      return responseOk;
-    } else {
-      LOG.error("Result type {} not supported for information product {}",
-          informationProduct.getResultType(), informationProduct.getIdentifier());
-    }
+
+    LOG.error("Result type {} not supported for information product {}",
+        informationProduct.getResultType(), informationProduct.getIdentifier());
+
     return Response.serverError().build();
   }
 
@@ -137,8 +135,8 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     if (entity != null) {
       return Response.ok(entity).build();
     }
+
     return null;
   }
 
 }
-
