@@ -4,8 +4,8 @@ import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.http.MediaTypes;
-import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -23,18 +23,21 @@ public class LdRepresentationRequestMapper {
 
   private final RepresentationResourceProvider representationResourceProvider;
 
-  private final SupportedMediaTypesScanner supportedMediaTypesScanner;
+  private final SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
+  private final SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
   private final RepresentationRequestHandlerFactory representationRequestHandlerFactory;
   private final TransactionRequestHandlerFactory transactionRequestHandlerFactory;
 
   @Autowired
   public LdRepresentationRequestMapper(
       @NonNull RepresentationResourceProvider representationResourceProvider,
-      @NonNull SupportedMediaTypesScanner supportedMediaTypesScanner,
+      @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
+      @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,
       @NonNull RepresentationRequestHandlerFactory representationRequestHandlerFactory,
       @NonNull TransactionRequestHandlerFactory transactionRequestHandlerFactory) {
     this.representationResourceProvider = representationResourceProvider;
-    this.supportedMediaTypesScanner = supportedMediaTypesScanner;
+    this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
+    this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
     this.representationRequestHandlerFactory = representationRequestHandlerFactory;
     this.transactionRequestHandlerFactory = transactionRequestHandlerFactory;
   }
@@ -61,13 +64,13 @@ public class LdRepresentationRequestMapper {
         resourceBuilder.addMethod(HttpMethod.GET).handledBy(
             representationRequestHandlerFactory.newRepresentationRequestHandler(
                 representation)).produces(
-            supportedMediaTypesScanner.getMediaTypes(
+            supportedWriterMediaTypesScanner.getMediaTypes(
                 representation.getInformationProduct().getResultType())).nameBindings(
             ExpandFormatParameter.class);
       } else if (representation.getTransaction() != null) {
         resourceBuilder.addMethod(HttpMethod.POST).handledBy(
             transactionRequestHandlerFactory.newTransactionRequestHandler(
-                representation.getTransaction())).consumes(MediaTypes.RDFXML);
+                representation.getTransaction())).consumes(supportedReaderMediaTypesScanner.getMediaTypes());
       }
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {

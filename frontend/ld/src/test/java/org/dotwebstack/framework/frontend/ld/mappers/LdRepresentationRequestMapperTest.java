@@ -17,7 +17,7 @@ import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestParameterMapper;
@@ -67,7 +67,7 @@ public class LdRepresentationRequestMapperTest {
   private RepresentationResourceProvider representationResourceProvider;
 
   @Mock
-  private SupportedMediaTypesScanner supportedMediaTypesScanner;
+  private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
   @Mock
   private LdRepresentationRequestMapper ldRepresentationRequestMapper;
@@ -107,7 +107,7 @@ public class LdRepresentationRequestMapperTest {
         new RepresentationRequestHandler(representation, representationRequestParameterMapper);
     transactionRequestHandler = new TransactionRequestHandler(transaction);
     ldRepresentationRequestMapper = new LdRepresentationRequestMapper(
-        representationResourceProvider, supportedMediaTypesScanner,
+        representationResourceProvider, supportedWriterMediaTypesScanner,
         representationRequestHandlerFactory, transactionRequestHandlerFactory);
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
         isA(Representation.class))).thenReturn(representationRequestHandler);
@@ -119,7 +119,7 @@ public class LdRepresentationRequestMapperTest {
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
     LdRepresentationRequestMapper ldRepresentationRequestMapper = new LdRepresentationRequestMapper(
-        representationResourceProvider, supportedMediaTypesScanner,
+        representationResourceProvider, supportedWriterMediaTypesScanner,
         representationRequestHandlerFactory, transactionRequestHandlerFactory);
 
     // Assert
@@ -129,7 +129,7 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithValidData() {
     // Arrange
-    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+    when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     // Act
@@ -180,7 +180,7 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void loadRepresentations_IgnoreSecondRepresentation_WhenAddedTwice() {
     // Arrange
-    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+    when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     Representation representation =
@@ -204,7 +204,7 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void loadRepresentations_UsesPathDomainParameter_WithMatchAllDomain() {
     // Arrange
-    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+    when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
