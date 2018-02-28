@@ -21,11 +21,9 @@ import org.junit.rules.ExpectedException;
 
 public class IriTermParameterTest {
 
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
   @Rule
   public ExpectedException thrown = ExpectedException.none();
-
-  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
-
   private BindableParameter<IRI> requiredParameter;
   private BindableParameter<IRI> optionalParameter;
 
