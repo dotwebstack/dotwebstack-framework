@@ -62,14 +62,14 @@ public class RepresentationTest {
   public void build_CreatesRepresentation_WithValidData() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).pathPattern("pathPattern").build();
+        new Representation.Builder(DBEERPEDIA.BREWERIES).appliesTo("appliesTo").build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), is(nullValue()));
     assertThat(representation.getStage(), is(nullValue()));
     assertThat(representation.getAppearance(), is(nullValue()));
-    assertThat(representation.getPathPatterns(), hasItem("pathPattern"));
+    assertThat(representation.getAppliesTo(), hasItem("appliesTo"));
     assertThat(representation.getSubRepresentations(), is(Collections.EMPTY_LIST));
   }
 
@@ -82,7 +82,7 @@ public class RepresentationTest {
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), is(nullValue()));
     assertThat(representation.getStage(), is(nullValue()));
-    assertThat(representation.getPathPatterns(), equalTo(Collections.EMPTY_LIST));
+    assertThat(representation.getAppliesTo(), equalTo(Collections.EMPTY_LIST));
     assertThat(representation.getAppearance(), is(nullValue()));
   }
 
@@ -90,30 +90,28 @@ public class RepresentationTest {
   public void build_CreatesRepresentation_WithPathPattern() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).pathPattern(
+        new Representation.Builder(DBEERPEDIA.BREWERIES).appliesTo(
             DBEERPEDIA.PATH_PATTERN_VALUE).build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
-    assertThat(representation.getPathPatterns().toArray()[0],
-        equalTo(DBEERPEDIA.PATH_PATTERN_VALUE));
+    assertThat(representation.getAppliesTo().toArray()[0], equalTo(DBEERPEDIA.PATH_PATTERN_VALUE));
   }
 
   @Test
   public void build_CreatesRepresentation_WithMultiplePathPattern() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).pathPattern(
-            DBEERPEDIA.PATH_PATTERN_VALUE).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).pathPattern(
+        new Representation.Builder(DBEERPEDIA.BREWERIES).appliesTo(
+            DBEERPEDIA.PATH_PATTERN_VALUE).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).appliesTo(
                 DBEERPEDIA.PATH_PATTERN_VALUE).build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
     assertThat(representation.getInformationProduct(), is(nullValue()));
     assertThat(representation.getStage(), is(nullValue()));
-    assertThat(representation.getPathPatterns().toArray()[0],
-        equalTo(DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(representation.getPathPatterns().size(), equalTo(3));
+    assertThat(representation.getAppliesTo().toArray()[0], equalTo(DBEERPEDIA.PATH_PATTERN_VALUE));
+    assertThat(representation.getAppliesTo().size(), equalTo(3));
   }
 
   @Test
@@ -125,7 +123,7 @@ public class RepresentationTest {
         ELMO.RESOURCE_APPEARANCE, new LinkedHashModel()).build();
     final Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-            informationProduct).stage(stage).appearance(appearance).pathPattern(
+            informationProduct).stage(stage).appearance(appearance).appliesTo(
                 DBEERPEDIA.PATH_PATTERN_VALUE).subRepresentation(subRepresentation).build();
 
     // Assert
@@ -133,9 +131,8 @@ public class RepresentationTest {
     assertThat(representation.getInformationProduct(), equalTo(informationProduct));
     assertThat(representation.getStage(), equalTo(stage));
     assertThat(representation.getAppearance(), equalTo(appearance));
-    assertThat(representation.getPathPatterns().toArray()[0],
-        equalTo(DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(representation.getPathPatterns().size(), equalTo(1));
+    assertThat(representation.getAppliesTo().toArray()[0], equalTo(DBEERPEDIA.PATH_PATTERN_VALUE));
+    assertThat(representation.getAppliesTo().size(), equalTo(1));
     assertThat(representation.getSubRepresentations(),
         equalTo(ImmutableList.of(subRepresentation)));
   }

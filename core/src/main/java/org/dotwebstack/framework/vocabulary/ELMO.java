@@ -87,6 +87,8 @@ public final class ELMO {
 
   public static final IRI LAYOUT_PROP;
 
+  public static final IRI APPLIES_TO_PROP;
+
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -156,6 +158,8 @@ public final class ELMO {
 
     LAYOUT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "layout");
     SHAPE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "shape");
+
+    APPLIES_TO_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "appliesTo");
   }
 
   private ELMO() {

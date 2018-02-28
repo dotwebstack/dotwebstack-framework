@@ -80,7 +80,7 @@ public class LdRepresentationRequestMapperTest {
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-        informationProduct).stage(stage).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).build();
+        informationProduct).stage(stage).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).build();
     Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
 
@@ -131,7 +131,7 @@ public class LdRepresentationRequestMapperTest {
   public void loadRepresentations_MapRepresentation_WithoutStage() {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-        informationProduct).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).build();
+        informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).build();
     Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
@@ -147,7 +147,7 @@ public class LdRepresentationRequestMapperTest {
   public void loadRepresentations_MapRepresentation_WithNullStage() {
     // Arrange
     representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-        informationProduct).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).stage(null).build();
+        informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).stage(null).build();
     Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
@@ -167,10 +167,10 @@ public class LdRepresentationRequestMapperTest {
 
     Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-            informationProduct).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
+            informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
     Representation samePathRepresentation =
         new Representation.Builder(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION).informationProduct(
-            informationProduct).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
+            informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
     Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);
     representationMap.put(samePathRepresentation.getIdentifier(), samePathRepresentation);
@@ -194,7 +194,7 @@ public class LdRepresentationRequestMapperTest {
         DBEERPEDIA.BASE_PATH.stringValue()).build();
     Representation representation =
         new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-            informationProduct).pathPattern(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
+            informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
 
     Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
     representationMap.put(representation.getIdentifier(), representation);

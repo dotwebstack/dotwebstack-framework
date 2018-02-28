@@ -6,39 +6,39 @@
 GRAPH dbeerpedia:Theatre {
 
 dbeerpedia:TheRepresentation a elmo:Representation;
-  elmo:pathPattern "/subRep";
+  elmo:appliesTo "/subRep";
   elmo:stage dbeerpedia:Stage;
   elmo:informationProduct dbeerpedia:TupleBreweries;
   elmo:contains dbeerpedia:GraphBreweryListRepresentation;
 .
 
 dbeerpedia:GraphBreweryListRepresentation a elmo:Representation;
-  elmo:pathPattern "/graph-breweries";
+  elmo:appliesTo "/graph-breweries";
   elmo:stage dbeerpedia:Stage;
   elmo:informationProduct dbeerpedia:GraphBreweries;
 .
 
   dbeerpedia:TupleBreweryListRepresentation a elmo:Representation;
-    elmo:pathPattern "/tuple-breweries";
+    elmo:appliesTo "/tuple-breweries";
     elmo:stage dbeerpedia:Stage;
     elmo:informationProduct dbeerpedia:TupleBreweries;
   .
 
   dbeerpedia:BreweryRepresentation a elmo:Representation;
-    elmo:pathPattern "/tuple-brewery";
+    elmo:appliesTo "/tuple-brewery";
     elmo:stage dbeerpedia:Stage;
     elmo:informationProduct dbeerpedia:TupleBrewery;
   .
 
   dbeerpedia:ResourceRepresentation a elmo:Representation;
-      elmo:pathPattern "/doc/{reference}";
+      elmo:appliesTo "/doc/{reference}";
       elmo:stage dbeerpedia:Stage;
       elmo:parameterMapper dbeerpedia:SubjectFromUrl;
       elmo:informationProduct dbeerpedia:ResourceInformationProduct
   .
 
   dbeerpedia:Homepage a elmo:Representation;
-      elmo:pathPattern "";
+      elmo:appliesTo "";
       elmo:stage dbeerpedia:Stage;
       elmo:informationProduct dbeerpedia:GraphBreweries;
       elmo:appearance [a elmo:HtmlAppearance];
