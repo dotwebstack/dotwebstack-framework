@@ -23,15 +23,6 @@ public class TemplateProcessorTest {
   }
 
   @Test
-  public void processString_ThrowsException_ForMissingParameter() {
-    exception.expect(TemplateException.class);
-
-    String templateString = "someEndpoint/${iDoNotExist}";
-
-    processor.processString(templateString, null);
-  }
-
-  @Test
   public void processString_fillsTemplate_WithSingleParameter() {
     // Arrange
     String templateString = "someEndpoint/${id}";
