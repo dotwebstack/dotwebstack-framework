@@ -2,7 +2,6 @@ package org.dotwebstack.framework.param.term;
 
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 
 public class IriTermParameter extends TermParameter<IRI> {
@@ -17,8 +16,8 @@ public class IriTermParameter extends TermParameter<IRI> {
   }
 
   @Override
-  public Literal getValue(@NonNull IRI value) {
-    return VALUE_FACTORY.createLiteral(value.stringValue());
+  public IRI getValue(@NonNull IRI value) {
+    return value;
   }
 
   @Override
