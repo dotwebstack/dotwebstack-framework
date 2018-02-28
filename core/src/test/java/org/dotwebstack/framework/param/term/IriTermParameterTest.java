@@ -106,7 +106,7 @@ public class IriTermParameterTest {
     Value result = requiredParameter.getValue(value);
 
     // Assert
-    assertThat(result, is(SimpleValueFactory.getInstance().createLiteral("http://iri")));
+    assertThat(result, is(SimpleValueFactory.getInstance().createIRI("http://iri")));
   }
 
 }
