@@ -15,6 +15,7 @@
 @prefix elmo: <http://dotwebstack.org/def/elmo#>.
 
 GRAPH elmo:Shacl {
+
 elmo-shape:
   rdfs:label "SHACL for ELMO"@en;
   rdfs:comment "This shapes graph can be used to validate dotwebstack configurations. It can also be used to create a visual representation of the structure"@en;
@@ -859,17 +860,23 @@ elmo-shape:Representation a sh:NodeShape;
     sh:datatype xsd:string;
     sh:maxCount 1;
   ];
-  sh:property [
-    sh:name "elmo:appliesTo";
-    sh:path elmo:appliesTo;
-    sh:datatype xsd:string;
-  ];
-  sh:property [
-    sh:name "elmo:appliesTo";
-    sh:path elmo:appliesTo;
-    sh:nodeKind sh:BlankNodeOrIRI;
-    sh:node elmo-shape:Profile
-  ];
+  sh:xone (
+    [
+      sh:property [
+        sh:name "elmo:appliesTo";
+        sh:path elmo:appliesTo;
+        sh:datatype xsd:string;
+      ];
+    ]
+    [
+      sh:property [
+        sh:name "elmo:appliesTo";
+        sh:path elmo:appliesTo;
+        sh:nodeKind sh:BlankNodeOrIRI;
+        sh:node elmo-shape:Profile
+      ];
+    ]
+  );
   sh:property [
     sh:name "elmo:layer";
     sh:path elmo:layer;
