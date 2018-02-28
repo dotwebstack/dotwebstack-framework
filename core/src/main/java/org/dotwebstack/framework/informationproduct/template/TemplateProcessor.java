@@ -20,7 +20,7 @@ public class TemplateProcessor implements InitializingBean {
 
   private static final Logger LOG = LoggerFactory.getLogger(TemplateProcessor.class);
 
-  private static final TemplateMethodModelEx ESCAPE = new EscapeLiteralMethod();
+  private static final TemplateMethodModelEx ESCAPE = new EscapeStringLiteralMethod();
 
   private Configuration config;
 
@@ -44,7 +44,7 @@ public class TemplateProcessor implements InitializingBean {
       StringWriter processedStringWriter = new StringWriter();
 
       ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
-      builder.put(EscapeLiteralMethod.CTX_NAME, ESCAPE);
+      builder.put(EscapeStringLiteralMethod.CTX_NAME, ESCAPE);
       builder.putAll(parameters);
 
       endpointTemplate.process(builder.build(), processedStringWriter);

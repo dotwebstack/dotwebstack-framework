@@ -43,11 +43,11 @@ public class EscapeLiteralMethodTest {
   @Test
   public void exec_ReturnsEscapedString_Always() throws Exception {
     // Arrange
-    EscapeLiteralMethod escapeLiteralMethod = new EscapeLiteralMethod();
+    EscapeStringLiteralMethod escapeStringLiteralMethod = new EscapeStringLiteralMethod();
 
     // Act
-    final Object escapedString =
-        escapeLiteralMethod.exec(Collections.singletonList(new SimpleScalar(unescaped)));
+    Object escapedString =
+        escapeStringLiteralMethod.exec(Collections.singletonList(new SimpleScalar(unescaped)));
 
     // Assert
     assertThat(escapedString, is(escaped));

@@ -7,7 +7,7 @@ import java.util.List;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
-public class EscapeLiteralMethod implements TemplateMethodModelEx {
+public class EscapeStringLiteralMethod implements TemplateMethodModelEx {
 
   /* the way this method gets exposed to FreeMarker context */
   static final String CTX_NAME = "literal";
