@@ -36,6 +36,10 @@ public final class OpenApiSpecificationExtensions {
    */
   public static final String RESULT_FOUND_QUERY = DOTWEBSTACK_PREFIX.concat("result-found-query");
 
+  public static final String CONTEXT_LINKS = DOTWEBSTACK_PREFIX.concat("context-links");
+
+  public static final String KEY_LDPATH = DOTWEBSTACK_PREFIX.concat("key-ldpath");
+
   private OpenApiSpecificationExtensions() {
     throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", OpenApiSpecificationExtensions.class));

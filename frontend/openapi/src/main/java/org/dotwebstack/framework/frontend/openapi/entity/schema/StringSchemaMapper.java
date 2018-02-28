@@ -1,9 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.NonNull;
@@ -19,8 +21,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
 
-  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
   static final String PATTERN = "pattern";
+  static final String LINK_CHOICES = "link-choices";
+  static final String KEY = "key";
+
+  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   @Override
   public String mapTupleValue(@NonNull StringProperty schema, @NonNull ValueContext valueContext) {
@@ -38,7 +43,9 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
           (Map<String, String>) vendorExtensions.get(OpenApiSpecificationExtensions.RELATIVE_LINK),
           graphEntity, valueContext);
     }
-
+    if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONTEXT_LINKS)) {
+      return handleContextLinkVendorExtension(property, graphEntity, valueContext);
+    }
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
       LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
       return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
@@ -57,13 +64,84 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     return null;
   }
 
+  /**
+   * Handles "x-context-links" vendor extension. <br/>
+   *
+   * <pre>
+   *   x-context-links:
+   *     # (required) this ldpath is used to get real value of key
+   *     x-key-ldpath: x / y / z
+   *     # (optional) if x-relative-link does not declare its own ldpath, this one is used instead;
+   *     # (handy, if almost all ldpaths are the same)
+   *     x-ldpath: a / b /c
+   *     # a list of key-value entries to choose from;
+   *     link-choices:
+   *       # value of the key is compared (case-insensitive) with result of x-key-ldpath
+   *     - key: "bestemmingsplan"
+   *       # this relative link is chosen if value of key above equals to result of x-key-ldpath
+   *       x-relative-link:
+   *         pattern: /bestemmingsplangebieden/$1
+   *         x-ldpath: 'path'
+   * </pre>
+   *
+   * @param property parent string property
+   * @param entityBuilderContext provided entity context
+   * @param context value context
+   * @return the same as
+   *         {@link #handleRelativeLinkVendorExtension(Map, EntityBuilderContext, Value)}
+   */
+  @SuppressWarnings("unchecked")
+  private String handleContextLinkVendorExtension(StringProperty property, GraphEntity graphEntity,
+      ValueContext valueContext) {
+
+    Map<String, Object> contextLink = expectValue(property.getVendorExtensions(),
+        OpenApiSpecificationExtensions.CONTEXT_LINKS, Map.class);
+
+    List<Map<String, Object>> choices = expectValue(contextLink, LINK_CHOICES, List.class);
+
+    /* this ldpath is used to get real value of key */
+    String realValueLdPath =
+        expectValue(contextLink, OpenApiSpecificationExtensions.KEY_LDPATH, String.class);
+    LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
+    Collection<Value> values = ldPathExecutor.ldPathQuery(valueContext.getValue(), realValueLdPath);
+    String realValue = getSingleStatement(values, realValueLdPath).stringValue();
+
+    if (realValue != null) {
+      /* this ldpath is inherited by all choices */
+      String linkCommonLdPath = (String) contextLink.get(OpenApiSpecificationExtensions.LDPATH);
+
+      for (Map<String, Object> choice : (List<Map<String, Object>>) choices) {
+        Object key = choice.get(KEY);
+        if (realValue.equalsIgnoreCase(key.toString())) {
+          Map<String, String> relativeLinkProperty = Maps.newHashMap(
+              (Map<String, String>) choice.get(OpenApiSpecificationExtensions.RELATIVE_LINK));
+          relativeLinkProperty.putIfAbsent(OpenApiSpecificationExtensions.LDPATH, linkCommonLdPath);
+
+          return handleRelativeLinkVendorExtension(relativeLinkProperty, graphEntity, valueContext);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private <T> T expectValue(Map<String, Object> map, String key, Class<T> clazz) {
+    Object value = map.get(key);
+
+    if (!clazz.isInstance(value)) {
+      throw new SchemaMapperRuntimeException(
+          String.format("Property '%s' should be defined as %s.", key, clazz.getSimpleName()));
+    }
+
+    return clazz.cast(value);
+  }
+
   private String handleRelativeLinkVendorExtension(Map<String, String> relativeLinkPropertiesMap,
       GraphEntity graphEntity, ValueContext valueContext) {
 
     if (relativeLinkPropertiesMap == null) {
-      throw new SchemaMapperRuntimeException(
-          String.format("Property '%s' can not be null.",
-              OpenApiSpecificationExtensions.RELATIVE_LINK));
+      throw new SchemaMapperRuntimeException(String.format("Property '%s' can not be null.",
+          OpenApiSpecificationExtensions.RELATIVE_LINK));
     }
 
     if (!relativeLinkPropertiesMap.containsKey(PATTERN)) {
@@ -74,9 +152,8 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
 
     if (relativeLinkPropertiesMap.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
       Collection<Value> queryResult =
-          graphEntity.getLdPathExecutor()
-              .ldPathQuery(valueContext.getValue(), relativeLinkPropertiesMap.get(
-                  OpenApiSpecificationExtensions.LDPATH));
+          graphEntity.getLdPathExecutor().ldPathQuery(valueContext.getValue(),
+              relativeLinkPropertiesMap.get(OpenApiSpecificationExtensions.LDPATH));
 
       if (queryResult.size() > 1) {
         throw new SchemaMapperRuntimeException(String.format(
