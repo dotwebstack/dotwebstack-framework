@@ -43,9 +43,8 @@ public class TemplateProcessor implements InitializingBean {
       Template endpointTemplate = new Template(null, templateString, config);
       StringWriter processedStringWriter = new StringWriter();
 
-      ImmutableMap.Builder<String, Object> builder =
-          ImmutableMap.<String, Object>builder().put(EscapeLiteralMethod.CTX_NAME, ESCAPE);
-
+      ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+      builder.put(EscapeLiteralMethod.CTX_NAME, ESCAPE);
       builder.putAll(parameters);
 
       endpointTemplate.process(builder.build(), processedStringWriter);
