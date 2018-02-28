@@ -129,7 +129,7 @@ public class TermParameterDefinitionFactoryTest {
 
     builder.subject(DBEERPEDIA.NAME_PARAMETER_ID).add(RDF.TYPE, ELMO.TERM_PARAMETER).add(
         ELMO.NAME_PROP, DBEERPEDIA.NAME_PARAMETER_VALUE).add(ELMO.SHAPE_PROP, blankNode).subject(
-            blankNode).add(SHACL.DATATYPE, XMLSchema.ANYURI);
+            blankNode).add(SHACL.NODEKIND, SHACL.IRI);
 
     Model model = builder.build();
 
