@@ -35,12 +35,15 @@ public class LdModuleTest {
   @Mock
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
+  @Mock
+  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
+
   private LdModule ldModule;
 
   @Before
   public void setUp() {
     ldModule = new LdModule(ldRepresentationRequestMapper, ldRedirectionRequestMapper,
-        supportedWriterMediaTypesScanner);
+        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
     ldModule.initialize(httpConfiguration);
   }
 
@@ -50,7 +53,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(null, ldRedirectionRequestMapper, supportedWriterMediaTypesScanner);
+    new LdModule(null, ldRedirectionRequestMapper,
+        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
   }
 
   @Test
@@ -59,7 +63,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldRepresentationRequestMapper, null, supportedWriterMediaTypesScanner);
+    new LdModule(ldRepresentationRequestMapper, null,
+        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
   }
 
   @Test
@@ -68,7 +73,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldRepresentationRequestMapper, ldRedirectionRequestMapper, null);
+    new LdModule(ldRepresentationRequestMapper, ldRedirectionRequestMapper,
+        null, supportedReaderMediaTypesScanner);
   }
 
   @Test

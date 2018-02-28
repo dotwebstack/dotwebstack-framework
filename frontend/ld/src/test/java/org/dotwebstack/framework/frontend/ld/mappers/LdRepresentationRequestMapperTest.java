@@ -17,6 +17,7 @@ import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
+import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
@@ -70,6 +71,8 @@ public class LdRepresentationRequestMapperTest {
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
   @Mock
+  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
+  @Mock
   private LdRepresentationRequestMapper ldRepresentationRequestMapper;
 
   @Mock
@@ -108,7 +111,8 @@ public class LdRepresentationRequestMapperTest {
     transactionRequestHandler = new TransactionRequestHandler(transaction);
     ldRepresentationRequestMapper = new LdRepresentationRequestMapper(
         representationResourceProvider, supportedWriterMediaTypesScanner,
-        representationRequestHandlerFactory, transactionRequestHandlerFactory);
+        supportedReaderMediaTypesScanner, representationRequestHandlerFactory,
+        transactionRequestHandlerFactory);
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
         isA(Representation.class))).thenReturn(representationRequestHandler);
 
@@ -120,7 +124,8 @@ public class LdRepresentationRequestMapperTest {
     // Arrange / Act
     LdRepresentationRequestMapper ldRepresentationRequestMapper = new LdRepresentationRequestMapper(
         representationResourceProvider, supportedWriterMediaTypesScanner,
-        representationRequestHandlerFactory, transactionRequestHandlerFactory);
+        supportedReaderMediaTypesScanner, representationRequestHandlerFactory,
+        transactionRequestHandlerFactory);
 
     // Assert
     assertThat(ldRepresentationRequestMapper, not(nullValue()));

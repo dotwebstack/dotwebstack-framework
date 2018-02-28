@@ -72,8 +72,8 @@ public class SupportedWriterMediaTypesScannerTest {
   @Test
   public void constructor_FindsSupportedTupleProviders_WhenProvided() {
     // Arrange & Act
-    SupportedWriterMediaTypesScanner scanner = new SupportedWriterMediaTypesScanner(Collections.emptyList(),
-        Collections.singletonList(new StubTupleMessageBodyWriter()));
+    SupportedWriterMediaTypesScanner scanner = new SupportedWriterMediaTypesScanner(
+        Collections.emptyList(), Collections.singletonList(new StubTupleMessageBodyWriter()));
 
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));

@@ -7,9 +7,11 @@ import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+import org.eclipse.rdf4j.model.Model;
 import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,9 +70,15 @@ public class LdRepresentationRequestMapper {
                 representation.getInformationProduct().getResultType())).nameBindings(
             ExpandFormatParameter.class);
       } else if (representation.getTransaction() != null) {
-        resourceBuilder.addMethod(HttpMethod.POST).handledBy(
-            transactionRequestHandlerFactory.newTransactionRequestHandler(
-                representation.getTransaction())).consumes(supportedReaderMediaTypesScanner.getMediaTypes());
+        try {
+          resourceBuilder.addMethod(HttpMethod.POST).handledBy(
+              transactionRequestHandlerFactory.newTransactionRequestHandler(
+                  representation.getTransaction()),
+              TransactionRequestHandler.class.getMethod("apply", Model.class))
+              .consumes(supportedReaderMediaTypesScanner.getMediaTypes());
+        } catch (NoSuchMethodException e) {
+          e.printStackTrace();
+        }
       }
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {

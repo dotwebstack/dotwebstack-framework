@@ -33,13 +33,13 @@ public class JsonLdModelReader implements MessageBodyReader<Model> {
       MediaType mediaType, MultivaluedMap<String, String> multivaluedMap, InputStream inputStream)
       throws IOException, WebApplicationException {
 
-      RDFParser rdfParser = Rio.createParser(RDFFormat.JSONLD);
+    RDFParser rdfParser = Rio.createParser(RDFFormat.JSONLD);
 
-      Model transactionModel = new LinkedHashModel();
-      rdfParser.setRDFHandler(new StatementCollector(transactionModel));
+    Model transactionModel = new LinkedHashModel();
+    rdfParser.setRDFHandler(new StatementCollector(transactionModel));
 
-      rdfParser.parse(inputStream, "");
-      return transactionModel;
+    rdfParser.parse(inputStream, "");
+    return transactionModel;
   }
 
 }

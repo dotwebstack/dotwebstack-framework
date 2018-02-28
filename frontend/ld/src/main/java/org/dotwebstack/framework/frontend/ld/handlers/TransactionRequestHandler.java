@@ -21,11 +21,11 @@ public class TransactionRequestHandler implements Inflector<Model, Response> {
 
   @Override
   public Response apply(Model transactionModel) {
-      // start transaction
-      TransactionHandler transactionHandler = new TransactionHandler(transaction, transactionModel);
-      transactionHandler.execute();
+    // start transaction
+    TransactionHandler transactionHandler = new TransactionHandler(transaction, transactionModel);
+    transactionHandler.execute();
 
-      return Response.ok().build();
+    return Response.ok().build();
   }
 
 }
