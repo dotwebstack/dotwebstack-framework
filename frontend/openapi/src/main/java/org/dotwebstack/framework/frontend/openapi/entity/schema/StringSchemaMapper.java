@@ -1,9 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.StringProperty;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.NonNull;
@@ -19,6 +21,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
 
+  static final String PATTERN = "pattern";
+  static final String LINK_CHOICES = "link-choices";
+  static final String KEY = "key";
+
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   @Override
@@ -32,6 +38,14 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     validateVendorExtensions(property);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
+    if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.RELATIVE_LINK)) {
+      return handleRelativeLinkVendorExtension(
+          (Map<String, String>) vendorExtensions.get(OpenApiSpecificationExtensions.RELATIVE_LINK),
+          graphEntity, valueContext);
+    }
+    if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONTEXT_LINKS)) {
+      return handleContextLinkVendorExtension(property, graphEntity, valueContext);
+    }
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
       LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
       return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
@@ -48,6 +62,91 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     }
 
     return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  private String handleContextLinkVendorExtension(StringProperty property, GraphEntity graphEntity,
+      ValueContext valueContext) {
+
+    Map<String, Object> contextLink = expectValue(property.getVendorExtensions(),
+        OpenApiSpecificationExtensions.CONTEXT_LINKS, Map.class);
+
+    List<Map<String, Object>> choices = expectValue(contextLink, LINK_CHOICES, List.class);
+
+    /* this ldpath is used to get real value of key */
+    String realValueLdPath =
+        expectValue(contextLink, OpenApiSpecificationExtensions.KEY_LDPATH, String.class);
+    LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
+    Collection<Value> values = ldPathExecutor.ldPathQuery(valueContext.getValue(), realValueLdPath);
+    String realValue = getSingleStatement(values, realValueLdPath).stringValue();
+
+    if (realValue != null) {
+      /* this ldpath is inherited by all choices */
+      String linkCommonLdPath = (String) contextLink.get(OpenApiSpecificationExtensions.LDPATH);
+
+      for (Map<String, Object> choice : (List<Map<String, Object>>) choices) {
+        Object key = choice.get(KEY);
+        if (realValue.equalsIgnoreCase(key.toString())) {
+          Map<String, String> relativeLinkProperty = Maps.newHashMap(
+              (Map<String, String>) choice.get(OpenApiSpecificationExtensions.RELATIVE_LINK));
+          relativeLinkProperty.putIfAbsent(OpenApiSpecificationExtensions.LDPATH, linkCommonLdPath);
+
+          return handleRelativeLinkVendorExtension(relativeLinkProperty, graphEntity, valueContext);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private <T> T expectValue(Map<String, Object> map, String key, Class<T> clazz) {
+    Object value = map.get(key);
+
+    if (!clazz.isInstance(value)) {
+      throw new SchemaMapperRuntimeException(
+          String.format("Property '%s' should be defined as %s.", key, clazz.getSimpleName()));
+    }
+
+    return clazz.cast(value);
+  }
+
+  private String handleRelativeLinkVendorExtension(Map<String, String> relativeLinkPropertiesMap,
+      GraphEntity graphEntity, ValueContext valueContext) {
+
+    if (relativeLinkPropertiesMap == null) {
+      throw new SchemaMapperRuntimeException(String.format("Property '%s' can not be null.",
+          OpenApiSpecificationExtensions.RELATIVE_LINK));
+    }
+
+    if (!relativeLinkPropertiesMap.containsKey(PATTERN)) {
+      throw new SchemaMapperRuntimeException(
+          String.format("Property '%s' should have a '%s' property.",
+              OpenApiSpecificationExtensions.RELATIVE_LINK, PATTERN));
+    }
+
+    if (relativeLinkPropertiesMap.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+      Collection<Value> queryResult =
+          graphEntity.getLdPathExecutor().ldPathQuery(valueContext.getValue(),
+              relativeLinkPropertiesMap.get(OpenApiSpecificationExtensions.LDPATH));
+
+      if (queryResult.size() > 1) {
+        throw new SchemaMapperRuntimeException(String.format(
+            "LDPath query '%s' yielded multiple results (%d) for a property, which "
+                + "requires a single result.",
+            relativeLinkPropertiesMap.get(OpenApiSpecificationExtensions.LDPATH),
+            queryResult.size()));
+      }
+
+      if (queryResult.isEmpty()) {
+        return null;
+      }
+
+      return graphEntity.getBaseUri() + relativeLinkPropertiesMap.get(PATTERN).replace("$1",
+          queryResult.iterator().next().stringValue());
+
+    }
+
+    return graphEntity.getBaseUri() + relativeLinkPropertiesMap.get(PATTERN);
   }
 
   /**

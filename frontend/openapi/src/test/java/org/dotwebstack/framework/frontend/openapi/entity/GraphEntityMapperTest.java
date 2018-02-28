@@ -45,7 +45,7 @@ public class GraphEntityMapperTest {
     // Arrange
     IntegerProperty schema = new IntegerProperty();
     GraphEntity entity = newGraphEntity(ImmutableMap.of(MediaType.TEXT_PLAIN_TYPE, schema),
-        queryResultMock, definitionsMock, ImmutableMap.of(), productMock);
+        queryResultMock, definitionsMock, ImmutableMap.of(), productMock, "");
 
     Object object = new Object();
     when(schemaMapperAdapterMock.mapGraphValue(any(IntegerProperty.class), any(GraphEntity.class),
