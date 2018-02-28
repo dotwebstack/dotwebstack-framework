@@ -71,4 +71,18 @@ public class TemplateProcessorTest {
     assertThat("'test2 + test1'", is(result2));
   }
 
+  @Test
+  public void processString_fillsTemplate_WithUnescapedStringLiteral() {
+    // Arrange
+    String unescaped = "Hello, I'm called \"Joes Kees\"";
+    String templateString = "Something ${literal(param)}";
+    ImmutableMap<String, Object> parameters = ImmutableMap.of("param", unescaped);
+
+    // Act
+    String processedString = processor.processString(templateString, parameters);
+
+    // Assert
+    assertThat(processedString, is("Something " + "Hello, I\\'m called \\\"Joes Kees\\\""));
+  }
+
 }
