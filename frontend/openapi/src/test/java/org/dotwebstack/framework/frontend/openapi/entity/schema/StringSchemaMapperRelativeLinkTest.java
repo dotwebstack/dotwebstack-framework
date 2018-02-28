@@ -61,7 +61,7 @@ public class StringSchemaMapperRelativeLinkTest {
 
 
   @Test
-  public void handleRelativeLinkWithoutLdPathExpression() {
+  public void mapGraphValue_ReturnsAbsoluteLink_ForRelativeLinkWithoutPlaceHolder() {
     // Arrange
     String pattern = "/somePatternWithoutPlaceholder";
     stringProperty.setVendorExtension(RELATIVE_LINK, ImmutableMap.of(PATTERN, pattern));
@@ -74,13 +74,13 @@ public class StringSchemaMapperRelativeLinkTest {
   }
 
   @Test
-  public void handleRelativeLinkWithLdPathExpressionWithSingleResult() {
+  public void mapGraphValue_ReplacesPlaceHolder_ForRelativeLinkWithsPlaceHolder() {
     // Arrange
     stringProperty.setVendorExtension(RELATIVE_LINK,
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
-    when(ldPathExecutorMock.ldPathQuery(eq(VALUE_1), anyString()))
-        .thenReturn(ImmutableList.of(VALUE_1));
+    when(ldPathExecutorMock.ldPathQuery(eq(VALUE_1), anyString())).thenReturn(
+        ImmutableList.of(VALUE_1));
 
     // Act
     Object result = mapper.mapGraphValue(stringProperty, entityMock, contextMock, mapperAdapter);
@@ -90,7 +90,7 @@ public class StringSchemaMapperRelativeLinkTest {
   }
 
   @Test
-  public void handleRelativeLinkWithLdPathExpressionWithoutResult() {
+  public void mapGraphValue_ReturnsNull_ForLdPathExpressionWithoutResult() {
     // Arrange
     stringProperty.setVendorExtension(RELATIVE_LINK,
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
@@ -103,13 +103,13 @@ public class StringSchemaMapperRelativeLinkTest {
   }
 
   @Test
-  public void handleRelativeLinkWithLdPathExpressionWithMultipleResults() {
+  public void mapGraphValue_ThrowsEx_ForRelativeLinkWithLdPathExpressionWithMultipleResults() {
     // Arrange
     stringProperty.setVendorExtension(RELATIVE_LINK,
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
-    when(ldPathExecutorMock.ldPathQuery(eq(VALUE_1), anyString()))
-        .thenReturn(ImmutableList.of(VALUE_1, VALUE_2));
+    when(ldPathExecutorMock.ldPathQuery(eq(VALUE_1), anyString())).thenReturn(
+        ImmutableList.of(VALUE_1, VALUE_2));
     when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
 
     // Assert
@@ -124,7 +124,7 @@ public class StringSchemaMapperRelativeLinkTest {
   }
 
   @Test
-  public void handleRelativeLinkWithoutPatternPropertyThrowsException() {
+  public void mapGraphValue_ThrowsException_ForRelativeLinkWithoutPatternProperty() {
     // Arrange
     stringProperty.setVendorExtension(RELATIVE_LINK, ImmutableMap.<String, String>of());
 
@@ -138,7 +138,7 @@ public class StringSchemaMapperRelativeLinkTest {
   }
 
   @Test
-  public void handleRelativeLinkThatIsNull() {
+  public void mapGraphValue_ThrowsException_ForRelativeLinkThatIsNull() {
     // Arrange
     stringProperty.setVendorExtension(RELATIVE_LINK, null);
 
