@@ -16,7 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
 @RunWith(Parameterized.class)
 public class EscapeLiteralMethodTest {
 
-  @Parameters(name = "exec_ReturnsEscapedString_Always [{0} -> {1}]")
+  @Parameters(name = "exec_ReturnsEscapedString_Always [{1}]")
   public static List<Object[]> data() {
     // @formatter:off
     return Arrays.asList(new Object[][] {
