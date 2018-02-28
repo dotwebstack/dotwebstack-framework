@@ -64,32 +64,6 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     return null;
   }
 
-  /**
-   * Handles "x-context-links" vendor extension. <br/>
-   *
-   * <pre>
-   *   x-context-links:
-   *     # (required) this ldpath is used to get real value of key
-   *     x-key-ldpath: x / y / z
-   *     # (optional) if x-relative-link does not declare its own ldpath, this one is used instead;
-   *     # (handy, if almost all ldpaths are the same)
-   *     x-ldpath: a / b /c
-   *     # a list of key-value entries to choose from;
-   *     link-choices:
-   *       # value of the key is compared (case-insensitive) with result of x-key-ldpath
-   *     - key: "bestemmingsplan"
-   *       # this relative link is chosen if value of key above equals to result of x-key-ldpath
-   *       x-relative-link:
-   *         pattern: /bestemmingsplangebieden/$1
-   *         x-ldpath: 'path'
-   * </pre>
-   *
-   * @param property parent string property
-   * @param entityBuilderContext provided entity context
-   * @param context value context
-   * @return the same as
-   *         {@link #handleRelativeLinkVendorExtension(Map, EntityBuilderContext, Value)}
-   */
   @SuppressWarnings("unchecked")
   private String handleContextLinkVendorExtension(StringProperty property, GraphEntity graphEntity,
       ValueContext valueContext) {
