@@ -16,8 +16,8 @@ public class IriTermParameter extends TermParameter<IRI> {
   }
 
   @Override
-  public Literal getValue(@NonNull IRI value) {
-    return VALUE_FACTORY.createLiteral(value.stringValue());
+  public IRI getValue(@NonNull IRI value) {
+    return value;
   }
 
   @Override
