@@ -77,7 +77,7 @@ public class LdRepresentationRequestMapper {
               TransactionRequestHandler.class.getMethod("apply", Model.class))
               .consumes(supportedReaderMediaTypesScanner.getMediaTypes());
         } catch (NoSuchMethodException e) {
-          e.printStackTrace();
+          throw new RuntimeException();
         }
       }
 
