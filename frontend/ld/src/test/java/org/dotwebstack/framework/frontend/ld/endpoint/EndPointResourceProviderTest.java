@@ -16,7 +16,6 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
-import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -67,9 +66,6 @@ public class EndPointResourceProviderTest {
   private Stage stage;
 
   @Mock
-  private ParameterMapper parameterMapper;
-
-  @Mock
   private GraphQuery graphQuery;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -83,8 +79,6 @@ public class EndPointResourceProviderTest {
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
     when(stageResourceProvider.get(any())).thenReturn(stage);
-    when(parameterMapperResourceProvider.get(any())).thenReturn(parameterMapper);
-
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
@@ -135,9 +129,7 @@ public class EndPointResourceProviderTest {
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, RDF.TYPE, ELMO.ENDPOINT),
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.PATH_PATTERN,
-                DBEERPEDIA.PATH_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.PARAMETER_MAPPER_PROP,
-                DBEERPEDIA.SUBJECT_FROM_URL))));
+                DBEERPEDIA.PATH_PATTERN))));
 
     // Act
     endPointResourceProvider.loadResources();
@@ -147,7 +139,6 @@ public class EndPointResourceProviderTest {
     EndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
     assertThat(endPoint, is(not(nullValue())));
     assertThat(endPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
-    assertThat(endPoint.getParameterMapper(), equalTo(parameterMapper));
   }
 
   @Test
@@ -158,8 +149,6 @@ public class EndPointResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, RDF.TYPE, ELMO.ENDPOINT),
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.PATH_PATTERN,
                 DBEERPEDIA.PATH_PATTERN),
-            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.PARAMETER_MAPPER_PROP,
-                DBEERPEDIA.SUBJECT_FROM_URL),
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL),
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.STAGE_PROP,
@@ -173,7 +162,6 @@ public class EndPointResourceProviderTest {
     EndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
     assertThat(endPoint, is(not(nullValue())));
     assertThat(endPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
-    assertThat(endPoint.getParameterMapper(), equalTo(parameterMapper));
     assertThat(endPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
     assertThat(endPoint.getStage(), equalTo(stage));
   }

@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class EndPointResourceProvider extends AbstractResourceProvider<EndPoint> {
 
-  private final ParameterMapperResourceProvider parameterMapperResourceProvider;
-
   private final StageResourceProvider stageResourceProvider;
 
   @Autowired
@@ -29,7 +27,6 @@ public class EndPointResourceProvider extends AbstractResourceProvider<EndPoint>
       @NonNull ParameterMapperResourceProvider parameterMapperResourceProvider,
       @NonNull StageResourceProvider stageResourceProvider) {
     super(configurationBackend, applicationProperties);
-    this.parameterMapperResourceProvider = parameterMapperResourceProvider;
     this.stageResourceProvider = stageResourceProvider;
   }
 
@@ -53,8 +50,6 @@ public class EndPointResourceProvider extends AbstractResourceProvider<EndPoint>
     getObjectString(model, identifier, RDFS.LABEL).ifPresent(builder::label);
     getObjectResource(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));
-    getObjectResource(model, identifier, ELMO.PARAMETER_MAPPER_PROP).ifPresent(
-        iri -> builder.parameterMapper(parameterMapperResourceProvider.get(iri)));
 
     return builder.build();
   }

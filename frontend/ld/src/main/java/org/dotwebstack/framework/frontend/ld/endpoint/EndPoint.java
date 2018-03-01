@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.ld.endpoint;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.eclipse.rdf4j.model.Resource;
 
 public class EndPoint {
@@ -22,7 +21,6 @@ public class EndPoint {
     pathPattern = builder.pathPattern;
     label = builder.label;
     stage = builder.stage;
-    parameterMapper = builder.parameterMapper;
   }
 
   public Resource getIdentifier() {
@@ -35,10 +33,6 @@ public class EndPoint {
 
   public Stage getStage() {
     return stage;
-  }
-
-  public ParameterMapper getParameterMapper() {
-    return parameterMapper;
   }
 
   public String getPathPattern() {
@@ -55,8 +49,6 @@ public class EndPoint {
 
     private Stage stage;
 
-    private ParameterMapper parameterMapper;
-
     public Builder(@NonNull Resource identifier, @NonNull String pathPattern) {
       this.identifier = identifier;
       this.pathPattern = pathPattern;
@@ -69,11 +61,6 @@ public class EndPoint {
 
     public Builder stage(@NonNull Stage stage) {
       this.stage = stage;
-      return this;
-    }
-
-    public Builder parameterMapper(@NonNull ParameterMapper parameterMapper) {
-      this.parameterMapper = parameterMapper;
       return this;
     }
 
