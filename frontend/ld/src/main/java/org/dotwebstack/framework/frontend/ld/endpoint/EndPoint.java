@@ -14,9 +14,7 @@ public class EndPoint {
 
   private Stage stage;
 
-  private ParameterMapper parameterMapper;
-
-  private EndPoint(Builder builder) {
+  protected EndPoint(Builder builder) {
     identifier = builder.identifier;
     pathPattern = builder.pathPattern;
     label = builder.label;
