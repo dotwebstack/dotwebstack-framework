@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,9 +19,6 @@ public class EndPointTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   private final String pathPattern = "pathPattern";
-
-  @Mock
-  private ParameterMapper parameterMapper;
 
   @Mock
   private Stage stage;
@@ -59,13 +55,12 @@ public class EndPointTest {
   public void build_CreateEndpointComplete_WithValidData() {
     // Assert
     EndPoint endPoint =
-        new EndPoint.Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).label("label").parameterMapper(
-            parameterMapper).stage(stage).build();
+        new EndPoint.Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).label("label").stage(
+            stage).build();
 
     // Act
     assertThat(endPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
     assertThat(endPoint.getPathPattern(), equalTo(pathPattern));
-    assertThat(endPoint.getParameterMapper(), equalTo(parameterMapper));
     assertThat(endPoint.getStage(), equalTo(stage));
     assertThat(endPoint.getLabel(), equalTo("label"));
   }
