@@ -157,7 +157,7 @@ public class FileConfigurationBackend
           FileFormats.getFormat(extension));
       streamList.add(new ByteArrayInputStream(outputStream.toByteArray()));
     } catch (IOException ex) {
-      LOG.error("Configuration file %s could not be read.", resource.getFilename());
+      LOG.error("Configuration file {} could not be read.", resource.getFilename());
       throw new ConfigurationException(
           String.format("Configuration file <%s> could not be read.", resource.getFilename()));
     }
