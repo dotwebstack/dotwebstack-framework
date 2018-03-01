@@ -23,6 +23,8 @@ public final class ELMO {
 
   public static final IRI SEQUENTIAL_FLOW_PROP;
 
+  public static final IRI UNKNOWN_FLOW_PROP;
+
   public static final IRI PERSISTENCE_STEP;
 
   public static final IRI VALIDATION_STEP;
@@ -160,6 +162,7 @@ public final class ELMO {
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
 
     SEQUENTIAL_FLOW_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "sequentialFlow");
+    UNKNOWN_FLOW_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "unknownFlow");
 
     TARGET_GRAPH_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "targetGraph");
 

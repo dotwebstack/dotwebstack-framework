@@ -1,11 +1,9 @@
 package org.dotwebstack.framework.transaction;
 
-import org.dotwebstack.framework.transaction.flow.FlowExecutor;
+import lombok.NonNull;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
 
 public class TransactionHandler {
 
@@ -15,19 +13,19 @@ public class TransactionHandler {
 
   private Repository transactionRepository;
 
-  public TransactionHandler(Transaction transaction, Model model) {
+  public TransactionHandler(@NonNull Repository transactionRepository,
+      @NonNull Transaction transaction, @NonNull Model model) {
     this.transaction = transaction;
     this.model = model;
+    this.transactionRepository = transactionRepository;
   }
 
   public void execute() {
-    transactionRepository = new SailRepository(new MemoryStore());
     transactionRepository.initialize();
     RepositoryConnection repositoryConnection = transactionRepository.getConnection();
     repositoryConnection.add(model);
 
-    FlowExecutor flowExecutor = transaction.getFlow().getExecutor(repositoryConnection);
-    flowExecutor.execute();
+    transaction.getFlow().getExecutor(repositoryConnection).execute();
 
     repositoryConnection.close();
     transactionRepository.shutDown();

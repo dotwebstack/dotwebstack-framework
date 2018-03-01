@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.transaction.flow.FlowFactory;
 import org.dotwebstack.framework.transaction.flow.SequentialFlow;
@@ -80,7 +81,6 @@ public class TransactionResourceProviderTest {
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
 
     when(sequentialFlowResourceProvider.get(any())).thenReturn(sequentialFlow);
-
   }
 
   @Test
@@ -108,6 +108,22 @@ public class TransactionResourceProviderTest {
 
     // Act
     new TransactionResourceProvider(configurationBackend, applicationProperties, null);
+  }
+
+  @Test
+  public void loadResources_ThrowsException_WithNoMatchingFlowFactories() {
+    // Assert
+    thrown.expect(ConfigurationException.class);
+
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.TRANSACTION, RDF.TYPE, ELMO.TRANSACTION),
+            valueFactory.createStatement(DBEERPEDIA.TRANSACTION, ELMO.UNKNOWN_FLOW_PROP,
+                DBEERPEDIA.PERSISTENCE_STEP))));
+
+    // Act
+    transactionResourceProvider.loadResources();
   }
 
   @Test
