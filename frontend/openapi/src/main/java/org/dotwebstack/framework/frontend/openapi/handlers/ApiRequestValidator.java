@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 class ApiRequestValidator {
   private static final Logger LOG = LoggerFactory.getLogger(ApiRequestValidator.class);
 
-  private static final List<String> FILTERED_HEADERS = ImmutableList.of("Accept", "Content-Type");
+  private static final List<String> FILTERED_HEADERS = ImmutableList.of("accept", "content-type");
 
   private final RequestValidator requestValidator;
 
@@ -47,7 +47,7 @@ class ApiRequestValidator {
     Builder builder = new SimpleRequest.Builder(method, requestContext.getUriInfo().getPath());
 
     requestContext.getHeaders().entrySet().stream().filter(
-        entry -> !FILTERED_HEADERS.contains(entry.getKey())).forEach(
+        entry -> !FILTERED_HEADERS.contains(entry.getKey().toLowerCase())).forEach(
             entry -> builder.withHeader(entry.getKey(), entry.getValue()));
     requestContext.getUriInfo().getPathParameters().forEach(builder::withQueryParam);
     requestContext.getUriInfo().getQueryParameters().forEach(builder::withQueryParam);
