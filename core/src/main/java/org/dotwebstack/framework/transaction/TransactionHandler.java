@@ -29,6 +29,7 @@ public class TransactionHandler {
     FlowExecutor flowExecutor = transaction.getFlow().getExecutor(repositoryConnection);
     flowExecutor.execute();
 
+    repositoryConnection.close();
     transactionRepository.shutDown();
   }
 
