@@ -9,6 +9,7 @@ import com.atlassian.oai.validator.report.ValidationReport;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Swagger;
+import java.util.List;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response.Status;
@@ -18,6 +19,8 @@ import org.slf4j.LoggerFactory;
 
 class ApiRequestValidator {
   private static final Logger LOG = LoggerFactory.getLogger(ApiRequestValidator.class);
+
+  private static final List<String> FILTERED_HEADERS = ImmutableList.of("Accept", "Content-Type");
 
   private final RequestValidator requestValidator;
 
@@ -43,7 +46,9 @@ class ApiRequestValidator {
     Method method = Method.valueOf(strMethod.toUpperCase());
     Builder builder = new SimpleRequest.Builder(method, requestContext.getUriInfo().getPath());
 
-    requestContext.getHeaders().forEach(builder::withHeader);
+    requestContext.getHeaders().entrySet().stream().filter(
+        entry -> !FILTERED_HEADERS.contains(entry.getKey())).forEach(
+            entry -> builder.withHeader(entry.getKey(), entry.getValue()));
     requestContext.getUriInfo().getPathParameters().forEach(builder::withQueryParam);
     requestContext.getUriInfo().getQueryParameters().forEach(builder::withQueryParam);
 
