@@ -27,6 +27,7 @@ public class DynamicEndPoint extends EndPoint {
       this.parameterMapper = parameterMapper;
     }
 
+    @Override
     public DynamicEndPoint build() {
       return new DynamicEndPoint(this);
     }
