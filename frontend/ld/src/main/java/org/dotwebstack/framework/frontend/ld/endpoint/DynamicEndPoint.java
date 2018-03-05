@@ -8,7 +8,7 @@ public class DynamicEndPoint extends EndPoint {
 
   private ParameterMapper parameterMapper;
 
-  private DynamicEndPoint(DynamicEndpointBuilder builder) {
+  private DynamicEndPoint(Builder builder) {
     super(builder);
     this.parameterMapper = builder.parameterMapper;
   }
@@ -17,17 +17,16 @@ public class DynamicEndPoint extends EndPoint {
     return parameterMapper;
   }
 
-  public static class DynamicEndpointBuilder extends EndPoint.Builder {
+  public static class Builder extends EndPointBuilder {
 
     private ParameterMapper parameterMapper;
 
-    public DynamicEndpointBuilder(@NonNull Resource identifier, @NonNull String pathPattern,
+    public Builder(@NonNull Resource identifier, @NonNull String pathPattern,
         @NonNull ParameterMapper parameterMapper) {
       super(identifier, pathPattern);
       this.parameterMapper = parameterMapper;
     }
 
-    @Override
     public DynamicEndPoint build() {
       return new DynamicEndPoint(this);
     }
