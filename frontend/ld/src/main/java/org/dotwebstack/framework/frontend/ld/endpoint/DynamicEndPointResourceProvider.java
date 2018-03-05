@@ -56,8 +56,8 @@ public class DynamicEndPointResourceProvider extends AbstractResourceProvider<Dy
     final ParameterMapper parameterMapper =
         parameterMapperResourceProvider.get(parameterMapperResource);
 
-    final DynamicEndPoint.Builder builder =
-        new DynamicEndPoint.Builder(identifier, pathPattern, parameterMapper);
+    final DynamicEndPoint.DynamicEndpointBuilder builder =
+        new DynamicEndPoint.DynamicEndpointBuilder(identifier, pathPattern, parameterMapper);
     getObjectString(model, identifier, RDFS.LABEL).ifPresent(builder::label);
     getObjectResource(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));
