@@ -13,6 +13,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.util.ModelException;
 import org.eclipse.rdf4j.model.util.RDFCollections;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -46,9 +47,11 @@ public class SequentialFlowResourceProvider extends AbstractResourceProvider<Seq
   @Override
   public SequentialFlow createResource(Model model, Resource identifier) {
 
-    List<Value> stepIris = RDFCollections.asValues(model, identifier, new ArrayList<Value>());
+    List<Value> stepIris = null;
 
-    if (stepIris.isEmpty()) {
+    try {
+      stepIris = RDFCollections.asValues(model, identifier, new ArrayList<Value>());
+    } catch (ModelException modelException) {
       throw new ConfigurationException(
           String.format("No steps have been found for flow <%s>.", identifier));
     }
@@ -58,7 +61,7 @@ public class SequentialFlowResourceProvider extends AbstractResourceProvider<Seq
       Step step = stepResourceProvider.get((IRI)stepIri);
       if (step == null) {
         throw new ConfigurationException(
-            String.format("No step definition <%s> found for flow <%s>.", step, identifier));
+            String.format("No step definition <%s> found for flow <%s>.", stepIri, identifier));
       } else {
         stepList.add(step);
       }

@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.transaction.flow;
 
 import java.util.List;
+import lombok.NonNull;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -34,7 +35,7 @@ public class SequentialFlow implements Flow {
 
     private List<Step> steps;
 
-    public Builder(Resource identifier, List<Step> steps) {
+    public Builder(@NonNull Resource identifier, @NonNull List<Step> steps) {
       this.identifier = identifier;
       this.steps = steps;
     }
