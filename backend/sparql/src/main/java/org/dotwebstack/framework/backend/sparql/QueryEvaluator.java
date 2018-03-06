@@ -4,6 +4,8 @@ import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.RDF4JException;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.Query;
@@ -46,6 +48,16 @@ public class QueryEvaluator {
 
     throw new BackendException(
         String.format("Query type '%s' not supported.", preparedQuery.getClass()));
+  }
+
+  public void add(@NonNull RepositoryConnection repositoryConnection, @NonNull Model model,
+      @NonNull IRI targetGraph) {
+
+    try {
+      repositoryConnection.add(model, targetGraph);
+    } catch (RDF4JException e) {
+      throw new BackendException("Data could not be added into graph", e);
+    }
   }
 
 }

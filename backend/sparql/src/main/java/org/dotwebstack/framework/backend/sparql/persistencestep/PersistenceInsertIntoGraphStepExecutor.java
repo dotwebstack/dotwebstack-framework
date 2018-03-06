@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.sparql.persistencestep;
 
+import lombok.NonNull;
+import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
 import org.dotwebstack.framework.backend.sparql.SparqlBackend;
 import org.dotwebstack.framework.transaction.flow.step.AbstractStepExecutor;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
@@ -13,17 +15,21 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
 
   private PersistenceStep persistenceStep;
 
-  public PersistenceInsertIntoGraphStepExecutor(PersistenceStep persistenceStep,
-      Model transactionModel, SparqlBackend backend) {
+  private QueryEvaluator queryEvaluator;
+
+  public PersistenceInsertIntoGraphStepExecutor(@NonNull PersistenceStep persistenceStep,
+      @NonNull Model transactionModel, @NonNull SparqlBackend backend,
+      @NonNull QueryEvaluator queryEvaluator) {
     super(persistenceStep);
     this.backend = backend;
     this.transactionModel = transactionModel;
     this.persistenceStep = persistenceStep;
+    this.queryEvaluator = queryEvaluator;
   }
 
+  @Override
   public void execute() {
-    // add statements to graph
-    backend.getConnection().add(transactionModel, persistenceStep.getTargetGraph());
+    queryEvaluator.add(backend.getConnection(), transactionModel, persistenceStep.getTargetGraph());
   }
 
 }
