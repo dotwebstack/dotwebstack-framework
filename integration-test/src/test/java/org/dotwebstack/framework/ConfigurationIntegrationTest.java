@@ -84,7 +84,7 @@ public class ConfigurationIntegrationTest {
     String cssResource = layoutResourceProvider.get(DBEERPEDIA.LAYOUT).getOptions().get(
         valueFactory.createIRI("http://www.w3.org/1999/xhtml/vocab#stylesheet")).stringValue();
     assertThat(cssResource, equalTo("stage-layout.css"));
-    assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(7));
     assertThat(dynamicEndPointResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT), notNullValue());
     assertThat(dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT).getLabel(),
