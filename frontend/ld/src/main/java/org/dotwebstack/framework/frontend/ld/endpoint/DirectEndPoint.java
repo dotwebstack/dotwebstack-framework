@@ -38,7 +38,7 @@ public class DirectEndPoint extends EndPoint {
 
     // add services
 
-    public Builder(Resource identifier, String pathPattern) {
+    public Builder(@NonNull Resource identifier, @NonNull String pathPattern) {
       super(identifier, pathPattern);
     }
 
