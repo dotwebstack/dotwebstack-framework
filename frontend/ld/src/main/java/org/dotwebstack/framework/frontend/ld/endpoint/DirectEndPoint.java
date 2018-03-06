@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.endpoint;
 
+import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.eclipse.rdf4j.model.Resource;
 
@@ -29,7 +30,7 @@ public class DirectEndPoint extends EndPoint {
 
   // add getters for services
 
-  public static class Builder extends EndPointBuilder {
+  public static class Builder extends EndPointBuilder<Builder> {
 
     private Representation representationGet;
 
@@ -49,6 +50,10 @@ public class DirectEndPoint extends EndPoint {
     public Builder representationPost(Representation representation) {
       this.representationPost = representation;
       return this;
+    }
+
+    public DirectEndPoint build() {
+      return new DirectEndPoint(this);
     }
 
     // add builder methods for services

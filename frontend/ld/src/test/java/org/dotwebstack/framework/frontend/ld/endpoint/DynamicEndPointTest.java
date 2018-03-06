@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import org.dotwebstack.framework.frontend.http.stage.Stage;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Rule;
@@ -33,8 +34,7 @@ public class DynamicEndPointTest {
   public void build_CreateDynamicEndPoint_WithValidData() {
     // Assert
     DynamicEndPoint dynamicEndPoint =
-        new DynamicEndPoint.DynamicEndpointBuilder(DBEERPEDIA.DOC_ENDPOINT, pathPattern,
-            parameterMapper).build();
+        new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern, parameterMapper).build();
 
     // Act
     assertThat(dynamicEndPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
@@ -48,7 +48,7 @@ public class DynamicEndPointTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new DynamicEndPoint.DynamicEndpointBuilder(null, pathPattern, parameterMapper).build();
+    new Builder(null, pathPattern, parameterMapper).build();
   }
 
   @Test
@@ -57,8 +57,7 @@ public class DynamicEndPointTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new DynamicEndPoint.DynamicEndpointBuilder(DBEERPEDIA.DOC_ENDPOINT, null,
-        parameterMapper).build();
+    new Builder(DBEERPEDIA.DOC_ENDPOINT, null, parameterMapper).build();
   }
 
   @Test

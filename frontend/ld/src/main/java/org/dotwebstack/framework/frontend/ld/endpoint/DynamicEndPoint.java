@@ -17,7 +17,7 @@ public class DynamicEndPoint extends EndPoint {
     return parameterMapper;
   }
 
-  public static class Builder extends EndPointBuilder {
+  public static class Builder extends EndPointBuilder<Builder> {
 
     private ParameterMapper parameterMapper;
 

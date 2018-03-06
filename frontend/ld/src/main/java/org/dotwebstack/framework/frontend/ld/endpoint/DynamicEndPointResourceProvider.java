@@ -6,6 +6,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -56,8 +57,7 @@ public class DynamicEndPointResourceProvider extends AbstractResourceProvider<Dy
     final ParameterMapper parameterMapper =
         parameterMapperResourceProvider.get(parameterMapperResource);
 
-    final DynamicEndPoint.DynamicEndpointBuilder builder =
-        new DynamicEndPoint.DynamicEndpointBuilder(identifier, pathPattern, parameterMapper);
+    final DynamicEndPoint.Builder builder = new Builder(identifier, pathPattern, parameterMapper);
     getObjectString(model, identifier, RDFS.LABEL).ifPresent(builder::label);
     getObjectResource(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));

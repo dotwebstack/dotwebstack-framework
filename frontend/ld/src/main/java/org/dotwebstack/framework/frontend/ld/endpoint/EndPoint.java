@@ -14,7 +14,7 @@ public abstract class EndPoint {
 
   private Stage stage;
 
-  protected EndPoint(EndPointBuilder builder) {
+  protected EndPoint(EndPointBuilder<?> builder) {
     identifier = builder.identifier;
     pathPattern = builder.pathPattern;
     label = builder.label;
@@ -37,7 +37,7 @@ public abstract class EndPoint {
     return pathPattern;
   }
 
-  protected static class EndPointBuilder {
+  public abstract static class EndPointBuilder<E extends EndPointBuilder<E>> {
 
     private Resource identifier;
 
@@ -47,21 +47,22 @@ public abstract class EndPoint {
 
     private Stage stage;
 
-    public EndPointBuilder(@NonNull Resource identifier, @NonNull String pathPattern) {
+    protected EndPointBuilder(@NonNull Resource identifier, @NonNull String pathPattern) {
       this.identifier = identifier;
       this.pathPattern = pathPattern;
     }
 
-    public EndPointBuilder label(@NonNull String label) {
+    protected EndPointBuilder label(@NonNull String label) {
       this.label = label;
       return this;
     }
 
-    public EndPointBuilder stage(@NonNull Stage stage) {
+    protected EndPointBuilder stage(@NonNull Stage stage) {
       this.stage = stage;
       return this;
     }
 
+    protected abstract EndPoint build();
   }
 
 }
