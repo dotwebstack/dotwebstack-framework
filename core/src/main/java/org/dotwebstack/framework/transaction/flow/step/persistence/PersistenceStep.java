@@ -15,7 +15,6 @@ public class PersistenceStep implements Step<StepExecutor> {
 
   private Resource identifier;
 
-  // todo replace IRI by Strategy
   private IRI persistenceStrategy;
 
   private Backend backend;
