@@ -125,7 +125,8 @@ public class BackendResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.BACKEND, RDF.TYPE, ELMO.SPARQL_BACKEND),
-            valueFactory.createStatement(DBEERPEDIA.BACKEND, ELMO.ENDPOINT, DBEERPEDIA.ENDPOINT))));
+            valueFactory.createStatement(DBEERPEDIA.BACKEND, ELMO.ENDPOINT_PROP,
+                DBEERPEDIA.ENDPOINT))));
     when(backendFactory.create(any(Model.class), eq(DBEERPEDIA.BACKEND))).thenReturn(backend);
     when(backendFactory.supports(any(IRI.class))).thenReturn(true);
 
@@ -143,7 +144,8 @@ public class BackendResourceProviderTest {
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
             valueFactory.createStatement(DBEERPEDIA.BACKEND, RDF.TYPE, ELMO.SPARQL_BACKEND),
-            valueFactory.createStatement(DBEERPEDIA.BACKEND, ELMO.ENDPOINT, DBEERPEDIA.ENDPOINT))));
+            valueFactory.createStatement(DBEERPEDIA.BACKEND, ELMO.ENDPOINT_PROP,
+                DBEERPEDIA.ENDPOINT))));
     when(backendFactory.supports(ELMO.SPARQL_BACKEND)).thenReturn(false);
 
     // Assert
@@ -158,9 +160,9 @@ public class BackendResourceProviderTest {
   @Test
   public void loadResources_ThrowsException_TypeStatementMissing() {
     // Arrange
-    when(graphQuery.evaluate()).thenReturn(
-        new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
-            valueFactory.createStatement(DBEERPEDIA.BACKEND, ELMO.ENDPOINT, DBEERPEDIA.ENDPOINT))));
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(valueFactory.createStatement(DBEERPEDIA.BACKEND, ELMO.ENDPOINT_PROP,
+            DBEERPEDIA.ENDPOINT))));
 
     // Assert
     thrown.expect(ConfigurationException.class);

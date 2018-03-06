@@ -29,14 +29,15 @@ class SparqlBackendFactory implements BackendFactory {
   @Override
   public Backend create(Model backendModel, Resource identifier) {
     Literal endpoint =
-        Models.objectLiteral(backendModel.filter(identifier, ELMO.ENDPOINT, null)).orElseThrow(
-            () -> new ConfigurationException(String.format(
-                "No <%s> statement has been found for backend <%s>.", ELMO.ENDPOINT, identifier)));
+        Models.objectLiteral(backendModel.filter(identifier, ELMO.ENDPOINT_PROP, null)).orElseThrow(
+            () -> new ConfigurationException(
+                String.format("No <%s> statement has been found for backend <%s>.",
+                    ELMO.ENDPOINT_PROP, identifier)));
 
     if (!XMLSchema.ANYURI.equals(endpoint.getDatatype())) {
       throw new ConfigurationException(
-          String.format("Object <%s> for backend <%s> must be of datatype <%s>.", ELMO.ENDPOINT,
-              identifier, XMLSchema.ANYURI));
+          String.format("Object <%s> for backend <%s> must be of datatype <%s>.",
+              ELMO.ENDPOINT_PROP, identifier, XMLSchema.ANYURI));
     }
 
     SPARQLRepository repository = new SPARQLRepository(endpoint.stringValue());
