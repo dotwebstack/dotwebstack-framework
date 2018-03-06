@@ -5,40 +5,70 @@
 
 GRAPH dbeerpedia:Theatre {
 
-dbeerpedia:TheRepresentation a elmo:Representation;
-  elmo:pathPattern "/subRep";
-  elmo:stage dbeerpedia:Stage;
-  elmo:informationProduct dbeerpedia:TupleBreweries;
-  elmo:contains dbeerpedia:GraphBreweryListRepresentation;
-.
+  dbeerpedia:TheEndpoint a elmo:Endpoint;
+    elmo:stage dbeerpedia:Stage;
+    elmo:pathPattern "/subRep";
+    elmo:getRepresentation dbeerpedia:TheRepresentation;
+  .
 
-dbeerpedia:GraphBreweryListRepresentation a elmo:Representation;
-  elmo:pathPattern "/graph-breweries";
-  elmo:stage dbeerpedia:Stage;
-  elmo:informationProduct dbeerpedia:GraphBreweries;
-.
+  dbeerpedia:TheRepresentation a elmo:Representation;
+    elmo:stage dbeerpedia:Stage;
+    elmo:informationProduct dbeerpedia:TupleBreweries;
+    elmo:contains dbeerpedia:GraphBreweryListRepresentation;
+  .
+
+  dbeerpedia:GraphBreweryListEndpoint a elmo:Endpoint;
+    elmo:stage dbeerpedia:Stage;
+    elmo:pathPattern "/graph-breweries";
+    elmo:getRepresentation dbeerpedia:GraphBreweryListRepresentation;
+  .
+
+  dbeerpedia:GraphBreweryListRepresentation a elmo:Representation;
+    elmo:stage dbeerpedia:Stage;
+    elmo:informationProduct dbeerpedia:GraphBreweries;
+  .
+
+  dbeerpedia:TupleBreweryListEndpoint a elmo:Endpoint;
+    elmo:stage dbeerpedia:Stage;
+    elmo:pathPattern "/tuple-breweries";
+    elmo:getRepresentation dbeerpedia:TupleBreweryListRepresentation;
+  .
 
   dbeerpedia:TupleBreweryListRepresentation a elmo:Representation;
-    elmo:pathPattern "/tuple-breweries";
     elmo:stage dbeerpedia:Stage;
     elmo:informationProduct dbeerpedia:TupleBreweries;
   .
 
-  dbeerpedia:BreweryRepresentation a elmo:Representation;
+  dbeerpedia:BreweryEndpoint a elmo:Endpoint;
+    elmo:stage dbeerpedia:Stage;
     elmo:pathPattern "/tuple-brewery";
+    elmo:getRepresentation dbeerpedia:BreweryRepresentation;
+  .
+
+  dbeerpedia:BreweryRepresentation a elmo:Representation;
     elmo:stage dbeerpedia:Stage;
     elmo:informationProduct dbeerpedia:TupleBrewery;
   .
 
-  dbeerpedia:ResourceRepresentation a elmo:Representation;
+  dbeerpedia:ResourceEndpoint a elmo:Endpoint;
+      elmo:stage dbeerpedia:Stage;
       elmo:pathPattern "/doc/{reference}";
+      elmo:getRepresentation dbeerpedia:ResourceRepresentation;
+   .
+
+  dbeerpedia:ResourceRepresentation a elmo:Representation;
       elmo:stage dbeerpedia:Stage;
       elmo:parameterMapper dbeerpedia:SubjectFromUrl;
       elmo:informationProduct dbeerpedia:ResourceInformationProduct
   .
 
-  dbeerpedia:Homepage a elmo:Representation;
+  dbeerpedia:HomepageEndpoint a elmo:Endpoint;
+      elmo:stage dbeerpedia:Stage;
       elmo:pathPattern "";
+      elmo:getRepresentation dbeerpedia:Homepage;
+   .
+
+  dbeerpedia:Homepage a elmo:Representation;
       elmo:stage dbeerpedia:Stage;
       elmo:informationProduct dbeerpedia:GraphBreweries;
       elmo:appearance [a elmo:HtmlAppearance];
