@@ -10,10 +10,6 @@ public class DirectEndPoint extends EndPoint {
 
   private Representation representationPost;
 
-  // private Service postService;
-  // private Service putService;
-  // private Service deleteService;
-
   public DirectEndPoint(Builder builder) {
     super(builder);
     this.representationGet = builder.representationGet;
@@ -28,15 +24,11 @@ public class DirectEndPoint extends EndPoint {
     return representationPost;
   }
 
-  // add getters for services
-
   public static class Builder extends EndPointBuilder<Builder> {
 
     private Representation representationGet;
 
     private Representation representationPost;
-
-    // add services
 
     public Builder(@NonNull Resource identifier, @NonNull String pathPattern) {
       super(identifier, pathPattern);
@@ -56,6 +48,5 @@ public class DirectEndPoint extends EndPoint {
       return new DirectEndPoint(this);
     }
 
-    // add builder methods for services
   }
 }
