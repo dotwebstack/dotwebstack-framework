@@ -38,7 +38,7 @@ public class GraphEntityTest {
   @Before
   public void setUp() {
     entity = newGraphEntity(ImmutableMap.of(), queryResultMock, definitionsMock,
-        ImmutableMap.of(), productMock);
+        ImmutableMap.of(), productMock, "");
   }
 
   @Test

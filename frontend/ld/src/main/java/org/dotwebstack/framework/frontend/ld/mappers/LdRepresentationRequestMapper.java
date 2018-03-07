@@ -86,7 +86,7 @@ public class LdRepresentationRequestMapper {
         LOG.debug("Mapped {} operation(s) for request path {}",
             resourceBuilder.build().getResourceMethods(), absolutePath);
       } else {
-        LOG.error("Resource <%s> is not registered", absolutePath);
+        LOG.error("Resource <{}> is not registered", absolutePath);
       }
     });
   }

@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.param.ShaclShape;
+import org.dotwebstack.framework.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
@@ -29,12 +30,13 @@ public final class TermParameterFactory {
     } else if (type.equals(XMLSchema.BOOLEAN)) {
       Boolean defVal = defaultValue != null ? ((Literal) defaultValue).booleanValue() : null;
       return new BooleanTermParameter(identifier, name, required, defVal);
-    } else if (type.equals(XMLSchema.ANYURI)) {
-      return new IriTermParameter(identifier, name, required, (IRI) defaultValue);
+    } else if (type.equals(SHACL.IRI)) {
+      IRI defVal = defaultValue != null ? ((Literal) defaultValue).getDatatype() : null;
+      return new IriTermParameter(identifier, name, required, defVal);
     }
     throw new ConfigurationException(
-        String.format("Unsupported data type: <%s>. Supported types: %s", type, ImmutableList.of(
-            XMLSchema.BOOLEAN, XMLSchema.STRING, XMLSchema.INTEGER, XMLSchema.ANYURI)));
+        String.format("Unsupported data type: <%s>. Supported types: %s", type,
+            ImmutableList.of(XMLSchema.BOOLEAN, XMLSchema.STRING, XMLSchema.INTEGER, SHACL.IRI)));
   }
 
 }

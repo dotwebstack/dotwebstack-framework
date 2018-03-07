@@ -1,9 +1,14 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.base.Splitter;
+import io.swagger.models.HttpMethod;
 import java.io.IOException;
+import java.util.List;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.HttpHeaders;
@@ -48,6 +53,7 @@ public class OpenApiIntegrationTest {
     target = ClientBuilder.newClient(httpConfiguration).target(
         String.format("http://localhost:%d", this.port));
 
+    System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
     SparqlHttpStub.start();
   }
 
@@ -128,16 +134,38 @@ public class OpenApiIntegrationTest {
   }
 
   @Test
-  public void get_GetCorrectOptions_ThroughOpenApi() {
+  public void get_GetAllowedMethods_ForOptionsRequest() {
     // Act
-    Response response =
-        target.path("/dbp/api/v1/breweries").request(MediaType.TEXT_PLAIN_TYPE).options();
+    Response response = target.path("/dbp/api/v1/breweries").request().options();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("HEAD, GET, OPTIONS"));
-    assertThat(response.getHeaderString("allow"), equalTo("HEAD,GET,OPTIONS"));
+    List<String> allowMethods =
+        Splitter.on(",").splitToList(response.getHeaders().getFirst(HttpHeaders.ALLOW).toString());
+    assertThat(allowMethods, containsInAnyOrder(HttpMethod.GET.toString(),
+        HttpMethod.HEAD.toString(), HttpMethod.OPTIONS.toString()));
+    assertThat(response.getHeaders().containsKey(
+        org.springframework.http.HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), is(false));
+  }
+
+  @Test
+  public void get_GetCorsPolicy_ForOptionsRequestWithOriginAndRequestMethod() {
+    // Act
+    Response response = target.path("/dbp/api/v1/breweries").request().header(
+        org.springframework.http.HttpHeaders.ORIGIN, "http://foo").header(
+            org.springframework.http.HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET").options();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(
+        response.getHeaders().getFirst(
+            org.springframework.http.HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo("http://foo"));
+    List<String> allowMethods =
+        Splitter.on(",").trimResults().splitToList(response.getHeaders().getFirst(
+            org.springframework.http.HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
+    assertThat(allowMethods, containsInAnyOrder(HttpMethod.GET.toString(),
+        HttpMethod.HEAD.toString(), HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -242,6 +270,25 @@ public class OpenApiIntegrationTest {
 
     String result = response.readEntity(String.class);
     JSONAssert.assertEquals(expected.toString(), result, true);
+  }
+
+  @Test
+  public void get_GraphGetBreweryCollection_ThroughOpenApi_Returns404ForEmptyQueryResult()
+      throws JSONException {
+    // Arrange
+    // @formatter:off
+    Model model = new ModelBuilder()
+        .build();
+    // @formatter:on
+
+    SparqlHttpStub.returnGraph(model);
+
+    // Act
+    Response response = target.path("/dbp/api/v1/graph-breweries").request().accept(
+        MediaType.APPLICATION_JSON_TYPE).get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
   }
 
 }
