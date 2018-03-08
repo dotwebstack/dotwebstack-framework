@@ -21,6 +21,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TriGModelReaderTest {
@@ -61,18 +63,11 @@ public class TriGModelReaderTest {
   @Test
   public void readFrom_GetValidModel_WithValidTriG() throws IOException {
     // Arrange
-    InputStream triG = new ByteArrayInputStream(("@prefix rdf: "
-        + "<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
-        + "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n"
-        + "@prefix xml: <http://www.w3.org/XML/1998/namespace> .\n"
-        + "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .\n"
-        + "\n"
-        + "<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend> ;\n"
-        + "    rdfs:label \"Beer breweries in The Netherlands\" .").getBytes());
+    Resource triG = new ClassPathResource("/modelreader/triG.trig");
 
     // Act
     Model model = triGModelReader.readFrom(Model.class, type, annotations, mediaType,
-        multiValuedMap, triG);
+        multiValuedMap, triG.getInputStream());
 
     // Assert
     assertTrue(model.contains(DBEERPEDIA.BREWERIES, RDF.TYPE, DBEERPEDIA.BACKEND));

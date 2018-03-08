@@ -21,6 +21,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RdfXmlModelReaderTest {
@@ -61,22 +63,11 @@ public class RdfXmlModelReaderTest {
   @Test
   public void readFrom_GetValidModel_WithValidRdfXml() throws IOException {
     // Arrange
-    InputStream rdfXml = new ByteArrayInputStream(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        + "\n"
-        + "<rdf:RDF\n"
-        + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n"
-        + "\n"
-        + "<rdf:Description rdf:about=\"http://dbeerpedia.org#Breweries\">\n"
-        + "<rdf:type rdf:resource=\"http://dbeerpedia.org#Backend\"/>\n"
-        + "<label xmlns=\"http://www.w3.org/2000/01/rdf-schema#\">"
-        + "Beer breweries in The Netherlands</label>\n"
-        + "</rdf:Description>\n"
-        + "\n"
-        + "</rdf:RDF>").getBytes());
+    Resource rdfXml = new ClassPathResource("/modelreader/rdfXml.xml");
 
     // Act
     Model model = rdfXmlModelReader.readFrom(Model.class, type, annotations, mediaType,
-        multiValuedMap, rdfXml);
+        multiValuedMap, rdfXml.getInputStream());
 
     // Assert
     assertTrue(model.contains(DBEERPEDIA.BREWERIES, RDF.TYPE, DBEERPEDIA.BACKEND));

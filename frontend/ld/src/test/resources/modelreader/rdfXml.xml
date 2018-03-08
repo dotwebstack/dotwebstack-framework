@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<rdf:RDF
+xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+<rdf:Description rdf:about="http://dbeerpedia.org#Breweries">
+<rdf:type rdf:resource="http://dbeerpedia.org#Backend"/>
+<label xmlns="http://www.w3.org/2000/01/rdf-schema#">Beer breweries in The Netherlands</label>
+</rdf:Description>
+
+</rdf:RDF>

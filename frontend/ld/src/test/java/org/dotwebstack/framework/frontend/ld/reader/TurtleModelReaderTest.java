@@ -21,6 +21,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TurtleModelReaderTest {
@@ -61,14 +63,11 @@ public class TurtleModelReaderTest {
   @Test
   public void readFrom_GetValidModel_WithValidTurtle() throws IOException {
     // Arrange
-    InputStream turtle = new ByteArrayInputStream(("<http://dbeerpedia.org#Breweries> "
-        + "<http://www.w3.org/2000/01/rdf-schema#label> \"Beer breweries in The Netherlands\" .\n"
-        + "<http://dbeerpedia.org#Breweries> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> "
-        + "<http://dbeerpedia.org#Backend> .\n").getBytes());
+    Resource turtle = new ClassPathResource("/modelreader/turtle.ttl");
 
     // Act
     Model model = turtleModelReader.readFrom(Model.class, type, annotations, mediaType,
-        multiValuedMap, turtle);
+        multiValuedMap, turtle.getInputStream());
 
     // Assert
     assertTrue(model.contains(DBEERPEDIA.BREWERIES, RDF.TYPE, DBEERPEDIA.BACKEND));

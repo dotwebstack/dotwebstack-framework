@@ -21,6 +21,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JsonLdModelReaderTest {
@@ -61,20 +63,11 @@ public class JsonLdModelReaderTest {
   @Test
   public void readFrom_GetValidModel_WithValidJsonLd() throws IOException {
     // Arrange
-    InputStream jsonLd = new ByteArrayInputStream(("{\n"
-        + "  \"@context\": {\n"
-        + "    \"rdf\": \"http://www.w3.org/1999/02/22-rdf-syntax-ns#\",\n"
-        + "    \"rdfs\": \"http://www.w3.org/2000/01/rdf-schema#\",\n"
-        + "    \"xsd\": \"http://www.w3.org/2001/XMLSchema#\"\n"
-        + "  },\n"
-        + "  \"@id\": \"http://dbeerpedia.org#Breweries\",\n"
-        + "  \"@type\": \"http://dbeerpedia.org#Backend\",\n"
-        + "  \"rdfs:label\": \"Beer breweries in The Netherlands\"\n"
-        + "}").getBytes());
+    Resource jsonLd = new ClassPathResource("/modelreader/jsonLd.json");
 
     // Act
     Model model = jsonLdModelReader.readFrom(Model.class, type, annotations, mediaType,
-        multiValuedMap, jsonLd);
+        multiValuedMap, jsonLd.getInputStream());
 
     // Assert
     assertTrue(model.contains(DBEERPEDIA.BREWERIES, RDF.TYPE, DBEERPEDIA.BACKEND));
