@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.mappers;
 
+import java.util.Arrays;
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
@@ -11,7 +12,6 @@ import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
-import org.eclipse.rdf4j.model.Model;
 import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,19 +66,16 @@ public class LdRepresentationRequestMapper {
         resourceBuilder.addMethod(HttpMethod.GET).handledBy(
             representationRequestHandlerFactory.newRepresentationRequestHandler(
                 representation)).produces(
-            supportedWriterMediaTypesScanner.getMediaTypes(
-                representation.getInformationProduct().getResultType())).nameBindings(
-            ExpandFormatParameter.class);
+                    supportedWriterMediaTypesScanner.getMediaTypes(
+                        representation.getInformationProduct().getResultType())).nameBindings(
+                            ExpandFormatParameter.class);
       } else if (representation.getTransaction() != null) {
-        try {
-          resourceBuilder.addMethod(HttpMethod.POST).handledBy(
-              transactionRequestHandlerFactory.newTransactionRequestHandler(
-                  representation.getTransaction()),
-              TransactionRequestHandler.class.getMethod("apply", Model.class))
-              .consumes(supportedReaderMediaTypesScanner.getMediaTypes());
-        } catch (NoSuchMethodException e) {
-          throw new RuntimeException("Apply method not defined in TransactionRequestHandler");
-        }
+        resourceBuilder.addMethod(HttpMethod.POST).handledBy(
+            transactionRequestHandlerFactory.newTransactionRequestHandler(
+                representation.getTransaction()),
+            Arrays.stream(TransactionRequestHandler.class.getMethods()).filter(
+                method -> method.getName() == "apply").findFirst().get()).consumes(
+                    supportedReaderMediaTypesScanner.getMediaTypes());
       }
 
       if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
