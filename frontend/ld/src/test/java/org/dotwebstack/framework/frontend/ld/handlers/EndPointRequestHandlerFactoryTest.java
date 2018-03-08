@@ -3,7 +3,7 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 
-import org.dotwebstack.framework.frontend.ld.representation.Representation;
+import org.dotwebstack.framework.frontend.ld.endpoint.EndPoint;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,20 +11,20 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RepresentationRequestHandlerFactoryTest {
+public class EndPointRequestHandlerFactoryTest {
 
-  RepresentationRequestHandlerFactory representationRequestHandlerFactory;
-
-  @Mock
-  Representation representation;
+  EndPointRequestHandlerFactory representationRequestHandlerFactory;
 
   @Mock
-  RepresentationRequestParameterMapper representationRequestParameterMapper;
+  EndPoint endPoint;
+
+  @Mock
+  EndPointRequestParameterMapper representationRequestParameterMapper;
 
   @Before
   public void setUp() {
     representationRequestHandlerFactory =
-        new RepresentationRequestHandlerFactory(representationRequestParameterMapper);
+        new EndPointRequestHandlerFactory(representationRequestParameterMapper);
   }
 
   @Test
@@ -32,11 +32,11 @@ public class RepresentationRequestHandlerFactoryTest {
     // Arrange
 
     // Act
-    RepresentationRequestHandler representationRequestHandler =
-        representationRequestHandlerFactory.newRepresentationRequestHandler(representation);
+    EndPointRequestHandler endPointRequestHandler =
+        representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint);
 
     // Assert
-    assertThat(representationRequestHandler.getRepresentationRequestParameterMapper(),
+    assertThat(endPointRequestHandler.getEndPointRequestParameterMapper(),
         sameInstance(representationRequestParameterMapper));
   }
 

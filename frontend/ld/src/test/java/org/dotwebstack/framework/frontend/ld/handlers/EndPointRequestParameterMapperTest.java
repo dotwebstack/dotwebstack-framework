@@ -28,7 +28,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RepresentationRequestParameterMapperTest {
+public class EndPointRequestParameterMapperTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -48,7 +48,7 @@ public class RepresentationRequestParameterMapperTest {
 
   private Parameter<?> optionalParameter;
 
-  private RepresentationRequestParameterMapper representationRequestParameterMapper;
+  private EndPointRequestParameterMapper representationRequestParameterMapper;
 
   @Before
   public void setUp() {
@@ -64,7 +64,7 @@ public class RepresentationRequestParameterMapperTest {
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
         ImmutableList.of(requiredParameter, optionalParameter), templateProcessorMock);
 
-    representationRequestParameterMapper = new RepresentationRequestParameterMapper();
+    representationRequestParameterMapper = new EndPointRequestParameterMapper();
 
     uriInfoMock = mock(UriInfo.class);
     when(contextMock.getUriInfo()).thenReturn(uriInfoMock);

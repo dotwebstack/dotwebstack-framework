@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -27,10 +28,13 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RepresentationRequestHandlerTest {
+public class EndPointRequestHandlerTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+
+  @Mock
+  private DirectEndPoint endPoint;
 
   @Mock
   private Representation representation;
@@ -41,15 +45,16 @@ public class RepresentationRequestHandlerTest {
   @Mock
   private InformationProduct informationProduct;
 
-  private RepresentationRequestParameterMapper representationRequestParameterMapper;
+  private EndPointRequestParameterMapper endPointRequestParameterMapper;
 
-  private RepresentationRequestHandler getRequestHandler;
+  private EndPointRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
-    representationRequestParameterMapper = new RepresentationRequestParameterMapper();
-    getRequestHandler =
-        new RepresentationRequestHandler(representation, representationRequestParameterMapper);
+    endPointRequestParameterMapper = new EndPointRequestParameterMapper();
+    getRequestHandler = new EndPointRequestHandler(endPoint, endPointRequestParameterMapper);
+    when(endPoint.getRepresentationGet()).thenReturn(representation);
+    when(representation.getInformationProduct()).thenReturn(informationProduct);
   }
 
   @Test
@@ -58,13 +63,12 @@ public class RepresentationRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new RepresentationRequestHandler(null, representationRequestParameterMapper);
+    new EndPointRequestHandler(null, endPointRequestParameterMapper);
   }
 
   @Test
   public void apply_ReturnQueryRepresentation_WhenGraphQueryResult() {
     // Arrange
-    when(representation.getInformationProduct()).thenReturn(informationProduct);
     GraphQueryResult queryResult = mock(GraphQueryResult.class);
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
     when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
@@ -81,13 +85,12 @@ public class RepresentationRequestHandlerTest {
     assertThat(response.getEntity(), instanceOf(GraphEntity.class));
     GraphEntity entity = (GraphEntity) response.getEntity();
     assertThat(entity.getQueryResult(), equalTo(queryResult));
-    assertThat(entity.getRepresentation(), equalTo(representation));
+    assertThat(entity.getRepresentation(), equalTo(endPoint));
   }
 
   @Test
   public void apply_ReturnQueryRepresentation_WhenTupleQueryResult() {
     // Arrange
-    when(representation.getInformationProduct()).thenReturn(informationProduct);
     TupleQueryResult queryResult = mock(TupleQueryResult.class);
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
@@ -104,13 +107,12 @@ public class RepresentationRequestHandlerTest {
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     TupleEntity entity = (TupleEntity) response.getEntity();
     assertThat(entity.getQueryResult(), equalTo(queryResult));
-    assertThat(entity.getRepresentation(), equalTo(representation));
+    assertThat(entity.getRepresentation(), equalTo(endPoint));
   }
 
   @Test
   public void apply_ThrowsException_WhenQueryResultIsUnexpected() {
     // Arrange
-    when(representation.getInformationProduct()).thenReturn(informationProduct);
     Object queryResult = new Object();
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
 

@@ -10,19 +10,20 @@ import org.apache.jena.rdf.model.impl.PropertyImpl;
 
 public class ValidationReport {
 
-  private static final String DESCRIPTION_RESULT_MESSAGE =
-      "http://www.w3.org/ns/shacl#resultMessage";
+  private static final String NAMESPACE = "http://www.w3.org/ns/shacl#";
 
-  private static final String DESCRIPTION_FOCUS_NODE = "http://www.w3.org/ns/shacl#focusNode";
+  private static final String DESCRIPTION_RESULT_MESSAGE = "resultMessage";
 
-  private static final String DESCRIPTION_CONFORMS = "http://www.w3.org/ns/shacl#conforms";
+  private static final String DESCRIPTION_FOCUS_NODE = "focusNode";
 
-  private static final String DESCRIPTION_RESULT = "http://www.w3.org/ns/shacl#result";
+  private static final String DESCRIPTION_CONFORMS = "conforms";
+
+  private static final String DESCRIPTION_RESULT = "result";
 
   @java.lang.SuppressWarnings("squid:S1075")
-  private static final String DESCRIPTION_RESULT_PATH = "http://www.w3.org/ns/shacl#resultPath";
+  private static final String DESCRIPTION_RESULT_PATH = "resultPath";
 
-  private static final String DESCRIPTION_RESULT_VALUE = "http://www.w3.org/ns/shacl#value";
+  private static final String DESCRIPTION_RESULT_VALUE = "value";
 
   private final Model reportModel;
 
