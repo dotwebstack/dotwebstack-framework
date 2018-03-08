@@ -45,8 +45,8 @@ public class TransactionResourceProvider extends AbstractResourceProvider<Transa
       for (FlowFactory flowFactory : flowFactories) {
         if (flowFactory.supports(predicate)) {
           final Transaction.Builder transactionBuilder = new Transaction.Builder(identifier);
-          getObjectResource(model, identifier, predicate).ifPresent(flowIndentifier ->
-            transactionBuilder.flow(flowFactory.getResource(flowIndentifier)));
+          getObjectResource(model, identifier, predicate).ifPresent(
+              flowIndentifier -> transactionBuilder.flow(flowFactory.getResource(flowIndentifier)));
           return transactionBuilder.build();
         }
       }
