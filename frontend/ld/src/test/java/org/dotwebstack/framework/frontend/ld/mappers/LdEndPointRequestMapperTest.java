@@ -18,11 +18,14 @@ import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
+import org.dotwebstack.framework.frontend.ld.endpoint.EndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.EndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestParameterMapper;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
-import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.glassfish.jersey.server.model.Resource;
@@ -36,7 +39,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class LdRepresentationRequestMapperTest {
+public class LdEndPointRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -51,16 +54,19 @@ public class LdRepresentationRequestMapperTest {
   private InformationProduct informationProduct;
 
   @Mock
+  private DirectEndPoint endPoint;
+
+  @Mock
   private Representation representation;
 
   @Mock
-  private RepresentationResourceProvider representationResourceProvider;
+  private EndPointResourceProvider endPointResourceProvider;
 
   @Mock
   private SupportedMediaTypesScanner supportedMediaTypesScanner;
 
   @Mock
-  private LdRepresentationRequestMapper ldRepresentationRequestMapper;
+  private LdEndPointRequestMapper ldEndPointRequestMapper;
 
   @Mock
   private RepresentationRequestParameterMapper representationRequestParameterMapper;
@@ -79,18 +85,17 @@ public class LdRepresentationRequestMapperTest {
     stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
-    representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-        informationProduct).stage(stage).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
-    representationMap.put(representation.getIdentifier(), representation);
+    endPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
+        DBEERPEDIA.PATH_PATTERN_VALUE).representationGet(representation).stage(stage).build();
+    Map<org.eclipse.rdf4j.model.Resource, EndPoint> endPointMap = new HashMap<>();
+    endPointMap.put(endPoint.getIdentifier(), endPoint);
 
-    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+    when(endPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     representationRequestHandler =
         new RepresentationRequestHandler(representation, representationRequestParameterMapper);
-    ldRepresentationRequestMapper =
-        new LdRepresentationRequestMapper(representationResourceProvider,
-            supportedMediaTypesScanner, representationRequestHandlerFactory);
+    ldEndPointRequestMapper = new LdEndPointRequestMapper(endPointResourceProvider,
+        supportedMediaTypesScanner, representationRequestHandlerFactory);
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
         isA(Representation.class))).thenReturn(representationRequestHandler);
 
@@ -100,12 +105,11 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    LdRepresentationRequestMapper ldRepresentationRequestMapper =
-        new LdRepresentationRequestMapper(representationResourceProvider,
-            supportedMediaTypesScanner, representationRequestHandlerFactory);
+    LdEndPointRequestMapper ldEndPointRequestMapper = new LdEndPointRequestMapper(
+        endPointResourceProvider, supportedMediaTypesScanner, representationRequestHandlerFactory);
 
     // Assert
-    assertThat(ldRepresentationRequestMapper, not(nullValue()));
+    assertThat(ldEndPointRequestMapper, not(nullValue()));
   }
 
   @Test
@@ -115,7 +119,7 @@ public class LdRepresentationRequestMapperTest {
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     // Act
-    ldRepresentationRequestMapper.loadRepresentations(httpConfiguration);
+    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
 
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
@@ -130,14 +134,13 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithoutStage() {
     // Arrange
-    representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-        informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
-    representationMap.put(representation.getIdentifier(), representation);
-    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+    endPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
+    Map<org.eclipse.rdf4j.model.Resource, EndPoint> endPointMap = new HashMap<>();
+    endPointMap.put(endPoint.getIdentifier(), endPoint);
+    when(endPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    ldRepresentationRequestMapper.loadRepresentations(httpConfiguration);
+    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -146,14 +149,13 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithNullStage() {
     // Arrange
-    representation = new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-        informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).stage(null).build();
-    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
-    representationMap.put(representation.getIdentifier(), representation);
-    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+    endPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
+    Map<org.eclipse.rdf4j.model.Resource, EndPoint> endPointMap = new HashMap<>();
+    endPointMap.put(endPoint.getIdentifier(), endPoint);
+    when(endPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    ldRepresentationRequestMapper.loadRepresentations(httpConfiguration);
+    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -165,19 +167,17 @@ public class LdRepresentationRequestMapperTest {
     when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
-    Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-            informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
-    Representation samePathRepresentation =
-        new Representation.Builder(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION).informationProduct(
-            informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
-    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
-    representationMap.put(representation.getIdentifier(), representation);
-    representationMap.put(samePathRepresentation.getIdentifier(), samePathRepresentation);
-    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+    DirectEndPoint endPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
+        DBEERPEDIA.PATH_PATTERN_VALUE).representationGet(representation).stage(stage).build();
+    DirectEndPoint samePathEndPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
+        DBEERPEDIA.PATH_PATTERN_VALUE).representationGet(representation).stage(stage).build();
+    Map<org.eclipse.rdf4j.model.Resource, EndPoint> endPointMap = new HashMap<>();
+    endPointMap.put(endPoint.getIdentifier(), endPoint);
+    endPointMap.put(samePathEndPoint.getIdentifier(), samePathEndPoint);
+    when(endPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    ldRepresentationRequestMapper.loadRepresentations(httpConfiguration);
+    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
@@ -192,16 +192,16 @@ public class LdRepresentationRequestMapperTest {
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
-    Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
-            informationProduct).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).stage(stage).build();
+    EndPoint endPoint =
+        new Builder(DBEERPEDIA.DEFAULT_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).representationGet(
+            representation).stage(stage).build();
 
-    Map<org.eclipse.rdf4j.model.Resource, Representation> representationMap = new HashMap<>();
-    representationMap.put(representation.getIdentifier(), representation);
-    when(representationResourceProvider.getAll()).thenReturn(representationMap);
+    Map<org.eclipse.rdf4j.model.Resource, EndPoint> endPointMap = new HashMap<>();
+    endPointMap.put(endPoint.getIdentifier(), endPoint);
+    when(endPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    ldRepresentationRequestMapper.loadRepresentations(httpConfiguration);
+    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));

@@ -22,6 +22,8 @@ public class ValidationReport {
   @java.lang.SuppressWarnings("squid:S1075")
   private static final String DESCRIPTION_RESULT_PATH = "http://www.w3.org/ns/shacl#resultPath";
 
+  private static final String DESCRIPTION_RESULT_VALUE = "http://www.w3.org/ns/shacl#value";
+
   private final Model reportModel;
 
   private final Map<String, Violation> errors;
