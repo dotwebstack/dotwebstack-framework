@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
@@ -31,7 +30,7 @@ public class TurtleModelReader implements MessageBodyReader<Model> {
   @Override
   public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations,
       MediaType mediaType, MultivaluedMap<String, String> multivaluedMap, InputStream inputStream)
-      throws IOException, WebApplicationException {
+      throws IOException {
 
     RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
 

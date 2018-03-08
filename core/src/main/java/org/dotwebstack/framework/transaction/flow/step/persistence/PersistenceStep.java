@@ -11,7 +11,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
-public class PersistenceStep implements Step<StepExecutor> {
+public class PersistenceStep implements Step {
 
   private Resource identifier;
 

@@ -56,7 +56,7 @@ public class SequentialFlowResourceProvider extends AbstractResourceProvider<Seq
           String.format("No steps have been found for flow <%s>.", identifier));
     }
 
-    List<Step> stepList = new ArrayList<Step>();
+    List<Step> stepList = new ArrayList<>();
     stepIris.forEach(stepIri -> {
       Step step = stepResourceProvider.get((IRI)stepIri);
       if (step == null) {

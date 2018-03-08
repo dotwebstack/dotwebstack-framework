@@ -2,8 +2,8 @@ package org.dotwebstack.framework.transaction.flow.step;
 
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
-public interface Step<T> {
+public interface Step {
 
-  StepExecutor<T> createStepExecutor(RepositoryConnection repositoryConnection);
+  StepExecutor createStepExecutor(RepositoryConnection repositoryConnection);
 
 }

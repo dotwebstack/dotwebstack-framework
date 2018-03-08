@@ -66,8 +66,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
     getObjectResource(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(
         iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
-    // todo change to resource
-    getObjectIRI(model, identifier, ELMO.TRANSACTION_PROP).ifPresent(
+    getObjectResource(model, identifier, ELMO.TRANSACTION_PROP).ifPresent(
         iri -> builder.transaction(transactionResourceProvider.get(iri)));
     getObjectResource(model, identifier, ELMO.APPEARANCE_PROP).ifPresent(
         iri -> builder.appearance(appearanceResourceProvider.get(iri)));

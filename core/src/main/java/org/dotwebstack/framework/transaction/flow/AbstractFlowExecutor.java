@@ -3,7 +3,7 @@ package org.dotwebstack.framework.transaction.flow;
 import lombok.NonNull;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
-public abstract class AbstractFlowExecutor<T> implements FlowExecutor<T> {
+public abstract class AbstractFlowExecutor<T> implements FlowExecutor {
 
   protected T flow;
 
