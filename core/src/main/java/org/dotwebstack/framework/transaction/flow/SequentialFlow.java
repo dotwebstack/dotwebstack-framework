@@ -12,12 +12,12 @@ public class SequentialFlow implements Flow {
 
   private List<Step> steps;
 
-  public SequentialFlow(Builder builder) {
+  public SequentialFlow(@NonNull Builder builder) {
     this.identifier = builder.identifier;
     this.steps = builder.steps;
   }
 
-  public SequentialFlowExecutor getExecutor(RepositoryConnection repositoryConnection) {
+  public SequentialFlowExecutor getExecutor(@NonNull RepositoryConnection repositoryConnection) {
     return new SequentialFlowExecutor(this, repositoryConnection);
   }
 

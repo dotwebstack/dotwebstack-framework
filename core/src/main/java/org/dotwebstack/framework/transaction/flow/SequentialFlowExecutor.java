@@ -1,12 +1,13 @@
 package org.dotwebstack.framework.transaction.flow;
 
+import lombok.NonNull;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 public class SequentialFlowExecutor extends AbstractFlowExecutor<SequentialFlow> {
 
-  public SequentialFlowExecutor(SequentialFlow flow,
-      RepositoryConnection repositoryConnection) {
+  public SequentialFlowExecutor(@NonNull SequentialFlow flow,
+      @NonNull RepositoryConnection repositoryConnection) {
     super(flow, repositoryConnection);
   }
 

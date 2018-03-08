@@ -2,6 +2,7 @@ package org.dotwebstack.framework.transaction.flow;
 
 import java.util.ArrayList;
 import java.util.List;
+import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -27,15 +28,14 @@ public class SequentialFlowResourceProvider extends AbstractResourceProvider<Seq
 
   @Autowired
   public SequentialFlowResourceProvider(
-      ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties,
-      StepResourceProvider stepResourceProvider) {
+      ConfigurationBackend configurationBackend, ApplicationProperties applicationProperties,
+      @NonNull StepResourceProvider stepResourceProvider) {
     super(configurationBackend, applicationProperties);
     this.stepResourceProvider = stepResourceProvider;
   }
 
   @Override
-  protected GraphQuery getQueryForResources(RepositoryConnection conn) {
+  protected GraphQuery getQueryForResources(@NonNull RepositoryConnection conn) {
     final String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o. ?transaction ?flow ?s. }";
 
     final GraphQuery graphQuery = conn.prepareGraphQuery(query);
@@ -45,7 +45,7 @@ public class SequentialFlowResourceProvider extends AbstractResourceProvider<Seq
   }
 
   @Override
-  public SequentialFlow createResource(Model model, Resource identifier) {
+  public SequentialFlow createResource(@NonNull Model model, @NonNull Resource identifier) {
 
     List<Value> stepIris = null;
 

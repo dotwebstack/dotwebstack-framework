@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.transaction.flow.step;
 
 import java.util.List;
+import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -22,13 +23,14 @@ public class StepResourceProvider extends AbstractResourceProvider<Step> {
 
   @Autowired
   public StepResourceProvider(ConfigurationBackend configurationBackend,
-      ApplicationProperties applicationProperties, List<StepFactory> stepFactoryList) {
+      ApplicationProperties applicationProperties,
+      @NonNull List<StepFactory> stepFactoryList) {
     super(configurationBackend, applicationProperties);
     this.stepFactoryList = stepFactoryList;
   }
 
   @Override
-  protected GraphQuery getQueryForResources(RepositoryConnection conn) {
+  protected GraphQuery getQueryForResources(@NonNull RepositoryConnection conn) {
     final String query =
         "CONSTRUCT { ?o ?op ?oo } WHERE { ?o ?op ?oo . ?s ?p ?o. ?transaction ?flow ?s. }";
 
@@ -39,7 +41,7 @@ public class StepResourceProvider extends AbstractResourceProvider<Step> {
   }
 
   @Override
-  protected Step createResource(Model model, Resource identifier) {
+  protected Step createResource(@NonNull Model model, @NonNull Resource identifier) {
     IRI transactionStep = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for step <%s>.", RDF.TYPE, identifier)));

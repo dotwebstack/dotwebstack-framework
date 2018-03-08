@@ -10,7 +10,7 @@ public class Transaction {
 
   private Flow flow;
 
-  public Transaction(Builder builder) {
+  public Transaction(@NonNull Builder builder) {
     identifier = builder.identifier;
     flow = builder.flow;
   }

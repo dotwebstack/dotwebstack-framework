@@ -23,7 +23,7 @@ public class PersistenceStep implements Step {
 
   private IRI targetGraph;
 
-  public PersistenceStep(Builder builder) {
+  public PersistenceStep(@NonNull Builder builder) {
     this.identifier = builder.identifier;
     this.persistenceStrategy = builder.persistenceStrategy;
     this.backend = builder.backend;
@@ -31,7 +31,8 @@ public class PersistenceStep implements Step {
     this.backendResourceProvider = builder.backendResourceProvider;
   }
 
-  public StepExecutor createStepExecutor(RepositoryConnection transactionRepositoryConnection) {
+  public StepExecutor createStepExecutor(@NonNull RepositoryConnection
+      transactionRepositoryConnection) {
     Model transactionModel = QueryResults.asModel(transactionRepositoryConnection
         .getStatements(null, null, null));
     return backendResourceProvider.get(backend.getIdentifier())

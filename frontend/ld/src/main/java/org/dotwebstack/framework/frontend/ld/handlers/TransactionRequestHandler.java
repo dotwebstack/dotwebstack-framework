@@ -18,7 +18,7 @@ public class TransactionRequestHandler implements Inflector<Model, Response> {
   }
 
   @Override
-  public Response apply(Model transactionModel) {
+  public Response apply(@NonNull Model transactionModel) {
     TransactionHandler transactionHandler = new TransactionHandler(
         new SailRepository(new MemoryStore()), transaction, transactionModel);
     transactionHandler.execute();
