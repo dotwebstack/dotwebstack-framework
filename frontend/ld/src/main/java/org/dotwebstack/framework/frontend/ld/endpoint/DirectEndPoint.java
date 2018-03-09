@@ -6,41 +6,41 @@ import org.eclipse.rdf4j.model.Resource;
 
 public class DirectEndPoint extends AbstractEndPoint {
 
-  private Representation representationGet;
+  private Representation getRepresentation;
 
-  private Representation representationPost;
+  private Representation postRepresentation;
 
   public DirectEndPoint(Builder builder) {
     super(builder);
-    this.representationGet = builder.representationGet;
-    this.representationPost = builder.representationPost;
+    this.getRepresentation = builder.getRepresentation;
+    this.postRepresentation = builder.postRepresentation;
   }
 
-  public Representation getRepresentationGet() {
-    return representationGet;
+  public Representation getGetRepresentation() {
+    return getRepresentation;
   }
 
-  public Representation getRepresentationPost() {
-    return representationPost;
+  public Representation getPostRepresentation() {
+    return postRepresentation;
   }
 
   public static class Builder extends EndPointBuilder<Builder> {
 
-    private Representation representationGet;
+    private Representation getRepresentation;
 
-    private Representation representationPost;
+    private Representation postRepresentation;
 
     public Builder(@NonNull Resource identifier, @NonNull String pathPattern) {
       super(identifier, pathPattern);
     }
 
-    public Builder representationGet(Representation representation) {
-      this.representationGet = representation;
+    public Builder getRepresentation(Representation representation) {
+      this.getRepresentation = representation;
       return this;
     }
 
-    public Builder representationPost(Representation representation) {
-      this.representationPost = representation;
+    public Builder postRepresentation(Representation representation) {
+      this.postRepresentation = representation;
       return this;
     }
 

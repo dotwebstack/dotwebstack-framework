@@ -65,8 +65,8 @@ public class DirectEndPointTest {
   public void build_CreateDynamicEndPointComplete_WithValidData() {
     // Assert
     DirectEndPoint directEndPoint =
-        (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).representationPost(
-            representationPost).representationGet(representationGet).label(label).stage(
+        (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).postRepresentation(
+            representationPost).getRepresentation(representationGet).label(label).stage(
                 stage).build();
 
     // Act
@@ -74,7 +74,7 @@ public class DirectEndPointTest {
     assertThat(directEndPoint.getPathPattern(), equalTo(pathPattern));
     assertThat(directEndPoint.getLabel(), equalTo(label));
     assertThat(directEndPoint.getStage(), equalTo(stage));
-    assertThat(directEndPoint.getRepresentationGet(), equalTo(representationGet));
-    assertThat(directEndPoint.getRepresentationPost(), equalTo(representationPost));
+    assertThat(directEndPoint.getGetRepresentation(), equalTo(representationGet));
+    assertThat(directEndPoint.getPostRepresentation(), equalTo(representationPost));
   }
 }
