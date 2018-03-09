@@ -7,7 +7,6 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint.Builder;
-import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Model;
@@ -49,15 +48,10 @@ public class DynamicEndPointResourceProvider extends AbstractResourceProvider<Dy
         () -> new ConfigurationException(
             String.format("No <%s> statement has been found for pathPattern <%s>.",
                 ELMO.PATH_PATTERN, identifier)));
-    final Resource parameterMapperResource =
-        getObjectResource(model, identifier, ELMO.PARAMETER_MAPPER_PROP).orElseThrow(
-            () -> new ConfigurationException(
-                String.format("No <%s> statement has been found for parameterMapper <%s>.",
-                    ELMO.PARAMETER_MAPPER_PROP, identifier)));
-    final ParameterMapper parameterMapper =
-        parameterMapperResourceProvider.get(parameterMapperResource);
 
-    final DynamicEndPoint.Builder builder = new Builder(identifier, pathPattern, parameterMapper);
+    final DynamicEndPoint.Builder builder = new Builder(identifier, pathPattern);
+    getObjectResource(model, identifier, ELMO.PARAMETER_MAPPER_PROP).ifPresent(
+        resource -> builder.parameterMapper(parameterMapperResourceProvider.get(resource)));
     getObjectString(model, identifier, RDFS.LABEL).ifPresent(builder::label);
     getObjectResource(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));

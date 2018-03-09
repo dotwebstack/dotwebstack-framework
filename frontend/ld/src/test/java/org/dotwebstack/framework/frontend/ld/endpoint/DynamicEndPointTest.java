@@ -34,7 +34,7 @@ public class DynamicEndPointTest {
   public void build_CreateDynamicEndPoint_WithValidData() {
     // Assert
     DynamicEndPoint dynamicEndPoint =
-        new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern, parameterMapper).build();
+        new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).parameterMapper(parameterMapper).build();
 
     // Act
     assertThat(dynamicEndPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
@@ -48,7 +48,7 @@ public class DynamicEndPointTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Builder(null, pathPattern, parameterMapper).build();
+    new Builder(null, pathPattern).build();
   }
 
   @Test
@@ -57,24 +57,15 @@ public class DynamicEndPointTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new Builder(DBEERPEDIA.DOC_ENDPOINT, null, parameterMapper).build();
-  }
-
-  @Test
-  public void build_ThrowsException_WithMissingParameterMapper() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern, null).build();
+    new Builder(DBEERPEDIA.DOC_ENDPOINT, null).build();
   }
 
   @Test
   public void build_CreateDynamicEndPointComplete_WithValidData() {
     // Assert
     DynamicEndPoint dynamicEndPoint =
-        (DynamicEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern, parameterMapper).label(
-            label).stage(stage).build();
+        (DynamicEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).parameterMapper(
+            parameterMapper).label(label).stage(stage).build();
 
     // Act
     assertThat(dynamicEndPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
