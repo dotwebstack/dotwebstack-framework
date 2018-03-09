@@ -4,7 +4,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.eclipse.rdf4j.model.Resource;
 
-public abstract class EndPoint {
+public abstract class AbstractEndPoint {
 
   private Resource identifier;
 
@@ -14,7 +14,7 @@ public abstract class EndPoint {
 
   private Stage stage;
 
-  protected EndPoint(EndPointBuilder<?> builder) {
+  protected AbstractEndPoint(EndPointBuilder<?> builder) {
     identifier = builder.identifier;
     pathPattern = builder.pathPattern;
     label = builder.label;
@@ -62,7 +62,7 @@ public abstract class EndPoint {
       return this;
     }
 
-    protected abstract EndPoint build();
+    protected abstract AbstractEndPoint build();
   }
 
 }
