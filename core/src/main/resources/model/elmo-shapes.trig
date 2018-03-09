@@ -863,9 +863,16 @@ elmo-shape:Representation a sh:NodeShape;
   sh:xone (
     [
       sh:property [
+        sh:path elmo:appliesTo;
+        sh:maxCount 0;
+      ];
+    ]
+    [
+      sh:property [
         sh:name "elmo:appliesTo";
         sh:path elmo:appliesTo;
         sh:datatype xsd:string;
+        sh:minCount 1;
       ];
     ]
     [
@@ -873,7 +880,8 @@ elmo-shape:Representation a sh:NodeShape;
         sh:name "elmo:appliesTo";
         sh:path elmo:appliesTo;
         sh:nodeKind sh:BlankNodeOrIRI;
-        sh:node elmo-shape:Profile
+        sh:node elmo-shape:Profile;
+        sh:minCount 1;
       ];
     ]
   );

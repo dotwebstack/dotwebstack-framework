@@ -5,10 +5,10 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
-import org.dotwebstack.framework.frontend.ld.endpoint.EndPoint;
-import org.dotwebstack.framework.frontend.ld.endpoint.EndPointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
@@ -21,57 +21,48 @@ public class LdEndPointRequestMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(LdEndPointRequestMapper.class);
 
-  // private final RepresentationResourceProvider representationResourceProvider;
-
-  private final EndPointResourceProvider endPointResourceProvider;
+  private final DirectEndPointResourceProvider endPointResourceProvider;
 
   private final SupportedMediaTypesScanner supportedMediaTypesScanner;
 
-  private final RepresentationRequestHandlerFactory representationRequestHandlerFactory;
+  private final EndPointRequestHandlerFactory endPointRequestHandlerFactory;
 
   @Autowired
-  public LdEndPointRequestMapper(@NonNull EndPointResourceProvider endPointResourceProvider,
+  public LdEndPointRequestMapper(@NonNull DirectEndPointResourceProvider endPointResourceProvider,
       @NonNull SupportedMediaTypesScanner supportedMediaTypesScanner,
-      @NonNull RepresentationRequestHandlerFactory representationRequestHandlerFactory) {
+      @NonNull EndPointRequestHandlerFactory endPointRequestHandlerFactory) {
     this.endPointResourceProvider = endPointResourceProvider;
     this.supportedMediaTypesScanner = supportedMediaTypesScanner;
-    this.representationRequestHandlerFactory = representationRequestHandlerFactory;
+    this.endPointRequestHandlerFactory = endPointRequestHandlerFactory;
   }
 
   public void loadEndPoints(HttpConfiguration httpConfiguration) {
-    for (EndPoint endPoint : endPointResourceProvider.getAll().values()) {
+    for (AbstractEndPoint endPoint : endPointResourceProvider.getAll().values()) {
       if (endPoint.getStage() != null) {
-        mapEndPoint(endPoint, httpConfiguration);
+        mapRepresentation(endPoint, httpConfiguration);
       } else {
         LOG.warn("Endpoint '{}' is not mapped to a stage.", endPoint.getIdentifier());
       }
     }
   }
 
-  private void mapEndPoint(EndPoint endPoint, HttpConfiguration httpConfiguration) {
+  private void mapRepresentation(AbstractEndPoint endPoint, HttpConfiguration httpConfiguration) {
     if (endPoint instanceof DirectEndPoint) {
+      final Representation representation = ((DirectEndPoint) endPoint).getGetRepresentation();
       String basePath = endPoint.getStage().getFullPath();
-
-      final Representation representation = ((DirectEndPoint) endPoint).getRepresentationGet();
-
-      representation.getAppliesTo().forEach(appliesTo -> {
-        String absolutePath = basePath.concat(appliesTo);
-
-        Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-        resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-            representationRequestHandlerFactory.newRepresentationRequestHandler(
-                representation)).produces(
-                    supportedMediaTypesScanner.getMediaTypes(
-                        representation.getInformationProduct().getResultType())).nameBindings(
-                            ExpandFormatParameter.class);
-
-        if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
-          httpConfiguration.registerResources(resourceBuilder.build());
-          LOG.debug("Mapped GET operation for request path {}", absolutePath);
-        } else {
-          LOG.error("Resource <%s> is not registered", absolutePath);
-        }
-      });
+      String absolutePath = basePath.concat(endPoint.getPathPattern());
+      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+      resourceBuilder.addMethod(HttpMethod.GET).handledBy(
+          endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+              supportedMediaTypesScanner.getMediaTypes(
+                  representation.getInformationProduct().getResultType())).nameBindings(
+                      ExpandFormatParameter.class);
+      if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
+        httpConfiguration.registerResources(resourceBuilder.build());
+        LOG.debug("Mapped GET operation for request path {}", absolutePath);
+      } else {
+        LOG.error("Resource <{}> is not registered", absolutePath);
+      }
     }
   }
 

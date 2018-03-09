@@ -52,16 +52,16 @@ public abstract class AbstractEndPoint {
       this.pathPattern = pathPattern;
     }
 
-    protected EndPointBuilder label(@NonNull String label) {
+    public EndPointBuilder label(@NonNull String label) {
       this.label = label;
       return this;
     }
 
-    protected EndPointBuilder stage(@NonNull Stage stage) {
+    public EndPointBuilder stage(@NonNull Stage stage) {
       this.stage = stage;
       return this;
     }
 
-    protected abstract AbstractEndPoint build();
+    public abstract AbstractEndPoint build();
   }
 }

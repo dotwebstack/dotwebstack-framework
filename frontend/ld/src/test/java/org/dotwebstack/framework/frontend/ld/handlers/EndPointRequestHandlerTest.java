@@ -7,7 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
@@ -16,6 +18,7 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
+import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -45,6 +48,9 @@ public class EndPointRequestHandlerTest {
   @Mock
   private InformationProduct informationProduct;
 
+  @Mock
+  private RepresentationResourceProvider representationResourceProvider;
+
   private EndPointRequestParameterMapper endPointRequestParameterMapper;
 
   private EndPointRequestHandler getRequestHandler;
@@ -52,8 +58,9 @@ public class EndPointRequestHandlerTest {
   @Before
   public void setUp() {
     endPointRequestParameterMapper = new EndPointRequestParameterMapper();
-    getRequestHandler = new EndPointRequestHandler(endPoint, endPointRequestParameterMapper);
-    when(endPoint.getRepresentationGet()).thenReturn(representation);
+    getRequestHandler = new EndPointRequestHandler(endPoint, endPointRequestParameterMapper,
+        representationResourceProvider);
+    when(endPoint.getGetRepresentation()).thenReturn(representation);
     when(representation.getInformationProduct()).thenReturn(informationProduct);
   }
 
@@ -63,7 +70,8 @@ public class EndPointRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new EndPointRequestHandler(null, endPointRequestParameterMapper);
+    new EndPointRequestHandler(null, endPointRequestParameterMapper,
+        representationResourceProvider);
   }
 
   @Test
@@ -76,6 +84,8 @@ public class EndPointRequestHandlerTest {
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getPath()).thenReturn("/");
+    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
+    when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
 
     // Act
     Response response = getRequestHandler.apply(containerRequestContext);
@@ -85,7 +95,7 @@ public class EndPointRequestHandlerTest {
     assertThat(response.getEntity(), instanceOf(GraphEntity.class));
     GraphEntity entity = (GraphEntity) response.getEntity();
     assertThat(entity.getQueryResult(), equalTo(queryResult));
-    assertThat(entity.getRepresentation(), equalTo(endPoint));
+    assertThat(entity.getRepresentation(), equalTo(endPoint.getGetRepresentation()));
   }
 
   @Test
@@ -98,6 +108,8 @@ public class EndPointRequestHandlerTest {
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getPath()).thenReturn("/");
+    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
+    when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
 
     // Act
     Response response = getRequestHandler.apply(containerRequestContext);
@@ -107,7 +119,7 @@ public class EndPointRequestHandlerTest {
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     TupleEntity entity = (TupleEntity) response.getEntity();
     assertThat(entity.getQueryResult(), equalTo(queryResult));
-    assertThat(entity.getRepresentation(), equalTo(endPoint));
+    assertThat(entity.getRepresentation(), equalTo(endPoint.getGetRepresentation()));
   }
 
   @Test
@@ -119,6 +131,8 @@ public class EndPointRequestHandlerTest {
     UriInfo uriInfo = mock(UriInfo.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getPath()).thenReturn("/");
+    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
+    when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
 
     // Assert
     thrown.expect(ConfigurationException.class);

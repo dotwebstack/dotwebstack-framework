@@ -8,8 +8,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScannerTest.StubGraphEntityWriter;
+import org.dotwebstack.framework.frontend.ld.mappers.LdEndPointRequestMapper;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
-import org.dotwebstack.framework.frontend.ld.mappers.LdRepresentationRequestMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class LdModuleTest {
   private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
 
   @Mock
-  private LdRepresentationRequestMapper ldRepresentationRequestMapper;
+  private LdEndPointRequestMapper ldEndPointRequestMapper;
 
   @Mock
   private LdRedirectionRequestMapper ldRedirectionRequestMapper;
@@ -39,7 +39,7 @@ public class LdModuleTest {
 
   @Before
   public void setUp() {
-    ldModule = new LdModule(ldRepresentationRequestMapper, ldRedirectionRequestMapper,
+    ldModule = new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper,
         supportedMediaTypesScanner);
     ldModule.initialize(httpConfiguration);
   }
@@ -59,7 +59,7 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldRepresentationRequestMapper, null, supportedMediaTypesScanner);
+    new LdModule(ldEndPointRequestMapper, null, supportedMediaTypesScanner);
   }
 
   @Test
@@ -68,7 +68,7 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldRepresentationRequestMapper, ldRedirectionRequestMapper, null);
+    new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper, null);
   }
 
   @Test

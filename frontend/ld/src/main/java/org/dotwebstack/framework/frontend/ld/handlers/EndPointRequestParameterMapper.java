@@ -10,7 +10,7 @@ import org.dotwebstack.framework.param.Parameter;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RepresentationRequestParameterMapper {
+public class EndPointRequestParameterMapper {
 
   Map<String, String> map(@NonNull InformationProduct informationProduct,
       @NonNull ContainerRequestContext context) {
