@@ -48,13 +48,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class EntityWriterInterceptorTest {
 
-  @Rule
-  public final ExpectedException thrown = ExpectedException.none();
-
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
-
   private static final String NAMESPACE_RO = "http://data.informatiehuisruimte.nl/def/ro#";
 
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
   @Mock
   private WriterInterceptorContext interceptorContextMock;
 
@@ -123,8 +121,8 @@ public class EntityWriterInterceptorTest {
     Map<MediaType, Property> schemaMap =
         ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE, new ResponseProperty(new Response()));
 
-    GraphEntity entity =
-        newGraphEntity(schemaMap, queryResultMock, definitionsMock, ImmutableMap.of(), productMock);
+    GraphEntity entity = newGraphEntity(schemaMap, queryResultMock, definitionsMock,
+        ImmutableMap.of(), productMock, "");
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
@@ -144,8 +142,8 @@ public class EntityWriterInterceptorTest {
     Map<MediaType, Property> schemaMap = ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
         new ResponseProperty(new Response().headers(ImmutableMap.of())));
 
-    GraphEntity entity =
-        newGraphEntity(schemaMap, queryResultMock, definitionsMock, ImmutableMap.of(), productMock);
+    GraphEntity entity = newGraphEntity(schemaMap, queryResultMock, definitionsMock,
+        ImmutableMap.of(), productMock, "");
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
@@ -165,8 +163,8 @@ public class EntityWriterInterceptorTest {
     // Arrange
     Map<MediaType, Property> schemaMap = ImmutableMap.of();
 
-    GraphEntity entity =
-        newGraphEntity(schemaMap, queryResultMock, definitionsMock, ImmutableMap.of(), productMock);
+    GraphEntity entity = newGraphEntity(schemaMap, queryResultMock, definitionsMock,
+        ImmutableMap.of(), productMock, "");
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
@@ -188,8 +186,8 @@ public class EntityWriterInterceptorTest {
         new ResponseProperty(new Response().headers(ImmutableMap.of("Content-Crs",
             new StringProperty().vendorExtension("foo", "bar").vendorExtension("baz", "qux")))));
 
-    GraphEntity entity =
-        newGraphEntity(schemaMap, queryResultMock, definitionsMock, ImmutableMap.of(), productMock);
+    GraphEntity entity = newGraphEntity(schemaMap, queryResultMock, definitionsMock,
+        ImmutableMap.of(), productMock, "");
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
@@ -216,13 +214,14 @@ public class EntityWriterInterceptorTest {
         new StringTermParameter(VALUE_FACTORY.createIRI("http://foo#", "bar"), "bar", false),
         new StringTermParameter(VALUE_FACTORY.createIRI("http://baz#", "qux"), "qux", false)));
 
-    Map<MediaType, Property> schemaMap = ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
-        new ResponseProperty(new Response().header("Content-Crs",
-            new StringProperty().vendorExtension(OpenApiSpecificationExtensions.PARAMETER,
-                NAMESPACE_RO + "ContentCrsParameter").vendorExtension("foo", "bar"))));
+    Map<MediaType,
+        Property> schemaMap = ImmutableMap.of(MediaType.APPLICATION_JSON_TYPE,
+            new ResponseProperty(new Response().header("Content-Crs",
+                new StringProperty().vendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+                    NAMESPACE_RO + "ContentCrsParameter").vendorExtension("foo", "bar"))));
 
-    GraphEntity entity =
-        newGraphEntity(schemaMap, queryResultMock, definitionsMock, ImmutableMap.of(), productMock);
+    GraphEntity entity = newGraphEntity(schemaMap, queryResultMock, definitionsMock,
+        ImmutableMap.of(), productMock, "");
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
@@ -251,7 +250,7 @@ public class EntityWriterInterceptorTest {
                         NAMESPACE_RO + "xPaginationPageParameter"))));
 
     GraphEntity entity = newGraphEntity(schemaMap, queryResultMock, definitionsMock,
-        ImmutableMap.of("contentCrs", "epsg:28992", "page", "3"), informationProductMock);
+        ImmutableMap.of("contentCrs", "epsg:28992", "page", "3"), informationProductMock, "");
 
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 

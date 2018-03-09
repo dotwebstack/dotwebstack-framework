@@ -9,9 +9,13 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.openapi.BaseUriFactory;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.frontend.openapi.entity.Entity;
@@ -21,6 +25,7 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +35,10 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
   private final ApiOperation apiOperation;
 
+  @Getter(AccessLevel.PACKAGE)
   private final InformationProduct informationProduct;
 
+  @Getter(AccessLevel.PACKAGE)
   private final Map<MediaType, Property> schemaMap;
 
   private final RequestParameterMapper requestParameterMapper;
@@ -52,14 +59,6 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     this.swagger = swagger;
   }
 
-  public InformationProduct getInformationProduct() {
-    return informationProduct;
-  }
-
-  public Map<MediaType, Property> getSchemaMap() {
-    return schemaMap;
-  }
-
   /**
    * @throws NotFoundException If the requested resource cannot be found.
    * @throws ConfigurationException If the {@link OpenApiSpecificationExtensions#RESULT_FOUND_QUERY}
@@ -67,9 +66,12 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
    */
   @Override
   public Response apply(@NonNull ContainerRequestContext context) {
-    String path = context.getUriInfo().getPath();
+    UriInfo uriInfo = context.getUriInfo();
+    String path = uriInfo.getPath();
 
     LOG.debug("Handling {} request for path {}", context.getMethod(), path);
+
+    context.setProperty(RequestHandlerProperties.OPERATION, apiOperation.getOperation());
 
     RequestParameters requestParameters =
         apiRequestValidator.validate(apiOperation, swagger, context);
@@ -77,19 +79,20 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
         informationProduct, requestParameters);
 
-    Response responseOk = null;
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
       TupleEntity entity =
           TupleEntity.builder().withQueryResult(result).withSchemaMap(schemaMap).build();
 
-      responseOk = responseOk(entity);
+      return responseOk(entity);
     }
+
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
+      String baseUri = BaseUriFactory.newBaseUri((ContainerRequest) context, swagger);
+
       GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
       GraphEntity entity = GraphEntity.newGraphEntity(schemaMap, result, swagger, parameterValues,
-          informationProduct);
+          informationProduct, baseUri);
 
       String query = getResultFoundQuery();
 
@@ -97,14 +100,12 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
         throw new NotFoundException();
       }
 
-      responseOk = responseOk(entity);
+      return responseOk(entity);
     }
-    if (responseOk != null) {
-      return responseOk;
-    } else {
-      LOG.error("Result type {} not supported for information product {}",
-          informationProduct.getResultType(), informationProduct.getIdentifier());
-    }
+
+    LOG.error("Result type {} not supported for information product {}",
+        informationProduct.getResultType(), informationProduct.getIdentifier());
+
     return Response.serverError().build();
   }
 
@@ -134,8 +135,8 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     if (entity != null) {
       return Response.ok(entity).build();
     }
+
     return null;
   }
 
 }
-

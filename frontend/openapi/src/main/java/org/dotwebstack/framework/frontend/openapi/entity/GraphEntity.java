@@ -1,13 +1,13 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
+import static com.google.common.collect.Maps.newHashMap;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Model;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.Property;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.Getter;
@@ -24,21 +24,19 @@ import org.eclipse.rdf4j.repository.Repository;
 public final class GraphEntity extends AbstractEntity {
 
   private final ImmutableMap<String, String> ldPathNamespaces;
-
   private final Map<String, Model> swaggerDefinitions;
-
   private final Repository repository;
-
   private final InformationProduct informationProduct;
 
   private final Map<String, String> parameters;
 
   private final LdPathExecutor ldPathExecutor;
+  private final String baseUri;
 
   private GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
       @NonNull ImmutableMap<String, String> ldPathNamespaces,
       @NonNull Map<String, Model> swaggerDefinitions, @NonNull Repository repository,
-      @NonNull Map<String, String> requestParameters,
+      @NonNull Map<String, String> requestParameters, @NonNull String baseUri,
       @NonNull InformationProduct informationProduct) {
     super(schemaMap);
 
@@ -46,26 +44,20 @@ public final class GraphEntity extends AbstractEntity {
     this.swaggerDefinitions = swaggerDefinitions;
     this.repository = repository;
     this.informationProduct = informationProduct;
-    this.parameters = new HashMap(requestParameters);
+    this.parameters = newHashMap(requestParameters);
+    this.baseUri = baseUri;
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 
   public static GraphEntity newGraphEntity(@NonNull Map<MediaType, Property> schemaMap,
       @NonNull QueryResult<Statement> queryResult, @NonNull Swagger definitions,
       @NonNull Map<String, String> requestParameters,
-      @NonNull InformationProduct informationProduct) {
+      @NonNull InformationProduct informationProduct, @NonNull String baseUri) {
+
     return new GraphEntity(schemaMap, extractLdpathNamespaces(definitions),
         extractSwaggerDefinitions(definitions),
-        Rdf4jUtils.asRepository(QueryResults.asModel(queryResult)), requestParameters,
+        Rdf4jUtils.asRepository(QueryResults.asModel(queryResult)), requestParameters, baseUri,
         informationProduct);
-  }
-
-  public void addParameter(@NonNull String key, String value) {
-    parameters.put(key, value);
-  }
-
-  public Map<String, String> getParameters() {
-    return Collections.unmodifiableMap(parameters);
   }
 
   private static Map<String, Model> extractSwaggerDefinitions(Swagger swagger) {
@@ -95,6 +87,14 @@ public final class GraphEntity extends AbstractEntity {
     }
 
     return ImmutableMap.of();
+  }
+
+  public void addParameter(@NonNull String key, String value) {
+    parameters.put(key, value);
+  }
+
+  public Map<String, String> getParameters() {
+    return Collections.unmodifiableMap(parameters);
   }
 
 }
