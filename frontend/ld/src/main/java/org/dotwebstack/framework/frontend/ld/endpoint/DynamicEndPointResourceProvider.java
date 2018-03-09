@@ -39,6 +39,7 @@ public class DynamicEndPointResourceProvider extends AbstractResourceProvider<Dy
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.DYNAMIC_ENDPOINT);
+
     return graphQuery;
   }
 
@@ -55,6 +56,7 @@ public class DynamicEndPointResourceProvider extends AbstractResourceProvider<Dy
     getObjectString(model, identifier, RDFS.LABEL).ifPresent(builder::label);
     getObjectResource(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));
+
     return builder.build();
   }
 }

@@ -40,6 +40,7 @@ public class DirectEndPointResourceProvider extends AbstractResourceProvider<Abs
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", ELMO.ENDPOINT);
+
     return graphQuery;
   }
 
