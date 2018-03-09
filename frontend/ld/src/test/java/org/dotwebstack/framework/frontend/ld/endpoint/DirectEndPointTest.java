@@ -25,10 +25,10 @@ public class DirectEndPointTest {
   private final String label = "label";
 
   @Mock
-  private Representation representationGet;
+  private Representation getRespresentation;
 
   @Mock
-  private Representation representationPost;
+  private Representation postRepresentation;
 
   @Mock
   private Stage stage;
@@ -66,7 +66,7 @@ public class DirectEndPointTest {
     // Assert
     DirectEndPoint directEndPoint =
         (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).postRepresentation(
-            representationPost).getRepresentation(representationGet).label(label).stage(
+            postRepresentation).getRepresentation(getRespresentation).label(label).stage(
                 stage).build();
 
     // Act
@@ -74,7 +74,7 @@ public class DirectEndPointTest {
     assertThat(directEndPoint.getPathPattern(), equalTo(pathPattern));
     assertThat(directEndPoint.getLabel(), equalTo(label));
     assertThat(directEndPoint.getStage(), equalTo(stage));
-    assertThat(directEndPoint.getGetRepresentation(), equalTo(representationGet));
-    assertThat(directEndPoint.getPostRepresentation(), equalTo(representationPost));
+    assertThat(directEndPoint.getGetRepresentation(), equalTo(getRespresentation));
+    assertThat(directEndPoint.getPostRepresentation(), equalTo(postRepresentation));
   }
 }
