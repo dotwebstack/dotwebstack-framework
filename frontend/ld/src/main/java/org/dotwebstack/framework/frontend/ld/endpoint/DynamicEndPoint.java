@@ -4,7 +4,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.eclipse.rdf4j.model.Resource;
 
-public class DynamicEndPoint extends EndPoint {
+public class DynamicEndPoint extends AbstractEndPoint {
 
   private ParameterMapper parameterMapper;
 

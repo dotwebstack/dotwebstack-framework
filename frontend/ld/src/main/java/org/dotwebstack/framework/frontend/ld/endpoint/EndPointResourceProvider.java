@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EndPointResourceProvider extends AbstractResourceProvider<EndPoint> {
+public class EndPointResourceProvider extends AbstractResourceProvider<AbstractEndPoint> {
 
   private final StageResourceProvider stageResourceProvider;
 

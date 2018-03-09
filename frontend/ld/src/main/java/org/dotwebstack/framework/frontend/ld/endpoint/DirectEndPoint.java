@@ -4,7 +4,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.eclipse.rdf4j.model.Resource;
 
-public class DirectEndPoint extends EndPoint {
+public class DirectEndPoint extends AbstractEndPoint {
 
   private Representation representationGet;
 
