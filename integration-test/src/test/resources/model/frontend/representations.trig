@@ -13,7 +13,6 @@ GRAPH dbeerpedia:Theatre {
 
   dbeerpedia:TheRepresentation a elmo:Representation;
     elmo:stage dbeerpedia:Stage;
-    elmo:pathPattern "/subRep"; # [todo] to delete after finishing LDT-284
     elmo:informationProduct dbeerpedia:TupleBreweries;
     elmo:contains dbeerpedia:GraphBreweryListRepresentation;
   .
@@ -26,7 +25,6 @@ GRAPH dbeerpedia:Theatre {
 
   dbeerpedia:GraphBreweryListRepresentation a elmo:Representation;
     elmo:stage dbeerpedia:Stage;
-    elmo:pathPattern "/graph-breweries"; # [todo] to delete after finishing LDT-284
     elmo:informationProduct dbeerpedia:GraphBreweries;
   .
 
@@ -38,7 +36,6 @@ GRAPH dbeerpedia:Theatre {
 
   dbeerpedia:TupleBreweryListRepresentation a elmo:Representation;
     elmo:stage dbeerpedia:Stage;
-    elmo:pathPattern "/tuple-breweries"; # [todo] to delete after finishing LDT-284
     elmo:informationProduct dbeerpedia:TupleBreweries;
   .
 
@@ -50,7 +47,6 @@ GRAPH dbeerpedia:Theatre {
 
   dbeerpedia:BreweryRepresentation a elmo:Representation;
     elmo:stage dbeerpedia:Stage;
-    elmo:pathPattern "/tuple-brewery"; # [todo] to delete after finishing LDT-284
     elmo:informationProduct dbeerpedia:TupleBrewery;
   .
 
@@ -62,7 +58,6 @@ GRAPH dbeerpedia:Theatre {
 
   dbeerpedia:ResourceRepresentation a elmo:Representation;
       elmo:stage dbeerpedia:Stage;
-      elmo:pathPattern "/doc/{reference}"; # [todo] to delete after finishing LDT-284
       elmo:parameterMapper dbeerpedia:SubjectFromUrl;
       elmo:informationProduct dbeerpedia:ResourceInformationProduct;
   .
@@ -75,7 +70,6 @@ GRAPH dbeerpedia:Theatre {
 
   dbeerpedia:Homepage a elmo:Representation;
       elmo:stage dbeerpedia:Stage;
-      elmo:pathPattern ""; # [todo] to delete after finishing LDT-284
       elmo:informationProduct dbeerpedia:GraphBreweries;
       elmo:appearance [a elmo:HtmlAppearance];
     .
