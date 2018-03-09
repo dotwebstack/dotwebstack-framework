@@ -21,10 +21,13 @@ public class DynamicEndPoint extends AbstractEndPoint {
 
     private ParameterMapper parameterMapper;
 
-    public Builder(@NonNull Resource identifier, @NonNull String pathPattern,
-        @NonNull ParameterMapper parameterMapper) {
+    public Builder(@NonNull Resource identifier, @NonNull String pathPattern) {
       super(identifier, pathPattern);
+    }
+
+    public Builder parameterMapper(@NonNull ParameterMapper parameterMapper) {
       this.parameterMapper = parameterMapper;
+      return this;
     }
 
     public DynamicEndPoint build() {
