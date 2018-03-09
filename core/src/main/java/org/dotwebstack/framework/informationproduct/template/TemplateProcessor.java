@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.informationproduct.template;
 
+import com.google.common.collect.ImmutableMap;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.TemplateMethodModelEx;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -18,6 +20,8 @@ public class TemplateProcessor implements InitializingBean {
 
   private static final Logger LOG = LoggerFactory.getLogger(TemplateProcessor.class);
 
+  private static final TemplateMethodModelEx ESCAPE = new EscapeStringLiteralMethod();
+
   private Configuration config;
 
   private static Configuration prepareConfiguration() {
@@ -31,14 +35,19 @@ public class TemplateProcessor implements InitializingBean {
     return result;
   }
 
-  public String processString(@NonNull String templateString, Map<String, Object> parameters) {
+  public String processString(@NonNull String templateString,
+      @NonNull Map<String, Object> parameters) {
     LOG.debug("Processing template string with parameters: {}", parameters);
 
     try {
       Template endpointTemplate = new Template(null, templateString, config);
       StringWriter processedStringWriter = new StringWriter();
 
-      endpointTemplate.process(parameters, processedStringWriter);
+      ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+      builder.put(EscapeStringLiteralMethod.CTX_NAME, ESCAPE);
+      builder.putAll(parameters);
+
+      endpointTemplate.process(builder.build(), processedStringWriter);
 
       return processedStringWriter.toString();
     } catch (IOException | freemarker.template.TemplateException ex) {

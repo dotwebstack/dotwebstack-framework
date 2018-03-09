@@ -4,58 +4,48 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.eclipse.rdf4j.model.Resource;
 
-public class DirectEndPoint extends EndPoint {
+public class DirectEndPoint extends AbstractEndPoint {
 
-  private Representation representationGet;
+  private Representation getRepresentation;
 
-  private Representation representationPost;
-
-  // private Service postService;
-  // private Service putService;
-  // private Service deleteService;
+  private Representation postRepresentation;
 
   public DirectEndPoint(Builder builder) {
     super(builder);
-    this.representationGet = builder.representationGet;
-    this.representationPost = builder.representationPost;
+    this.getRepresentation = builder.getRepresentation;
+    this.postRepresentation = builder.postRepresentation;
   }
 
-  public Representation getRepresentationGet() {
-    return representationGet;
+  public Representation getGetRepresentation() {
+    return getRepresentation;
   }
 
-  public Representation getRepresentationPost() {
-    return representationPost;
+  public Representation getPostRepresentation() {
+    return postRepresentation;
   }
-
-  // add getters for services
 
   public static class Builder extends EndPointBuilder<Builder> {
 
-    private Representation representationGet;
+    private Representation getRepresentation;
 
-    private Representation representationPost;
-
-    // add services
+    private Representation postRepresentation;
 
     public Builder(@NonNull Resource identifier, @NonNull String pathPattern) {
       super(identifier, pathPattern);
     }
 
-    public Builder representationGet(Representation representation) {
-      this.representationGet = representation;
+    public Builder getRepresentation(Representation representation) {
+      this.getRepresentation = representation;
       return this;
     }
 
-    public Builder representationPost(Representation representation) {
-      this.representationPost = representation;
+    public Builder postRepresentation(Representation representation) {
+      this.postRepresentation = representation;
       return this;
     }
 
     public DirectEndPoint build() {
       return new DirectEndPoint(this);
     }
-
-    // add builder methods for services
   }
 }

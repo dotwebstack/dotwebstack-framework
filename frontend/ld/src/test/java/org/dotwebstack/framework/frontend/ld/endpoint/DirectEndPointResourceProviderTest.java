@@ -16,7 +16,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
-import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
+import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -36,7 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EndPointResourceProviderTest {
+public class DirectEndPointResourceProviderTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -54,13 +54,13 @@ public class EndPointResourceProviderTest {
   private ApplicationProperties applicationProperties;
 
   @Mock
-  private ParameterMapperResourceProvider parameterMapperResourceProvider;
+  private RepresentationResourceProvider representationResourceProvider;
 
   @Mock
   private StageResourceProvider stageResourceProvider;
 
   @Mock
-  private EndPointResourceProvider endPointResourceProvider;
+  private DirectEndPointResourceProvider endPointResourceProvider;
 
   @Mock
   private Stage stage;
@@ -72,8 +72,8 @@ public class EndPointResourceProviderTest {
 
   @Before
   public void setUp() {
-    endPointResourceProvider = new EndPointResourceProvider(configurationBackend,
-        applicationProperties, parameterMapperResourceProvider, stageResourceProvider);
+    endPointResourceProvider = new DirectEndPointResourceProvider(configurationBackend,
+        applicationProperties, stageResourceProvider, representationResourceProvider);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -88,8 +88,8 @@ public class EndPointResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new EndPointResourceProvider(null, applicationProperties, parameterMapperResourceProvider,
-        stageResourceProvider);
+    new DirectEndPointResourceProvider(null, applicationProperties, stageResourceProvider,
+        representationResourceProvider);
   }
 
   @Test
@@ -98,18 +98,8 @@ public class EndPointResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new EndPointResourceProvider(configurationBackend, null, parameterMapperResourceProvider,
-        stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingParameterMapperResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new EndPointResourceProvider(configurationBackend, applicationProperties, null,
-        stageResourceProvider);
+    new DirectEndPointResourceProvider(configurationBackend, null, stageResourceProvider,
+        representationResourceProvider);
   }
 
   @Test
@@ -118,8 +108,8 @@ public class EndPointResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new EndPointResourceProvider(configurationBackend, applicationProperties,
-        parameterMapperResourceProvider, null);
+    new DirectEndPointResourceProvider(configurationBackend, applicationProperties, null,
+        representationResourceProvider);
   }
 
   @Test
@@ -136,7 +126,7 @@ public class EndPointResourceProviderTest {
 
     // Assert
     assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(1));
-    EndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
+    AbstractEndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
     assertThat(endPoint, is(not(nullValue())));
     assertThat(endPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
   }
@@ -159,7 +149,7 @@ public class EndPointResourceProviderTest {
 
     // Assert
     assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(1));
-    EndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
+    AbstractEndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
     assertThat(endPoint, is(not(nullValue())));
     assertThat(endPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
     assertThat(endPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));

@@ -11,8 +11,8 @@ import org.dotwebstack.framework.backend.sparql.SparqlBackend;
 import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.endpoint.EndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -51,7 +51,7 @@ public class ConfigurationIntegrationTest {
   private LayoutResourceProvider layoutResourceProvider;
 
   @Autowired
-  private EndPointResourceProvider endPointResourceProvider;
+  private DirectEndPointResourceProvider directEndPointResourceProvider;
 
   @Autowired
   private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
@@ -84,12 +84,12 @@ public class ConfigurationIntegrationTest {
     String cssResource = layoutResourceProvider.get(DBEERPEDIA.LAYOUT).getOptions().get(
         valueFactory.createIRI("http://www.w3.org/1999/xhtml/vocab#stylesheet")).stringValue();
     assertThat(cssResource, equalTo("stage-layout.css"));
-    assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(7));
+    assertThat(directEndPointResourceProvider.getAll().entrySet(), hasSize(7));
     assertThat(dynamicEndPointResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT), notNullValue());
     assertThat(dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT).getLabel(),
         notNullValue());
-    assertThat(endPointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
+    assertThat(directEndPointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
   }
 
 }

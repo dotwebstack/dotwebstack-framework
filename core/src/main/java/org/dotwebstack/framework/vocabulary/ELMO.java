@@ -93,6 +93,10 @@ public final class ELMO {
 
   public static final IRI DYNAMIC_ENDPOINT;
 
+  public static final IRI GET_REPRESENTATION_PROP;
+
+  public static final IRI POST_REPRESENTATION_PROP;
+
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -166,6 +170,9 @@ public final class ELMO {
     SHAPE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "shape");
 
     APPLIES_TO_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "appliesTo");
+
+    GET_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "getRepresentation");
+    POST_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "postRepresentation");
   }
 
   private ELMO() {

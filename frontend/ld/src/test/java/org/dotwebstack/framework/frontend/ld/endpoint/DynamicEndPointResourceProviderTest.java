@@ -38,6 +38,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DynamicEndPointResourceProviderTest {
+
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
@@ -174,6 +175,5 @@ public class DynamicEndPointResourceProviderTest {
     assertThat(dynamicEndPoint.getParameterMapper(), equalTo(parameterMapper));
     assertThat(dynamicEndPoint.getStage(), equalTo(stage));
     assertThat(dynamicEndPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
-
   }
 }
