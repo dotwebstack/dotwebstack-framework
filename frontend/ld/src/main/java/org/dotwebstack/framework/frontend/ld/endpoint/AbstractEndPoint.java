@@ -64,5 +64,4 @@ public abstract class AbstractEndPoint {
 
     protected abstract AbstractEndPoint build();
   }
-
 }

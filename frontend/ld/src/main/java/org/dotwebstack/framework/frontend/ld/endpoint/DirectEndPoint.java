@@ -47,6 +47,5 @@ public class DirectEndPoint extends AbstractEndPoint {
     public DirectEndPoint build() {
       return new DirectEndPoint(this);
     }
-
   }
 }
