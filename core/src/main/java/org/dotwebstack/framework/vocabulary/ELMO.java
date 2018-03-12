@@ -17,6 +17,18 @@ public final class ELMO {
 
   public static final IRI INFORMATION_PRODUCT_PROP;
 
+  public static final IRI TRANSACTION;
+
+  public static final IRI TRANSACTION_PROP;
+
+  public static final IRI SEQUENTIAL_FLOW_PROP;
+
+  public static final IRI UNKNOWN_FLOW_PROP;
+
+  public static final IRI PERSISTENCE_STEP;
+
+  public static final IRI VALIDATION_STEP;
+
   public static final IRI SITE;
 
   public static final IRI STAGE;
@@ -87,6 +99,14 @@ public final class ELMO {
 
   public static final IRI LAYOUT_PROP;
 
+  public static final IRI PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH;
+
+  public static final IRI PERSISTENCE_STRATEGY_UNKNOWN;
+
+  public static final IRI PERSISTENCE_STRATEGY_PROP;
+
+  public static final IRI TARGET_GRAPH_PROP;
+
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -102,6 +122,11 @@ public final class ELMO {
 
     // Classes
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
+
+    TRANSACTION = valueFactory.createIRI(ELMO.NAMESPACE, "Transaction");
+    PERSISTENCE_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "PersistenceStep");
+
+    VALIDATION_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "ValidationStep");
 
     SITE = valueFactory.createIRI(ELMO.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(ELMO.NAMESPACE, "Stage");
@@ -132,10 +157,24 @@ public final class ELMO {
         valueFactory.createIRI(ELMO.NAMESPACE_EXTENSION_RESULTTYPE, ResultType.GRAPH.name());
 
     INFORMATION_PRODUCT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "informationProduct");
+    TRANSACTION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "transaction");
     PATH_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "pathPattern");
     PARAMETER_MAPPER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "parameterMapper");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
+
+    SEQUENTIAL_FLOW_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "sequentialFlow");
+    UNKNOWN_FLOW_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "unknownFlow");
+
+    TARGET_GRAPH_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "targetGraph");
+
+    PERSISTENCE_STRATEGY_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "persistenceStrategy");
+
+    PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH = valueFactory.createIRI(ELMO.NAMESPACE_BASE,
+        "/persistence-strategy/InsertIntoGraph");
+
+    PERSISTENCE_STRATEGY_UNKNOWN = valueFactory.createIRI(ELMO.NAMESPACE_BASE,
+        "/persistence-strategy/Unknown");
 
     REDIRECT_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.ws.rs.NotSupportedException;
+import org.apache.http.HttpStatus;
 import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
@@ -46,6 +47,8 @@ public class SparqlHttpStub {
 
   private TupleQueryResultBuilder tupleResultBuilder;
 
+  private int responseCode = 0;
+
   private SparqlHttpStub() {
     init();
   }
@@ -66,12 +69,21 @@ public class SparqlHttpStub {
     assertThat(instance, is(not(nullValue())));
     instance.tupleResultBuilder = null;
     instance.graphResult = model;
+    instance.responseCode = HttpStatus.SC_OK;
   }
 
   public static void returnTuple(TupleQueryResultBuilder builder) {
     assertThat(instance, is(not(nullValue())));
     instance.tupleResultBuilder = builder;
     instance.graphResult = null;
+    instance.responseCode = HttpStatus.SC_OK;
+  }
+
+  public static void setResponseCode(int responseCode) {
+    assertThat(instance, is(not(nullValue())));
+    instance.tupleResultBuilder = null;
+    instance.graphResult = null;
+    instance.responseCode = responseCode;
   }
 
   public static void main(String[] args) throws IOException {
@@ -126,20 +138,21 @@ public class SparqlHttpStub {
       try {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        if (parent.graphResult == null && parent.tupleResultBuilder == null) {
-          fail("Please specify either a graph or tuple result for your stub.");
+        if (parent.graphResult == null && parent.tupleResultBuilder == null
+            && parent.responseCode == 0) {
+          fail("Please specify either a graph or tuple result or ok response for your stub.");
         }
 
         if (parent.graphResult != null) {
           httpExchange.getResponseHeaders().add("Content-Type", MediaTypes.TURTLE);
           Rio.write(parent.graphResult, output, RDFFormat.TURTLE);
-        } else {
+        } else if (parent.tupleResultBuilder != null) {
           httpExchange.getResponseHeaders().add("Content-Type", MediaTypes.SPARQL_RESULTS_JSON);
           TupleQueryResultWriter writer = new SPARQLResultsJSONWriter(output);
           QueryResults.report(parent.tupleResultBuilder.build(), writer);
         }
 
-        httpExchange.sendResponseHeaders(200, output.size());
+        httpExchange.sendResponseHeaders(parent.responseCode, output.size());
         OutputStream responseBody = httpExchange.getResponseBody();
         responseBody.write(output.toByteArray());
         responseBody.close();

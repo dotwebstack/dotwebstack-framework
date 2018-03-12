@@ -27,7 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class SupportedMediaTypesScannerTest {
+public class SupportedWriterMediaTypesScannerTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -44,7 +44,7 @@ public class SupportedMediaTypesScannerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SupportedMediaTypesScanner(null, Collections.emptyList());
+    new SupportedWriterMediaTypesScanner(null, Collections.emptyList());
   }
 
   @Test
@@ -53,13 +53,13 @@ public class SupportedMediaTypesScannerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SupportedMediaTypesScanner(Collections.emptyList(), null);
+    new SupportedWriterMediaTypesScanner(Collections.emptyList(), null);
   }
 
   @Test
   public void constructor_FindsSupportedGraphProviders_WhenProvided() {
     // Arrange & Act
-    SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(
+    SupportedWriterMediaTypesScanner scanner = new SupportedWriterMediaTypesScanner(
         Collections.singletonList(new StubGraphEntityWriter()), Collections.emptyList());
 
     // Assert
@@ -72,8 +72,8 @@ public class SupportedMediaTypesScannerTest {
   @Test
   public void constructor_FindsSupportedTupleProviders_WhenProvided() {
     // Arrange & Act
-    SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(Collections.emptyList(),
-        Collections.singletonList(new StubTupleMessageBodyWriter()));
+    SupportedWriterMediaTypesScanner scanner = new SupportedWriterMediaTypesScanner(
+        Collections.emptyList(), Collections.singletonList(new StubTupleMessageBodyWriter()));
 
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));
@@ -85,8 +85,8 @@ public class SupportedMediaTypesScannerTest {
   @Test
   public void constructor_IgnoresUnsupportedProviders_WhenProvided() {
     // Arrange & Act
-    SupportedMediaTypesScanner scanner =
-        new SupportedMediaTypesScanner(Collections.singletonList(unsupportedGraphWriter),
+    SupportedWriterMediaTypesScanner scanner =
+        new SupportedWriterMediaTypesScanner(Collections.singletonList(unsupportedGraphWriter),
             Collections.singletonList(unsupportedTupleWriter));
 
     // Assert
@@ -99,7 +99,7 @@ public class SupportedMediaTypesScannerTest {
   @Test
   public void constructor_IgnoresProviderWithoutProduce_WhenProvided() {
     // Arrange & Act
-    SupportedMediaTypesScanner scanner = new SupportedMediaTypesScanner(
+    SupportedWriterMediaTypesScanner scanner = new SupportedWriterMediaTypesScanner(
         Collections.singletonList(new InvalidGraphEntityWriter()), Collections.emptyList());
 
     // Assert

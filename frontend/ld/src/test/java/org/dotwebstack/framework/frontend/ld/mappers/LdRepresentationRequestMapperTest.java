@@ -17,14 +17,19 @@ import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestParameterMapper;
+import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandler;
+import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.Transaction;
+import org.dotwebstack.framework.transaction.flow.Flow;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
@@ -51,14 +56,22 @@ public class LdRepresentationRequestMapperTest {
   private InformationProduct informationProduct;
 
   @Mock
+  private Transaction transaction;
+
+  @Mock
+  private Flow flow;
+
+  @Mock
   private Representation representation;
 
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
 
   @Mock
-  private SupportedMediaTypesScanner supportedMediaTypesScanner;
+  private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
+  @Mock
+  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
   @Mock
   private LdRepresentationRequestMapper ldRepresentationRequestMapper;
 
@@ -67,8 +80,13 @@ public class LdRepresentationRequestMapperTest {
 
   private RepresentationRequestHandler representationRequestHandler;
 
+  private TransactionRequestHandler transactionRequestHandler;
+
   @Mock
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
+
+  @Mock
+  private TransactionRequestHandlerFactory transactionRequestHandlerFactory;
 
   private HttpConfiguration httpConfiguration;
 
@@ -86,11 +104,15 @@ public class LdRepresentationRequestMapperTest {
 
     when(representationResourceProvider.getAll()).thenReturn(representationMap);
 
+    transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION).flow(flow).build();
+
     representationRequestHandler =
         new RepresentationRequestHandler(representation, representationRequestParameterMapper);
-    ldRepresentationRequestMapper =
-        new LdRepresentationRequestMapper(representationResourceProvider,
-            supportedMediaTypesScanner, representationRequestHandlerFactory);
+    transactionRequestHandler = new TransactionRequestHandler(transaction);
+    ldRepresentationRequestMapper = new LdRepresentationRequestMapper(
+        representationResourceProvider, supportedWriterMediaTypesScanner,
+        supportedReaderMediaTypesScanner, representationRequestHandlerFactory,
+        transactionRequestHandlerFactory);
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
         isA(Representation.class))).thenReturn(representationRequestHandler);
 
@@ -100,9 +122,10 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    LdRepresentationRequestMapper ldRepresentationRequestMapper =
-        new LdRepresentationRequestMapper(representationResourceProvider,
-            supportedMediaTypesScanner, representationRequestHandlerFactory);
+    LdRepresentationRequestMapper ldRepresentationRequestMapper = new LdRepresentationRequestMapper(
+        representationResourceProvider, supportedWriterMediaTypesScanner,
+        supportedReaderMediaTypesScanner, representationRequestHandlerFactory,
+        transactionRequestHandlerFactory);
 
     // Assert
     assertThat(ldRepresentationRequestMapper, not(nullValue()));
@@ -111,7 +134,7 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithValidData() {
     // Arrange
-    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+    when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     // Act
@@ -162,7 +185,7 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void loadRepresentations_IgnoreSecondRepresentation_WhenAddedTwice() {
     // Arrange
-    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+    when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     Representation representation =
@@ -186,7 +209,7 @@ public class LdRepresentationRequestMapperTest {
   @Test
   public void loadRepresentations_UsesPathDomainParameter_WithMatchAllDomain() {
     // Arrange
-    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+    when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();

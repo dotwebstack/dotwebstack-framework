@@ -180,6 +180,12 @@ public final class DBEERPEDIA {
 
   public static final Literal LAYOUT_NL_VALUE;
 
+  public static final IRI PERSISTENCE_STEP;
+
+  public static final IRI TRANSACTION;
+
+  public static final IRI SEQUENTIAL_FLOW;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
@@ -286,6 +292,12 @@ public final class DBEERPEDIA {
     LAYOUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayout");
 
     LAYOUT_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayoutNL");
+
+    PERSISTENCE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PersistenceStep");
+
+    TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
+
+    SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
   }
 
   private DBEERPEDIA() {
