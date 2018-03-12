@@ -44,4 +44,5 @@ public class PersistenceStepFactory implements StepFactory {
       @NonNull IRI predicate) {
     return Models.objectIRI(model.filter(subject, predicate, null));
   }
+
 }
