@@ -74,4 +74,5 @@ public class DynamicEndPointTest {
     assertThat(dynamicEndPoint.getLabel(), equalTo(label));
     assertThat(dynamicEndPoint.getStage(), equalTo(stage));
   }
+
 }
