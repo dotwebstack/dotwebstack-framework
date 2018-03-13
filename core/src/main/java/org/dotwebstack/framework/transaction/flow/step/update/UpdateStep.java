@@ -26,7 +26,8 @@ public class UpdateStep implements Step {
     this.identifier = builder.identifier;
     this.label = builder.label;
     this.query = builder.query;
-    this.backendIri = builder.backend;
+    this.backendIri = builder.backendIri;
+    this.backendResourceProvider = builder.backendResourceProvider;
   }
 
   public StepExecutor createStepExecutor(@NonNull RepositoryConnection
@@ -64,7 +65,7 @@ public class UpdateStep implements Step {
 
     private String query;
 
-    private Resource backend;
+    private Resource backendIri;
 
     private BackendResourceProvider backendResourceProvider;
 
@@ -84,8 +85,8 @@ public class UpdateStep implements Step {
       return this;
     }
 
-    public Builder backend(@NonNull Resource backend) {
-      this.backend = backend;
+    public Builder backend(@NonNull Resource backendIri) {
+      this.backendIri = backendIri;
       return this;
     }
 

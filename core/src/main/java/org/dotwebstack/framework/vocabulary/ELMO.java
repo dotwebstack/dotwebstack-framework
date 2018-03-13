@@ -27,6 +27,8 @@ public final class ELMO {
 
   public static final IRI UNKNOWN_FLOW_PROP;
 
+  public static final IRI STEP;
+
   public static final IRI PERSISTENCE_STEP;
 
   public static final IRI UPDATE_STEP;
@@ -129,6 +131,7 @@ public final class ELMO {
 
     TRANSACTION = valueFactory.createIRI(ELMO.NAMESPACE, "Transaction");
     TRANSACTION_REPOSITORY = valueFactory.createIRI(ELMO.NAMESPACE, "TransactionRepository");
+    STEP = valueFactory.createIRI(ELMO.NAMESPACE, "Step");
     PERSISTENCE_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "PersistenceStep");
     VALIDATION_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "ValidationStep");
     UPDATE_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "UpdateStep");
