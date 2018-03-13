@@ -99,6 +99,14 @@ public final class ELMO {
 
   public static final IRI LAYOUT_PROP;
 
+  public static final IRI ENDPOINT_PROP;
+
+  public static final IRI DYNAMIC_ENDPOINT;
+
+  public static final IRI GET_REPRESENTATION_PROP;
+
+  public static final IRI POST_REPRESENTATION_PROP;
+
   public static final IRI PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH;
 
   public static final IRI PERSISTENCE_STRATEGY_UNKNOWN;
@@ -144,13 +152,15 @@ public final class ELMO {
     URI_PARAMETER_MAPPER = valueFactory.createIRI(ELMO.NAMESPACE, "UriParameterMapper");
 
     LAYOUT = valueFactory.createIRI(ELMO.NAMESPACE, "Layout");
+    ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "Endpoint");
+    DYNAMIC_ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "DynamicEndpoint");
 
     // Properties
     BASE_PATH = valueFactory.createIRI(ELMO.NAMESPACE, "basePath");
     DOMAIN = valueFactory.createIRI(ELMO.NAMESPACE, "domain");
     SITE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "site");
 
-    ENDPOINT = valueFactory.createIRI(ELMO.NAMESPACE, "endpoint");
+    ENDPOINT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "endpoint");
     QUERY = valueFactory.createIRI(ELMO.NAMESPACE, "query");
     RESULT_TYPE = valueFactory.createIRI(ELMO.NAMESPACE, "resultType");
     RESULT_TYPE_DEFAULT =
@@ -170,11 +180,11 @@ public final class ELMO {
 
     PERSISTENCE_STRATEGY_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "persistenceStrategy");
 
-    PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH = valueFactory.createIRI(ELMO.NAMESPACE_BASE,
-        "/persistence-strategy/InsertIntoGraph");
+    PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH =
+        valueFactory.createIRI(ELMO.NAMESPACE_BASE, "/persistence-strategy/InsertIntoGraph");
 
-    PERSISTENCE_STRATEGY_UNKNOWN = valueFactory.createIRI(ELMO.NAMESPACE_BASE,
-        "/persistence-strategy/Unknown");
+    PERSISTENCE_STRATEGY_UNKNOWN =
+        valueFactory.createIRI(ELMO.NAMESPACE_BASE, "/persistence-strategy/Unknown");
 
     REDIRECT_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 
@@ -195,6 +205,9 @@ public final class ELMO {
 
     LAYOUT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "layout");
     SHAPE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "shape");
+
+    GET_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "getRepresentation");
+    POST_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "postRepresentation");
   }
 
   private ELMO() {

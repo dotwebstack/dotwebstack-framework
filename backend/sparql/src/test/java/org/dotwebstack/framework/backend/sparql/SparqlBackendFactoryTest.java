@@ -54,7 +54,7 @@ public class SparqlBackendFactoryTest {
   public void create_BackendIsCreated_WithValidData() {
     // Arrange
     Model backendModel =
-        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.ENDPOINT, DBEERPEDIA.ENDPOINT).build();
+        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.ENDPOINT_PROP, DBEERPEDIA.ENDPOINT).build();
 
     // Act
     SparqlBackend backend = (SparqlBackend) backendFactory.create(backendModel, DBEERPEDIA.BACKEND);
@@ -73,7 +73,7 @@ public class SparqlBackendFactoryTest {
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("No <%s> statement has been found for backend <%s>.",
-        ELMO.ENDPOINT, DBEERPEDIA.BACKEND));
+        ELMO.ENDPOINT_PROP, DBEERPEDIA.BACKEND));
 
     // Act
     backendFactory.create(backendModel, DBEERPEDIA.BACKEND);
@@ -85,12 +85,12 @@ public class SparqlBackendFactoryTest {
     Literal endpointAsString =
         SimpleValueFactory.getInstance().createLiteral(DBEERPEDIA.ENDPOINT.stringValue());
     Model backendModel =
-        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.ENDPOINT, endpointAsString).build();
+        new ModelBuilder().add(DBEERPEDIA.BACKEND, ELMO.ENDPOINT_PROP, endpointAsString).build();
 
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("Object <%s> for backend <%s> must be of datatype <%s>.",
-        ELMO.ENDPOINT, DBEERPEDIA.BACKEND, XMLSchema.ANYURI));
+        ELMO.ENDPOINT_PROP, DBEERPEDIA.BACKEND, XMLSchema.ANYURI));
 
     // Act
     backendFactory.create(backendModel, DBEERPEDIA.BACKEND);
