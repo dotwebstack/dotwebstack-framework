@@ -67,7 +67,7 @@ public class SequentialFlowResourceProvider extends AbstractResourceProvider<Seq
 
     List<Step> stepList = new ArrayList<>();
     stepIris.forEach(stepIri -> {
-      Step step = stepResourceProvider.get((IRI) stepIri);
+      Step step = stepResourceProvider.get((IRI)stepIri);
       if (step == null) {
         throw new ConfigurationException(
             String.format("No step definition <%s> found for flow <%s>.", stepIri, identifier));
