@@ -63,4 +63,5 @@ public class DirectEndPointResourceProvider extends AbstractResourceProvider<Abs
 
     return builder.build();
   }
+
 }

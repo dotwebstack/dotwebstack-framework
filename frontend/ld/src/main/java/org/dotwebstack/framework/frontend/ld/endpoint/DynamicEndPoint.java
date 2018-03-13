@@ -34,4 +34,5 @@ public class DynamicEndPoint extends AbstractEndPoint {
       return new DynamicEndPoint(this);
     }
   }
+
 }

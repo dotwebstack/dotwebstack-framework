@@ -59,4 +59,5 @@ public class DynamicEndPointResourceProvider extends AbstractResourceProvider<Dy
 
     return builder.build();
   }
+
 }
