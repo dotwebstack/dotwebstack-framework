@@ -50,7 +50,7 @@ public class FileConfigurationBackendIntegrationTest {
   }
 
   @Test
-  public void configrateBackend_WithoutPrefixesInBackendfile_throwConfigurationException()
+  public void configureBackend_WithoutPrefixesInBackendfile_throwConfigurationException()
       throws Exception {
     // Arrange
     fileConfigurationBackend = new FileConfigurationBackend(elmoConfiguration, sailRepository,

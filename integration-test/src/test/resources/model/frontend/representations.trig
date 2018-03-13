@@ -77,6 +77,14 @@ GRAPH dbeerpedia:Theatre {
       elmo:stage dbeerpedia:Stage;
       elmo:pathPattern ""; # [todo] to delete after finishing LDT-284
       elmo:informationProduct dbeerpedia:GraphBreweries;
-      elmo:appearance [a elmo:HtmlAppearance];
-    .
+      #elmo:appearance [a elmo:HtmlAppearance];
+      elmo:appearance dbeerpedia:HtmlAppearance
+  .
+  dbeerpedia:HtmlAppearance a elmo:HtmlAppearance
+  .
+  dbeerpedia:TransactionRepresentation a elmo:Representation;
+    elmo:pathPattern "/add-concept";
+    elmo:stage dbeerpedia:Stage;
+    elmo:transaction dbeerpedia:InsertConcept;
+  .
 }

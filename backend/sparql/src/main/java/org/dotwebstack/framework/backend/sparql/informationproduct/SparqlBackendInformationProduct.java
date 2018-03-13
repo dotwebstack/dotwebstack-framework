@@ -1,10 +1,12 @@
-package org.dotwebstack.framework.backend.sparql;
+package org.dotwebstack.framework.backend.sparql.informationproduct;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
+import org.dotwebstack.framework.backend.sparql.SparqlBackend;
 import org.dotwebstack.framework.informationproduct.AbstractInformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.BindableParameter;

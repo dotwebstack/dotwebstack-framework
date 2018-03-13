@@ -17,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SupportedMediaTypesScanner {
+public class SupportedWriterMediaTypesScanner {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SupportedMediaTypesScanner.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SupportedWriterMediaTypesScanner.class);
 
   private List<MediaType> graphMediaTypes = new ArrayList<>();
 
@@ -30,7 +30,7 @@ public class SupportedMediaTypesScanner {
   private List<MessageBodyWriter<TupleEntity>> tupleEntityWriters = new ArrayList<>();
 
   @Autowired
-  public SupportedMediaTypesScanner(
+  public SupportedWriterMediaTypesScanner(
       @NonNull List<MessageBodyWriter<GraphEntity>> graphEntityWriters,
       @NonNull List<MessageBodyWriter<TupleEntity>> tupleEntityWriters) {
     loadSupportedMediaTypes(graphEntityWriters, graphMediaTypes, this.graphEntityWriters);

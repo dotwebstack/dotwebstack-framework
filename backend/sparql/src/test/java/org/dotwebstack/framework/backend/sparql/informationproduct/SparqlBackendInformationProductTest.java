@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.sparql;
+package org.dotwebstack.framework.backend.sparql.informationproduct;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.contains;
@@ -11,6 +11,9 @@ import java.util.Collections;
 import java.util.Map;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
+import org.dotwebstack.framework.backend.sparql.SparqlBackend;
+import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
