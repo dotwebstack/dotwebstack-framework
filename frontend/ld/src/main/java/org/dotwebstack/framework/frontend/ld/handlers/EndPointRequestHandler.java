@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
@@ -46,6 +48,10 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
   public Response apply(ContainerRequestContext containerRequestContext) {
     String path = containerRequestContext.getUriInfo().getPath();
 
+    Map<String, String> parameterValues = new HashMap<>();
+    containerRequestContext.getUriInfo().getPathParameters().forEach(
+        (key, value) -> parameterValues.put(key, value.get(0)));
+
     if (endpoint instanceof DirectEndPoint) {
       final String request = containerRequestContext.getRequest().getMethod();
       final Representation representation;
@@ -58,49 +64,42 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
       } else {
         return null;
       }
-      InformationProduct informationProduct = representation.getInformationProduct();
-
-      Map<String, String> parameterValues =
-          endPointRequestParameterMapper.map(informationProduct, containerRequestContext);
-
-      representation.getParameterMappers().forEach(
-          parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
-
-      Object result = informationProduct.getResult(parameterValues);
-
-      if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-        return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
-      }
-      if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-        return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
-      }
-
-      throw new ConfigurationException(
-          String.format("Result type %s not supported for information product %s",
-              informationProduct.getResultType(), informationProduct.getIdentifier()));
+      return temp(representation, containerRequestContext, parameterValues);
     } else {
-      return null;
+      // dynamicEndPoint
+      Optional<String> subjectParameter = Optional.of(parameterValues.get("subject"));
+      if (subjectParameter.isPresent()) {
+        for (Representation resp : representationResourceProvider.getAll().values()) {
+          if (resp.getAppliesTo().equals(subjectParameter)) {
+            return temp(resp, containerRequestContext, parameterValues);
+          }
+        }
+      }
     }
-    // else {
-    // InformationProduct informationProduct = representation.getInformationProduct();
-    //
-    // Map<String, String> parameterValues =
-    // representationRequestParameterMapper.map(informationProduct, containerRequestContext);
-    //
-    // representation.getParameterMappers().forEach(
-    // parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
-    //
-    // Object result = informationProduct.getResult(parameterValues);
-    //
-    // if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-    // return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
-    // }
-    // if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-    // return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
-    // }
-    //
-    // throw new ConfigurationException(
-    // String.format("Result type %s not supported for information product %s",
-    // informationProduct.getResultType(), informationProduct.getIdentifier()));
+    return null;
   }
+
+  private Response temp(Representation representation,
+      ContainerRequestContext containerRequestContext, Map parameterValues) {
+    InformationProduct informationProduct = representation.getInformationProduct();
+
+    endPointRequestParameterMapper.map(informationProduct, containerRequestContext).forEach(
+        (key, value) -> parameterValues.put(key, value));
+    representation.getParameterMappers().forEach(
+        parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
+
+    Object result = informationProduct.getResult(parameterValues);
+
+    if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
+      return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
+    }
+    if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
+      return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
+    }
+
+    throw new ConfigurationException(
+        String.format("Result type %s not supported for information product %s",
+            informationProduct.getResultType(), informationProduct.getIdentifier()));
+  }
+
 }
