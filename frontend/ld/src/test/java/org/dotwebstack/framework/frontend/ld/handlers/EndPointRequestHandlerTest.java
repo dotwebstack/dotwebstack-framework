@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -82,7 +83,9 @@ public class EndPointRequestHandlerTest {
     when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
 
     UriInfo uriInfo = mock(UriInfo.class);
+    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
     when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
@@ -106,7 +109,9 @@ public class EndPointRequestHandlerTest {
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
     UriInfo uriInfo = mock(UriInfo.class);
+    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
     when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
@@ -129,7 +134,9 @@ public class EndPointRequestHandlerTest {
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
 
     UriInfo uriInfo = mock(UriInfo.class);
+    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
     when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
