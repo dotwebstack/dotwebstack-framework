@@ -326,11 +326,26 @@ elmo:ParameterMapper a owl:Class;
 
 # == INDIVIDUALS ==
 elmo:SubjectParameter a elmo:TermParameter;
-  elmo:name "SUBJECT";
+  elmo:name "subject";
   elmo:shape [
 #    sh:nodeKind sh:IRI;     This is WRONG, but current framework cannot deal with sh:IRI nodekinds
     sh:datatype xsd:string; #This is WRONG, but current framework cannot deal with sh:IRI nodekinds
   ]
+.
+elmo:PageParameter a elmo:TermParameter;
+  elmo:name "page";
+  elmo:shape [
+    sh:datatype xsd:integer;
+    sh:minInclusive 1;
+    sh:defaultValue 1;
+  ];
+.
+elmo:PageSizeParameter a elmo:TermParameter;
+  elmo:name "pageSize";
+  elmo:shape [
+    sh:datatype xsd:integer;
+    sh:defaultValue 10;
+  ];
 .
 
 elmo:BottomLayer a elmo:Layer;
