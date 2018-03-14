@@ -2,9 +2,13 @@ GRAPH dbeerpedia:Theatre {
 
   # Transaction: replace resource from graph
   dbeerpedia:InsertConcept a elmo:Transaction;
-    elmo:sequentialFlow (dbeerpedia:UpdateStep dbeerpedia:PersistenceStep);
+    elmo:sequentialFlow (
+      dbeerpedia:PreUpdateStep
+      dbeerpedia:PersistenceStep
+      dbeerpedia:PostUpdateStep
+    );
   .
-  dbeerpedia:UpdateStep a elmo:UpdateStep;
+  dbeerpedia:PreUpdateStep a elmo:UpdateStep;
     elmo:backend elmo:TransactionRepository;
     elmo:query """
       INSERT DATA
@@ -18,5 +22,15 @@ GRAPH dbeerpedia:Theatre {
     elmo:persistenceStrategy elmo-sp:InsertIntoGraph;
     elmo:backend dbeerpedia:Backend;
     elmo:targetGraph <http://dotwebstack.org/all-concepts>;
+  .
+  dbeerpedia:PostUpdateStep a elmo:UpdateStep;
+    elmo:backend dbeerpedia:Backend;
+    elmo:query """
+      INSERT DATA
+        {
+        <http://dbeerpedia.org#davo> <http://www.w3.org/2000/01/rdf-schema#label>
+        \"Davo brouwerij Deventer\"
+        };
+    """
   .
 }
