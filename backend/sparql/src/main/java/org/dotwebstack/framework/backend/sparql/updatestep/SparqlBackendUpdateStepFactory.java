@@ -13,7 +13,7 @@ public class SparqlBackendUpdateStepFactory {
   private QueryEvaluator queryEvaluator;
 
   @Autowired
-  public SparqlBackendUpdateStepFactory(QueryEvaluator queryEvaluator) {
+  public SparqlBackendUpdateStepFactory(@NonNull QueryEvaluator queryEvaluator) {
     this.queryEvaluator = queryEvaluator;
   }
 

@@ -5,9 +5,7 @@ import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 public class UpdateStep implements Step {
@@ -33,8 +31,6 @@ public class UpdateStep implements Step {
   public StepExecutor createStepExecutor(@NonNull RepositoryConnection
       transactionRepositoryConnection) {
     if (backendIri.equals(ELMO.TRANSACTION_REPOSITORY)) {
-      Model transactionModel = QueryResults.asModel(transactionRepositoryConnection
-          .getStatements(null, null, null));
       return new UpdateTransactionRepositoryExecutor(this, transactionRepositoryConnection);
     } else {
       return backendResourceProvider.get(backendIri).createUpdateStepExecutor(this);

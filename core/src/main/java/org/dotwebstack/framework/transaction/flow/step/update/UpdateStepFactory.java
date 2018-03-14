@@ -42,11 +42,11 @@ public class UpdateStepFactory implements StepFactory {
     return builder.build();
   }
 
-  protected Optional<String> getObjectString(Model model, Resource subject, IRI predicate) {
+  private Optional<String> getObjectString(Model model, Resource subject, IRI predicate) {
     return Models.objectString(model.filter(subject, predicate, null));
   }
 
-  protected Optional<IRI> getObjectIRI(Model model, Resource subject, IRI predicate) {
+  private Optional<IRI> getObjectIRI(Model model, Resource subject, IRI predicate) {
     return Models.objectIRI(model.filter(subject, predicate, null));
   }
 
