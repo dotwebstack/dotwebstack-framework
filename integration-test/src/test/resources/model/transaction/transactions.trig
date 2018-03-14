@@ -7,9 +7,10 @@ GRAPH dbeerpedia:Theatre {
   dbeerpedia:UpdateStep a elmo:UpdateStep;
     elmo:backend elmo:TransactionRepository;
     elmo:query """
-      insert "
+      INSERT DATA
         {
-        <http://dbeerpedia.org#davo> <http://www.w3.org/2000/01/rdf-schema#label> \"Davo brouwerij Deventer\"
+        <http://dbeerpedia.org#davo> <http://www.w3.org/2000/01/rdf-schema#label>
+        \"Davo brouwerij Deventer\"
         };
     """
   .
