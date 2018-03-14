@@ -68,7 +68,7 @@ public class UpdateStepTest {
   }
 
   @Test
-  public void CreateStepExecutor_GetTransactionRepositoryExecutor_WithValidData() {
+  public void createStepExecutor_GetTransactionRepositoryExecutor_WithValidData() {
     // Arrange
     IRI backendIri = ELMO.TRANSACTION_REPOSITORY;
     updateStep = new UpdateStep.Builder(identifier, backendResourceProvider)
@@ -82,7 +82,7 @@ public class UpdateStepTest {
   }
 
   @Test
-  public void CreateStepExecutor_GetStepExecutor_WithValidData() {
+  public void createStepExecutor_GetStepExecutor_WithValidData() {
     // Arrange
     IRI backendIri = ELMO.BACKEND;
     updateStep = new UpdateStep.Builder(identifier, backendResourceProvider)

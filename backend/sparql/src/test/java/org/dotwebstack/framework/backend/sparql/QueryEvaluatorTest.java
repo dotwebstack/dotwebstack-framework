@@ -229,7 +229,8 @@ public class QueryEvaluatorTest {
   @Test
   public void add_ThrowsException_WithRdf4jError() {
     // Arrange
-    doThrow(new RDFParseException("Parse error")).when(repositoryConnection).add(model, targetGraphIri);
+    doThrow(new RDFParseException("Parse error")).when(repositoryConnection).add(model,
+        targetGraphIri);
 
     // Assert
     thrown.expect(BackendException.class);
