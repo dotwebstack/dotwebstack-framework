@@ -66,7 +66,7 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
       } else {
         return null;
       }
-      return temp(representation, containerRequestContext, parameterValues);
+      return applyRepresentation(representation, containerRequestContext, parameterValues);
     } else {
       parameterValues.putAll(
           ((DynamicEndPoint) endpoint).getParameterMapper().map(containerRequestContext));
@@ -75,7 +75,7 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
         for (Representation resp : representationResourceProvider.getAll().values()) {
           String appliesTo = getUrl(resp, parameterValues);
           if (appliesTo.equals(subjectParameter.get())) {
-            return temp(resp, containerRequestContext, parameterValues);
+            return applyRepresentation(resp, containerRequestContext, parameterValues);
           }
         }
       }
@@ -83,8 +83,17 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
     return null;
   }
 
-  private Response temp(Representation representation,
+  private String getUrl(Representation representation, Map<String, String> parameterValues) {
+    for (String appliesTo : representation.getAppliesTo()) {
+      UriTemplate template = new UriTemplate(appliesTo);
+      return template.expand(parameterValues).toString();
+    }
+    return "";
+  }
+
+  private Response applyRepresentation(Representation representation,
       ContainerRequestContext containerRequestContext, Map parameterValues) {
+
     InformationProduct informationProduct = representation.getInformationProduct();
 
     endPointRequestParameterMapper.map(informationProduct, containerRequestContext).forEach(
