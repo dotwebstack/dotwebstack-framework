@@ -54,8 +54,8 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
     containerRequestContext.getUriInfo().getPathParameters().forEach(
         (key, value) -> parameterValues.put(key, value.get(0)));
 
+    final String request = containerRequestContext.getRequest().getMethod();
     if (endpoint instanceof DirectEndPoint) {
-      final String request = containerRequestContext.getRequest().getMethod();
       final Representation representation;
       if (request.equals(HttpMethod.GET)) {
         LOG.debug("Handling GET request for path {}", path);
@@ -64,23 +64,27 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
         LOG.debug("Handling POST request for path {}", path);
         representation = ((DirectEndPoint) endpoint).getPostRepresentation();
       } else {
-        return null;
+        throw new ConfigurationException(String.format(
+            "Result type %s not supported for endpoint %s", request, endpoint.getIdentifier()));
       }
       return applyRepresentation(representation, containerRequestContext, parameterValues);
     } else {
-      parameterValues.putAll(
-          ((DynamicEndPoint) endpoint).getParameterMapper().map(containerRequestContext));
-      Optional<String> subjectParameter = Optional.ofNullable(parameterValues.get("subject"));
-      if (subjectParameter.isPresent()) {
-        for (Representation resp : representationResourceProvider.getAll().values()) {
-          String appliesTo = getUrl(resp, parameterValues);
-          if (appliesTo.equals(subjectParameter.get())) {
-            return applyRepresentation(resp, containerRequestContext, parameterValues);
+      if (request.equals(HttpMethod.GET)) {
+        parameterValues.putAll(
+            ((DynamicEndPoint) endpoint).getParameterMapper().map(containerRequestContext));
+        Optional<String> subjectParameter = Optional.ofNullable(parameterValues.get("subject"));
+        if (subjectParameter.isPresent()) {
+          for (Representation resp : representationResourceProvider.getAll().values()) {
+            String appliesTo = getUrl(resp, parameterValues);
+            if (appliesTo.equals(subjectParameter.get())) {
+              return applyRepresentation(resp, containerRequestContext, parameterValues);
+            }
           }
         }
       }
     }
-    return null;
+    throw new ConfigurationException(String.format("Result type %s not supported for endpoint %s",
+        request, endpoint.getIdentifier()));
   }
 
   private String getUrl(Representation representation, Map<String, String> parameterValues) {
@@ -91,8 +95,8 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
     return "";
   }
 
-  private Response applyRepresentation(Representation representation,
-      ContainerRequestContext containerRequestContext, Map parameterValues) {
+  private Response applyRepresentation(@NonNull Representation representation,
+      @NonNull ContainerRequestContext containerRequestContext, @NonNull Map parameterValues) {
 
     InformationProduct informationProduct = representation.getInformationProduct();
 
