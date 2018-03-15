@@ -14,8 +14,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
+import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -66,6 +68,9 @@ public class DirectEndPointResourceProviderTest {
   private Stage stage;
 
   @Mock
+  private Representation representation;
+
+  @Mock
   private GraphQuery graphQuery;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -79,6 +84,7 @@ public class DirectEndPointResourceProviderTest {
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
     when(configurationRepositoryConnection.prepareGraphQuery(anyString())).thenReturn(graphQuery);
     when(stageResourceProvider.get(any())).thenReturn(stage);
+    when(representationResourceProvider.get(any())).thenReturn(representation);
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
   }
 
@@ -142,17 +148,41 @@ public class DirectEndPointResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, RDFS.LABEL,
                 DBEERPEDIA.BREWERIES_LABEL),
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.STAGE_PROP,
-                DBEERPEDIA.SECOND_STAGE))));
+                DBEERPEDIA.SECOND_STAGE),
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.GET_REPRESENTATION_PROP,
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.POST_REPRESENTATION_PROP,
+                ELMO.REPRESENTATION))));
 
     // Act
     endPointResourceProvider.loadResources();
 
     // Assert
     assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(1));
-    AbstractEndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
+    DirectEndPoint endPoint =
+        (DirectEndPoint) endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
     assertThat(endPoint, is(not(nullValue())));
     assertThat(endPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
     assertThat(endPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
     assertThat(endPoint.getStage(), equalTo(stage));
+    assertThat(endPoint.getGetRepresentation(), equalTo(representation));
+    assertThat(endPoint.getPostRepresentation(), equalTo(representation));
   }
+
+  @Test
+  public void loadResources_LoadDirectEndPoint_MissingPathPattern() {
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("No <%s> statement has been found for pathPattern <%s>.",
+        ELMO.PATH_PATTERN, DBEERPEDIA.DOC_ENDPOINT));
+
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(
+        new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, RDF.TYPE, ELMO.ENDPOINT))));
+
+    // Act
+    endPointResourceProvider.loadResources();
+  }
+
 }
