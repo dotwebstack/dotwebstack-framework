@@ -11,6 +11,7 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -21,6 +22,7 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriTemplate;
 
 public class EndPointRequestHandler implements Inflector<ContainerRequestContext, Response> {
 
@@ -66,11 +68,13 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
       }
       return temp(representation, containerRequestContext, parameterValues);
     } else {
-      // dynamicEndPoint
-      Optional<String> subjectParameter = Optional.of(parameterValues.get("subject"));
+      parameterValues.putAll(
+          ((DynamicEndPoint) endpoint).getParameterMapper().map(containerRequestContext));
+      Optional<String> subjectParameter = Optional.ofNullable(parameterValues.get("subject"));
       if (subjectParameter.isPresent()) {
         for (Representation resp : representationResourceProvider.getAll().values()) {
-          if (resp.getAppliesTo().equals(subjectParameter)) {
+          String appliesTo = getUrl(resp, parameterValues);
+          if (appliesTo.equals(subjectParameter.get())) {
             return temp(resp, containerRequestContext, parameterValues);
           }
         }
