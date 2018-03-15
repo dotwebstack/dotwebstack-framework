@@ -2,6 +2,7 @@ GRAPH dbeerpedia:Theatre {
 
   dbeerpedia:DocEndpoint a elmo:DynamicEndpoint;
     rdfs:label "label";
+    elmo:stage dbeerpedia:Stage;
     elmo:pathPattern "/id/{reference}";
     elmo:parameterMapper dbeerpedia:SubjectFromUrl;
   .
