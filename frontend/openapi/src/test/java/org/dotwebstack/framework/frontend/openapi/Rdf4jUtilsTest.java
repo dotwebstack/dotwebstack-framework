@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.openapi;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -46,40 +45,6 @@ public class Rdf4jUtilsTest {
       assertTrue(
           con.hasStatement(DBEERPEDIA.MAXIMUS, DBEERPEDIA.NAME, DBEERPEDIA.MAXIMUS_NAME, false));
     }
-  }
-
-  @Test
-  public void evaluateAskQuery_EvaluatesToTrue_WhenQueryEvaluatesToTrue() {
-    // Arrange
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
-        DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
-            DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
-                DBEERPEDIA.MAXIMUS_NAME).build();
-    Repository repository = Rdf4jUtils.asRepository(model);
-
-    // Act
-    Boolean result = Rdf4jUtils.evaluateAskQuery(repository,
-        String.format("ASK {?s <%s> <%s> }", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE));
-
-    // Assert
-    assertTrue(result);
-  }
-
-  @Test
-  public void evaluateAskQuery_EvaluatesToFalse_WhenQueryEvaluatesToFalse() {
-    // Arrange
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
-        DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
-            DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
-                DBEERPEDIA.MAXIMUS_NAME).build();
-    Repository repository = Rdf4jUtils.asRepository(model);
-
-    // Act
-    Boolean result = Rdf4jUtils.evaluateAskQuery(repository,
-        String.format("ASK {?s <%s> <%s> }", RDF.TYPE, "http://foo"));
-
-    // Assert
-    assertFalse(result);
   }
 
   @Test

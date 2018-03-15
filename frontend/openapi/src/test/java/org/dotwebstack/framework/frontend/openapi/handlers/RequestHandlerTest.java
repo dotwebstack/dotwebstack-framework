@@ -3,6 +3,8 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -13,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
@@ -31,9 +34,9 @@ import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.util.ModelBuilder;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.query.impl.IteratingGraphQueryResult;
@@ -50,6 +53,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequestHandlerTest {
+
+  private static final SimpleValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   @Rule
   public final ExpectedException exception = ExpectedException.none();
@@ -117,7 +122,84 @@ public class RequestHandlerTest {
   }
 
   @Test
-  public void apply_ReturnsOkResponse_ForGraphQueryResult() {
+  public void apply_ReturnsOkResponseWithEmptySubjects_ForEmptySubjectQueryResult() {
+    // Arrange
+    when(swaggerMock.getBasePath()).thenReturn("");
+    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
+    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
+
+    GraphQueryResult result = mock(GraphQueryResult.class);
+    Map<String, String> parameters = ImmutableMap.of();
+
+    when(informationProductMock.getResult(parameters)).thenReturn(result);
+    when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
+
+    Operation operation = new Operation().vendorExtensions(ImmutableMap.of(
+        OpenApiSpecificationExtensions.SUBJECT_QUERY, "SELECT ?s WHERE { ?s ?p ?o }")).response(
+            Status.OK.getStatusCode(), new io.swagger.models.Response());
+
+    when(apiOperationMock.getOperation()).thenReturn(operation);
+
+    // Act
+    Response response = requestHandler.apply(containerRequestMock);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getEntity(), instanceOf(GraphEntity.class));
+
+    assertThat(((GraphEntity) response.getEntity()).getInformationProduct(),
+        sameInstance(informationProductMock));
+    assertThat(((GraphEntity) response.getEntity()).getParameters(), is(parameters));
+    assertThat(((GraphEntity) response.getEntity()).getSchemaMap(), is(schemaMap));
+    assertThat(((GraphEntity) response.getEntity()).getSubjects(), is(empty()));
+  }
+
+  @Test
+  public void apply_ReturnsOkResponseWithSubjects_ForNonEmptySubjectQueryResult() {
+    // Arrange
+    when(swaggerMock.getBasePath()).thenReturn("");
+    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
+    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
+
+    GraphQueryResult result = new IteratingGraphQueryResult(ImmutableMap.of(), ImmutableList.of(
+        VALUE_FACTORY.createStatement(DBEERPEDIA.BROUWTOREN, RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
+        VALUE_FACTORY.createStatement(DBEERPEDIA.BROUWTOREN, RDFS.LABEL,
+            DBEERPEDIA.BROUWTOREN_NAME),
+        VALUE_FACTORY.createStatement(DBEERPEDIA.MAXIMUS, RDF.TYPE, DBEERPEDIA.WINERY_TYPE),
+        VALUE_FACTORY.createStatement(DBEERPEDIA.MAXIMUS, RDFS.LABEL, DBEERPEDIA.MAXIMUS_NAME)));
+
+    Map<String, String> parameters = ImmutableMap.of();
+
+    when(informationProductMock.getResult(parameters)).thenReturn(result);
+    when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
+
+    Operation operation = new Operation().vendorExtensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
+            String.format("SELECT ?s WHERE {?s <%s> <%s> }", RDF.TYPE,
+                DBEERPEDIA.BREWERY_TYPE))).response(Status.OK.getStatusCode(),
+                    new io.swagger.models.Response());
+
+    when(apiOperationMock.getOperation()).thenReturn(operation);
+
+    // Act
+    Response response = requestHandler.apply(containerRequestMock);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getEntity(), instanceOf(GraphEntity.class));
+
+    assertThat(((GraphEntity) response.getEntity()).getInformationProduct(),
+        sameInstance(informationProductMock));
+    assertThat(((GraphEntity) response.getEntity()).getParameters(), is(parameters));
+    assertThat(((GraphEntity) response.getEntity()).getSchemaMap(), is(schemaMap));
+    assertThat(((GraphEntity) response.getEntity()).getSubjects(), contains(DBEERPEDIA.BROUWTOREN));
+  }
+
+  @Test
+  public void apply_ThrowsConfigurationEx_WhenSubjectQueryHasNotBeenDefinedForGraphResult() {
+    // Assert
+    exception.expect(ConfigurationException.class);
+
     // Arrange
     when(swaggerMock.getBasePath()).thenReturn("");
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
@@ -135,129 +217,29 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    Response response = requestHandler.apply(containerRequestMock);
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getEntity(), instanceOf(GraphEntity.class));
-
-    assertThat(((GraphEntity) response.getEntity()).getInformationProduct(),
-        sameInstance(informationProductMock));
-    assertThat(((GraphEntity) response.getEntity()).getParameters(), is(parameters));
-    assertThat(((GraphEntity) response.getEntity()).getSchemaMap(), is(schemaMap));
+    requestHandler.apply(containerRequestMock);
   }
 
   @Test
-  public void apply_ReturnsOkResponse_WhenResultFoundQueryHasBeenDefinedAndQueryReturnsTrue() {
-    // Arrange
-    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
-    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
-
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
-        DBEERPEDIA.BREWERY_TYPE).build();
-
-    GraphQueryResult result = new IteratingGraphQueryResult(ImmutableMap.of(), model);
-    Map<String, String> parameters = ImmutableMap.of();
-
-    when(informationProductMock.getResult(parameters)).thenReturn(result);
-    when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
-
-    Operation operation = new Operation().vendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.RESULT_FOUND_QUERY,
-            String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE))).response(
-                Status.OK.getStatusCode(), new io.swagger.models.Response()).response(
-                    Status.NOT_FOUND.getStatusCode(), new io.swagger.models.Response());
-
-    when(apiOperationMock.getOperation()).thenReturn(operation);
-
-    // Act
-    Response response = requestHandler.apply(containerRequestMock);
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-  }
-
-  @Test
-  public void apply_ThrowsNotFoundEx_WhenResultFoundQueryHasBeenDefinedAndQueryReturnsFalse() {
+  public void apply_ThrowsNotFoundEx_WhenSubjectQueryResultIsEmptyAnd404ResponseIsDefined() {
     // Assert
     exception.expect(NotFoundException.class);
 
     // Arrange
+    when(swaggerMock.getBasePath()).thenReturn("");
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
-    Model model = new ModelBuilder().build();
-
-    GraphQueryResult result = new IteratingGraphQueryResult(ImmutableMap.of(), model);
+    GraphQueryResult result = mock(GraphQueryResult.class);
     Map<String, String> parameters = ImmutableMap.of();
 
     when(informationProductMock.getResult(parameters)).thenReturn(result);
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
-    Operation operation = new Operation().vendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.RESULT_FOUND_QUERY,
-            String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE))).response(
-                Status.OK.getStatusCode(), new io.swagger.models.Response()).response(
-                    Status.NOT_FOUND.getStatusCode(), new io.swagger.models.Response());
-
-    when(apiOperationMock.getOperation()).thenReturn(operation);
-
-    // Act
-    requestHandler.apply(containerRequestMock);
-  }
-
-  @Test
-  public void apply_ThrowsConfigurationEx_WhenResultFoundQueryHasBeenDefinedWithout404Response() {
-    // Assert
-    exception.expect(ConfigurationException.class);
-    exception.expectMessage("Vendor extension 'x-dotwebstack-result-found-query' has been defined, "
-        + "while 404 response is missing");
-
-    // Arrange
-    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
-    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
-
-    Model model = new ModelBuilder().build();
-
-    GraphQueryResult result = new IteratingGraphQueryResult(ImmutableMap.of(), model);
-    Map<String, String> parameters = ImmutableMap.of();
-
-    when(informationProductMock.getResult(parameters)).thenReturn(result);
-    when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
-
-    Operation operation = new Operation().vendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.RESULT_FOUND_QUERY,
-            String.format("ASK {?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE))).response(
-                Status.OK.getStatusCode(), new io.swagger.models.Response());
-
-    when(apiOperationMock.getOperation()).thenReturn(operation);
-
-    // Act
-    requestHandler.apply(containerRequestMock);
-  }
-
-  @Test
-  public void apply_ThrowsConfigurationEx_When404ResponseHasBeenDefinedWithoutResultFoundQuery() {
-    // Assert
-    exception.expect(ConfigurationException.class);
-    exception.expectMessage("Vendor extension 'x-dotwebstack-result-found-query' is missing, "
-        + "while 404 response has been defined");
-
-    // Arrange
-    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
-    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
-
-    Model model = new ModelBuilder().build();
-
-    GraphQueryResult result = new IteratingGraphQueryResult(ImmutableMap.of(), model);
-    Map<String, String> parameters = ImmutableMap.of();
-
-    when(informationProductMock.getResult(parameters)).thenReturn(result);
-    when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
-
-    Operation operation = new Operation().response(Status.OK.getStatusCode(),
-        new io.swagger.models.Response()).response(Status.NOT_FOUND.getStatusCode(),
-            new io.swagger.models.Response());
+    Operation operation = new Operation().vendorExtensions(ImmutableMap.of(
+        OpenApiSpecificationExtensions.SUBJECT_QUERY, "SELECT ?s WHERE { ?s ?p ?o }")).response(
+            Status.OK.getStatusCode(), new io.swagger.models.Response()).response(
+                Status.NOT_FOUND.getStatusCode(), new io.swagger.models.Response());
 
     when(apiOperationMock.getOperation()).thenReturn(operation);
 

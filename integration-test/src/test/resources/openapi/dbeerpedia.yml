@@ -91,7 +91,11 @@ paths:
   /graph-breweries:
     get:
       x-dotwebstack-information-product: "http://dbeerpedia.org#GraphBreweries"
-      x-dotwebstack-result-found-query: "ASK { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbeerpedia.org#Brewery> }"
+      x-dotwebstack-subject-query: >
+        SELECT ?s
+        WHERE {
+          ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbeerpedia.org#Brewery>
+        }
       parameters:
       - name: id
         in: path

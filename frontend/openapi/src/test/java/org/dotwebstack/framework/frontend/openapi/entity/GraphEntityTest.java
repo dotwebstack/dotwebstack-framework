@@ -5,11 +5,11 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.swagger.models.Swagger;
 import java.util.Map;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.query.QueryResult;
+import org.eclipse.rdf4j.repository.Repository;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class GraphEntityTest {
   private InformationProduct productMock;
 
   @Mock
-  private QueryResult<Statement> queryResultMock;
+  private Repository repositoryMock;
 
   @Mock
   private Swagger definitionsMock;
@@ -37,7 +37,7 @@ public class GraphEntityTest {
 
   @Before
   public void setUp() {
-    entity = newGraphEntity(ImmutableMap.of(), queryResultMock, definitionsMock,
+    entity = newGraphEntity(ImmutableMap.of(), repositoryMock, ImmutableSet.of(), definitionsMock,
         ImmutableMap.of(), productMock, "");
   }
 
