@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
@@ -147,6 +148,24 @@ public class DynamicEndPointResourceProviderTest {
     assertThat(dynamicEndPoint, is(not(nullValue())));
     assertThat(dynamicEndPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
     assertThat(dynamicEndPoint.getParameterMapper(), equalTo(parameterMapper));
+  }
+
+  @Test
+  public void loadResources_LoadDynamicEndPoint_MissingPathPattern() {
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("No <%s> statement has been found for pathPattern <%s>.",
+        ELMO.PATH_PATTERN, DBEERPEDIA.DOC_ENDPOINT));
+
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, RDF.TYPE, ELMO.DYNAMIC_ENDPOINT),
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.PARAMETER_MAPPER_PROP,
+                DBEERPEDIA.SUBJECT_FROM_URL))));
+
+    // Act
+    dynamicEndPointResourceProvider.loadResources();
   }
 
   @Test
