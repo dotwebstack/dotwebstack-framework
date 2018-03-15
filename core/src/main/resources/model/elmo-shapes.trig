@@ -803,7 +803,7 @@ elmo-shape:DynamicEndpoint a sh:NodeShape;
     sh:name "elmo:parameterMapper";
     sh:path elmo:parameterMapper;
     sh:class elmo:ParameterMapper;
-    sh:minCount 1;
+    # minCount can be zero, in such a case the subject URL-parameter will be mapped
     sh:maxCount 1
   ];
 .
@@ -941,9 +941,9 @@ elmo-shape:Layer a sh:NodeShape;
     sh:maxCount 1;
   ];
   sh:property [
-    sh:path rdfs:label;
     sh:name "rdfs:label";
-    sh:datatype xsd:string
+    sh:path rdfs:label;
+    sh:datatype xsd:string;
   ];
   sh:property [
     sh:path elmo:index;
