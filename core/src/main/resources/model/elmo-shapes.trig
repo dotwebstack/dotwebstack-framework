@@ -310,9 +310,39 @@ elmo-shape:ValidationStep a sh:NodeShape;
     sh:hasValue elmo:ValidationStep;
   ];
   sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
+  ];
+  sh:property [
     sh:name "elmo:conformsTo";
     sh:path elmo:conformsTo;
     sh:nodeKind sh:IRI;
+  ];
+.
+elmo-shape:AssertionStep a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:AssertionStep;
+  rdfs:label "Assertion step shape"@en;
+  sh:name "elmo:AssertionStep";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:AssertionStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
+  ];
+  sh:property [
+    sh:name "elmo:assert";
+    sh:path elmo:assert;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:assertNot";
+    sh:path elmo:assertNot;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
   ];
 .
 
@@ -324,6 +354,10 @@ elmo-shape:UpdateStep a sh:NodeShape;
   sh:property [
     sh:path rdf:type;
     sh:hasValue elmo:UpdateStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
   ];
   sh:property [
     sh:path elmo:backend;
@@ -345,6 +379,10 @@ elmo-shape:PersistenceStep a sh:NodeShape;
   sh:property [
     sh:path rdf:type;
     sh:hasValue elmo:PersistenceStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
   ];
   sh:property [
     sh:path elmo:backend;

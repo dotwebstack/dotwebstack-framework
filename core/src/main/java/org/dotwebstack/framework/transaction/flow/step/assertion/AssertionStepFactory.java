@@ -26,7 +26,7 @@ public class AssertionStepFactory implements StepFactory {
     getObjectString(stepModel, identifier, RDFS.LABEL).ifPresent(
         builder::label);
     builder.assertion(getObjectString(stepModel, identifier, ELMO.ASSERT),
-        getObjectString(stepModel, identifier, ELMO.ASSERT));
+        getObjectString(stepModel, identifier, ELMO.ASSERT_NOT));
 
     return builder.build();
   }

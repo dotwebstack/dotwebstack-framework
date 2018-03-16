@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.transaction.flow.step.update;
 
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.transaction.flow.step.AbstractStepExecutor;
 import org.eclipse.rdf4j.RDF4JException;
@@ -13,7 +14,7 @@ public class UpdateTransactionRepositoryExecutor extends AbstractStepExecutor<Up
   private RepositoryConnection transactionConnection;
 
   public UpdateTransactionRepositoryExecutor(UpdateStep updateStep,
-      RepositoryConnection transactionConnection) {
+      @NonNull RepositoryConnection transactionConnection) {
     super(updateStep);
     this.transactionConnection = transactionConnection;
   }

@@ -1,32 +1,28 @@
 package org.dotwebstack.framework.transaction.flow.step.assertion;
 
+import javax.ws.rs.BadRequestException;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.transaction.flow.step.AbstractStepExecutor;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.query.BooleanQuery;
-import org.eclipse.rdf4j.query.Query;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor<AssertionStep> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(
-      AssertionTransactionRepositoryExecutor.class);
 
   private RepositoryConnection transactionConnection;
 
   public AssertionTransactionRepositoryExecutor(AssertionStep assertionStep,
-      RepositoryConnection transactionConnection) {
+      @NonNull RepositoryConnection transactionConnection) {
     super(assertionStep);
     this.transactionConnection = transactionConnection;
   }
 
   @Override
-  public void execute() {
-    Query preparedQuery;
+  public void execute() throws BadRequestException {
+    BooleanQuery preparedQuery;
     String query = step.getAssertionQuery();
 
     try {
@@ -41,8 +37,7 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
         returnValue = !returnValue;
       }
       if (!returnValue) {
-        // todo -> correct status code
-        throw new RuntimeException(String.format("Assertion failed for query %s", query));
+        throw new BadRequestException(String.format("Assertion failed for query %s", query));
       }
     } catch (QueryEvaluationException e) {
       throw new BackendException(String.format("Query could not be evaluated: %s", query), e);
