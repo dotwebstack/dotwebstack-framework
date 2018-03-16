@@ -21,7 +21,7 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
   }
 
   @Override
-  public void execute() throws BadRequestException {
+  public void execute() {
     BooleanQuery preparedQuery;
     String query = step.getAssertionQuery();
 
@@ -32,7 +32,7 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
     }
 
     try {
-      boolean returnValue = ((BooleanQuery)preparedQuery).evaluate();
+      boolean returnValue = preparedQuery.evaluate();
       if (step.isAssertionNot()) {
         returnValue = !returnValue;
       }
