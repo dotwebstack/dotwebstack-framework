@@ -61,7 +61,7 @@ public class QueryEvaluator {
     }
   }
 
-  public void execute(@NonNull RepositoryConnection repositoryConnection, @NonNull String query) {
+  public void update(@NonNull RepositoryConnection repositoryConnection, @NonNull String query) {
     Update preparedQuery;
 
     try {

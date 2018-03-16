@@ -22,7 +22,7 @@ public class UpdateStepExecutor extends AbstractStepExecutor<UpdateStep> {
 
   @Override
   public void execute() {
-    queryEvaluator.execute(sparqlBackend.getConnection(), step.getQuery());
+    queryEvaluator.update(sparqlBackend.getConnection(), step.getQuery());
   }
 
 }

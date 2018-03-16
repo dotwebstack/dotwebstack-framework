@@ -43,7 +43,7 @@ public class UpdateStepExecutorTest {
     updateStepExecutor.execute();
 
     // Assert
-    verify(queryEvaluator, times(1)).execute(repositoryConnection, query);
+    verify(queryEvaluator, times(1)).update(repositoryConnection, query);
   }
 
 }

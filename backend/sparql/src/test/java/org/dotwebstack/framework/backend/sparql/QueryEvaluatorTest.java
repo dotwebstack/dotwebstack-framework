@@ -112,7 +112,7 @@ public class QueryEvaluatorTest {
     when(repositoryConnection.prepareUpdate(QueryLanguage.SPARQL, INSERT_QUERY)).thenReturn(query);
 
     // Act
-    queryEvaluator.execute(repositoryConnection, INSERT_QUERY);
+    queryEvaluator.update(repositoryConnection, INSERT_QUERY);
 
     // Assert
     verify(query, times(1)).execute();
@@ -208,7 +208,7 @@ public class QueryEvaluatorTest {
     thrown.expectMessage(String.format("Query could not be prepared: %s", INSERT_QUERY));
 
     // Act
-    queryEvaluator.execute(repositoryConnection, INSERT_QUERY);
+    queryEvaluator.update(repositoryConnection, INSERT_QUERY);
   }
 
   @Test
@@ -223,7 +223,7 @@ public class QueryEvaluatorTest {
     thrown.expectMessage(String.format("Query could not be executed: %s", GRAPH_QUERY));
 
     // Act
-    queryEvaluator.execute(repositoryConnection, GRAPH_QUERY);
+    queryEvaluator.update(repositoryConnection, GRAPH_QUERY);
   }
 
   @Test
