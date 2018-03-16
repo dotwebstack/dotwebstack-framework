@@ -333,7 +333,7 @@ elmo-shape:UpdateStep a sh:NodeShape;
   sh:property [
     sh:name "elmo:query";
     sh:path elmo:query;
-    sh:nodeKind xsd:string;
+    sh:datatype xsd:string;
   ];
 .
 

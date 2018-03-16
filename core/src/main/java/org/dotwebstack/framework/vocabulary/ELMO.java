@@ -19,13 +19,19 @@ public final class ELMO {
 
   public static final IRI TRANSACTION;
 
+  public static final IRI TRANSACTION_REPOSITORY;
+
   public static final IRI TRANSACTION_PROP;
 
   public static final IRI SEQUENTIAL_FLOW_PROP;
 
   public static final IRI UNKNOWN_FLOW_PROP;
 
+  public static final IRI STEP;
+
   public static final IRI PERSISTENCE_STEP;
+
+  public static final IRI UPDATE_STEP;
 
   public static final IRI VALIDATION_STEP;
 
@@ -132,9 +138,11 @@ public final class ELMO {
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
 
     TRANSACTION = valueFactory.createIRI(ELMO.NAMESPACE, "Transaction");
+    TRANSACTION_REPOSITORY = valueFactory.createIRI(ELMO.NAMESPACE, "TransactionRepository");
+    STEP = valueFactory.createIRI(ELMO.NAMESPACE, "Step");
     PERSISTENCE_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "PersistenceStep");
-
     VALIDATION_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "ValidationStep");
+    UPDATE_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "UpdateStep");
 
     SITE = valueFactory.createIRI(ELMO.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(ELMO.NAMESPACE, "Stage");

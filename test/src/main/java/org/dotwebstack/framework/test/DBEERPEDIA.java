@@ -186,6 +186,12 @@ public final class DBEERPEDIA {
 
   public static final IRI PERSISTENCE_STEP;
 
+  public static final IRI UPDATE_STEP;
+
+  public static final IRI PRE_UPDATE_STEP;
+
+  public static final IRI POST_UPDATE_STEP;
+
   public static final IRI TRANSACTION;
 
   public static final IRI SEQUENTIAL_FLOW;
@@ -302,6 +308,12 @@ public final class DBEERPEDIA {
     DEFAULT_ENDPOINT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "DefaultEndpoint");
 
     PERSISTENCE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PersistenceStep");
+
+    UPDATE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "UpdateStep");
+
+    PRE_UPDATE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PreUpdateStep");
+
+    POST_UPDATE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PostUpdateStep");
 
     TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
 

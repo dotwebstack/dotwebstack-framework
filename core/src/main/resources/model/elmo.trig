@@ -345,6 +345,8 @@ elmo:TopLayer a elmo:Layer;
   rdfs:label "Top layer"@en;
   elmo:index 1
 .
+elmo:TransactionRepository a elmo:Backend;
+.
 
 # == PROPERTIES ==
 elmo:appearance a owl:ObjectProperty;
