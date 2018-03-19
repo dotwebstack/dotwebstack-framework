@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsNot.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -21,6 +22,7 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
@@ -62,10 +64,8 @@ public class LdEndPointRequestMapperTest {
   @Mock
   private DynamicEndPoint dynamicEndPoint;
 
-  @Mock
   private Representation getRepresentation;
 
-  @Mock
   private Representation postRepresentation;
 
   @Mock
@@ -113,22 +113,21 @@ public class LdEndPointRequestMapperTest {
 
   @Before
   public void setUp() {
-    when(directEndPoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
-    when(directEndPoint.getStage()).thenReturn(stage);
-    when(directEndPoint.getStage().getFullPath()).thenReturn("/fullPath");
-    when(directEndPoint.getStage().getBasePath()).thenReturn("/basePath");
-    when(directEndPoint.getPathPattern()).thenReturn(DBEERPEDIA.PATH_PATTERN_VALUE);
-    // when(directEndPoint.getGetRepresentation()).thenReturn(getRepresentation);
-    when(directEndPoint.getPostRepresentation()).thenReturn(postRepresentation);
-    when(stageResourceProvider.get(any())).thenReturn(stage);
-    when(representationResourceProvider.get(any())).thenReturn(getRepresentation);
-    when(directEndPointResourceProvider.get(any())).thenReturn(directEndPoint);
-    // when(directEndPointResourceProvider.getAll()).thenReturn(
-    // ImmutableBiMap.of(DBEERPEDIA.DOC_ENDPOINT, directEndPoint));
+    getRepresentation =
+        new Representation.Builder(DBEERPEDIA.BREWERY_REPRESENTATION).informationProduct(
+            informationProduct).build();
+    postRepresentation =
+        new Representation.Builder(DBEERPEDIA.BREWERY_REPRESENTATION).informationProduct(
+            informationProduct).build();
 
+    when(directEndPoint.getStage()).thenReturn(stage);
+    when(directEndPoint.getStage().getFullPath()).thenReturn(
+        "/" + DBEERPEDIA.ORG_HOST + DBEERPEDIA.BASE_PATH.getLabel());
+    when(directEndPoint.getPathPattern()).thenReturn(DBEERPEDIA.PATH_PATTERN_VALUE);
+    when(directEndPoint.getGetRepresentation()).thenReturn(getRepresentation);
+    when(directEndPoint.getPostRepresentation()).thenReturn(postRepresentation);
 
     Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
-    // Map<org.eclipse.rdf4j.model.Resource, DynamicEndPoint> dynamicEndPointMap = new HashMap<>();
     endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, directEndPoint);
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
@@ -138,11 +137,9 @@ public class LdEndPointRequestMapperTest {
             endPointRequestHandlerFactory, transactionRequestHandlerFactory);
     endPointRequestHandler = new EndPointRequestHandler(directEndPoint,
         endPointRequestParameterMapper, representationResourceProvider);
-    // when(dynamicEndPointResourceProvider.getAll()).thenReturn(dynamicEndPointMap);
 
-    // when(endPointRequestHandlerFactory.newEndPointRequestHandler(
-    // isA(AbstractEndPoint.class))).thenReturn(endPointRequestHandler);
-    when(getRepresentation.getInformationProduct()).thenReturn(informationProduct);
+    when(endPointRequestHandlerFactory.newEndPointRequestHandler(
+        isA(AbstractEndPoint.class))).thenReturn(endPointRequestHandler);
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 

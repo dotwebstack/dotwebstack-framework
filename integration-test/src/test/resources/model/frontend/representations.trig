@@ -76,8 +76,14 @@ GRAPH dbeerpedia:Theatre {
   .
   dbeerpedia:HtmlAppearance a elmo:HtmlAppearance
   .
+
+  dbeerpedia:TransactionEndpoint a elmo:Endpoint;
+        elmo:stage dbeerpedia:Stage;
+        elmo:pathPattern "/add-concept";
+        elmo:postRepresentation dbeerpedia:TransactionRepresentation;
+   .
+
   dbeerpedia:TransactionRepresentation a elmo:Representation;
-    elmo:pathPattern "/add-concept";
     elmo:stage dbeerpedia:Stage;
     elmo:transaction dbeerpedia:InsertConcept;
   .
