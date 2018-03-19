@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.mappers;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
@@ -29,17 +27,19 @@ public class LdEndPointRequestMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(LdEndPointRequestMapper.class);
 
-  private final DirectEndPointResourceProvider directEndPointResourceProvider;
+  private DirectEndPointResourceProvider directEndPointResourceProvider;
 
-  private final DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
+  private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
 
-  private final SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
+  private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
-  private final EndPointRequestHandlerFactory endPointRequestHandlerFactory;
+  private EndPointRequestHandlerFactory endPointRequestHandlerFactory;
 
-  private final TransactionRequestHandlerFactory transactionRequestHandlerFactory;
+  private TransactionRequestHandlerFactory transactionRequestHandlerFactory;
 
-  private final SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
+  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
+
+  // private LdRepresentationRequestMapper ldRepresentationRequestMapper;
 
   @Autowired
   public LdEndPointRequestMapper(
@@ -48,30 +48,26 @@ public class LdEndPointRequestMapper {
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,
       @NonNull EndPointRequestHandlerFactory endPointRequestHandlerFactory,
-      @NonNull TransactionRequestHandlerFactory transactionRequestHandlerFactory) {
+      @NonNull TransactionRequestHandlerFactory transactionRequestHandlerFactory
+  // @NonNull LdRepresentationRequestMapper ldRepresentationRequestMapper
+  ) {
     this.directEndPointResourceProvider = directEndPointResourceProvider;
     this.dynamicEndPointResourceProvider = dynamicEndPointResourceProvider;
     this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
     this.endPointRequestHandlerFactory = endPointRequestHandlerFactory;
     this.transactionRequestHandlerFactory = transactionRequestHandlerFactory;
     this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
+    // this.ldRepresentationRequestMapper = ldRepresentationRequestMapper;
   }
 
   public void loadEndPoints(HttpConfiguration httpConfiguration) {
-    List<AbstractEndPoint> allEndPoints = new ArrayList<>();
-    allEndPoints.addAll(directEndPointResourceProvider.getAll().values());
-    allEndPoints.addAll(dynamicEndPointResourceProvider.getAll().values());
-    // for (AbstractEndPoint endPoint : allEndPoints) {
-    // System.out.println(endPoint.getIdentifier());
-    // // if (endPoint.getStage() != null) {
-    // // System.out.println("endpoint has stage: " + endPoint.getStage().getIdentifier());
-    // mapRepresentation(endPoint, httpConfiguration);
-    // // } else {
-    // // LOG.warn("Endpoint '{}' is not mapped to a stage.", endPoint.getIdentifier());
-    // // System.out.println("endpoint failed: " + endPoint.getIdentifier());
-    // // }
-    // }
+    // List<AbstractEndPoint> allEndPoints = new ArrayList<>();
+    // allEndPoints.addAll(directEndPointResourceProvider.getAll().values());
+    // allEndPoints.addAll(dynamicEndPointResourceProvider.getAll().values());
+    System.out.println("number of : " + directEndPointResourceProvider.getAll().values().size());
     for (DirectEndPoint endPoint : directEndPointResourceProvider.getAll().values()) {
+      System.out.println("endpoint: " + endPoint.getIdentifier());
+      System.out.println("endpoint class: " + endPoint.getClass().toString());
       if (endPoint.getStage() != null) {
         mapRepresentation(endPoint, httpConfiguration);
       } else {
@@ -81,13 +77,12 @@ public class LdEndPointRequestMapper {
     }
   }
 
-  private void mapRepresentation(DirectEndPoint endPoint, HttpConfiguration httpConfiguration) {
+  private void mapRepresentation(AbstractEndPoint endPoint, HttpConfiguration httpConfiguration) {
     System.out.println("call maprepresentation");
     String basePath = endPoint.getStage().getFullPath();
     System.out.println("base path: " + basePath);
     String absolutePath = basePath.concat(endPoint.getPathPattern());
     System.out.println("absolutePath: " + absolutePath);
-    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
     if (endPoint instanceof DirectEndPoint) {
       System.out.println("found directendpoint");
       Optional<Representation> getRepresentation =
@@ -96,15 +91,18 @@ public class LdEndPointRequestMapper {
           Optional.ofNullable(((DirectEndPoint) endPoint).getPostRepresentation());
 
       getRepresentation.ifPresent(representation -> {
+        Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
         System.out.println("found getRep");
         resourceBuilder.addMethod(HttpMethod.GET).handledBy(
             endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
                 supportedWriterMediaTypesScanner.getMediaTypes(
                     representation.getInformationProduct().getResultType())).nameBindings(
                         ExpandFormatParameter.class);
+        buildResource(httpConfiguration, resourceBuilder, absolutePath);
       });
       // todo ask Joost
       postRepresentation.ifPresent(representation -> {
+        Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
         System.out.println("found postRep");
         resourceBuilder.addMethod(HttpMethod.POST).handledBy(
             transactionRequestHandlerFactory.newTransactionRequestHandler(
@@ -112,14 +110,25 @@ public class LdEndPointRequestMapper {
             Arrays.stream(TransactionRequestHandler.class.getMethods()).filter(
                 method -> method.getName() == "apply").findFirst().get()).consumes(
                     supportedReaderMediaTypesScanner.getMediaTypes());
+        buildResource(httpConfiguration, resourceBuilder, absolutePath);
       });
     } else {
+      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
           endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
               supportedWriterMediaTypesScanner.getAllSupportedMediaTypes()).nameBindings(
                   ExpandFormatParameter.class);
+      buildResource(httpConfiguration, resourceBuilder, absolutePath);
     }
+
+  }
+
+  private void buildResource(HttpConfiguration httpConfiguration, Resource.Builder resourceBuilder,
+      String absolutePath) {
     if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
+      httpConfiguration.getResources().stream().forEach(
+          resource -> System.out.println("reg. res.: " + resource.toString()));
+      System.out.println(resourceBuilder.toString());
       httpConfiguration.registerResources(resourceBuilder.build());
       LOG.debug("Mapped {} operation for request path {}",
           resourceBuilder.build().getResourceMethods(), absolutePath);

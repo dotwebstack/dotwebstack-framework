@@ -53,8 +53,8 @@ public class LdRepresentationRequestMapperTest {
 
   @Mock
   private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
-  @Mock
-  private LdRepresentationRequestMapper ldRepresentationRequestMapper;
+  // @Mock
+  // private LdRepresentationRequestMapper ldRepresentationRequestMapper;
 
   // @Mock
   // private RepresentationRequestParameterMapper representationRequestParameterMapper;

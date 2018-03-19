@@ -6,8 +6,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsNot.not;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -23,7 +21,6 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
@@ -59,16 +56,22 @@ public class LdEndPointRequestMapperTest {
   @Mock
   private Site site;
 
+  @Mock
   private DirectEndPoint directEndPoint;
 
+  @Mock
   private DynamicEndPoint dynamicEndPoint;
 
   @Mock
-  private Representation representation;
+  private Representation getRepresentation;
+
+  @Mock
+  private Representation postRepresentation;
 
   @Mock
   private InformationProduct informationProduct;
 
+  @Mock
   private DirectEndPointResourceProvider directEndPointResourceProvider;
 
   @Mock
@@ -110,32 +113,36 @@ public class LdEndPointRequestMapperTest {
 
   @Before
   public void setUp() {
-    site = new Site.Builder(DBEERPEDIA.BREWERIES).domain(DBEERPEDIA.DOMAIN.stringValue()).build();
-
-    stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
-        DBEERPEDIA.BASE_PATH.stringValue()).build();
-
-    directEndPoint = mock(DirectEndPoint.class);
     when(directEndPoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
-    directEndPointResourceProvider = new DirectEndPointResourceProvider(configurationBackend,
-        applicationProperties, stageResourceProvider, representationResourceProvider);
+    when(directEndPoint.getStage()).thenReturn(stage);
+    when(directEndPoint.getStage().getFullPath()).thenReturn("/fullPath");
+    when(directEndPoint.getStage().getBasePath()).thenReturn("/basePath");
+    when(directEndPoint.getPathPattern()).thenReturn(DBEERPEDIA.PATH_PATTERN_VALUE);
+    // when(directEndPoint.getGetRepresentation()).thenReturn(getRepresentation);
+    when(directEndPoint.getPostRepresentation()).thenReturn(postRepresentation);
+    when(stageResourceProvider.get(any())).thenReturn(stage);
+    when(representationResourceProvider.get(any())).thenReturn(getRepresentation);
+    when(directEndPointResourceProvider.get(any())).thenReturn(directEndPoint);
+    // when(directEndPointResourceProvider.getAll()).thenReturn(
+    // ImmutableBiMap.of(DBEERPEDIA.DOC_ENDPOINT, directEndPoint));
+
+
     Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
     // Map<org.eclipse.rdf4j.model.Resource, DynamicEndPoint> dynamicEndPointMap = new HashMap<>();
     endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, directEndPoint);
+    when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
-
-    // when(dynamicEndPointResourceProvider.getAll()).thenReturn(dynamicEndPointMap);
-
-    endPointRequestHandler = new EndPointRequestHandler(directEndPoint,
-        endPointRequestParameterMapper, representationResourceProvider);
     ldEndPointRequestMapper =
         new LdEndPointRequestMapper(directEndPointResourceProvider, dynamicEndPointResourceProvider,
             supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
             endPointRequestHandlerFactory, transactionRequestHandlerFactory);
-    when(endPointRequestHandlerFactory.newEndPointRequestHandler(
-        isA(AbstractEndPoint.class))).thenReturn(endPointRequestHandler);
-    when(representation.getInformationProduct()).thenReturn(informationProduct);
-    when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    endPointRequestHandler = new EndPointRequestHandler(directEndPoint,
+        endPointRequestParameterMapper, representationResourceProvider);
+    // when(dynamicEndPointResourceProvider.getAll()).thenReturn(dynamicEndPointMap);
+
+    // when(endPointRequestHandlerFactory.newEndPointRequestHandler(
+    // isA(AbstractEndPoint.class))).thenReturn(endPointRequestHandler);
+    when(getRepresentation.getInformationProduct()).thenReturn(informationProduct);
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
@@ -207,9 +214,9 @@ public class LdEndPointRequestMapperTest {
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     DirectEndPoint endPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
-        DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(representation).stage(stage).build();
+        DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(getRepresentation).stage(stage).build();
     DirectEndPoint samePathEndPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
-        DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(representation).stage(stage).build();
+        DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(getRepresentation).stage(stage).build();
     Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
     endPointMap.put(endPoint.getIdentifier(), endPoint);
     endPointMap.put(samePathEndPoint.getIdentifier(), samePathEndPoint);
@@ -232,7 +239,7 @@ public class LdEndPointRequestMapperTest {
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
     DirectEndPoint endPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
-        DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(representation).stage(stage).build();
+        DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(getRepresentation).stage(stage).build();
 
     Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
     endPointMap.put(endPoint.getIdentifier(), endPoint);
