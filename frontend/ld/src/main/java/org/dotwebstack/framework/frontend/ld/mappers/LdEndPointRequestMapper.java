@@ -61,11 +61,18 @@ public class LdEndPointRequestMapper {
     List<AbstractEndPoint> allEndPoints = new ArrayList<>();
     allEndPoints.addAll(directEndPointResourceProvider.getAll().values());
     allEndPoints.addAll(dynamicEndPointResourceProvider.getAll().values());
-    System.out.println("number of endpoints: " + allEndPoints.size());
-    for (AbstractEndPoint endPoint : allEndPoints) {
-      System.out.println(endPoint.getIdentifier());
+    // for (AbstractEndPoint endPoint : allEndPoints) {
+    // System.out.println(endPoint.getIdentifier());
+    // // if (endPoint.getStage() != null) {
+    // // System.out.println("endpoint has stage: " + endPoint.getStage().getIdentifier());
+    // mapRepresentation(endPoint, httpConfiguration);
+    // // } else {
+    // // LOG.warn("Endpoint '{}' is not mapped to a stage.", endPoint.getIdentifier());
+    // // System.out.println("endpoint failed: " + endPoint.getIdentifier());
+    // // }
+    // }
+    for (DirectEndPoint endPoint : directEndPointResourceProvider.getAll().values()) {
       if (endPoint.getStage() != null) {
-        System.out.println("endpoint has stage: " + endPoint.getStage().getIdentifier());
         mapRepresentation(endPoint, httpConfiguration);
       } else {
         LOG.warn("Endpoint '{}' is not mapped to a stage.", endPoint.getIdentifier());
@@ -74,7 +81,7 @@ public class LdEndPointRequestMapper {
     }
   }
 
-  private void mapRepresentation(AbstractEndPoint endPoint, HttpConfiguration httpConfiguration) {
+  private void mapRepresentation(DirectEndPoint endPoint, HttpConfiguration httpConfiguration) {
     System.out.println("call maprepresentation");
     String basePath = endPoint.getStage().getFullPath();
     System.out.println("base path: " + basePath);

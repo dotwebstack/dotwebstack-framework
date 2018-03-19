@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DirectEndPointResourceProvider extends AbstractResourceProvider<DirectEndPoint> {
 
-  private final StageResourceProvider stageResourceProvider;
+  private StageResourceProvider stageResourceProvider;
 
   private RepresentationResourceProvider representationResourceProvider;
 
