@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScannerTest.StubGraphEntityWriter;
+import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScannerTest.StubGraphEntityWriter;
 import org.dotwebstack.framework.frontend.ld.mappers.LdEndPointRequestMapper;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
 import org.junit.Before;
@@ -33,14 +33,17 @@ public class LdModuleTest {
   private LdRedirectionRequestMapper ldRedirectionRequestMapper;
 
   @Mock
-  private SupportedMediaTypesScanner supportedMediaTypesScanner;
+  private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
+
+  @Mock
+  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
   private LdModule ldModule;
 
   @Before
   public void setUp() {
     ldModule = new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper,
-        supportedMediaTypesScanner);
+        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
     ldModule.initialize(httpConfiguration);
   }
 
@@ -50,7 +53,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(null, ldRedirectionRequestMapper, supportedMediaTypesScanner);
+    new LdModule(null, ldRedirectionRequestMapper, supportedWriterMediaTypesScanner,
+        supportedReaderMediaTypesScanner);
   }
 
   @Test
@@ -59,7 +63,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldEndPointRequestMapper, null, supportedMediaTypesScanner);
+    new LdModule(ldEndPointRequestMapper, null, supportedWriterMediaTypesScanner,
+        supportedReaderMediaTypesScanner);
   }
 
   @Test
@@ -68,7 +73,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper, null);
+    new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper, null,
+        supportedReaderMediaTypesScanner);
   }
 
   @Test
@@ -89,7 +95,7 @@ public class LdModuleTest {
   @Test
   public void constructor_RegistersSparqlProviders_WhenProvidedByScanner() {
     // Arrange
-    when(supportedMediaTypesScanner.getGraphEntityWriters()).thenReturn(
+    when(supportedWriterMediaTypesScanner.getGraphEntityWriters()).thenReturn(
         Collections.singletonList(new StubGraphEntityWriter()));
 
     // Act

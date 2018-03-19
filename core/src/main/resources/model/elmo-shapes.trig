@@ -15,7 +15,6 @@
 @prefix elmo: <http://dotwebstack.org/def/elmo#>.
 
 GRAPH elmo:Shacl {
-
 elmo-shape:
   rdfs:label "SHACL for ELMO"@en;
   rdfs:comment "This shapes graph can be used to validate dotwebstack configurations. It can also be used to create a visual representation of the structure"@en;
@@ -615,20 +614,20 @@ elmo-shape:SparqlBackend a sh:NodeShape;
     sh:maxCount 1;
     sh:datatype xsd:anyURI;
   ];
-  sh:property [
-    sh:path [sh:inversePath elmo:backend ];
-    sh:node [
-      rdfs:label "IP constraints for sparql backend";
-      sh:name "elmo:InformationProduct (Sparql)";
-      sh:property [
-        sh:path elmo:query;
-        sh:name "elmo:query";
-        sh:minCount 1;
-        sh:maxCount 1;
-      ];
-    ];
-    sh:class elmo:InformationProduct;
-  ]
+#  sh:property [
+#    sh:path [sh:inversePath elmo:backend ];
+#    sh:node [
+#      rdfs:label "IP constraints for sparql backend";
+#      sh:name "elmo:InformationProduct (Sparql)";
+#      sh:property [
+#        sh:path elmo:query;
+#        sh:name "elmo:query";
+#        sh:minCount 1;
+#        sh:maxCount 1;
+#      ];
+#    ];
+#    sh:class elmo:InformationProduct;
+#  ]
 .
 
 elmo-shape:ElasticSearchBackend a sh:NodeShape;
@@ -941,9 +940,9 @@ elmo-shape:Layer a sh:NodeShape;
     sh:maxCount 1;
   ];
   sh:property [
-    sh:name "rdfs:label";
     sh:path rdfs:label;
-    sh:datatype xsd:string;
+    sh:name "rdfs:label";
+    sh:datatype xsd:string
   ];
   sh:property [
     sh:path elmo:index;

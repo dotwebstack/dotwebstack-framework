@@ -17,6 +17,8 @@ import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourcePr
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.TransactionResourceProvider;
+import org.dotwebstack.framework.transaction.flow.step.StepResourceProvider;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Test;
@@ -42,6 +44,9 @@ public class ConfigurationIntegrationTest {
   private InformationProductResourceProvider informationProductResourceProvider;
 
   @Autowired
+  private TransactionResourceProvider transactionResourceProvider;
+
+  @Autowired
   private RepresentationResourceProvider representationResourceProvider;
 
   @Autowired
@@ -56,6 +61,9 @@ public class ConfigurationIntegrationTest {
   @Autowired
   private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
 
+  @Autowired
+  private StepResourceProvider stepResourceProvider;
+
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Test
@@ -69,7 +77,9 @@ public class ConfigurationIntegrationTest {
     assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(4));
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.TUPLE_BREWERIES), notNullValue());
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.GRAPH_BREWERIES), notNullValue());
-    assertThat(representationResourceProvider.getAll().entrySet(), hasSize(6));
+    assertThat(transactionResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(transactionResourceProvider.get(DBEERPEDIA.TRANSACTION), notNullValue());
+    assertThat(representationResourceProvider.getAll().entrySet(), hasSize(7));
     assertThat(representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
         notNullValue());
     assertThat(representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION),
@@ -90,6 +100,8 @@ public class ConfigurationIntegrationTest {
     assertThat(dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT).getLabel(),
         notNullValue());
     assertThat(directEndPointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
+    assertThat(stepResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(stepResourceProvider.get(DBEERPEDIA.PERSISTENCE_STEP), notNullValue());
   }
 
 }

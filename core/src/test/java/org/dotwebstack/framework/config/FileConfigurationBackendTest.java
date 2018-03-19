@@ -86,9 +86,6 @@ public class FileConfigurationBackendTest {
     elmoConfigurationResource = mock(Resource.class);
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
     elmoShapesResource = new ClassPathResource("/model/elmo-shapes.trig");
-    // when(elmoShapesResource.getFilename()).thenReturn("elmo-shapes.trig");
-    // when(elmoShapesResource.getInputStream()).thenReturn(new ByteArrayInputStream(
-    // "@prefix dbeerpedia: <http://dbeerpedia.org#> .".getBytes(Charsets.UTF_8)));
     shaclValidator = mock(ShaclValidator.class);
     when(elmoConfigurationResource.getInputStream()).thenReturn(
         new ByteArrayInputStream("@prefix dbeerpedia: <http://dbeerpedia.org#> .".getBytes()));

@@ -17,7 +17,8 @@ import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.ld.SupportedMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
+import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
@@ -27,6 +28,7 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourcePro
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestParameterMapper;
+import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -53,8 +55,9 @@ public class LdEndPointRequestMapperTest {
   @Mock
   private Site site;
 
-  @Mock
-  private AbstractEndPoint endPoint;
+  private DirectEndPoint directEndPoint;
+
+  private DynamicEndPoint dynamicEndPoint;
 
   @Mock
   private Representation representation;
@@ -69,16 +72,22 @@ public class LdEndPointRequestMapperTest {
   private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
 
   @Mock
-  private SupportedMediaTypesScanner supportedMediaTypesScanner;
+  private LdEndPointRequestMapper ldEndPointRequestMapper;
 
   @Mock
-  private LdEndPointRequestMapper ldEndPointRequestMapper;
+  private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
+
+  @Mock
+  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
   @Mock
   private EndPointRequestParameterMapper endPointRequestParameterMapper;
 
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
+
+  @Mock
+  private TransactionRequestHandlerFactory transactionRequestHandlerFactory;
 
   private EndPointRequestHandler endPointRequestHandler;
 
@@ -94,20 +103,22 @@ public class LdEndPointRequestMapperTest {
     stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
 
-    endPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
+    directEndPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(representation).postRepresentation(
             representation).stage(stage).build();
-    Map<org.eclipse.rdf4j.model.Resource, AbstractEndPoint> endPointMap = new HashMap<>();
-    Map<org.eclipse.rdf4j.model.Resource, DynamicEndPoint> dynamicEndPointMap = new HashMap<>();
-    endPointMap.put(endPoint.getIdentifier(), endPoint);
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
+    // Map<org.eclipse.rdf4j.model.Resource, DynamicEndPoint> dynamicEndPointMap = new HashMap<>();
+    endPointMap.put(directEndPoint.getIdentifier(), directEndPoint);
 
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
-    when(dynamicEndPointResourceProvider.getAll()).thenReturn(dynamicEndPointMap);
+    // when(dynamicEndPointResourceProvider.getAll()).thenReturn(dynamicEndPointMap);
 
-    endPointRequestHandler = new EndPointRequestHandler(endPoint, endPointRequestParameterMapper,
-        representationResourceProvider);
-    ldEndPointRequestMapper = new LdEndPointRequestMapper(directEndPointResourceProvider,
-        dynamicEndPointResourceProvider, supportedMediaTypesScanner, endPointRequestHandlerFactory);
+    endPointRequestHandler = new EndPointRequestHandler(directEndPoint,
+        endPointRequestParameterMapper, representationResourceProvider);
+    ldEndPointRequestMapper =
+        new LdEndPointRequestMapper(directEndPointResourceProvider, dynamicEndPointResourceProvider,
+            supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
+            endPointRequestHandlerFactory, transactionRequestHandlerFactory);
     when(endPointRequestHandlerFactory.newEndPointRequestHandler(
         isA(AbstractEndPoint.class))).thenReturn(endPointRequestHandler);
     when(representation.getInformationProduct()).thenReturn(informationProduct);
@@ -120,7 +131,8 @@ public class LdEndPointRequestMapperTest {
     // Arrange / Act
     LdEndPointRequestMapper ldEndPointRequestMapper =
         new LdEndPointRequestMapper(directEndPointResourceProvider, dynamicEndPointResourceProvider,
-            supportedMediaTypesScanner, endPointRequestHandlerFactory);
+            supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
+            endPointRequestHandlerFactory, transactionRequestHandlerFactory);
 
     // Assert
     assertThat(ldEndPointRequestMapper, not(nullValue()));
@@ -129,7 +141,7 @@ public class LdEndPointRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithValidData() {
     // Arrange
-    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+    when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     // Act
@@ -141,16 +153,16 @@ public class LdEndPointRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(resource.getResourceMethods(), hasSize(2));
+    assertThat(resource.getResourceMethods(), hasSize(1));
     assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
   }
 
   @Test
   public void loadRepresentations_MapRepresentation_WithoutStage() {
     // Arrange
-    endPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<org.eclipse.rdf4j.model.Resource, AbstractEndPoint> endPointMap = new HashMap<>();
-    endPointMap.put(endPoint.getIdentifier(), endPoint);
+    directEndPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
+    endPointMap.put(directEndPoint.getIdentifier(), directEndPoint);
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
@@ -163,9 +175,9 @@ public class LdEndPointRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithNullStage() {
     // Arrange
-    endPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<org.eclipse.rdf4j.model.Resource, AbstractEndPoint> endPointMap = new HashMap<>();
-    endPointMap.put(endPoint.getIdentifier(), endPoint);
+    directEndPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
+    endPointMap.put(directEndPoint.getIdentifier(), directEndPoint);
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
@@ -178,14 +190,14 @@ public class LdEndPointRequestMapperTest {
   @Test
   public void loadRepresentations_IgnoreSecondRepresentation_WhenAddedTwice() {
     // Arrange
-    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+    when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     DirectEndPoint endPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(representation).stage(stage).build();
     DirectEndPoint samePathEndPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(representation).stage(stage).build();
-    Map<org.eclipse.rdf4j.model.Resource, AbstractEndPoint> endPointMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
     endPointMap.put(endPoint.getIdentifier(), endPoint);
     endPointMap.put(samePathEndPoint.getIdentifier(), samePathEndPoint);
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
@@ -200,17 +212,16 @@ public class LdEndPointRequestMapperTest {
   @Test
   public void loadRepresentations_UsesPathDomainParameter_WithMatchAllDomain() {
     // Arrange
-    when(supportedMediaTypesScanner.getMediaTypes(any())).thenReturn(
+    when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
-    AbstractEndPoint endPoint =
-        new Builder(DBEERPEDIA.DEFAULT_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(
-            representation).stage(stage).build();
+    DirectEndPoint endPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
+        DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(representation).stage(stage).build();
 
-    Map<org.eclipse.rdf4j.model.Resource, AbstractEndPoint> endPointMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
     endPointMap.put(endPoint.getIdentifier(), endPoint);
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 

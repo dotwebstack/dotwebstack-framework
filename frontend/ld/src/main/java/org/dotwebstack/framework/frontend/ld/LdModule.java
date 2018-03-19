@@ -16,15 +16,19 @@ public class LdModule implements HttpModule {
 
   private final LdRedirectionRequestMapper ldRedirectionRequestMapper;
 
-  private final SupportedMediaTypesScanner supportedMediaTypesScanner;
+  private final SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
+
+  private final SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
   @Autowired
   public LdModule(@NonNull LdEndPointRequestMapper ldEndPointRequestMapper,
       @NonNull LdRedirectionRequestMapper ldRedirectionRequestMapper,
-      @NonNull SupportedMediaTypesScanner supportedMediaTypesScanner) {
+      @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
+      @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner) {
     this.ldEndPointRequestMapper = ldEndPointRequestMapper;
     this.ldRedirectionRequestMapper = ldRedirectionRequestMapper;
-    this.supportedMediaTypesScanner = supportedMediaTypesScanner;
+    this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
+    this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
   }
 
   @Override
@@ -33,8 +37,10 @@ public class LdModule implements HttpModule {
     ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
     ldRedirectionRequestMapper.loadRedirections(httpConfiguration);
 
-    supportedMediaTypesScanner.getGraphEntityWriters().forEach(httpConfiguration::register);
-    supportedMediaTypesScanner.getTupleEntityWriters().forEach(httpConfiguration::register);
+    supportedWriterMediaTypesScanner.getGraphEntityWriters().forEach(httpConfiguration::register);
+    supportedWriterMediaTypesScanner.getTupleEntityWriters().forEach(httpConfiguration::register);
+
+    supportedReaderMediaTypesScanner.getModelReaders().forEach(httpConfiguration::register);
   }
 
 }

@@ -1,5 +1,5 @@
 @prefix elmo: <http://dotwebstack.org/def/elmo#>.
-@prefix elmo-sp: <http://dotwebstack.org/def/elmo/storage-protocol/>.
+@prefix elmo-sp: <http://dotwebstack.org/def/elmo/persistence-strategy/>.
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
@@ -363,7 +363,8 @@ elmo:ParameterMapper a owl:Class;
 elmo:SubjectParameter a elmo:TermParameter;
   elmo:name "subject";
   elmo:shape [
-    sh:nodeKind sh:IRI;
+#    sh:nodeKind sh:IRI;     This is WRONG, but current framework cannot deal with sh:IRI nodekinds
+    sh:datatype xsd:string; #This is WRONG, but current framework cannot deal with sh:IRI nodekinds
   ]
 .
 
@@ -525,5 +526,91 @@ elmo:template a owl:DatatypeProperty;
   rdfs:comment "A template to be used as part of a replace construction"@en;
   rdfs:domain elmo:RequestMapper;
   rdfs:range xsd:string;
+.
+}
+
+GRAPH elmo:Config {
+  elmo:SparqlBackend rdfs:subClassOf elmo:Backend .
+}
+
+GRAPH elmo:Config {
+  # =========
+  # Resulttypes
+  #
+  elmo-schemes:result-types a skos:ConceptScheme;
+    rdfs:label "Result types"@en;
+  .
+
+  elmo-rt:Tuple a elmo:ResultType;
+    skos:inScheme elmo-schemes:result-types;
+    rdfs:label "Tuple";
+    rdfs:comment "The result contains tuples (an ordered list of bindingsets), for example the result of a SELECT query."
+  .
+  elmo-rt:Graph a elmo:ResultType;
+    skos:inScheme elmo-schemes:result-types;
+    rdfs:label "Graph";
+    rdfs:comment "The result is a graph (a set of triples), for example the result of a CONSTRUCT query."
+  .
+}
+
+GRAPH elmo:Config {
+# =========
+# Persistence strategies
+#
+# Used terminology in the description of the persistence strategies:
+# - subject parameter: the elmo:SubjectParameter that identifies the subject of the transaction. In REST API's this will be similar to the URL
+# - target graph: the URI of an explicitly specified target graph (as part of the transaction configuration), or the value of the subject parameter in case no target graph is specified
+# - transaction repository: the in memory dataset that is loaded from the http request body (and may be changed with an elmo:UpdateStep)
+#
+
+elmo-sp:DeleteGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Clear graph";
+	rdfs:comment "Clears the content of the target graph";
+.
+elmo-sp:ReplaceGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Replace graph";
+	rdfs:comment "Replaces the content of the target graph with the content of the transaction repository";
+.
+elmo-sp:InsertIntoGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Insert into graph";
+	rdfs:comment "Inserts the content of the transaction repository in the target graph, without deleting any triples in the target graph";
+.
+elmo-sp:InsertOrReplaceResourceInGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Insert or replace resource in graph";
+	rdfs:comment "Insert the content of the transaction repository in the target graph, and deletes any triples <s,p,o> for any s that is present in the transaction repository";
+.
+elmo-sp:DeleteResourceFromGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Delete resource from graph";
+	rdfs:comment "Deletes any triples <s,p,o> from the target graph where s is equal to the value of the subject parameter";
+.
+elmo-sp:CreateResourceInGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Create resource in graph";
+	rdfs:comment "mints URIs for any resource in the transaction repository, and inserts the transaction repository into the target graph.";
+.
+elmo-sp:InsertIntoVersionGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Insert into version graph";
+	rdfs:comment "inserts the content of the transaction repository into a newly created versioned target graph.";
+.
+elmo-sp:InvalidateVersionGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Invalidate version graph";
+	rdfs:comment "invalidates the current version (this created a new version that states that the previous version is invalid)";
+.
+elmo-sp:DeleteVersionGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Delete version graph";
+	rdfs:comment "deletes a particular version graph.";
+.
+elmo-sp:CreateResourceInVersionGraph a elmo:PersistenceStrategy;
+	skos:inScheme elmo-schemes:persistence-strategy;
+	rdfs:label "Create resource in version graph";
+	rdfs:comment "mints URIs for any resource in the transaction repository, and inserts the content of the transaction repository into a newly created versioned target graph.";
 .
 }
