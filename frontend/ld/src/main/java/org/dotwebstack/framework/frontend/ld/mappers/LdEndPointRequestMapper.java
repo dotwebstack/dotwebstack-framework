@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
@@ -13,6 +14,7 @@ import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandler;
@@ -63,10 +65,34 @@ public class LdEndPointRequestMapper {
     allEndPoints.addAll(dynamicEndPointResourceProvider.getAll().values());
     for (AbstractEndPoint endPoint : allEndPoints) {
       if (endPoint.getStage() != null) {
+        mapService(endPoint, httpConfiguration);
         mapRepresentation(endPoint, httpConfiguration);
       } else {
         LOG.warn("Endpoint '{}' is not mapped to a stage.", endPoint.getIdentifier());
       }
+    }
+  }
+
+  private void mapService(AbstractEndPoint endPoint, HttpConfiguration httpConfiguration) {
+    String basePath = endPoint.getStage().getFullPath();
+    String absolutePath = basePath.concat(endPoint.getPathPattern());
+    if (endPoint instanceof DirectEndPoint) {
+      registerTransaction(((DirectEndPoint) endPoint).getDeleteService(), HttpMethod.DELETE,
+          absolutePath, httpConfiguration);
+      registerTransaction(((DirectEndPoint) endPoint).getPostService(), HttpMethod.POST,
+          absolutePath, httpConfiguration);
+      registerTransaction(((DirectEndPoint) endPoint).getPutService(), HttpMethod.PUT, absolutePath,
+          httpConfiguration);
+    } else if (endPoint instanceof DynamicEndPoint) {
+      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+      resourceBuilder.addMethod(HttpMethod.GET).handledBy(
+          endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+              supportedWriterMediaTypesScanner.getAllSupportedMediaTypes()).nameBindings(
+                  ExpandFormatParameter.class);
+      buildResource(httpConfiguration, resourceBuilder, absolutePath);
+    } else {
+      throw new ConfigurationException(String.format("Unsupported endpoint typ {} for endpoint {}",
+          endPoint.getClass(), endPoint.getIdentifier()));
     }
   }
 
@@ -88,25 +114,32 @@ public class LdEndPointRequestMapper {
                         ExpandFormatParameter.class);
         buildResource(httpConfiguration, resourceBuilder, absolutePath);
       });
-      postRepresentation.ifPresent(representation -> {
-        Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-        resourceBuilder.addMethod(HttpMethod.POST).handledBy(
-            transactionRequestHandlerFactory.newTransactionRequestHandler(
-                representation.getTransaction()),
-            Arrays.stream(TransactionRequestHandler.class.getMethods()).filter(
-                method -> method.getName() == "apply").findFirst().get()).consumes(
-                    supportedReaderMediaTypesScanner.getMediaTypes());
-        buildResource(httpConfiguration, resourceBuilder, absolutePath);
-      });
-    } else {
+
+    } else if (endPoint instanceof DynamicEndPoint) {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
           endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
               supportedWriterMediaTypesScanner.getAllSupportedMediaTypes()).nameBindings(
                   ExpandFormatParameter.class);
       buildResource(httpConfiguration, resourceBuilder, absolutePath);
+    } else {
+      throw new ConfigurationException(String.format("Unsupported endpoint typ {} for endpoint {}",
+          endPoint.getClass(), endPoint.getIdentifier()));
     }
+  }
 
+  private void registerTransaction(
+      List<org.dotwebstack.framework.frontend.ld.service.Service> services, String httpMethod,
+      String absolutePath, HttpConfiguration httpConfiguration) {
+    services.stream().forEach(service -> {
+      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+      resourceBuilder.addMethod(httpMethod).handledBy(
+          transactionRequestHandlerFactory.newTransactionRequestHandler(service.getTransaction()),
+          Arrays.stream(TransactionRequestHandler.class.getMethods()).filter(
+              method -> method.getName() == "apply").findFirst().get()).consumes(
+                  supportedReaderMediaTypesScanner.getMediaTypes());
+      buildResource(httpConfiguration, resourceBuilder, absolutePath);
+    });
   }
 
   private void buildResource(HttpConfiguration httpConfiguration, Resource.Builder resourceBuilder,
