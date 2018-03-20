@@ -19,6 +19,7 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+import org.dotwebstack.framework.frontend.ld.service.ServiceResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -65,6 +66,9 @@ public class DirectEndPointResourceProviderTest {
   private DirectEndPointResourceProvider endPointResourceProvider;
 
   @Mock
+  private ServiceResourceProvider serviceResourceProvider;
+
+  @Mock
   private Stage stage;
 
   @Mock
@@ -77,8 +81,9 @@ public class DirectEndPointResourceProviderTest {
 
   @Before
   public void setUp() {
-    endPointResourceProvider = new DirectEndPointResourceProvider(configurationBackend,
-        applicationProperties, stageResourceProvider, representationResourceProvider);
+    endPointResourceProvider =
+        new DirectEndPointResourceProvider(configurationBackend, applicationProperties,
+            stageResourceProvider, representationResourceProvider, serviceResourceProvider);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -95,7 +100,7 @@ public class DirectEndPointResourceProviderTest {
 
     // Act
     new DirectEndPointResourceProvider(null, applicationProperties, stageResourceProvider,
-        representationResourceProvider);
+        representationResourceProvider, serviceResourceProvider);
   }
 
   @Test
@@ -105,7 +110,7 @@ public class DirectEndPointResourceProviderTest {
 
     // Act
     new DirectEndPointResourceProvider(configurationBackend, null, stageResourceProvider,
-        representationResourceProvider);
+        representationResourceProvider, serviceResourceProvider);
   }
 
   @Test
@@ -115,8 +120,10 @@ public class DirectEndPointResourceProviderTest {
 
     // Act
     new DirectEndPointResourceProvider(configurationBackend, applicationProperties, null,
-        representationResourceProvider);
+        representationResourceProvider, serviceResourceProvider);
   }
+
+  // todo add null representationResourceProvider test and null serviceReosurceProvider
 
   @Test
   public void loadResources_LoadEndPoint_WithValidData() {

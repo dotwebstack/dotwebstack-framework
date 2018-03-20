@@ -15,6 +15,7 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProv
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+import org.dotwebstack.framework.frontend.ld.service.ServiceResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.transaction.TransactionResourceProvider;
@@ -64,6 +65,9 @@ public class ConfigurationIntegrationTest {
   @Autowired
   private StepResourceProvider stepResourceProvider;
 
+  @Autowired
+  private ServiceResourceProvider serviceResourceProvider;
+
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Test
@@ -79,7 +83,7 @@ public class ConfigurationIntegrationTest {
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.GRAPH_BREWERIES), notNullValue());
     assertThat(transactionResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(transactionResourceProvider.get(DBEERPEDIA.TRANSACTION), notNullValue());
-    assertThat(representationResourceProvider.getAll().entrySet(), hasSize(7));
+    assertThat(representationResourceProvider.getAll().entrySet(), hasSize(6));
     assertThat(representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
         notNullValue());
     assertThat(representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION),
@@ -102,6 +106,7 @@ public class ConfigurationIntegrationTest {
     assertThat(directEndPointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
     assertThat(stepResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(stepResourceProvider.get(DBEERPEDIA.PERSISTENCE_STEP), notNullValue());
+    assertThat(serviceResourceProvider.getAll().entrySet(), hasSize(1));
   }
 
 }
