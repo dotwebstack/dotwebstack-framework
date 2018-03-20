@@ -80,10 +80,10 @@ GRAPH dbeerpedia:Theatre {
   dbeerpedia:TransactionEndpoint a elmo:Endpoint;
         elmo:stage dbeerpedia:Stage;
         elmo:pathPattern "/add-concept";
-        elmo:postRepresentation dbeerpedia:TransactionRepresentation;
+        elmo:postService dbeerpedia:TransactionService;
    .
 
-  dbeerpedia:TransactionRepresentation a elmo:Representation;
+  dbeerpedia:TransactionService a elmo:Service;
     elmo:stage dbeerpedia:Stage;
     elmo:transaction dbeerpedia:InsertConcept;
   .
