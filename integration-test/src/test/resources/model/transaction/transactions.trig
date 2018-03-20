@@ -11,6 +11,7 @@ GRAPH dbeerpedia:Theatre {
     );
   .
   dbeerpedia:PreUpdateStep a elmo:UpdateStep;
+  	rdfs:label "Pre update";
     elmo:backend elmo:TransactionRepository;
     elmo:query """
       INSERT DATA
@@ -35,11 +36,13 @@ GRAPH dbeerpedia:Theatre {
   	"""
   .
   dbeerpedia:PersistenceStep a elmo:PersistenceStep;
+  	rdfs:label "Persist into all concepts graph";
     elmo:persistenceStrategy elmo-sp:InsertIntoGraph;
     elmo:backend dbeerpedia:Backend;
     elmo:targetGraph <http://dotwebstack.org/all-concepts>;
   .
   dbeerpedia:PostUpdateStep a elmo:UpdateStep;
+  	rdfs:label "Post update";
     elmo:backend dbeerpedia:Backend;
     elmo:query """
       INSERT DATA
