@@ -117,6 +117,14 @@ public final class ELMO {
 
   public static final IRI TARGET_GRAPH_PROP;
 
+  public static final IRI SERVICE;
+
+  public static final IRI SERVICE_POST_PROP;
+
+  public static final IRI SERVICE_PUT_PROP;
+
+  public static final IRI SERVICE_DELETE_PROP;
+
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -190,6 +198,8 @@ public final class ELMO {
 
     REDIRECT_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
 
+    SERVICE = valueFactory.createIRI(ELMO.NAMESPACE, "Service");
+
     PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
     TERM_PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "TermParameter");
 
@@ -212,6 +222,10 @@ public final class ELMO {
 
     GET_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "getRepresentation");
     POST_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "postRepresentation");
+
+    SERVICE_POST_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "postService");
+    SERVICE_PUT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "putService");
+    SERVICE_DELETE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "deleteService");
   }
 
   private ELMO() {
