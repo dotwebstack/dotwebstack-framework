@@ -52,4 +52,23 @@ GRAPH dbeerpedia:Theatre {
         };
     """
   .
+  # Transaction: (test reading list with blank nodes)
+  dbeerpedia:InsertConcept2 a elmo:Transaction;
+    elmo:sequentialFlow (
+    [ a elmo:UpdateStep;
+      elmo:backend elmo:TransactionRepository;
+      elmo:query """
+        INSERT DATA
+        {
+        <http://dbeerpedia.org#davo> <http://www.w3.org/2000/01/rdf-schema#label>
+        \"Davo brouwerij Deventer\"
+        };
+      """
+    ]
+    [ a elmo:PersistenceStep;
+      elmo:persistenceStrategy elmo-sp:InsertIntoGraph;
+      elmo:backend dbeerpedia:Backend;
+      elmo:targetGraph <http://dotwebstack.org/all-concepts>;
+    ])
+  .
 }

@@ -10,7 +10,6 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -67,7 +66,7 @@ public class SequentialFlowResourceProvider extends AbstractResourceProvider<Seq
 
     List<Step> stepList = new ArrayList<>();
     stepIris.forEach(stepIri -> {
-      Step step = stepResourceProvider.get((IRI)stepIri);
+      Step step = stepResourceProvider.get((Resource)stepIri);
       if (step == null) {
         throw new ConfigurationException(
             String.format("No step definition <%s> found for flow <%s>.", stepIri, identifier));
