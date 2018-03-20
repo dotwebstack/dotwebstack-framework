@@ -6,6 +6,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
+import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,10 +32,19 @@ public class DirectEndPointTest {
   private Representation postRepresentation;
 
   @Mock
+  private Service postService;
+
+  @Mock
+  private Service putService;
+
+  @Mock
+  private Service deleteService;
+
+  @Mock
   private Stage stage;
 
   @Test
-  public void build_CreateDynamicEndPoint_WithValidData() {
+  public void build_CreateDirectEndPoint_WithValidData() {
     // Assert
     DirectEndPoint directEndPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).build();
 
@@ -62,12 +72,13 @@ public class DirectEndPointTest {
   }
 
   @Test
-  public void build_CreateDynamicEndPointComplete_WithValidData() {
+  public void build_CreateDirectEndPointComplete_WithValidData() {
     // Assert
     DirectEndPoint directEndPoint =
         (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).postRepresentation(
-            postRepresentation).getRepresentation(getRespresentation).label(label).stage(
-                stage).build();
+            postRepresentation).getRepresentation(getRespresentation).postService(
+                postService).putService(putService).deleteService(deleteService).label(label).stage(
+                    stage).build();
 
     // Act
     assertThat(directEndPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
@@ -76,5 +87,8 @@ public class DirectEndPointTest {
     assertThat(directEndPoint.getStage(), equalTo(stage));
     assertThat(directEndPoint.getGetRepresentation(), equalTo(getRespresentation));
     assertThat(directEndPoint.getPostRepresentation(), equalTo(postRepresentation));
+    assertThat(directEndPoint.getDeleteService().get(0), equalTo(deleteService));
+    assertThat(directEndPoint.getPostService().get(0), equalTo(postService));
+    assertThat(directEndPoint.getPutService().get(0), equalTo(putService));
   }
 }

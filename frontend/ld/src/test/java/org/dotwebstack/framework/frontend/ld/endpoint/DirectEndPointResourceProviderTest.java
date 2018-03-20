@@ -123,7 +123,25 @@ public class DirectEndPointResourceProviderTest {
         representationResourceProvider, serviceResourceProvider);
   }
 
-  // todo add null representationResourceProvider test and null serviceReosurceProvider
+  @Test
+  public void constructor_ThrowsException_WithMissingRepresentationResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new DirectEndPointResourceProvider(configurationBackend, applicationProperties,
+        stageResourceProvider, null, serviceResourceProvider);
+  }
+
+  @Test
+  public void constructor_ThrowsException_WithMissingServiceResourceProvider() {
+    // Assert
+    thrown.expect(NullPointerException.class);
+
+    // Act
+    new DirectEndPointResourceProvider(configurationBackend, applicationProperties,
+        stageResourceProvider, representationResourceProvider, null);
+  }
 
   @Test
   public void loadResources_LoadEndPoint_WithValidData() {
@@ -159,7 +177,13 @@ public class DirectEndPointResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.GET_REPRESENTATION_PROP,
                 ELMO.REPRESENTATION),
             valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.POST_REPRESENTATION_PROP,
-                ELMO.REPRESENTATION))));
+                ELMO.REPRESENTATION),
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.SERVICE_POST_PROP,
+                DBEERPEDIA.SERVICE_POST),
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.SERVICE_DELETE_PROP,
+                DBEERPEDIA.SERVICE_DELETE),
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.SERVICE_PUT_PROP,
+                DBEERPEDIA.SERVICE_PUT))));
 
     // Act
     endPointResourceProvider.loadResources();
@@ -174,6 +198,9 @@ public class DirectEndPointResourceProviderTest {
     assertThat(endPoint.getStage(), equalTo(stage));
     assertThat(endPoint.getGetRepresentation(), equalTo(representation));
     assertThat(endPoint.getPostRepresentation(), equalTo(representation));
+    assertThat(endPoint.getDeleteService(), hasSize(1));
+    assertThat(endPoint.getPostService(), hasSize(1));
+    assertThat(endPoint.getPutService(), hasSize(1));
   }
 
   @Test

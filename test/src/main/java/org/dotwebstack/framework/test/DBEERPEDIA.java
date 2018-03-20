@@ -192,6 +192,12 @@ public final class DBEERPEDIA {
 
   public static final IRI SEQUENTIAL_FLOW;
 
+  public static final IRI SERVICE_POST;
+
+  public static final IRI SERVICE_PUT;
+
+  public static final IRI SERVICE_DELETE;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
@@ -310,6 +316,10 @@ public final class DBEERPEDIA {
     TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
 
     SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
+
+    SERVICE_DELETE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "deleteService");
+    SERVICE_POST = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "postService");
+    SERVICE_PUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "putService");
   }
 
   private DBEERPEDIA() {
