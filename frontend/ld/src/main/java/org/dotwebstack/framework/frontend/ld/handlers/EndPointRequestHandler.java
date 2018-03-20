@@ -28,11 +28,11 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
 
   private static final Logger LOG = LoggerFactory.getLogger(EndPointRequestHandler.class);
 
-  private AbstractEndPoint endpoint;
+  private final AbstractEndPoint endpoint;
 
-  private EndPointRequestParameterMapper endPointRequestParameterMapper;
+  private final EndPointRequestParameterMapper endPointRequestParameterMapper;
 
-  private RepresentationResourceProvider representationResourceProvider;
+  private final RepresentationResourceProvider representationResourceProvider;
 
   public EndPointRequestHandler(@NonNull AbstractEndPoint endpoint,
       @NonNull EndPointRequestParameterMapper endPointRequestParameterMapper,
@@ -68,7 +68,7 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
             "Result type %s not supported for endpoint %s", request, endpoint.getIdentifier()));
       }
       return applyRepresentation(representation, containerRequestContext, parameterValues);
-    } else {
+    } else if (endpoint instanceof DynamicEndPoint) {
       if (request.equals(HttpMethod.GET)) {
         parameterValues.putAll(
             ((DynamicEndPoint) endpoint).getParameterMapper().map(containerRequestContext));
@@ -82,6 +82,9 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
           }
         }
       }
+    } else {
+      throw new ConfigurationException(String.format("Unsupported endpoint typ {} for endpoint {}",
+          endpoint.getClass(), endpoint.getIdentifier()));
     }
     throw new ConfigurationException(String.format("Result type %s not supported for endpoint %s",
         request, endpoint.getIdentifier()));
