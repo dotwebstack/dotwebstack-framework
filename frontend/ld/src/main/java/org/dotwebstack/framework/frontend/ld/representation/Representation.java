@@ -29,7 +29,7 @@ public class Representation {
 
   private List<Representation> subRepresentations;
 
-  private Representation(Builder builder) {
+  protected Representation(Builder<?> builder) {
     identifier = builder.identifier;
     appliesTo = builder.appliesTo;
     parameterMappers = builder.parameterMappers;
@@ -76,7 +76,7 @@ public class Representation {
     this.subRepresentations.add(subRepresentation);
   }
 
-  public static class Builder {
+  public static class Builder<E extends Builder<E>> {
 
     private Resource identifier;
 
