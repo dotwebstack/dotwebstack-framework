@@ -91,8 +91,9 @@ public class LdEndPointRequestMapper {
                   ExpandFormatParameter.class);
       buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.GET);
     } else {
-      throw new ConfigurationException(String.format("Unsupported endpoint typ {} for endpoint {}",
-          endPoint.getClass(), endPoint.getIdentifier()));
+      throw new ConfigurationException(
+          String.format("Unsupported endpoint typ {%s} for endpoint {%s}", endPoint.getClass(),
+              endPoint.getIdentifier()));
     }
   }
 
@@ -132,8 +133,9 @@ public class LdEndPointRequestMapper {
                   ExpandFormatParameter.class);
       buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.GET);
     } else {
-      throw new ConfigurationException(String.format("Unsupported endpoint typ {} for endpoint {}",
-          endPoint.getClass(), endPoint.getIdentifier()));
+      throw new ConfigurationException(
+          String.format("Unsupported endpoint typ {%s} for endpoint {%s}", endPoint.getClass(),
+              endPoint.getIdentifier()));
     }
   }
 
