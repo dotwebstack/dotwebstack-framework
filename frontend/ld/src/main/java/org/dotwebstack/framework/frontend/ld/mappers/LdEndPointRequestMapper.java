@@ -114,6 +114,15 @@ public class LdEndPointRequestMapper {
                         ExpandFormatParameter.class);
         buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.GET);
       });
+      postRepresentation.ifPresent(representation -> {
+        Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+        resourceBuilder.addMethod(HttpMethod.POST).handledBy(
+            endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+                supportedWriterMediaTypesScanner.getMediaTypes(
+                    representation.getInformationProduct().getResultType())).nameBindings(
+                        ExpandFormatParameter.class);
+        buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.POST);
+      });
 
     } else if (endPoint instanceof DynamicEndPoint) {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
