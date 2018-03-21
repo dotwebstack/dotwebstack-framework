@@ -91,11 +91,12 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
   }
 
   private String getUrl(Representation representation, Map<String, String> parameterValues) {
+    String url = "";
     for (String appliesTo : representation.getAppliesTo()) {
       UriTemplate template = new UriTemplate(appliesTo);
-      return template.expand(parameterValues).toString();
+      url = template.expand(parameterValues).toString();
     }
-    return "";
+    return url;
   }
 
   private Response applyRepresentation(@NonNull Representation representation,
