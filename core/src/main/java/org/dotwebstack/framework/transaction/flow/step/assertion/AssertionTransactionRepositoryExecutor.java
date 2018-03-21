@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.transaction.flow.step.assertion;
 
-import javax.ws.rs.BadRequestException;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.transaction.flow.step.AbstractStepExecutor;
+import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -37,7 +37,7 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
         returnValue = !returnValue;
       }
       if (!returnValue) {
-        throw new BadRequestException(String.format("Assertion failed for query %s", query));
+        throw new StepFailureException(step.getLabel());
       }
     } catch (QueryEvaluationException e) {
       throw new BackendException(String.format("Query could not be evaluated: %s", query), e);

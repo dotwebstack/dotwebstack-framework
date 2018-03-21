@@ -239,14 +239,14 @@ public class LdIntegrationTest {
         + "</rdf:Description>\n"
         + "\n"
         + "</rdf:RDF> ";
-    SparqlHttpStub.setResponseCode(HttpStatus.SC_METHOD_FAILURE);
+    SparqlHttpStub.setResponseCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
     // Act
     Response response = target.path("/dbp/ld/v1/add-concept").request()
         .post(Entity.entity(rdf, MediaTypes.RDFXML));
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.METHOD_NOT_ALLOWED.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
   }
 
 }

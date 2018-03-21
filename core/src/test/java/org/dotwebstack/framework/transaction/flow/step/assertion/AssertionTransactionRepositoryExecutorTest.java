@@ -2,6 +2,7 @@ package org.dotwebstack.framework.transaction.flow.step.assertion;
 
 import static org.mockito.Mockito.when;
 
+import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
@@ -47,8 +48,7 @@ public class AssertionTransactionRepositoryExecutorTest {
     when(assertionStep.getAssertionQuery()).thenReturn("ASK WHERE { ?s ?p ?o }");
 
     // Assert
-    // todo: should be BadRequestException but get this. why?
-    thrown.expect(RuntimeException.class);
+    thrown.expect(StepFailureException.class);
 
     // Act
     assertionTransactionRepositoryExecutor.execute();
