@@ -363,8 +363,7 @@ elmo:ParameterMapper a owl:Class;
 elmo:SubjectParameter a elmo:TermParameter;
   elmo:name "subject";
   elmo:shape [
-#    sh:nodeKind sh:IRI;     This is WRONG, but current framework cannot deal with sh:IRI nodekinds
-    sh:datatype xsd:string; #This is WRONG, but current framework cannot deal with sh:IRI nodekinds
+    sh:nodeKind sh:IRI;
   ]
 .
 
