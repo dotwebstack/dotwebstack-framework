@@ -89,7 +89,7 @@ public class LdEndPointRequestMapper {
           endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
               supportedWriterMediaTypesScanner.getAllSupportedMediaTypes()).nameBindings(
                   ExpandFormatParameter.class);
-      buildResource(httpConfiguration, resourceBuilder, absolutePath);
+      buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.GET);
     } else {
       throw new ConfigurationException(String.format("Unsupported endpoint typ {} for endpoint {}",
           endPoint.getClass(), endPoint.getIdentifier()));
@@ -112,7 +112,7 @@ public class LdEndPointRequestMapper {
                 supportedWriterMediaTypesScanner.getMediaTypes(
                     representation.getInformationProduct().getResultType())).nameBindings(
                         ExpandFormatParameter.class);
-        buildResource(httpConfiguration, resourceBuilder, absolutePath);
+        buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.GET);
       });
 
     } else if (endPoint instanceof DynamicEndPoint) {
@@ -121,7 +121,7 @@ public class LdEndPointRequestMapper {
           endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
               supportedWriterMediaTypesScanner.getAllSupportedMediaTypes()).nameBindings(
                   ExpandFormatParameter.class);
-      buildResource(httpConfiguration, resourceBuilder, absolutePath);
+      buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.GET);
     } else {
       throw new ConfigurationException(String.format("Unsupported endpoint typ {} for endpoint {}",
           endPoint.getClass(), endPoint.getIdentifier()));
@@ -138,13 +138,13 @@ public class LdEndPointRequestMapper {
           Arrays.stream(TransactionRequestHandler.class.getMethods()).filter(
               method -> method.getName() == "apply").findFirst().get()).consumes(
                   supportedReaderMediaTypesScanner.getMediaTypes());
-      buildResource(httpConfiguration, resourceBuilder, absolutePath);
+      buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod);
     });
   }
 
   private void buildResource(HttpConfiguration httpConfiguration, Resource.Builder resourceBuilder,
-      String absolutePath) {
-    if (!httpConfiguration.resourceAlreadyRegistered(absolutePath)) {
+      String absolutePath, String httpMethod) {
+    if (!httpConfiguration.resourceAlreadyRegistered(absolutePath, httpMethod)) {
       httpConfiguration.registerResources(resourceBuilder.build());
       LOG.debug("Mapped {} operation for request path {}",
           resourceBuilder.build().getResourceMethods(), absolutePath);

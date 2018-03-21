@@ -78,12 +78,24 @@ GRAPH dbeerpedia:Theatre {
   .
 
   dbeerpedia:TransactionEndpoint a elmo:Endpoint;
-        elmo:stage dbeerpedia:Stage;
-        elmo:pathPattern "/add-concept";
-        elmo:postService dbeerpedia:TransactionService;
+    elmo:stage dbeerpedia:Stage;
+    elmo:pathPattern "/add-concept";
+    elmo:postService dbeerpedia:TransactionPostService;
+    elmo:putService dbeerpedia:TransactionPutService;
+    elmo:deleteService dbeerpedia:TransactionDeleteService;
    .
 
-  dbeerpedia:TransactionService a elmo:Service;
+  dbeerpedia:TransactionPostService a elmo:Service;
+    elmo:stage dbeerpedia:Stage;
+    elmo:transaction dbeerpedia:InsertConcept;
+  .
+
+  dbeerpedia:TransactionPutService a elmo:Service;
+    elmo:stage dbeerpedia:Stage;
+    elmo:transaction dbeerpedia:InsertConcept;
+  .
+
+  dbeerpedia:TransactionDeleteService a elmo:Service;
     elmo:stage dbeerpedia:Stage;
     elmo:transaction dbeerpedia:InsertConcept;
   .

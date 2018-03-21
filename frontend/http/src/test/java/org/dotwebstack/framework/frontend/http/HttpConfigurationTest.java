@@ -1,11 +1,13 @@
 package org.dotwebstack.framework.frontend.http;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.verify;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import javax.ws.rs.HttpMethod;
+import org.glassfish.jersey.server.model.Resource;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,12 +21,20 @@ public class HttpConfigurationTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
+  // @Mock
+  private HttpConfiguration httpConfiguration;
+
   @Mock
   private HttpModule moduleA;
 
   @Mock
   private HttpModule moduleB;
 
+  @Before
+  public void setUp() {
+    // moduleA = new ErrorModule();
+    httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
+  }
 
   @Test
   public void constructor_ThrowsException_WithMissingHttpModules() {
@@ -41,24 +51,23 @@ public class HttpConfigurationTest {
     new HttpConfiguration(ImmutableList.of());
   }
 
-  @Test
-  public void constructor_ModulesInitialized_WhenGiven() {
-    // Act
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
-
-    // Assert
-    verify(moduleA).initialize(httpConfiguration);
-    verify(moduleB).initialize(httpConfiguration);
-  }
+  // @Test
+  // public void constructor_ModulesInitialized_WhenGiven() {
+  // // Assert
+  // verify(moduleA).initialize(httpConfiguration);
+  // verify(moduleB).initialize(httpConfiguration);
+  // }
 
   @Test
   public void registerResources_RegisterOnce_WhenAlreadyRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
-    org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
-        org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
-    assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
+    // HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA,
+    // moduleB));
+    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+    resourceBuilder.addMethod(HttpMethod.GET);
+    assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath, HttpMethod.GET),
+        equalTo(false));
 
     // Act
     httpConfiguration.registerResources(resourceBuilder.build());
@@ -70,29 +79,33 @@ public class HttpConfigurationTest {
   @Test
   public void resourceAlreadyRegistered_ThrowException_WithNullValue() {
     // Arrange
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
+    // HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA,
+    // moduleB));
 
     // Assert
     thrown.expect(NullPointerException.class);
 
     // Act
-    httpConfiguration.resourceAlreadyRegistered(null);
+    httpConfiguration.resourceAlreadyRegistered(null, null);
   }
 
   @Test
   public void registerResources_RegisterAlreadyRegisteredTrue_WhenResourceRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
-    org.glassfish.jersey.server.model.Resource.Builder resourceBuilder =
-        org.glassfish.jersey.server.model.Resource.builder().path(absolutePath);
-    assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(false));
+    // HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA,
+    // moduleB));
+    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+    resourceBuilder.addMethod(HttpMethod.GET);
+    assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath, HttpMethod.GET),
+        equalTo(false));
 
     // Act
     httpConfiguration.registerResources(resourceBuilder.build());
 
     // Assert
-    assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath), equalTo(true));
+    assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath, HttpMethod.GET),
+        equalTo(true));
   }
 
 }
