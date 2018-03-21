@@ -83,8 +83,9 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
         }
       }
     } else {
-      throw new ConfigurationException(String.format("Unsupported endpoint typ {} for endpoint {}",
-          endpoint.getClass(), endpoint.getIdentifier()));
+      throw new ConfigurationException(
+          String.format("Unsupported endpoint typ {%s} for endpoint {%s}", endpoint.getClass(),
+              endpoint.getIdentifier()));
     }
     throw new ConfigurationException(String.format("Result type %s not supported for endpoint %s",
         request, endpoint.getIdentifier()));
