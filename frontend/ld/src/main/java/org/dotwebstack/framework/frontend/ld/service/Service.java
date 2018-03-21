@@ -19,6 +19,7 @@ public class Service extends Representation {
       super(representation);
     }
 
+    @Override
     public Service build() {
       return new Service(this);
     }
