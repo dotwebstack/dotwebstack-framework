@@ -12,6 +12,7 @@ import org.eclipse.rdf4j.query.Query;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +58,22 @@ public class QueryEvaluator {
       repositoryConnection.add(model, targetGraph);
     } catch (RDF4JException e) {
       throw new BackendException("Data could not be added into graph", e);
+    }
+  }
+
+  public void update(@NonNull RepositoryConnection repositoryConnection, @NonNull String query) {
+    Update preparedQuery;
+
+    try {
+      preparedQuery = repositoryConnection.prepareUpdate(QueryLanguage.SPARQL, query);
+    } catch (RDF4JException e) {
+      throw new BackendException(String.format("Query could not be prepared: %s", query), e);
+    }
+
+    try {
+      preparedQuery.execute();
+    } catch (QueryEvaluationException e) {
+      throw new BackendException(String.format("Query could not be executed: %s", query), e);
     }
   }
 

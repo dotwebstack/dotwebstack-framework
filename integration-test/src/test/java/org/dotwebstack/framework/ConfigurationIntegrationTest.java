@@ -81,7 +81,7 @@ public class ConfigurationIntegrationTest {
     assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(4));
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.TUPLE_BREWERIES), notNullValue());
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.GRAPH_BREWERIES), notNullValue());
-    assertThat(transactionResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(transactionResourceProvider.getAll().entrySet(), hasSize(2));
     assertThat(transactionResourceProvider.get(DBEERPEDIA.TRANSACTION), notNullValue());
     assertThat(representationResourceProvider.getAll().entrySet(), hasSize(6));
     assertThat(representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION),
@@ -104,9 +104,13 @@ public class ConfigurationIntegrationTest {
     assertThat(dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT).getLabel(),
         notNullValue());
     assertThat(directEndPointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
-    assertThat(stepResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(stepResourceProvider.getAll().entrySet(), hasSize(7));
     assertThat(stepResourceProvider.get(DBEERPEDIA.PERSISTENCE_STEP), notNullValue());
     assertThat(serviceResourceProvider.getAll().entrySet(), hasSize(3));
+    assertThat(stepResourceProvider.get(DBEERPEDIA.ASSERTION_IF_EXIST_STEP), notNullValue());
+    assertThat(stepResourceProvider.get(DBEERPEDIA.ASSERTION_IF_NOT_EXIST_STEP), notNullValue());
+    assertThat(stepResourceProvider.get(DBEERPEDIA.PRE_UPDATE_STEP), notNullValue());
+    assertThat(stepResourceProvider.get(DBEERPEDIA.POST_UPDATE_STEP), notNullValue());
   }
 
 }

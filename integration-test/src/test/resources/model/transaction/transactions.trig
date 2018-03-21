@@ -2,11 +2,73 @@ GRAPH dbeerpedia:Theatre {
 
   # Transaction: replace resource from graph
   dbeerpedia:InsertConcept a elmo:Transaction;
-    elmo:sequentialFlow (dbeerpedia:PersistenceStep);
+    elmo:sequentialFlow (
+      dbeerpedia:PreUpdateStep
+      dbeerpedia:AssertIfNotExists
+      dbeerpedia:AssertIfExists
+      dbeerpedia:PersistenceStep
+      dbeerpedia:PostUpdateStep
+    );
+  .
+  dbeerpedia:PreUpdateStep a elmo:UpdateStep;
+  	rdfs:label "Pre update";
+    elmo:backend elmo:TransactionRepository;
+    elmo:query """
+      INSERT DATA
+        {
+        <http://dbeerpedia.org#davo> <http://www.w3.org/2000/01/rdf-schema#label>
+        \"Davo brouwerij Deventer\"
+        };
+    """
+  .
+  dbeerpedia:AssertIfNotExists a elmo:AssertionStep;
+  	#rdfs:label "Davo should exists";
+  	elmo:assert """
+  	  ASK  { ?s <http://www.w3.org/2000/01/rdf-schema#label> \"Davo brouwerij Deventer\"
+  	  }
+  	"""
+  .
+  dbeerpedia:AssertIfExists a elmo:AssertionStep;
+  	#rdfs:label "Brouwtoren should not exists"@en;
+  	elmo:assertNot """
+  	  ASK  { ?s <http://www.w3.org/2000/01/rdf-schema#label> \"Brouwtoren\"
+  	  }
+  	"""
   .
   dbeerpedia:PersistenceStep a elmo:PersistenceStep;
+  	rdfs:label "Persist into all concepts graph";
     elmo:persistenceStrategy elmo-sp:InsertIntoGraph;
     elmo:backend dbeerpedia:Backend;
     elmo:targetGraph <http://dotwebstack.org/all-concepts>;
+  .
+  dbeerpedia:PostUpdateStep a elmo:UpdateStep;
+  	rdfs:label "Post update";
+    elmo:backend dbeerpedia:Backend;
+    elmo:query """
+      INSERT DATA
+        {
+        <http://dbeerpedia.org#davo> <http://www.w3.org/2000/01/rdf-schema#label>
+        \"Davo brouwerij Deventer\"
+        };
+    """
+  .
+  # Transaction: (test reading list with blank nodes)
+  dbeerpedia:InsertConcept2 a elmo:Transaction;
+    elmo:sequentialFlow (
+    [ a elmo:UpdateStep;
+      elmo:backend elmo:TransactionRepository;
+      elmo:query """
+        INSERT DATA
+        {
+        <http://dbeerpedia.org#davo> <http://www.w3.org/2000/01/rdf-schema#label>
+        \"Davo brouwerij Deventer\"
+        };
+      """
+    ]
+    [ a elmo:PersistenceStep;
+      elmo:persistenceStrategy elmo-sp:InsertIntoGraph;
+      elmo:backend dbeerpedia:Backend;
+      elmo:targetGraph <http://dotwebstack.org/all-concepts>;
+    ])
   .
 }

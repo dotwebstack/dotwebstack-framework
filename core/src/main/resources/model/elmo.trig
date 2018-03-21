@@ -380,6 +380,9 @@ elmo:SubjectParameter a elmo:TermParameter;
 #  elmo:index 1
 #.
 
+elmo:TransactionRepository a elmo:Backend;
+.
+
 # == PROPERTIES ==
 elmo:appearance a owl:ObjectProperty;
   rdfs:label "appearance"@en;

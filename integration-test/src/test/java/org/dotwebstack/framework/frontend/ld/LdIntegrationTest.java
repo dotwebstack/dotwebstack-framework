@@ -225,16 +225,16 @@ public class LdIntegrationTest {
         + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
         + "xmlns:si=\"https://www.w3schools.com/rdf/\">\n" + "\n"
         + "<rdf:Description rdf:about=\"https://www.w3schools.com\">\n"
-        + " <si:title>W3Schools</si:title>\n" + " <si:author>Jan Egil Refsnes</si:author>\n"
+        + "  <si:title>W3Schools</si:title>\n" + "  <si:author>Jan Egil Refsnes</si:author>\n"
         + "</rdf:Description>\n" + "\n" + "</rdf:RDF> ";
-    SparqlHttpStub.setResponseCode(HttpStatus.SC_METHOD_FAILURE);
+    SparqlHttpStub.setResponseCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
     // Act
     Response response =
         target.path("/dbp/ld/v1/add-concept").request().post(Entity.entity(rdf, MediaTypes.RDFXML));
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.METHOD_NOT_ALLOWED.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
   }
 
 }

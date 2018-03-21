@@ -51,4 +51,5 @@ public class SupportedReaderMediaTypesScanner {
   public List<MediaType> getMediaTypes() {
     return mediaTypes;
   }
+
 }
