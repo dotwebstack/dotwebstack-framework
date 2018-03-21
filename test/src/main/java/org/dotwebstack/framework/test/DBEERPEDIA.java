@@ -60,6 +60,8 @@ public final class DBEERPEDIA {
 
   public static final Literal ASK_ALL_QUERY;
 
+  public static final Literal ASK2_ALL_QUERY;
+
   public static final Literal MALFORMED_QUERY;
 
   public static final IRI BROUWTOREN;
@@ -186,6 +188,10 @@ public final class DBEERPEDIA {
 
   public static final IRI PERSISTENCE_STEP;
 
+  public static final IRI ASSERTION_IF_EXIST_STEP;
+
+  public static final IRI ASSERTION_IF_NOT_EXIST_STEP;
+
   public static final IRI UPDATE_STEP;
 
   public static final IRI PRE_UPDATE_STEP;
@@ -237,6 +243,7 @@ public final class DBEERPEDIA {
     SELECT_ALL_QUERY = valueFactory.createLiteral("SELECT ?s ?p ?o WHERE { ?s ?p ?o }");
     CONSTRUCT_ALL_QUERY = valueFactory.createLiteral("CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o }");
     ASK_ALL_QUERY = valueFactory.createLiteral("ASK WHERE { ?s ?p ?o }");
+    ASK2_ALL_QUERY = valueFactory.createLiteral("ASK WHERE { ?s a ?o }");
 
     BROUWTOREN = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c");
@@ -308,6 +315,10 @@ public final class DBEERPEDIA {
     DEFAULT_ENDPOINT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "DefaultEndpoint");
 
     PERSISTENCE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PersistenceStep");
+
+    ASSERTION_IF_EXIST_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "AssertIfExists");
+
+    ASSERTION_IF_NOT_EXIST_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "AssertIfNotExists");
 
     UPDATE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "UpdateStep");
 

@@ -33,6 +33,12 @@ public final class ELMO {
 
   public static final IRI UPDATE_STEP;
 
+  public static final IRI ASSERTION_STEP;
+
+  public static final IRI ASSERT;
+
+  public static final IRI ASSERT_NOT;
+
   public static final IRI VALIDATION_STEP;
 
   public static final IRI SITE;
@@ -143,6 +149,7 @@ public final class ELMO {
     PERSISTENCE_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "PersistenceStep");
     VALIDATION_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "ValidationStep");
     UPDATE_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "UpdateStep");
+    ASSERTION_STEP = valueFactory.createIRI(ELMO.NAMESPACE, "AssertionStep");
 
     SITE = valueFactory.createIRI(ELMO.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(ELMO.NAMESPACE, "Stage");
@@ -183,6 +190,9 @@ public final class ELMO {
 
     SEQUENTIAL_FLOW_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "sequentialFlow");
     UNKNOWN_FLOW_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "unknownFlow");
+
+    ASSERT = valueFactory.createIRI(ELMO.NAMESPACE, "assert");
+    ASSERT_NOT = valueFactory.createIRI(ELMO.NAMESPACE, "assertNot");
 
     TARGET_GRAPH_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "targetGraph");
 
