@@ -3,9 +3,14 @@ package org.dotwebstack.framework.frontend.http;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.ImmutableList;
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.MediaType;
+import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.model.Resource;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,7 +26,6 @@ public class HttpConfigurationTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  // @Mock
   private HttpConfiguration httpConfiguration;
 
   @Mock
@@ -32,7 +36,6 @@ public class HttpConfigurationTest {
 
   @Before
   public void setUp() {
-    // moduleA = new ErrorModule();
     httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
   }
 
@@ -48,24 +51,25 @@ public class HttpConfigurationTest {
   @Test
   public void constructor_ThrowsNoExceptions_WithoutExtensions() {
     // Act & assert
-    new HttpConfiguration(ImmutableList.of());
+    new HttpConfiguration(ImmutableList.of(moduleA, moduleB));
   }
 
-  // @Test
-  // public void constructor_ModulesInitialized_WhenGiven() {
-  // // Assert
-  // verify(moduleA).initialize(httpConfiguration);
-  // verify(moduleB).initialize(httpConfiguration);
-  // }
+  @Test
+  public void constructor_ModulesInitialized_WhenGiven() {
+    // Assert
+    verify(moduleA).initialize(httpConfiguration);
+    verify(moduleB).initialize(httpConfiguration);
+  }
 
   @Test
   public void registerResources_RegisterOnce_WhenAlreadyRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    // HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA,
-    // moduleB));
+    final Inflector<ContainerRequestContext, ?> inflector = mock(Inflector.class);
+    final MediaType mediaType = mock(MediaType.class);
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-    resourceBuilder.addMethod(HttpMethod.GET);
+    resourceBuilder.addMethod(HttpMethod.GET).handledBy(inflector).produces(mediaType).nameBindings(
+        ExpandFormatParameter.class);
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath, HttpMethod.GET),
         equalTo(false));
 
@@ -78,10 +82,6 @@ public class HttpConfigurationTest {
 
   @Test
   public void resourceAlreadyRegistered_ThrowException_WithNullValue() {
-    // Arrange
-    // HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA,
-    // moduleB));
-
     // Assert
     thrown.expect(NullPointerException.class);
 
@@ -93,10 +93,11 @@ public class HttpConfigurationTest {
   public void registerResources_RegisterAlreadyRegisteredTrue_WhenResourceRegistered() {
     // Arrange
     final String absolutePath = "https://run.forrest.run/";
-    // HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of(moduleA,
-    // moduleB));
+    final Inflector<ContainerRequestContext, ?> inflector = mock(Inflector.class);
+    final MediaType mediaType = mock(MediaType.class);
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-    resourceBuilder.addMethod(HttpMethod.GET);
+    resourceBuilder.addMethod(HttpMethod.GET).handledBy(inflector).produces(mediaType).nameBindings(
+        ExpandFormatParameter.class);
     assertThat(httpConfiguration.resourceAlreadyRegistered(absolutePath, HttpMethod.GET),
         equalTo(false));
 
