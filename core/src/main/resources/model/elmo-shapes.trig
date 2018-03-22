@@ -1012,5 +1012,17 @@ elmo-shape:Fragment a sh:NodeShape;
     sh:maxCount 1;
     sh:nodeKind sh:IRI;
   ];
+  sh:property [
+    sh:name "elmo:valueDatatype";
+    sh:path elmo:valueDatatype;
+    sh:maxCount 1;
+    sh:nodeKind sh:IRI;
+  ];
+  sh:property [
+    sh:name "elmo:valueTemplate";
+    sh:path elmo:valueTemplate;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ];
 .
 }
