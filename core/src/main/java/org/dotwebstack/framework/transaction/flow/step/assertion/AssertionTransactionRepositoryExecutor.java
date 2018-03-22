@@ -28,7 +28,8 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
     try {
       preparedQuery = transactionConnection.prepareBooleanQuery(QueryLanguage.SPARQL, query);
     } catch (RDF4JException e) {
-      throw new BackendException(String.format("Query could not be prepared: %s", query), e);
+      throw new BackendException(String.format("Query could not be prepared: %s (%s)",
+          query, e.getMessage()), e);
     }
 
     try {
@@ -40,7 +41,8 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
         throw new StepFailureException(step.getLabel());
       }
     } catch (QueryEvaluationException e) {
-      throw new BackendException(String.format("Query could not be evaluated: %s", query), e);
+      throw new BackendException(String.format("Query could not be evaluated: %s (%s)",
+          query, e.getMessage()), e);
     }
   }
 
