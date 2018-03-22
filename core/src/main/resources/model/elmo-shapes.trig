@@ -15,6 +15,7 @@
 @prefix elmo: <http://dotwebstack.org/def/elmo#>.
 
 GRAPH elmo:Shacl {
+
 elmo-shape:
   rdfs:label "SHACL for ELMO"@en;
   rdfs:comment "This shapes graph can be used to validate dotwebstack configurations. It can also be used to create a visual representation of the structure"@en;
@@ -77,6 +78,13 @@ elmo-shape:Site a sh:NodeShape;
     sh:path elmo:domain;
     sh:maxCount 1;
     sh:datatype xsd:string
+  ];
+  sh:property [
+    sh:name "sh:basePath";
+    sh:path elmo:basePath;
+    sh:minCount 0;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
   ];
   sh:property [
     sh:name "rdfs:label";
@@ -337,28 +345,6 @@ elmo-shape:AssertionStep a sh:NodeShape;
   sh:property [
       sh:name "rdfs:label";
       sh:path rdfs:label;
-  ];
-  sh:property [
-    sh:name "elmo:assert";
-    sh:path elmo:assert;
-    sh:datatype xsd:string;
-    sh:maxCount 1;
-  ];
-  sh:property [
-    sh:name "elmo:assertNot";
-    sh:path elmo:assertNot;
-    sh:datatype xsd:string;
-    sh:maxCount 1;
-  ];
-.
-
-elmo-shape:AssertionStep a sh:NodeShape;
-  sh:closed true;
-  sh:targetClass elmo:AssertionStep;
-  sh:property [
-    sh:name "rdfs:label";
-    sh:path rdfs:label;
-    sh:datatype rdf:langString
   ];
   sh:property [
     sh:name "elmo:assert";
@@ -652,20 +638,20 @@ elmo-shape:SparqlBackend a sh:NodeShape;
     sh:maxCount 1;
     sh:datatype xsd:anyURI;
   ];
-#  sh:property [
-#    sh:path [sh:inversePath elmo:backend ];
-#    sh:node [
-#      rdfs:label "IP constraints for sparql backend";
-#      sh:name "elmo:InformationProduct (Sparql)";
-#      sh:property [
-#        sh:path elmo:query;
-#        sh:name "elmo:query";
-#        sh:minCount 1;
-#        sh:maxCount 1;
-#      ];
-#    ];
-#    sh:class elmo:InformationProduct;
-#  ]
+  sh:property [
+    sh:path [sh:inversePath elmo:backend ];
+    sh:node [
+      rdfs:label "IP constraints for sparql backend";
+      sh:name "elmo:InformationProduct (Sparql)";
+      sh:property [
+        sh:path elmo:query;
+        sh:name "elmo:query";
+        sh:minCount 1;
+        sh:maxCount 1;
+      ];
+    ];
+    sh:class elmo:InformationProduct;
+  ]
 .
 
 elmo-shape:ElasticSearchBackend a sh:NodeShape;
@@ -980,14 +966,14 @@ elmo-shape:Layer a sh:NodeShape;
   sh:property [
     sh:path rdfs:label;
     sh:name "rdfs:label";
-    sh:datatype xsd:string;
+    sh:datatype rdf:langString
   ];
   sh:property [
     sh:path elmo:index;
     sh:name "elmo:index";
     sh:minCount 1;
     sh:maxCount 1;
-    sh:datatype xsd:integer;
+    sh:datatype xsd:integer
   ]
 .
 
@@ -1197,6 +1183,18 @@ elmo-shape:Fragment a sh:NodeShape;
     sh:path xhtml:glossary;
     sh:maxCount 1;
     sh:nodeKind sh:IRI;
+  ];
+  sh:property [
+    sh:name "elmo:valueDatatype";
+    sh:path elmo:valueDatatype;
+    sh:maxCount 1;
+    sh:nodeKind sh:IRI;
+  ];
+    sh:property [
+    sh:name "elmo:valueTemplate";
+    sh:path elmo:valueTemplate;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
   ];
 .
 }
