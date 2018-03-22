@@ -1,11 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import io.swagger.models.properties.Property;
-import java.util.Map;
-import javax.ws.rs.core.MediaType;
+import io.swagger.models.Response;
 
 public interface Entity {
 
-  Map<MediaType, Property> getSchemaMap();
+  Response getResponse();
 
 }

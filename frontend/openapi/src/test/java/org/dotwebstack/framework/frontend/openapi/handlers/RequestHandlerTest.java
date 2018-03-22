@@ -83,8 +83,7 @@ public class RequestHandlerTest {
 
   @Before
   public void setUp() throws URISyntaxException {
-    schemaMap = ImmutableMap.of();
-    requestHandler = new RequestHandler(apiOperationMock, informationProductMock, schemaMap,
+    requestHandler = new RequestHandler(apiOperationMock, informationProductMock, new io.swagger.models.Response(),
         requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
 
     when(containerRequestMock.getBaseUri()).thenReturn(new URI("http://host:123/path"));
@@ -117,7 +116,7 @@ public class RequestHandlerTest {
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
-    assertThat(((TupleEntity) response.getEntity()).getSchemaMap(), equalTo(schemaMap));
+    assertThat(((TupleEntity) response.getEntity()).getResponse(), equalTo(schemaMap));
     verify(containerRequestMock).setProperty("operation", apiOperationMock.getOperation());
   }
 
@@ -150,7 +149,7 @@ public class RequestHandlerTest {
     assertThat(((GraphEntity) response.getEntity()).getInformationProduct(),
         sameInstance(informationProductMock));
     assertThat(((GraphEntity) response.getEntity()).getParameters(), is(parameters));
-    assertThat(((GraphEntity) response.getEntity()).getSchemaMap(), is(schemaMap));
+    assertThat(((GraphEntity) response.getEntity()).getResponse(), is(schemaMap));
     assertThat(((GraphEntity) response.getEntity()).getSubjects(), is(empty()));
   }
 
@@ -191,7 +190,7 @@ public class RequestHandlerTest {
     assertThat(((GraphEntity) response.getEntity()).getInformationProduct(),
         sameInstance(informationProductMock));
     assertThat(((GraphEntity) response.getEntity()).getParameters(), is(parameters));
-    assertThat(((GraphEntity) response.getEntity()).getSchemaMap(), is(schemaMap));
+    assertThat(((GraphEntity) response.getEntity()).getResponse(), is(schemaMap));
     assertThat(((GraphEntity) response.getEntity()).getSubjects(), contains(DBEERPEDIA.BROUWTOREN));
   }
 

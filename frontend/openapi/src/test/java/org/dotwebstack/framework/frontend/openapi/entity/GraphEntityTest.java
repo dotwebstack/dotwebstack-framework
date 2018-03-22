@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import java.util.Map;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -37,7 +38,7 @@ public class GraphEntityTest {
 
   @Before
   public void setUp() {
-    entity = newGraphEntity(ImmutableMap.of(), repositoryMock, ImmutableSet.of(), definitionsMock,
+    entity = newGraphEntity(new Response(), repositoryMock, ImmutableSet.of(), definitionsMock,
         ImmutableMap.of(), productMock, "");
   }
 

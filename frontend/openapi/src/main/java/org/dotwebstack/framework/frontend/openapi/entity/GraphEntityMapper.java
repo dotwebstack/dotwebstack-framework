@@ -20,7 +20,7 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
 
   @Override
   public Object map(@NonNull GraphEntity entity, @NonNull MediaType mediaType) {
-    Property schema = entity.getSchemaMap().get(mediaType);
+    Property schema = entity.getResponse().getSchema();
     ValueContext valueContext = ValueContext.builder().build();
 
     if (schema == null) {

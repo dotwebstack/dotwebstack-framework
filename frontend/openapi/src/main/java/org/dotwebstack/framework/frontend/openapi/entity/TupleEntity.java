@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import io.swagger.models.properties.Property;
-import java.util.Map;
-import javax.ws.rs.core.MediaType;
+import io.swagger.models.Response;
 import lombok.NonNull;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
@@ -10,8 +8,8 @@ public final class TupleEntity extends AbstractEntity {
 
   private final TupleQueryResult queryResult;
 
-  TupleEntity(@NonNull Map<MediaType, Property> schemaMap, @NonNull TupleQueryResult queryResult) {
-    super(schemaMap);
+  TupleEntity(@NonNull Response response, @NonNull TupleQueryResult queryResult) {
+    super(response);
     this.queryResult = queryResult;
   }
 
@@ -25,7 +23,7 @@ public final class TupleEntity extends AbstractEntity {
 
   public static class Builder {
 
-    private Map<MediaType, Property> schemaMap;
+    private Response response;
 
     private TupleQueryResult tupleQueryResult;
 
@@ -34,14 +32,15 @@ public final class TupleEntity extends AbstractEntity {
       return this;
     }
 
-    public Builder withSchemaMap(@NonNull Map<MediaType, Property> schemaMap) {
-      this.schemaMap = schemaMap;
+    public Builder withResponse(@NonNull Response response) {
+      this.response = response;
       return this;
     }
 
     public TupleEntity build() {
-      return new TupleEntity(schemaMap, tupleQueryResult);
+      return new TupleEntity(response, tupleQueryResult);
     }
 
   }
+
 }

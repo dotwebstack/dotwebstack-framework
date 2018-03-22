@@ -2,12 +2,10 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Swagger;
-import io.swagger.models.properties.Property;
 import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import lombok.AccessLevel;
@@ -43,7 +41,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
   private final InformationProduct informationProduct;
 
   @Getter(AccessLevel.PACKAGE)
-  private final Map<MediaType, Property> schemaMap;
+  private final io.swagger.models.Response response;
 
   private final RequestParameterMapper requestParameterMapper;
 
@@ -52,13 +50,13 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
   private final ApiRequestValidator apiRequestValidator;
 
   RequestHandler(@NonNull ApiOperation apiOperation, @NonNull InformationProduct informationProduct,
-      @NonNull Map<MediaType, Property> schemaMap,
+      @NonNull io.swagger.models.Response response,
       @NonNull RequestParameterMapper requestParameterMapper,
       @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;
     this.informationProduct = informationProduct;
-    this.schemaMap = schemaMap;
+    this.response = response;
     this.requestParameterMapper = requestParameterMapper;
     this.swagger = swagger;
   }
@@ -89,7 +87,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
       TupleEntity entity =
-          TupleEntity.builder().withQueryResult(result).withSchemaMap(schemaMap).build();
+          TupleEntity.builder().withQueryResult(result).withResponse(response).build();
 
       return responseOk(entity);
     }
@@ -105,8 +103,8 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
         throw new NotFoundException();
       }
 
-      GraphEntity entity = GraphEntity.newGraphEntity(schemaMap, resultRepository, subjects,
-          swagger, parameterValues, informationProduct, baseUri);
+      GraphEntity entity = GraphEntity.newGraphEntity(response, resultRepository, subjects, swagger,
+          parameterValues, informationProduct, baseUri);
 
       return responseOk(entity);
     }

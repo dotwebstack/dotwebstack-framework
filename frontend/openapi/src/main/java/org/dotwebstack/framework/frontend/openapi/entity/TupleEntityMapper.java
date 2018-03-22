@@ -9,7 +9,6 @@ import io.swagger.models.properties.Property;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext;
 import org.eclipse.rdf4j.query.BindingSet;
@@ -33,21 +32,20 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
 
   @Override
   public Object map(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
-    Property schema = entity.getSchemaMap().get(mediaType);
-
-    ValueContext valueContext = ValueContext.builder().build();
+    // Already prepared for OASv3 multiple media type support
+    Property schema = entity.getResponse().getSchema();
 
     if (schema == null) {
       throw new EntityMapperRuntimeException(
           String.format("No schema found for media type '%s'.", mediaType.toString()));
     }
 
-    if (schema instanceof ResponseProperty) {
-      schema = ((ResponseProperty) schema).getSchema();
-    }
+    ValueContext valueContext = ValueContext.builder().build();
+
     if (schema instanceof ObjectProperty) {
       return mapObject(entity, (ObjectProperty) schema, valueContext);
     }
+
     if (schema instanceof ArrayProperty) {
       return mapCollection(entity, (ArrayProperty) schema, valueContext);
     }

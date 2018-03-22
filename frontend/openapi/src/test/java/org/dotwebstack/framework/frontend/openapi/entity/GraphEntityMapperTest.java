@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.IntegerProperty;
 import javax.ws.rs.core.MediaType;
@@ -47,8 +48,8 @@ public class GraphEntityMapperTest {
   public void map_Returns_SchemaMapperAdapterResult() {
     // Arrange
     IntegerProperty schema = new IntegerProperty();
-    GraphEntity entity = newGraphEntity(ImmutableMap.of(MediaType.TEXT_PLAIN_TYPE, schema),
-        repositoryMock, ImmutableSet.of(), definitionsMock, ImmutableMap.of(), productMock, "");
+    GraphEntity entity = newGraphEntity(new Response().schema(schema), repositoryMock,
+        ImmutableSet.of(), definitionsMock, ImmutableMap.of(), productMock, "");
 
     Object object = new Object();
     when(schemaMapperAdapterMock.mapGraphValue(any(IntegerProperty.class), any(GraphEntity.class),

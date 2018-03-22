@@ -1,20 +1,19 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import io.swagger.models.properties.Property;
-import java.util.Map;
-import javax.ws.rs.core.MediaType;
+import io.swagger.models.Response;
 import lombok.NonNull;
 
 abstract class AbstractEntity implements Entity {
 
-  private Map<MediaType, Property> schemaMap;
+  private Response response;
 
-  AbstractEntity(@NonNull Map<MediaType, Property> schemaMap) {
-    this.schemaMap = schemaMap;
+  AbstractEntity(@NonNull Response response) {
+    this.response = response;
   }
 
   @Override
-  public Map<MediaType, Property> getSchemaMap() {
-    return schemaMap;
+  public Response getResponse() {
+    return response;
   }
+
 }

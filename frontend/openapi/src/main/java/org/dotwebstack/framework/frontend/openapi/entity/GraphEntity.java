@@ -5,12 +5,11 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Model;
+import io.swagger.models.Response;
 import io.swagger.models.Swagger;
-import io.swagger.models.properties.Property;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import javax.ws.rs.core.MediaType;
 import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -37,12 +36,12 @@ public final class GraphEntity extends AbstractEntity {
 
   private final String baseUri;
 
-  private GraphEntity(@NonNull Map<MediaType, Property> schemaMap,
+  private GraphEntity(@NonNull Response response,
       @NonNull ImmutableMap<String, String> ldPathNamespaces,
       @NonNull Map<String, Model> swaggerDefinitions, @NonNull Repository repository,
       @NonNull Set<Resource> subjects, @NonNull Map<String, String> requestParameters,
       @NonNull String baseUri, @NonNull InformationProduct informationProduct) {
-    super(schemaMap);
+    super(response);
 
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = swaggerDefinitions;
@@ -54,11 +53,11 @@ public final class GraphEntity extends AbstractEntity {
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 
-  public static GraphEntity newGraphEntity(@NonNull Map<MediaType, Property> schemaMap,
+  public static GraphEntity newGraphEntity(@NonNull Response response,
       @NonNull Repository repository, @NonNull Set<Resource> subjects, @NonNull Swagger definitions,
       @NonNull Map<String, String> requestParameters,
       @NonNull InformationProduct informationProduct, @NonNull String baseUri) {
-    return new GraphEntity(schemaMap, extractLdpathNamespaces(definitions),
+    return new GraphEntity(response, extractLdpathNamespaces(definitions),
         extractSwaggerDefinitions(definitions), repository, subjects, requestParameters, baseUri,
         informationProduct);
   }

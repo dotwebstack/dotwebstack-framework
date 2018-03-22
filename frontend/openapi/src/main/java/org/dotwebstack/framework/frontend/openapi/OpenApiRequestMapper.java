@@ -9,17 +9,13 @@ import io.swagger.models.RefModel;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.BodyParameter;
-import io.swagger.models.properties.Property;
 import io.swagger.parser.SwaggerParser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +23,6 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -150,17 +145,11 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
       Response response = getOperation.getResponses().get(okStatusCode);
 
-      if (response.getSchema() == null) {
+      if (response == null) {
         throw new ConfigurationException(
-            String.format("Resource '%s' does not specify a schema for the status %s response.",
+            String.format("Resource '%s' does not specify a response for the status %s response.",
                 absolutePath, okStatusCode));
       }
-
-      Property property = new ResponseProperty(response);
-
-      // Will eventually be replaced by OASv3 Content object
-      Map<MediaType, Property> schemaMap =
-          produces.stream().collect(Collectors.toMap(MediaType::valueOf, mediaType -> property));
 
       IRI informationProductIdentifier =
           valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
@@ -173,7 +162,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
       ResourceMethod.Builder methodBuilder =
           resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
-              requestHandlerFactory.newRequestHandler(apiOperation, informationProduct, schemaMap,
+              requestHandlerFactory.newRequestHandler(apiOperation, informationProduct, response,
                   swagger));
 
       produces.forEach(methodBuilder::produces);
