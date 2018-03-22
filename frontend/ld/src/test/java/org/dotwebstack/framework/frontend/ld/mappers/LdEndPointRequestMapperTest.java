@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -167,11 +166,10 @@ public class LdEndPointRequestMapperTest {
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
     final ResourceMethod method = resource.getResourceMethods().get(0);
-    assertThat(httpConfiguration.getResources(), hasSize(1));
+    assertThat(httpConfiguration.getResources(), hasSize(2));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
     assertThat(resource.getResourceMethods(), hasSize(1));
-    assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
   }
 
   @Test
