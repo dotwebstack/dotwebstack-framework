@@ -19,12 +19,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
-import io.swagger.models.properties.Property;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.backend.ResultType;
@@ -77,14 +75,16 @@ public class RequestHandlerTest {
   @Mock
   private Swagger swaggerMock;
 
-  private Map<MediaType, Property> schemaMap;
+  private io.swagger.models.Response entityResponse;
 
   private RequestHandler requestHandler;
 
   @Before
   public void setUp() throws URISyntaxException {
-    requestHandler = new RequestHandler(apiOperationMock, informationProductMock, new io.swagger.models.Response(),
-        requestParameterMapperMock, apiRequestValidatorMock, swaggerMock);
+    entityResponse = new io.swagger.models.Response();
+    requestHandler = new RequestHandler(apiOperationMock, informationProductMock,
+        new io.swagger.models.Response(), requestParameterMapperMock, apiRequestValidatorMock,
+        swaggerMock);
 
     when(containerRequestMock.getBaseUri()).thenReturn(new URI("http://host:123/path"));
 
@@ -116,7 +116,7 @@ public class RequestHandlerTest {
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getEntity(), instanceOf(TupleEntity.class));
     assertThat(((TupleEntity) response.getEntity()).getResult(), equalTo(result));
-    assertThat(((TupleEntity) response.getEntity()).getResponse(), equalTo(schemaMap));
+    assertThat(((TupleEntity) response.getEntity()).getResponse(), equalTo(entityResponse));
     verify(containerRequestMock).setProperty("operation", apiOperationMock.getOperation());
   }
 
@@ -149,7 +149,7 @@ public class RequestHandlerTest {
     assertThat(((GraphEntity) response.getEntity()).getInformationProduct(),
         sameInstance(informationProductMock));
     assertThat(((GraphEntity) response.getEntity()).getParameters(), is(parameters));
-    assertThat(((GraphEntity) response.getEntity()).getResponse(), is(schemaMap));
+    assertThat(((GraphEntity) response.getEntity()).getResponse(), is(entityResponse));
     assertThat(((GraphEntity) response.getEntity()).getSubjects(), is(empty()));
   }
 
@@ -190,7 +190,7 @@ public class RequestHandlerTest {
     assertThat(((GraphEntity) response.getEntity()).getInformationProduct(),
         sameInstance(informationProductMock));
     assertThat(((GraphEntity) response.getEntity()).getParameters(), is(parameters));
-    assertThat(((GraphEntity) response.getEntity()).getResponse(), is(schemaMap));
+    assertThat(((GraphEntity) response.getEntity()).getResponse(), is(entityResponse));
     assertThat(((GraphEntity) response.getEntity()).getSubjects(), contains(DBEERPEDIA.BROUWTOREN));
   }
 

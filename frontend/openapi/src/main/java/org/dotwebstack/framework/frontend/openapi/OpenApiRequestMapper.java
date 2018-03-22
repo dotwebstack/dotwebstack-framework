@@ -145,12 +145,6 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
       Response response = getOperation.getResponses().get(okStatusCode);
 
-      if (response == null) {
-        throw new ConfigurationException(
-            String.format("Resource '%s' does not specify a response for the status %s response.",
-                absolutePath, okStatusCode));
-      }
-
       IRI informationProductIdentifier =
           valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
               OpenApiSpecificationExtensions.INFORMATION_PRODUCT));

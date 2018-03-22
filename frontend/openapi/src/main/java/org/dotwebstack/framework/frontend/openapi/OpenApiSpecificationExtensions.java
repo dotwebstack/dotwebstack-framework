@@ -35,6 +35,8 @@ public final class OpenApiSpecificationExtensions {
    */
   public static final String SUBJECT_QUERY = DOTWEBSTACK_PREFIX.concat("subject-query");
 
+  public static final String SUBJECT = DOTWEBSTACK_PREFIX.concat("subject");
+
   /**
    * Handles "x-dotwebstack-context-links" vendor extension. <br/>
    *

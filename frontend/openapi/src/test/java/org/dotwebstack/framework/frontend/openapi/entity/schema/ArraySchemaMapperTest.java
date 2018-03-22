@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.Property;
@@ -70,7 +71,9 @@ public class ArraySchemaMapperTest {
   private ArraySchemaMapper schemaMapper;
 
   private StringProperty stringProperty;
+
   private ObjectProperty objectProperty;
+
   private ArrayProperty arrayProperty;
 
   @Before
@@ -194,17 +197,13 @@ public class ArraySchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsArrayOfObjects_WhenSubjectQueryHasBeenDefined() {
+  public void mapGraphValue_ReturnsArrayOfObjects_WhenSubjectExtEnabled() {
     // Arrange
     arrayProperty.setItems(objectProperty);
-    arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
-        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE)));
+    arrayProperty.setVendorExtension(OpenApiSpecificationExtensions.SUBJECT, true);
 
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
-        DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
-            DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
-                DBEERPEDIA.MAXIMUS_NAME).build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
+    when(entityMock.getSubjects()).thenReturn(
+        ImmutableSet.of(DBEERPEDIA.BROUWTOREN, DBEERPEDIA.MAXIMUS));
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN, "name")).thenReturn(
         ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME));

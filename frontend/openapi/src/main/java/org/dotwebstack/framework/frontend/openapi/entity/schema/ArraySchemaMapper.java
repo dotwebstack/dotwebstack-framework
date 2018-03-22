@@ -17,7 +17,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayProperty, Object> {
+public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty, Object> {
 
   @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull ValueContext valueContext) {
@@ -25,13 +25,12 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ArrayProperty property,
-      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull ArrayProperty property, @NonNull GraphEntity graphEntity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    if (hasSubjectQueryVendorExtension(property)) {
-      Set<Resource> subjects = getSubjects(property, graphEntity);
+    if (hasSubjectVendorExtension(property)) {
+      Set<Resource> subjects = graphEntity.getSubjects();
 
       subjects.forEach(subject -> {
         ValueContext subjectContext = valueContext.toBuilder().value(subject).build();
@@ -64,8 +63,8 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
     queryResult.forEach(valueNext -> {
       ValueContext newValueContext = valueContext.toBuilder().value(valueNext).build();
       Optional innerPropertySolved =
-          Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
-              graphEntity, newValueContext, schemaMapperAdapter));
+          Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntity,
+              newValueContext, schemaMapperAdapter));
       builder.add(innerPropertySolved);
 
     });

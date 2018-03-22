@@ -18,7 +18,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectProperty, Object> {
+public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectProperty, Object> {
 
   @Override
   public Object mapTupleValue(@NonNull ObjectProperty schema, @NonNull ValueContext valueContext) {
@@ -26,9 +26,8 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ObjectProperty property,
-      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull ObjectProperty property, @NonNull GraphEntity graphEntity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext newValueContext = populateValueContextWithVendorExtensions(property, valueContext);
 
     return handleProperty(property, graphEntity, newValueContext, schemaMapperAdapter);
@@ -57,7 +56,7 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
       ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
-    if (hasSubjectQueryVendorExtension(property)) {
+    if (hasSubjectVendorExtension(property)) {
       Value value = getSubject(property, graphEntity);
 
       if (value == null) {
@@ -80,10 +79,10 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
   }
 
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
-      GraphEntity entityBuilderContext, ValueContext valueContext, String ldPathQuery,
+      GraphEntity graphEntity, ValueContext valueContext, String ldPathQuery,
       SchemaMapperAdapter schemaMapperAdapter) {
 
-    LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
+    LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
@@ -104,13 +103,14 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
     ValueContext newValueContext =
         valueContext.toBuilder().value(queryResult.iterator().next()).build();
 
-    return handleProperties(property, entityBuilderContext, newValueContext, schemaMapperAdapter);
+    return handleProperties(property, graphEntity, newValueContext, schemaMapperAdapter);
   }
 
   private Map<String, Object> handleProperties(ObjectProperty property,
       GraphEntity entityBuilderContext, ValueContext valueContext,
       SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+
     property.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
           valueContext, schemaMapperAdapter);
@@ -119,6 +119,7 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
         builder.put(propKey, Optional.fromNullable(propertyResult));
       }
     });
+
     return builder.build();
   }
 

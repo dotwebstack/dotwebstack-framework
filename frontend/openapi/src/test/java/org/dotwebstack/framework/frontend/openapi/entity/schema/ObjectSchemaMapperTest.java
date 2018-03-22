@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,16 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.util.ModelBuilder;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -137,10 +133,10 @@ public class ObjectSchemaMapperTest {
 
     // Assert
     assertThat(result.keySet(), hasSize(4));
-    assertThat(result, hasEntry(KEY_1, com.google.common.base.Optional.of(STR_VALUE_1)));
-    assertThat(result, hasEntry(KEY_2, com.google.common.base.Optional.of(STR_VALUE_2)));
-    assertThat(result, hasEntry(KEY_3, com.google.common.base.Optional.of(VALUE_3)));
-    assertThat(result, hasEntry(KEY_4, com.google.common.base.Optional.absent()));
+    assertThat(result, hasEntry(KEY_1, Optional.of(STR_VALUE_1)));
+    assertThat(result, hasEntry(KEY_2, Optional.of(STR_VALUE_2)));
+    assertThat(result, hasEntry(KEY_3, Optional.of(VALUE_3)));
+    assertThat(result, hasEntry(KEY_4, Optional.absent()));
   }
 
   @Test
@@ -194,19 +190,16 @@ public class ObjectSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_SwitchesContext_WhenSubjectQueryHasBeenDefined() {
+  public void mapGraphValue_SwitchesContext_WhenSubjectExtEnabled() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
-        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
-        OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
-    property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
+    property.setVendorExtension(OpenApiSpecificationExtensions.SUBJECT, true);
+    property.setProperties(ImmutableMap.of("name", new StringProperty().vendorExtension(
+        OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue())));
 
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
-        DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
+    when(entityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
-        DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
+        DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(property, entityMock,
@@ -217,73 +210,25 @@ public class ObjectSchemaMapperTest {
 
     Map map = (Map) result;
 
-    assertThat(map, is(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(),
-        Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue()))));
+    assertThat(map,
+        is(ImmutableMap.of("name", Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue()))));
   }
 
   @Test
   public void mapGraphValue_ReturnsNull_WhenSubjectQueryYieldsNoResultAndPropertyIsOptional() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
-        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
-        OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
-    property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
+    property.setVendorExtension(OpenApiSpecificationExtensions.SUBJECT, true);
+    property.setProperties(ImmutableMap.of("name", new StringProperty().vendorExtension(
+        OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue())));
 
-    Model model = new ModelBuilder().build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
+    when(entityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(property, entityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
-    assertThat(result, nullValue());
-  }
-
-  @Test
-  public void mapGraphValue_ThrowsException_WhenSubjectQueryYieldsNoResultAndPropertyIsRequired() {
-    // Assert
-    expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(
-        "Subject query for a required object property yielded no result");
-
-    // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
-        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
-        OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
-    property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
-    property.setRequired(true);
-
-    Model model = new ModelBuilder().build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
-
-    // Act
-    schemaMapperAdapter.mapGraphValue(property, entityMock,
-        ValueContext.builder().value(null).build(), schemaMapperAdapter);
-  }
-
-  @Test
-  public void mapGraphValue_ThrowsException_WhenSubjectQueryYieldsMultipleResults() {
-    // Assert
-    expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage("More entrypoint subjects found. Only one is required");
-
-    // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
-        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
-        OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
-    property.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
-    property.setRequired(true);
-
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
-        DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
-            DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
-                DBEERPEDIA.MAXIMUS_NAME).build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
-
-    // Act
-    schemaMapperAdapter.mapGraphValue(property, entityMock,
-        ValueContext.builder().value(null).build(), schemaMapperAdapter);
+    assertThat(result, is(nullValue()));
   }
 
   @Test
