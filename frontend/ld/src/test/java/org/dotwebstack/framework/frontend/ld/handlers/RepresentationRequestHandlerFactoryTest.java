@@ -12,9 +12,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EndPointRequestHandlerFactoryTest {
+public class RepresentationRequestHandlerFactoryTest {
 
-  EndPointRequestHandlerFactory endPointRequestHandlerFactory;
+  RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   @Mock
   AbstractEndPoint endPoint;
@@ -27,7 +27,7 @@ public class EndPointRequestHandlerFactoryTest {
 
   @Before
   public void setUp() {
-    endPointRequestHandlerFactory = new EndPointRequestHandlerFactory(
+    representationRequestHandlerFactory = new RepresentationRequestHandlerFactory(
         endPointRequestParameterMapper, representationResourceProvider);
   }
 
@@ -36,11 +36,11 @@ public class EndPointRequestHandlerFactoryTest {
     // Arrange
 
     // Act
-    EndPointRequestHandler endPointRequestHandler =
-        endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint);
+    RepresentationRequestHandler representationRequestHandler =
+        representationRequestHandlerFactory.newEndPointRequestHandler(endPoint);
 
     // Assert
-    assertThat(endPointRequestHandler.getEndPointRequestParameterMapper(),
+    assertThat(representationRequestHandler.getEndPointRequestParameterMapper(),
         sameInstance(endPointRequestParameterMapper));
   }
 

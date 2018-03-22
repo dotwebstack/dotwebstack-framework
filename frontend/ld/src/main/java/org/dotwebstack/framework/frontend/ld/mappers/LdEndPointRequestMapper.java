@@ -16,7 +16,7 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -37,7 +37,7 @@ public class LdEndPointRequestMapper {
 
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
-  private EndPointRequestHandlerFactory endPointRequestHandlerFactory;
+  private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   private TransactionRequestHandlerFactory transactionRequestHandlerFactory;
 
@@ -49,12 +49,12 @@ public class LdEndPointRequestMapper {
       @NonNull DynamicEndPointResourceProvider dynamicEndPointResourceProvider,
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,
-      @NonNull EndPointRequestHandlerFactory endPointRequestHandlerFactory,
+      @NonNull RepresentationRequestHandlerFactory representationRequestHandlerFactory,
       @NonNull TransactionRequestHandlerFactory transactionRequestHandlerFactory) {
     this.directEndPointResourceProvider = directEndPointResourceProvider;
     this.dynamicEndPointResourceProvider = dynamicEndPointResourceProvider;
     this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
-    this.endPointRequestHandlerFactory = endPointRequestHandlerFactory;
+    this.representationRequestHandlerFactory = representationRequestHandlerFactory;
     this.transactionRequestHandlerFactory = transactionRequestHandlerFactory;
     this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
   }
@@ -86,7 +86,7 @@ public class LdEndPointRequestMapper {
     } else if (endPoint instanceof DynamicEndPoint) {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+          representationRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
               supportedWriterMediaTypesScanner.getAllSupportedMediaTypes()).nameBindings(
                   ExpandFormatParameter.class);
       buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.GET);
@@ -109,7 +109,7 @@ public class LdEndPointRequestMapper {
       getRepresentation.ifPresent(representation -> {
         Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
         resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-            endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+            representationRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
                 supportedWriterMediaTypesScanner.getMediaTypes(
                     representation.getInformationProduct().getResultType())).nameBindings(
                         ExpandFormatParameter.class);
@@ -118,7 +118,7 @@ public class LdEndPointRequestMapper {
       postRepresentation.ifPresent(representation -> {
         Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
         resourceBuilder.addMethod(HttpMethod.POST).handledBy(
-            endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+            representationRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
                 supportedWriterMediaTypesScanner.getMediaTypes(
                     representation.getInformationProduct().getResultType())).nameBindings(
                         ExpandFormatParameter.class);
@@ -128,7 +128,7 @@ public class LdEndPointRequestMapper {
     } else if (endPoint instanceof DynamicEndPoint) {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          endPointRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+          representationRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
               supportedWriterMediaTypesScanner.getAllSupportedMediaTypes()).nameBindings(
                   ExpandFormatParameter.class);
       buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.GET);

@@ -27,9 +27,9 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestHandler;
-import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestParameterMapper;
+import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
+import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
@@ -103,10 +103,10 @@ public class LdEndPointRequestMapperTest {
   @Mock
   private TransactionRequestHandlerFactory transactionRequestHandlerFactory;
 
-  private EndPointRequestHandler endPointRequestHandler;
+  private RepresentationRequestHandler representationRequestHandler;
 
   @Mock
-  private EndPointRequestHandlerFactory endPointRequestHandlerFactory;
+  private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   private HttpConfiguration httpConfiguration;
 
@@ -133,12 +133,12 @@ public class LdEndPointRequestMapperTest {
     ldEndPointRequestMapper =
         new LdEndPointRequestMapper(directEndPointResourceProvider, dynamicEndPointResourceProvider,
             supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
-            endPointRequestHandlerFactory, transactionRequestHandlerFactory);
-    endPointRequestHandler = new EndPointRequestHandler(directEndPoint,
+            representationRequestHandlerFactory, transactionRequestHandlerFactory);
+    representationRequestHandler = new RepresentationRequestHandler(directEndPoint,
         endPointRequestParameterMapper, representationResourceProvider);
 
-    when(endPointRequestHandlerFactory.newEndPointRequestHandler(
-        isA(AbstractEndPoint.class))).thenReturn(endPointRequestHandler);
+    when(representationRequestHandlerFactory.newEndPointRequestHandler(
+        isA(AbstractEndPoint.class))).thenReturn(representationRequestHandler);
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
@@ -148,7 +148,7 @@ public class LdEndPointRequestMapperTest {
     LdEndPointRequestMapper ldEndPointRequestMapper =
         new LdEndPointRequestMapper(directEndPointResourceProvider, dynamicEndPointResourceProvider,
             supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
-            endPointRequestHandlerFactory, transactionRequestHandlerFactory);
+            representationRequestHandlerFactory, transactionRequestHandlerFactory);
 
     // Assert
     assertThat(ldEndPointRequestMapper, not(nullValue()));

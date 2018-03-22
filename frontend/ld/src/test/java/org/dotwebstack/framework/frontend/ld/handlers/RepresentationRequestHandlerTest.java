@@ -41,7 +41,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EndPointRequestHandlerTest {
+public class RepresentationRequestHandlerTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -63,12 +63,12 @@ public class EndPointRequestHandlerTest {
 
   private EndPointRequestParameterMapper endPointRequestParameterMapper;
 
-  private EndPointRequestHandler getRequestHandler;
+  private RepresentationRequestHandler getRequestHandler;
 
   @Before
   public void setUp() {
     endPointRequestParameterMapper = new EndPointRequestParameterMapper();
-    getRequestHandler = new EndPointRequestHandler(endPoint, endPointRequestParameterMapper,
+    getRequestHandler = new RepresentationRequestHandler(endPoint, endPointRequestParameterMapper,
         representationResourceProvider);
     when(endPoint.getGetRepresentation()).thenReturn(representation);
     when(endPoint.getPostRepresentation()).thenReturn(representation);
@@ -81,7 +81,7 @@ public class EndPointRequestHandlerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new EndPointRequestHandler(null, endPointRequestParameterMapper,
+    new RepresentationRequestHandler(null, endPointRequestParameterMapper,
         representationResourceProvider);
   }
 
@@ -161,7 +161,7 @@ public class EndPointRequestHandlerTest {
     when(dynamicEndPoint.getParameterMapper()).thenReturn(mock(ParameterMapper.class));
     when(representationResourceProvider.getAll()).thenReturn(allRepresentations);
     when(representation.getAppliesTo()).thenReturn(ImmutableList.of(appliesTo));
-    EndPointRequestHandler requestHandler = new EndPointRequestHandler(dynamicEndPoint,
+    RepresentationRequestHandler requestHandler = new RepresentationRequestHandler(dynamicEndPoint,
         endPointRequestParameterMapper, representationResourceProvider);
 
     // Act
@@ -236,7 +236,7 @@ public class EndPointRequestHandlerTest {
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.PUT);
     DynamicEndPoint dynamicEndPoint = mock(DynamicEndPoint.class);
     when(dynamicEndPoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
-    EndPointRequestHandler requestHandler = new EndPointRequestHandler(dynamicEndPoint,
+    RepresentationRequestHandler requestHandler = new RepresentationRequestHandler(dynamicEndPoint,
         endPointRequestParameterMapper, representationResourceProvider);
 
     // Act

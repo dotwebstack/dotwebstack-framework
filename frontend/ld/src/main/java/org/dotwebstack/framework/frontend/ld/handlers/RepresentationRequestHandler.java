@@ -24,9 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriTemplate;
 
-public class EndPointRequestHandler implements Inflector<ContainerRequestContext, Response> {
+public class RepresentationRequestHandler implements Inflector<ContainerRequestContext, Response> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(EndPointRequestHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RepresentationRequestHandler.class);
 
   private final AbstractEndPoint endpoint;
 
@@ -34,7 +34,7 @@ public class EndPointRequestHandler implements Inflector<ContainerRequestContext
 
   private final RepresentationResourceProvider representationResourceProvider;
 
-  public EndPointRequestHandler(@NonNull AbstractEndPoint endpoint,
+  public RepresentationRequestHandler(@NonNull AbstractEndPoint endpoint,
       @NonNull EndPointRequestParameterMapper endPointRequestParameterMapper,
       @NonNull RepresentationResourceProvider representationResourceProvider) {
     this.endpoint = endpoint;
