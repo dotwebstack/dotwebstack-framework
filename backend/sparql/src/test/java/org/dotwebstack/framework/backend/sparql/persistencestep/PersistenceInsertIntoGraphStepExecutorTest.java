@@ -4,8 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
 import org.dotwebstack.framework.backend.sparql.SparqlBackend;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.eclipse.rdf4j.model.Model;
 import org.junit.Test;
@@ -30,6 +35,10 @@ public class PersistenceInsertIntoGraphStepExecutorTest {
   @Mock
   private QueryEvaluator queryEvaluator;
 
+  private Collection<Parameter> parameters = new ArrayList<>();
+
+  private Map<String, String> parameterValues =  new HashMap<>();
+
   @Test
   public void execute_AddModelIntoGraph_WithValidData() {
     // Arrange
@@ -37,7 +46,7 @@ public class PersistenceInsertIntoGraphStepExecutorTest {
         persistenceStep, transactionModel, sparqlBackend, queryEvaluator);
 
     // Act
-    persistenceInsertIntoGraphStepExecutor.execute();
+    persistenceInsertIntoGraphStepExecutor.execute(parameters, parameterValues);
 
     // Assert
     verify(queryEvaluator, times(1)).add(any(), any(), any());

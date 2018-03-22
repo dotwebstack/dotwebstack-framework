@@ -4,8 +4,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
 import org.dotwebstack.framework.backend.sparql.SparqlBackend;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.update.UpdateStep;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.junit.Test;
@@ -31,6 +36,10 @@ public class UpdateStepExecutorTest {
   @Mock
   private RepositoryConnection repositoryConnection;
 
+  private Collection<Parameter> parameters = new ArrayList<>();
+
+  private Map<String, String> parameterValues =  new HashMap<>();
+
   @Test
   public void execute_IsExecuted_WithValidData() {
     // Arrange
@@ -40,7 +49,7 @@ public class UpdateStepExecutorTest {
     when(sparqlBackend.getConnection()).thenReturn(repositoryConnection);
 
     // Act
-    updateStepExecutor.execute();
+    updateStepExecutor.execute(parameters, parameterValues);
 
     // Assert
     verify(queryEvaluator, times(1)).update(repositoryConnection, query);

@@ -2,6 +2,11 @@ package org.dotwebstack.framework.transaction.flow.step.assertion;
 
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -31,6 +36,10 @@ public class AssertionTransactionRepositoryExecutorTest {
 
   private RepositoryConnection repositoryConnection;
 
+  private Collection<Parameter> parameters = new ArrayList<>();
+
+  private Map<String, String> parameterValues =  new HashMap<>();
+
   @Before
   public void setUp() {
     repository = new SailRepository(new MemoryStore());
@@ -51,7 +60,7 @@ public class AssertionTransactionRepositoryExecutorTest {
     thrown.expect(StepFailureException.class);
 
     // Act
-    assertionTransactionRepositoryExecutor.execute();
+    assertionTransactionRepositoryExecutor.execute(parameters, parameterValues);
   }
 
   @Test
@@ -61,7 +70,7 @@ public class AssertionTransactionRepositoryExecutorTest {
     when(assertionStep.getAssertionQuery()).thenReturn("ASK WHERE { ?s ?p ?o }");
 
     // Act
-    assertionTransactionRepositoryExecutor.execute();
+    assertionTransactionRepositoryExecutor.execute(parameters, parameterValues);
   }
 
   @Test
@@ -73,7 +82,7 @@ public class AssertionTransactionRepositoryExecutorTest {
     thrown.expect(Exception.class);
 
     // Act
-    assertionTransactionRepositoryExecutor.execute();
+    assertionTransactionRepositoryExecutor.execute(parameters, parameterValues);
   }
 
   @After

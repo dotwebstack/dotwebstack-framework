@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.transaction.flow;
 
+import java.util.Collection;
+import java.util.Map;
 import lombok.NonNull;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
@@ -12,9 +15,10 @@ public class SequentialFlowExecutor extends AbstractFlowExecutor<SequentialFlow>
   }
 
   @Override
-  public void execute() {
+  public void execute(@NonNull Collection<Parameter> parameters,
+      @NonNull Map<String, String> parameterValues) {
     for (Step step : flow.getSteps()) {
-      step.createStepExecutor(repositoryConnection).execute();
+      step.createStepExecutor(repositoryConnection).execute(parameters, parameterValues);
     }
   }
 

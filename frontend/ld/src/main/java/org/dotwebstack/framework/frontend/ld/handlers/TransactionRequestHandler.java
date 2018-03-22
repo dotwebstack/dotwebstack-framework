@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
+import java.util.HashMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
@@ -24,7 +25,7 @@ public class TransactionRequestHandler implements Inflector<Model, Response> {
     TransactionHandler transactionHandler = new TransactionHandler(
         new SailRepository(new MemoryStore()), transaction, transactionModel);
     try {
-      transactionHandler.execute();
+      transactionHandler.execute(new HashMap<String, String>());
     } catch (StepFailureException e) {
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (RuntimeException e) {

@@ -57,7 +57,7 @@ public class TransactionRequestHandlerTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(200));
-    verify(flowExecutor, times(1)).execute();
+    verify(flowExecutor, times(1)).execute(any(), any());
   }
 
 }

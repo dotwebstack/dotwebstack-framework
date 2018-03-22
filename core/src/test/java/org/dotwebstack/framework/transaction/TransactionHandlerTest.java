@@ -6,6 +6,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.dotwebstack.framework.transaction.flow.Flow;
 import org.dotwebstack.framework.transaction.flow.FlowExecutor;
 import org.eclipse.rdf4j.model.Model;
@@ -43,6 +45,8 @@ public class TransactionHandlerTest {
   @Mock
   private Model model;
 
+  private Map<String, String> parameterValues = new HashMap<>();
+
   private TransactionHandler transactionHandler;
 
   @Before
@@ -58,11 +62,11 @@ public class TransactionHandlerTest {
     when(flow.getExecutor(any())).thenReturn(flowExecutor);
 
     // Act
-    transactionHandler.execute();
+    transactionHandler.execute(parameterValues);
 
     // Assert
     verify(repositoryConnection).add(eq(model));
-    verify(flowExecutor, times(1)).execute();
+    verify(flowExecutor, times(1)).execute(any(), any());
   }
 
 }
