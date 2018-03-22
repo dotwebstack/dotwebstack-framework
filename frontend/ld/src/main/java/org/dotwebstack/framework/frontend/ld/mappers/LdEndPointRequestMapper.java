@@ -17,8 +17,8 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProv
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
-import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandler;
-import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandler;
+import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
@@ -39,7 +39,7 @@ public class LdEndPointRequestMapper {
 
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
-  private TransactionRequestHandlerFactory transactionRequestHandlerFactory;
+  private ServiceRequestHandlerFactory serviceRequestHandlerFactory;
 
   private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
@@ -50,12 +50,12 @@ public class LdEndPointRequestMapper {
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,
       @NonNull RepresentationRequestHandlerFactory representationRequestHandlerFactory,
-      @NonNull TransactionRequestHandlerFactory transactionRequestHandlerFactory) {
+      @NonNull ServiceRequestHandlerFactory serviceRequestHandlerFactory) {
     this.directEndPointResourceProvider = directEndPointResourceProvider;
     this.dynamicEndPointResourceProvider = dynamicEndPointResourceProvider;
     this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
     this.representationRequestHandlerFactory = representationRequestHandlerFactory;
-    this.transactionRequestHandlerFactory = transactionRequestHandlerFactory;
+    this.serviceRequestHandlerFactory = serviceRequestHandlerFactory;
     this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
   }
 
@@ -145,8 +145,8 @@ public class LdEndPointRequestMapper {
     services.stream().forEach(service -> {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(httpMethod).handledBy(
-          transactionRequestHandlerFactory.newTransactionRequestHandler(service.getTransaction()),
-          Arrays.stream(TransactionRequestHandler.class.getMethods()).filter(
+          serviceRequestHandlerFactory.newTransactionRequestHandler(service.getTransaction()),
+          Arrays.stream(ServiceRequestHandler.class.getMethods()).filter(
               method -> method.getName() == "apply").findFirst().get()).consumes(
                   supportedReaderMediaTypesScanner.getMediaTypes());
       buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod);

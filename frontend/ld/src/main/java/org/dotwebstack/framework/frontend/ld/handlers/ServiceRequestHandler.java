@@ -11,11 +11,11 @@ import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.glassfish.jersey.process.Inflector;
 
-public class TransactionRequestHandler implements Inflector<Model, Response> {
+public class ServiceRequestHandler implements Inflector<Model, Response> {
 
   private Transaction transaction;
 
-  public TransactionRequestHandler(@NonNull Transaction transaction) {
+  public ServiceRequestHandler(@NonNull Transaction transaction) {
     this.transaction = transaction;
   }
 

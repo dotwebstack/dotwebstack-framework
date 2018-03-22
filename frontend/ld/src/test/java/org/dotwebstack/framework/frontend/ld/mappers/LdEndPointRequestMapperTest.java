@@ -30,7 +30,7 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourcePro
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestParameterMapper;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
-import org.dotwebstack.framework.frontend.ld.handlers.TransactionRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -101,7 +101,7 @@ public class LdEndPointRequestMapperTest {
   private ApplicationProperties applicationProperties;
 
   @Mock
-  private TransactionRequestHandlerFactory transactionRequestHandlerFactory;
+  private ServiceRequestHandlerFactory transactionRequestHandlerFactory;
 
   private RepresentationRequestHandler representationRequestHandler;
 
@@ -112,12 +112,10 @@ public class LdEndPointRequestMapperTest {
 
   @Before
   public void setUp() {
-    getRepresentation =
-        new Representation.Builder(DBEERPEDIA.BREWERY_REPRESENTATION).informationProduct(
-            informationProduct).build();
-    postRepresentation =
-        new Representation.Builder(DBEERPEDIA.BREWERY_REPRESENTATION).informationProduct(
-            informationProduct).build();
+    getRepresentation = new Representation.RepresentationBuilder(
+        DBEERPEDIA.BREWERY_REPRESENTATION).informationProduct(informationProduct).build();
+    postRepresentation = new Representation.RepresentationBuilder(
+        DBEERPEDIA.BREWERY_REPRESENTATION).informationProduct(informationProduct).build();
 
     when(directEndPoint.getStage()).thenReturn(stage);
     when(directEndPoint.getStage().getFullPath()).thenReturn(
@@ -248,7 +246,6 @@ public class LdEndPointRequestMapperTest {
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
     assertThat(resource.getPath(), equalTo("/" + Stage.PATH_DOMAIN_PARAMETER
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-
   }
 
 }

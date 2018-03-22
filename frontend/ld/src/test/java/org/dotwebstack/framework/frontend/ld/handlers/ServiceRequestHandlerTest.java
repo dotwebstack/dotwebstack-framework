@@ -23,7 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TransactionRequestHandlerTest {
+public class ServiceRequestHandlerTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -40,11 +40,11 @@ public class TransactionRequestHandlerTest {
   @Mock
   private ContainerRequestContext containerRequestContext;
 
-  private TransactionRequestHandler transactionRequestHandler;
+  private ServiceRequestHandler serviceRequestHandler;
 
   @Before
   public void setUp() {
-    transactionRequestHandler = new TransactionRequestHandler(transaction);
+    serviceRequestHandler = new ServiceRequestHandler(transaction);
     when(transaction.getFlow()).thenReturn(flow);
     when(flow.getExecutor(any())).thenReturn(flowExecutor);
   }
@@ -53,7 +53,7 @@ public class TransactionRequestHandlerTest {
   public void apply_ReturnOkResponse_WithValidData() {
     // Act
     Model transactionModel = new LinkedHashModel();
-    Response response = transactionRequestHandler.apply(transactionModel);
+    Response response = serviceRequestHandler.apply(transactionModel);
 
     // Assert
     assertThat(response.getStatus(), equalTo(200));

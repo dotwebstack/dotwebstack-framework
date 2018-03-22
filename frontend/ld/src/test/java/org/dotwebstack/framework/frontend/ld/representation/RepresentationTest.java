@@ -45,7 +45,7 @@ public class RepresentationTest {
 
     // Act
     IRI representationIri = null;
-    new Representation.Builder(representationIri).build();
+    new Representation.RepresentationBuilder(representationIri).build();
   }
 
   @Test
@@ -55,14 +55,15 @@ public class RepresentationTest {
 
     // Act
     Representation representation = null;
-    new Representation.Builder(representation).build();
+    new Representation.RepresentationBuilder(representation).build();
   }
 
   @Test
   public void build_CreatesRepresentation_WithValidData() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).appliesTo("appliesTo").build();
+        new Representation.RepresentationBuilder(DBEERPEDIA.BREWERIES).appliesTo(
+            "appliesTo").build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -76,7 +77,8 @@ public class RepresentationTest {
   @Test
   public void build_CreatesRepresentation_WithoutPathPattern() {
     // Act
-    final Representation representation = new Representation.Builder(DBEERPEDIA.BREWERIES).build();
+    final Representation representation =
+        new Representation.RepresentationBuilder(DBEERPEDIA.BREWERIES).build();
 
     // Assert
     assertThat(representation.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -90,7 +92,7 @@ public class RepresentationTest {
   public void build_CreatesRepresentation_WithPathPattern() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).appliesTo(
+        new Representation.RepresentationBuilder(DBEERPEDIA.BREWERIES).appliesTo(
             DBEERPEDIA.PATH_PATTERN_VALUE).build();
 
     // Assert
@@ -102,7 +104,7 @@ public class RepresentationTest {
   public void build_CreatesRepresentation_WithMultiplePathPattern() {
     // Act
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).appliesTo(
+        new Representation.RepresentationBuilder(DBEERPEDIA.BREWERIES).appliesTo(
             DBEERPEDIA.PATH_PATTERN_VALUE).appliesTo(DBEERPEDIA.PATH_PATTERN_VALUE).appliesTo(
                 DBEERPEDIA.PATH_PATTERN_VALUE).build();
 
@@ -122,7 +124,7 @@ public class RepresentationTest {
     final Appearance appearance = new Appearance.Builder(DBEERPEDIA.BREWERY_APPEARANCE,
         ELMO.RESOURCE_APPEARANCE, new LinkedHashModel()).build();
     final Representation representation =
-        new Representation.Builder(DBEERPEDIA.BREWERIES).informationProduct(
+        new Representation.RepresentationBuilder(DBEERPEDIA.BREWERIES).informationProduct(
             informationProduct).stage(stage).appearance(appearance).appliesTo(
                 DBEERPEDIA.PATH_PATTERN_VALUE).subRepresentation(subRepresentation).build();
 

@@ -9,7 +9,7 @@ public class Service extends Representation {
     super(builder);
   }
 
-  public static class Builder extends Representation.Builder<Builder> {
+  public static class Builder extends RepresentationBuilder<Builder> {
 
     public Builder(Resource identifier) {
       super(identifier);

@@ -62,7 +62,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Override
   protected Representation createResource(Model model, Resource identifier) {
-    final Representation.Builder builder = new Representation.Builder(identifier);
+    final Representation.RepresentationBuilder builder =
+        new Representation.RepresentationBuilder(identifier);
 
     getObjectResource(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(
         iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
