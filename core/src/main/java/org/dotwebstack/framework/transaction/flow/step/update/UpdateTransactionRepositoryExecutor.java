@@ -27,13 +27,15 @@ public class UpdateTransactionRepositoryExecutor extends AbstractStepExecutor<Up
     try {
       preparedQuery = transactionConnection.prepareUpdate(QueryLanguage.SPARQL, query);
     } catch (RDF4JException e) {
-      throw new BackendException(String.format("Query could not be prepared: %s", query), e);
+      throw new BackendException(String.format("Query could not be prepared: %s (%s)", query,
+          e.getMessage()), e);
     }
 
     try {
       preparedQuery.execute();
     } catch (QueryEvaluationException e) {
-      throw new BackendException(String.format("Query could not be executed: %s", query), e);
+      throw new BackendException(String.format("Query could not be executed: %s (%s)", query,
+          e.getMessage()), e);
     }
   }
 
