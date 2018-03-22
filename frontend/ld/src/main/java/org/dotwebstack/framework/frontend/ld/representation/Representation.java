@@ -29,7 +29,7 @@ public class Representation {
 
   private List<Representation> subRepresentations;
 
-  protected Representation(Builder<?> builder) {
+  protected Representation(RepresentationBuilder<?> builder) {
     identifier = builder.identifier;
     appliesTo = builder.appliesTo;
     parameterMappers = builder.parameterMappers;
@@ -76,7 +76,7 @@ public class Representation {
     this.subRepresentations.add(subRepresentation);
   }
 
-  public static class Builder<E extends Builder<E>> {
+  public static class RepresentationBuilder<E extends RepresentationBuilder<E>> {
 
     private Resource identifier;
 
@@ -94,11 +94,11 @@ public class Representation {
 
     private List<Representation> subRepresentations = new ArrayList<>();
 
-    public Builder(@NonNull Resource identifier) {
+    public RepresentationBuilder(@NonNull Resource identifier) {
       this.identifier = identifier;
     }
 
-    public Builder(@NonNull Representation representation) {
+    public RepresentationBuilder(@NonNull Representation representation) {
       this.identifier = representation.identifier;
       this.informationProduct = representation.informationProduct;
       this.transaction = representation.transaction;
@@ -109,37 +109,37 @@ public class Representation {
       this.subRepresentations = representation.subRepresentations;
     }
 
-    public Builder informationProduct(InformationProduct informationProduct) {
+    public RepresentationBuilder informationProduct(InformationProduct informationProduct) {
       this.informationProduct = informationProduct;
       return this;
     }
 
-    public Builder transaction(Transaction transaction) {
+    public RepresentationBuilder transaction(Transaction transaction) {
       this.transaction = transaction;
       return this;
     }
 
-    public Builder appearance(Appearance appearance) {
+    public RepresentationBuilder appearance(Appearance appearance) {
       this.appearance = appearance;
       return this;
     }
 
-    public Builder stage(Stage stage) {
+    public RepresentationBuilder stage(Stage stage) {
       this.stage = stage;
       return this;
     }
 
-    public Builder appliesTo(String appliesTo) {
+    public RepresentationBuilder appliesTo(String appliesTo) {
       this.appliesTo.add(appliesTo);
       return this;
     }
 
-    public Builder parameterMapper(ParameterMapper parameterMapper) {
+    public RepresentationBuilder parameterMapper(ParameterMapper parameterMapper) {
       this.parameterMappers.add(parameterMapper);
       return this;
     }
 
-    public Builder subRepresentation(Representation subRespresentation) {
+    public RepresentationBuilder subRepresentation(Representation subRespresentation) {
       this.subRepresentations.add(subRespresentation);
       return this;
     }
