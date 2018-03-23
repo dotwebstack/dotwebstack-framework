@@ -12,8 +12,13 @@ import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor<AssertionStep> {
+
+  private static final Logger LOG =
+      LoggerFactory.getLogger(AssertionTransactionRepositoryExecutor.class);
 
   private RepositoryConnection transactionConnection;
 
@@ -44,6 +49,7 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
         returnValue = !returnValue;
       }
       if (!returnValue) {
+        LOG.debug(String.format("Assertion '%s'/%s returned false", step.getLabel(), query));
         throw new StepFailureException(step.getLabel());
       }
     } catch (QueryEvaluationException e) {

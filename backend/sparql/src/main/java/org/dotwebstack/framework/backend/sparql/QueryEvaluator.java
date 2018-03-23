@@ -57,11 +57,13 @@ public class QueryEvaluator {
     try {
       repositoryConnection.add(model, targetGraph);
     } catch (RDF4JException e) {
-      throw new BackendException("Data could not be added into graph", e);
+      throw new BackendException(String.format("Data could not be added into graph: %s",
+          e.getMessage()), e);
     }
   }
 
-  public void update(@NonNull RepositoryConnection repositoryConnection, @NonNull String query) {
+  public void update(@NonNull RepositoryConnection repositoryConnection, @NonNull String query,
+      @NonNull Map<String, Value> bindings) {
     Update preparedQuery;
 
     try {
@@ -69,6 +71,8 @@ public class QueryEvaluator {
     } catch (RDF4JException e) {
       throw new BackendException(String.format("Query could not be prepared: %s", query), e);
     }
+
+    bindings.forEach(preparedQuery::setBinding);
 
     try {
       preparedQuery.execute();

@@ -11,8 +11,13 @@ import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UpdateTransactionRepositoryExecutor extends AbstractStepExecutor<UpdateStep> {
+
+  private static final Logger LOG =
+      LoggerFactory.getLogger(UpdateTransactionRepositoryExecutor.class);
 
   private RepositoryConnection transactionConnection;
 
@@ -39,6 +44,7 @@ public class UpdateTransactionRepositoryExecutor extends AbstractStepExecutor<Up
 
     try {
       preparedQuery.execute();
+      LOG.debug(String.format("Executed Update step '%s': %s", step.getLabel(), query));
     } catch (QueryEvaluationException e) {
       throw new BackendException(String.format("Query could not be executed: %s (%s)", query,
           e.getMessage()), e);
