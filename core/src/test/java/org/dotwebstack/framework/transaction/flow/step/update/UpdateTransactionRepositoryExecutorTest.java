@@ -3,6 +3,11 @@ package org.dotwebstack.framework.transaction.flow.step.update;
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -38,6 +43,10 @@ public class UpdateTransactionRepositoryExecutorTest {
 
   private RepositoryConnection repositoryConnection;
 
+  private Collection<Parameter> parameters = new ArrayList<>();
+
+  private Map<String, String> parameterValues =  new HashMap<>();
+
   @Before
   public void setUp() {
     repository = new SailRepository(new MemoryStore());
@@ -56,7 +65,7 @@ public class UpdateTransactionRepositoryExecutorTest {
         + " <http://www.w3.org/2000/01/rdf-schema#label> \"Maximus\" ." + "}");
 
     // Act
-    updateTransactionRepositoryExecutor.execute();
+    updateTransactionRepositoryExecutor.execute(parameters, parameterValues);
 
     // Assert
     GraphQueryResult graphQueryResult =
@@ -75,7 +84,7 @@ public class UpdateTransactionRepositoryExecutorTest {
     thrown.expect(Exception.class);
 
     // Act
-    updateTransactionRepositoryExecutor.execute();
+    updateTransactionRepositoryExecutor.execute(parameters, parameterValues);
   }
 
   @After
