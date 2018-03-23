@@ -59,7 +59,7 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
       return applyDirectEndpoint(containerRequestContext, parameterValues, path, request,
           (DirectEndPoint) endpoint);
     } else if (endpoint instanceof DynamicEndPoint) {
-      return applyDynamicEndpoint(containerRequestContext, parameterValues, path, request,
+      return applyDynamicEndpoint(containerRequestContext, parameterValues, request,
           (DynamicEndPoint) endpoint);
     } else {
       throw new ConfigurationException(
@@ -88,7 +88,7 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
   }
 
   private Response applyDynamicEndpoint(ContainerRequestContext containerRequestContext,
-      Map<String, String> parameterValues, String path, String request, DynamicEndPoint endpoint) {
+      Map<String, String> parameterValues, String request, DynamicEndPoint endpoint) {
     if (request.equals(HttpMethod.GET)) {
       parameterValues.putAll((endpoint.getParameterMapper().map(containerRequestContext)));
       Optional<String> subjectParameter = Optional.ofNullable(parameterValues.get("subject"));
