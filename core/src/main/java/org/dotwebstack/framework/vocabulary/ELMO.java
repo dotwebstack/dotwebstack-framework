@@ -127,6 +127,8 @@ public final class ELMO {
 
   public static final IRI TARGET_GRAPH_PROP;
 
+  public static final IRI CONFORMS_TO_PROP;
+
   private static final String NAMESPACE_BASE = "http://dotwebstack.org/def/elmo";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
@@ -226,6 +228,8 @@ public final class ELMO {
 
     GET_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "getRepresentation");
     POST_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "postRepresentation");
+
+    CONFORMS_TO_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "conformsTo");
   }
 
   private ELMO() {
