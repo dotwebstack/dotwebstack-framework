@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
@@ -13,6 +16,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TransactionRequestHandlerTest {
@@ -44,21 +48,15 @@ public class TransactionRequestHandlerTest {
   public void setUp() {
     transactionRequestHandler = new TransactionRequestHandler(transaction,
         supportedReaderMediaTypesScanner, representationRequestParameterMapper);
-    //when(transaction.getFlow()).thenReturn(flow);
-    //when(flow.getExecutor(any())).thenReturn(flowExecutor);
   }
 
   @Test
-  public void apply_ReturnOkResponse_WithValidData() {
+  public void apply_ExpectNotAcceptableResponse_WhenNoSupportedMediaTypes() {
     // Act
-    //Model transactionModel = new LinkedHashModel();
-
-    thrown.expect(RuntimeException.class);
     Response response = transactionRequestHandler.apply(containerRequestContext);
 
     // Assert
-    //assertThat(response.getStatus(), equalTo(HttpStatus.OK));
-    //verify(flowExecutor, times(1)).execute(any(), any());
+    assertThat(response.getStatus(), equalTo(HttpStatus.NOT_ACCEPTABLE.value()));
   }
 
 }

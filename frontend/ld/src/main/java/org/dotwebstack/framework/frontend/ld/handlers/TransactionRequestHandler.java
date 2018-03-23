@@ -55,8 +55,8 @@ public class TransactionRequestHandler implements Inflector<ContainerRequestCont
     }
 
     if (transactionModel == null) {
-      throw new RuntimeException(String.format("Content type %s not supported",
-          mediaType.toString()));
+      return Response.status(Status.NOT_ACCEPTABLE).entity(
+          String.format("Content type %s not supported", mediaType.toString())).build();
     }
 
     TransactionHandler transactionHandler = new TransactionHandler(
