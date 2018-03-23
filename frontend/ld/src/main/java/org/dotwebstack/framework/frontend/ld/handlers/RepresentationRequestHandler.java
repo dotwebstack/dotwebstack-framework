@@ -56,36 +56,50 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
 
     final String request = containerRequestContext.getRequest().getMethod();
     if (endpoint instanceof DirectEndPoint) {
-      final Representation representation;
-      if (request.equals(HttpMethod.GET)) {
-        LOG.debug("Handling GET request for path {}", path);
-        representation = ((DirectEndPoint) endpoint).getGetRepresentation();
-      } else if (request.equals(HttpMethod.POST)) {
-        LOG.debug("Handling POST request for path {}", path);
-        representation = ((DirectEndPoint) endpoint).getPostRepresentation();
-      } else {
-        throw new ConfigurationException(String.format(
-            "Result type %s not supported for endpoint %s", request, endpoint.getIdentifier()));
-      }
-      return applyRepresentation(representation, containerRequestContext, parameterValues);
+      return applyDirectEndpoint(containerRequestContext, parameterValues, path, request,
+          (DirectEndPoint) endpoint);
     } else if (endpoint instanceof DynamicEndPoint) {
-      if (request.equals(HttpMethod.GET)) {
-        parameterValues.putAll(
-            ((DynamicEndPoint) endpoint).getParameterMapper().map(containerRequestContext));
-        Optional<String> subjectParameter = Optional.ofNullable(parameterValues.get("subject"));
-        if (subjectParameter.isPresent()) {
-          for (Representation resp : representationResourceProvider.getAll().values()) {
-            String appliesTo = getUrl(resp, parameterValues);
-            if (appliesTo.equals(subjectParameter.get())) {
-              return applyRepresentation(resp, containerRequestContext, parameterValues);
-            }
-          }
-        }
-      }
+      return applyDynamicEndpoint(containerRequestContext, parameterValues, path, request,
+          (DynamicEndPoint) endpoint);
     } else {
       throw new ConfigurationException(
           String.format("Unsupported endpoint typ {%s} for endpoint {%s}", endpoint.getClass(),
               endpoint.getIdentifier()));
+    }
+  }
+
+  private Response applyDirectEndpoint(ContainerRequestContext containerRequestContext,
+      Map<String, String> parameterValues, String path, String request, DirectEndPoint endpoint) {
+    final Representation representation;
+    switch (request) {
+      case HttpMethod.GET:
+        LOG.debug("Handling GET request for path {}", path);
+        representation = endpoint.getGetRepresentation();
+        break;
+      case HttpMethod.POST:
+        LOG.debug("Handling POST request for path {}", path);
+        representation = endpoint.getPostRepresentation();
+        break;
+      default:
+        throw new ConfigurationException(String.format(
+            "Result type %s not supported for endpoint %s", request, endpoint.getIdentifier()));
+    }
+    return applyRepresentation(representation, containerRequestContext, parameterValues);
+  }
+
+  private Response applyDynamicEndpoint(ContainerRequestContext containerRequestContext,
+      Map<String, String> parameterValues, String path, String request, DynamicEndPoint endpoint) {
+    if (request.equals(HttpMethod.GET)) {
+      parameterValues.putAll((endpoint.getParameterMapper().map(containerRequestContext)));
+      Optional<String> subjectParameter = Optional.ofNullable(parameterValues.get("subject"));
+      if (subjectParameter.isPresent()) {
+        for (Representation resp : representationResourceProvider.getAll().values()) {
+          String appliesTo = getUrl(resp, parameterValues);
+          if (appliesTo.equals(subjectParameter.get())) {
+            return applyRepresentation(resp, containerRequestContext, parameterValues);
+          }
+        }
+      }
     }
     throw new ConfigurationException(String.format("Result type %s not supported for endpoint %s",
         request, endpoint.getIdentifier()));
@@ -101,7 +115,8 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
   }
 
   private Response applyRepresentation(@NonNull Representation representation,
-      @NonNull ContainerRequestContext containerRequestContext, @NonNull Map parameterValues) {
+      @NonNull ContainerRequestContext containerRequestContext,
+      @NonNull Map<String, String> parameterValues) {
 
     InformationProduct informationProduct = representation.getInformationProduct();
 
