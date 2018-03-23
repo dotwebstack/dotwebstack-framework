@@ -9,11 +9,16 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProductFactory;
+import org.dotwebstack.framework.backend.sparql.persistencestep.PersistenceInsertIntoGraphStepExecutor;
 import org.dotwebstack.framework.backend.sparql.persistencestep.SparqlBackendPersistenceStepFactory;
 import org.dotwebstack.framework.backend.sparql.updatestep.SparqlBackendUpdateStepFactory;
+import org.dotwebstack.framework.backend.sparql.updatestep.UpdateStepExecutor;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
+import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
+import org.dotwebstack.framework.transaction.flow.step.update.UpdateStep;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -48,6 +53,12 @@ public class SparqlBackendTest {
 
   @Mock
   private IRI identifier;
+
+  @Mock
+  private PersistenceStep persistenceStep;
+
+  @Mock
+  private UpdateStep updateStep;
 
   @Test
   public void constructor_ThrowsException_WithMissingIdentifier() {
@@ -129,6 +140,45 @@ public class SparqlBackendTest {
 
     // Assert
     assertThat(result, equalTo(informationProductMock));
+  }
+
+  @Test
+  public void createPersistenceStepExecutor_CreatesPersistenceStepExecutor_WithValidData() {
+    // Arrange
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+
+    PersistenceInsertIntoGraphStepExecutor persistenceStepExecutorMock =
+        mock(PersistenceInsertIntoGraphStepExecutor.class);
+
+    when(persistenceStepFactory.create(persistenceStep, model, backend))
+        .thenReturn(persistenceStepExecutorMock);
+
+    // Act
+    StepExecutor stepExecutor = backend.createPersistenceStepExecutor(persistenceStep, model);
+
+    // Arrange
+    assertThat(stepExecutor, equalTo(persistenceStepExecutorMock));
+  }
+
+  @Test
+  public void createUpdateStepExecutor_CreatesUpdateStepExecutor_WithValidData() {
+    // Arrange
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+
+    UpdateStepExecutor updateStepExecutorMock = mock(UpdateStepExecutor.class);
+
+    Parameter<?> requiredParameterMock = mock(Parameter.class);
+    Parameter<?> optionalParameterMock = mock(Parameter.class);
+
+    when(updateStepFactory.create(updateStep, backend)).thenReturn(updateStepExecutorMock);
+
+    // Act
+    StepExecutor stepExecutor = backend.createUpdateStepExecutor(updateStep);
+
+    // Arrange
+    assertThat(stepExecutor, equalTo(updateStepExecutorMock));
   }
 
 }
