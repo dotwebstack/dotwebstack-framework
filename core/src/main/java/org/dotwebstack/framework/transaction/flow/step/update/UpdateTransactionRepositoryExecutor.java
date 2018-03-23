@@ -44,7 +44,7 @@ public class UpdateTransactionRepositoryExecutor extends AbstractStepExecutor<Up
 
     try {
       preparedQuery.execute();
-      LOG.debug(String.format("Executed Update step %s", query));
+      LOG.debug("Executed Update step {}", query);
     } catch (QueryEvaluationException e) {
       throw new BackendException(String.format("Query could not be executed: %s (%s)", query,
           e.getMessage()), e);

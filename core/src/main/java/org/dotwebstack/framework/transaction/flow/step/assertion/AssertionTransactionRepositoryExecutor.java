@@ -49,7 +49,7 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
         returnValue = !returnValue;
       }
       if (!returnValue) {
-        LOG.debug(String.format("Assertion %s returned false", query));
+        LOG.debug("Assertion {} returned false", query);
         throw new StepFailureException(step.getLabel());
       }
     } catch (QueryEvaluationException e) {

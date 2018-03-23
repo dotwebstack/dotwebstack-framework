@@ -23,10 +23,8 @@ public abstract class AbstractStepExecutor<T> implements StepExecutor {
       String name = parameter.getName();
       Object value = parameter.handle(parameterValues);
 
-      if (value != null) {
-        if (parameter instanceof BindableParameter) {
-          bindings.put(name, ((BindableParameter) parameter).getValue(value));
-        }
+      if (value != null && parameter instanceof BindableParameter) {
+        bindings.put(name, ((BindableParameter) parameter).getValue(value));
       }
     }
 
