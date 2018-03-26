@@ -282,11 +282,11 @@ elmo-shape:Transaction a sh:NodeShape;
 #    sh:maxCount 1;
 #  ];
   # Link to elmo:Representation
-  sh:property [
-    sh:path [sh:inversePath elmo:transaction ];
-    sh:node elmo-shape:TransactionRepresentation;
-    sh:class elmo:Representation;
-  ];
+#  sh:property [
+#    sh:path [sh:inversePath elmo:transaction ];
+#    sh:node elmo-shape:TransactionRepresentation;
+#    sh:class elmo:Representation;
+#  ];
 .
 
 elmo-shape:Step a sh:NodeShape;

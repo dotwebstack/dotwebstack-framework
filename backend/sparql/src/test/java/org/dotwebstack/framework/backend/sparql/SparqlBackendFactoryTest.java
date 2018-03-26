@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProductFactory;
 import org.dotwebstack.framework.backend.sparql.persistencestep.SparqlBackendPersistenceStepFactory;
 import org.dotwebstack.framework.backend.sparql.updatestep.SparqlBackendUpdateStepFactory;
+import org.dotwebstack.framework.backend.sparql.validationstep.SparqlBackendValidationStepFactory;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -38,12 +39,15 @@ public class SparqlBackendFactoryTest {
   @Mock
   private SparqlBackendUpdateStepFactory updateStepFactory;
 
+  @Mock
+  private SparqlBackendValidationStepFactory validationStepFactory;
+
   private SparqlBackendFactory backendFactory;
 
   @Before
   public void setUp() {
     backendFactory = new SparqlBackendFactory(informationProductFactory, persistenceStepFactory,
-        updateStepFactory);
+        updateStepFactory, validationStepFactory);
   }
 
   @Test
@@ -52,7 +56,8 @@ public class SparqlBackendFactoryTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackendFactory(null, persistenceStepFactory, updateStepFactory);
+    new SparqlBackendFactory(null, persistenceStepFactory, updateStepFactory,
+        validationStepFactory);
   }
 
   @Test

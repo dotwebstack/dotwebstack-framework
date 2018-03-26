@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProductFactory;
 import org.dotwebstack.framework.backend.sparql.persistencestep.SparqlBackendPersistenceStepFactory;
 import org.dotwebstack.framework.backend.sparql.updatestep.SparqlBackendUpdateStepFactory;
+import org.dotwebstack.framework.backend.sparql.validationstep.SparqlBackendValidationStepFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -44,6 +45,9 @@ public class SparqlBackendTest {
   private SparqlBackendUpdateStepFactory updateStepFactory;
 
   @Mock
+  private SparqlBackendValidationStepFactory validationStepFactory;
+
+  @Mock
   private Model model;
 
   @Mock
@@ -55,8 +59,8 @@ public class SparqlBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackend.Builder(null, repository, informationProductFactory,
-        persistenceStepFactory, updateStepFactory);
+    new SparqlBackend.Builder(null, repository, informationProductFactory, persistenceStepFactory,
+        updateStepFactory, validationStepFactory);
   }
 
   @Test
@@ -66,7 +70,7 @@ public class SparqlBackendTest {
 
     // Act
     new SparqlBackend.Builder(DBEERPEDIA.BACKEND, null, informationProductFactory,
-        persistenceStepFactory, updateStepFactory);
+        persistenceStepFactory, updateStepFactory, validationStepFactory);
   }
 
   @Test
@@ -75,15 +79,16 @@ public class SparqlBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, null,
-        persistenceStepFactory, updateStepFactory);
+    new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, null, persistenceStepFactory,
+        updateStepFactory, validationStepFactory);
   }
 
   @Test
   public void build_CreatesBackend_WithCorrectData() {
     // Act
-    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
-        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+    SparqlBackend backend =
+        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, informationProductFactory,
+            persistenceStepFactory, updateStepFactory, validationStepFactory).build();
 
     // Assert
     assertThat(backend.getIdentifier(), equalTo(DBEERPEDIA.BACKEND));
@@ -93,8 +98,9 @@ public class SparqlBackendTest {
   @Test
   public void getConnection_ReusesConnection_WhenCalledTwice() {
     // Arrange
-    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
-        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+    SparqlBackend backend =
+        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, informationProductFactory,
+            persistenceStepFactory, updateStepFactory, validationStepFactory).build();
     when(repository.getConnection()).thenReturn(mock(RepositoryConnection.class));
 
     // Act
@@ -110,8 +116,9 @@ public class SparqlBackendTest {
   @Test
   public void createInformationProduct_CreatesInformationProduct_WithValidData() {
     // Arrange
-    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
-        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+    SparqlBackend backend =
+        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, informationProductFactory,
+            persistenceStepFactory, updateStepFactory, validationStepFactory).build();
 
     InformationProduct informationProductMock = mock(InformationProduct.class);
 

@@ -198,6 +198,8 @@ public final class DBEERPEDIA {
 
   public static final IRI POST_UPDATE_STEP;
 
+  public static final IRI VALIDATION_STEP;
+
   public static final IRI TRANSACTION;
 
   public static final IRI SEQUENTIAL_FLOW;
@@ -329,6 +331,8 @@ public final class DBEERPEDIA {
     TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
 
     SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
+
+    VALIDATION_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ValidationStep");
   }
 
   private DBEERPEDIA() {
