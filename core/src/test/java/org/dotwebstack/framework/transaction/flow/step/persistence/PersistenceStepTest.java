@@ -7,7 +7,6 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,14 +31,6 @@ public class PersistenceStepTest {
 
   @Mock
   private IRI targetGraph;
-
-  @Before
-  public void setup() {
-  }
-
-  @Test
-  public void createStepExecutor() {
-  }
 
   @Test
   public void build_CreateStepExecutor_WithValidData() {

@@ -158,6 +158,11 @@ elmo:Step a owl:Class;
       rdfs:label "Validation step"@en;
       rdfs:comment "A step that performs a validation on the transaction repository, using some SHACL shape graph";
     .
+    elmo:AssertionStep a owl:Class;
+      rdfs:subClassOf elmo:Step;
+      rdfs:label "Assertion step"@en;
+      rdfs:comment "A step that performs a assertion on the transaction repository, using a SPARQL ASK query";
+    .
     elmo:UpdateStep a owl:Class;
       rdfs:subClassOf elmo:Step;
       rdfs:label "Update step";
@@ -359,6 +364,8 @@ elmo:MiddleLayer a elmo:Layer;
 elmo:TopLayer a elmo:Layer;
   rdfs:label "Top layer"@en;
   elmo:index 1
+.
+elmo:TransactionRepository a elmo:Backend;
 .
 
 # == PROPERTIES ==
