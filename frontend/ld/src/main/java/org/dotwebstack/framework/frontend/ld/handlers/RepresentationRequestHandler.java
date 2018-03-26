@@ -121,7 +121,7 @@ public class RepresentationRequestHandler implements Inflector<ContainerRequestC
     InformationProduct informationProduct = representation.getInformationProduct();
 
     endPointRequestParameterMapper.map(informationProduct, containerRequestContext).forEach(
-        (key, value) -> parameterValues.put(key, value));
+        parameterValues::put);
     representation.getParameterMappers().forEach(
         parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
 
