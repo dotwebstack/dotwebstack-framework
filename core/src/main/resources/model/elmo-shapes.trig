@@ -281,6 +281,16 @@ elmo-shape:Transaction a sh:NodeShape;
 #    sh:class elmo:Transformer;
 #    sh:maxCount 1;
 #  ];
+  sh:property [
+    sh:name "elmo:optionalParameter";
+    sh:path elmo:optionalParameter;
+    sh:class elmo:Parameter;
+  ];
+  sh:property [
+    sh:name "elmo:requiredParameter";
+    sh:path elmo:requiredParameter;
+    sh:class elmo:Parameter;
+  ];
   # Link to elmo:Representation
 #  sh:property [
 #    sh:path [sh:inversePath elmo:transaction ];

@@ -14,6 +14,7 @@ import java.util.List;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.param.ParameterDefinitionResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.transaction.flow.FlowFactory;
 import org.dotwebstack.framework.transaction.flow.SequentialFlow;
@@ -62,6 +63,9 @@ public class TransactionResourceProviderTest {
   @Mock
   private SequentialFlowResourceProvider sequentialFlowResourceProvider;
 
+  @Mock
+  private ParameterDefinitionResourceProvider parameterDefinitionResourceProvider;
+
   private List<FlowFactory> flowFactories;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -74,7 +78,8 @@ public class TransactionResourceProviderTest {
     flowFactories.add(new SequentialFlowFactory(sequentialFlowResourceProvider));
 
     transactionResourceProvider =
-        new TransactionResourceProvider(configurationBackend, applicationProperties, flowFactories);
+        new TransactionResourceProvider(configurationBackend, applicationProperties, flowFactories,
+            parameterDefinitionResourceProvider);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
     when(configurationRepository.getConnection()).thenReturn(configurationRepositoryConnection);
@@ -89,7 +94,8 @@ public class TransactionResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new TransactionResourceProvider(null, applicationProperties, flowFactories);
+    new TransactionResourceProvider(null, applicationProperties, flowFactories,
+        parameterDefinitionResourceProvider);
   }
 
   @Test
@@ -98,7 +104,8 @@ public class TransactionResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new TransactionResourceProvider(configurationBackend, null, flowFactories);
+    new TransactionResourceProvider(configurationBackend, null, flowFactories,
+        parameterDefinitionResourceProvider);
   }
 
   @Test
@@ -107,7 +114,8 @@ public class TransactionResourceProviderTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new TransactionResourceProvider(configurationBackend, applicationProperties, null);
+    new TransactionResourceProvider(configurationBackend, applicationProperties, null,
+        parameterDefinitionResourceProvider);
   }
 
   @Test

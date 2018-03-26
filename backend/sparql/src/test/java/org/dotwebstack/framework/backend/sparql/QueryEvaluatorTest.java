@@ -111,8 +111,11 @@ public class QueryEvaluatorTest {
     SPARQLUpdate query = mock(SPARQLUpdate.class);
     when(repositoryConnection.prepareUpdate(QueryLanguage.SPARQL, INSERT_QUERY)).thenReturn(query);
 
+    ImmutableMap<String, Value> bindings = ImmutableMap.of("dateOfFoundation",
+        DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION, "fte", DBEERPEDIA.BROUWTOREN_FTE);
+
     // Act
-    queryEvaluator.update(repositoryConnection, INSERT_QUERY);
+    queryEvaluator.update(repositoryConnection, INSERT_QUERY, bindings);
 
     // Assert
     verify(query, times(1)).execute();
@@ -203,12 +206,14 @@ public class QueryEvaluatorTest {
     when(repositoryConnection.prepareUpdate(QueryLanguage.SPARQL, INSERT_QUERY)).thenThrow(
         MalformedQueryException.class);
 
+    ImmutableMap<String, Value> bindings = ImmutableMap.of();
+
     // Assert
     thrown.expect(BackendException.class);
     thrown.expectMessage(String.format("Query could not be prepared: %s", INSERT_QUERY));
 
     // Act
-    queryEvaluator.update(repositoryConnection, INSERT_QUERY);
+    queryEvaluator.update(repositoryConnection, INSERT_QUERY, bindings);
   }
 
   @Test
@@ -217,13 +222,14 @@ public class QueryEvaluatorTest {
     Update query = mock(Update.class);
     when(repositoryConnection.prepareUpdate(QueryLanguage.SPARQL, GRAPH_QUERY)).thenReturn(query);
     doThrow(new QueryEvaluationException()).when(query).execute();
+    ImmutableMap<String, Value> bindings = ImmutableMap.of();
 
     // Assert
     thrown.expect(BackendException.class);
     thrown.expectMessage(String.format("Query could not be executed: %s", GRAPH_QUERY));
 
     // Act
-    queryEvaluator.update(repositoryConnection, GRAPH_QUERY);
+    queryEvaluator.update(repositoryConnection, GRAPH_QUERY, bindings);
   }
 
   @Test
