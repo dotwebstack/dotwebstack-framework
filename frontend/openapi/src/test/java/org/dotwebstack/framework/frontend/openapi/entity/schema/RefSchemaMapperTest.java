@@ -106,8 +106,8 @@ public class RefSchemaMapperTest {
         property.getSimpleRef()));
 
     // Act
-    schemaMapper.mapGraphValue(property, graphEntityMock, ValueContext.builder().value(context).build(),
-        schemaMapperAdapter);
+    schemaMapper.mapGraphValue(property, graphEntityMock,
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
   @Test

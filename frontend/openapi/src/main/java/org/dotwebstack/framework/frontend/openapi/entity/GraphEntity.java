@@ -26,21 +26,18 @@ public final class GraphEntity extends AbstractEntity {
 
   private final Set<Resource> subjects;
 
-  private final RequestContext requestContext;
-
   private final LdPathExecutor ldPathExecutor;
 
   private GraphEntity(@NonNull Response response,
       @NonNull ImmutableMap<String, String> ldPathNamespaces,
       @NonNull Map<String, Model> swaggerDefinitions, @NonNull Repository repository,
       @NonNull Set<Resource> subjects, @NonNull RequestContext requestContext) {
-    super(response);
+    super(response, requestContext);
 
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = swaggerDefinitions;
     this.repository = repository;
     this.subjects = subjects;
-    this.requestContext = requestContext;
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 

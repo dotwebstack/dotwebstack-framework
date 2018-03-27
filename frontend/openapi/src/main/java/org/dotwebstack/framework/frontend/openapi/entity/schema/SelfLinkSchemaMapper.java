@@ -20,12 +20,14 @@ public class SelfLinkSchemaMapper implements SchemaMapper<ObjectProperty, Object
   @Override
   public Object mapGraphValue(@NonNull ObjectProperty schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    return null;
+    String operationPath =
+        entity.getRequestContext().getApiOperation().getRequestPath().normalised();
+    return SchemaMapperUtils.createLink(operationPath);
   }
 
   @Override
   public boolean supports(Property schema) {
-    return schema instanceof ObjectProperty && OpenApiSpecificationExtensions.SELF_LINK.equals(
+    return schema instanceof ObjectProperty && OpenApiSpecificationExtensions.TYPE_SELF_LINK.equals(
         schema.getVendorExtensions().get(OpenApiSpecificationExtensions.TYPE));
   }
 

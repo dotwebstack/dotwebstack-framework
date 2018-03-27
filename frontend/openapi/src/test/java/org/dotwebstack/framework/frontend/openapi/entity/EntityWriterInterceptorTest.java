@@ -103,7 +103,8 @@ public class EntityWriterInterceptorTest {
   @Test
   public void aroundWriteTo_MapsEntity_ForTupleEntity() throws IOException {
     // Arrange
-    TupleEntity entity = new TupleEntity(new Response(), mock(TupleQueryResult.class));
+    TupleEntity entity =
+        new TupleEntity(new Response(), mock(TupleQueryResult.class), requestContextMock);
     Object mappedEntity = ImmutableList.of();
     when(interceptorContextMock.getEntity()).thenReturn(entity);
     when(tupleEntityMapperMock.map(entity, MediaType.APPLICATION_JSON_TYPE)).thenReturn(

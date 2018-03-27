@@ -147,8 +147,8 @@ public class StringSchemaMapperContextLinksTest {
     when(requestContext.getBaseUri()).thenReturn("/base");
 
     // Act
-    Object result =
-        schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
+    Object result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
+        schemaMapperAdapter);
 
     // Assert
     /*
@@ -168,8 +168,8 @@ public class StringSchemaMapperContextLinksTest {
         choice2PatternResult);
 
     // Act (2)
-    result =
-        schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
+    result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
+        schemaMapperAdapter);
 
     // Assert (2)
     Assert.assertEquals("/base/abc/object_type_2", result);
@@ -181,8 +181,8 @@ public class StringSchemaMapperContextLinksTest {
     when(ldPathExecutorMock.ldPathQuery(VALUE, "key / path")).thenReturn(realKeyResult);
 
     // Act (3)
-    result =
-        schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
+    result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
+        schemaMapperAdapter);
 
     // Assert (3)
     Assert.assertNull(result);

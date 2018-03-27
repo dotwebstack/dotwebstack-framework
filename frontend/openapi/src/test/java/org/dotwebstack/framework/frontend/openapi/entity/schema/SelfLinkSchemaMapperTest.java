@@ -2,11 +2,15 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
+import com.atlassian.oai.validator.model.ApiOperation;
+import com.atlassian.oai.validator.model.NormalisedPath;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,11 +20,25 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class SelfLinkSchemaMapperTest {
 
+  // private final String baseUri = "http://localhost:8080/api/v2";
+
   @Mock
-  private TupleEntity tupleEntityMock;
+  private GraphEntity graphEntityMock;
 
   @Mock
   private ValueContext valueContextMock;
+
+  @Mock
+  private RequestContext requestContextMock;
+
+  @Mock
+  private SchemaMapperAdapter schemaMapperAdapterMock;
+
+  @Mock
+  private ApiOperation apiOperation;
+
+  @Mock
+  private NormalisedPath requestPath;
 
   private SelfLinkSchemaMapper schemaMapper;
 
@@ -29,19 +47,27 @@ public class SelfLinkSchemaMapperTest {
   @Before
   public void setUp() {
     schemaMapper = new SelfLinkSchemaMapper();
+
     property = new ObjectProperty();
     property.setVendorExtension(OpenApiSpecificationExtensions.TYPE,
-        OpenApiSpecificationExtensions.SELF_LINK);
+        OpenApiSpecificationExtensions.TYPE_SELF_LINK);
+
+    when(requestPath.normalised()).thenReturn("/breweries");
+    when(apiOperation.getRequestPath()).thenReturn(requestPath);
+    when(requestContextMock.getApiOperation()).thenReturn(apiOperation);
+    when(graphEntityMock.getRequestContext()).thenReturn(requestContextMock);
   }
 
   @Test
-  public void mapTupleValue_ReturnsLink_WhenInvoked() {
+  public void mapGraphValue_ReturnsLink_WhenInvoked() {
     // Arrange
 
     // Act
-    Object result = schemaMapper.mapTupleValue(property, tupleEntityMock, valueContextMock);
+    Object result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
+        schemaMapperAdapterMock);
 
     // Assert
+    System.out.println(result);
     // assertThat(result, instanceOf(Map.class));
   }
 

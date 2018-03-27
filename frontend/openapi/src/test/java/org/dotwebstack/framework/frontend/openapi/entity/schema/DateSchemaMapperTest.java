@@ -108,8 +108,8 @@ public class DateSchemaMapperTest {
 
     // Act
 
-    schemaMapper.mapGraphValue(property, graphEntityMock, ValueContext.builder().value(context).build(),
-        schemaMapperAdapter);
+    schemaMapper.mapGraphValue(property, graphEntityMock,
+        ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
 }

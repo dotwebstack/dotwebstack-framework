@@ -3,8 +3,8 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Operation;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -23,7 +23,7 @@ public class RequestContextTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private Operation operationMock;
+  private ApiOperation operationMock;
 
   @Mock
   private InformationProduct informationProductMock;

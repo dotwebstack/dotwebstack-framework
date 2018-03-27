@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import io.swagger.models.Operation;
+import com.atlassian.oai.validator.model.ApiOperation;
 import java.util.Collections;
 import java.util.Map;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 @RequiredArgsConstructor
 public final class RequestContext {
 
-  private final Operation operation;
+  private final ApiOperation apiOperation;
 
   private final InformationProduct informationProduct;
 

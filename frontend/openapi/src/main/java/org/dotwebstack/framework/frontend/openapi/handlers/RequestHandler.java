@@ -88,12 +88,13 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
     String baseUri = BaseUriFactory.newBaseUri((ContainerRequest) context, swagger);
     RequestContext requestContext =
-        new RequestContext(operation, informationProduct, parameterValues, baseUri);
+        new RequestContext(apiOperation, informationProduct, parameterValues, baseUri);
 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
       TupleEntity entity =
-          TupleEntity.builder().withQueryResult(result).withResponse(response).build();
+          TupleEntity.builder().withResult(result).withResponse(response).withRequestContext(
+              requestContext).build();
 
       return responseOk(entity);
     }

@@ -74,7 +74,8 @@ public class StringSchemaMapperRelativeLinkTest {
     stringProperty.setVendorExtension(RELATIVE_LINK, ImmutableMap.of(PATTERN, pattern));
 
     // Act
-    Object result = mapper.mapGraphValue(stringProperty, graphEntityMock, contextMock, mapperAdapter);
+    Object result =
+        mapper.mapGraphValue(stringProperty, graphEntityMock, contextMock, mapperAdapter);
 
     // Assert
     assertThat(result, is(BASE_URL + pattern));
@@ -90,7 +91,8 @@ public class StringSchemaMapperRelativeLinkTest {
         ImmutableList.of(VALUE_1));
 
     // Act
-    Object result = mapper.mapGraphValue(stringProperty, graphEntityMock, contextMock, mapperAdapter);
+    Object result =
+        mapper.mapGraphValue(stringProperty, graphEntityMock, contextMock, mapperAdapter);
 
     // Assert
     assertThat(result, is(BASE_URL + SOME_PATTERN.replace("$1", VALUE_1.stringValue())));
@@ -103,7 +105,8 @@ public class StringSchemaMapperRelativeLinkTest {
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
     // Act
-    Object result = mapper.mapGraphValue(stringProperty, graphEntityMock, contextMock, mapperAdapter);
+    Object result =
+        mapper.mapGraphValue(stringProperty, graphEntityMock, contextMock, mapperAdapter);
 
     // Assert
     assertThat(result, nullValue());

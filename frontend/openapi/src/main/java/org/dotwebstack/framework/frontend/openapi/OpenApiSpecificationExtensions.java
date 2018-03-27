@@ -14,11 +14,11 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String TYPE = DOTWEBSTACK_PREFIX.concat("type");
 
+  public static final String TYPE_SELF_LINK = "self-link";
+
   public static final String CONSTANT_VALUE = DOTWEBSTACK_PREFIX.concat("constant-value");
 
   public static final String RELATIVE_LINK = DOTWEBSTACK_PREFIX.concat("relative-link");
-
-  public static final String SELF_LINK = DOTWEBSTACK_PREFIX.concat("self-link");
 
   public static final String EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL =
       DOTWEBSTACK_PREFIX.concat("exclude-properties-when-empty-or-null");
