@@ -124,6 +124,8 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
               OpenApiSpecificationExtensions.RELATIVE_LINK, PATTERN));
     }
 
+    String baseUri = graphEntity.getRequestContext().getBaseUri();
+
     if (relativeLinkPropertiesMap.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
       Collection<Value> queryResult =
           graphEntity.getLdPathExecutor().ldPathQuery(valueContext.getValue(),
@@ -141,12 +143,12 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
         return null;
       }
 
-      return graphEntity.getBaseUri() + relativeLinkPropertiesMap.get(PATTERN).replace("$1",
+      return baseUri + relativeLinkPropertiesMap.get(PATTERN).replace("$1",
           queryResult.iterator().next().stringValue());
 
     }
 
-    return graphEntity.getBaseUri() + relativeLinkPropertiesMap.get(PATTERN);
+    return baseUri + relativeLinkPropertiesMap.get(PATTERN);
   }
 
   /**

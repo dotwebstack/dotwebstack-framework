@@ -77,10 +77,10 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
         continue;
       }
 
-      InformationProduct product = entity.getInformationProduct();
+      InformationProduct product = entity.getRequestContext().getInformationProduct();
       Parameter<?> parameter =
           InformationProductUtils.getParameter(product, (String) parameterIdString);
-      Object value = parameter.handle(entity.getParameters());
+      Object value = parameter.handle(entity.getRequestContext().getParameters());
 
       result.put(header.getKey(), value);
     }

@@ -31,7 +31,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CorsResponseFilterTest {
+public class CorsOpenApiResponseFilterTest {
 
   private static final String ORIGIN = "http://foo";
 

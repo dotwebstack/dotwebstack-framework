@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
@@ -14,7 +13,7 @@ import io.swagger.models.properties.IntegerProperty;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext;
-import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.eclipse.rdf4j.repository.Repository;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +31,7 @@ public class GraphEntityMapperTest {
   private Repository repositoryMock;
 
   @Mock
-  private InformationProduct productMock;
+  private RequestContext requestContextMock;
 
   @Mock
   private SchemaMapperAdapter schemaMapperAdapterMock;
@@ -49,7 +48,7 @@ public class GraphEntityMapperTest {
     // Arrange
     IntegerProperty schema = new IntegerProperty();
     GraphEntity entity = newGraphEntity(new Response().schema(schema), repositoryMock,
-        ImmutableSet.of(), definitionsMock, ImmutableMap.of(), productMock, "");
+        ImmutableSet.of(), definitionsMock, requestContextMock);
 
     Object object = new Object();
     when(schemaMapperAdapterMock.mapGraphValue(any(IntegerProperty.class), any(GraphEntity.class),

@@ -25,6 +25,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.WriterInterceptorContext;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.term.IntegerTermParameter;
 import org.dotwebstack.framework.param.term.StringTermParameter;
@@ -61,6 +62,9 @@ public class EntityWriterInterceptorTest {
   private GraphEntityMapper graphEntityMapperMock;
 
   @Mock
+  private RequestContext requestContextMock;
+
+  @Mock
   private InformationProduct productMock;
 
   @Mock
@@ -80,6 +84,7 @@ public class EntityWriterInterceptorTest {
         new EntityWriterInterceptor(graphEntityMapperMock, tupleEntityMapperMock);
 
     when(interceptorContextMock.getMediaType()).thenReturn(MediaType.APPLICATION_JSON_TYPE);
+    when(requestContextMock.getInformationProduct()).thenReturn(productMock);
   }
 
   @Test
@@ -117,7 +122,7 @@ public class EntityWriterInterceptorTest {
   public void aroundWriteTo_MapsEntity_ForGraphEntity() throws IOException {
     // Arrange
     GraphEntity entity = newGraphEntity(new Response(), repositoryMock, ImmutableSet.of(),
-        definitionsMock, ImmutableMap.of(), productMock, "");
+        definitionsMock, requestContextMock);
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
@@ -137,7 +142,7 @@ public class EntityWriterInterceptorTest {
     Response response = new Response().headers(ImmutableMap.of());
 
     GraphEntity entity = newGraphEntity(response, repositoryMock, ImmutableSet.of(),
-        definitionsMock, ImmutableMap.of(), productMock, "");
+        definitionsMock, requestContextMock);
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
@@ -159,7 +164,7 @@ public class EntityWriterInterceptorTest {
         new StringProperty().vendorExtension("foo", "bar").vendorExtension("baz", "qux")));
 
     GraphEntity entity = newGraphEntity(response, repositoryMock, ImmutableSet.of(),
-        definitionsMock, ImmutableMap.of(), productMock, "");
+        definitionsMock, requestContextMock);
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
@@ -181,7 +186,6 @@ public class EntityWriterInterceptorTest {
         NAMESPACE_RO + "ContentCrsParameter"));
 
     // Arrange
-    InformationProduct productMock = mock(InformationProduct.class);
     when(productMock.getParameters()).thenReturn(ImmutableList.of(
         new StringTermParameter(VALUE_FACTORY.createIRI("http://foo#", "bar"), "bar", false),
         new StringTermParameter(VALUE_FACTORY.createIRI("http://baz#", "qux"), "qux", false)));
@@ -191,7 +195,7 @@ public class EntityWriterInterceptorTest {
             NAMESPACE_RO + "ContentCrsParameter").vendorExtension("foo", "bar"));
 
     GraphEntity entity = newGraphEntity(response, repositoryMock, ImmutableSet.of(),
-        definitionsMock, ImmutableMap.of(), productMock, "");
+        definitionsMock, requestContextMock);
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 
     Object mappedEntity = ImmutableList.of();
@@ -205,8 +209,7 @@ public class EntityWriterInterceptorTest {
   @Test
   public void aroundWriteTo_WritesResponseHeaders_ForKnownParameters() throws IOException {
     // Arrange
-    InformationProduct informationProductMock = mock(InformationProduct.class);
-    when(informationProductMock.getParameters()).thenReturn(ImmutableList.of(
+    when(productMock.getParameters()).thenReturn(ImmutableList.of(
         new StringTermParameter(VALUE_FACTORY.createIRI(NAMESPACE_RO, "ContentCrsParameter"),
             "contentCrs", false),
         new IntegerTermParameter(VALUE_FACTORY.createIRI(NAMESPACE_RO, "xPaginationPageParameter"),
@@ -218,9 +221,11 @@ public class EntityWriterInterceptorTest {
                 new IntegerProperty().vendorExtension(OpenApiSpecificationExtensions.PARAMETER,
                     NAMESPACE_RO + "xPaginationPageParameter"));
 
-    GraphEntity entity =
-        newGraphEntity(response, repositoryMock, ImmutableSet.of(), definitionsMock,
-            ImmutableMap.of("contentCrs", "epsg:28992", "page", "3"), informationProductMock, "");
+    when(requestContextMock.getParameters()).thenReturn(
+        ImmutableMap.of("contentCrs", "epsg:28992", "page", "3"));
+
+    GraphEntity entity = newGraphEntity(response, repositoryMock, ImmutableSet.of(),
+        definitionsMock, requestContextMock);
 
     when(interceptorContextMock.getEntity()).thenReturn(entity);
 

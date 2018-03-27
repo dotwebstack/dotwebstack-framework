@@ -146,9 +146,10 @@ public class RequestHandlerTest {
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getEntity(), instanceOf(GraphEntity.class));
 
-    assertThat(((GraphEntity) response.getEntity()).getInformationProduct(),
+    assertThat(((GraphEntity) response.getEntity()).getRequestContext().getInformationProduct(),
         sameInstance(informationProductMock));
-    assertThat(((GraphEntity) response.getEntity()).getParameters(), is(parameters));
+    assertThat(((GraphEntity) response.getEntity()).getRequestContext().getParameters(),
+        is(parameters));
     assertThat(((GraphEntity) response.getEntity()).getResponse(), is(entityResponse));
     assertThat(((GraphEntity) response.getEntity()).getSubjects(), is(empty()));
   }
@@ -187,9 +188,10 @@ public class RequestHandlerTest {
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getEntity(), instanceOf(GraphEntity.class));
 
-    assertThat(((GraphEntity) response.getEntity()).getInformationProduct(),
+    assertThat(((GraphEntity) response.getEntity()).getRequestContext().getInformationProduct(),
         sameInstance(informationProductMock));
-    assertThat(((GraphEntity) response.getEntity()).getParameters(), is(parameters));
+    assertThat(((GraphEntity) response.getEntity()).getRequestContext().getParameters(),
+        is(parameters));
     assertThat(((GraphEntity) response.getEntity()).getResponse(), is(entityResponse));
     assertThat(((GraphEntity) response.getEntity()).getSubjects(), contains(DBEERPEDIA.BROUWTOREN));
   }

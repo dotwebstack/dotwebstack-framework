@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
+import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import java.util.Map;
 import java.util.Set;
@@ -76,13 +77,18 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
     LOG.debug("Handling {} request for path {}", context.getMethod(), path);
 
-    context.setProperty(RequestHandlerProperties.OPERATION, apiOperation.getOperation());
+    Operation operation = apiOperation.getOperation();
+    context.setProperty(RequestHandlerProperties.OPERATION, operation);
 
     RequestParameters requestParameters =
         apiRequestValidator.validate(apiOperation, swagger, context);
 
-    Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
-        informationProduct, requestParameters);
+    Map<String, String> parameterValues =
+        requestParameterMapper.map(operation, informationProduct, requestParameters);
+
+    String baseUri = BaseUriFactory.newBaseUri((ContainerRequest) context, swagger);
+    RequestContext requestContext =
+        new RequestContext(operation, informationProduct, parameterValues, baseUri);
 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
@@ -93,8 +99,6 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     }
 
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-      String baseUri = BaseUriFactory.newBaseUri((ContainerRequest) context, swagger);
-
       GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
       Repository resultRepository = Rdf4jUtils.asRepository(QueryResults.asModel(result));
       Set<Resource> subjects = getSubjects(resultRepository);
@@ -103,8 +107,8 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
         throw new NotFoundException();
       }
 
-      GraphEntity entity = GraphEntity.newGraphEntity(response, resultRepository, subjects, swagger,
-          parameterValues, informationProduct, baseUri);
+      GraphEntity entity =
+          GraphEntity.newGraphEntity(response, resultRepository, subjects, swagger, requestContext);
 
       return responseOk(entity);
     }

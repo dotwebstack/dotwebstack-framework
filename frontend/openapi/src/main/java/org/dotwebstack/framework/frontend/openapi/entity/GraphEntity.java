@@ -1,19 +1,17 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import static com.google.common.collect.ImmutableMap.copyOf;
-import static com.google.common.collect.Maps.newHashMap;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Model;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.Repository;
 
@@ -28,38 +26,29 @@ public final class GraphEntity extends AbstractEntity {
 
   private final Set<Resource> subjects;
 
-  private final InformationProduct informationProduct;
-
-  private final Map<String, String> parameters;
+  private final RequestContext requestContext;
 
   private final LdPathExecutor ldPathExecutor;
-
-  private final String baseUri;
 
   private GraphEntity(@NonNull Response response,
       @NonNull ImmutableMap<String, String> ldPathNamespaces,
       @NonNull Map<String, Model> swaggerDefinitions, @NonNull Repository repository,
-      @NonNull Set<Resource> subjects, @NonNull Map<String, String> requestParameters,
-      @NonNull String baseUri, @NonNull InformationProduct informationProduct) {
+      @NonNull Set<Resource> subjects, @NonNull RequestContext requestContext) {
     super(response);
 
     this.ldPathNamespaces = ldPathNamespaces;
     this.swaggerDefinitions = swaggerDefinitions;
     this.repository = repository;
     this.subjects = subjects;
-    this.informationProduct = informationProduct;
-    this.parameters = newHashMap(requestParameters);
-    this.baseUri = baseUri;
+    this.requestContext = requestContext;
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 
   public static GraphEntity newGraphEntity(@NonNull Response response,
       @NonNull Repository repository, @NonNull Set<Resource> subjects, @NonNull Swagger definitions,
-      @NonNull Map<String, String> requestParameters,
-      @NonNull InformationProduct informationProduct, @NonNull String baseUri) {
+      @NonNull RequestContext requestContext) {
     return new GraphEntity(response, extractLdpathNamespaces(definitions),
-        extractSwaggerDefinitions(definitions), repository, subjects, requestParameters, baseUri,
-        informationProduct);
+        extractSwaggerDefinitions(definitions), repository, subjects, requestContext);
   }
 
   private static Map<String, Model> extractSwaggerDefinitions(Swagger swagger) {
@@ -89,14 +78,6 @@ public final class GraphEntity extends AbstractEntity {
     }
 
     return ImmutableMap.of();
-  }
-
-  public void addParameter(@NonNull String key, String value) {
-    parameters.put(key, value);
-  }
-
-  public Map<String, String> getParameters() {
-    return Collections.unmodifiableMap(parameters);
   }
 
 }

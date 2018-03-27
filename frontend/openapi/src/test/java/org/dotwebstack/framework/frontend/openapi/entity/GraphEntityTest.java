@@ -1,17 +1,25 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import static org.dotwebstack.framework.frontend.openapi.entity.GraphEntity.newGraphEntity;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import io.swagger.models.Model;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import java.util.Map;
-import org.dotwebstack.framework.informationproduct.InformationProduct;
+import java.util.Set;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.repository.Repository;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -26,59 +34,81 @@ public class GraphEntityTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private InformationProduct productMock;
+  private Response response;
 
   @Mock
-  private Repository repositoryMock;
+  private Repository repository;
 
   @Mock
-  private Swagger definitionsMock;
+  private Set<Resource> subjects;
 
-  private GraphEntity entity;
+  @Mock
+  private Swagger swaggerMock;
 
-  @Before
-  public void setUp() {
-    entity = newGraphEntity(new Response(), repositoryMock, ImmutableSet.of(), definitionsMock,
-        ImmutableMap.of(), productMock, "");
-  }
+  @Mock
+  private Map<String, Model> swaggerDefinitionsMock;
 
-  @Test
-  public void constructor_InitializesResponseParameters_AsEmpty() {
-    // Assert
-    assertThat(entity.getParameters().isEmpty(), is(true));
-  }
+  @Mock
+  private RequestContext requestContext;
 
   @Test
-  public void addParameter_StoresValue_ForNewValue() {
+  public void newGraphEntity_CreatesGraphEntity_WhenDefinitionsArePresent() {
+    // Arrange
+    when(swaggerMock.getDefinitions()).thenReturn(swaggerDefinitionsMock);
+
     // Act
-    entity.addParameter("X", "A");
-    entity.addParameter("Y", "B");
-    entity.addParameter("Z", "C");
+    GraphEntity graphEntity =
+        GraphEntity.newGraphEntity(response, repository, subjects, swaggerMock, requestContext);
 
     // Assert
-    assertThat(entity.getParameters(), is(ImmutableMap.of("X", "A", "Y", "B", "Z", "C")));
+    assertThat(graphEntity.getResponse(), equalTo(response));
+    assertThat(graphEntity.getRepository(), equalTo(repository));
+    assertThat(graphEntity.getSubjects(), equalTo(subjects));
+    assertThat(graphEntity.getSwaggerDefinitions(), equalTo(swaggerDefinitionsMock));
+    assertThat(graphEntity.getRequestContext(), equalTo(requestContext));
   }
 
   @Test
-  public void addParameter_OverwritesExistingValue_ForDuplicateValue() {
+  public void newGraphEntity_CreatesEmptyMaps_ForAbsentValues() {
     // Act
-    entity.addParameter("X", "A");
-    entity.addParameter("X", "B");
+    GraphEntity graphEntity =
+        GraphEntity.newGraphEntity(response, repository, subjects, swaggerMock, requestContext);
 
     // Assert
-    assertThat(entity.getParameters(), is(ImmutableMap.of("X", "B")));
+    assertThat(graphEntity.getSwaggerDefinitions(), is(not(nullValue())));
+    assertThat(graphEntity.getSwaggerDefinitions().keySet(), is(empty()));
+
+    assertThat(graphEntity.getLdPathNamespaces(), is(not(nullValue())));
+    assertThat(graphEntity.getLdPathNamespaces().keySet(), is(empty()));
   }
 
   @Test
-  public void getParameters_ReturnsResult_AsImmutable() {
+  public void newGraphEntity_ExtractsNamespaces_WhenExtEnabled() {
+    // Arrange
+    Map<String, String> namespaces = ImmutableMap.of("rdf", RDF.NAMESPACE, "rdfs", RDFS.NAMESPACE);
+    Map<String, Object> vendorExtensions =
+        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH_NAMESPACES, namespaces);
+    when(swaggerMock.getVendorExtensions()).thenReturn(vendorExtensions);
+
+    // Act
+    GraphEntity graphEntity =
+        GraphEntity.newGraphEntity(response, repository, subjects, swaggerMock, requestContext);
+
     // Assert
-    thrown.expect(UnsupportedOperationException.class);
+    assertThat(graphEntity.getLdPathNamespaces(), equalTo(namespaces));
+  }
+
+  @Test
+  public void newGraphEntity_ThrowsException_WhenNamespacesNotInMap() {
+    // Assert
+    thrown.expect(LdPathExecutorRuntimeException.class);
 
     // Arrange
-    Map<String, String> result = entity.getParameters();
+    when(swaggerMock.getVendorExtensions()).thenReturn(
+        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH_NAMESPACES, true));
 
     // Act
-    result.put("key", "value");
+    GraphEntity.newGraphEntity(response, repository, subjects, swaggerMock, requestContext);
   }
 
 }

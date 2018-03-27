@@ -14,6 +14,7 @@ import java.util.Map;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -36,11 +37,17 @@ public class StringSchemaMapperContextLinksTest {
 
   @Mock
   private GraphEntity entityMock;
+
+  @Mock
+  private RequestContext requestContext;
+
   @Mock
   private LdPathExecutor ldPathExecutorMock;
 
   private ValueContext valueContextMock;
+
   private SchemaMapperAdapter schemaMapperAdapter;
+
   private SchemaMapper<StringProperty, ?> schemaMapper;
 
   private StringProperty property;
@@ -53,6 +60,7 @@ public class StringSchemaMapperContextLinksTest {
 
     valueContextMock = ValueContext.builder().value(VALUE).build();
 
+    when(entityMock.getRequestContext()).thenReturn(requestContext);
     when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
@@ -136,7 +144,7 @@ public class StringSchemaMapperContextLinksTest {
         Lists.newArrayList(SimpleValueFactory.getInstance().createLiteral("object_type_2"));
     when(ldPathExecutorMock.ldPathQuery(VALUE, "key / path")).thenReturn(realKeyResult);
 
-    when(entityMock.getBaseUri()).thenReturn("/base");
+    when(requestContext.getBaseUri()).thenReturn("/base");
 
     // Act
     Object result =
