@@ -115,8 +115,8 @@ public class TupleEntityMapperTest {
     when(result.hasNext()).thenReturn(true, false);
     when(result.next()).thenReturn(
         new ListBindingSet(ImmutableList.of("name"), ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME)));
-    when(schemaMapper.mapTupleValue(any(StringProperty.class), any(ValueContext.class))).thenReturn(
-        DBEERPEDIA.BROUWTOREN_NAME.stringValue());
+    when(schemaMapper.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+        any(ValueContext.class))).thenReturn(DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
     Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
@@ -159,8 +159,8 @@ public class TupleEntityMapperTest {
     QueryBindingSet bindingSet = new QueryBindingSet();
     bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
     when(result.next()).thenReturn(bindingSet);
-    when(schemaMapper.mapTupleValue(any(StringProperty.class), any(ValueContext.class))).thenReturn(
-        DBEERPEDIA.BROUWTOREN_NAME.stringValue());
+    when(schemaMapper.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+        any(ValueContext.class))).thenReturn(DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
     Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
@@ -182,8 +182,8 @@ public class TupleEntityMapperTest {
     when(result.next()).thenReturn(bindingSet);
 
     StringProperty stringProperty = new StringProperty();
-    when(schemaMapper.mapTupleValue(any(StringProperty.class), any(ValueContext.class))).thenReturn(
-        DBEERPEDIA.BROUWTOREN_NAME.stringValue());
+    when(schemaMapper.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+        any(ValueContext.class))).thenReturn(DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     TupleEntity entity = new TupleEntity(new Response().schema(
         new ObjectProperty().properties(ImmutableMap.of("name", stringProperty.required(false)))),
@@ -212,8 +212,8 @@ public class TupleEntityMapperTest {
     QueryBindingSet bindingSet = new QueryBindingSet();
     bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
     when(result.next()).thenReturn(bindingSet, bindingSet);
-    when(schemaMapper.mapTupleValue(any(StringProperty.class), any(ValueContext.class))).thenReturn(
-        "firstName").thenReturn("secondName");
+    when(schemaMapper.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+        any(ValueContext.class))).thenReturn("firstName").thenReturn("secondName");
 
     // Act
     Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);

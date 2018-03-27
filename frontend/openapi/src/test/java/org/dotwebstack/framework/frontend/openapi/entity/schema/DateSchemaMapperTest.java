@@ -37,7 +37,7 @@ public class DateSchemaMapperTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Mock
-  private GraphEntity entityMock;
+  private GraphEntity graphEntityMock;
 
   @Mock
   private SchemaMapperAdapter schemaMapperAdapter;
@@ -49,13 +49,14 @@ public class DateSchemaMapperTest {
   private LdPathExecutor ldPathExecutor;
 
   private DateSchemaMapper schemaMapper;
+
   private DateProperty property;
 
   @Before
   public void setUp() {
     schemaMapper = new DateSchemaMapper();
     property = new DateProperty();
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
 
   @Test
@@ -70,7 +71,7 @@ public class DateSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
     // Act
-    LocalDate result = schemaMapper.mapGraphValue(property, entityMock,
+    LocalDate result = schemaMapper.mapGraphValue(property, graphEntityMock,
         ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
     // Assert
@@ -86,7 +87,7 @@ public class DateSchemaMapperTest {
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    LocalDate result = schemaMapper.mapGraphValue(property, entityMock,
+    LocalDate result = schemaMapper.mapGraphValue(property, graphEntityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
@@ -107,7 +108,7 @@ public class DateSchemaMapperTest {
 
     // Act
 
-    schemaMapper.mapGraphValue(property, entityMock, ValueContext.builder().value(context).build(),
+    schemaMapper.mapGraphValue(property, graphEntityMock, ValueContext.builder().value(context).build(),
         schemaMapperAdapter);
   }
 

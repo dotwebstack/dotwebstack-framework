@@ -53,8 +53,7 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
     return ImmutableMap.of();
   }
 
-  private Object mapObject(TupleEntity entity, ObjectProperty schema,
-      ValueContext valueContext) {
+  private Object mapObject(TupleEntity entity, ObjectProperty schema, ValueContext valueContext) {
     TupleQueryResult result = entity.getResult();
     if (result.hasNext()) {
       BindingSet bindingSet = result.next();
@@ -62,7 +61,7 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
         LOG.warn("TupleQueryResult yielded several bindingsets. Only parsing the first.");
       }
 
-      return mapBindingSet(bindingSet, schema.getProperties(), valueContext);
+      return mapBindingSet(bindingSet, schema.getProperties(), entity, valueContext);
     } else {
       throw new EntityMapperRuntimeException("TupleQueryResult did not yield any values.");
     }
@@ -87,14 +86,14 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
     Map<String, Property> itemProperties = ((ObjectProperty) itemSchema).getProperties();
 
     while (result.hasNext()) {
-      collectionBuilder.add(mapBindingSet(result.next(), itemProperties, valueContext));
+      collectionBuilder.add(mapBindingSet(result.next(), itemProperties, entity, valueContext));
     }
 
     return collectionBuilder.build();
   }
 
   private ImmutableMap<String, Object> mapBindingSet(BindingSet bindingSet,
-      Map<String, Property> itemProperties, ValueContext valueContext) {
+      Map<String, Property> itemProperties, TupleEntity entity, ValueContext valueContext) {
     ImmutableMap.Builder<String, Object> itemBuilder = new ImmutableMap.Builder<>();
 
     itemProperties.forEach((name, property) -> {
@@ -110,7 +109,7 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
       ValueContext newValueContext =
           valueContext.toBuilder().value(bindingSet.getValue(name)).build();
 
-      itemBuilder.put(name, schemaMapperAdapter.mapTupleValue(property, newValueContext));
+      itemBuilder.put(name, schemaMapperAdapter.mapTupleValue(property, entity, newValueContext));
     });
 
     return itemBuilder.build();

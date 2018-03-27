@@ -12,6 +12,7 @@ import io.swagger.models.properties.Property;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Value;
 import org.junit.Rule;
@@ -116,13 +117,13 @@ public class AbstractSubjectSchemaMapperTest {
   private static class TestSubjectSchemaMapper extends AbstractSubjectSchemaMapper {
 
     @Override
-    public Object mapTupleValue(Property schema, ValueContext valueContext) {
+    public Object mapTupleValue(Property schema, TupleEntity entity, ValueContext valueContext) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object mapGraphValue(Property schema, GraphEntity entityContext,
-        ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
+    public Object mapGraphValue(Property schema, GraphEntity entity, ValueContext valueContext,
+        SchemaMapperAdapter schemaMapperAdapter) {
       throw new UnsupportedOperationException();
     }
 

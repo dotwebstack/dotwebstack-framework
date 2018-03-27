@@ -9,6 +9,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -21,15 +22,14 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
 
   @Override
-  public Object mapTupleValue(@NonNull BaseIntegerProperty schema,
+  public Object mapTupleValue(@NonNull BaseIntegerProperty schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).intValue();
   }
 
   @Override
-  public Object mapGraphValue(@NonNull BaseIntegerProperty property,
-      @NonNull GraphEntity context, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull BaseIntegerProperty property, @NonNull GraphEntity entity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
@@ -42,7 +42,7 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
           String.format("Property '%s' must have a '%s' attribute.", property.getName(),
               OpenApiSpecificationExtensions.LDPATH));
     }
-    LdPathExecutor ldPathExecutor = context.getLdPathExecutor();
+    LdPathExecutor ldPathExecutor = entity.getLdPathExecutor();
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 

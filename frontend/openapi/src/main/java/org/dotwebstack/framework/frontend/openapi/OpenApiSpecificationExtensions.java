@@ -2,7 +2,7 @@ package org.dotwebstack.framework.frontend.openapi;
 
 public final class OpenApiSpecificationExtensions {
 
-  public static final String DOTWEBSTACK_PREFIX = "x-dotwebstack-";
+  private static final String DOTWEBSTACK_PREFIX = "x-dotwebstack-";
 
   public static final String INFORMATION_PRODUCT = DOTWEBSTACK_PREFIX.concat("information-product");
 
@@ -17,6 +17,8 @@ public final class OpenApiSpecificationExtensions {
   public static final String CONSTANT_VALUE = DOTWEBSTACK_PREFIX.concat("constant-value");
 
   public static final String RELATIVE_LINK = DOTWEBSTACK_PREFIX.concat("relative-link");
+
+  public static final String SELF_LINK = DOTWEBSTACK_PREFIX.concat("self-link");
 
   public static final String EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL =
       DOTWEBSTACK_PREFIX.concat("exclude-properties-when-empty-or-null");

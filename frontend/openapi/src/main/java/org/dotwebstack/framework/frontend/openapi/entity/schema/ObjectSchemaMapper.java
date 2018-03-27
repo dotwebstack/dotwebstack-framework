@@ -13,6 +13,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
@@ -21,16 +22,17 @@ import org.springframework.stereotype.Service;
 public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ObjectProperty schema, @NonNull ValueContext valueContext) {
+  public Object mapTupleValue(@NonNull ObjectProperty schema, @NonNull TupleEntity entity,
+      @NonNull ValueContext valueContext) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ObjectProperty property, @NonNull GraphEntity graphEntity,
+  public Object mapGraphValue(@NonNull ObjectProperty property, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext newValueContext = populateValueContextWithVendorExtensions(property, valueContext);
 
-    return handleProperty(property, graphEntity, newValueContext, schemaMapperAdapter);
+    return handleProperty(property, entity, newValueContext, schemaMapperAdapter);
   }
 
   private static ValueContext populateValueContextWithVendorExtensions(@NonNull Property property,

@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -28,12 +29,13 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   @Override
-  public String mapTupleValue(@NonNull StringProperty schema, @NonNull ValueContext valueContext) {
+  public String mapTupleValue(@NonNull StringProperty schema, @NonNull TupleEntity entity,
+      @NonNull ValueContext valueContext) {
     return valueContext.getValue().stringValue();
   }
 
   @Override
-  public String mapGraphValue(@NonNull StringProperty property, @NonNull GraphEntity graphEntity,
+  public String mapGraphValue(@NonNull StringProperty property, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     validateVendorExtensions(property);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
@@ -41,13 +43,13 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.RELATIVE_LINK)) {
       return handleRelativeLinkVendorExtension(
           (Map<String, String>) vendorExtensions.get(OpenApiSpecificationExtensions.RELATIVE_LINK),
-          graphEntity, valueContext);
+          entity, valueContext);
     }
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONTEXT_LINKS)) {
-      return handleContextLinkVendorExtension(property, graphEntity, valueContext);
+      return handleContextLinkVendorExtension(property, entity, valueContext);
     }
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-      LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
+      LdPathExecutor ldPathExecutor = entity.getLdPathExecutor();
       return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
     }
 

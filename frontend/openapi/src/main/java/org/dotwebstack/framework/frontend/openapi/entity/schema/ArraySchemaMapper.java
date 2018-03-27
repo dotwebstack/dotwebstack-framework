@@ -11,6 +11,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -20,27 +21,28 @@ import org.springframework.stereotype.Service;
 public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull ValueContext valueContext) {
+  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull TupleEntity entity,
+      @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ArrayProperty property, @NonNull GraphEntity graphEntity,
+  public Object mapGraphValue(@NonNull ArrayProperty property, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
     if (hasSubjectVendorExtension(property)) {
-      Set<Resource> subjects = graphEntity.getSubjects();
+      Set<Resource> subjects = entity.getSubjects();
 
       subjects.forEach(subject -> {
         ValueContext subjectContext = valueContext.toBuilder().value(subject).build();
 
-        builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntity,
-            subjectContext, schemaMapperAdapter));
+        builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), entity, subjectContext,
+            schemaMapperAdapter));
       });
     } else if (valueContext.getValue() != null) {
       if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(property, graphEntity, valueContext, schemaMapperAdapter, builder);
+        queryAndValidate(property, entity, valueContext, schemaMapperAdapter, builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
             "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));

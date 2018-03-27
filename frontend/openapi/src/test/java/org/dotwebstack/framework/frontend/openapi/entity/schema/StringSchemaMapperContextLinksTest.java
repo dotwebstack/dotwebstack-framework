@@ -36,7 +36,7 @@ public class StringSchemaMapperContextLinksTest {
   private static final Literal VALUE = SimpleValueFactory.getInstance().createLiteral("value");
 
   @Mock
-  private GraphEntity entityMock;
+  private GraphEntity graphEntityMock;
 
   @Mock
   private RequestContext requestContext;
@@ -60,8 +60,8 @@ public class StringSchemaMapperContextLinksTest {
 
     valueContextMock = ValueContext.builder().value(VALUE).build();
 
-    when(entityMock.getRequestContext()).thenReturn(requestContext);
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(graphEntityMock.getRequestContext()).thenReturn(requestContext);
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
   @Test
@@ -75,7 +75,7 @@ public class StringSchemaMapperContextLinksTest {
     property.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, null);
 
     // Act
-    schemaMapper.mapGraphValue(property, entityMock, valueContextMock, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
   }
 
   @Test
@@ -91,7 +91,7 @@ public class StringSchemaMapperContextLinksTest {
         contextLinksExtension);
 
     // Act
-    schemaMapper.mapGraphValue(property, entityMock, valueContextMock, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
   }
 
   @Test
@@ -106,14 +106,14 @@ public class StringSchemaMapperContextLinksTest {
         ImmutableMap.of(StringSchemaMapper.LINK_CHOICES, Lists.newArrayList()));
 
     // Act
-    schemaMapper.mapGraphValue(property, entityMock, valueContextMock, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
   }
 
   @SuppressWarnings("unchecked")
   @Test
   public void mapGraphValue_picksTheRightKey_ForInheritedLdPath() {
     // Arrange
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
 
     Map<String, Object> contextLinksExtension = new HashMap<>();
     property.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS,
@@ -148,7 +148,7 @@ public class StringSchemaMapperContextLinksTest {
 
     // Act
     Object result =
-        schemaMapper.mapGraphValue(property, entityMock, valueContextMock, schemaMapperAdapter);
+        schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
 
     // Assert
     /*
@@ -169,7 +169,7 @@ public class StringSchemaMapperContextLinksTest {
 
     // Act (2)
     result =
-        schemaMapper.mapGraphValue(property, entityMock, valueContextMock, schemaMapperAdapter);
+        schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
 
     // Assert (2)
     Assert.assertEquals("/base/abc/object_type_2", result);
@@ -182,7 +182,7 @@ public class StringSchemaMapperContextLinksTest {
 
     // Act (3)
     result =
-        schemaMapper.mapGraphValue(property, entityMock, valueContextMock, schemaMapperAdapter);
+        schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
 
     // Assert (3)
     Assert.assertNull(result);
