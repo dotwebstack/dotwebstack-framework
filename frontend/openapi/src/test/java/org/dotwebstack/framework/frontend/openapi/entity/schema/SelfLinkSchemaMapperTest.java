@@ -16,6 +16,7 @@ import io.swagger.models.properties.ObjectProperty;
 import java.net.URI;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +28,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class SelfLinkSchemaMapperTest {
 
   private final String baseUri = "http://localhost:8080/api/v2";
+
+  @Mock
+  private TupleEntity tupleEntityMock;
 
   @Mock
   private GraphEntity graphEntityMock;
@@ -41,13 +45,13 @@ public class SelfLinkSchemaMapperTest {
   private SchemaMapperAdapter schemaMapperAdapterMock;
 
   @Mock
-  private ApiOperation apiOperation;
+  private ApiOperation apiOperationMock;
 
   @Mock
-  private Operation operation;
+  private Operation operationMock;
 
   @Mock
-  private NormalisedPath requestPath;
+  private NormalisedPath requestPathMock;
 
   private SelfLinkSchemaMapper schemaMapper;
 
@@ -61,19 +65,32 @@ public class SelfLinkSchemaMapperTest {
     property.setVendorExtension(OpenApiSpecificationExtensions.TYPE,
         OpenApiSpecificationExtensions.TYPE_SELF_LINK);
 
-    when(apiOperation.getRequestPath()).thenReturn(requestPath);
-    when(apiOperation.getOperation()).thenReturn(operation);
+    when(apiOperationMock.getRequestPath()).thenReturn(requestPathMock);
+    when(apiOperationMock.getOperation()).thenReturn(operationMock);
 
     when(requestContextMock.getBaseUri()).thenReturn(baseUri);
-    when(requestContextMock.getApiOperation()).thenReturn(apiOperation);
+    when(requestContextMock.getApiOperation()).thenReturn(apiOperationMock);
 
+    when(tupleEntityMock.getRequestContext()).thenReturn(requestContextMock);
     when(graphEntityMock.getRequestContext()).thenReturn(requestContextMock);
+  }
+
+  @Test
+  public void mapTupleValue_ReturnsSimpleLink_WithNoRequestParameters() {
+    // Arrange
+    when(requestPathMock.normalised()).thenReturn("/breweries");
+
+    // Act
+    Object result = schemaMapper.mapTupleValue(property, tupleEntityMock, valueContextMock);
+
+    // Assert
+    assertThat(result, equalTo(SchemaMapperUtils.createLink(URI.create(baseUri + "/breweries"))));
   }
 
   @Test
   public void mapGraphValue_ReturnsSimpleLink_WithNoRequestParameters() {
     // Arrange
-    when(requestPath.normalised()).thenReturn("/breweries");
+    when(requestPathMock.normalised()).thenReturn("/breweries");
 
     // Act
     Object result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
@@ -86,7 +103,7 @@ public class SelfLinkSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsPopulatedLink_WithPathParameter() {
     // Arrange
-    when(requestPath.normalised()).thenReturn("/breweries/{id}");
+    when(requestPathMock.normalised()).thenReturn("/breweries/{id}");
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("id", "123"));
 
     // Act
@@ -101,10 +118,10 @@ public class SelfLinkSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsLinkWithQueryParameters_WhenParametersAreSent() {
     // Arrange
-    when(requestPath.normalised()).thenReturn("/breweries");
+    when(requestPathMock.normalised()).thenReturn("/breweries");
     QueryParameter param = new QueryParameter().name("a");
     param.setDefault("789");
-    when(operation.getParameters()).thenReturn(
+    when(operationMock.getParameters()).thenReturn(
         ImmutableList.of(param, new QueryParameter().name("b")));
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "b", "456"));
 
@@ -120,10 +137,10 @@ public class SelfLinkSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsLinkWithExcludedParameter_WhenParameterEqualDefault() {
     // Arrange
-    when(requestPath.normalised()).thenReturn("/breweries");
+    when(requestPathMock.normalised()).thenReturn("/breweries");
     QueryParameter param = new QueryParameter().name("a");
     param.setDefault("123");
-    when(operation.getParameters()).thenReturn(
+    when(operationMock.getParameters()).thenReturn(
         ImmutableList.of(param, new QueryParameter().name("b")));
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "b", "456"));
 
@@ -139,8 +156,8 @@ public class SelfLinkSchemaMapperTest {
   @Test
   public void mapGraphValue_IgnoresQueryParameter_ForUnknownParameter() {
     // Arrange
-    when(requestPath.normalised()).thenReturn("/breweries");
-    when(operation.getParameters()).thenReturn(
+    when(requestPathMock.normalised()).thenReturn("/breweries");
+    when(operationMock.getParameters()).thenReturn(
         ImmutableList.of(new QueryParameter().name("a"), new QueryParameter().name("b")));
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "c", "456"));
 
