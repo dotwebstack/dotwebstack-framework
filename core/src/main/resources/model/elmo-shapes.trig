@@ -281,6 +281,16 @@ elmo-shape:Transaction a sh:NodeShape;
 #    sh:class elmo:Transformer;
 #    sh:maxCount 1;
 #  ];
+  sh:property [
+    sh:name "elmo:optionalParameter";
+    sh:path elmo:optionalParameter;
+    sh:class elmo:Parameter;
+  ];
+  sh:property [
+    sh:name "elmo:requiredParameter";
+    sh:path elmo:requiredParameter;
+    sh:class elmo:Parameter;
+  ];
   # Link to elmo:Representation
   sh:property [
     sh:path [sh:inversePath elmo:transaction ];
@@ -310,9 +320,39 @@ elmo-shape:ValidationStep a sh:NodeShape;
     sh:hasValue elmo:ValidationStep;
   ];
   sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
+  ];
+  sh:property [
     sh:name "elmo:conformsTo";
     sh:path elmo:conformsTo;
     sh:nodeKind sh:IRI;
+  ];
+.
+elmo-shape:AssertionStep a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:AssertionStep;
+  rdfs:label "Assertion step shape"@en;
+  sh:name "elmo:AssertionStep";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:AssertionStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
+  ];
+  sh:property [
+    sh:name "elmo:assert";
+    sh:path elmo:assert;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:assertNot";
+    sh:path elmo:assertNot;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
   ];
 .
 
@@ -324,6 +364,10 @@ elmo-shape:UpdateStep a sh:NodeShape;
   sh:property [
     sh:path rdf:type;
     sh:hasValue elmo:UpdateStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
   ];
   sh:property [
     sh:path elmo:backend;
@@ -345,6 +389,10 @@ elmo-shape:PersistenceStep a sh:NodeShape;
   sh:property [
     sh:path rdf:type;
     sh:hasValue elmo:PersistenceStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
   ];
   sh:property [
     sh:path elmo:backend;
@@ -963,6 +1011,18 @@ elmo-shape:Fragment a sh:NodeShape;
     sh:path xhtml:glossary;
     sh:maxCount 1;
     sh:nodeKind sh:IRI;
+  ];
+  sh:property [
+    sh:name "elmo:valueDatatype";
+    sh:path elmo:valueDatatype;
+    sh:maxCount 1;
+    sh:nodeKind sh:IRI;
+  ];
+  sh:property [
+    sh:name "elmo:valueTemplate";
+    sh:path elmo:valueTemplate;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
   ];
 .
 }

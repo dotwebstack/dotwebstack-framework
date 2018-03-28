@@ -1,11 +1,21 @@
 package org.dotwebstack.framework.transaction;
 
+import java.io.StringWriter;
+import java.util.Map;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFWriter;
+import org.eclipse.rdf4j.rio.Rio;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TransactionHandler {
+
+  private static final Logger LOG = LoggerFactory.getLogger(TransactionHandler.class);
 
   private Transaction transaction;
 
@@ -20,12 +30,20 @@ public class TransactionHandler {
     this.transactionRepository = transactionRepository;
   }
 
-  public void execute() {
+  public void execute(@NonNull Map<String, String> parameterValues) {
     transactionRepository.initialize();
     RepositoryConnection repositoryConnection = transactionRepository.getConnection();
     repositoryConnection.add(model);
 
-    transaction.getFlow().getExecutor(repositoryConnection).execute();
+    StringWriter stringWriter = new StringWriter();
+    RDFWriter writer = Rio.createWriter(RDFFormat.TURTLE, stringWriter);
+    repositoryConnection.prepareGraphQuery(QueryLanguage.SPARQL,
+        "CONSTRUCT {?s ?p ?o } WHERE {?s ?p ?o } ").evaluate(writer);
+    LOG.debug(String.format("Transaction repository before starting flow execution:\n%s",
+        stringWriter.toString()));
+
+    transaction.getFlow().getExecutor(repositoryConnection).execute(transaction.getParameters(),
+        parameterValues);
 
     repositoryConnection.close();
     transactionRepository.shutDown();

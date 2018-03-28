@@ -26,8 +26,11 @@ public class LdRepresentationRequestMapper {
   private final RepresentationResourceProvider representationResourceProvider;
 
   private final SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
+
   private final SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
+
   private final RepresentationRequestHandlerFactory representationRequestHandlerFactory;
+
   private final TransactionRequestHandlerFactory transactionRequestHandlerFactory;
 
   @Autowired

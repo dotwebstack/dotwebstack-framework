@@ -108,7 +108,8 @@ public class LdRepresentationRequestMapperTest {
 
     representationRequestHandler =
         new RepresentationRequestHandler(representation, representationRequestParameterMapper);
-    transactionRequestHandler = new TransactionRequestHandler(transaction);
+    transactionRequestHandler = new TransactionRequestHandler(transaction,
+        supportedReaderMediaTypesScanner, representationRequestParameterMapper);
     ldRepresentationRequestMapper = new LdRepresentationRequestMapper(
         representationResourceProvider, supportedWriterMediaTypesScanner,
         supportedReaderMediaTypesScanner, representationRequestHandlerFactory,

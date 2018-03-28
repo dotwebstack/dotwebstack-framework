@@ -1,16 +1,19 @@
 package org.dotwebstack.framework.transaction;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.dotwebstack.framework.transaction.flow.Flow;
 import org.dotwebstack.framework.transaction.flow.FlowExecutor;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.repository.Repository;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,11 +28,7 @@ public class TransactionHandlerTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  @Mock
-  Repository repository;
-
-  @Mock
-  RepositoryConnection repositoryConnection;
+  Repository repository = new SailRepository(new MemoryStore());
 
   @Mock
   private Transaction transaction;
@@ -40,8 +39,9 @@ public class TransactionHandlerTest {
   @Mock
   private FlowExecutor flowExecutor;
 
-  @Mock
-  private Model model;
+  private Model model = new LinkedHashModel();
+
+  private Map<String, String> parameterValues = new HashMap<>();
 
   private TransactionHandler transactionHandler;
 
@@ -53,16 +53,14 @@ public class TransactionHandlerTest {
   @Test
   public void execute_Transaction_WithValidData() {
     // Arrange
-    when(repository.getConnection()).thenReturn(repositoryConnection);
     when(transaction.getFlow()).thenReturn(flow);
     when(flow.getExecutor(any())).thenReturn(flowExecutor);
 
     // Act
-    transactionHandler.execute();
+    transactionHandler.execute(parameterValues);
 
     // Assert
-    verify(repositoryConnection).add(eq(model));
-    verify(flowExecutor, times(1)).execute();
+    verify(flowExecutor, times(1)).execute(any(), any());
   }
 
 }
