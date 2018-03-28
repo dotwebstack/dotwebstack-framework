@@ -11,6 +11,7 @@ import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.IntegerProperty;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
@@ -51,7 +52,7 @@ public class GraphEntityMapperTest {
         ImmutableSet.of(), definitionsMock, requestContextMock);
 
     Object object = new Object();
-    when(schemaMapperAdapterMock.mapGraphValue(any(IntegerProperty.class), any(GraphEntity.class),
+    when(schemaMapperAdapterMock.mapGraphValue(any(ResponseProperty.class), any(GraphEntity.class),
         any(ValueContext.class), any(SchemaMapperAdapter.class))).thenReturn(object);
 
     // Act

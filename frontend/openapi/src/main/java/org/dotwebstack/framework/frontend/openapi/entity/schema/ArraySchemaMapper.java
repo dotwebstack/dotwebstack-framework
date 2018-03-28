@@ -27,22 +27,22 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ArrayProperty property, @NonNull GraphEntity entity,
+  public Object mapGraphValue(@NonNull ArrayProperty schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    if (hasSubjectVendorExtension(property)) {
+    if (hasSubjectVendorExtension(schema)) {
       Set<Resource> subjects = entity.getSubjects();
 
       subjects.forEach(subject -> {
         ValueContext subjectContext = valueContext.toBuilder().value(subject).build();
 
-        builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), entity, subjectContext,
+        builder.add(schemaMapperAdapter.mapGraphValue(schema.getItems(), entity, subjectContext,
             schemaMapperAdapter));
       });
     } else if (valueContext.getValue() != null) {
-      if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(property, entity, valueContext, schemaMapperAdapter, builder);
+      if (schema.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+        queryAndValidate(schema, entity, valueContext, schemaMapperAdapter, builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
             "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));

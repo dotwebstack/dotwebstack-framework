@@ -23,7 +23,6 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
   @Override
   public Object mapGraphValue(@NonNull RefProperty schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-
     Model refModel = entity.getSwaggerDefinitions().get(schema.getSimpleRef());
 
     if (refModel == null) {

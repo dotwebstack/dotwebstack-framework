@@ -11,9 +11,9 @@ import org.eclipse.rdf4j.model.Value;
 abstract class AbstractSubjectSchemaMapper<S extends Property, T>
     extends AbstractSchemaMapper<S, T> {
 
-  protected boolean hasSubjectVendorExtension(@NonNull Property property) {
-    return hasVendorExtension(property, OpenApiSpecificationExtensions.SUBJECT)
-        && (boolean) property.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT);
+  protected static boolean hasSubjectVendorExtension(@NonNull Property schema) {
+    return hasVendorExtension(schema, OpenApiSpecificationExtensions.SUBJECT)
+        && (boolean) schema.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT);
   }
 
   /**
@@ -21,11 +21,11 @@ abstract class AbstractSubjectSchemaMapper<S extends Property, T>
    * @throws SchemaMapperRuntimeException If the property is required, and no subject can be found.
    * @throws SchemaMapperRuntimeException If more than one subject has been found.
    */
-  protected final Value getSubject(@NonNull Property property, @NonNull GraphEntity graphEntity) {
+  protected static Value getSubject(@NonNull Property schema, @NonNull GraphEntity graphEntity) {
     Set<Resource> subjects = graphEntity.getSubjects();
 
     if (subjects.isEmpty()) {
-      if (property.getRequired()) {
+      if (schema.getRequired()) {
         throw new SchemaMapperRuntimeException(
             "Expected a single subject, but subject query yielded no results.");
       }

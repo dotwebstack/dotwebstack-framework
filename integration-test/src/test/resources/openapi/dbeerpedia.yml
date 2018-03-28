@@ -180,48 +180,52 @@ paths:
         x-dotwebstack-parameter: "http://dbeerpedia.org#IdFilter"
       responses:
         200:
+          x-dotwebstack-subject: true
           description: OK
           schema:
+            $ref: "#/definitions/Brewery"
+
+definitions:
+  Brewery:
+    type: object
+    required:
+      - naam
+      - sinds
+      - fte
+      - oprichting
+      - plaats
+      - _links
+    properties:
+      naam:
+        type: string
+        format: string
+        x-dotwebstack-ldpath: "dbeerpedia:Name"
+      sinds:
+        type: integer
+        format: int32
+        x-dotwebstack-ldpath: "dbeerpedia:Since"
+      fte:
+        type: number
+        format: double
+        x-dotwebstack-ldpath: "dbeerpedia:FTE"
+      oprichting:
+        type: string
+        format: datetime
+        x-dotwebstack-ldpath: "dbeerpedia:Foundation"
+      plaats:
+        type: string
+        format: string
+        x-dotwebstack-ldpath: "dbeerpedia:Place"
+      _links:
+        type: object
+        required:
+          - self
+        properties:
+          self:
             type: object
-            x-dotwebstack-subject: true
+            x-dotwebstack-type: self-link
             required:
-              - naam
-              - sinds
-              - fte
-              - oprichting
-              - plaats
-              - _links
+              - href
             properties:
-              naam:
+              href:
                 type: string
-                format: string
-                x-dotwebstack-ldpath: "dbeerpedia:Name"
-              sinds:
-                type: integer
-                format: int32
-                x-dotwebstack-ldpath: "dbeerpedia:Since"
-              fte:
-                type: number
-                format: double
-                x-dotwebstack-ldpath: "dbeerpedia:FTE"
-              oprichting:
-                type: string
-                format: datetime
-                x-dotwebstack-ldpath: "dbeerpedia:Foundation"
-              plaats:
-                type: string
-                format: string
-                x-dotwebstack-ldpath: "dbeerpedia:Place"
-              _links:
-                type: object
-                required:
-                  - self
-                properties:
-                  self:
-                    type: object
-                    x-dotwebstack-type: self-link
-                    required:
-                      - href
-                    properties:
-                      href:
-                        type: string

@@ -28,10 +28,10 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
   }
 
   @Override
-  public Object mapGraphValue(@NonNull BaseIntegerProperty property, @NonNull GraphEntity entity,
+  public Object mapGraphValue(@NonNull BaseIntegerProperty schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     String ldPathQuery =
-        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+        (String) schema.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
     if (ldPathQuery == null && isSupportedLiteral(valueContext.getValue())) {
       return ((Literal) valueContext.getValue()).integerValue().intValue();
@@ -39,14 +39,14 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
 
     if (ldPathQuery == null) {
       throw new SchemaMapperRuntimeException(
-          String.format("Property '%s' must have a '%s' attribute.", property.getName(),
+          String.format("Property '%s' must have a '%s' attribute.", schema.getName(),
               OpenApiSpecificationExtensions.LDPATH));
     }
     LdPathExecutor ldPathExecutor = entity.getLdPathExecutor();
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
-    if (!property.getRequired() && queryResult.isEmpty()) {
+    if (!schema.getRequired() && queryResult.isEmpty()) {
       return null;
     }
 

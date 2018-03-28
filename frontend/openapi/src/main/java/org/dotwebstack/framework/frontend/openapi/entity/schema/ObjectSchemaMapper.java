@@ -28,21 +28,20 @@ public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectProper
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ObjectProperty property, @NonNull GraphEntity entity,
+  public Object mapGraphValue(@NonNull ObjectProperty schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    ValueContext newValueContext = populateValueContextWithVendorExtensions(property, valueContext);
+    ValueContext newValueContext = populateValueContextWithVendorExtensions(schema, valueContext);
 
-    return handleProperty(property, entity, newValueContext, schemaMapperAdapter);
+    return handleProperty(schema, entity, newValueContext, schemaMapperAdapter);
   }
 
-  private static ValueContext populateValueContextWithVendorExtensions(@NonNull Property property,
+  private static ValueContext populateValueContextWithVendorExtensions(@NonNull Property schema,
       @NonNull ValueContext valueContext) {
     ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
-    if (hasVendorExtension(property,
+    if (hasVendorExtension(schema,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL)) {
-      builder.isExcludedWhenEmptyOrNull(
-          hasVendorExtensionExcludePropertiesWhenEmptyOrNull(property));
+      builder.isExcludedWhenEmptyOrNull(hasVendorExtensionExcludePropertiesWhenEmptyOrNull(schema));
     }
 
     return builder.build();

@@ -29,10 +29,10 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
   }
 
   @Override
-  public Double mapGraphValue(@NonNull DoubleProperty property, @NonNull GraphEntity entity,
+  public Double mapGraphValue(@NonNull DoubleProperty schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     String ldPathQuery =
-        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+        (String) schema.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
     if (ldPathQuery == null && isSupportedLiteral(valueContext.getValue())) {
       return ((Literal) valueContext.getValue()).doubleValue();
@@ -40,14 +40,14 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
 
     if (ldPathQuery == null) {
       throw new SchemaMapperRuntimeException(
-          String.format("Property '%s' must have a '%s' attribute.", property.getName(),
+          String.format("Property '%s' must have a '%s' attribute.", schema.getName(),
               OpenApiSpecificationExtensions.LDPATH));
     }
     LdPathExecutor ldPathExecutor = entity.getLdPathExecutor();
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
-    if (!property.getRequired() && queryResult.isEmpty()) {
+    if (!schema.getRequired() && queryResult.isEmpty()) {
       return null;
     }
 

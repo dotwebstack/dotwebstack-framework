@@ -67,7 +67,6 @@ public class SelfLinkSchemaMapperTest {
         schemaMapperAdapterMock);
 
     // Assert
-    System.out.println(result);
     // assertThat(result, instanceOf(Map.class));
   }
 

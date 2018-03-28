@@ -30,10 +30,10 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   }
 
   @Override
-  public LocalDate mapGraphValue(@NonNull DateProperty property, @NonNull GraphEntity entity,
+  public LocalDate mapGraphValue(@NonNull DateProperty schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     String ldPathQuery =
-        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+        (String) schema.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
     if (ldPathQuery == null && isSupportedLiteral(valueContext.getValue())) {
       return convertToDate(((Literal) valueContext.getValue()).calendarValue());
@@ -41,7 +41,7 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
 
     if (ldPathQuery == null) {
       throw new SchemaMapperRuntimeException(
-          String.format("Property '%s' must have a '%s' attribute.", property.getName(),
+          String.format("Property '%s' must have a '%s' attribute.", schema.getName(),
               OpenApiSpecificationExtensions.LDPATH));
     }
 
@@ -49,7 +49,7 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
-    if (!property.getRequired() && queryResult.isEmpty()) {
+    if (!schema.getRequired() && queryResult.isEmpty()) {
       return null;
     }
 
