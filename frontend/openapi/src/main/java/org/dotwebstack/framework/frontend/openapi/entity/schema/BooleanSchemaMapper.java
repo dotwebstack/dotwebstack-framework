@@ -3,6 +3,9 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.BooleanProperty;
 import io.swagger.models.properties.Property;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -12,10 +15,6 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 @Service
 class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean> {
 
@@ -23,14 +22,13 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
 
   @Override
   public Boolean mapTupleValue(@NonNull BooleanProperty schema,
-                               @NonNull ValueContext valueContext) {
+      @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).booleanValue();
   }
 
   @Override
-  public Boolean mapGraphValue(@NonNull BooleanProperty property,
-                               @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-                               @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Boolean mapGraphValue(@NonNull BooleanProperty property, @NonNull GraphEntity graphEntity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     validateVendorExtensions(property);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
@@ -39,18 +37,24 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
       return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
     }
 
+    if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
+      return handleConstantValueVendorExtension(property);
+    }
+
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).booleanValue();
   }
 
-  private Boolean handleLdPathVendorExtension(BooleanProperty property, Value context, LdPathExecutor ldPathExecutor) {
+  @SuppressWarnings("squid:S2447")
+  private Boolean handleLdPathVendorExtension(BooleanProperty property, Value context,
+      LdPathExecutor ldPathExecutor) {
     String ldPathQuery =
-            (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
     if (ldPathQuery == null) {
       if (property.getRequired()) {
-        throw new SchemaMapperRuntimeException(String.format(
-                "Boolean property has '%s' vendor extension that is null, but the property is required.",
-                OpenApiSpecificationExtensions.LDPATH));
+        throw new SchemaMapperRuntimeException(
+            String.format("Boolean property has '%s' vendor extension that is null, "
+                + "but the property is required.", OpenApiSpecificationExtensions.LDPATH));
       }
       return null;
     }
@@ -61,14 +65,14 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
       return null;
     }
 
-    return SchemaMapperUtils.castLiteralValue(getSingleStatement(queryResult, ldPathQuery)).booleanValue();
+    return SchemaMapperUtils.castLiteralValue(
+        getSingleStatement(queryResult, ldPathQuery)).booleanValue();
   }
 
   @Override
   public boolean supports(@NonNull Property schema) {
     return schema instanceof BooleanProperty;
   }
-
 
   /**
    * Validates the vendor extensions that are declared on the BooleanProperty. A BooleanProperty
@@ -79,21 +83,21 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
    * </ul>
    *
    * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
-   *                                      are encountered.
+   *         are encountered.
    */
   private void validateVendorExtensions(BooleanProperty property) {
 
     ImmutableSet<String> supportedVendorExtensions = ImmutableSet.of(
-            OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
+        OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
-    long nrOfSupportedVendorExtentionsPresent =
-            property.getVendorExtensions().keySet().stream().filter(
-                    supportedVendorExtensions::contains).count();
-    if (nrOfSupportedVendorExtentionsPresent > 1) {
+    long nrOfSupportedVendorExtensionsPresent =
+        property.getVendorExtensions().keySet().stream().filter(
+            supportedVendorExtensions::contains).count();
+    if (nrOfSupportedVendorExtensionsPresent > 1) {
       throw new SchemaMapperRuntimeException(String.format(
-              "A string object must have either no, a '%s' or '%s' property. "
-                      + "A boolean object cannot have a combination of these.",
-              OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE));
+          "A string object must have either no, a '%s' or '%s' property. "
+              + "A boolean object cannot have a combination of these.",
+          OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE));
     }
   }
 
@@ -101,4 +105,27 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
   }
+
+  @SuppressWarnings("squid:S2447")
+  private Boolean handleConstantValueVendorExtension(BooleanProperty property) {
+    Object value =
+        property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
+
+    if (value != null) {
+      if (isSupportedLiteral(value)) {
+        return SchemaMapperUtils.castLiteralValue((Value) value).booleanValue();
+      }
+
+      return Boolean.valueOf(value.toString());
+    }
+
+    if (property.getRequired()) {
+      throw new SchemaMapperRuntimeException(String.format(
+          "Boolean property has '%s' vendor extension that is null, but the property is required.",
+          OpenApiSpecificationExtensions.CONSTANT_VALUE));
+    }
+
+    return null;
+  }
+
 }
