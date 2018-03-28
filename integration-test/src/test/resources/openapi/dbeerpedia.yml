@@ -99,10 +99,23 @@ paths:
       parameters:
       - name: id
         in: path
-        description: Identifier
         required: false
         type: string
         x-dotwebstack-parameter: "http://dbeerpedia.org#IdFilter"
+      - name: page
+        in: query
+        required: false
+        type: integer
+        minimum: 1
+        default: 1
+        x-dotwebstack-parameter: "http://dotwebstack.org/def/elmo#PageParameter"
+      - name: pageSize
+        in: query
+        required: false
+        type: integer
+        enum: [10, 20, 50, 100]
+        default: 20
+        x-dotwebstack-parameter: "http://dotwebstack.org/def/elmo#PageSizeParameter"
       responses:
         200:
           schema:
@@ -174,7 +187,6 @@ paths:
       parameters:
       - name: id
         in: path
-        description: Identifier
         required: true
         type: string
         x-dotwebstack-parameter: "http://dbeerpedia.org#IdFilter"

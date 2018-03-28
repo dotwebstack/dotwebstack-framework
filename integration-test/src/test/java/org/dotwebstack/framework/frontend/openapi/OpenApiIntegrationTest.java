@@ -241,8 +241,9 @@ public class OpenApiIntegrationTest {
     SparqlHttpStub.returnGraph(model);
 
     // Act
-    Response response = target.path("/dbp/api/v1/graph-breweries").request().accept(
-        MediaType.APPLICATION_JSON_TYPE).get();
+    Response response =
+        target.path("/dbp/api/v1/graph-breweries").queryParam("page", 2).request().accept(
+            MediaType.APPLICATION_JSON_TYPE).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -263,7 +264,8 @@ public class OpenApiIntegrationTest {
 
     JSONObject expected =
         new JSONObject(ImmutableMap.of("_embedded", ImmutableMap.of("breweries", breweries),
-            "_links", ImmutableMap.of("self", ImmutableMap.of("href", "/graph-breweries"))));
+            "_links", ImmutableMap.of("self", ImmutableMap.of("href",
+                String.format("https://localhost:%d/dbp/api/v1/graph-breweries?page=2", port)))));
 
     String result = response.readEntity(String.class);
     JSONAssert.assertEquals(expected.toString(), result, true);
@@ -317,7 +319,8 @@ public class OpenApiIntegrationTest {
         .put("fte", DBEERPEDIA.BROUWTOREN_FTE.doubleValue())
         .put("oprichting", DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue())
         .put("plaats", DBEERPEDIA.BROUWTOREN_PLACE.stringValue())
-        .put("_links", ImmutableMap.of("self", ImmutableMap.of("href", "/graph-breweries/{id}")))
+        .put("_links", ImmutableMap.of("self", ImmutableMap.of("href",
+            String.format("https://localhost:%d/dbp/api/v1/graph-breweries/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c", port))))
         .build());
     // @formatter:on
 

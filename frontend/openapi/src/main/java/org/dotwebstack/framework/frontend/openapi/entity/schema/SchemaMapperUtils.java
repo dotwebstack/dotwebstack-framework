@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableMap;
+import java.net.URI;
 import java.util.Map;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -20,8 +21,8 @@ final class SchemaMapperUtils {
     return ((Literal) value);
   }
 
-  public static Map<String, String> createLink(String href) {
-    return ImmutableMap.of("href", href);
+  public static Map<String, String> createLink(URI href) {
+    return ImmutableMap.of("href", href.toString());
   }
 
 }
