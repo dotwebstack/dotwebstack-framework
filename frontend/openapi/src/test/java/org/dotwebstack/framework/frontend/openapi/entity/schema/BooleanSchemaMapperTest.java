@@ -68,4 +68,9 @@ public class BooleanSchemaMapperTest {
     assertThat(supported, equalTo(false));
   }
 
+  @Test
+  public void mapGraphValueTest(){
+
+  }
+
 }

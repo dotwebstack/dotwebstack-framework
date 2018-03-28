@@ -39,7 +39,6 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
       return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
     }
 
-
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).booleanValue();
   }
 
