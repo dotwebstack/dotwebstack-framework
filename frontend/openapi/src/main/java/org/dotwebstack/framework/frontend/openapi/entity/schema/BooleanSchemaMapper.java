@@ -29,7 +29,8 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   @Override
   public Boolean mapGraphValue(@NonNull BooleanProperty property, @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    validateVendorExtensions(property);
+    validateVendorExtensions(property, ImmutableSet.of(
+            OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE));
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
@@ -47,15 +48,11 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   @SuppressWarnings("squid:S2447")
   private Boolean handleLdPathVendorExtension(BooleanProperty property, Value context,
       LdPathExecutor ldPathExecutor) {
-    String ldPathQuery =
-        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+    String vendorExtension = OpenApiSpecificationExtensions.LDPATH;
+    String ldPathQuery = (String) property.getVendorExtensions().get(vendorExtension);
 
     if (ldPathQuery == null) {
-      if (property.getRequired()) {
-        throw new SchemaMapperRuntimeException(
-            String.format("Boolean property has '%s' vendor extension that is null, "
-                + "but the property is required.", OpenApiSpecificationExtensions.LDPATH));
-      }
+      handleRequired(property, vendorExtension);
       return null;
     }
 
@@ -69,47 +66,10 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
         getSingleStatement(queryResult, ldPathQuery)).booleanValue();
   }
 
-  @Override
-  public boolean supports(@NonNull Property schema) {
-    return schema instanceof BooleanProperty;
-  }
-
-  /**
-   * Validates the vendor extensions that are declared on the BooleanProperty. A BooleanProperty
-   * should have exactly one of these vendor extensions:
-   * <ul>
-   * <li>{@link OpenApiSpecificationExtensions#CONSTANT_VALUE}</li>
-   * <li>{@link OpenApiSpecificationExtensions#LDPATH}</li>
-   * </ul>
-   *
-   * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
-   *         are encountered.
-   */
-  private void validateVendorExtensions(BooleanProperty property) {
-
-    ImmutableSet<String> supportedVendorExtensions = ImmutableSet.of(
-        OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
-
-    long nrOfSupportedVendorExtensionsPresent =
-        property.getVendorExtensions().keySet().stream().filter(
-            supportedVendorExtensions::contains).count();
-    if (nrOfSupportedVendorExtensionsPresent > 1) {
-      throw new SchemaMapperRuntimeException(String.format(
-          "A string object must have either no, a '%s' or '%s' property. "
-              + "A boolean object cannot have a combination of these.",
-          OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE));
-    }
-  }
-
-  @Override
-  protected Set<IRI> getSupportedDataTypes() {
-    return SUPPORTED_TYPES;
-  }
-
   @SuppressWarnings("squid:S2447")
   private Boolean handleConstantValueVendorExtension(BooleanProperty property) {
-    Object value =
-        property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
+    String vendorExtension = OpenApiSpecificationExtensions.CONSTANT_VALUE;
+    Object value = property.getVendorExtensions().get(vendorExtension);
 
     if (value != null) {
       if (isSupportedLiteral(value)) {
@@ -119,13 +79,19 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
       return Boolean.valueOf(value.toString());
     }
 
-    if (property.getRequired()) {
-      throw new SchemaMapperRuntimeException(String.format(
-          "Boolean property has '%s' vendor extension that is null, but the property is required.",
-          OpenApiSpecificationExtensions.CONSTANT_VALUE));
-    }
+    handleRequired(property, vendorExtension);
 
     return null;
+  }
+
+  @Override
+  public boolean supports(@NonNull Property schema) {
+    return schema instanceof BooleanProperty;
+  }
+
+  @Override
+  protected Set<IRI> getSupportedDataTypes() {
+    return SUPPORTED_TYPES;
   }
 
 }
