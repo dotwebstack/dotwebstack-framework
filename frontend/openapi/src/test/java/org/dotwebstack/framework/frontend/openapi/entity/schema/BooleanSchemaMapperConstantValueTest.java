@@ -5,13 +5,10 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
+import com.github.andrewoma.dexx.collection.Maps;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.BooleanProperty;
-
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.eclipse.rdf4j.model.Literal;
@@ -63,12 +60,6 @@ public class BooleanSchemaMapperConstantValueTest {
     assertBooleanTrue(result);
   }
 
-  private void assertBooleanTrue(Object result) {
-    assertThat(result, instanceOf(Boolean.class));
-    assertThat(result, is(true));
-  }
-
-
   @Test
   public void mapGraphValue_ReturnsBooleanValue_WhenBooleanConstantValueIsDefined() {
     // Arrange
@@ -98,7 +89,7 @@ public class BooleanSchemaMapperConstantValueTest {
   @Test
   public void mapGraphValue_ReturnsNull_ForNullConstantValue() {
     // Arrange
-    property.setVendorExtensions(nullableMapOf(CONSTANT_VALUE));
+    property.setVendorExtensions(Maps.of(CONSTANT_VALUE, null).asMap());
 
     // Act
     Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
@@ -110,7 +101,7 @@ public class BooleanSchemaMapperConstantValueTest {
   @Test
   public void mapGraphValue_ThrowsException_ForNullConstantAndRequiredProperty() {
     // Arrange
-    property.setVendorExtensions(nullableMapOf(CONSTANT_VALUE));
+    property.setVendorExtensions(Maps.of(CONSTANT_VALUE, null).asMap());
     property.setRequired(true);
 
     // Assert
@@ -123,13 +114,9 @@ public class BooleanSchemaMapperConstantValueTest {
     mapper.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
   }
 
-  private static Map<String, Object> nullableMapOf(String key) {
-    Map<String, Object> result = new HashMap<>();
-
-    result.put(key, null);
-
-    return result;
+  private static void assertBooleanTrue(Object result) {
+    assertThat(result, instanceOf(Boolean.class));
+    assertThat(result, is(true));
   }
-
 
 }

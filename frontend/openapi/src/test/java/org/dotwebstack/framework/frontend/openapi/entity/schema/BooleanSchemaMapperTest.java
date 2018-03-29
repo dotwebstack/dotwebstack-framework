@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import io.swagger.models.properties.BooleanProperty;
 import io.swagger.models.properties.StringProperty;
+import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -17,8 +18,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Collections;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BooleanSchemaMapperTest {
@@ -48,11 +47,12 @@ public class BooleanSchemaMapperTest {
     exception.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(property, ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
+    schemaMapper.mapTupleValue(property,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
-  public void mapTupleValue_ReturnValue_ForLiterals() {
+  public void mapTupleValue_ReturnsValue_ForLiterals() {
     // Arrange & Act
     Boolean result = schemaMapper.mapTupleValue(property,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
