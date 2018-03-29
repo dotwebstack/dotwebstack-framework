@@ -84,7 +84,7 @@ public class BooleanSchemaMapperTest {
     // Arrange
     property.vendorExtension(OpenApiSpecificationExtensions.LDPATH, "ld-Path");
     property.vendorExtension(CONSTANT_VALUE, "true");
-    ValueContext context = ValueContext.builder().build();
+    final ValueContext context = ValueContext.builder().build();
 
     // Assert
     exception.expect(SchemaMapperRuntimeException.class);

@@ -38,6 +38,7 @@ public class BooleanSchemaMapperLdPathTest {
 
   @Mock
   private GraphEntity entityMock;
+
   @Mock
   private Value subjectMock;
 
@@ -45,7 +46,6 @@ public class BooleanSchemaMapperLdPathTest {
 
   @Mock
   private LdPathExecutor ldPathExecutorMock;
-  private ValueContext valueContext;
 
 
   @Before
@@ -54,23 +54,22 @@ public class BooleanSchemaMapperLdPathTest {
     property = new BooleanProperty();
 
     mapperAdapter = new SchemaMapperAdapter(Collections.singletonList(schemaMapper));
-    valueContext = ValueContext.builder().build();
 
     when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
   @Test
-  public void mapGraphValueTest() {
+  public void mapGraphValue_ReturnsBooleanValue_ForLdPath() {
     // Arrange
     property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
     Literal literal = VALUE_FACTORY.createLiteral("true", XMLSchema.BOOLEAN);
 
     when(ldPathExecutorMock.ldPathQuery(subjectMock, "ld-path")).thenReturn(
-            ImmutableList.of(literal));
+        ImmutableList.of(literal));
 
     // Act
     Boolean result = schemaMapper.mapGraphValue(property, entityMock,
-            ValueContext.builder().value(subjectMock).build(), mapperAdapter);
+        ValueContext.builder().value(subjectMock).build(), mapperAdapter);
 
     // Assert
     assertThat(result, is(true));
