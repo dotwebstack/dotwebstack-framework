@@ -6,7 +6,8 @@ import org.eclipse.rdf4j.model.Resource;
 
 public class BooleanTermParameter extends TermParameter<Boolean> {
 
-  public BooleanTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required) {
+  public BooleanTermParameter(@NonNull Resource identifier, @NonNull String name,
+      boolean required) {
     this(identifier, name, required, null);
   }
 

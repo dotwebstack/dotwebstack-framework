@@ -18,10 +18,7 @@ import org.eclipse.rdf4j.model.IRI;
 
 abstract class AbstractLinkSchemaMapper implements SchemaMapper<ObjectProperty, Object> {
 
-  private AbstractLinkSchemaMapper() {
-    throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", AbstractLinkSchemaMapper.class));
-  }
+  AbstractLinkSchemaMapper() {}
 
   protected static URI buildUri(@NonNull RequestContext requestContext,
       Map<String, String> extraParams) {
