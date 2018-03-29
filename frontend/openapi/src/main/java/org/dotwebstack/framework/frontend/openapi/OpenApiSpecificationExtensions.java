@@ -16,6 +16,10 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String TYPE_SELF_LINK = "self-link";
 
+  public static final String TYPE_NEXT_LINK = "next-link";
+
+  public static final String TYPE_PREV_LINK = "prev-link";
+
   public static final String CONSTANT_VALUE = DOTWEBSTACK_PREFIX.concat("constant-value");
 
   public static final String RELATIVE_LINK = DOTWEBSTACK_PREFIX.concat("relative-link");

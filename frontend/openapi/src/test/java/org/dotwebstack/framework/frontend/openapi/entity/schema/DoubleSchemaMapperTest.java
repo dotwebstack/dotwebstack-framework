@@ -56,12 +56,12 @@ public class DoubleSchemaMapperTest {
 
   private DoubleSchemaMapper schemaMapper;
 
-  private DoubleProperty property;
+  private DoubleProperty schema;
 
   @Before
   public void setUp() {
     schemaMapper = new DoubleSchemaMapper();
-    property = new DoubleProperty();
+    schema = new DoubleProperty();
 
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
     schemaMapperAdapter = new SchemaMapperAdapter(Arrays.asList(schemaMapper));
@@ -74,14 +74,14 @@ public class DoubleSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(property, tupleEntityMock,
+    schemaMapper.mapTupleValue(schema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Double result = (Double) schemaMapper.mapTupleValue(property, tupleEntityMock,
+    Double result = (Double) schemaMapper.mapTupleValue(schema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
 
     // Assert
@@ -91,7 +91,7 @@ public class DoubleSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForIntegerProperty() {
     // Arrange & Act
-    Boolean supported = schemaMapper.supports(property);
+    Boolean supported = schemaMapper.supports(schema);
 
     // Assert
     assertThat(supported, equalTo(true));
@@ -109,7 +109,7 @@ public class DoubleSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(property, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(schema, graphEntityMock,
         ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
     // Assert
@@ -120,12 +120,12 @@ public class DoubleSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_ForLdPath() {
     // Arrange
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
     // Act
-    Double result = (Double) schemaMapperAdapter.mapGraphValue(property, graphEntityMock,
+    Double result = (Double) schemaMapperAdapter.mapGraphValue(schema, graphEntityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
@@ -141,12 +141,12 @@ public class DoubleSchemaMapperTest {
         DUMMY_EXPR, XMLSchema.DOUBLE));
 
     // Arrange
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_3));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(property, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(schema, graphEntityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
@@ -154,11 +154,11 @@ public class DoubleSchemaMapperTest {
   public void mapGraphValue_ThrowsException_ForEmptyLdPath() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage(String.format("Property '%s' must have a '%s' attribute",
-        property.getName(), OpenApiSpecificationExtensions.LDPATH));
+    thrown.expectMessage(String.format("Property '%s' must have a '%s' attribute", schema.getName(),
+        OpenApiSpecificationExtensions.LDPATH));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(property, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(schema, graphEntityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 

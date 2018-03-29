@@ -67,7 +67,7 @@ public class RefSchemaMapperTest {
   @Mock
   private LdPathExecutor ldPathExecutor;
 
-  private RefProperty property;
+  private RefProperty schema;
 
   private SchemaMapperAdapter schemaMapperAdapter;
 
@@ -82,13 +82,13 @@ public class RefSchemaMapperTest {
 
   @Before
   public void setUp() {
-    property = new RefProperty();
+    schema = new RefProperty();
   }
 
   @Test
   public void supports_ReturnsTrue_ForRefProperty() {
     // Act
-    boolean result = schemaMapper.supports(property);
+    boolean result = schemaMapper.supports(schema);
 
     // Assert
     assertTrue(result);
@@ -97,33 +97,33 @@ public class RefSchemaMapperTest {
   @Test
   public void mapGraphValue_ThrowsException_WhenRefCannotBeResolved() {
     // Arrange
-    property.set$ref(DUMMY_REF);
+    schema.set$ref(DUMMY_REF);
     when(graphEntityMock.getSwaggerDefinitions()).thenReturn(ImmutableMap.of());
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format("Unable to resolve reference to swagger model: '%s'.",
-        property.getSimpleRef()));
+        schema.getSimpleRef()));
 
     // Act
-    schemaMapper.mapGraphValue(property, graphEntityMock,
+    schemaMapper.mapGraphValue(schema, graphEntityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
   @Test
   public void mapGraphValue_ReturnsResults_WhenRefCanBeResolved() {
     // Arrange
-    property.set$ref(DUMMY_REF);
+    schema.set$ref(DUMMY_REF);
     Model refModel = new ModelImpl();
     refModel.setProperties(ImmutableMap.of(KEY_1, PROPERTY_1, KEY_2, PROPERTY_2));
 
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
     when(graphEntityMock.getSwaggerDefinitions()).thenReturn(
-        ImmutableMap.of(property.getSimpleRef(), refModel));
+        ImmutableMap.of(schema.getSimpleRef(), refModel));
     when(ldPathExecutor.ldPathQuery(context, LD_PATH_QUERY)).thenReturn(ImmutableList.of(VALUE_2));
 
     // Act
-    Map<String, Object> result = (Map<String, Object>) schemaMapper.mapGraphValue(property,
+    Map<String, Object> result = (Map<String, Object>) schemaMapper.mapGraphValue(schema,
         graphEntityMock, ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert

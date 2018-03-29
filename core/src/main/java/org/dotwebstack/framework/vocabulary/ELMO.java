@@ -87,6 +87,10 @@ public final class ELMO {
 
   public static final IRI TERM_PARAMETER;
 
+  public static final IRI PAGE_PARAMETER;
+
+  public static final IRI PAGE_SIZE_PARAMETER;
+
   public static final IRI OPTIONAL_PARAMETER_PROP;
 
   public static final IRI REQUIRED_PARAMETER_PROP;
@@ -208,6 +212,8 @@ public final class ELMO {
 
     PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "Parameter");
     TERM_PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "TermParameter");
+    PAGE_PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "PageParameter");
+    PAGE_SIZE_PARAMETER = valueFactory.createIRI(ELMO.NAMESPACE, "PageSizeParameter");
 
     OPTIONAL_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "optionalParameter");
     REQUIRED_PARAMETER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "requiredParameter");

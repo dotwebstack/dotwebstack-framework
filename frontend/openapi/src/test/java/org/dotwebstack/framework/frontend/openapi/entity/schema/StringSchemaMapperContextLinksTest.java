@@ -50,13 +50,13 @@ public class StringSchemaMapperContextLinksTest {
 
   private SchemaMapper<StringProperty, ?> schemaMapper;
 
-  private StringProperty property;
+  private StringProperty schema;
 
   @Before
   public void setUp() {
     schemaMapper = new StringSchemaMapper();
     schemaMapperAdapter = new SchemaMapperAdapter(ImmutableList.of(schemaMapper));
-    property = new StringProperty();
+    schema = new StringProperty();
 
     valueContextMock = ValueContext.builder().value(VALUE).build();
 
@@ -72,10 +72,10 @@ public class StringSchemaMapperContextLinksTest {
         "Property '" + OpenApiSpecificationExtensions.CONTEXT_LINKS + "' should be defined as Map");
 
     // Arrange
-    property.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, null);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, null);
 
     // Act
-    schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock, schemaMapperAdapter);
   }
 
   @Test
@@ -87,11 +87,10 @@ public class StringSchemaMapperContextLinksTest {
 
     // Arrange
     Map<String, Object> contextLinksExtension = new HashMap<>();
-    property.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS,
-        contextLinksExtension);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, contextLinksExtension);
 
     // Act
-    schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock, schemaMapperAdapter);
   }
 
   @Test
@@ -102,11 +101,11 @@ public class StringSchemaMapperContextLinksTest {
         "Property '" + OpenApiSpecificationExtensions.KEY_LDPATH + "' should be defined as String");
 
     // Arrange
-    property.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS,
+    schema.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS,
         ImmutableMap.of(StringSchemaMapper.LINK_CHOICES, Lists.newArrayList()));
 
     // Act
-    schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock, schemaMapperAdapter);
   }
 
   @SuppressWarnings("unchecked")
@@ -116,8 +115,7 @@ public class StringSchemaMapperContextLinksTest {
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
 
     Map<String, Object> contextLinksExtension = new HashMap<>();
-    property.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS,
-        contextLinksExtension);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, contextLinksExtension);
 
     List<Object> choices = new ArrayList<>();
     contextLinksExtension.put(StringSchemaMapper.LINK_CHOICES, choices);
@@ -147,8 +145,8 @@ public class StringSchemaMapperContextLinksTest {
     when(requestContext.getBaseUri()).thenReturn("/base");
 
     // Act
-    Object result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
-        schemaMapperAdapter);
+    Object result =
+        schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock, schemaMapperAdapter);
 
     // Assert
     /*
@@ -168,8 +166,8 @@ public class StringSchemaMapperContextLinksTest {
         choice2PatternResult);
 
     // Act (2)
-    result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
-        schemaMapperAdapter);
+    result =
+        schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock, schemaMapperAdapter);
 
     // Assert (2)
     Assert.assertEquals("/base/abc/object_type_2", result);
@@ -181,8 +179,8 @@ public class StringSchemaMapperContextLinksTest {
     when(ldPathExecutorMock.ldPathQuery(VALUE, "key / path")).thenReturn(realKeyResult);
 
     // Act (3)
-    result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
-        schemaMapperAdapter);
+    result =
+        schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock, schemaMapperAdapter);
 
     // Assert (3)
     Assert.assertNull(result);

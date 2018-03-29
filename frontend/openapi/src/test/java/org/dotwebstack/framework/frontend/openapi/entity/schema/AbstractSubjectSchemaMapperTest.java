@@ -29,7 +29,7 @@ public class AbstractSubjectSchemaMapperTest {
   private GraphEntity entityMock;
 
   @Mock
-  private Property propertyMock;
+  private Property schemaMock;
 
   private AbstractSubjectSchemaMapper mapper = new TestSubjectSchemaMapper();
 
@@ -39,10 +39,10 @@ public class AbstractSubjectSchemaMapperTest {
   @Test
   public void hasSubjectQueryVendorExt_ReturnsFalse_WhenPropDoesNotHaveSubjectQueryVendorExt() {
     // Arrange
-    when(propertyMock.getVendorExtensions()).thenReturn(ImmutableMap.of());
+    when(schemaMock.getVendorExtensions()).thenReturn(ImmutableMap.of());
 
     // Act
-    boolean result = mapper.hasSubjectVendorExtension(propertyMock);
+    boolean result = mapper.hasSubjectVendorExtension(schemaMock);
 
     // Assert
     assertThat(result, is(false));
@@ -51,11 +51,11 @@ public class AbstractSubjectSchemaMapperTest {
   @Test
   public void hasSubjectQueryVendorExt_ReturnsTrue_WhenPropDoesHaveSubjectQueryVendorExt() {
     // Arrange
-    when(propertyMock.getVendorExtensions()).thenReturn(
+    when(schemaMock.getVendorExtensions()).thenReturn(
         ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT, true));
 
     // Act
-    boolean result = mapper.hasSubjectVendorExtension(propertyMock);
+    boolean result = mapper.hasSubjectVendorExtension(schemaMock);
 
     // Assert
     assertThat(result, is(true));
@@ -64,11 +64,11 @@ public class AbstractSubjectSchemaMapperTest {
   @Test
   public void getSubject_ReturnsNull_ForOptionalPropertyWithZeroSubjects() {
     // Arrange
-    when(propertyMock.getRequired()).thenReturn(false);
+    when(schemaMock.getRequired()).thenReturn(false);
     when(entityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
-    Value subject = mapper.getSubject(propertyMock, entityMock);
+    Value subject = mapper.getSubject(schemaMock, entityMock);
 
     // Assert
     assertThat(subject, is(nullValue()));
@@ -80,7 +80,7 @@ public class AbstractSubjectSchemaMapperTest {
     when(entityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
 
     // Act
-    Value subject = mapper.getSubject(propertyMock, entityMock);
+    Value subject = mapper.getSubject(schemaMock, entityMock);
 
     // Assert
     assertThat(subject, equalTo(DBEERPEDIA.BROUWTOREN));
@@ -93,11 +93,11 @@ public class AbstractSubjectSchemaMapperTest {
     thrown.expectMessage("Expected a single subject, but subject query yielded no results.");
 
     // Arrange
-    when(propertyMock.getRequired()).thenReturn(true);
+    when(schemaMock.getRequired()).thenReturn(true);
     when(entityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
-    mapper.getSubject(propertyMock, entityMock);
+    mapper.getSubject(schemaMock, entityMock);
   }
 
   @Test
@@ -111,7 +111,7 @@ public class AbstractSubjectSchemaMapperTest {
         ImmutableSet.of(DBEERPEDIA.BROUWTOREN, DBEERPEDIA.MAXIMUS));
 
     // Act
-    mapper.getSubject(propertyMock, entityMock);
+    mapper.getSubject(schemaMock, entityMock);
   }
 
   private static class TestSubjectSchemaMapper extends AbstractSubjectSchemaMapper {

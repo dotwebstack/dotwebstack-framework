@@ -11,7 +11,7 @@ public class StringTermParameter extends TermParameter<String> {
     this(identifier, name, required, null);
   }
 
-  StringTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
+  public StringTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
       String defaultValue) {
     super(identifier, name, required, defaultValue);
   }

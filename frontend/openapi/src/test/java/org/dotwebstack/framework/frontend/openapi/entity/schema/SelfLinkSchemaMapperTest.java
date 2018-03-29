@@ -7,10 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.atlassian.oai.validator.model.NormalisedPath;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Operation;
-import io.swagger.models.parameters.QueryParameter;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import java.net.URI;
@@ -55,14 +52,14 @@ public class SelfLinkSchemaMapperTest {
 
   private SelfLinkSchemaMapper schemaMapper;
 
-  private ObjectProperty property;
+  private ObjectProperty schema;
 
   @Before
   public void setUp() {
     schemaMapper = new SelfLinkSchemaMapper();
 
-    property = new ObjectProperty();
-    property.setVendorExtension(OpenApiSpecificationExtensions.TYPE,
+    schema = new ObjectProperty();
+    schema.setVendorExtension(OpenApiSpecificationExtensions.TYPE,
         OpenApiSpecificationExtensions.TYPE_SELF_LINK);
 
     when(apiOperationMock.getRequestPath()).thenReturn(requestPathMock);
@@ -76,104 +73,34 @@ public class SelfLinkSchemaMapperTest {
   }
 
   @Test
-  public void mapTupleValue_ReturnsSimpleLink_WithNoRequestParameters() {
+  public void mapTupleValue_ReturnsLink_WhenInvoked() {
     // Arrange
     when(requestPathMock.normalised()).thenReturn("/breweries");
 
     // Act
-    Object result = schemaMapper.mapTupleValue(property, tupleEntityMock, valueContextMock);
+    Object result = schemaMapper.mapTupleValue(schema, tupleEntityMock, valueContextMock);
 
     // Assert
     assertThat(result, equalTo(SchemaMapperUtils.createLink(URI.create(baseUri + "/breweries"))));
   }
 
   @Test
-  public void mapGraphValue_ReturnsSimpleLink_WithNoRequestParameters() {
+  public void mapGraphValue_ReturnsLink_WhenInvoked() {
     // Arrange
     when(requestPathMock.normalised()).thenReturn("/breweries");
 
     // Act
-    Object result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
+    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock,
         schemaMapperAdapterMock);
 
     // Assert
     assertThat(result, equalTo(SchemaMapperUtils.createLink(URI.create(baseUri + "/breweries"))));
-  }
-
-  @Test
-  public void mapGraphValue_ReturnsPopulatedLink_WithPathParameter() {
-    // Arrange
-    when(requestPathMock.normalised()).thenReturn("/breweries/{id}");
-    when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("id", "123"));
-
-    // Act
-    Object result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
-        schemaMapperAdapterMock);
-
-    // Assert
-    assertThat(result,
-        equalTo(SchemaMapperUtils.createLink(URI.create(baseUri + "/breweries/123"))));
-  }
-
-  @Test
-  public void mapGraphValue_ReturnsLinkWithQueryParameters_WhenParametersAreSent() {
-    // Arrange
-    when(requestPathMock.normalised()).thenReturn("/breweries");
-    QueryParameter param = new QueryParameter().name("a");
-    param.setDefault("789");
-    when(operationMock.getParameters()).thenReturn(
-        ImmutableList.of(param, new QueryParameter().name("b")));
-    when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "b", "456"));
-
-    // Act
-    Object result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
-        schemaMapperAdapterMock);
-
-    // Assert
-    assertThat(result,
-        equalTo(SchemaMapperUtils.createLink(URI.create(baseUri + "/breweries?a=123&b=456"))));
-  }
-
-  @Test
-  public void mapGraphValue_ReturnsLinkWithExcludedParameter_WhenParameterEqualDefault() {
-    // Arrange
-    when(requestPathMock.normalised()).thenReturn("/breweries");
-    QueryParameter param = new QueryParameter().name("a");
-    param.setDefault("123");
-    when(operationMock.getParameters()).thenReturn(
-        ImmutableList.of(param, new QueryParameter().name("b")));
-    when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "b", "456"));
-
-    // Act
-    Object result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
-        schemaMapperAdapterMock);
-
-    // Assert
-    assertThat(result,
-        equalTo(SchemaMapperUtils.createLink(URI.create(baseUri + "/breweries?b=456"))));
-  }
-
-  @Test
-  public void mapGraphValue_IgnoresQueryParameter_ForUnknownParameter() {
-    // Arrange
-    when(requestPathMock.normalised()).thenReturn("/breweries");
-    when(operationMock.getParameters()).thenReturn(
-        ImmutableList.of(new QueryParameter().name("a"), new QueryParameter().name("b")));
-    when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "c", "456"));
-
-    // Act
-    Object result = schemaMapper.mapGraphValue(property, graphEntityMock, valueContextMock,
-        schemaMapperAdapterMock);
-
-    // Assert
-    assertThat(result,
-        equalTo(SchemaMapperUtils.createLink(URI.create(baseUri + "/breweries?a=123"))));
   }
 
   @Test
   public void supports_ReturnsTrue_ForObjectPropertyWithRequiredVendorExtension() {
     // Act
-    boolean result = schemaMapper.supports(property);
+    boolean result = schemaMapper.supports(schema);
 
     // Assert
     assertThat(result, is(true));

@@ -50,19 +50,19 @@ public class DateSchemaMapperTest {
 
   private DateSchemaMapper schemaMapper;
 
-  private DateProperty property;
+  private DateProperty schema;
 
   @Before
   public void setUp() {
     schemaMapper = new DateSchemaMapper();
-    property = new DateProperty();
+    schema = new DateProperty();
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
 
   @Test
   public void supports_ReturnsTrue_ForDateProperty() {
     // Act
-    boolean result = schemaMapper.supports(property);
+    boolean result = schemaMapper.supports(schema);
 
     // Arrange
     assertThat(result, is(true));
@@ -71,7 +71,7 @@ public class DateSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_WhenNoLdPathHasBeenSupplied() {
     // Act
-    LocalDate result = schemaMapper.mapGraphValue(property, graphEntityMock,
+    LocalDate result = schemaMapper.mapGraphValue(schema, graphEntityMock,
         ValueContext.builder().value(VALUE_1).build(), schemaMapperAdapter);
 
     // Assert
@@ -83,11 +83,11 @@ public class DateSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_ForLdPath() {
     // Arrange
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
-    LocalDate result = schemaMapper.mapGraphValue(property, graphEntityMock,
+    LocalDate result = schemaMapper.mapGraphValue(schema, graphEntityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
 
     // Assert
@@ -102,13 +102,13 @@ public class DateSchemaMapperTest {
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         DUMMY_EXPR, XMLSchema.DATE.stringValue()));
     // Arrange
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
         ImmutableList.of(VALUE_3));
 
     // Act
 
-    schemaMapper.mapGraphValue(property, graphEntityMock,
+    schemaMapper.mapGraphValue(schema, graphEntityMock,
         ValueContext.builder().value(context).build(), schemaMapperAdapter);
   }
 
