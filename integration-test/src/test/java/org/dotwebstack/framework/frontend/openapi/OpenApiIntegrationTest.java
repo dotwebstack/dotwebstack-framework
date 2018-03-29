@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 import io.swagger.models.HttpMethod;
 import java.io.IOException;
 import java.util.List;
@@ -222,26 +223,17 @@ public class OpenApiIntegrationTest {
         .subject(DBEERPEDIA.BROUWTOREN)
           .add(RDF.TYPE,DBEERPEDIA.BREWERY_TYPE)
           .add(DBEERPEDIA.NAME,DBEERPEDIA.BROUWTOREN_NAME)
-        .subject(DBEERPEDIA.BROUWTOREN)
           .add(DBEERPEDIA.FTE,DBEERPEDIA.BROUWTOREN_FTE)
-        .subject(DBEERPEDIA.BROUWTOREN)
           .add(DBEERPEDIA.FOUNDATION,DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION)
-        .subject(DBEERPEDIA.BROUWTOREN)
           .add(DBEERPEDIA.PLACE,DBEERPEDIA.BROUWTOREN_PLACE)
-        .subject(DBEERPEDIA.BROUWTOREN)
           .add(DBEERPEDIA.FTE,DBEERPEDIA.BROUWTOREN_FTE)
-        .subject(DBEERPEDIA.BROUWTOREN)
           .add(DBEERPEDIA.SINCE,DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION)
         .subject(DBEERPEDIA.MAXIMUS)
           .add(RDF.TYPE,DBEERPEDIA.BREWERY_TYPE)
           .add(DBEERPEDIA.NAME,DBEERPEDIA.MAXIMUS_NAME)
-        .subject(DBEERPEDIA.MAXIMUS)
           .add(DBEERPEDIA.FTE,DBEERPEDIA.MAXIMUS_FTE)
-        .subject(DBEERPEDIA.MAXIMUS)
           .add(DBEERPEDIA.FOUNDATION,DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION)
-        .subject(DBEERPEDIA.MAXIMUS)
           .add(DBEERPEDIA.PLACE,DBEERPEDIA.MAXIMUS_PLACE)
-        .subject(DBEERPEDIA.MAXIMUS)
           .add(DBEERPEDIA.SINCE,DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION)
         .build();
     // @formatter:on
@@ -249,38 +241,43 @@ public class OpenApiIntegrationTest {
     SparqlHttpStub.returnGraph(model);
 
     // Act
-    Response response = target.path("/dbp/api/v1/graph-breweries").request().accept(
-        MediaType.APPLICATION_JSON_TYPE).get();
+    Response response =
+        target.path("/dbp/api/v1/graph-breweries").queryParam("page", 2).request().accept(
+            MediaType.APPLICATION_JSON_TYPE).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
-    JSONArray expected = new JSONArray();
-    expected.put(new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
-        DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue()).put("fte",
+    JSONArray breweries = new JSONArray();
+    breweries.put(new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
+        DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.intValue()).put("fte",
             DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
                 DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
                     DBEERPEDIA.MAXIMUS_PLACE.stringValue()));
-    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
-        DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
-            DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
-                DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
-                    DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
+    breweries.put(
+        new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
+            DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue()).put("fte",
+                DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
+                    DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+                        DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
+
+    JSONObject expected = new JSONObject(ImmutableMap.of("_embedded",
+        ImmutableMap.of("breweries", breweries), "_links",
+        ImmutableMap.of("self",
+            ImmutableMap.of("href",
+                String.format("https://localhost:%d/dbp/api/v1/graph-breweries?page=2", port)),
+            "prev", ImmutableMap.of("href",
+                String.format("https://localhost:%d/dbp/api/v1/graph-breweries?page=1", port)))));
 
     String result = response.readEntity(String.class);
     JSONAssert.assertEquals(expected.toString(), result, true);
   }
 
   @Test
-  public void get_GraphGetBreweryCollection_ThroughOpenApi_Returns404ForEmptyQueryResult()
-      throws JSONException {
+  public void get_GraphGetBreweryCollection_ThroughOpenApi_Returns404ForEmptyQueryResult() {
     // Arrange
-    // @formatter:off
-    Model model = new ModelBuilder()
-        .build();
-    // @formatter:on
-
+    Model model = new ModelBuilder().build();
     SparqlHttpStub.returnGraph(model);
 
     // Act
@@ -289,6 +286,49 @@ public class OpenApiIntegrationTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
+  }
+
+  @Test
+  public void get_GraphGetSingleBrewery_ThroughOpenApi() throws JSONException {
+    // Arrange
+    // @formatter:off
+    Model model = new ModelBuilder()
+        .subject(DBEERPEDIA.BROUWTOREN)
+          .add(RDF.TYPE,DBEERPEDIA.BREWERY_TYPE)
+          .add(DBEERPEDIA.NAME,DBEERPEDIA.BROUWTOREN_NAME)
+          .add(DBEERPEDIA.FTE,DBEERPEDIA.BROUWTOREN_FTE)
+          .add(DBEERPEDIA.FOUNDATION,DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION)
+          .add(DBEERPEDIA.PLACE,DBEERPEDIA.BROUWTOREN_PLACE)
+          .add(DBEERPEDIA.FTE,DBEERPEDIA.BROUWTOREN_FTE)
+          .add(DBEERPEDIA.SINCE,DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION)
+        .build();
+    // @formatter:on
+
+    SparqlHttpStub.returnGraph(model);
+
+    // Act
+    Response response = target.path(
+        "/dbp/api/v1/graph-breweries/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c").request().accept(
+            MediaType.APPLICATION_JSON_TYPE).get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
+
+    // @formatter:off
+    JSONObject expected = new JSONObject(ImmutableMap.<String, Object>builder()
+        .put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue())
+        .put("sinds", DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue())
+        .put("fte", DBEERPEDIA.BROUWTOREN_FTE.doubleValue())
+        .put("oprichting", DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue())
+        .put("plaats", DBEERPEDIA.BROUWTOREN_PLACE.stringValue())
+        .put("_links", ImmutableMap.of("self", ImmutableMap.of("href",
+            String.format("https://localhost:%d/dbp/api/v1/graph-breweries/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c", port))))
+        .build());
+    // @formatter:on
+
+    String result = response.readEntity(String.class);
+    JSONAssert.assertEquals(expected.toString(), result, true);
   }
 
 }

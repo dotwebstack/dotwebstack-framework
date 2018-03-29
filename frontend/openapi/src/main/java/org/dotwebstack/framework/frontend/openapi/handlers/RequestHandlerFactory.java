@@ -1,10 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
+import io.swagger.models.Response;
 import io.swagger.models.Swagger;
-import io.swagger.models.properties.Property;
-import java.util.Map;
-import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -24,9 +22,9 @@ public class RequestHandlerFactory {
   }
 
   public RequestHandler newRequestHandler(@NonNull ApiOperation apiOperation,
-      @NonNull InformationProduct informationProduct, @NonNull Map<MediaType, Property> schemaMap,
+      @NonNull InformationProduct informationProduct, @NonNull Response response,
       @NonNull Swagger swagger) {
-    return new RequestHandler(apiOperation, informationProduct, schemaMap, requestParameterMapper,
+    return new RequestHandler(apiOperation, informationProduct, response, requestParameterMapper,
         new ApiRequestValidator(SwaggerUtils.createValidator(swagger), requestParameterExtractor),
         swagger);
   }

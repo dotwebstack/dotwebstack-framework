@@ -11,37 +11,38 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayProperty, Object> {
+public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull ValueContext valueContext) {
+  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull TupleEntity entity,
+      @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ArrayProperty property,
-      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull ArrayProperty schema, @NonNull GraphEntity entity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    if (hasSubjectQueryVendorExtension(property)) {
-      Set<Resource> subjects = getSubjects(property, graphEntity);
+    if (hasSubjectVendorExtension(schema)) {
+      Set<Resource> subjects = entity.getSubjects();
 
       subjects.forEach(subject -> {
         ValueContext subjectContext = valueContext.toBuilder().value(subject).build();
 
-        builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntity,
-            subjectContext, schemaMapperAdapter));
+        builder.add(schemaMapperAdapter.mapGraphValue(schema.getItems(), entity, subjectContext,
+            schemaMapperAdapter));
       });
     } else if (valueContext.getValue() != null) {
-      if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(property, graphEntity, valueContext, schemaMapperAdapter, builder);
+      if (schema.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+        queryAndValidate(schema, entity, valueContext, schemaMapperAdapter, builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
             "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
@@ -64,8 +65,8 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
     queryResult.forEach(valueNext -> {
       ValueContext newValueContext = valueContext.toBuilder().value(valueNext).build();
       Optional innerPropertySolved =
-          Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
-              graphEntity, newValueContext, schemaMapperAdapter));
+          Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntity,
+              newValueContext, schemaMapperAdapter));
       builder.add(innerPropertySolved);
 
     });
