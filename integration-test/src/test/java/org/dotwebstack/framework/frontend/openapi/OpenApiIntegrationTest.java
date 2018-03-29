@@ -262,10 +262,13 @@ public class OpenApiIntegrationTest {
                     DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
                         DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
 
-    JSONObject expected =
-        new JSONObject(ImmutableMap.of("_embedded", ImmutableMap.of("breweries", breweries),
-            "_links", ImmutableMap.of("self", ImmutableMap.of("href",
-                String.format("https://localhost:%d/dbp/api/v1/graph-breweries?page=2", port)))));
+    JSONObject expected = new JSONObject(ImmutableMap.of("_embedded",
+        ImmutableMap.of("breweries", breweries), "_links",
+        ImmutableMap.of("self",
+            ImmutableMap.of("href",
+                String.format("https://localhost:%d/dbp/api/v1/graph-breweries?page=2", port)),
+            "prev", ImmutableMap.of("href",
+                String.format("https://localhost:%d/dbp/api/v1/graph-breweries?page=1", port)))));
 
     String result = response.readEntity(String.class);
     JSONAssert.assertEquals(expected.toString(), result, true);

@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -8,6 +9,7 @@ import com.atlassian.oai.validator.model.ApiOperation;
 import com.atlassian.oai.validator.model.NormalisedPath;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.QueryParameter;
 import io.swagger.models.properties.ObjectProperty;
@@ -17,8 +19,13 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.param.term.IntegerTermParameter;
+import org.dotwebstack.framework.vocabulary.ELMO;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -28,8 +35,14 @@ public class AbstractLinkSchemaMapperTest {
 
   private final String baseUri = "http://localhost:8080/api/v2";
 
+  @Rule
+  public final ExpectedException thrown = ExpectedException.none();
+
   @Mock
   private RequestContext requestContextMock;
+
+  @Mock
+  private InformationProduct informationProductMock;
 
   @Mock
   private ApiOperation apiOperationMock;
@@ -57,6 +70,7 @@ public class AbstractLinkSchemaMapperTest {
 
     when(requestContextMock.getBaseUri()).thenReturn(baseUri);
     when(requestContextMock.getApiOperation()).thenReturn(apiOperationMock);
+    when(requestContextMock.getInformationProduct()).thenReturn(informationProductMock);
   }
 
   @Test
@@ -161,6 +175,84 @@ public class AbstractLinkSchemaMapperTest {
 
     // Assert
     assertThat(result, equalTo(URI.create(baseUri + "/breweries?a=456")));
+  }
+
+  @Test
+  public void getPageTermParameter_ReturnsTermParameter_WhenFound() {
+    // Arrange
+    IntegerTermParameter parameter = new IntegerTermParameter(ELMO.PAGE_PARAMETER, "page", false);
+    when(informationProductMock.getParameters()).thenReturn(ImmutableSet.of(parameter));
+
+    // Act
+    IntegerTermParameter result = schemaMapper.getPageTermParameter(requestContextMock);
+
+    // Assert
+    assertThat(result, sameInstance(parameter));
+  }
+
+  @Test
+  public void getPageTermParameter_ThrowsException_WhenNotFound() {
+    // Assert
+    thrown.expect(SchemaMapperRuntimeException.class);
+
+    // Arrange
+    when(informationProductMock.getParameters()).thenReturn(ImmutableSet.of());
+
+    // Act
+    schemaMapper.getPageTermParameter(requestContextMock);
+  }
+
+  @Test
+  public void getPageSizeTermParameter_ReturnsTermParameter_WhenFound() {
+    // Arrange
+    IntegerTermParameter parameter =
+        new IntegerTermParameter(ELMO.PAGE_SIZE_PARAMETER, "pageSize", false);
+    when(informationProductMock.getParameters()).thenReturn(ImmutableSet.of(parameter));
+
+    // Act
+    IntegerTermParameter result = schemaMapper.getPageSizeTermParameter(requestContextMock);
+
+    // Assert
+    assertThat(result, sameInstance(parameter));
+  }
+
+  @Test
+  public void getPageSizeTermParameter_ThrowsException_WhenNotFound() {
+    // Assert
+    thrown.expect(SchemaMapperRuntimeException.class);
+
+    // Arrange
+    when(informationProductMock.getParameters()).thenReturn(ImmutableSet.of());
+
+    // Act
+    schemaMapper.getPageSizeTermParameter(requestContextMock);
+  }
+
+  @Test
+  public void getPageQueryParameter_ReturnsQueryParameter_WhenFound() {
+    // Arrange
+    QueryParameter parameter = new QueryParameter();
+    parameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+        ELMO.PAGE_PARAMETER.stringValue());
+    when(operationMock.getParameters()).thenReturn(ImmutableList.of(parameter));
+
+    // Act
+    QueryParameter result = schemaMapper.getPageQueryParameter(requestContextMock);
+
+    // Assert
+    assertThat(result, sameInstance(parameter));
+  }
+
+  @Test
+  public void getPageQueryParameter_ThrowsException_WhenNotFound() {
+    // Assert
+    thrown.expect(SchemaMapperRuntimeException.class);
+
+    // Arrange
+    when(operationMock.getParameters()).thenReturn(ImmutableList.of());
+
+    // Act
+    schemaMapper.getPageQueryParameter(requestContextMock);
   }
 
   private static class TestLinkSchemaMapper extends AbstractLinkSchemaMapper {
