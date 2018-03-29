@@ -114,7 +114,7 @@ paths:
         required: false
         type: integer
         enum: [10, 20, 50, 100]
-        default: 20
+        default: 10
         x-dotwebstack-parameter: "http://dotwebstack.org/def/elmo#PageSizeParameter"
       responses:
         200:
@@ -162,6 +162,7 @@ paths:
                           format: string
                           x-dotwebstack-ldpath: "dbeerpedia:Place"
               _links:
+                x-dotwebstack-exclude-properties-when-empty-or-null: true
                 type: object
                 required:
                   - self
@@ -174,6 +175,25 @@ paths:
                     properties:
                       href:
                         type: string
+                        format: uri
+                  prev:
+                    type: object
+                    x-dotwebstack-type: prev-link
+                    required:
+                      - href
+                    properties:
+                      href:
+                        type: string
+                        format: uri
+                  next:
+                    type: object
+                    x-dotwebstack-type: next-link
+                    required:
+                      - href
+                    properties:
+                      href:
+                        type: string
+                        format: uri
         404:
           description: "Status 404"
   /graph-breweries/{id}:
