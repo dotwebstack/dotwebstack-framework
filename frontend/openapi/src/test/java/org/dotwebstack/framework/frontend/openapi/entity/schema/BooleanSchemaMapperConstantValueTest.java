@@ -116,7 +116,7 @@ public class BooleanSchemaMapperConstantValueTest {
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(
-        "Boolean property has 'x-dotwebstack-constant-value' vendor extension that is null, "
+        "BooleanProperty has 'x-dotwebstack-constant-value' vendor extension that is null, "
             + "but the property is required");
 
     // Act
