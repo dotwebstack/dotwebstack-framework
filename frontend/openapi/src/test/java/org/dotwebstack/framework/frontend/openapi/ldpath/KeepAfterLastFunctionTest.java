@@ -28,43 +28,65 @@ public class KeepAfterLastFunctionTest extends AbstractFunctionTest {
   }
 
   @Test
-  public void testKeepAfterLastFunction() throws ParseException {
+  public void apply_ReturnsCollection_ForInputWithSeparator() throws ParseException {
+    // Arrange
     final String id = "baz";
     final String ldPath =
         String.format("fn:keepAfterLast(<%s>, \"%s\") :: xsd:string", predicate.stringValue(), "/");
     addStatement(repository.getValueFactory().createStatement(subject, predicate, iri("ex", id)));
 
+    // Act
     final ImmutableCollection<Object> values = evaluateRule(ldPath, subject);
 
+    // Assert
     assertThat(values.size(), Matchers.equalTo(1));
     assertThat(values, Matchers.contains("example.com#baz"));
   }
 
   @Test
-  public void testNoOccurrence() throws ParseException {
+  public void apply_ReturnsCollection_ForInputWithoutSeparator() throws ParseException {
+    // Arrange
     final String value = "stringLiteral";
     final String ldPath =
         String.format("fn:keepAfterLast(<%s>, \"%s\") :: xsd:string", predicate.stringValue(), "/");
     addStatement(repository.getValueFactory().createStatement(subject, predicate,
         repository.getValueFactory().createLiteral(value)));
 
+    // Act
     final ImmutableCollection<Object> values = evaluateRule(ldPath, subject);
 
+    // Assert
     assertThat(values.size(), Matchers.equalTo(1));
     assertThat(values, Matchers.contains(value));
   }
 
   @Test
-  public void testValidateNumberOfArguments() throws ParseException {
+  public void apply_ThrowsException_ForInvalidNumberOfArguments() throws ParseException {
+    // Arrange
     final String id = "baz";
     final String ldPath =
         String.format("fn:keepAfterLast(<%s>) :: xsd:string", predicate.stringValue());
     addStatement(repository.getValueFactory().createStatement(subject, predicate, iri("ex", id)));
 
+    // Assert
     expectedException.expect(IllegalArgumentException.class);
     expectedException.expectMessage("LdPath function keepAfterLast requires 2 arguments");
 
+    // Act
     evaluateRule(ldPath, subject);
+  }
+
+  @Test
+  public void apply_ReturnsEmptyCollection_ForEmptyCollectionInArgsInput() throws ParseException {
+    // Arrange
+    final String ldPath =
+        String.format("fn:keepAfterLast(<http://google.com>, \"%s\") :: xsd:string", "/");
+
+    // Act
+    final ImmutableCollection<Object> values = evaluateRule(ldPath, subject);
+
+    // Assert
+    assertThat(values.size(), Matchers.equalTo(0));
   }
 
 }
