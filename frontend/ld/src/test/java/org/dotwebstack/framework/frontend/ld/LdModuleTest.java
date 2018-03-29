@@ -8,8 +8,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScannerTest.StubGraphEntityWriter;
+import org.dotwebstack.framework.frontend.ld.mappers.LdEndPointRequestMapper;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
-import org.dotwebstack.framework.frontend.ld.mappers.LdRepresentationRequestMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class LdModuleTest {
   private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
 
   @Mock
-  private LdRepresentationRequestMapper ldRepresentationRequestMapper;
+  private LdEndPointRequestMapper ldEndPointRequestMapper;
 
   @Mock
   private LdRedirectionRequestMapper ldRedirectionRequestMapper;
@@ -42,7 +42,7 @@ public class LdModuleTest {
 
   @Before
   public void setUp() {
-    ldModule = new LdModule(ldRepresentationRequestMapper, ldRedirectionRequestMapper,
+    ldModule = new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper,
         supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
     ldModule.initialize(httpConfiguration);
   }
@@ -53,8 +53,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(null, ldRedirectionRequestMapper,
-        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
+    new LdModule(null, ldRedirectionRequestMapper, supportedWriterMediaTypesScanner,
+        supportedReaderMediaTypesScanner);
   }
 
   @Test
@@ -63,8 +63,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldRepresentationRequestMapper, null,
-        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
+    new LdModule(ldEndPointRequestMapper, null, supportedWriterMediaTypesScanner,
+        supportedReaderMediaTypesScanner);
   }
 
   @Test
@@ -73,8 +73,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldRepresentationRequestMapper, ldRedirectionRequestMapper,
-        null, supportedReaderMediaTypesScanner);
+    new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper, null,
+        supportedReaderMediaTypesScanner);
   }
 
   @Test

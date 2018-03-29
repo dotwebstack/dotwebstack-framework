@@ -6,6 +6,7 @@ import org.dotwebstack.framework.frontend.http.error.WebApplicationExceptionMapp
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
 import org.glassfish.jersey.servlet.ServletProperties;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +21,16 @@ public class HttpConfiguration extends ResourceConfig {
     httpModules.forEach(module -> module.initialize(this));
   }
 
-  public boolean resourceAlreadyRegistered(@NonNull String absolutePath) {
-    return super.getResources().stream().map(Resource::getPath).anyMatch(absolutePath::equals);
+  public boolean resourceAlreadyRegistered(@NonNull String absolutePath, @NonNull String method) {
+    for (Resource resource : super.getResources()) {
+      for (ResourceMethod resourceMethod : resource.getResourceMethods()) {
+        if (resourceMethod.getHttpMethod().equals(method)
+            && resource.getPath().equals(absolutePath)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
 }

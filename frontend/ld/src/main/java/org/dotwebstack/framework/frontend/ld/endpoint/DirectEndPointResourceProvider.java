@@ -8,6 +8,7 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+import org.dotwebstack.framework.frontend.ld.service.ServiceResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -18,20 +19,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DirectEndPointResourceProvider extends AbstractResourceProvider<AbstractEndPoint> {
+public class DirectEndPointResourceProvider extends AbstractResourceProvider<DirectEndPoint> {
 
   private final StageResourceProvider stageResourceProvider;
 
-  private RepresentationResourceProvider representationResourceProvider;
+  private final RepresentationResourceProvider representationResourceProvider;
+
+  private final ServiceResourceProvider serviceResourceProvider;
 
   @Autowired
   public DirectEndPointResourceProvider(ConfigurationBackend configurationBackend,
       ApplicationProperties applicationProperties,
       @NonNull StageResourceProvider stageResourceProvider,
-      @NonNull RepresentationResourceProvider representationResourceProvider) {
+      @NonNull RepresentationResourceProvider representationResourceProvider,
+      @NonNull ServiceResourceProvider serviceResourceProvider) {
     super(configurationBackend, applicationProperties);
     this.stageResourceProvider = stageResourceProvider;
     this.representationResourceProvider = representationResourceProvider;
+    this.serviceResourceProvider = serviceResourceProvider;
   }
 
 
@@ -60,6 +65,12 @@ public class DirectEndPointResourceProvider extends AbstractResourceProvider<Abs
         resource -> builder.getRepresentation(representationResourceProvider.get(resource)));
     getObjectResource(model, identifier, ELMO.POST_REPRESENTATION_PROP).ifPresent(
         resource -> builder.postRepresentation(representationResourceProvider.get(resource)));
+    getObjectResources(model, identifier, ELMO.SERVICE_POST_PROP).stream().forEach(
+        postService -> builder.postService(serviceResourceProvider.get(postService)));
+    getObjectResources(model, identifier, ELMO.SERVICE_PUT_PROP).stream().forEach(
+        putService -> builder.putService(serviceResourceProvider.get(putService)));
+    getObjectResources(model, identifier, ELMO.SERVICE_DELETE_PROP).stream().forEach(
+        deleteService -> builder.deleteService(serviceResourceProvider.get(deleteService)));
 
     return builder.build();
   }

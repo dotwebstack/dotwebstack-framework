@@ -3,7 +3,8 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 
-import org.dotwebstack.framework.frontend.ld.representation.Representation;
+import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
+import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,15 +17,18 @@ public class RepresentationRequestHandlerFactoryTest {
   RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   @Mock
-  Representation representation;
+  AbstractEndPoint endPoint;
 
   @Mock
-  RepresentationRequestParameterMapper representationRequestParameterMapper;
+  EndPointRequestParameterMapper endPointRequestParameterMapper;
+
+  @Mock
+  RepresentationResourceProvider representationResourceProvider;
 
   @Before
   public void setUp() {
-    representationRequestHandlerFactory =
-        new RepresentationRequestHandlerFactory(representationRequestParameterMapper);
+    representationRequestHandlerFactory = new RepresentationRequestHandlerFactory(
+        endPointRequestParameterMapper, representationResourceProvider);
   }
 
   @Test
@@ -33,11 +37,11 @@ public class RepresentationRequestHandlerFactoryTest {
 
     // Act
     RepresentationRequestHandler representationRequestHandler =
-        representationRequestHandlerFactory.newRepresentationRequestHandler(representation);
+        representationRequestHandlerFactory.newEndPointRequestHandler(endPoint);
 
     // Assert
-    assertThat(representationRequestHandler.getRepresentationRequestParameterMapper(),
-        sameInstance(representationRequestParameterMapper));
+    assertThat(representationRequestHandler.getEndPointRequestParameterMapper(),
+        sameInstance(endPointRequestParameterMapper));
   }
 
 }

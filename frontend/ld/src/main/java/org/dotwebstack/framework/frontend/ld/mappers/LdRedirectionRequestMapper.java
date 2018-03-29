@@ -37,13 +37,13 @@ public class LdRedirectionRequestMapper {
   }
 
   private void mapRedirection(Redirection redirection, HttpConfiguration httpConfiguration) {
-    String absolutePathPattern = redirection.getStage().getFullPath()
-        + redirection.getPathPattern();
+    String absolutePathPattern =
+        redirection.getStage().getFullPath() + redirection.getPathPattern();
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePathPattern);
     resourceBuilder.addMethod(HttpMethod.GET).handledBy(
         new RedirectionRequestHandler(redirection)).nameBindings(ExpandFormatParameter.class);
 
-    if (!httpConfiguration.resourceAlreadyRegistered(absolutePathPattern)) {
+    if (!httpConfiguration.resourceAlreadyRegistered(absolutePathPattern, HttpMethod.GET)) {
       httpConfiguration.registerResources(resourceBuilder.build());
       LOG.debug("Mapped GET redirection for request path {}", absolutePathPattern);
     } else {

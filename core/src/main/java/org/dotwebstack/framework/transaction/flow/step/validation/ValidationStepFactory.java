@@ -3,6 +3,8 @@ package org.dotwebstack.framework.transaction.flow.step.validation;
 import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
+import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -19,9 +21,13 @@ public class ValidationStepFactory implements StepFactory {
 
   private BackendResourceProvider backendResourceProvider;
 
+  private ConfigurationBackend configurationBackend;
+
   @Autowired
-  public ValidationStepFactory(@NonNull BackendResourceProvider backendResourceProvider) {
+  public ValidationStepFactory(@NonNull BackendResourceProvider backendResourceProvider,
+      @NonNull ConfigurationBackend configurationBackend) {
     this.backendResourceProvider = backendResourceProvider;
+    this.configurationBackend = configurationBackend;
   }
 
   @Override
@@ -35,6 +41,9 @@ public class ValidationStepFactory implements StepFactory {
         new ValidationStep.Builder(identifier, backendResourceProvider);
     getObjectString(stepModel, identifier, RDFS.LABEL).ifPresent(builder::label);
     getObjectIRI(stepModel, identifier, ELMO.CONFORMS_TO_PROP).ifPresent(builder::conformsTo);
+    getObjectIRI(stepModel, identifier, ELMO.BACKEND_PROP).ifPresent(
+        iri -> builder.backend(backendResourceProvider.get(iri)));
+    builder.fileConfigurationBackend((FileConfigurationBackend) configurationBackend);
 
     return builder.build();
   }

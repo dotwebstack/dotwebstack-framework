@@ -3,6 +3,7 @@ package org.dotwebstack.framework.transaction.flow.step.validation;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
+import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.eclipse.rdf4j.model.IRI;
@@ -23,12 +24,15 @@ public class ValidationStep implements Step {
 
   private BackendResourceProvider backendResourceProvider;
 
+  private FileConfigurationBackend fileConfigurationBackend;
+
   private ValidationStep(@NonNull Builder builder) {
     identifier = builder.identifier;
     conformsTo = builder.conformsTo;
     label = builder.label;
     backend = builder.backend;
     backendResourceProvider = builder.backendResourceProvider;
+    fileConfigurationBackend = builder.fileConfigurationBackend;
   }
 
   @Override
@@ -36,7 +40,7 @@ public class ValidationStep implements Step {
     Model transactionModel =
         QueryResults.asModel(transactionRepositoryConnection.getStatements(null, null, null));
     return backendResourceProvider.get(backend.getIdentifier()).createValidationStepExecutor(this,
-        transactionModel);
+        transactionModel, fileConfigurationBackend);
   }
 
   public Resource getIdentifier() {
@@ -63,6 +67,8 @@ public class ValidationStep implements Step {
 
     private BackendResourceProvider backendResourceProvider;
 
+    private FileConfigurationBackend fileConfigurationBackend;
+
     public Builder(@NonNull Resource identifier,
         @NonNull BackendResourceProvider backendResourceProvider) {
       this.identifier = identifier;
@@ -81,6 +87,12 @@ public class ValidationStep implements Step {
 
     public Builder backend(@NonNull Backend backend) {
       this.backend = backend;
+      return this;
+    }
+
+    public Builder fileConfigurationBackend(
+        @NonNull FileConfigurationBackend fileConfigurationBackend) {
+      this.fileConfigurationBackend = fileConfigurationBackend;
       return this;
     }
 

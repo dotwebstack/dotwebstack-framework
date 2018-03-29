@@ -1,7 +1,10 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -35,6 +38,12 @@ public class SupportedWriterMediaTypesScanner {
       @NonNull List<MessageBodyWriter<TupleEntity>> tupleEntityWriters) {
     loadSupportedMediaTypes(graphEntityWriters, graphMediaTypes, this.graphEntityWriters);
     loadSupportedMediaTypes(tupleEntityWriters, tupleMediaTypes, this.tupleEntityWriters);
+  }
+
+  public Collection<MediaType> getAllSupportedMediaTypes() {
+    Iterable<MediaType> combinedMediaTypeLists =
+        Iterables.unmodifiableIterable(Iterables.concat(graphMediaTypes, tupleMediaTypes));
+    return Lists.newArrayList(combinedMediaTypeLists);
   }
 
   private <T> void loadSupportedMediaTypes(List<MessageBodyWriter<T>> entityWriters,

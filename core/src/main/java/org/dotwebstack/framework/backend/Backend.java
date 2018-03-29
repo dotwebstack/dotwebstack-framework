@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend;
 
 import java.util.Collection;
+import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
@@ -22,6 +23,7 @@ public interface Backend {
 
   StepExecutor createUpdateStepExecutor(UpdateStep updateStep);
 
-  StepExecutor createValidationStepExecutor(ValidationStep validationStep, Model transactionModel);
+  StepExecutor createValidationStepExecutor(ValidationStep validationStep, Model transactionModel,
+      FileConfigurationBackend fileConfigurationBackend);
 
 }

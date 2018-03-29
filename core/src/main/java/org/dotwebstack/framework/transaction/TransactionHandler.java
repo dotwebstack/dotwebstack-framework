@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.transaction;
 
+import java.util.Map;
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.Repository;
@@ -20,12 +21,13 @@ public class TransactionHandler {
     this.transactionRepository = transactionRepository;
   }
 
-  public void execute() {
+  public void execute(@NonNull Map<String, String> parameterValues) {
     transactionRepository.initialize();
     RepositoryConnection repositoryConnection = transactionRepository.getConnection();
     repositoryConnection.add(model);
 
-    transaction.getFlow().getExecutor(repositoryConnection).execute();
+    transaction.getFlow().getExecutor(repositoryConnection).execute(transaction.getParameters(),
+        parameterValues);
 
     repositoryConnection.close();
     transactionRepository.shutDown();

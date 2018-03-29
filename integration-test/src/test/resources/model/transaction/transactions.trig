@@ -6,7 +6,7 @@ GRAPH dbeerpedia:Theatre {
       dbeerpedia:PreUpdateStep
       dbeerpedia:AssertIfNotExists
       dbeerpedia:AssertIfExists
-     #dbeerpedia:ValidationStep
+      dbeerpedia:ValidationStep
       dbeerpedia:PersistenceStep
       dbeerpedia:PostUpdateStep
     );
@@ -14,6 +14,7 @@ GRAPH dbeerpedia:Theatre {
 
   dbeerpedia:ValidationStep a elmo:ValidationStep;
     rdfs:label "validation to check concept";
+    elmo:backend dbeerpedia:Backend;
     elmo:conformsTo dbeerpedia:ConceptShapeGraph;
   .
 
@@ -29,7 +30,7 @@ GRAPH dbeerpedia:Theatre {
     """
   .
   dbeerpedia:AssertIfNotExists a elmo:AssertionStep;
-  	rdfs:label "Davo should exists";
+   	rdfs:label "Davo should exists";
   	elmo:assert """
   	  ASK  { ?s <http://www.w3.org/2000/01/rdf-schema#label> \"Davo brouwerij Deventer\"
   	  }
@@ -62,10 +63,6 @@ GRAPH dbeerpedia:Theatre {
   # Transaction: (test reading list with blank nodes)
   dbeerpedia:InsertConcept2 a elmo:Transaction;
     elmo:sequentialFlow (
-    [ a elmo:ValidationStep;
-      rdfs:label "validation to check concept";
-      elmo:conformsTo dbeerpedia:ConceptShapeGraph;
-    ]
     [ a elmo:UpdateStep;
       elmo:backend elmo:TransactionRepository;
       elmo:query """

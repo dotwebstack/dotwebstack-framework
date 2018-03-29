@@ -1,22 +1,28 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.ld.representation.Representation;
+import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
+import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RepresentationRequestHandlerFactory {
 
-  private final RepresentationRequestParameterMapper representationRequestParameterMapper;
+  private final EndPointRequestParameterMapper endPointRequestParameterMapper;
+
+  private final RepresentationResourceProvider representationResourceProvider;
 
   public RepresentationRequestHandlerFactory(
-      @NonNull RepresentationRequestParameterMapper representationRequestParameterMapper) {
-    this.representationRequestParameterMapper = representationRequestParameterMapper;
+      @NonNull EndPointRequestParameterMapper endPointRequestParameterMapper,
+      @NonNull RepresentationResourceProvider representationResourceProvider) {
+    this.endPointRequestParameterMapper = endPointRequestParameterMapper;
+    this.representationResourceProvider = representationResourceProvider;
   }
 
-  public RepresentationRequestHandler newRepresentationRequestHandler(
-      @NonNull Representation representation) {
-    return new RepresentationRequestHandler(representation, representationRequestParameterMapper);
+  public RepresentationRequestHandler newEndPointRequestHandler(
+      @NonNull AbstractEndPoint endpoint) {
+    return new RepresentationRequestHandler(endpoint, endPointRequestParameterMapper,
+        representationResourceProvider);
   }
 
 }

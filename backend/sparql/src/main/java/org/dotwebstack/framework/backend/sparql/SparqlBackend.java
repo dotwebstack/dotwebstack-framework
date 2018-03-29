@@ -7,6 +7,7 @@ import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackend
 import org.dotwebstack.framework.backend.sparql.persistencestep.SparqlBackendPersistenceStepFactory;
 import org.dotwebstack.framework.backend.sparql.updatestep.SparqlBackendUpdateStepFactory;
 import org.dotwebstack.framework.backend.sparql.validationstep.SparqlBackendValidationStepFactory;
+import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
@@ -33,6 +34,8 @@ public class SparqlBackend implements Backend {
   private SparqlBackendValidationStepFactory validationStepFactory;
 
   private RepositoryConnection repositoryConnection;
+
+  private FileConfigurationBackend fileConfigurationBackend;
 
   private SparqlBackend(Builder builder) {
     identifier = builder.identifier;
@@ -67,8 +70,8 @@ public class SparqlBackend implements Backend {
 
   @Override
   public StepExecutor createValidationStepExecutor(ValidationStep validationStep,
-      Model transactionModel) {
-    return validationStepFactory.create(validationStep, transactionModel, this);
+      Model transactionModel, FileConfigurationBackend fileConfigurationBackend) {
+    return validationStepFactory.create(validationStep, transactionModel, fileConfigurationBackend);
   }
 
   public SPARQLRepository getRepository() {

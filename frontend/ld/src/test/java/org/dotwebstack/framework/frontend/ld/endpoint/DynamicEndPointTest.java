@@ -31,6 +31,16 @@ public class DynamicEndPointTest {
   private Stage stage;
 
   @Test
+  public void build_CreateDynamicEndPoint_WithValidBasicData() {
+    // Assert
+    DynamicEndPoint dynamicEndPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).build();
+
+    // Act
+    assertThat(dynamicEndPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
+    assertThat(dynamicEndPoint.getPathPattern(), equalTo(pathPattern));
+  }
+
+  @Test
   public void build_CreateDynamicEndPoint_WithValidData() {
     // Assert
     DynamicEndPoint dynamicEndPoint =

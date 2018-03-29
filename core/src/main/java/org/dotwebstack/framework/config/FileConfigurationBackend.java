@@ -32,6 +32,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,6 +127,24 @@ public class FileConfigurationBackend
       }
       Model model = QueryResults.asModel(
           repositoryConnection.getStatements(null, null, null, ELMO.SHACL_GRAPHNAME));
+
+      // todo to delete after testing
+      RepositoryResult<org.eclipse.rdf4j.model.Resource> graphs =
+          repository.getConnection().getContextIDs();
+      if (graphs != null) {
+        System.out.println("*** all graphs");
+
+        while (graphs.hasNext()) {
+          System.out.println(graphs.next().toString());
+        }
+        System.out.println("***");
+      } else {
+        System.out.println("graphs is null");
+      }
+      Model tempModel = QueryResults.asModel(
+          repositoryConnection.getStatements(null, null, null, ELMO.SHACL_CONCEPT_GRAPHNAME));
+      System.out.println("concept model: \n" + tempModel.toString());
+      //
       validate(configurationStreams, model);
     } catch (RDF4JException e) {
       throw new ConfigurationException("Error while loading RDF data.", e);

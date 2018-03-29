@@ -182,6 +182,8 @@ public final class DBEERPEDIA {
 
   public static final Literal LAYOUT_NL_VALUE;
 
+  public static final IRI APPLIES_TO;
+
   public static final IRI DOC_ENDPOINT;
 
   public static final IRI DEFAULT_ENDPOINT;
@@ -203,6 +205,12 @@ public final class DBEERPEDIA {
   public static final IRI TRANSACTION;
 
   public static final IRI SEQUENTIAL_FLOW;
+
+  public static final IRI SERVICE_POST;
+
+  public static final IRI SERVICE_PUT;
+
+  public static final IRI SERVICE_DELETE;
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -312,6 +320,8 @@ public final class DBEERPEDIA {
 
     LAYOUT_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayoutNL");
 
+    APPLIES_TO = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "appliesTo");
+
     DOC_ENDPOINT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "DocEndpoint");
 
     DEFAULT_ENDPOINT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "DefaultEndpoint");
@@ -333,6 +343,9 @@ public final class DBEERPEDIA {
     SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
 
     VALIDATION_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ValidationStep");
+    SERVICE_DELETE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "deleteService");
+    SERVICE_POST = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "postService");
+    SERVICE_PUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "putService");
   }
 
   private DBEERPEDIA() {
