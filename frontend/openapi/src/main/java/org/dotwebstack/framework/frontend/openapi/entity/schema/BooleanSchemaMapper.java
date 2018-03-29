@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean> {
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.BOOLEAN);
+  private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
+      OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
   @Override
   public Boolean mapTupleValue(@NonNull BooleanProperty schema,
@@ -29,8 +31,7 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   @Override
   public Boolean mapGraphValue(@NonNull BooleanProperty property, @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    validateVendorExtensions(property, ImmutableSet.of(
-            OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE));
+    validateVendorExtensions(property, SUPPORTED_VENDOR_EXTENSIONS);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
@@ -42,6 +43,7 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
       return handleConstantValueVendorExtension(property);
     }
 
+    // TODO: line below should never be reached. Return null instead?
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).booleanValue();
   }
 
