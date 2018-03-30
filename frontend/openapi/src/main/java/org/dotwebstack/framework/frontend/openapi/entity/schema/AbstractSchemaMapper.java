@@ -1,12 +1,10 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -41,12 +39,12 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     if (property.getVendorExtensions().keySet().stream().filter(
             supportedExtensions::contains).count() != 1) {
 
-      String message = property.getClass().getSimpleName() +
-          " object must have one of: " +
-          supportedExtensions.toString()
+      String message = property.getClass().getSimpleName()
+          + " object must have one of: "
+          + supportedExtensions.toString()
               .replaceAll("[\\[\\]]", "'")
-              .replaceAll(", ", "', '") +
-          ". This object cannot have a combination of these.";
+              .replaceAll(", ", "', '")
+          + ". This object cannot have a combination of these.";
 
       throw new SchemaMapperRuntimeException(message);
     }
