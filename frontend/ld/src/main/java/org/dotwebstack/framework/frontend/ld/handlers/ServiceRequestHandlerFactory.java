@@ -19,7 +19,7 @@ public class ServiceRequestHandlerFactory {
     this.endPointRequestParameterMapper = endPointRequestParameterMapper;
   }
 
-  public ServiceRequestHandler newTransactionRequestHandler(@NonNull Transaction transaction) {
+  public ServiceRequestHandler newServiceRequestHandler(@NonNull Transaction transaction) {
     return new ServiceRequestHandler(transaction, supportedReaderMediaTypesScanner,
         endPointRequestParameterMapper);
   }
