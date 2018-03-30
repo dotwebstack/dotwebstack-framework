@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.frontend.ld.endpoint;
 
-import java.util.ArrayList;
-import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.service.Service;
@@ -13,11 +11,11 @@ public class DirectEndPoint extends AbstractEndPoint {
 
   private Representation postRepresentation;
 
-  private List<Service> deleteService;
+  private Service deleteService;
 
-  private List<Service> postService;
+  private Service postService;
 
-  private List<Service> putService;
+  private Service putService;
 
   public DirectEndPoint(Builder builder) {
     super(builder);
@@ -36,15 +34,15 @@ public class DirectEndPoint extends AbstractEndPoint {
     return postRepresentation;
   }
 
-  public List<Service> getDeleteService() {
+  public Service getDeleteService() {
     return deleteService;
   }
 
-  public List<Service> getPostService() {
+  public Service getPostService() {
     return postService;
   }
 
-  public List<Service> getPutService() {
+  public Service getPutService() {
     return putService;
   }
 
@@ -54,17 +52,14 @@ public class DirectEndPoint extends AbstractEndPoint {
 
     private Representation postRepresentation;
 
-    private List<Service> deleteService;
+    private Service deleteService;
 
-    private List<Service> postService;
+    private Service postService;
 
-    private List<Service> putService;
+    private Service putService;
 
     public Builder(@NonNull Resource identifier, @NonNull String pathPattern) {
       super(identifier, pathPattern);
-      this.deleteService = new ArrayList<>();
-      this.postService = new ArrayList<>();
-      this.putService = new ArrayList<>();
     }
 
     public Builder getRepresentation(Representation representation) {
@@ -78,17 +73,17 @@ public class DirectEndPoint extends AbstractEndPoint {
     }
 
     public Builder deleteService(Service deleteService) {
-      this.deleteService.add(deleteService);
+      this.deleteService = deleteService;
       return this;
     }
 
     public Builder postService(Service postService) {
-      this.postService.add(postService);
+      this.postService = postService;
       return this;
     }
 
     public Builder putService(Service putService) {
-      this.putService.add(putService);
+      this.putService = putService;
       return this;
     }
 
