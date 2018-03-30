@@ -39,7 +39,6 @@ public class DirectEndPointResourceProvider extends AbstractResourceProvider<Dir
     this.serviceResourceProvider = serviceResourceProvider;
   }
 
-
   @Override
   protected GraphQuery getQueryForResources(RepositoryConnection conn) {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
