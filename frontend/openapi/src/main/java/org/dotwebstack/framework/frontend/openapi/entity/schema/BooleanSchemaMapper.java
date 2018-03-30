@@ -30,18 +30,18 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   }
 
   @Override
-  public Boolean mapGraphValue(@NonNull BooleanProperty property, @NonNull GraphEntity graphEntity,
+  public Boolean mapGraphValue(@NonNull BooleanProperty schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    validateVendorExtensions(property, SUPPORTED_VENDOR_EXTENSIONS);
-    Map<String, Object> vendorExtensions = property.getVendorExtensions();
+    validateVendorExtensions(schema, SUPPORTED_VENDOR_EXTENSIONS);
+    Map<String, Object> vendorExtensions = schema.getVendorExtensions();
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-      LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
-      return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
+      LdPathExecutor ldPathExecutor = entity.getLdPathExecutor();
+      return handleLdPathVendorExtension(schema, valueContext.getValue(), ldPathExecutor);
     }
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
-      return handleConstantValueVendorExtension(property);
+      return handleConstantValueVendorExtension(schema);
     }
 
     // TODO: line below should never be reached. Return null instead?
