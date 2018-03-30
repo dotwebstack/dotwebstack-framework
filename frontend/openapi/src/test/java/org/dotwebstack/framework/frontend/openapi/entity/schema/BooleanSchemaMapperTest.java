@@ -31,7 +31,7 @@ public class BooleanSchemaMapperTest {
 
   private BooleanSchemaMapper schemaMapper;
 
-  private BooleanProperty property;
+  private BooleanProperty schema;
 
   @Mock
   private GraphEntity entitymock;
@@ -40,7 +40,7 @@ public class BooleanSchemaMapperTest {
   @Before
   public void setUp() {
     schemaMapper = new BooleanSchemaMapper();
-    property = new BooleanProperty();
+    schema = new BooleanProperty();
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(schemaMapper));
   }
 
@@ -51,14 +51,14 @@ public class BooleanSchemaMapperTest {
     exception.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(property, tupleEntityMock,
+    schemaMapper.mapTupleValue(schema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnsValue_ForLiterals() {
     // Arrange & Act
-    Boolean result = schemaMapper.mapTupleValue(property, tupleEntityMock,
+    Boolean result = schemaMapper.mapTupleValue(schema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
 
     // Assert
@@ -68,7 +68,7 @@ public class BooleanSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForBooleanProperty() {
     // Arrange & Act
-    Boolean supported = schemaMapper.supports(property);
+    Boolean supported = schemaMapper.supports(schema);
 
     // Assert
     assertThat(supported, equalTo(true));
@@ -86,8 +86,8 @@ public class BooleanSchemaMapperTest {
   @Test
   public void mapGraphValue_ThrowsEx_MultipleVendorExtensions() {
     // Arrange
-    property.vendorExtension(OpenApiSpecificationExtensions.LDPATH, "ld-Path");
-    property.vendorExtension(CONSTANT_VALUE, "true");
+    schema.vendorExtension(OpenApiSpecificationExtensions.LDPATH, "ld-Path");
+    schema.vendorExtension(CONSTANT_VALUE, "true");
     final ValueContext context = ValueContext.builder().build();
 
     // Assert
@@ -97,7 +97,7 @@ public class BooleanSchemaMapperTest {
     exception.expectMessage(LDPATH);
 
     // Act
-    schemaMapper.mapGraphValue(property, entitymock, context, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, entitymock, context, schemaMapperAdapter);
   }
 
 }

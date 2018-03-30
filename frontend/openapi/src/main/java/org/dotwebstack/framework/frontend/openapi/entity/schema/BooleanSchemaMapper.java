@@ -10,10 +10,10 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,9 +30,9 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   }
 
   @Override
-  public Boolean mapGraphValue(@NonNull BooleanProperty property,
-      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {validateVendorExtensions(property, SUPPORTED_VENDOR_EXTENSIONS);
+  public Boolean mapGraphValue(@NonNull BooleanProperty property, @NonNull GraphEntity graphEntity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+    validateVendorExtensions(property, SUPPORTED_VENDOR_EXTENSIONS);
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
