@@ -145,7 +145,7 @@ public class LdEndPointRequestMapper {
     services.stream().forEach(service -> {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(httpMethod).handledBy(
-          serviceRequestHandlerFactory.newTransactionRequestHandler(service.getTransaction()),
+          serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction()),
           Arrays.stream(ServiceRequestHandler.class.getMethods()).filter(
               method -> method.getName() == "apply").findFirst().get()).consumes(
                   supportedReaderMediaTypesScanner.getMediaTypes());
