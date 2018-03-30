@@ -57,6 +57,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       return handleConstantValueVendorExtension(schema);
     }
 
+    // TODO: check usage of following code block
     if (valueContext.getValue() != null) {
       return valueContext.getValue().stringValue();
     } else if (schema.getRequired()) {
@@ -86,7 +87,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       /* this ldpath is inherited by all choices */
       String linkCommonLdPath = (String) contextLink.get(OpenApiSpecificationExtensions.LDPATH);
 
-      for (Map<String, Object> choice : (List<Map<String, Object>>) choices) {
+      for (Map<String, Object> choice : choices) {
         Object key = choice.get(KEY);
         if (realValue.equalsIgnoreCase(key.toString())) {
           Map<String, String> relativeLinkProperty = Maps.newHashMap(
