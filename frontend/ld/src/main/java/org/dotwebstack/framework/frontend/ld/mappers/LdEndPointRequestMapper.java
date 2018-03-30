@@ -139,18 +139,15 @@ public class LdEndPointRequestMapper {
     }
   }
 
-  private void registerTransaction(
-      List<org.dotwebstack.framework.frontend.ld.service.Service> services, String httpMethod,
-      String absolutePath, HttpConfiguration httpConfiguration) {
-    services.stream().forEach(service -> {
-      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-      resourceBuilder.addMethod(httpMethod).handledBy(
-          serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction()),
-          Arrays.stream(ServiceRequestHandler.class.getMethods()).filter(
-              method -> method.getName() == "apply").findFirst().get()).consumes(
-                  supportedReaderMediaTypesScanner.getMediaTypes());
-      buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod);
-    });
+  private void registerTransaction(org.dotwebstack.framework.frontend.ld.service.Service service,
+      String httpMethod, String absolutePath, HttpConfiguration httpConfiguration) {
+    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+    resourceBuilder.addMethod(httpMethod).handledBy(
+        serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction()),
+        Arrays.stream(ServiceRequestHandler.class.getMethods()).filter(
+            method -> method.getName() == "apply").findFirst().get()).consumes(
+                supportedReaderMediaTypesScanner.getMediaTypes());
+    buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod);
   }
 
   private void buildResource(HttpConfiguration httpConfiguration, Resource.Builder resourceBuilder,
