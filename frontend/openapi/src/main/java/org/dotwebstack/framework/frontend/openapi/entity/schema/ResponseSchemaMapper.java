@@ -5,26 +5,27 @@ import io.swagger.models.properties.Property;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProperty, Object> {
+public class ResponseSchemaMapper extends AbstractSubjectSchemaMapper<ResponseProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ResponseProperty schema, @NonNull ValueContext value) {
+  public Object mapTupleValue(@NonNull ResponseProperty schema, @NonNull TupleEntity entity,
+      @NonNull ValueContext valueContext) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ResponseProperty property,
-      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull ResponseProperty schema, @NonNull GraphEntity entity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
-    if (hasSubjectQueryVendorExtension(property)) {
-      Value value = getSubject(property, graphEntity);
+    if (hasSubjectVendorExtension(schema)) {
+      Value value = getSubject(schema, entity);
 
       if (value == null) {
         return null;
@@ -33,12 +34,12 @@ class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProp
       builder.value(value);
     }
 
-    return schemaMapperAdapter.mapGraphValue(property.getSchema(), graphEntity,
-        builder.build(), schemaMapperAdapter);
+    return schemaMapperAdapter.mapGraphValue(schema.getSchema(), entity, builder.build(),
+        schemaMapperAdapter);
   }
 
   @Override
-  public boolean supports(@NonNull Property schema) {
+  public boolean supports(Property schema) {
     return schema instanceof ResponseProperty;
   }
 

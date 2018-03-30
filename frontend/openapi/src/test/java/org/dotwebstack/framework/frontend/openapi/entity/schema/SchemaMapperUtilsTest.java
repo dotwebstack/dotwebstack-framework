@@ -4,6 +4,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
+import java.net.URI;
+import java.util.Map;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -34,6 +37,18 @@ public class SchemaMapperUtilsTest {
     // Assert
     assertThat(result, notNullValue());
     assertThat(result.getDatatype(), equalTo(XMLSchema.STRING));
+  }
+
+  @Test
+  public void createLink_ReturnsLink_ForGivenUri() {
+    // Arrange
+    String uri = "http://foo";
+
+    // Act
+    Map<String, String> link = SchemaMapperUtils.createLink(URI.create("http://foo"));
+
+    // Assert
+    assertThat(link, equalTo(ImmutableMap.of("href", uri)));
   }
 
 }
