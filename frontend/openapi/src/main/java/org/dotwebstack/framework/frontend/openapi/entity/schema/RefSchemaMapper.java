@@ -6,7 +6,9 @@ import com.google.common.collect.ImmutableMap.Builder;
 import io.swagger.models.Model;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
+import java.util.function.BiConsumer;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.springframework.stereotype.Service;
@@ -31,11 +33,33 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
     }
 
     Builder<String, Object> builder = ImmutableMap.builder();
-    refModel.getProperties().forEach((propKey, propValue) -> builder.put(propKey,
-        Optional.fromNullable(schemaMapperAdapter.mapGraphValue(propValue, entity, valueContext,
-            schemaMapperAdapter))));
+    refModel.getProperties().forEach(
+        mapPropertiesInRef(entity, valueContext, schemaMapperAdapter, builder));
 
     return builder.build();
+  }
+
+  private BiConsumer<String, Property> mapPropertiesInRef(@NonNull GraphEntity entity, //
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter, //
+      Builder<String, Object> builder) { //
+
+    return (propKey, propValue) -> {
+      Object value =
+          schemaMapperAdapter.mapGraphValue(propValue, entity, valueContext, schemaMapperAdapter);
+
+      Boolean showWhenNull = true;
+      if (propValue.getVendorExtensions().containsKey(
+          OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL)) {
+        Object bool = propValue.getVendorExtensions().get(
+            OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL);
+        if (bool instanceof Boolean) {
+          showWhenNull = !(Boolean) bool;
+        }
+      }
+      if (showWhenNull || value != null) {
+        builder.put(propKey, Optional.fromNullable(value));
+      }
+    };
   }
 
   public boolean supports(@NonNull Property property) {

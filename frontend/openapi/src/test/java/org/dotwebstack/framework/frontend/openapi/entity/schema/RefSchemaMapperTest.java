@@ -1,8 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -39,9 +40,11 @@ public class RefSchemaMapperTest {
   private static final String DUMMY_REF = "#/graphEntityMock/fooModel";
   private static final String KEY_1 = "one";
   private static final String KEY_2 = "_two";
+  private static final String KEY_3 = "three";
 
   private static final StringProperty PROPERTY_1 = new StringProperty();
   private static final IntegerProperty PROPERTY_2 = new IntegerProperty();
+  private static final StringProperty PROPERTY_3 = new StringProperty();
   private static final Literal VALUE_1 = SimpleValueFactory.getInstance().createLiteral("CONSTANT");
   private static final Literal VALUE_2 =
       SimpleValueFactory.getInstance().createLiteral("123", XMLSchema.INTEGER);
@@ -51,6 +54,9 @@ public class RefSchemaMapperTest {
   static {
     PROPERTY_1.getVendorExtensions().put(OpenApiSpecificationExtensions.CONSTANT_VALUE, VALUE_1);
     PROPERTY_2.getVendorExtensions().put(OpenApiSpecificationExtensions.LDPATH, LD_PATH_QUERY);
+    PROPERTY_3.getVendorExtensions().put(OpenApiSpecificationExtensions.CONSTANT_VALUE, null);
+    PROPERTY_3.getVendorExtensions().put(
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
   }
 
   @Rule
@@ -132,4 +138,27 @@ public class RefSchemaMapperTest {
     assertEquals(((Optional) result.get(KEY_2)).orNull(), VALUE_2.intValue());
   }
 
+  @Test
+  public void mapGraphValue_ReturnsResults_WhenRefCanBeResolvedAndOneIsNull() {
+    // Arrange
+    schema.set$ref(DUMMY_REF);
+    Model refModel = new ModelImpl();
+    refModel.setProperties(
+        ImmutableMap.of(KEY_1, PROPERTY_1, KEY_2, PROPERTY_2, KEY_3, PROPERTY_3));
+
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
+    when(graphEntityMock.getSwaggerDefinitions()).thenReturn(
+        ImmutableMap.of(schema.getSimpleRef(), refModel));
+    when(ldPathExecutor.ldPathQuery(context, LD_PATH_QUERY)).thenReturn(ImmutableList.of(VALUE_2));
+
+    // Act
+    Map<String, Optional> result = (Map<String, Optional>) schemaMapper.mapGraphValue(schema,
+        graphEntityMock, ValueContext.builder().value(context).build(), schemaMapperAdapter);
+
+    // Assert
+    assertThat(result.keySet(), hasSize(2));
+    assertEquals(result.get(KEY_1).orNull(), VALUE_1.stringValue());
+    assertEquals(result.get(KEY_2).orNull(), VALUE_2.intValue());
+    assertThat(result.containsKey(KEY_3), is(false));
+  }
 }
