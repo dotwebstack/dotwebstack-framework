@@ -12,12 +12,9 @@ import org.dotwebstack.framework.transaction.flow.step.validation.ValidationStep
 import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
-import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.QueryResults;
-import org.eclipse.rdf4j.repository.RepositoryResult;
 
 public class ValidationStepExecutor extends AbstractStepExecutor<ValidationStep> {
 
@@ -43,36 +40,16 @@ public class ValidationStepExecutor extends AbstractStepExecutor<ValidationStep>
   public void execute(Collection<Parameter> parameters, Map<String, String> parameterValues) {
     final Model validationModel;
 
-    RepositoryResult<Resource> graphs = backend.getRepository().getConnection().getContextIDs();
-    System.out.println("*** all graphs");
-    while (graphs.hasNext()) {
-      System.out.println(graphs.next().toString());
-    }
-    System.out.println("***");
-
     try {
-      if (ELMO.SHACL_CONCEPT_GRAPHNAME.equals(step.getConformsTo())) {
-        System.out.println(ELMO.SHACL_CONCEPT_GRAPHNAME + " = " + step.getConformsTo());
-      } else {
-        System.out.println("Found no shacl concept graph name....");
-      }
-      System.out.println("graph name: " + step.getConformsTo().toString());
       validationModel =
           QueryResults.asModel(backend.getRepository().getConnection().getStatements(null, null,
               null, step.getConformsTo()));
     } catch (RDF4JException ex) {
-      System.out.println(ex.getMessage());
-      System.out.println(ex.toString());
       throw new BackendException(String.format("........: (%s)", ex.getMessage()), ex);
     }
 
     final ShaclValidator shaclValidator = new ShaclValidator();
-    System.out.println("transaction model:\n***");
-    System.out.println(transactionModel.toString() + "\n***");
-    System.out.println("validation model:\n***");
-    System.out.println(validationModel.toString() + "\n***");
     final ValidationReport report = shaclValidator.validate(transactionModel, validationModel);
-    System.out.println("result --> " + report.isValid());
     if (!report.isValid()) {
       throw new ShaclValidationException(report.printReport());
     }
