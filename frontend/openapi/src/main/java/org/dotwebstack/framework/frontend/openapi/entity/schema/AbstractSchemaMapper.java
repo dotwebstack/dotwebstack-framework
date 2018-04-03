@@ -28,6 +28,28 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     return queryResult.iterator().next();
   }
 
+  /**
+   * Validates the vendor extensions that are declared on the Property. A Property
+   * should have exactly one of the vendor extensions declared in supportedExtensions
+   *
+   * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
+   *         are encountered.
+   */
+  protected void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
+    if (property.getVendorExtensions().keySet().stream().filter(
+            supportedExtensions::contains).count() != 1) {
+
+      String message = property.getClass().getSimpleName()
+          + " object must have one of: "
+          + supportedExtensions.toString()
+              .replaceAll("[\\[\\]]", "'")
+              .replaceAll(", ", "', '")
+          + ". This object cannot have a combination of these.";
+
+      throw new SchemaMapperRuntimeException(message);
+    }
+  }
+
   protected abstract Set<IRI> getSupportedDataTypes();
 
   protected String dataTypesAsString() {
@@ -70,6 +92,15 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
    */
   protected boolean isSupportedLiteral(Object value) {
     return value instanceof Literal && isDataTypeSupported((Literal) value);
+  }
+
+  protected void handleRequired(Property property, String vendorExtension) {
+    if (property.getRequired()) {
+      String message =
+          String.format("%s has '%s' vendor extension that is null, but the property is required.",
+              property.getClass().getSimpleName(), vendorExtension);
+      throw new SchemaMapperRuntimeException(message);
+    }
   }
 
 }

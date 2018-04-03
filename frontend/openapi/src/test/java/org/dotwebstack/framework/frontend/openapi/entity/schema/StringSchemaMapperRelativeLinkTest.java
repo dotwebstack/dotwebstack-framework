@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.StringProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
@@ -38,36 +39,42 @@ public class StringSchemaMapperRelativeLinkTest {
   private static final Literal VALUE_2 = SimpleValueFactory.getInstance().createLiteral("b");
 
   @Mock
-  private GraphEntity entityMock;
+  private GraphEntity graphEntityMock;
+
+  @Mock
+  private RequestContext requestContextMock;
+
   @Mock
   private LdPathExecutor ldPathExecutorMock;
 
   private ValueContext contextMock;
-  private SchemaMapperAdapter mapperAdapter;
-  private SchemaMapper<StringProperty, ?> mapper;
-  private StringProperty stringProperty;
 
+  private SchemaMapperAdapter mapperAdapter;
+
+  private SchemaMapper<StringProperty, ?> schemaMapper;
+
+  private StringProperty schema;
 
   @Before
   public void setUp() {
-    mapper = new StringSchemaMapper();
-    stringProperty = new StringProperty();
-    mapperAdapter = new SchemaMapperAdapter(ImmutableList.of(mapper));
+    schemaMapper = new StringSchemaMapper();
+    schema = new StringProperty();
+    mapperAdapter = new SchemaMapperAdapter(ImmutableList.of(schemaMapper));
     contextMock = ValueContext.builder().value(VALUE_1).build();
 
-    when(entityMock.getBaseUri()).thenReturn(BASE_URL);
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(requestContextMock.getBaseUri()).thenReturn(BASE_URL);
+    when(graphEntityMock.getRequestContext()).thenReturn(requestContextMock);
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
-
 
   @Test
   public void mapGraphValue_ReturnsAbsoluteLink_ForRelativeLinkWithoutPlaceHolder() {
     // Arrange
     String pattern = "/somePatternWithoutPlaceholder";
-    stringProperty.setVendorExtension(RELATIVE_LINK, ImmutableMap.of(PATTERN, pattern));
+    schema.setVendorExtension(RELATIVE_LINK, ImmutableMap.of(PATTERN, pattern));
 
     // Act
-    Object result = mapper.mapGraphValue(stringProperty, entityMock, contextMock, mapperAdapter);
+    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, contextMock, mapperAdapter);
 
     // Assert
     assertThat(result, is(BASE_URL + pattern));
@@ -76,14 +83,14 @@ public class StringSchemaMapperRelativeLinkTest {
   @Test
   public void mapGraphValue_ReplacesPlaceHolder_ForRelativeLinkWithsPlaceHolder() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK,
+    schema.setVendorExtension(RELATIVE_LINK,
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
     when(ldPathExecutorMock.ldPathQuery(eq(VALUE_1), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
     // Act
-    Object result = mapper.mapGraphValue(stringProperty, entityMock, contextMock, mapperAdapter);
+    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, contextMock, mapperAdapter);
 
     // Assert
     assertThat(result, is(BASE_URL + SOME_PATTERN.replace("$1", VALUE_1.stringValue())));
@@ -92,11 +99,11 @@ public class StringSchemaMapperRelativeLinkTest {
   @Test
   public void mapGraphValue_ReturnsNull_ForLdPathExpressionWithoutResult() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK,
+    schema.setVendorExtension(RELATIVE_LINK,
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
     // Act
-    Object result = mapper.mapGraphValue(stringProperty, entityMock, contextMock, mapperAdapter);
+    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, contextMock, mapperAdapter);
 
     // Assert
     assertThat(result, nullValue());
@@ -105,12 +112,12 @@ public class StringSchemaMapperRelativeLinkTest {
   @Test
   public void mapGraphValue_ThrowsEx_ForRelativeLinkWithLdPathExpressionWithMultipleResults() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK,
+    schema.setVendorExtension(RELATIVE_LINK,
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
     when(ldPathExecutorMock.ldPathQuery(eq(VALUE_1), anyString())).thenReturn(
         ImmutableList.of(VALUE_1, VALUE_2));
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
 
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
@@ -119,14 +126,14 @@ public class StringSchemaMapperRelativeLinkTest {
             + "requires a single result.", DUMMY_EXPR, 2));
 
     // Act
-    mapper.mapGraphValue(stringProperty, entityMock, contextMock, mapperAdapter);
+    schemaMapper.mapGraphValue(schema, graphEntityMock, contextMock, mapperAdapter);
 
   }
 
   @Test
   public void mapGraphValue_ThrowsException_ForRelativeLinkWithoutPatternProperty() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK, ImmutableMap.<String, String>of());
+    schema.setVendorExtension(RELATIVE_LINK, ImmutableMap.<String, String>of());
 
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
@@ -134,20 +141,20 @@ public class StringSchemaMapperRelativeLinkTest {
         String.format("'%s' should have a '%s' property.", RELATIVE_LINK, PATTERN));
 
     // Act
-    mapper.mapGraphValue(stringProperty, entityMock, contextMock, mapperAdapter);
+    schemaMapper.mapGraphValue(schema, graphEntityMock, contextMock, mapperAdapter);
   }
 
   @Test
   public void mapGraphValue_ThrowsException_ForRelativeLinkThatIsNull() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK, null);
+    schema.setVendorExtension(RELATIVE_LINK, null);
 
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format("'%s' can not be null.", RELATIVE_LINK));
 
     // Act
-    mapper.mapGraphValue(stringProperty, entityMock, contextMock, mapperAdapter);
+    schemaMapper.mapGraphValue(schema, graphEntityMock, contextMock, mapperAdapter);
   }
 
 }
