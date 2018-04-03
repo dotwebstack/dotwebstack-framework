@@ -5,6 +5,7 @@ import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
@@ -27,6 +28,8 @@ public class DirectEndPointRequestMapper {
 
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
+  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
+
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   private ServiceRequestHandlerFactory serviceRequestHandlerFactory;
@@ -35,10 +38,12 @@ public class DirectEndPointRequestMapper {
   public DirectEndPointRequestMapper(
       @NonNull DirectEndPointResourceProvider directEndPointResourceProvider,
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
+      @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,
       @NonNull RepresentationRequestHandlerFactory representationRequestHandlerFactory,
       @NonNull ServiceRequestHandlerFactory serviceRequestHandlerFactory) {
     this.directEndPointResourceProvider = directEndPointResourceProvider;
     this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
+    this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
     this.representationRequestHandlerFactory = representationRequestHandlerFactory;
     this.serviceRequestHandlerFactory = serviceRequestHandlerFactory;
   }
@@ -97,7 +102,8 @@ public class DirectEndPointRequestMapper {
       String httpMethod, String absolutePath, HttpConfiguration httpConfiguration) {
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
     resourceBuilder.addMethod(httpMethod).handledBy(
-        serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction()));
+        serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction()))
+        .consumes(supportedReaderMediaTypesScanner.getMediaTypes());
     buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod);
   }
 
