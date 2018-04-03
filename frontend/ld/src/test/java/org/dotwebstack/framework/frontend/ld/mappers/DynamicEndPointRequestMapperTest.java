@@ -11,13 +11,9 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
-import org.dotwebstack.framework.ApplicationProperties;
-import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
-import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
@@ -26,10 +22,8 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourcePro
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestParameterMapper;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
-import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
-import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
@@ -54,13 +48,7 @@ public class DynamicEndPointRequestMapperTest {
   private Stage stage;
 
   @Mock
-  private Site site;
-
-  @Mock
   private DynamicEndPoint dynamicEndPoint;
-
-  @Mock
-  private InformationProduct informationProduct;
 
   @Mock
   private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
@@ -69,32 +57,16 @@ public class DynamicEndPointRequestMapperTest {
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
   @Mock
-  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
-
-  @Mock
   private EndPointRequestParameterMapper endPointRequestParameterMapper;
 
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
 
   @Mock
-  private StageResourceProvider stageResourceProvider;
-
-  @Mock
-  private ConfigurationBackend configurationBackend;
-
-  @Mock
-  private ApplicationProperties applicationProperties;
-
-  @Mock
-  private ServiceRequestHandlerFactory transactionRequestHandlerFactory;
-
-  @Mock
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   @Mock
   private ParameterMapper parameterMapper;
-
 
   private HttpConfiguration httpConfiguration;
 

@@ -13,13 +13,9 @@ import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.ApplicationProperties;
-import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
-import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
@@ -56,9 +52,6 @@ public class DirectEndPointRequestMapperTest {
   private Stage stage;
 
   @Mock
-  private Site site;
-
-  @Mock
   private DirectEndPoint directEndPoint;
 
   @Mock
@@ -71,22 +64,10 @@ public class DirectEndPointRequestMapperTest {
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
   @Mock
-  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
-
-  @Mock
   private EndPointRequestParameterMapper endPointRequestParameterMapper;
 
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
-
-  @Mock
-  private StageResourceProvider stageResourceProvider;
-
-  @Mock
-  private ConfigurationBackend configurationBackend;
-
-  @Mock
-  private ApplicationProperties applicationProperties;
 
   @Mock
   private ServiceRequestHandlerFactory transactionRequestHandlerFactory;
@@ -121,8 +102,8 @@ public class DirectEndPointRequestMapperTest {
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     directEndPointRequestMapper = new DirectEndPointRequestMapper(directEndPointResourceProvider,
-        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
-        representationRequestHandlerFactory, transactionRequestHandlerFactory);
+        supportedWriterMediaTypesScanner, representationRequestHandlerFactory,
+        transactionRequestHandlerFactory);
     representationRequestHandler = new RepresentationRequestHandler(directEndPoint,
         endPointRequestParameterMapper, representationResourceProvider);
 
@@ -134,10 +115,9 @@ public class DirectEndPointRequestMapperTest {
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    DirectEndPointRequestMapper directEndPointRequestMapper =
-        new DirectEndPointRequestMapper(directEndPointResourceProvider,
-            supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
-            representationRequestHandlerFactory, transactionRequestHandlerFactory);
+    DirectEndPointRequestMapper directEndPointRequestMapper = new DirectEndPointRequestMapper(
+        directEndPointResourceProvider, supportedWriterMediaTypesScanner,
+        representationRequestHandlerFactory, transactionRequestHandlerFactory);
 
     // Assert
     assertThat(directEndPointRequestMapper, not(nullValue()));
