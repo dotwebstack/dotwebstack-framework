@@ -40,7 +40,7 @@ public class TransactionHandler {
     repositoryConnection.prepareGraphQuery(QueryLanguage.SPARQL,
         "CONSTRUCT {?s ?p ?o } WHERE {?s ?p ?o } ").evaluate(writer);
     LOG.debug("Transaction repository before starting flow execution:\n{}",
-        stringWriter.toString());
+        stringWriter);
 
     transaction.getFlow().getExecutor(repositoryConnection).execute(transaction.getParameters(),
         parameterValues);
