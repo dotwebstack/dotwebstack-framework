@@ -8,7 +8,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScannerTest.StubGraphEntityWriter;
-import org.dotwebstack.framework.frontend.ld.mappers.LdEndPointRequestMapper;
+import org.dotwebstack.framework.frontend.ld.mappers.DirectEndPointRequestMapper;
+import org.dotwebstack.framework.frontend.ld.mappers.DynamicEndPointRequestMapper;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,7 +28,10 @@ public class LdModuleTest {
   private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
 
   @Mock
-  private LdEndPointRequestMapper ldEndPointRequestMapper;
+  private DirectEndPointRequestMapper directEndPointRequestMapper;
+
+  @Mock
+  private DynamicEndPointRequestMapper dynamicEndPointRequestMapper;
 
   @Mock
   private LdRedirectionRequestMapper ldRedirectionRequestMapper;
@@ -42,8 +46,9 @@ public class LdModuleTest {
 
   @Before
   public void setUp() {
-    ldModule = new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper,
-        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
+    ldModule = new LdModule(dynamicEndPointRequestMapper, directEndPointRequestMapper,
+        ldRedirectionRequestMapper, supportedWriterMediaTypesScanner,
+        supportedReaderMediaTypesScanner);
     ldModule.initialize(httpConfiguration);
   }
 
@@ -53,8 +58,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(null, ldRedirectionRequestMapper, supportedWriterMediaTypesScanner,
-        supportedReaderMediaTypesScanner);
+    new LdModule(null, directEndPointRequestMapper, ldRedirectionRequestMapper,
+        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
   }
 
   @Test
@@ -63,8 +68,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldEndPointRequestMapper, null, supportedWriterMediaTypesScanner,
-        supportedReaderMediaTypesScanner);
+    new LdModule(dynamicEndPointRequestMapper, directEndPointRequestMapper, null,
+        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
   }
 
   @Test
@@ -73,8 +78,8 @@ public class LdModuleTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper, null,
-        supportedReaderMediaTypesScanner);
+    new LdModule(dynamicEndPointRequestMapper, directEndPointRequestMapper,
+        ldRedirectionRequestMapper, null, supportedReaderMediaTypesScanner);
   }
 
   @Test
