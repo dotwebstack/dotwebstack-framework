@@ -19,7 +19,7 @@ public class RepresentationRequestHandlerFactory {
     this.representationResourceProvider = representationResourceProvider;
   }
 
-  public RepresentationRequestHandler newEndPointRequestHandler(
+  public RepresentationRequestHandler newRepresentationRequestHandler(
       @NonNull AbstractEndPoint endpoint) {
     return new RepresentationRequestHandler(endpoint, endPointRequestParameterMapper,
         representationResourceProvider);

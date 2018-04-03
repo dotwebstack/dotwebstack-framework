@@ -37,7 +37,7 @@ public class RepresentationRequestHandlerFactoryTest {
 
     // Act
     RepresentationRequestHandler representationRequestHandler =
-        representationRequestHandlerFactory.newEndPointRequestHandler(endPoint);
+        representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint);
 
     // Assert
     assertThat(representationRequestHandler.getEndPointRequestParameterMapper(),

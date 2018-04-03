@@ -50,7 +50,7 @@ public class DynamicEndPointRequestMapper {
     String absolutePath = basePath.concat(endPoint.getPathPattern());
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
     resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-        representationRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+        representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint)).produces(
             supportedWriterMediaTypesScanner.getAllSupportedMediaTypes()).nameBindings(
                 ExpandFormatParameter.class);
     if (!httpConfiguration.resourceAlreadyRegistered(absolutePath, HttpMethod.GET)) {

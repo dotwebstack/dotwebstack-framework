@@ -116,7 +116,7 @@ public class DynamicEndPointRequestMapperTest {
     representationRequestHandler = new RepresentationRequestHandler(dynamicEndPoint,
         endPointRequestParameterMapper, representationResourceProvider);
 
-    when(representationRequestHandlerFactory.newEndPointRequestHandler(
+    when(representationRequestHandlerFactory.newRepresentationRequestHandler(
         isA(AbstractEndPoint.class))).thenReturn(representationRequestHandler);
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }

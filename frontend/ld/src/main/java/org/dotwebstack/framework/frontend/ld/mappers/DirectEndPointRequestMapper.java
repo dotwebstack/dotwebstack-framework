@@ -83,7 +83,7 @@ public class DirectEndPointRequestMapper {
     getRepresentation.ifPresent(representation -> {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          representationRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+          representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint)).produces(
               supportedWriterMediaTypesScanner.getMediaTypes(
                   representation.getInformationProduct().getResultType())).nameBindings(
                       ExpandFormatParameter.class);
@@ -92,7 +92,7 @@ public class DirectEndPointRequestMapper {
     postRepresentation.ifPresent(representation -> {
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
       resourceBuilder.addMethod(HttpMethod.POST).handledBy(
-          representationRequestHandlerFactory.newEndPointRequestHandler(endPoint)).produces(
+          representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint)).produces(
               supportedWriterMediaTypesScanner.getMediaTypes(
                   representation.getInformationProduct().getResultType())).nameBindings(
                       ExpandFormatParameter.class);
