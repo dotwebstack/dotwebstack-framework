@@ -15,7 +15,6 @@
   <name>DotWebStack Backend</name>
 
   <modules>
-    <module>elasticsearch</module>
     <module>sparql</module>
   </modules>
 
