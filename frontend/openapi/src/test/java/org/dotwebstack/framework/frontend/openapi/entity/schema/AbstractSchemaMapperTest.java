@@ -12,13 +12,13 @@ public class AbstractSchemaMapperTest {
   @Test
   public void hasVendorExtension_ReturnsTrue_WhenPropertyHasExtension() {
     // Arrange
-    StringProperty property = new StringProperty();
+    StringProperty schema = new StringProperty();
 
-    property.setVendorExtension(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+        true);
 
     // Act
-    boolean result = AbstractSchemaMapper.hasVendorExtension(property,
+    boolean result = AbstractSchemaMapper.hasVendorExtension(schema,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL);
 
     // Assert
@@ -28,14 +28,14 @@ public class AbstractSchemaMapperTest {
   @Test
   public void hasVendorExtension_ReturnsFalse_WhenPropertyHasExtension() {
     // Arrange
-    StringProperty property = new StringProperty();
+    StringProperty schema = new StringProperty();
 
-    property.setVendorExtension(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+        true);
 
     // Act
     boolean result =
-        AbstractSchemaMapper.hasVendorExtension(property, OpenApiSpecificationExtensions.LDPATH);
+        AbstractSchemaMapper.hasVendorExtension(schema, OpenApiSpecificationExtensions.LDPATH);
 
     // Assert
     assertThat(result, is(false));
@@ -44,13 +44,13 @@ public class AbstractSchemaMapperTest {
   @Test
   public void hasVendorExtensionWithValue_ReturnsTrue_WhenPropertyHasExtensionWithValue() {
     // Arrange
-    StringProperty property = new StringProperty();
+    StringProperty schema = new StringProperty();
 
-    property.setVendorExtension(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+        true);
 
     // Act
-    boolean result = AbstractSchemaMapper.hasVendorExtensionWithValue(property,
+    boolean result = AbstractSchemaMapper.hasVendorExtensionWithValue(schema,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
 
     // Assert
@@ -60,13 +60,13 @@ public class AbstractSchemaMapperTest {
   @Test
   public void hasVendorExtensionWithValue_ReturnsFalse_WhenPropertyHasExtensionWithoutValue() {
     // Arrange
-    StringProperty property = new StringProperty();
+    StringProperty schema = new StringProperty();
 
-    property.setVendorExtension(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+        true);
 
     // Act
-    boolean result = AbstractSchemaMapper.hasVendorExtensionWithValue(property,
+    boolean result = AbstractSchemaMapper.hasVendorExtensionWithValue(schema,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, false);
 
     // Assert
@@ -76,13 +76,13 @@ public class AbstractSchemaMapperTest {
   @Test
   public void hasVendorExtensionWithValue_ReturnsFalse_WhenPropertyDoesNotHaveExtension() {
     // Arrange
-    StringProperty property = new StringProperty();
+    StringProperty schema = new StringProperty();
 
-    property.setVendorExtension(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+        true);
 
     // Act
-    boolean result = AbstractSchemaMapper.hasVendorExtensionWithValue(property,
+    boolean result = AbstractSchemaMapper.hasVendorExtensionWithValue(schema,
         OpenApiSpecificationExtensions.LDPATH, false);
 
     // Assert

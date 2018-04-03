@@ -6,15 +6,16 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.properties.IntegerProperty;
 import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext;
-import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.query.QueryResult;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
+import org.eclipse.rdf4j.repository.Repository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,10 +27,13 @@ public class GraphEntityMapperTest {
 
   @Mock
   private Swagger definitionsMock;
+
   @Mock
-  private QueryResult<Statement> queryResultMock;
+  private Repository repositoryMock;
+
   @Mock
-  private InformationProduct productMock;
+  private RequestContext requestContextMock;
+
   @Mock
   private SchemaMapperAdapter schemaMapperAdapterMock;
 
@@ -44,11 +48,11 @@ public class GraphEntityMapperTest {
   public void map_Returns_SchemaMapperAdapterResult() {
     // Arrange
     IntegerProperty schema = new IntegerProperty();
-    GraphEntity entity = newGraphEntity(ImmutableMap.of(MediaType.TEXT_PLAIN_TYPE, schema),
-        queryResultMock, definitionsMock, ImmutableMap.of(), productMock, "");
+    GraphEntity entity = newGraphEntity(new Response().schema(schema), repositoryMock,
+        ImmutableSet.of(), definitionsMock, requestContextMock);
 
     Object object = new Object();
-    when(schemaMapperAdapterMock.mapGraphValue(any(IntegerProperty.class), any(GraphEntity.class),
+    when(schemaMapperAdapterMock.mapGraphValue(any(ResponseProperty.class), any(GraphEntity.class),
         any(ValueContext.class), any(SchemaMapperAdapter.class))).thenReturn(object);
 
     // Act

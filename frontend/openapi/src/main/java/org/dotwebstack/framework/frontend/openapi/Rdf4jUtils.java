@@ -35,12 +35,6 @@ public final class Rdf4jUtils {
     return repository;
   }
 
-  public static Boolean evaluateAskQuery(@NonNull Repository repository, @NonNull String query) {
-    try (RepositoryConnection connection = repository.getConnection()) {
-      return connection.prepareBooleanQuery(query).evaluate();
-    }
-  }
-
   /**
    * @return The resources resulting from evaluating the supplied SPARQL SELECT query on the
    *         specified repository. The query must have defined exactly one binding and must return

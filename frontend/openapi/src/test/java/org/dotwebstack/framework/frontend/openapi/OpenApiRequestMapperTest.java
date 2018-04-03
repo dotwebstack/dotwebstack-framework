@@ -414,27 +414,6 @@ public class OpenApiRequestMapperTest {
   }
 
   @Test
-  public void map_ThrowsException_EndpointWithoutOkResponseSchema() throws IOException {
-    // Arrange
-    mockDefinition().produces(MediaType.TEXT_PLAIN).host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(
-            ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
-                DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-                    new Response())));
-
-    // Assert
-    thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(
-        String.format("Resource '%s' does not specify a schema for the status %d response.",
-            "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
-
-    // Act
-    requestMapper.map(httpConfigurationMock);
-  }
-
-
-
-  @Test
   public void map_ProducesPrecedence_WithValidData() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.TEXT_PLAIN).path("/breweries",

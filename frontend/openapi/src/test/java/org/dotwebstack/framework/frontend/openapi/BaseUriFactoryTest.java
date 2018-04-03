@@ -155,7 +155,6 @@ public class BaseUriFactoryTest {
 
     // Act
     BaseUriFactory.newBaseUri(containerRequestMock, swagger);
-    System.out.println(BaseUriFactory.newBaseUri(containerRequestMock, swagger));
   }
 
   private String getUriString(Scheme scheme, String host, String path) {

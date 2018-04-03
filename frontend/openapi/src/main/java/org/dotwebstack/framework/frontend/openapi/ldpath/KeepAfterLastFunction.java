@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.ldpath;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
+import java.util.Collections;
 import lombok.NonNull;
 import org.apache.marmotta.ldpath.api.backend.RDFBackend;
 import org.apache.marmotta.ldpath.api.functions.SelectorFunction;
@@ -21,6 +22,10 @@ public final class KeepAfterLastFunction<N> extends SelectorFunction<N> {
     if (args.length != NO_ARGS) {
       throw new IllegalArgumentException(
           String.format("LdPath function %s requires %d arguments.", getLocalName(), NO_ARGS));
+    }
+
+    if (args[0].isEmpty()) {
+      return Collections.emptyList();
     }
 
     final N node = args[0].iterator().next();

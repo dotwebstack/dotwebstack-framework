@@ -174,6 +174,8 @@ public final class DBEERPEDIA {
 
   public static final IRI BREWERY_TYPE;
 
+  public static final IRI WINERY_TYPE;
+
   public static final IRI LAYOUT;
 
   public static final IRI LAYOUT_NL;
@@ -313,6 +315,8 @@ public final class DBEERPEDIA {
     PATH_PATTERN = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "pathPattern");
 
     BREWERY_TYPE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Brewery");
+
+    WINERY_TYPE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Winery");
 
     LAYOUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayout");
 
