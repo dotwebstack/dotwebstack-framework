@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.endpoint;
 
+import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.service.Service;
@@ -11,11 +12,11 @@ public class DirectEndPoint extends AbstractEndPoint {
 
   private Representation postRepresentation;
 
-  private Service deleteService;
+  private Optional<Service> deleteService;
 
-  private Service postService;
+  private Optional<Service> postService;
 
-  private Service putService;
+  private Optional<Service> putService;
 
   public DirectEndPoint(Builder builder) {
     super(builder);
@@ -34,15 +35,15 @@ public class DirectEndPoint extends AbstractEndPoint {
     return postRepresentation;
   }
 
-  public Service getDeleteService() {
+  public Optional<Service> getDeleteService() {
     return deleteService;
   }
 
-  public Service getPostService() {
+  public Optional<Service> getPostService() {
     return postService;
   }
 
-  public Service getPutService() {
+  public Optional<Service> getPutService() {
     return putService;
   }
 
@@ -52,14 +53,17 @@ public class DirectEndPoint extends AbstractEndPoint {
 
     private Representation postRepresentation;
 
-    private Service deleteService;
+    private Optional<Service> deleteService;
 
-    private Service postService;
+    private Optional<Service> postService;
 
-    private Service putService;
+    private Optional<Service> putService;
 
     public Builder(@NonNull Resource identifier, @NonNull String pathPattern) {
       super(identifier, pathPattern);
+      this.deleteService = Optional.empty();
+      this.postService = Optional.empty();
+      this.putService = Optional.empty();
     }
 
     public Builder getRepresentation(Representation representation) {
@@ -73,17 +77,17 @@ public class DirectEndPoint extends AbstractEndPoint {
     }
 
     public Builder deleteService(Service deleteService) {
-      this.deleteService = deleteService;
+      this.deleteService = Optional.of(deleteService);
       return this;
     }
 
     public Builder postService(Service postService) {
-      this.postService = postService;
+      this.postService = Optional.of(postService);
       return this;
     }
 
     public Builder putService(Service putService) {
-      this.putService = putService;
+      this.putService = Optional.of(putService);
       return this;
     }
 
