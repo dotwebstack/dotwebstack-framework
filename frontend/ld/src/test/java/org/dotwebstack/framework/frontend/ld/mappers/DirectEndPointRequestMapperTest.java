@@ -13,12 +13,9 @@ import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.ApplicationProperties;
-import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
@@ -56,9 +53,6 @@ public class DirectEndPointRequestMapperTest {
   private Stage stage;
 
   @Mock
-  private Site site;
-
-  @Mock
   private DirectEndPoint directEndPoint;
 
   @Mock
@@ -78,15 +72,6 @@ public class DirectEndPointRequestMapperTest {
 
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
-
-  @Mock
-  private StageResourceProvider stageResourceProvider;
-
-  @Mock
-  private ConfigurationBackend configurationBackend;
-
-  @Mock
-  private ApplicationProperties applicationProperties;
 
   @Mock
   private ServiceRequestHandlerFactory transactionRequestHandlerFactory;

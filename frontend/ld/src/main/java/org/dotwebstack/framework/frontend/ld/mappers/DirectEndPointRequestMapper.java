@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.ld.mappers;
 
-import java.util.Arrays;
 import java.util.Optional;
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
@@ -12,7 +11,6 @@ import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
-import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.glassfish.jersey.server.model.Resource;
@@ -104,10 +102,7 @@ public class DirectEndPointRequestMapper {
       String httpMethod, String absolutePath, HttpConfiguration httpConfiguration) {
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
     resourceBuilder.addMethod(httpMethod).handledBy(
-        serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction()),
-        Arrays.stream(ServiceRequestHandler.class.getMethods()).filter(
-            method -> method.getName() == "apply").findFirst().get()).consumes(
-                supportedReaderMediaTypesScanner.getMediaTypes());
+        serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction()));
     buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod);
   }
 
