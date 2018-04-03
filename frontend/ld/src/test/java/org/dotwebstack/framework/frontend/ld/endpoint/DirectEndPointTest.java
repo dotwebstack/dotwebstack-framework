@@ -87,8 +87,8 @@ public class DirectEndPointTest {
     assertThat(directEndPoint.getStage(), equalTo(stage));
     assertThat(directEndPoint.getGetRepresentation(), equalTo(getRespresentation));
     assertThat(directEndPoint.getPostRepresentation(), equalTo(postRepresentation));
-    assertThat(directEndPoint.getDeleteService().get(0), equalTo(deleteService));
-    assertThat(directEndPoint.getPostService().get(0), equalTo(postService));
-    assertThat(directEndPoint.getPutService().get(0), equalTo(putService));
+    assertThat(directEndPoint.getDeleteService().get(), equalTo(deleteService));
+    assertThat(directEndPoint.getPostService().get(), equalTo(postService));
+    assertThat(directEndPoint.getPutService().get(), equalTo(putService));
   }
 }

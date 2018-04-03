@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -19,6 +20,7 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.dotwebstack.framework.frontend.ld.service.ServiceResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -91,6 +93,7 @@ public class DirectEndPointResourceProviderTest {
     when(stageResourceProvider.get(any())).thenReturn(stage);
     when(representationResourceProvider.get(any())).thenReturn(representation);
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
+    when(serviceResourceProvider.get(any())).thenReturn(mock(Service.class));
   }
 
   @Test
@@ -198,9 +201,9 @@ public class DirectEndPointResourceProviderTest {
     assertThat(endPoint.getStage(), equalTo(stage));
     assertThat(endPoint.getGetRepresentation(), equalTo(representation));
     assertThat(endPoint.getPostRepresentation(), equalTo(representation));
-    assertThat(endPoint.getDeleteService(), hasSize(1));
-    assertThat(endPoint.getPostService(), hasSize(1));
-    assertThat(endPoint.getPutService(), hasSize(1));
+    assertThat(endPoint.getDeleteService(), not(nullValue()));
+    assertThat(endPoint.getPostService().get(), not(nullValue()));
+    assertThat(endPoint.getPutService(), not(nullValue()));
   }
 
   @Test
