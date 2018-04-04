@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.properties.DateProperty;
+import io.swagger.models.properties.DateTimeProperty;
 import io.swagger.models.properties.Property;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -21,18 +21,20 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
-  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
+class DateTimeSchemaMapper extends AbstractSchemaMapper<DateTimeProperty, LocalDateTime> {
+  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATETIME);
 
   @Override
-  public LocalDate mapTupleValue(@NonNull DateProperty schema, @NonNull ValueContext valueContext) {
-    return convertToDate(
+  public LocalDateTime mapTupleValue(@NonNull DateTimeProperty schema,
+      @NonNull ValueContext valueContext) {
+    return convertToDateTime(
         SchemaMapperUtils.castLiteralValue(valueContext.getValue()).calendarValue());
   }
 
   @Override
-  public LocalDate mapGraphValue(@NonNull DateProperty property, @NonNull GraphEntity graphEntity,
-      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public LocalDateTime mapGraphValue(@NonNull DateTimeProperty property,
+      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
@@ -45,16 +47,16 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
     return null;
   }
 
-  private LocalDate handleConstantValueVendorExtension(DateProperty schema) {
+  private LocalDateTime handleConstantValueVendorExtension(DateTimeProperty schema) {
     Object value = schema.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
     if (value != null) {
       if (isSupportedLiteral(value)) {
-        return convertToDate(((Literal) value).calendarValue());
+        return convertToDateTime(((Literal) value).calendarValue());
       }
       ValueFactory valueFactory = SimpleValueFactory.getInstance();
-      Literal literal = valueFactory.createLiteral((String) value, XMLSchema.DATE);
-      return convertToDate(literal.calendarValue());
+      Literal literal = valueFactory.createLiteral((String) value, XMLSchema.DATETIME);
+      return convertToDateTime(literal.calendarValue());
     }
 
     if (schema.getRequired()) {
@@ -62,17 +64,16 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
           "String Property has '%s' vendor extension that is null, but the property is required.",
           OpenApiSpecificationExtensions.CONSTANT_VALUE));
     }
-
     return null;
   }
 
-  private LocalDate handleLdPathVendorExtension(@NonNull DateProperty property,
+  private LocalDateTime handleLdPathVendorExtension(@NonNull DateTimeProperty property,
       @NonNull ValueContext valueContext, @NonNull GraphEntity graphEntity) {
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
     if (ldPathQuery == null && isSupportedLiteral(valueContext.getValue())) {
-      return convertToDate(((Literal) valueContext.getValue()).calendarValue());
+      return convertToDateTime(((Literal) valueContext.getValue()).calendarValue());
     }
 
     if (ldPathQuery == null) {
@@ -89,23 +90,23 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
       return null;
     }
 
-    Value dateValue = getSingleStatement(queryResult, ldPathQuery);
+    Value dateTimeValue = getSingleStatement(queryResult, ldPathQuery);
     try {
-      return convertToDate(((Literal) dateValue).calendarValue());
+      return convertToDateTime(((Literal) dateTimeValue).calendarValue());
     } catch (IllegalArgumentException iae) {
       throw new SchemaMapperRuntimeException(String.format(
           "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
-          ldPathQuery, XMLSchema.DATE.stringValue()));
+          ldPathQuery, XMLSchema.DATETIME.stringValue()));
     }
   }
 
-  private LocalDate convertToDate(XMLGregorianCalendar dateValue) {
-    return dateValue.toGregorianCalendar().toZonedDateTime().toLocalDate();
+  private LocalDateTime convertToDateTime(XMLGregorianCalendar dateTimeValue) {
+    return dateTimeValue.toGregorianCalendar().toZonedDateTime().toLocalDateTime();
   }
 
   @Override
   public boolean supports(@NonNull Property schema) {
-    return schema instanceof DateProperty;
+    return schema instanceof DateTimeProperty;
   }
 
   @Override

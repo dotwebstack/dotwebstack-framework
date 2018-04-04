@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.DateProperty;
+import io.swagger.models.properties.DateTimeProperty;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
@@ -24,7 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DateSchemaMapperTest {
+public class DateTimeSchemaMapperTest {
 
   private static final String DUMMY_EXPR = "dummyExpr()";
   private static final Literal VALUE_3 = SimpleValueFactory.getInstance().createLiteral("foo");
@@ -44,22 +44,22 @@ public class DateSchemaMapperTest {
   @Mock
   private LdPathExecutor ldPathExecutor;
 
-  private DateSchemaMapper schemaMapper;
-  private DateProperty property;
+  private DateTimeSchemaMapper schemaMapper;
+  private DateTimeProperty property;
 
   @Before
   public void setUp() {
-    schemaMapper = new DateSchemaMapper();
-    property = new DateProperty();
+    schemaMapper = new DateTimeSchemaMapper();
+    property = new DateTimeProperty();
     when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
 
   @Test
-  public void supports_ReturnsTrue_ForDateProperty() {
+  public void supports_ReturnsTrue_ForDateTimeProperty() {
     // Act
     boolean result = schemaMapper.supports(property);
 
-    // Arrange
+    // Assert
     assertThat(result, is(true));
   }
 
@@ -69,7 +69,7 @@ public class DateSchemaMapperTest {
     expectedException.expect(SchemaMapperRuntimeException.class);
     expectedException.expectMessage(String.format(
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
-        DUMMY_EXPR, XMLSchema.DATE.stringValue()));
+        DUMMY_EXPR, XMLSchema.DATETIME.stringValue()));
 
     // Arrange
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
