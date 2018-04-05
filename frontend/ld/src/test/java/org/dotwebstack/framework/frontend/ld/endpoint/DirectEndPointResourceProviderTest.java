@@ -202,7 +202,7 @@ public class DirectEndPointResourceProviderTest {
     assertThat(endPoint.getGetRepresentation(), equalTo(representation));
     assertThat(endPoint.getPostRepresentation(), equalTo(representation));
     assertThat(endPoint.getDeleteService(), not(nullValue()));
-    assertThat(endPoint.getPostService().get(), not(nullValue()));
+    assertThat(endPoint.getPostService(), not(nullValue()));
     assertThat(endPoint.getPutService(), not(nullValue()));
   }
 

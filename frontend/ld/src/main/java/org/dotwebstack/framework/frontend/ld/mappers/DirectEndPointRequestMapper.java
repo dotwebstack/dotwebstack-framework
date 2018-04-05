@@ -62,12 +62,18 @@ public class DirectEndPointRequestMapper {
   private void mapService(DirectEndPoint endPoint, HttpConfiguration httpConfiguration) {
     String basePath = endPoint.getStage().getFullPath();
     String absolutePath = basePath.concat(endPoint.getPathPattern());
-    endPoint.getDeleteService().ifPresent(deleteService -> registerTransaction(deleteService,
-        HttpMethod.DELETE, absolutePath, httpConfiguration));
-    endPoint.getPostService().ifPresent(postService -> registerTransaction(postService,
-        HttpMethod.POST, absolutePath, httpConfiguration));
-    endPoint.getPutService().ifPresent(putService -> registerTransaction(putService, HttpMethod.PUT,
-        absolutePath, httpConfiguration));
+    final Optional<org.dotwebstack.framework.frontend.ld.service.Service> deleteService =
+        Optional.ofNullable(endPoint.getDeleteService());
+    deleteService.ifPresent(service -> registerTransaction(service, HttpMethod.DELETE, absolutePath,
+        httpConfiguration));
+    final Optional<org.dotwebstack.framework.frontend.ld.service.Service> postService =
+        Optional.ofNullable(endPoint.getPostService());
+    postService.ifPresent(
+        service -> registerTransaction(service, HttpMethod.POST, absolutePath, httpConfiguration));
+    final Optional<org.dotwebstack.framework.frontend.ld.service.Service> putService =
+        Optional.ofNullable(endPoint.getPutService());
+    putService.ifPresent(
+        service -> registerTransaction(service, HttpMethod.PUT, absolutePath, httpConfiguration));
   }
 
   private void mapRepresentation(AbstractEndPoint endPoint, HttpConfiguration httpConfiguration) {
@@ -102,8 +108,8 @@ public class DirectEndPointRequestMapper {
       String httpMethod, String absolutePath, HttpConfiguration httpConfiguration) {
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
     resourceBuilder.addMethod(httpMethod).handledBy(
-        serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction()))
-        .consumes(supportedReaderMediaTypesScanner.getMediaTypes());
+        serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction())).consumes(
+            supportedReaderMediaTypesScanner.getMediaTypes());
     buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod);
   }
 
