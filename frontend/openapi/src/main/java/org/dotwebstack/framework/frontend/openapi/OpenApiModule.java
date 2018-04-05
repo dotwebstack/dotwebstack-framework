@@ -7,6 +7,7 @@ import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.HttpModule;
 import org.dotwebstack.framework.frontend.openapi.cors.CorsResponseFilter;
 import org.dotwebstack.framework.frontend.openapi.entity.EntityWriterInterceptor;
+import org.dotwebstack.framework.frontend.openapi.mappers.OpenApiRequestMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
