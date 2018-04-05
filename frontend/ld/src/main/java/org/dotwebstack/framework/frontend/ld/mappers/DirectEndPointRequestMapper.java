@@ -84,24 +84,7 @@ public class DirectEndPointRequestMapper {
     Optional<Representation> postRepresentation =
         Optional.ofNullable(((DirectEndPoint) endPoint).getPostRepresentation());
 
-    getRepresentation.ifPresent(representation -> {
-      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-      resourceBuilder.addMethod(HttpMethod.GET).handledBy(
-          representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint)).produces(
-              supportedWriterMediaTypesScanner.getMediaTypes(
-                  representation.getInformationProduct().getResultType())).nameBindings(
-                      ExpandFormatParameter.class);
-      buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.GET);
-    });
-    postRepresentation.ifPresent(representation -> {
-      Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-      resourceBuilder.addMethod(HttpMethod.POST).handledBy(
-          representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint)).produces(
-              supportedWriterMediaTypesScanner.getMediaTypes(
-                  representation.getInformationProduct().getResultType())).nameBindings(
-                      ExpandFormatParameter.class);
-      buildResource(httpConfiguration, resourceBuilder, absolutePath, HttpMethod.POST);
-    });
+
   }
 
   private void registerTransaction(org.dotwebstack.framework.frontend.ld.service.Service service,
@@ -110,11 +93,17 @@ public class DirectEndPointRequestMapper {
     resourceBuilder.addMethod(httpMethod).handledBy(
         serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction())).consumes(
             supportedReaderMediaTypesScanner.getMediaTypes());
-    buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod);
+    buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod, null, null);
   }
 
-  private void buildResource(HttpConfiguration httpConfiguration, Resource.Builder resourceBuilder,
-      String absolutePath, String httpMethod) {
+  private void buildResource(HttpConfiguration httpConfiguration,
+      final Resource.Builder resourceBuilder, String absolutePath, String httpMethod,
+      Representation representation, DirectEndPoint endPoint) {
+    resourceBuilder.addMethod(httpMethod).handledBy(
+        representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint)).produces(
+            supportedWriterMediaTypesScanner.getMediaTypes(
+                representation.getInformationProduct().getResultType())).nameBindings(
+                    ExpandFormatParameter.class);
     if (!httpConfiguration.resourceAlreadyRegistered(absolutePath, httpMethod)) {
       httpConfiguration.registerResources(resourceBuilder.build());
       LOG.debug("Mapped {} operation for request path {}",
