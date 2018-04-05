@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import io.swagger.models.Model;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -32,32 +33,34 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
           "Unable to resolve reference to swagger model: '%s'.", schema.getSimpleRef()));
     }
 
+    Boolean showWhenNull = true;
+    String exclude = OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL;
+    Map<String, Object> extensions = refModel.getVendorExtensions();
+    if (extensions.containsKey(exclude)) {
+      Object bool = extensions.get(exclude);
+      if (bool instanceof Boolean) {
+        showWhenNull = !(Boolean) bool;
+      } else {
+        throw new SchemaMapperRuntimeException(
+            String.format("Extension '%s' doesn't have a Boolean value", exclude));
+      }
+    }
+
     Builder<String, Object> builder = ImmutableMap.builder();
     refModel.getProperties().forEach(
-        mapPropertiesInRef(entity, valueContext, schemaMapperAdapter, builder));
+        mapPropertiesInRef(entity, valueContext, schemaMapperAdapter, builder, showWhenNull));
 
     return builder.build();
   }
 
   private BiConsumer<String, Property> mapPropertiesInRef(@NonNull GraphEntity entity, //
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter, //
-      Builder<String, Object> builder) { //
+      Builder<String, Object> builder, @NonNull boolean showWhenNull) { //
 
     return (propKey, propValue) -> {
       Object value =
           schemaMapperAdapter.mapGraphValue(propValue, entity, valueContext, schemaMapperAdapter);
-      Boolean showWhenNull = true;
-      if (propValue.getVendorExtensions().containsKey(
-          OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL)) {
-        Object bool = propValue.getVendorExtensions().get(
-            OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL);
-        if (bool instanceof Boolean) {
-          showWhenNull = !(Boolean) bool;
-        } else {
-          throw new SchemaMapperRuntimeException(
-              "If this is not a boolean you might have made a mistake in your config");
-        }
-      }
+
       if (showWhenNull || value != null) {
         builder.put(propKey, Optional.fromNullable(value));
       }

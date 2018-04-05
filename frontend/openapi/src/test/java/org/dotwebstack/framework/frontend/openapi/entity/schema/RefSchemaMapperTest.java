@@ -55,8 +55,6 @@ public class RefSchemaMapperTest {
     PROPERTY_1.getVendorExtensions().put(OpenApiSpecificationExtensions.CONSTANT_VALUE, VALUE_1);
     PROPERTY_2.getVendorExtensions().put(OpenApiSpecificationExtensions.LDPATH, LD_PATH_QUERY);
     PROPERTY_3.getVendorExtensions().put(OpenApiSpecificationExtensions.CONSTANT_VALUE, null);
-    PROPERTY_3.getVendorExtensions().put(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
   }
 
   @Rule
@@ -143,6 +141,8 @@ public class RefSchemaMapperTest {
     // Arrange
     schema.set$ref(DUMMY_REF);
     Model refModel = new ModelImpl();
+    refModel.getVendorExtensions().put(
+        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
     refModel.setProperties(
         ImmutableMap.of(KEY_1, PROPERTY_1, KEY_2, PROPERTY_2, KEY_3, PROPERTY_3));
 
