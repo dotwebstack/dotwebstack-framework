@@ -46,7 +46,6 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
     return (propKey, propValue) -> {
       Object value =
           schemaMapperAdapter.mapGraphValue(propValue, entity, valueContext, schemaMapperAdapter);
-
       Boolean showWhenNull = true;
       if (propValue.getVendorExtensions().containsKey(
           OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL)) {
@@ -54,6 +53,9 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
             OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL);
         if (bool instanceof Boolean) {
           showWhenNull = !(Boolean) bool;
+        } else {
+          throw new SchemaMapperRuntimeException(
+              "If this is not a boolean you might have made a mistake in your config");
         }
       }
       if (showWhenNull || value != null) {
