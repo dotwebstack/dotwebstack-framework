@@ -19,8 +19,7 @@ public class SparqlBackendValidationStepFactory {
 
   public ValidationStepExecutor create(@NonNull ValidationStep validationStep,
       @NonNull Model transactionModel, @NonNull FileConfigurationBackend fileConfigurationBackend) {
-    return new ValidationStepExecutor(validationStep, transactionModel, fileConfigurationBackend,
-        queryEvaluator);
+    return new ValidationStepExecutor(validationStep, transactionModel, fileConfigurationBackend);
   }
 
 }

@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
-import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.AbstractStepExecutor;
@@ -14,6 +13,7 @@ import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.QueryResults;
 
 public class ValidationStepExecutor extends AbstractStepExecutor<ValidationStep> {
@@ -22,18 +22,11 @@ public class ValidationStepExecutor extends AbstractStepExecutor<ValidationStep>
 
   private Model transactionModel;
 
-  private ValidationStep validationStep;
-
-  private QueryEvaluator queryEvaluator;
-
   public ValidationStepExecutor(@NonNull ValidationStep validationStep,
-      @NonNull Model transactionModel, @NonNull FileConfigurationBackend backend,
-      @NonNull QueryEvaluator queryEvaluator) {
+      @NonNull Model transactionModel, @NonNull FileConfigurationBackend backend) {
     super(validationStep);
     this.backend = backend;
     this.transactionModel = transactionModel;
-    this.validationStep = validationStep;
-    this.queryEvaluator = queryEvaluator;
   }
 
   @Override
@@ -54,4 +47,5 @@ public class ValidationStepExecutor extends AbstractStepExecutor<ValidationStep>
       throw new ShaclValidationException(report.printReport());
     }
   }
+
 }
