@@ -22,15 +22,10 @@ public class HttpConfiguration extends ResourceConfig {
   }
 
   public boolean resourceAlreadyRegistered(@NonNull String absolutePath, @NonNull String method) {
-    for (Resource resource : super.getResources()) {
-      for (ResourceMethod resourceMethod : resource.getResourceMethods()) {
-        if (resourceMethod.getHttpMethod().equals(method)
-            && resource.getPath().equals(absolutePath)) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return super.getResources().stream().anyMatch(
+        (Resource resource) -> resource.getAllMethods().stream().map(
+            ResourceMethod::getHttpMethod).anyMatch(method::equals)
+            && resource.getPath().equals(absolutePath));
   }
 
 }
