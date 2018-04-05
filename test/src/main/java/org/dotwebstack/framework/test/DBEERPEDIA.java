@@ -14,6 +14,8 @@ public final class DBEERPEDIA {
 
   public static final Literal BASE_PATH;
 
+  public static final IRI SHACL_CONCEPT_GRAPHNAME;
+
   public static final String TITLE = "Dbeerpedia";
 
   public static final IRI NAME;
@@ -214,6 +216,7 @@ public final class DBEERPEDIA {
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    SHACL_CONCEPT_GRAPHNAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ConceptShapeGraph");
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
     SITE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Stage");

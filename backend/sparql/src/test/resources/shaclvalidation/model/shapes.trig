@@ -10,8 +10,9 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
 @prefix dash:   <http://datashapes.org/dash#>.
 @prefix dbeerpedia: <http://dbeerpedia.org#> .
+@prefix elmo: <http://dotwebstack.org/def/elmo#> .
 
-GRAPH dbeerpedia:ConceptShapeGraph {
+GRAPH elmo:ConceptShapeGraph {
 ex:Persoon a owl:Class;
   uml:stereotype kkg:ObjectType;
   skos:prefLabel "Persoon";

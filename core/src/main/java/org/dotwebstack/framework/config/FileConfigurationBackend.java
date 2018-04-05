@@ -96,6 +96,7 @@ public class FileConfigurationBackend
       LOG.warn("No model resources found in path:{}/model", resourcePath);
       return;
     }
+
     RepositoryConnection repositoryConnection;
     try {
       repositoryConnection = repository.getConnection();
@@ -122,10 +123,17 @@ public class FileConfigurationBackend
         }
         addResourceToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource,
             configurationStreams);
+        System.out.println(
+            String.format("Loaded configuration file: \"{%s}\"", resource.getFilename()));
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
       Model model = QueryResults.asModel(
           repositoryConnection.getStatements(null, null, null, ELMO.SHACL_GRAPHNAME));
+      // todo to delete after testing
+      Model temp = QueryResults.asModel(
+          repositoryConnection.getStatements(null, null, null, ELMO.SHACL_CONCEPT_GRAPHNAME));
+      System.out.println("this is sparta:\n " + temp.toString());
+      //
       validate(configurationStreams, model);
     } catch (RDF4JException e) {
       throw new ConfigurationException("Error while loading RDF data.", e);
