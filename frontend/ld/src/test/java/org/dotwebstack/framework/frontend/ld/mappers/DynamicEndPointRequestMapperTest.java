@@ -94,11 +94,6 @@ public class DynamicEndPointRequestMapperTest {
   }
 
   @Test
-  public void test() {
-
-  }
-
-  @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
     DynamicEndPointRequestMapper dynamicEndPointRequestMapper =
