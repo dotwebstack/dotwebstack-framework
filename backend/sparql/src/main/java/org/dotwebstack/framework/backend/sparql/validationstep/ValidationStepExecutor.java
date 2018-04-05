@@ -37,7 +37,10 @@ public class ValidationStepExecutor extends AbstractStepExecutor<ValidationStep>
           QueryResults.asModel(backend.getRepository().getConnection().getStatements(null, null,
               null, step.getConformsTo()));
     } catch (RDF4JException ex) {
-      throw new BackendException(String.format("........: (%s)", ex.getMessage()), ex);
+      throw new BackendException(
+          String.format("Could not read configuration at graph {%s} as model {%s}",
+              step.getConformsTo(), ex.getMessage()),
+          ex);
     }
 
     final ShaclValidator shaclValidator = new ShaclValidator();
