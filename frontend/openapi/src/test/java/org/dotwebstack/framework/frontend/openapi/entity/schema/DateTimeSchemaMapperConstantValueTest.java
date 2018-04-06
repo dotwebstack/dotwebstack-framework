@@ -36,7 +36,6 @@ public class DateTimeSchemaMapperConstantValueTest {
 
   @Mock
   private GraphEntity entityMock;
-
   private SchemaMapperAdapter mapperAdapter;
   private DateTimeProperty property;
   private DateTimeSchemaMapper schemaMapper;
