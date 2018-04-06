@@ -21,7 +21,6 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,7 +37,10 @@ public class DateSchemaMapperLdPathTest {
 
   private static final String DUMMY_EXPR = "dummyExpr()";
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
-  private static final Literal VALUE_1 = VALUE_FACTORY.createLiteral("2016-12-24", XMLSchema.DATE);
+  private static final String EXPECTED_LOCAL_DATE = "1982-11-25";
+  private static final Literal VALUE =
+      VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE, XMLSchema.DATE);
+
 
   private DateSchemaMapper schemaMapper;
 
@@ -69,7 +71,7 @@ public class DateSchemaMapperLdPathTest {
   public void mapGraphValueTest() {
     // Arrange
     property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
-    Literal literal = VALUE_FACTORY.createLiteral("1982-11-25", XMLSchema.DATE);
+    Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE, XMLSchema.DATE);
 
     when(ldPathExecutorMock.ldPathQuery(subjectMock, "ld-path")).thenReturn(
         ImmutableList.of(literal));
@@ -79,32 +81,31 @@ public class DateSchemaMapperLdPathTest {
         ValueContext.builder().value(subjectMock).build(), mapperAdapter);
 
     // Assert
-    assertThat(result, is(LocalDate.of(1982, 11, 25)));
+    assertThat(result.toString(), is(EXPECTED_LOCAL_DATE));
   }
 
   @Test
   public void mapGraphValue_ReturnsNull_WhenNoLdPathHasBeenSupplied() {
     // Act
     LocalDate result = schemaMapper.mapGraphValue(property, entityMock,
-        ValueContext.builder().value(VALUE_1).build(), mapperAdapter);
+        ValueContext.builder().value(VALUE).build(), mapperAdapter);
 
     // Assert
     assertThat(result, nullValue());
     verifyZeroInteractions(ldPathExecutorMock);
   }
 
-
   @Test
-  public void mapGraphValue_ReturnsValue_ForLdPath() {
+  public void mapGraphValue_ReturnsLocalDate_WhenSupportedLiteralLdPathIsDefined() {
     // Arrange
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(subjectMock), anyString())).thenReturn(
-        ImmutableList.of(VALUE_1));
+        ImmutableList.of(VALUE));
 
     LocalDate result = schemaMapper.mapGraphValue(property, entityMock,
         ValueContext.builder().value(subjectMock).build(), mapperAdapter);
 
     // Assert
-    assertThat(result.toString(), CoreMatchers.is(VALUE_1.calendarValue().toString()));
+    assertThat(result.toString(), is(VALUE.calendarValue().toString()));
   }
 }

@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -33,6 +32,7 @@ public class DateSchemaMapperConstantValueTest {
 
   private static final String CONSTANT_VALUE = OpenApiSpecificationExtensions.CONSTANT_VALUE;
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+  private static final String EXPECTED_LOCAL_DATE = "1982-11-25";
 
   @Mock
   private GraphEntity entityMock;
@@ -51,45 +51,31 @@ public class DateSchemaMapperConstantValueTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsDateValue_WhenStringConstantValueIsDefined() {
+  public void mapGraphValue_ReturnsLocalDate_WhenStringConstantValueIsDefined() {
     // Arrange
-    property.setVendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.CONSTANT_VALUE, "1982-11-25"));
+    property.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, EXPECTED_LOCAL_DATE));
 
     // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
+    LocalDate result =
+        (LocalDate) mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
 
     // Assert
-    assertThat(result, instanceOf(LocalDate.class));
-    assertThat(result.toString(), is("1982-11-25"));
+    assertThat(result.toString(), is(EXPECTED_LOCAL_DATE));
   }
 
   @Test
-  public void mapGraphValue_ReturnsDateValue_WhenBooleanConstantValueIsDefined() {
+  public void mapGraphValue_ReturnsLocalDate_WhenSupportedLiteralConstantValueIsDefined() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, "1982-11-25"));
-
-    // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
-
-    // Assert
-    assertThat(result, instanceOf(LocalDate.class));
-    assertThat(result.toString(), is("1982-11-25"));
-  }
-
-  @Test
-  public void mapGraphValue_ReturnsDateValue_WhenSupportedLiteralConstantValueIsDefined() {
-    // Arrange
-    Literal literal = VALUE_FACTORY.createLiteral("1982-11-25", XMLSchema.DATE);
+    Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE, XMLSchema.DATE);
 
     property.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
+    LocalDate result =
+        (LocalDate) mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
 
     // Assert
-    assertThat(result, instanceOf(LocalDate.class));
-    assertThat(result.toString(), is("1982-11-25"));
+    assertThat(result.toString(), is(EXPECTED_LOCAL_DATE));
   }
 
   @Test
@@ -112,9 +98,9 @@ public class DateSchemaMapperConstantValueTest {
 
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(
-        "String Property has 'x-dotwebstack-constant-value' vendor extension that is null, "
-            + "but the property is required.");
+    expectedException.expectMessage("x-dotwebstack-constant-value");
+    expectedException.expectMessage("is null");
+    expectedException.expectMessage("required");
 
     // Act
     schemaMapper.mapGraphValue(property, entityMock, valueContext, mapperAdapter);

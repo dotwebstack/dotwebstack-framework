@@ -13,6 +13,7 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -226,6 +227,11 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   @Override
   public boolean supports(@NonNull Property schema) {
     return schema instanceof StringProperty;
+  }
+
+  @Override
+  protected String convertToType(Literal literal) {
+    return literal.toString();
   }
 
   @Override

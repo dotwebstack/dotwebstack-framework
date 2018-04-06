@@ -13,6 +13,7 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
@@ -151,6 +152,11 @@ public class AbstractSubjectQuerySchemaMapperTest {
     @Override
     public boolean supports(Property schema) {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    Object convertToType(Literal literal) {
+      return null;
     }
 
     @Override

@@ -1,8 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -33,6 +32,7 @@ public class DateTimeSchemaMapperConstantValueTest {
 
   private static final String CONSTANT_VALUE = OpenApiSpecificationExtensions.CONSTANT_VALUE;
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+  private static final String EXPECTED_LOCAL_DATE_TIME = "1982-11-25T10:10:10";
 
   @Mock
   private GraphEntity entityMock;
@@ -51,47 +51,31 @@ public class DateTimeSchemaMapperConstantValueTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsDateTimeValue_WhenStringConstantValueIsDefined() {
+  public void mapGraphValue_ReturnsLocalDateTime_WhenStringConstantValueIsDefined() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.CONSTANT_VALUE,
-        LocalDateTime.of(2018, 4, 3, 10, 10, 10).toString()));
+    property.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, EXPECTED_LOCAL_DATE_TIME));
 
     // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
+    LocalDateTime result = (LocalDateTime) mapperAdapter.mapGraphValue(property, entityMock,
+        valueContext, mapperAdapter);
 
     // Assert
-    assertThat(result, instanceOf(LocalDateTime.class));
-    assertThat(result, is(LocalDateTime.of(2018, 4, 3, 10, 10, 10)));
+    assertThat(result.toString(), is(EXPECTED_LOCAL_DATE_TIME));
   }
 
   @Test
-  public void mapGraphValue_ReturnsDateTimeValue_WhenBooleanConstantValueIsDefined() {
+  public void mapGraphValue_ReturnsLocalDateTime_WhenSupportedLiteralConstantValueIsDefined() {
     // Arrange
-    property.setVendorExtensions(
-        ImmutableMap.of(CONSTANT_VALUE, LocalDateTime.of(2018, 4, 3, 10, 10, 10).toString()));
-
-    // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
-
-    // Assert
-    assertThat(result, instanceOf(LocalDateTime.class));
-    assertThat(result, is(LocalDateTime.of(2018, 4, 3, 10, 10, 10)));
-  }
-
-  @Test
-  public void mapGraphValue_ReturnsDateTimeValue_WhenSupportedLiteralConstantValueIsDefined() {
-    // Arrange
-    Literal literal = VALUE_FACTORY.createLiteral(
-        LocalDateTime.of(2018, 4, 3, 10, 10, 10).toString(), XMLSchema.DATETIME);
+    Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE_TIME, XMLSchema.DATETIME);
 
     property.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
+    LocalDateTime result = (LocalDateTime) mapperAdapter.mapGraphValue(property, entityMock,
+        valueContext, mapperAdapter);
 
     // Assert
-    assertThat(result, instanceOf(LocalDateTime.class));
-    assertThat(result, is(LocalDateTime.of(2018, 4, 3, 10, 10, 10)));
+    assertThat(result.toString(), is(EXPECTED_LOCAL_DATE_TIME));
   }
 
   @Test
@@ -103,7 +87,7 @@ public class DateTimeSchemaMapperConstantValueTest {
     Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
 
     // Assert
-    assertNull(result);
+    assertThat(result, is(nullValue()));
   }
 
   @Test
@@ -114,9 +98,9 @@ public class DateTimeSchemaMapperConstantValueTest {
 
     // Assert
     expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(
-        "String Property has 'x-dotwebstack-constant-value' vendor extension that is null, "
-            + "but the property is required.");
+    expectedException.expectMessage("x-dotwebstack-constant-value");
+    expectedException.expectMessage("is null");
+    expectedException.expectMessage("required");
 
     // Act
     schemaMapper.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
@@ -129,6 +113,5 @@ public class DateTimeSchemaMapperConstantValueTest {
 
     return result;
   }
-
 
 }

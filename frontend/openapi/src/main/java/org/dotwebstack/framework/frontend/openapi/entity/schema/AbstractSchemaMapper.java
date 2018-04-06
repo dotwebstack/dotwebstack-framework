@@ -1,19 +1,59 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 
 public abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
 
-  protected static Value getSingleStatement(@NonNull Collection<Value> queryResult,
+  T handleLdPathVendorExtension(@NonNull S property, @NonNull ValueContext valueContext,
+      @NonNull GraphEntity graphEntity) {
+    String ldPathQuery =
+        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+
+    if (ldPathQuery == null && isSupportedLiteral(valueContext.getValue())) {
+      return convertToType(((Literal) valueContext.getValue()));
+    }
+
+    if (ldPathQuery == null) {
+      throw new SchemaMapperRuntimeException(
+          String.format("Property '%s' must have a '%s' attribute.", property.getName(),
+              OpenApiSpecificationExtensions.LDPATH));
+    }
+
+    LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
+    Collection<Value> queryResult =
+        ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
+
+    if (!property.getRequired() && queryResult.isEmpty()) {
+      return null;
+    }
+
+    Value value = getSingleStatement(queryResult, ldPathQuery);
+    try {
+      return convertToType((Literal) value);
+    } catch (IllegalArgumentException iae) {
+      throw new SchemaMapperRuntimeException(expectedException(ldPathQuery));
+    }
+  }
+
+  String expectedException(String ldPathQuery) {
+    return ldPathQuery;
+  }
+
+  T convertToType(Literal literal) {
+    return null;
+  }
+
+  static Value getSingleStatement(@NonNull Collection<Value> queryResult,
       @NonNull String ldPathQuery) {
 
     if (queryResult.isEmpty()) {
@@ -31,22 +71,19 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
   }
 
   /**
-   * Validates the vendor extensions that are declared on the Property. A Property
-   * should have exactly one of the vendor extensions declared in supportedExtensions
+   * Validates the vendor extensions that are declared on the Property. A Property should have
+   * exactly one of the vendor extensions declared in supportedExtensions
    *
    * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
    *         are encountered.
    */
   protected void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
     if (property.getVendorExtensions().keySet().stream().filter(
-            supportedExtensions::contains).count() != 1) {
+        supportedExtensions::contains).count() != 1) {
 
-      String message = property.getClass().getSimpleName() +
-          " object must have one of: " +
-          supportedExtensions.toString()
-              .replaceAll("[\\[\\]]", "'")
-              .replaceAll(", ", "', '") +
-          ". This object cannot have a combination of these.";
+      String message = property.getClass().getSimpleName() + " object must have one of: "
+          + supportedExtensions.toString().replaceAll("[\\[\\]]", "'").replaceAll(", ", "', '")
+          + ". This object cannot have a combination of these.";
 
       throw new SchemaMapperRuntimeException(message);
     }
@@ -69,7 +106,6 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
         return true;
       }
     }
-
     return false;
   }
 

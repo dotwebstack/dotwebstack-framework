@@ -62,6 +62,11 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
   }
 
   @Override
+  Object convertToType(Literal literal) {
+    return literal.decimalValue();
+  }
+
+  @Override
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
   }

@@ -6,6 +6,7 @@ import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,11 @@ class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProp
   @Override
   public boolean supports(@NonNull Property schema) {
     return schema instanceof ResponseProperty;
+  }
+
+  @Override
+  protected Object convertToType(Literal literal) {
+    return literal;
   }
 
   @Override

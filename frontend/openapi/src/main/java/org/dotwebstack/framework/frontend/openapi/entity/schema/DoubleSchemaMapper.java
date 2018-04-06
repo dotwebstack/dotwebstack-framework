@@ -67,6 +67,11 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
   }
 
   @Override
+  Double convertToType(Literal literal) {
+    return literal.doubleValue();
+  }
+
+  @Override
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
   }

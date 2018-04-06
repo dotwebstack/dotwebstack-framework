@@ -14,6 +14,7 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
@@ -132,6 +133,11 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
   public boolean supports(@NonNull Property schema) {
     return schema instanceof ObjectProperty
         && !schema.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.TYPE);
+  }
+
+  @Override
+  Object convertToType(Literal literal) {
+    return literal;
   }
 
   @Override
