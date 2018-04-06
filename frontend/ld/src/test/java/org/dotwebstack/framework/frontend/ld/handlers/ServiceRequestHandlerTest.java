@@ -6,7 +6,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
-import org.dotwebstack.framework.transaction.Transaction;
+import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.dotwebstack.framework.transaction.flow.Flow;
 import org.dotwebstack.framework.transaction.flow.FlowExecutor;
 import org.junit.Before;
@@ -25,7 +25,7 @@ public class ServiceRequestHandlerTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private Transaction transaction;
+  private Service service;
 
   @Mock
   private Flow flow;
@@ -46,7 +46,7 @@ public class ServiceRequestHandlerTest {
 
   @Before
   public void setUp() {
-    serviceRequestHandler = new ServiceRequestHandler(transaction, supportedReaderMediaTypesScanner,
+    serviceRequestHandler = new ServiceRequestHandler(service, supportedReaderMediaTypesScanner,
         endPointRequestParameterMapper);
   }
 
