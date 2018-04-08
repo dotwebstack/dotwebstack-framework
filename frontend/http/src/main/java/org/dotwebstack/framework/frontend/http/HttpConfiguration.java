@@ -15,6 +15,7 @@ public class HttpConfiguration extends ResourceConfig {
   public HttpConfiguration(@NonNull List<HttpModule> httpModules) {
     register(HostPreMatchingRequestFilter.class);
     register(WebApplicationExceptionMapper.class);
+    register(RequestIdFilter.class);
     property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(robots.txt|(assets|webjars)/.*)");
     property(ServerProperties.WADL_FEATURE_DISABLE, true);
     httpModules.forEach(module -> module.initialize(this));
