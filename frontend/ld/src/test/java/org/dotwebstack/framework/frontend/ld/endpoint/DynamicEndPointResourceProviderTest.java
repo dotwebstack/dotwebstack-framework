@@ -62,9 +62,6 @@ public class DynamicEndPointResourceProviderTest {
   private StageResourceProvider stageResourceProvider;
 
   @Mock
-  private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
-
-  @Mock
   private Stage stage;
 
   @Mock
@@ -73,7 +70,9 @@ public class DynamicEndPointResourceProviderTest {
   @Mock
   private GraphQuery graphQuery;
 
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
+  private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
 
   @Before
   public void setUp() {
