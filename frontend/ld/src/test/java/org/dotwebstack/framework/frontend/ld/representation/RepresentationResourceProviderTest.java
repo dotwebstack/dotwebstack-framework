@@ -66,16 +66,13 @@ public class RepresentationResourceProviderTest {
   private StageResourceProvider stageResourceProvider;
 
   @Mock
-  private RepresentationResourceProvider representationResourceProvider;
-
-  @Mock
   private ParameterMapperResourceProvider parameterMapperResourceProvider;
 
   @Mock
   private InformationProduct informationProduct;
 
   @Mock
-  Transaction transaction;
+  private Transaction transaction;
 
   @Mock
   private Stage stage;
@@ -98,7 +95,9 @@ public class RepresentationResourceProviderTest {
   @Mock
   private GraphQuery graphQuery;
 
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
+  private RepresentationResourceProvider representationResourceProvider;
 
   @Before
   public void setUp() {
@@ -145,7 +144,7 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        transactionResourceProvider,null, stageResourceProvider, parameterMapperResourceProvider,
+        transactionResourceProvider, null, stageResourceProvider, parameterMapperResourceProvider,
         applicationProperties);
   }
 

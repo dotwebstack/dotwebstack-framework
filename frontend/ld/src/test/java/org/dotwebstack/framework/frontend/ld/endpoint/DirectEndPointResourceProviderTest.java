@@ -65,9 +65,6 @@ public class DirectEndPointResourceProviderTest {
   private StageResourceProvider stageResourceProvider;
 
   @Mock
-  private DirectEndPointResourceProvider endPointResourceProvider;
-
-  @Mock
   private ServiceResourceProvider serviceResourceProvider;
 
   @Mock
@@ -79,7 +76,9 @@ public class DirectEndPointResourceProviderTest {
   @Mock
   private GraphQuery graphQuery;
 
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
+  private DirectEndPointResourceProvider endPointResourceProvider;
 
   @Before
   public void setUp() {
@@ -143,8 +142,7 @@ public class DirectEndPointResourceProviderTest {
 
     // Assert
     assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(1));
-    DirectEndPoint endPoint =
-        (DirectEndPoint) endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
+    DirectEndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
     assertThat(endPoint, is(not(nullValue())));
     assertThat(endPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
     assertThat(endPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
