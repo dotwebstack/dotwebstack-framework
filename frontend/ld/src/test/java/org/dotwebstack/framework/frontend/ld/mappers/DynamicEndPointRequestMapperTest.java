@@ -42,9 +42,6 @@ public class DynamicEndPointRequestMapperTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private DynamicEndPointRequestMapper dynamicEndPointRequestMapper;
-
-  @Mock
   private Stage stage;
 
   @Mock
@@ -71,6 +68,9 @@ public class DynamicEndPointRequestMapperTest {
   private HttpConfiguration httpConfiguration;
 
   private RepresentationRequestHandler representationRequestHandler;
+
+  private DynamicEndPointRequestMapper dynamicEndPointRequestMapper;
+
 
   @Before
   public void setUp() {
