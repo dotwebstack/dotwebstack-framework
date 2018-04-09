@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.http.error;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.HttpModule;
@@ -18,10 +17,10 @@ public class ErrorModule implements HttpModule {
   @Override
   public void initialize(@NonNull HttpConfiguration httpConfiguration) {
     Resource.Builder resourceBuilder =
-        Resource.builder().path(String.format("/{domain}/%s/{%s:\\d{3}}",
-            SERVLET_ERROR_PATH_PREFIX, SERVLET_ERROR_STATUS_CODE_PARAMETER));
-    resourceBuilder.addMethod(HttpMethod.GET).handledBy(new ServletErrorHandler()).produces(
-        MediaType.TEXT_PLAIN_TYPE);
+        Resource.builder().path(String.format("/{domain}/%s/{%s:\\d{3}}", SERVLET_ERROR_PATH_PREFIX,
+            SERVLET_ERROR_STATUS_CODE_PARAMETER));
+    resourceBuilder.addMethod(HttpMethod.GET) //
+        .handledBy(new ServletErrorHandler()); //
     httpConfiguration.registerResources(resourceBuilder.build());
   }
 
