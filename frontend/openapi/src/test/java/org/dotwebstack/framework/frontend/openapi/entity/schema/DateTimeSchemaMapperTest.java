@@ -54,6 +54,8 @@ public class DateTimeSchemaMapperTest {
     when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
 
+  // XXX: Zie opmerkingen in DateSchemaMapper
+
   @Test
   public void supports_ReturnsTrue_ForDateTimeProperty() {
     // Act

@@ -23,6 +23,7 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
       OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
+  // XXX: Kan je hier niet de mapGraphValue uit de AbstractSchemaMapper gebruiken?
   @Override
   public Boolean mapGraphValue(@NonNull BooleanProperty property, @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
@@ -38,10 +39,12 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
       return handleConstantValueVendorExtension(property);
     }
 
+    // XXX: Misschien ook even kijken naar onderstaande TODO?
     // TODO: line below should never be reached. Return null instead?
     return mapTupleValue(property, valueContext);
   }
 
+  // XXX: Kan je hier niet de methode uit de AbstractSchemaMapper gebruiken?
   @SuppressWarnings("squid:S2447")
   protected Boolean handleLdPathVendorExtension(BooleanProperty property, Value context,
       LdPathExecutor ldPathExecutor) {
@@ -63,6 +66,8 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
         getSingleStatement(queryResult, ldPathQuery)).booleanValue();
   }
 
+  // XXX: Lijkt heel weinig af te wijken van de method in de AbstractSchemaMapper. Kan je die niet
+  // gebruiken?
   @SuppressWarnings("squid:S2447")
   @Override
   Boolean handleConstantValueVendorExtension(BooleanProperty property) {
@@ -79,6 +84,7 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
     return null;
   }
 
+  // XXX: Naamgeving ...
   @Override
   Boolean convertToType(Literal l) {
     return l.booleanValue();

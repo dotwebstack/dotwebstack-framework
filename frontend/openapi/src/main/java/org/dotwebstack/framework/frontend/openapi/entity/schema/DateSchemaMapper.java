@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
+  // XXX: Mag de input null zijn? En is public de juiste accessibility?
   @Override
   public String expectedException(String ldPathQuery) {
     return String.format(
@@ -36,5 +37,7 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
   }
+
+  // XXX: Netjes!
 
 }

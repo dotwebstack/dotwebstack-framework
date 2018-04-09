@@ -67,6 +67,7 @@ public class DateSchemaMapperLdPathTest {
     when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
+  // XXX: Naamgeving test.
   @Test
   public void mapGraphValueTest() {
     // Arrange

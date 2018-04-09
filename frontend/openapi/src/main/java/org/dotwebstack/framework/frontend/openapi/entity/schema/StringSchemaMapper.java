@@ -51,6 +51,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       return handleConstantValueVendorExtension(property);
     }
 
+    // XXX: Heb je iets gedaan met onderstaande TODO?
     // TODO: check usage of following code block
     if (valueContext.getValue() != null) {
       return valueContext.getValue().stringValue();
@@ -175,6 +176,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     }
   }
 
+  // XXX: Lijkt heel veel op de methode in de AbstractSchemaMapper. Kan je die gebruiken?
   @Override
   String handleConstantValueVendorExtension(StringProperty property) {
     Object value =
@@ -194,6 +196,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     return null;
   }
 
+  // XXX: Zelfde opmerking als hierboven
   private String handleLdPathVendorExtension(StringProperty property, Value context,
       LdPathExecutor ldPathExecutor) {
     String ldPathQuery =

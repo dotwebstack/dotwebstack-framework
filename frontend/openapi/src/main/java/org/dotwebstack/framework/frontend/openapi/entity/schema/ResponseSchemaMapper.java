@@ -19,9 +19,8 @@ class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProp
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ResponseProperty property,
-      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull ResponseProperty property, @NonNull GraphEntity graphEntity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
     if (hasSubjectQueryVendorExtension(property)) {
@@ -34,8 +33,8 @@ class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProp
       builder.value(value);
     }
 
-    return schemaMapperAdapter.mapGraphValue(property.getSchema(), graphEntity,
-        builder.build(), schemaMapperAdapter);
+    return schemaMapperAdapter.mapGraphValue(property.getSchema(), graphEntity, builder.build(),
+        schemaMapperAdapter);
   }
 
   @Override
@@ -43,6 +42,8 @@ class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProp
     return schema instanceof ResponseProperty;
   }
 
+  // XXX: Waarom is deze methode protected? Accessibility van deze methode is niet gelijk in alle
+  // SchemaMappers?
   @Override
   protected Object convertToType(Literal literal) {
     throw new UnsupportedOperationException();

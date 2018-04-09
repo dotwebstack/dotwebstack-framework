@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 class DateTimeSchemaMapper extends AbstractSchemaMapper<DateTimeProperty, LocalDateTime> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATETIME);
 
+  // XXX: Mag de input null zijn? En is public de juiste accessibility?
   @Override
   public String expectedException(String ldPathQuery) {
     return String.format(
@@ -22,6 +23,7 @@ class DateTimeSchemaMapper extends AbstractSchemaMapper<DateTimeProperty, LocalD
         ldPathQuery, XMLSchema.DATETIME.stringValue());
   }
 
+  // XXX: Wat je doet in de DateSchemaMapper werkt niet voor DateTime?
   @Override
   LocalDateTime convertToType(Literal literal) {
     return literal.calendarValue().toGregorianCalendar().toZonedDateTime().toLocalDateTime();

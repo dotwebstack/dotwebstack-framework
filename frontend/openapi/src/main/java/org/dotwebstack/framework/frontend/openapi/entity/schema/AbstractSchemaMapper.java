@@ -19,16 +19,21 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 public abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
 
+  // XXX: Subklassen kunnen ook in grid-frontend zitten. Kijk dus even goed naar de accessibility
+  // van alle methods.
+
   @Override
   public T mapTupleValue(@NonNull S schema, @NonNull ValueContext valueContext) {
     return convertToType(SchemaMapperUtils.castLiteralValue(valueContext.getValue()));
   }
 
+  @Override
   public T mapGraphValue(@NonNull S property, @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
     Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
+    // XXX: Alle drie worden ondersteund door de klassen die deze method gebruiken?
     ImmutableSet<String> supportedVendorExtensions = ImmutableSet.of(
         OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
         OpenApiSpecificationExtensions.CONSTANT_VALUE);
@@ -37,10 +42,12 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
         property.getVendorExtensions().keySet().stream().filter(
             supportedVendorExtensions::contains).count();
 
+    // XXX: Er is al een validateVendorExtensions method. Kan je deze hier gebruiken?
+    // XXX: En wat als er 0 nrOfSupportedVendorExtentionsPresent zijn?
     if (nrOfSupportedVendorExtentionsPresent > 1) {
       throw new SchemaMapperRuntimeException(String.format(
           "A " + property.getType() + " object must have either no, a '%s', '%s' or '%s' property."
-          + " A " + property.getType() + " object cannot have a combination of these.",
+              + " A " + property.getType() + " object cannot have a combination of these.",
           OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
           OpenApiSpecificationExtensions.CONSTANT_VALUE));
     }
@@ -51,6 +58,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
       return handleConstantValueVendorExtension(property);
     }
+    // XXX: En de RELATIVE_LINK vendor extension?
     return null;
   }
 
@@ -61,11 +69,14 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
       if (isSupportedLiteral(value)) {
         return convertToType(((Literal) value));
       }
+      // XXX: Heb je bij iedere aanroep van deze methode een nieuwe ValueFactory nodig?
       ValueFactory valueFactory = SimpleValueFactory.getInstance();
+      // XXX: XMLSchema.DATETIME?
       Literal literal = valueFactory.createLiteral((String) value, XMLSchema.DATETIME);
       return convertToType(literal);
     }
 
+    // XXX: Hoeveel wijkt dit af van de handleRequired method?
     if (schema.getRequired()) {
       throw new SchemaMapperRuntimeException(String.format(
           "String Property has '%s' vendor extension that is null, but the property is required.",
@@ -158,6 +169,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
       return false;
     }
 
+    // XXX: Streamify?
     IRI literalDataType = value.getDatatype();
     for (IRI dt : getSupportedDataTypes()) {
       if (literalDataType.equals(dt)) {

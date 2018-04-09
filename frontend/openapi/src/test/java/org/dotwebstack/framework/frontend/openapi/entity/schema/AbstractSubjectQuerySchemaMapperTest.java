@@ -35,7 +35,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
   @Mock
   private Property propertyMock;
 
-  private AbstractSubjectQuerySchemaMapper mapper = new TestSubjectQuerySchemaMapper();
+  private final AbstractSubjectQuerySchemaMapper mapper = new TestSubjectQuerySchemaMapper();
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -154,6 +154,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
       throw new UnsupportedOperationException();
     }
 
+    // XXX: Is null wat je hier wil retourneren?
     @Override
     Object convertToType(Literal literal) {
       return null;

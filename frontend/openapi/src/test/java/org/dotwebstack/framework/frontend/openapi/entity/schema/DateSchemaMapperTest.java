@@ -54,6 +54,7 @@ public class DateSchemaMapperTest {
     when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
 
+  // XXX: En als je een niet-DateProperty meegeeft?
   @Test
   public void supports_ReturnsTrue_ForDateProperty() {
     // Act
@@ -62,6 +63,8 @@ public class DateSchemaMapperTest {
     // Arrange
     assertThat(result, is(true));
   }
+
+  // XXX: Hier missen nog een paar testen voor de andere methoden in de klasse
 
   @Test
   public void mapGraphValue_ThrowsException_ForUnsupportedType() {

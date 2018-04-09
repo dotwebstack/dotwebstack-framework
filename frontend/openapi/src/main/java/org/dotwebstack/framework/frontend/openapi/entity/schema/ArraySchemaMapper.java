@@ -85,6 +85,10 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
     }
   }
 
+  // XXX: Het is gebruikelijk om de klassenaam over te nemen als naam van je variabele als deze niet
+  // te lang is. Dat zou hier dus neerkomen op `Literal literal`
+
+  // XXX: Wat is de betekenis van hetgene dat deze method retourneert? En waarom Object?
   @Override
   Object convertToType(Literal l) {
     return l.integerValue();
