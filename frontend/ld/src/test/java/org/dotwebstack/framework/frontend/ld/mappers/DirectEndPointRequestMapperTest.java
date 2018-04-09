@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
@@ -142,7 +143,7 @@ public class DirectEndPointRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(2));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(resource.getResourceMethods(), hasSize(1));
+    assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
   }
 
   @Test
