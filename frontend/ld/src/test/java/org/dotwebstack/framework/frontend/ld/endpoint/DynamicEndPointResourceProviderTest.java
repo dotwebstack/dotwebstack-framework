@@ -155,4 +155,5 @@ public class DynamicEndPointResourceProviderTest {
     assertThat(dynamicEndPoint.getStage(), equalTo(stage));
     assertThat(dynamicEndPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
   }
+
 }
