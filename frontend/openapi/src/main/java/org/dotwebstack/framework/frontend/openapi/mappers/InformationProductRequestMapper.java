@@ -37,7 +37,8 @@ public class InformationProductRequestMapper implements RequestMapper {
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
-  public InformationProductRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
+  public InformationProductRequestMapper(
+      @NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull RequestHandlerFactory requestHandlerFactory) {
     this.informationProductResourceProvider = informationProductLoader;
     this.requestHandlerFactory = requestHandlerFactory;
