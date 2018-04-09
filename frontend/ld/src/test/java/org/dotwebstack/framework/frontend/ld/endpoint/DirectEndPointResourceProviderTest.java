@@ -97,56 +97,6 @@ public class DirectEndPointResourceProviderTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(null, applicationProperties, stageResourceProvider,
-        representationResourceProvider, serviceResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingApplicationProperties() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(configurationBackend, null, stageResourceProvider,
-        representationResourceProvider, serviceResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingStageResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(configurationBackend, applicationProperties, null,
-        representationResourceProvider, serviceResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingRepresentationResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(configurationBackend, applicationProperties,
-        stageResourceProvider, null, serviceResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingServiceResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(configurationBackend, applicationProperties,
-        stageResourceProvider, representationResourceProvider, null);
-  }
-
-  @Test
   public void loadResources_LoadEndPoint_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),

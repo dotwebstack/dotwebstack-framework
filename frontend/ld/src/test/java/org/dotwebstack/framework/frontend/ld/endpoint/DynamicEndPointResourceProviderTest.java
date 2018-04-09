@@ -89,46 +89,6 @@ public class DynamicEndPointResourceProviderTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(null, applicationProperties,
-        parameterMapperResourceProvider, stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingApplicationProperties() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(configurationBackend, null, parameterMapperResourceProvider,
-        stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingParameterMapperResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(configurationBackend, applicationProperties, null,
-        stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingStageResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(configurationBackend, applicationProperties,
-        parameterMapperResourceProvider, null);
-  }
-
-  @Test
   public void loadResources_LoadEndPoint_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),

@@ -53,51 +53,6 @@ public class LdModuleTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingRepresentationRequestMapper() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new LdModule(null, directEndPointRequestMapper, ldRedirectionRequestMapper,
-        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingRedirectionRequestMapper() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new LdModule(dynamicEndPointRequestMapper, directEndPointRequestMapper, null,
-        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingMediaTypesScanner() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new LdModule(dynamicEndPointRequestMapper, directEndPointRequestMapper,
-        ldRedirectionRequestMapper, null, supportedReaderMediaTypesScanner);
-  }
-
-  @Test
-  public void initialize_ThrowsException_WithMissingHttpConfiguration() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    ldModule.initialize(null);
-  }
-
-  @Test
-  public void initialize_DoesNotThrowException_WithHttpConfiguration() {
-    // Act
-    ldModule.initialize(httpConfiguration);
-  }
-
-  @Test
   public void constructor_RegistersSparqlProviders_WhenProvidedByScanner() {
     // Arrange
     when(supportedWriterMediaTypesScanner.getGraphEntityWriters()).thenReturn(
