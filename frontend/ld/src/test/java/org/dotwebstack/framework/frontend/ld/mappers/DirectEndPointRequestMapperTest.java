@@ -140,7 +140,6 @@ public class DirectEndPointRequestMapperTest {
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
     final ResourceMethod method = resource.getResourceMethods().get(0);
-    // TODO: Do something with `method`
     assertThat(httpConfiguration.getResources(), hasSize(2));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
