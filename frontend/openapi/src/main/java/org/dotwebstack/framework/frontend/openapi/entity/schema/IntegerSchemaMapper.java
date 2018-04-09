@@ -21,12 +21,6 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
 
   @Override
-  public Object mapTupleValue(@NonNull BaseIntegerProperty schema,
-      @NonNull ValueContext valueContext) {
-    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).intValue();
-  }
-
-  @Override
   public Object mapGraphValue(@NonNull BaseIntegerProperty property,
       @NonNull GraphEntity context, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
@@ -63,7 +57,7 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
 
   @Override
   Object convertToType(Literal literal) {
-    return literal.decimalValue();
+    return literal.intValue();
   }
 
   @Override

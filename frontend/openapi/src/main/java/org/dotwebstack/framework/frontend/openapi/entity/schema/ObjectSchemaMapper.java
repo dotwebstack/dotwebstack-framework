@@ -22,11 +22,6 @@ import org.springframework.stereotype.Service;
 public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ObjectProperty schema, @NonNull ValueContext valueContext) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Object mapGraphValue(@NonNull ObjectProperty property,
       @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {

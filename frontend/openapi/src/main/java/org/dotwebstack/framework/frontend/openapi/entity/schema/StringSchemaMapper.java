@@ -29,11 +29,6 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   @Override
-  public String mapTupleValue(@NonNull StringProperty schema, @NonNull ValueContext valueContext) {
-    return valueContext.getValue().stringValue();
-  }
-
-  @Override
   public String mapGraphValue(@NonNull StringProperty property, @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     validateVendorExtensions(property);
@@ -180,7 +175,8 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     }
   }
 
-  private String handleConstantValueVendorExtension(StringProperty property) {
+  @Override
+  String handleConstantValueVendorExtension(StringProperty property) {
     Object value =
         property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
@@ -188,16 +184,13 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       if (isSupportedLiteral(value)) {
         return ((Value) value).stringValue();
       }
-
       return value.toString();
     }
-
     if (property.getRequired()) {
       throw new SchemaMapperRuntimeException(String.format(
           "String property has '%s' vendor extension that is null, but the property is required.",
           OpenApiSpecificationExtensions.CONSTANT_VALUE));
     }
-
     return null;
   }
 
@@ -231,7 +224,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
 
   @Override
   protected String convertToType(Literal literal) {
-    return literal.toString();
+    return literal.stringValue();
   }
 
   @Override

@@ -21,14 +21,8 @@ import org.springframework.stereotype.Service;
 public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayProperty, Object> {
 
   @Override
-  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull ValueContext valueContext) {
-    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
-  }
-
-  @Override
-  public Object mapGraphValue(@NonNull ArrayProperty property,
-      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull ArrayProperty property, @NonNull GraphEntity graphEntity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
     if (hasSubjectQueryVendorExtension(property)) {
@@ -48,7 +42,6 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
             "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
       }
     }
-
     return builder.build();
   }
 
@@ -65,12 +58,11 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
     queryResult.forEach(valueNext -> {
       ValueContext newValueContext = valueContext.toBuilder().value(valueNext).build();
       Optional innerPropertySolved =
-          Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(),
-              graphEntity, newValueContext, schemaMapperAdapter));
+          Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntity,
+              newValueContext, schemaMapperAdapter));
       builder.add(innerPropertySolved);
 
     });
-
   }
 
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {
@@ -94,13 +86,13 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
   }
 
   @Override
-  public boolean supports(@NonNull Property schema) {
-    return schema instanceof ArrayProperty;
+  Object convertToType(Literal l) {
+    return l.integerValue();
   }
 
   @Override
-  Object convertToType(Literal literal) {
-    return literal;
+  public boolean supports(@NonNull Property schema) {
+    return schema instanceof ArrayProperty;
   }
 
   @Override

@@ -18,9 +18,8 @@ public class LongSchemaMapper implements SchemaMapper<LongProperty, BigInteger> 
   }
 
   @Override
-  public BigInteger mapGraphValue(@NonNull LongProperty schema,
-      @NonNull GraphEntity graphEntity, @NotNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public BigInteger mapGraphValue(@NonNull LongProperty schema, @NonNull GraphEntity graphEntity,
+      @NotNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 

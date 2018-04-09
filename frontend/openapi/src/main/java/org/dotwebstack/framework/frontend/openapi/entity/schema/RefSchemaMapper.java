@@ -19,10 +19,8 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
   }
 
   @Override
-  public Object mapGraphValue(@NonNull RefProperty schema,
-      @NonNull GraphEntity graphEntity,
-      @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull RefProperty schema, @NonNull GraphEntity graphEntity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
     Model refModel = graphEntity.getSwaggerDefinitions().get(schema.getSimpleRef());
 

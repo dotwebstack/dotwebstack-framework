@@ -11,6 +11,7 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
@@ -21,12 +22,6 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.BOOLEAN);
   private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
       OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
-
-  @Override
-  public Boolean mapTupleValue(@NonNull BooleanProperty schema,
-      @NonNull ValueContext valueContext) {
-    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).booleanValue();
-  }
 
   @Override
   public Boolean mapGraphValue(@NonNull BooleanProperty property, @NonNull GraphEntity graphEntity,
@@ -44,11 +39,11 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
     }
 
     // TODO: line below should never be reached. Return null instead?
-    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).booleanValue();
+    return mapTupleValue(property, valueContext);
   }
 
   @SuppressWarnings("squid:S2447")
-  private Boolean handleLdPathVendorExtension(BooleanProperty property, Value context,
+  protected Boolean handleLdPathVendorExtension(BooleanProperty property, Value context,
       LdPathExecutor ldPathExecutor) {
     String vendorExtension = OpenApiSpecificationExtensions.LDPATH;
     String ldPathQuery = (String) property.getVendorExtensions().get(vendorExtension);
@@ -69,7 +64,8 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   }
 
   @SuppressWarnings("squid:S2447")
-  private Boolean handleConstantValueVendorExtension(BooleanProperty property) {
+  @Override
+  Boolean handleConstantValueVendorExtension(BooleanProperty property) {
     String vendorExtension = OpenApiSpecificationExtensions.CONSTANT_VALUE;
     Object value = property.getVendorExtensions().get(vendorExtension);
 
@@ -77,13 +73,15 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
       if (isSupportedLiteral(value)) {
         return SchemaMapperUtils.castLiteralValue((Value) value).booleanValue();
       }
-
       return Boolean.valueOf(value.toString());
     }
-
     handleRequired(property, vendorExtension);
-
     return null;
+  }
+
+  @Override
+  Boolean convertToType(Literal l) {
+    return l.booleanValue();
   }
 
   @Override

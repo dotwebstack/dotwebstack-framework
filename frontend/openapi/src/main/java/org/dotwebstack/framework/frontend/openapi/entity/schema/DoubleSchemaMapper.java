@@ -22,11 +22,6 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
       ImmutableSet.of(XMLSchema.DOUBLE, XMLSchema.DOUBLE);
 
   @Override
-  public Double mapTupleValue(@NonNull DoubleProperty schema, @NonNull ValueContext valueContext) {
-    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).doubleValue();
-  }
-
-  @Override
   public Double mapGraphValue(@NonNull DoubleProperty property,
       @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {

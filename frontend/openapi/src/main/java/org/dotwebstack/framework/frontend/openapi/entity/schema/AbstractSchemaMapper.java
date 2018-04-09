@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -11,10 +13,68 @@ import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 public abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
 
-  T handleLdPathVendorExtension(@NonNull S property, @NonNull ValueContext valueContext,
+  @Override
+  public T mapTupleValue(@NonNull S schema, @NonNull ValueContext valueContext) {
+    return convertToType(SchemaMapperUtils.castLiteralValue(valueContext.getValue()));
+  }
+
+  public T mapGraphValue(@NonNull S property, @NonNull GraphEntity graphEntity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+
+    Map<String, Object> vendorExtensions = property.getVendorExtensions();
+
+    ImmutableSet<String> supportedVendorExtensions = ImmutableSet.of(
+        OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
+        OpenApiSpecificationExtensions.CONSTANT_VALUE);
+
+    long nrOfSupportedVendorExtentionsPresent =
+        property.getVendorExtensions().keySet().stream().filter(
+            supportedVendorExtensions::contains).count();
+
+    if (nrOfSupportedVendorExtentionsPresent > 1) {
+      throw new SchemaMapperRuntimeException(String.format(
+          "A " + property.getType() + " object must have either no, a '%s', '%s' or '%s' property."
+          + " A " + property.getType() + " object cannot have a combination of these.",
+          OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
+          OpenApiSpecificationExtensions.CONSTANT_VALUE));
+    }
+
+    if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+      return handleLdPathVendorExtension(property, valueContext, graphEntity);
+    }
+    if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
+      return handleConstantValueVendorExtension(property);
+    }
+    return null;
+  }
+
+  T handleConstantValueVendorExtension(S schema) {
+    Object value = schema.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
+
+    if (value != null) {
+      if (isSupportedLiteral(value)) {
+        return convertToType(((Literal) value));
+      }
+      ValueFactory valueFactory = SimpleValueFactory.getInstance();
+      Literal literal = valueFactory.createLiteral((String) value, XMLSchema.DATETIME);
+      return convertToType(literal);
+    }
+
+    if (schema.getRequired()) {
+      throw new SchemaMapperRuntimeException(String.format(
+          "String Property has '%s' vendor extension that is null, but the property is required.",
+          OpenApiSpecificationExtensions.CONSTANT_VALUE));
+    }
+    return null;
+  }
+
+  private T handleLdPathVendorExtension(@NonNull S property, @NonNull ValueContext valueContext,
       @NonNull GraphEntity graphEntity) {
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
@@ -49,9 +109,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     return ldPathQuery;
   }
 
-  T convertToType(Literal literal) {
-    return null;
-  }
+  abstract T convertToType(Literal literal);
 
   static Value getSingleStatement(@NonNull Collection<Value> queryResult,
       @NonNull String ldPathQuery) {
@@ -77,7 +135,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
    * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
    *         are encountered.
    */
-  protected void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
+  void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
     if (property.getVendorExtensions().keySet().stream().filter(
         supportedExtensions::contains).count() != 1) {
 
@@ -91,7 +149,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
 
   protected abstract Set<IRI> getSupportedDataTypes();
 
-  protected String dataTypesAsString() {
+  String dataTypesAsString() {
     return Joiner.on(", ").join(getSupportedDataTypes());
   }
 
@@ -128,11 +186,11 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
    * @return <code>true</code> if given value is literal which supports one of given data types,
    *         <code>false</code> otherwise.
    */
-  protected boolean isSupportedLiteral(Object value) {
+  boolean isSupportedLiteral(Object value) {
     return value instanceof Literal && isDataTypeSupported((Literal) value);
   }
 
-  protected void handleRequired(Property property, String vendorExtension) {
+  void handleRequired(Property property, String vendorExtension) {
     if (property.getRequired()) {
       String message =
           String.format("%s has '%s' vendor extension that is null, but the property is required.",

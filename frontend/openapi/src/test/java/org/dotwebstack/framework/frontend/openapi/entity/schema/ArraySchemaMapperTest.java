@@ -69,13 +69,13 @@ public class ArraySchemaMapperTest {
 
   private ArraySchemaMapper schemaMapper;
 
-  private StringProperty stringProperty;
   private ObjectProperty objectProperty;
   private ArrayProperty arrayProperty;
 
   @Before
   public void setUp() {
     schemaMapper = new ArraySchemaMapper();
+    StringProperty stringProperty = new StringProperty();
 
     List<SchemaMapper<? extends Property, ?>> schemaMappers = new ArrayList<>();
 
@@ -87,7 +87,6 @@ public class ArraySchemaMapperTest {
 
     when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
 
-    stringProperty = new StringProperty();
     stringProperty.getVendorExtensions().put(OpenApiSpecificationExtensions.LDPATH, "name");
 
     objectProperty = new ObjectProperty();
