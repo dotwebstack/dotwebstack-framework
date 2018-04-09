@@ -58,7 +58,7 @@ public class DynamicEndPointRequestMapper {
       LOG.debug("Mapped {} operation for request path {}",
           resourceBuilder.build().getResourceMethods(), absolutePath);
     } else {
-      LOG.error("Resource <{}> is not registered", absolutePath);
+      LOG.debug("Resource <{}> is not registered", absolutePath);
     }
   }
 
