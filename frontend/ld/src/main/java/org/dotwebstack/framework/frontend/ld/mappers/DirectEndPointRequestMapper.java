@@ -104,6 +104,8 @@ public class DirectEndPointRequestMapper {
                   optionalEndPoint)).produces(supportedWriterMediaTypesScanner.getMediaTypes(
                       optionalRepresentation.getInformationProduct().getResultType())).nameBindings(
                           ExpandFormatParameter.class);
+          LOG.debug("Found representation {} for method {}", representation.getIdentifier(),
+              httpMethod);
         }));
     if (!httpConfiguration.resourceAlreadyRegistered(absolutePath, httpMethod)) {
       httpConfiguration.registerResources(resourceBuilder.build());
