@@ -142,7 +142,7 @@ public class DirectEndPointRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(2));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(resource.getResourceMethods(), hasSize(2));
+    assertThat(resource.getResourceMethods(), hasSize(1));
   }
 
   @Test
