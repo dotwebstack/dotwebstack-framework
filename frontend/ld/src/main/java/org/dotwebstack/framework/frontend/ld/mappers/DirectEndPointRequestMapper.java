@@ -79,12 +79,13 @@ public class DirectEndPointRequestMapper {
   private void mapRepresentation(AbstractEndPoint endPoint, HttpConfiguration httpConfiguration) {
     String basePath = endPoint.getStage().getFullPath();
     String absolutePath = basePath.concat(endPoint.getPathPattern());
-    Optional<Representation> getRepresentation =
-        Optional.ofNullable(((DirectEndPoint) endPoint).getGetRepresentation());
-    Optional<Representation> postRepresentation =
-        Optional.ofNullable(((DirectEndPoint) endPoint).getPostRepresentation());
-
-
+    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+    Optional.ofNullable(((DirectEndPoint) endPoint).getGetRepresentation()).ifPresent(
+        getRepresentation -> buildResource(httpConfiguration, resourceBuilder, absolutePath,
+            HttpMethod.GET, getRepresentation, (DirectEndPoint) endPoint));
+    Optional.ofNullable(((DirectEndPoint) endPoint).getPostRepresentation()).ifPresent(
+        postRepresentation -> buildResource(httpConfiguration, resourceBuilder, absolutePath,
+            HttpMethod.POST, postRepresentation, (DirectEndPoint) endPoint));
   }
 
   private void registerTransaction(org.dotwebstack.framework.frontend.ld.service.Service service,
@@ -99,11 +100,14 @@ public class DirectEndPointRequestMapper {
   private void buildResource(HttpConfiguration httpConfiguration,
       final Resource.Builder resourceBuilder, String absolutePath, String httpMethod,
       Representation representation, DirectEndPoint endPoint) {
-    resourceBuilder.addMethod(httpMethod).handledBy(
-        representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint)).produces(
-            supportedWriterMediaTypesScanner.getMediaTypes(
-                representation.getInformationProduct().getResultType())).nameBindings(
-                    ExpandFormatParameter.class);
+    Optional.ofNullable(representation).ifPresent(
+        optionalRepresentation -> Optional.ofNullable(endPoint).ifPresent(optionalEndPoint -> {
+          resourceBuilder.addMethod(httpMethod).handledBy(
+              representationRequestHandlerFactory.newRepresentationRequestHandler(
+                  optionalEndPoint)).produces(supportedWriterMediaTypesScanner.getMediaTypes(
+                      optionalRepresentation.getInformationProduct().getResultType())).nameBindings(
+                          ExpandFormatParameter.class);
+        }));
     if (!httpConfiguration.resourceAlreadyRegistered(absolutePath, httpMethod)) {
       httpConfiguration.registerResources(resourceBuilder.build());
       LOG.debug("Mapped {} operation for request path {}",
