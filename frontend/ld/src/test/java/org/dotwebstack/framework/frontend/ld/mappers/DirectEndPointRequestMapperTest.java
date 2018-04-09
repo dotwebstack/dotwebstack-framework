@@ -47,9 +47,6 @@ public class DirectEndPointRequestMapperTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private DirectEndPointRequestMapper directEndPointRequestMapper;
-
-  @Mock
   private Stage stage;
 
   @Mock
@@ -78,6 +75,8 @@ public class DirectEndPointRequestMapperTest {
 
   @Mock
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
+
+  private DirectEndPointRequestMapper directEndPointRequestMapper;
 
   private HttpConfiguration httpConfiguration;
 
@@ -119,10 +118,10 @@ public class DirectEndPointRequestMapperTest {
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    DirectEndPointRequestMapper directEndPointRequestMapper = new DirectEndPointRequestMapper(
-        directEndPointResourceProvider, supportedWriterMediaTypesScanner,
-        supportedReaderMediaTypesScanner, representationRequestHandlerFactory,
-        transactionRequestHandlerFactory);
+    DirectEndPointRequestMapper directEndPointRequestMapper =
+        new DirectEndPointRequestMapper(directEndPointResourceProvider,
+            supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
+            representationRequestHandlerFactory, transactionRequestHandlerFactory);
 
     // Assert
     assertThat(directEndPointRequestMapper, not(nullValue()));
@@ -143,7 +142,7 @@ public class DirectEndPointRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(2));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(resource.getResourceMethods(), hasSize(1));
+    assertThat(resource.getResourceMethods(), hasSize(2));
   }
 
   @Test
