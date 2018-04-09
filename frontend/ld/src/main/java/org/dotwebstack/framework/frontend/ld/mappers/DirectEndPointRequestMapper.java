@@ -13,26 +13,26 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProv
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
+import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
+@org.springframework.stereotype.Service
 public class DirectEndPointRequestMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(DirectEndPointRequestMapper.class);
 
-  private DirectEndPointResourceProvider directEndPointResourceProvider;
+  private final DirectEndPointResourceProvider directEndPointResourceProvider;
 
-  private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
+  private final SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
-  private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
+  private final SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
-  private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
+  private final RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
-  private ServiceRequestHandlerFactory serviceRequestHandlerFactory;
+  private final ServiceRequestHandlerFactory serviceRequestHandlerFactory;
 
   @Autowired
   public DirectEndPointRequestMapper(
@@ -62,16 +62,13 @@ public class DirectEndPointRequestMapper {
   private void mapService(DirectEndPoint endPoint, HttpConfiguration httpConfiguration) {
     String basePath = endPoint.getStage().getFullPath();
     String absolutePath = basePath.concat(endPoint.getPathPattern());
-    final Optional<org.dotwebstack.framework.frontend.ld.service.Service> deleteService =
-        Optional.ofNullable(endPoint.getDeleteService());
+    final Optional<Service> deleteService = Optional.ofNullable(endPoint.getDeleteService());
     deleteService.ifPresent(service -> registerTransaction(service, HttpMethod.DELETE, absolutePath,
         httpConfiguration));
-    final Optional<org.dotwebstack.framework.frontend.ld.service.Service> postService =
-        Optional.ofNullable(endPoint.getPostService());
+    final Optional<Service> postService = Optional.ofNullable(endPoint.getPostService());
     postService.ifPresent(
         service -> registerTransaction(service, HttpMethod.POST, absolutePath, httpConfiguration));
-    final Optional<org.dotwebstack.framework.frontend.ld.service.Service> putService =
-        Optional.ofNullable(endPoint.getPutService());
+    final Optional<Service> putService = Optional.ofNullable(endPoint.getPutService());
     putService.ifPresent(
         service -> registerTransaction(service, HttpMethod.PUT, absolutePath, httpConfiguration));
   }
@@ -88,11 +85,11 @@ public class DirectEndPointRequestMapper {
             HttpMethod.POST, postRepresentation, (DirectEndPoint) endPoint));
   }
 
-  private void registerTransaction(org.dotwebstack.framework.frontend.ld.service.Service service,
-      String httpMethod, String absolutePath, HttpConfiguration httpConfiguration) {
+  private void registerTransaction(Service service, String httpMethod, String absolutePath,
+      HttpConfiguration httpConfiguration) {
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
     resourceBuilder.addMethod(httpMethod).handledBy(
-        serviceRequestHandlerFactory.newServiceRequestHandler(service.getTransaction())).consumes(
+        serviceRequestHandlerFactory.newServiceRequestHandler(service)).consumes(
             supportedReaderMediaTypesScanner.getMediaTypes());
     buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod, null, null);
   }

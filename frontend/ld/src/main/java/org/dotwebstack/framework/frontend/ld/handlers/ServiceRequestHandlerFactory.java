@@ -2,10 +2,9 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
-import org.dotwebstack.framework.transaction.Transaction;
-import org.springframework.stereotype.Service;
+import org.dotwebstack.framework.frontend.ld.service.Service;
 
-@Service
+@org.springframework.stereotype.Service
 public class ServiceRequestHandlerFactory {
 
   private final SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
@@ -19,8 +18,8 @@ public class ServiceRequestHandlerFactory {
     this.endPointRequestParameterMapper = endPointRequestParameterMapper;
   }
 
-  public ServiceRequestHandler newServiceRequestHandler(@NonNull Transaction transaction) {
-    return new ServiceRequestHandler(transaction, supportedReaderMediaTypesScanner,
+  public ServiceRequestHandler newServiceRequestHandler(@NonNull Service service) {
+    return new ServiceRequestHandler(service, supportedReaderMediaTypesScanner,
         endPointRequestParameterMapper);
   }
 
