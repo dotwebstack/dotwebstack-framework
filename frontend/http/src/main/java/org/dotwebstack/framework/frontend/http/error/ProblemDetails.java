@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.http.error;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -21,11 +22,10 @@ public class ProblemDetails {
   private String detail;
 
   /**
-   * Extended properties
-   * See <a href="https://tools.ietf.org/html/rfc7807#section-3.2">
+   * Extended properties See <a href="https://tools.ietf.org/html/rfc7807#section-3.2">
    * https://tools.ietf.org/html/rfc7807#section-3.2</a>
    */
-  private Map<String, Object> extendedDetails;
+  private Map<String, Object> extendedDetails = new HashMap<>();
 
   public String getTitle() {
     return title;

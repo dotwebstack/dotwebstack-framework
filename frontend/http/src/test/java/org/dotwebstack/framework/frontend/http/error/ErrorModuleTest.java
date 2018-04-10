@@ -3,12 +3,10 @@ package org.dotwebstack.framework.frontend.http.error;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
@@ -52,7 +50,6 @@ public class ErrorModuleTest {
 
     ResourceMethod method = resource.getResourceMethods().get(0);
     assertThat(method.getHttpMethod(), CoreMatchers.equalTo(HttpMethod.GET));
-    assertThat(method.getProducedTypes(), contains(MediaType.TEXT_PLAIN_TYPE));
 
     Object handler = resource.getHandlerInstances().iterator().next();
     assertThat(handler, instanceOf(ServletErrorHandler.class));

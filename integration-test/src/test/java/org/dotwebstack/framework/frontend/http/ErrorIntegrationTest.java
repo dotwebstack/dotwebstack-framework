@@ -87,4 +87,19 @@ public class ErrorIntegrationTest {
 
   }
 
+  @Test
+  public void get_ReturnsNotAllowedJsonProblem_FoDeleteOnRobots() throws Exception {
+    // Act
+    Response response = target.path("/robots.txt").request().delete();
+
+    // Assert
+    assertThat(response.getStatusInfo(), equalTo(Status.METHOD_NOT_ALLOWED));
+    assertThat(response.getMediaType().toString(), equalTo("application/problem+json"));
+    JsonNode jsonNode = new ObjectMapper().readTree(response.readEntity(String.class));
+    assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), jsonNode.get("status").asInt());
+    assertEquals(Status.METHOD_NOT_ALLOWED.getReasonPhrase(), jsonNode.get("title").asText());
+    assertEquals("HTTP 405 Method Not Allowed", jsonNode.get("detail").asText());
+
+  }
+
 }

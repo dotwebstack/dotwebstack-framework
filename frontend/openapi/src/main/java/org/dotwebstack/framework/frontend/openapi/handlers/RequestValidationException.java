@@ -1,22 +1,19 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import java.util.Map;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
+import org.dotwebstack.framework.frontend.http.error.ExtendedProblemDetailException;
 
-public class RequestValidationException extends WebApplicationException {
+@SuppressWarnings("squid:MaximumInheritanceDepth")
+public class RequestValidationException extends ExtendedProblemDetailException {
 
   private static final long serialVersionUID = -2378432429849852636L;
 
-  private final transient Map<String, Object> details;
-
-  public RequestValidationException(String message, Status status, Map<String, Object> details) {
-    super(message, status);
-    this.details = details;
+  public RequestValidationException(String message, Status status,
+      Map<String, Object> extendedDetails) {
+    super(message, status, extendedDetails);
   }
 
-  Map<String, Object> getDetails() {
-    return details;
-  }
+
 
 }
