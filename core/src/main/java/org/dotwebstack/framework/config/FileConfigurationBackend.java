@@ -123,8 +123,6 @@ public class FileConfigurationBackend
         }
         addResourceToRepositoryConnection(repositoryConnection, optionalPrefixesResource, resource,
             configurationStreams);
-        System.out.println(
-            String.format("Loaded configuration file: \"{%s}\"", resource.getFilename()));
         LOG.info("Loaded configuration file: \"{}\"", resource.getFilename());
       }
       Model model = QueryResults.asModel(
