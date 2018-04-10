@@ -14,6 +14,7 @@ import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.validation.ValidationStep;
+import org.dotwebstack.framework.transaction.flow.step.validation.ValidationStepExecutor;
 import org.dotwebstack.framework.validation.RdfModelTransformer;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
@@ -143,12 +144,10 @@ public class ValidationStepExecutorTest {
   @Test
   public void constructor_ThrowsNoErrors_WithValidObjects() {
     // Arrange
-    backend = new FileConfigurationBackend(elmoConfigurationResource, repository,
-        "/shaclvalidation", elmoShapesResource, shaclValidator);
-    validationStep =
-        new ValidationStep.Builder(ELMO.VALIDATION_STEP, backendResourceProvider).conformsTo(
-            ELMO.SHACL_CONCEPT_GRAPHNAME).fileConfigurationBackend(backend).build();
-    validationStepExecutor = new ValidationStepExecutor(validationStep, transactionModel, backend);
+    final Model validationModel = new LinkedHashModel();
+    validationStep = new ValidationStep.Builder(ELMO.VALIDATION_STEP, validationModel).conformsTo(
+        ELMO.SHACL_CONCEPT_GRAPHNAME).build();
+    validationStepExecutor = new ValidationStepExecutor(validationStep, transactionModel);
 
     // Act
     validationStepExecutor.execute(parameters, parameterValues);
@@ -166,10 +165,9 @@ public class ValidationStepExecutorTest {
     backend.setResourceLoader(resourceLoader);
     backend.setEnvironment(environment);
 
-    validationStep =
-        new ValidationStep.Builder(ELMO.VALIDATION_STEP, backendResourceProvider).conformsTo(
-            ELMO.SHACL_CONCEPT_GRAPHNAME).fileConfigurationBackend(backend).build();
-    validationStepExecutor = new ValidationStepExecutor(validationStep, transactionModel, backend);
+    validationStep = new ValidationStep.Builder(ELMO.VALIDATION_STEP, validationModel).conformsTo(
+        ELMO.SHACL_CONCEPT_GRAPHNAME).build();
+    validationStepExecutor = new ValidationStepExecutor(validationStep, transactionModel);
     backend.loadResources();
 
     // Act
