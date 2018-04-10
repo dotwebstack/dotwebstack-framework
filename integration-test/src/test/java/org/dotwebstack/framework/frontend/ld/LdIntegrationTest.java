@@ -201,21 +201,21 @@ public class LdIntegrationTest {
 
   @Test
   public void post_PostRdf_ThroughLdApi() {
-    // // Arrange
-    // String rdf = "<?xml version=\"1.0\"?>\n" + "\n" + "<rdf:RDF\n"
-    // + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
-    // + "xmlns:si=\"https://www.w3schools.com/rdf/\">\n" + "\n"
-    // + "<rdf:Description rdf:about=\"https://www.w3schools.com\">\n"
-    // + " <si:title>W3Schools</si:title>\n" + " <si:author>Jan Egil Refsnes</si:author>\n"
-    // + "</rdf:Description>\n" + "\n" + "</rdf:RDF> ";
-    // SparqlHttpStub.setResponseCode(HttpStatus.SC_OK);
-    //
-    // // Act
-    // Response response =
-    // target.path("/dbp/ld/v1/add-concept").request().post(Entity.entity(rdf, MediaTypes.RDFXML));
-    //
-    // // Assert
-    // assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    // Arrange
+    String rdf = "<?xml version=\"1.0\"?>\n" + "\n" + "<rdf:RDF\n"
+        + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
+        + "xmlns:si=\"https://www.w3schools.com/rdf/\">\n" + "\n"
+        + "<rdf:Description rdf:about=\"https://www.w3schools.com\">\n"
+        + " <si:title>W3Schools</si:title>\n" + " <si:author>Jan Egil Refsnes</si:author>\n"
+        + "</rdf:Description>\n" + "\n" + "</rdf:RDF> ";
+    SparqlHttpStub.setResponseCode(HttpStatus.SC_OK);
+
+    // Act
+    Response response =
+        target.path("/dbp/ld/v1/add-concept").request().post(Entity.entity(rdf, MediaTypes.RDFXML));
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
   }
 
   @Test
@@ -225,7 +225,7 @@ public class LdIntegrationTest {
         + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
         + "xmlns:si=\"https://www.w3schools.com/rdf/\">\n" + "\n"
         + "<rdf:Description rdf:about=\"https://www.w3schools.com\">\n"
-        + "  <si:title>W3Schools</si:title>\n" + "  <si:author>Jan Egil Refsnes</si:author>\n"
+        + " <si:title>W3Schools</si:title>\n" + " <si:author>Jan Egil Refsnes</si:author>\n"
         + "</rdf:Description>\n" + "\n" + "</rdf:RDF> ";
     SparqlHttpStub.setResponseCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 

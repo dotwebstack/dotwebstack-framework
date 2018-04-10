@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.sparql.validationstep;
+package org.dotwebstack.framework.transaction.flow.step.validation;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -13,8 +13,6 @@ import java.util.Map;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.param.Parameter;
-import org.dotwebstack.framework.transaction.flow.step.validation.ValidationStep;
-import org.dotwebstack.framework.transaction.flow.step.validation.ValidationStepExecutor;
 import org.dotwebstack.framework.validation.RdfModelTransformer;
 import org.dotwebstack.framework.validation.ShaclValidator;
 import org.dotwebstack.framework.validation.ValidationReport;
