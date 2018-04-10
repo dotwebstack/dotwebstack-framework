@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -50,23 +49,6 @@ public class RequestIdFilterTest {
     String reqId = response.getHeaderString(X_REQUEST_ID);
     UUID.fromString(reqId);
     // if we get here without exceptions, all is fine.
-  }
-
-  @Test
-  public void get_GivesValidResponse_ForUnknownAssetWithReqId() {
-    // Arrange
-    String appRequestId = "42";
-
-    // Act
-    // some files are exempted from filters, like static assets, so we request an unknown one
-    Response response =
-        target.path("/unknown.txt").request().header(X_REQUEST_ID, appRequestId).get();
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
-    String reqId = response.getHeaderString(X_REQUEST_ID);
-    assertEquals(appRequestId, reqId);
-
   }
 
 }
