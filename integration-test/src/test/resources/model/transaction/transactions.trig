@@ -14,7 +14,6 @@ GRAPH dbeerpedia:Theatre {
 
   dbeerpedia:ValidationStep a elmo:ValidationStep;
     rdfs:label "validation to check concept";
-    elmo:backend dbeerpedia:Backend;
     elmo:conformsTo dbeerpedia:ConceptShapeGraph;
   .
 
