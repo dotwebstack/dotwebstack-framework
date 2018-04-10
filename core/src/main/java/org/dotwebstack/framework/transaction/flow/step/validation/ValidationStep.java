@@ -1,9 +1,6 @@
 package org.dotwebstack.framework.transaction.flow.step.validation;
 
 import lombok.NonNull;
-import org.dotwebstack.framework.backend.Backend;
-import org.dotwebstack.framework.backend.BackendResourceProvider;
-import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.eclipse.rdf4j.model.IRI;
@@ -20,27 +17,20 @@ public class ValidationStep implements Step {
 
   private String label;
 
-  private Backend backend;
-
-  private BackendResourceProvider backendResourceProvider;
-
-  private FileConfigurationBackend fileConfigurationBackend;
+  private Model validationModel;
 
   private ValidationStep(@NonNull Builder builder) {
     identifier = builder.identifier;
     conformsTo = builder.conformsTo;
     label = builder.label;
-    backend = builder.backend;
-    backendResourceProvider = builder.backendResourceProvider;
-    fileConfigurationBackend = builder.fileConfigurationBackend;
+    validationModel = builder.validationModel;
   }
 
   @Override
   public StepExecutor createStepExecutor(RepositoryConnection transactionRepositoryConnection) {
     Model transactionModel =
         QueryResults.asModel(transactionRepositoryConnection.getStatements(null, null, null));
-    return backendResourceProvider.get(backend.getIdentifier()).createValidationStepExecutor(this,
-        transactionModel, fileConfigurationBackend);
+    return new ValidationStepExecutor(this, transactionModel);
   }
 
   public Resource getIdentifier() {
@@ -55,6 +45,10 @@ public class ValidationStep implements Step {
     return label;
   }
 
+  public Model getValidationModel() {
+    return validationModel;
+  }
+
   public static class Builder {
 
     private Resource identifier;
@@ -63,16 +57,11 @@ public class ValidationStep implements Step {
 
     private String label;
 
-    private Backend backend;
+    private Model validationModel;
 
-    private BackendResourceProvider backendResourceProvider;
-
-    private FileConfigurationBackend fileConfigurationBackend;
-
-    public Builder(@NonNull Resource identifier,
-        @NonNull BackendResourceProvider backendResourceProvider) {
+    public Builder(@NonNull Resource identifier, @NonNull Model validationModel) {
       this.identifier = identifier;
-      this.backendResourceProvider = backendResourceProvider;
+      this.validationModel = validationModel;
     }
 
     public Builder conformsTo(@NonNull IRI conformsTo) {
@@ -82,17 +71,6 @@ public class ValidationStep implements Step {
 
     public Builder label(@NonNull String label) {
       this.label = label;
-      return this;
-    }
-
-    public Builder backend(@NonNull Backend backend) {
-      this.backend = backend;
-      return this;
-    }
-
-    public Builder fileConfigurationBackend(
-        @NonNull FileConfigurationBackend fileConfigurationBackend) {
-      this.fileConfigurationBackend = fileConfigurationBackend;
       return this;
     }
 
