@@ -1,13 +1,11 @@
 package org.dotwebstack.framework.backend;
 
 import java.util.Collection;
-import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.dotwebstack.framework.transaction.flow.step.update.UpdateStep;
-import org.dotwebstack.framework.transaction.flow.step.validation.ValidationStep;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 
@@ -22,8 +20,5 @@ public interface Backend {
       Model transactionModel);
 
   StepExecutor createUpdateStepExecutor(UpdateStep updateStep);
-
-  StepExecutor createValidationStepExecutor(ValidationStep validationStep, Model transactionModel,
-      FileConfigurationBackend fileConfigurationBackend);
 
 }
