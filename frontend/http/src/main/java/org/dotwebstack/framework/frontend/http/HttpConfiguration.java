@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.http;
 
 import java.util.List;
-import javax.ws.rs.Priorities;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.error.GenericExceptionMapper;
 import org.dotwebstack.framework.frontend.http.error.WebApplicationExceptionMapper;
@@ -15,11 +14,13 @@ import org.springframework.stereotype.Service;
 public class HttpConfiguration extends ResourceConfig {
 
   public HttpConfiguration(@NonNull List<HttpModule> httpModules) {
+    register(RequestIdFilter.class, 10);
+    register(MdcRequestIdFilter.class, 11);
     register(HostPreMatchingRequestFilter.class);
     register(WebApplicationExceptionMapper.class);
     register(GenericExceptionMapper.class);
 
-    register(RequestIdFilter.class, Priorities.AUTHENTICATION - 1);
+
     property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(robots.txt|(assets|webjars)/.*)");
     property(ServerProperties.WADL_FEATURE_DISABLE, true);
     httpModules.forEach(module -> module.initialize(this));
