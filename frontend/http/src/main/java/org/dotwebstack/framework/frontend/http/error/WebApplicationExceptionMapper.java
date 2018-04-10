@@ -14,7 +14,7 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplica
   public Response toResponse(@NonNull WebApplicationException e) {
 
 
-    Status status = Status.fromStatusCode(e.getResponse().getStatus());;
+    Status status = Status.fromStatusCode(e.getResponse().getStatus());
     ProblemDetails problemDetails = createProblemDetails(e, status);
 
 

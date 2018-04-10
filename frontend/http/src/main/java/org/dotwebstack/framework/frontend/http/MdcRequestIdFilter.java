@@ -19,16 +19,15 @@ public class MdcRequestIdFilter implements ContainerRequestFilter, ContainerResp
   private static final String REQUEST_ID_MDC_KEY = "REQUEST_ID";
 
   @Override
-  public void filter(ContainerRequestContext requestContext,
-      ContainerResponseContext responseContext) throws IOException {
-    MDC.remove(REQUEST_ID_MDC_KEY);
-  }
-
-
-  @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
     String property = (String) requestContext.getProperty(REQUEST_ID_PROPERTY);
     MDC.put(REQUEST_ID_MDC_KEY, property);
+  }
+
+  @Override
+  public void filter(ContainerRequestContext requestContext,
+      ContainerResponseContext responseContext) throws IOException {
+    MDC.remove(REQUEST_ID_MDC_KEY);
   }
 
 
