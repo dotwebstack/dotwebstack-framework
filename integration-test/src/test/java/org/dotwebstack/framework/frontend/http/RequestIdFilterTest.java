@@ -1,13 +1,13 @@
 package org.dotwebstack.framework.frontend.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.UUID;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.junit.Before;
@@ -21,7 +21,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class RequestIdLoggingTest {
+public class RequestIdFilterTest {
+
+  private static final String X_REQUEST_ID = "X-Request-ID";
 
   private WebTarget target;
 
@@ -38,17 +40,33 @@ public class RequestIdLoggingTest {
   }
 
   @Test
-  public void get_GivesValidResponse_ForStaticAsset() {
+  public void get_GivesValidResponse_ForUnknownAsset() {
     // Act
-    Response response = target.path("/rotbots.txt").request().get();
+    // some files are exempted from filters, like static assets, so we request an unknown one
+    Response response = target.path("/unknown.txt").request().get();
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("User-agent: *\nDisallow:\n"));
-    String reqId = response.getHeaderString("X-Request-ID");
+    assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
+    String reqId = response.getHeaderString(X_REQUEST_ID);
     UUID.fromString(reqId);
     // if we get here without exceptions, all is fine.
+  }
+
+  @Test
+  public void get_GivesValidResponse_ForUnknownAssetWithReqId() {
+    // Arrange
+    String appRequestId = "42";
+
+    // Act
+    // some files are exempted from filters, like static assets, so we request an unknown one
+    Response response =
+        target.path("/unknown.txt").request().header(X_REQUEST_ID, appRequestId).get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.NOT_FOUND.getStatusCode()));
+    String reqId = response.getHeaderString(X_REQUEST_ID);
+    assertEquals(appRequestId, reqId);
+
   }
 
 }
