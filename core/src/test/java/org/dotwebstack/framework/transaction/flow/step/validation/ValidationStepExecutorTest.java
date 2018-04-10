@@ -96,36 +96,34 @@ public class ValidationStepExecutorTest {
     shaclValidator = mock(ShaclValidator.class);
     // when(shapesResource.getFile()).thenReturn(
     // new ClassPathResource("/shaclvalidation/model/shapes.trig").getFile());
-    when(shapesResource.getInputStream()).thenReturn(new InputStreamResource(new ClassPathResource(
-        "/shaclvalidation/model/shapes.trig").getInputStream()).getInputStream());
+    when(shapesResource.getInputStream()).thenReturn(new InputStreamResource(
+        new ClassPathResource("/shaclvalidation/shapes.trig").getInputStream()).getInputStream());
     when(shapesResource.getFilename()).thenReturn("shapes.trig");
 
     // when(validDataResource.getFile()).thenReturn(
     // new ClassPathResource("/shaclvalidation/model/validData.trig").getFile());
     when(validDataResource.getInputStream()).thenReturn(
         new InputStreamResource(new ClassPathResource(
-            "/shaclvalidation/model/validData.trig").getInputStream()).getInputStream());
+            "/shaclvalidation/validData.trig").getInputStream()).getInputStream());
     when(validDataResource.getFilename()).thenReturn("validData.trig");
 
     // when(invalidDataResource.getFile()).thenReturn(
     // new ClassPathResource("/shaclvalidation/model/invalidData.trig").getFile());
     when(invalidDataResource.getInputStream()).thenReturn(
         new InputStreamResource(new ClassPathResource(
-            "/shaclvalidation/model/invalidData.trig").getInputStream()).getInputStream());
+            "/shaclvalidation/invalidData.trig").getInputStream()).getInputStream());
     when(invalidDataResource.getFilename()).thenReturn("invalidData.trig");
 
     // when(elmoShapesResource.getFile()).thenReturn(
     // new ClassPathResource("/shaclvalidation/model/elmo-shapes.trig").getFile());
-    when(elmoShapesResource.getInputStream()).thenReturn(
-        new InputStreamResource(new ClassPathResource(
-            "/shaclvalidation/model/elmo-shapes.trig").getInputStream()).getInputStream());
+    when(elmoShapesResource.getInputStream()).thenReturn(new InputStreamResource(
+        new ClassPathResource("/model/elmo-shapes.trig").getInputStream()).getInputStream());
     when(elmoShapesResource.getFilename()).thenReturn("elmo-shapes.trig");
 
     // when(elmoConfigurationResource.getFile()).thenReturn(
     // new ClassPathResource("/shaclvalidation/model/elmo.trig").getFile());
-    when(elmoConfigurationResource.getInputStream()).thenReturn(
-        new InputStreamResource(new ClassPathResource(
-            "/shaclvalidation/model/elmo.trig").getInputStream()).getInputStream());
+    when(elmoConfigurationResource.getInputStream()).thenReturn(new InputStreamResource(
+        new ClassPathResource("/model/elmo.trig").getInputStream()).getInputStream());
     when(elmoConfigurationResource.getFilename()).thenReturn("elmo.trig");
 
     report = mock(ValidationReport.class);
