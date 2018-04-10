@@ -129,11 +129,6 @@ public class FileConfigurationBackend
       }
       Model model = QueryResults.asModel(
           repositoryConnection.getStatements(null, null, null, ELMO.SHACL_GRAPHNAME));
-      // todo to delete after testing
-      Model temp = QueryResults.asModel(
-          repositoryConnection.getStatements(null, null, null, ELMO.SHACL_CONCEPT_GRAPHNAME));
-      System.out.println("this is sparta:\n " + temp.toString());
-      //
       validate(configurationStreams, model);
     } catch (RDF4JException e) {
       throw new ConfigurationException("Error while loading RDF data.", e);
