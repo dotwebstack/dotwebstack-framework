@@ -6,14 +6,11 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.sparql.informationproduct.SparqlBackendInformationProductFactory;
 import org.dotwebstack.framework.backend.sparql.persistencestep.SparqlBackendPersistenceStepFactory;
 import org.dotwebstack.framework.backend.sparql.updatestep.SparqlBackendUpdateStepFactory;
-import org.dotwebstack.framework.backend.sparql.validationstep.SparqlBackendValidationStepFactory;
-import org.dotwebstack.framework.config.FileConfigurationBackend;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.dotwebstack.framework.transaction.flow.step.update.UpdateStep;
-import org.dotwebstack.framework.transaction.flow.step.validation.ValidationStep;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -31,11 +28,7 @@ public class SparqlBackend implements Backend {
 
   private SparqlBackendUpdateStepFactory updateStepFactory;
 
-  private SparqlBackendValidationStepFactory validationStepFactory;
-
   private RepositoryConnection repositoryConnection;
-
-  private FileConfigurationBackend fileConfigurationBackend;
 
   private SparqlBackend(Builder builder) {
     identifier = builder.identifier;
@@ -43,7 +36,6 @@ public class SparqlBackend implements Backend {
     informationProductFactory = builder.informationProductFactory;
     persistenceStepFactory = builder.persistenceStepFactory;
     updateStepFactory = builder.updateStepFactory;
-    validationStepFactory = builder.validationStepFactory;
   }
 
   @Override
@@ -66,12 +58,6 @@ public class SparqlBackend implements Backend {
   @Override
   public StepExecutor createUpdateStepExecutor(UpdateStep updateStep) {
     return updateStepFactory.create(updateStep, this);
-  }
-
-  @Override
-  public StepExecutor createValidationStepExecutor(ValidationStep validationStep,
-      Model transactionModel, FileConfigurationBackend fileConfigurationBackend) {
-    return validationStepFactory.create(validationStep, transactionModel, fileConfigurationBackend);
   }
 
   public SPARQLRepository getRepository() {
@@ -98,19 +84,15 @@ public class SparqlBackend implements Backend {
 
     private SparqlBackendUpdateStepFactory updateStepFactory;
 
-    private SparqlBackendValidationStepFactory validationStepFactory;
-
     public Builder(@NonNull Resource identifier, @NonNull SPARQLRepository repository,
         @NonNull SparqlBackendInformationProductFactory informationProductFactory,
         @NonNull SparqlBackendPersistenceStepFactory persistenceStepFactory,
-        @NonNull SparqlBackendUpdateStepFactory updateStepFactory,
-        @NonNull SparqlBackendValidationStepFactory validationStepFactory) {
+        @NonNull SparqlBackendUpdateStepFactory updateStepFactory) {
       this.identifier = identifier;
       this.repository = repository;
       this.informationProductFactory = informationProductFactory;
       this.persistenceStepFactory = persistenceStepFactory;
       this.updateStepFactory = updateStepFactory;
-      this.validationStepFactory = validationStepFactory;
     }
 
     public SparqlBackend build() {
