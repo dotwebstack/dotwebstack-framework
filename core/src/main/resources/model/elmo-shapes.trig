@@ -328,11 +328,6 @@ elmo-shape:ValidationStep a sh:NodeShape;
     sh:path elmo:conformsTo;
     sh:nodeKind sh:IRI;
   ];
-  sh:property [
-      sh:path elmo:backend;
-      sh:name "elmo:backend";
-      sh:class elmo:Backend;
-    ];
 .
 elmo-shape:AssertionStep a sh:NodeShape;
   sh:closed true;
