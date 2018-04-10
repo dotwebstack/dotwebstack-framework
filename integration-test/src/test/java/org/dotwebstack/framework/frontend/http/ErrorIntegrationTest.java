@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.http;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -88,7 +89,7 @@ public class ErrorIntegrationTest {
   }
 
   @Test
-  public void get_ReturnsNotAllowedJsonProblem_FoDeleteOnRobots() throws Exception {
+  public void get_ReturnsNotAllowedJsonProblem_ForDeleteOnRobots() throws Exception {
     // Act
     Response response = target.path("/robots.txt").request().delete();
 
@@ -99,7 +100,22 @@ public class ErrorIntegrationTest {
     assertEquals(Status.METHOD_NOT_ALLOWED.getStatusCode(), jsonNode.get("status").asInt());
     assertEquals(Status.METHOD_NOT_ALLOWED.getReasonPhrase(), jsonNode.get("title").asText());
     assertEquals("HTTP 405 Method Not Allowed", jsonNode.get("detail").asText());
+  }
 
+  @Test
+  public void get_ReturnsJsonProblemWithDebugInfo_ForExtendedException() throws Exception {
+    // Act
+    Response response = target.path("/extended-exception").request().get();
+
+    // Assert
+    assertThat(response.getStatusInfo(), equalTo(Status.BAD_REQUEST));
+    assertThat(response.getMediaType().toString(), equalTo("application/problem+json"));
+    JsonNode jsonNode = new ObjectMapper().readTree(response.readEntity(String.class));
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), jsonNode.get("status").asInt());
+    assertEquals(Status.BAD_REQUEST.getReasonPhrase(), jsonNode.get("title").asText());
+    assertEquals("extended-message", jsonNode.get("detail").asText());
+    assertNotNull("no debugInfo key found in returned Json", jsonNode.get("debugInfo"));
+    assertEquals("detailvalue", jsonNode.get("debugInfo").get("detailkey").asText());
   }
 
 }

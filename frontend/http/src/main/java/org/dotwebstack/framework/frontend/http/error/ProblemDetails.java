@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.http.error;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +25,8 @@ public class ProblemDetails {
    * Extended properties See <a href="https://tools.ietf.org/html/rfc7807#section-3.2">
    * https://tools.ietf.org/html/rfc7807#section-3.2</a>
    */
+  @JsonProperty("debugInfo")
+  @JsonInclude(Include.NON_EMPTY)
   private Map<String, Object> extendedDetails = new HashMap<>();
 
   public String getTitle() {
@@ -55,7 +57,7 @@ public class ProblemDetails {
     this.extendedDetails = extendedDetails;
   }
 
-  @JsonAnyGetter
+  // @JsonAnyGetter
   public Map<String, Object> getExtendedDetails() {
     return extendedDetails;
   }

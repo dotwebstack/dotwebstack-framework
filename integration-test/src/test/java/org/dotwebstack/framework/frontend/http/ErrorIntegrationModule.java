@@ -1,6 +1,10 @@
 package org.dotwebstack.framework.frontend.http;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.Response.Status;
+import org.dotwebstack.framework.frontend.http.error.ExtendedProblemDetailException;
 import org.glassfish.jersey.server.model.Resource;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +18,15 @@ public class ErrorIntegrationModule implements HttpModule {
       throw new RuntimeException("Message containing sensitive debug info");
     });
     httpConfiguration.registerResources(builder.build());
+    Resource.Builder otherBuilder = Resource.builder("/{domain}/extended-exception");
+    otherBuilder.addMethod(HttpMethod.GET) //
+        .handledBy(context -> {
+          Map<String, Object> details = new HashMap<>();
+          details.put("detailkey", "detailvalue");
+          details.put("otherkey", "othervalue");
+          throw new ExtendedProblemDetailException("extended-message", Status.BAD_REQUEST, details);
+        });
+    httpConfiguration.registerResources(otherBuilder.build());
   }
 
 }
