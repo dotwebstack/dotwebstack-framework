@@ -38,6 +38,7 @@ public class DynamicEndPointRequestHandler extends RequestHandler<DynamicEndPoin
         }
       }
     }
+
     throw new ConfigurationException(String.format("Result type %s not supported for endpoint %s",
         request, endpoint.getIdentifier()));
   }
