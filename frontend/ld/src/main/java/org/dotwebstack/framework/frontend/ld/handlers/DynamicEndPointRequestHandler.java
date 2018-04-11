@@ -21,8 +21,6 @@ public class DynamicEndPointRequestHandler extends RequestHandler<DynamicEndPoin
 
   @Override
   public Response apply(ContainerRequestContext containerRequestContext) {
-    // String path = containerRequestContext.getUriInfo().getPath();
-
     Map<String, String> parameterValues = new HashMap<>();
     containerRequestContext.getUriInfo().getPathParameters().forEach(
         (key, value) -> parameterValues.put(key, value.get(0)));
