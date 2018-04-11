@@ -14,12 +14,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class ApiRequestValidator {
-  private static final Logger LOG = LoggerFactory.getLogger(ApiRequestValidator.class);
-
   private static final List<String> FILTERED_HEADERS = ImmutableList.of("accept", "content-type");
 
   private final RequestValidator requestValidator;
