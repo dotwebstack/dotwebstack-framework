@@ -15,13 +15,13 @@ import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.handlers.DynamicEndPointRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestParameterMapper;
-import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.ld.handlers.RequestHandler;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -67,7 +67,7 @@ public class DynamicEndPointRequestMapperTest {
 
   private HttpConfiguration httpConfiguration;
 
-  private RepresentationRequestHandler representationRequestHandler;
+  private RequestHandler representationRequestHandler;
 
   private DynamicEndPointRequestMapper dynamicEndPointRequestMapper;
 
@@ -85,11 +85,11 @@ public class DynamicEndPointRequestMapperTest {
 
     dynamicEndPointRequestMapper = new DynamicEndPointRequestMapper(dynamicEndPointResourceProvider,
         supportedWriterMediaTypesScanner, representationRequestHandlerFactory);
-    representationRequestHandler = new RepresentationRequestHandler(dynamicEndPoint,
+    representationRequestHandler = new DynamicEndPointRequestHandler(dynamicEndPoint,
         endPointRequestParameterMapper, representationResourceProvider);
 
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
-        isA(AbstractEndPoint.class))).thenReturn(representationRequestHandler);
+        isA(DynamicEndPoint.class))).thenReturn(representationRequestHandler);
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 

@@ -19,13 +19,13 @@ import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.handlers.DirectEndPointRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestParameterMapper;
-import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.ld.handlers.RequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
@@ -85,7 +85,7 @@ public class DirectEndPointRequestMapperTest {
 
   private Representation postRepresentation;
 
-  private RepresentationRequestHandler representationRequestHandler;
+  private RequestHandler representationRequestHandler;
 
   @Before
   public void setUp() {
@@ -108,11 +108,11 @@ public class DirectEndPointRequestMapperTest {
     directEndPointRequestMapper = new DirectEndPointRequestMapper(directEndPointResourceProvider,
         supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
         representationRequestHandlerFactory, transactionRequestHandlerFactory);
-    representationRequestHandler = new RepresentationRequestHandler(directEndPoint,
+    representationRequestHandler = new DirectEndPointRequestHandler(directEndPoint,
         endPointRequestParameterMapper, representationResourceProvider);
 
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
-        isA(AbstractEndPoint.class))).thenReturn(representationRequestHandler);
+        isA(DirectEndPoint.class))).thenReturn(representationRequestHandler);
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
