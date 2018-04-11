@@ -16,11 +16,11 @@ public class ResponsePropertyTest {
   @Test
   public void getDescription_ReturnsResponseDescription_ForInputResponse() {
     // Arrange
-    Property property = new ResponseProperty(new Response().description("foo"));
-    property.setDescription("bar");
+    Property schema = new ResponseProperty(new Response().description("foo"));
+    schema.setDescription("bar");
 
     // Act
-    String result = property.getDescription();
+    String result = schema.getDescription();
 
     // Assert
     assertThat(result, is("foo"));
@@ -57,12 +57,12 @@ public class ResponsePropertyTest {
   @Test
   public void getVendorExtensions_ReturnsResponseVendorExtensions_ForInputResponse() {
     // Arrange
-    ResponseProperty property = new ResponseProperty(
+    ResponseProperty schema = new ResponseProperty(
         new Response().vendorExtension("x-foo", "bar").vendorExtension("x-baz", "qux"));
-    property.setVendorExtensions(ImmutableMap.of("x-quux", "gorge"));
+    schema.setVendorExtensions(ImmutableMap.of("x-quux", "gorge"));
 
     // Act
-    Map<String, Object> result = property.getVendorExtensions();
+    Map<String, Object> result = schema.getVendorExtensions();
 
     // Assert
     assertThat(result, is(ImmutableMap.of("x-foo", "bar", "x-baz", "qux")));

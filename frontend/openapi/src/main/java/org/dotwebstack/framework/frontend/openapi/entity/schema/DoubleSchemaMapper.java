@@ -9,6 +9,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -22,16 +23,16 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
       ImmutableSet.of(XMLSchema.DOUBLE, XMLSchema.DOUBLE);
 
   @Override
-  public Double mapTupleValue(@NonNull DoubleProperty schema, @NonNull ValueContext valueContext) {
+  public Double mapTupleValue(@NonNull DoubleProperty schema, @NonNull TupleEntity entity,
+      @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).doubleValue();
   }
 
   @Override
-  public Double mapGraphValue(@NonNull DoubleProperty property,
-      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Double mapGraphValue(@NonNull DoubleProperty schema, @NonNull GraphEntity entity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     String ldPathQuery =
-        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+        (String) schema.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
     if (ldPathQuery == null && isSupportedLiteral(valueContext.getValue())) {
       return ((Literal) valueContext.getValue()).doubleValue();
@@ -39,14 +40,14 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
 
     if (ldPathQuery == null) {
       throw new SchemaMapperRuntimeException(
-          String.format("Property '%s' must have a '%s' attribute.", property.getName(),
+          String.format("Property '%s' must have a '%s' attribute.", schema.getName(),
               OpenApiSpecificationExtensions.LDPATH));
     }
-    LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
+    LdPathExecutor ldPathExecutor = entity.getLdPathExecutor();
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
-    if (!property.getRequired() && queryResult.isEmpty()) {
+    if (!schema.getRequired() && queryResult.isEmpty()) {
       return null;
     }
 

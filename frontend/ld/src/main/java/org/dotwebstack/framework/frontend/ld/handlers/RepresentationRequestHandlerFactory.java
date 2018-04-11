@@ -1,7 +1,8 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +20,15 @@ public class RepresentationRequestHandlerFactory {
     this.representationResourceProvider = representationResourceProvider;
   }
 
-  public RepresentationRequestHandler newEndPointRequestHandler(
-      @NonNull AbstractEndPoint endpoint) {
-    return new RepresentationRequestHandler(endpoint, endPointRequestParameterMapper,
+  public RequestHandler<DirectEndPoint> newRepresentationRequestHandler(
+      @NonNull DirectEndPoint endpoint) {
+    return new DirectEndPointRequestHandler(endpoint, endPointRequestParameterMapper,
+        representationResourceProvider);
+  }
+
+  public RequestHandler<DynamicEndPoint> newRepresentationRequestHandler(
+      @NonNull DynamicEndPoint endpoint) {
+    return new DynamicEndPointRequestHandler(endpoint, endPointRequestParameterMapper,
         representationResourceProvider);
   }
 

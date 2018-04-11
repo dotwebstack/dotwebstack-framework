@@ -63,26 +63,16 @@ public class RepresentationRequestHandlerTest {
 
   private EndPointRequestParameterMapper endPointRequestParameterMapper;
 
-  private RepresentationRequestHandler getRequestHandler;
+  private RequestHandler<DirectEndPoint> getRequestHandler;
 
   @Before
   public void setUp() {
     endPointRequestParameterMapper = new EndPointRequestParameterMapper();
-    getRequestHandler = new RepresentationRequestHandler(endPoint, endPointRequestParameterMapper,
+    getRequestHandler = new DirectEndPointRequestHandler(endPoint, endPointRequestParameterMapper,
         representationResourceProvider);
     when(endPoint.getGetRepresentation()).thenReturn(representation);
     when(endPoint.getPostRepresentation()).thenReturn(representation);
     when(representation.getInformationProduct()).thenReturn(informationProduct);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingRepresentation() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new RepresentationRequestHandler(null, endPointRequestParameterMapper,
-        representationResourceProvider);
   }
 
   @Test
@@ -154,15 +144,14 @@ public class RepresentationRequestHandlerTest {
 
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
-    when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
     DynamicEndPoint dynamicEndPoint = mock(DynamicEndPoint.class);
     when(dynamicEndPoint.getParameterMapper()).thenReturn(mock(ParameterMapper.class));
     when(representationResourceProvider.getAll()).thenReturn(allRepresentations);
     when(representation.getAppliesTo()).thenReturn(ImmutableList.of(appliesTo));
-    RepresentationRequestHandler requestHandler = new RepresentationRequestHandler(dynamicEndPoint,
-        endPointRequestParameterMapper, representationResourceProvider);
+    RequestHandler<DynamicEndPoint> requestHandler = new DynamicEndPointRequestHandler(
+        dynamicEndPoint, endPointRequestParameterMapper, representationResourceProvider);
 
     // Act
     Response response = requestHandler.apply(containerRequestContext);
@@ -231,13 +220,12 @@ public class RepresentationRequestHandlerTest {
     MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
-    when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.PUT);
     DynamicEndPoint dynamicEndPoint = mock(DynamicEndPoint.class);
     when(dynamicEndPoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
-    RepresentationRequestHandler requestHandler = new RepresentationRequestHandler(dynamicEndPoint,
-        endPointRequestParameterMapper, representationResourceProvider);
+    RequestHandler<DynamicEndPoint> requestHandler = new DynamicEndPointRequestHandler(
+        dynamicEndPoint, endPointRequestParameterMapper, representationResourceProvider);
 
     // Act
     requestHandler.apply(containerRequestContext);

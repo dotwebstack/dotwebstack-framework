@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -19,6 +20,7 @@ import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.dotwebstack.framework.frontend.ld.service.ServiceResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -63,9 +65,6 @@ public class DirectEndPointResourceProviderTest {
   private StageResourceProvider stageResourceProvider;
 
   @Mock
-  private DirectEndPointResourceProvider endPointResourceProvider;
-
-  @Mock
   private ServiceResourceProvider serviceResourceProvider;
 
   @Mock
@@ -77,7 +76,9 @@ public class DirectEndPointResourceProviderTest {
   @Mock
   private GraphQuery graphQuery;
 
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
+  private DirectEndPointResourceProvider endPointResourceProvider;
 
   @Before
   public void setUp() {
@@ -91,56 +92,7 @@ public class DirectEndPointResourceProviderTest {
     when(stageResourceProvider.get(any())).thenReturn(stage);
     when(representationResourceProvider.get(any())).thenReturn(representation);
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(null, applicationProperties, stageResourceProvider,
-        representationResourceProvider, serviceResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingApplicationProperties() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(configurationBackend, null, stageResourceProvider,
-        representationResourceProvider, serviceResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingStageResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(configurationBackend, applicationProperties, null,
-        representationResourceProvider, serviceResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingRepresentationResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(configurationBackend, applicationProperties,
-        stageResourceProvider, null, serviceResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingServiceResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DirectEndPointResourceProvider(configurationBackend, applicationProperties,
-        stageResourceProvider, representationResourceProvider, null);
+    when(serviceResourceProvider.get(any())).thenReturn(mock(Service.class));
   }
 
   @Test
@@ -190,17 +142,16 @@ public class DirectEndPointResourceProviderTest {
 
     // Assert
     assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(1));
-    DirectEndPoint endPoint =
-        (DirectEndPoint) endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
+    DirectEndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
     assertThat(endPoint, is(not(nullValue())));
     assertThat(endPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
     assertThat(endPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
     assertThat(endPoint.getStage(), equalTo(stage));
     assertThat(endPoint.getGetRepresentation(), equalTo(representation));
     assertThat(endPoint.getPostRepresentation(), equalTo(representation));
-    assertThat(endPoint.getDeleteService(), hasSize(1));
-    assertThat(endPoint.getPostService(), hasSize(1));
-    assertThat(endPoint.getPutService(), hasSize(1));
+    assertThat(endPoint.getDeleteService(), not(nullValue()));
+    assertThat(endPoint.getPostService(), not(nullValue()));
+    assertThat(endPoint.getPutService(), not(nullValue()));
   }
 
   @Test

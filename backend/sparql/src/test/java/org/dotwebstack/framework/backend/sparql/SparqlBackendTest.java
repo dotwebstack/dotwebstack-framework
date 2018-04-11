@@ -13,7 +13,6 @@ import org.dotwebstack.framework.backend.sparql.persistencestep.PersistenceInser
 import org.dotwebstack.framework.backend.sparql.persistencestep.SparqlBackendPersistenceStepFactory;
 import org.dotwebstack.framework.backend.sparql.updatestep.SparqlBackendUpdateStepFactory;
 import org.dotwebstack.framework.backend.sparql.updatestep.UpdateStepExecutor;
-import org.dotwebstack.framework.backend.sparql.validationstep.SparqlBackendValidationStepFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -50,9 +49,6 @@ public class SparqlBackendTest {
   private SparqlBackendUpdateStepFactory updateStepFactory;
 
   @Mock
-  private SparqlBackendValidationStepFactory validationStepFactory;
-
-  @Mock
   private Model model;
 
   @Mock
@@ -71,7 +67,7 @@ public class SparqlBackendTest {
 
     // Act
     new SparqlBackend.Builder(null, repository, informationProductFactory, persistenceStepFactory,
-        updateStepFactory, validationStepFactory);
+        updateStepFactory);
   }
 
   @Test
@@ -81,7 +77,7 @@ public class SparqlBackendTest {
 
     // Act
     new SparqlBackend.Builder(DBEERPEDIA.BACKEND, null, informationProductFactory,
-        persistenceStepFactory, updateStepFactory, validationStepFactory);
+        persistenceStepFactory, updateStepFactory);
   }
 
   @Test
@@ -91,15 +87,14 @@ public class SparqlBackendTest {
 
     // Act
     new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, null, persistenceStepFactory,
-        updateStepFactory, validationStepFactory);
+        updateStepFactory);
   }
 
   @Test
   public void build_CreatesBackend_WithCorrectData() {
     // Act
-    SparqlBackend backend =
-        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, informationProductFactory,
-            persistenceStepFactory, updateStepFactory, validationStepFactory).build();
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
 
     // Assert
     assertThat(backend.getIdentifier(), equalTo(DBEERPEDIA.BACKEND));
@@ -109,9 +104,8 @@ public class SparqlBackendTest {
   @Test
   public void getConnection_ReusesConnection_WhenCalledTwice() {
     // Arrange
-    SparqlBackend backend =
-        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, informationProductFactory,
-            persistenceStepFactory, updateStepFactory, validationStepFactory).build();
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
     when(repository.getConnection()).thenReturn(mock(RepositoryConnection.class));
 
     // Act
@@ -127,9 +121,8 @@ public class SparqlBackendTest {
   @Test
   public void createInformationProduct_CreatesInformationProduct_WithValidData() {
     // Arrange
-    SparqlBackend backend =
-        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, informationProductFactory,
-            persistenceStepFactory, updateStepFactory, validationStepFactory).build();
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
 
     InformationProduct informationProductMock = mock(InformationProduct.class);
 
@@ -152,9 +145,8 @@ public class SparqlBackendTest {
   @Test
   public void createPersistenceStepExecutor_CreatesPersistenceStepExecutor_WithValidData() {
     // Arrange
-    SparqlBackend backend =
-        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, informationProductFactory,
-            persistenceStepFactory, updateStepFactory, validationStepFactory).build();
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
 
     PersistenceInsertIntoGraphStepExecutor persistenceStepExecutorMock =
         mock(PersistenceInsertIntoGraphStepExecutor.class);
@@ -172,12 +164,12 @@ public class SparqlBackendTest {
   @Test
   public void createUpdateStepExecutor_CreatesUpdateStepExecutor_WithValidData() {
     // Arrange
-    SparqlBackend backend =
-        new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, informationProductFactory,
-            persistenceStepFactory, updateStepFactory, validationStepFactory).build();
+    SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
+        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
 
     UpdateStepExecutor updateStepExecutorMock = mock(UpdateStepExecutor.class);
 
+    // TODO: Do something with the mocks below, or clean up
     Parameter<?> requiredParameterMock = mock(Parameter.class);
     Parameter<?> optionalParameterMock = mock(Parameter.class);
 

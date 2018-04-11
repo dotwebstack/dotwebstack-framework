@@ -39,7 +39,6 @@ public class DirectEndPointResourceProvider extends AbstractResourceProvider<Dir
     this.serviceResourceProvider = serviceResourceProvider;
   }
 
-
   @Override
   protected GraphQuery getQueryForResources(RepositoryConnection conn) {
     String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
@@ -65,11 +64,11 @@ public class DirectEndPointResourceProvider extends AbstractResourceProvider<Dir
         resource -> builder.getRepresentation(representationResourceProvider.get(resource)));
     getObjectResource(model, identifier, ELMO.POST_REPRESENTATION_PROP).ifPresent(
         resource -> builder.postRepresentation(representationResourceProvider.get(resource)));
-    getObjectResources(model, identifier, ELMO.SERVICE_POST_PROP).stream().forEach(
+    getObjectResource(model, identifier, ELMO.SERVICE_POST_PROP).ifPresent(
         postService -> builder.postService(serviceResourceProvider.get(postService)));
-    getObjectResources(model, identifier, ELMO.SERVICE_PUT_PROP).stream().forEach(
+    getObjectResource(model, identifier, ELMO.SERVICE_PUT_PROP).ifPresent(
         putService -> builder.putService(serviceResourceProvider.get(putService)));
-    getObjectResources(model, identifier, ELMO.SERVICE_DELETE_PROP).stream().forEach(
+    getObjectResource(model, identifier, ELMO.SERVICE_DELETE_PROP).ifPresent(
         deleteService -> builder.deleteService(serviceResourceProvider.get(deleteService)));
 
     return builder.build();

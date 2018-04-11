@@ -8,7 +8,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScannerTest.StubGraphEntityWriter;
-import org.dotwebstack.framework.frontend.ld.mappers.LdEndPointRequestMapper;
+import org.dotwebstack.framework.frontend.ld.mappers.DirectEndPointRequestMapper;
+import org.dotwebstack.framework.frontend.ld.mappers.DynamicEndPointRequestMapper;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,7 +28,10 @@ public class LdModuleTest {
   private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
 
   @Mock
-  private LdEndPointRequestMapper ldEndPointRequestMapper;
+  private DirectEndPointRequestMapper directEndPointRequestMapper;
+
+  @Mock
+  private DynamicEndPointRequestMapper dynamicEndPointRequestMapper;
 
   @Mock
   private LdRedirectionRequestMapper ldRedirectionRequestMapper;
@@ -42,53 +46,9 @@ public class LdModuleTest {
 
   @Before
   public void setUp() {
-    ldModule = new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper,
-        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner);
-    ldModule.initialize(httpConfiguration);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingRepresentationRequestMapper() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new LdModule(null, ldRedirectionRequestMapper, supportedWriterMediaTypesScanner,
+    ldModule = new LdModule(dynamicEndPointRequestMapper, directEndPointRequestMapper,
+        ldRedirectionRequestMapper, supportedWriterMediaTypesScanner,
         supportedReaderMediaTypesScanner);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingRedirectionRequestMapper() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new LdModule(ldEndPointRequestMapper, null, supportedWriterMediaTypesScanner,
-        supportedReaderMediaTypesScanner);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingMediaTypesScanner() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new LdModule(ldEndPointRequestMapper, ldRedirectionRequestMapper, null,
-        supportedReaderMediaTypesScanner);
-  }
-
-  @Test
-  public void initialize_ThrowsException_WithMissingHttpConfiguration() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    ldModule.initialize(null);
-  }
-
-  @Test
-  public void initialize_DoesNotThrowException_WithHttpConfiguration() {
-    // Act
     ldModule.initialize(httpConfiguration);
   }
 

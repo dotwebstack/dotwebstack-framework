@@ -66,9 +66,6 @@ public class ServiceResourceProviderTest {
   private StageResourceProvider stageResourceProvider;
 
   @Mock
-  private ServiceResourceProvider serviceResourceProvider;
-
-  @Mock
   private ParameterMapperResourceProvider parameterMapperResourceProvider;
 
   @Mock
@@ -98,6 +95,8 @@ public class ServiceResourceProviderTest {
   @Mock
   private GraphQuery graphQuery;
 
+  private ServiceResourceProvider serviceResourceProvider;
+
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Before
@@ -115,60 +114,6 @@ public class ServiceResourceProviderTest {
     when(parameterMapperResourceProvider.get(any())).thenReturn(parameterMapper);
 
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new ServiceResourceProvider(null, informationProductResourceProvider,
-        transactionResourceProvider, appearanceResourceProvider, stageResourceProvider,
-        parameterMapperResourceProvider, applicationProperties);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingInformationProductResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new ServiceResourceProvider(configurationBackend, null, null, null, null, null,
-        applicationProperties);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingAppearanceResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new ServiceResourceProvider(configurationBackend, informationProductResourceProvider,
-        transactionResourceProvider, null, stageResourceProvider, parameterMapperResourceProvider,
-        applicationProperties);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingStageResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new ServiceResourceProvider(configurationBackend, informationProductResourceProvider,
-        transactionResourceProvider, appearanceResourceProvider, null,
-        parameterMapperResourceProvider, applicationProperties);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingApplicationProperties() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new ServiceResourceProvider(configurationBackend, informationProductResourceProvider,
-        transactionResourceProvider, appearanceResourceProvider, stageResourceProvider,
-        parameterMapperResourceProvider, null);
   }
 
   @Test

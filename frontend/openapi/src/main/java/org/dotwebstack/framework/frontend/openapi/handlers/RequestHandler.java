@@ -1,14 +1,13 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
+import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
-import io.swagger.models.properties.Property;
 import java.util.Map;
+import java.util.Set;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,8 +21,12 @@ import org.dotwebstack.framework.frontend.openapi.entity.Entity;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.repository.Repository;
 import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
@@ -39,7 +42,7 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
   private final InformationProduct informationProduct;
 
   @Getter(AccessLevel.PACKAGE)
-  private final Map<MediaType, Property> schemaMap;
+  private final io.swagger.models.Response response;
 
   private final RequestParameterMapper requestParameterMapper;
 
@@ -48,21 +51,24 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
   private final ApiRequestValidator apiRequestValidator;
 
   RequestHandler(@NonNull ApiOperation apiOperation, @NonNull InformationProduct informationProduct,
-      @NonNull Map<MediaType, Property> schemaMap,
+      @NonNull io.swagger.models.Response response,
       @NonNull RequestParameterMapper requestParameterMapper,
       @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;
     this.informationProduct = informationProduct;
-    this.schemaMap = schemaMap;
+    this.response = response;
     this.requestParameterMapper = requestParameterMapper;
     this.swagger = swagger;
   }
 
   /**
    * @throws NotFoundException If the requested resource cannot be found.
-   * @throws ConfigurationException If the {@link OpenApiSpecificationExtensions#RESULT_FOUND_QUERY}
-   *         vendor extension has been defined, but a 404 response is missing (and vice versa).
+   * @throws ConfigurationException If the {@link OpenApiSpecificationExtensions#SUBJECT_QUERY}
+   *         vendor extension is absent, while requesting a graph result.
+   * @throws RequestHandlerRuntimeException If the
+   *         {@link OpenApiSpecificationExtensions#SUBJECT_QUERY} vendor extension is present, and
+   *         the query fails to evaluate.
    */
   @Override
   public Response apply(@NonNull ContainerRequestContext context) {
@@ -71,34 +77,39 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
 
     LOG.debug("Handling {} request for path {}", context.getMethod(), path);
 
-    context.setProperty(RequestHandlerProperties.OPERATION, apiOperation.getOperation());
+    Operation operation = apiOperation.getOperation();
+    context.setProperty(RequestHandlerProperties.OPERATION, operation);
 
     RequestParameters requestParameters =
         apiRequestValidator.validate(apiOperation, swagger, context);
 
-    Map<String, String> parameterValues = requestParameterMapper.map(apiOperation.getOperation(),
-        informationProduct, requestParameters);
+    Map<String, String> parameterValues =
+        requestParameterMapper.map(operation, informationProduct, requestParameters);
+
+    String baseUri = BaseUriFactory.newBaseUri((ContainerRequest) context, swagger);
+    RequestContext requestContext =
+        new RequestContext(apiOperation, informationProduct, parameterValues, baseUri);
 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
       TupleQueryResult result = (TupleQueryResult) informationProduct.getResult(parameterValues);
       TupleEntity entity =
-          TupleEntity.builder().withQueryResult(result).withSchemaMap(schemaMap).build();
+          TupleEntity.builder().withResult(result).withResponse(response).withRequestContext(
+              requestContext).build();
 
       return responseOk(entity);
     }
 
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-      String baseUri = BaseUriFactory.newBaseUri((ContainerRequest) context, swagger);
-
       GraphQueryResult result = (GraphQueryResult) informationProduct.getResult(parameterValues);
-      GraphEntity entity = GraphEntity.newGraphEntity(schemaMap, result, swagger, parameterValues,
-          informationProduct, baseUri);
+      Repository resultRepository = Rdf4jUtils.asRepository(QueryResults.asModel(result));
+      Set<Resource> subjects = getSubjects(resultRepository);
 
-      String query = getResultFoundQuery();
-
-      if (query != null && !Rdf4jUtils.evaluateAskQuery(entity.getRepository(), query)) {
+      if (subjects.isEmpty() && is404ResponseDefined()) {
         throw new NotFoundException();
       }
+
+      GraphEntity entity =
+          GraphEntity.newGraphEntity(response, resultRepository, subjects, swagger, requestContext);
 
       return responseOk(entity);
     }
@@ -109,26 +120,27 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
     return Response.serverError().build();
   }
 
-  private String getResultFoundQuery() {
-    String query = (String) apiOperation.getOperation().getVendorExtensions().get(
-        OpenApiSpecificationExtensions.RESULT_FOUND_QUERY);
-    String statusCode = String.valueOf(Status.NOT_FOUND.getStatusCode());
+  private Set<Resource> getSubjects(Repository repository) {
+    String subjectQuery = (String) apiOperation.getOperation().getVendorExtensions().get(
+        OpenApiSpecificationExtensions.SUBJECT_QUERY);
 
-    io.swagger.models.Response response404 =
-        apiOperation.getOperation().getResponses().get(statusCode);
-
-    if (query != null && response404 == null) {
-      throw new ConfigurationException(
-          String.format("Vendor extension '%s' has been defined, while %s response is missing",
-              OpenApiSpecificationExtensions.RESULT_FOUND_QUERY, statusCode));
-    }
-    if (query == null && response404 != null) {
-      throw new ConfigurationException(
-          String.format("Vendor extension '%s' is missing, while %s response has been defined",
-              OpenApiSpecificationExtensions.RESULT_FOUND_QUERY, statusCode));
+    if (subjectQuery == null) {
+      throw new ConfigurationException(String.format(
+          "Vendor extension '%s' is required for information products with graph result type",
+          OpenApiSpecificationExtensions.SUBJECT_QUERY));
     }
 
-    return query;
+    try {
+      return Rdf4jUtils.evaluateSingleBindingSelectQuery(repository, subjectQuery);
+    } catch (QueryEvaluationException e) {
+      throw new RequestHandlerRuntimeException(e);
+    }
+  }
+
+  private boolean is404ResponseDefined() {
+    String statusCode = String.valueOf(Response.Status.NOT_FOUND.getStatusCode());
+
+    return apiOperation.getOperation().getResponses().containsKey(statusCode);
   }
 
   private Response responseOk(Entity entity) {

@@ -6,11 +6,11 @@ import org.eclipse.rdf4j.model.Resource;
 
 public class IriTermParameter extends TermParameter<IRI> {
 
-  IriTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required) {
+  public IriTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required) {
     this(identifier, name, required, null);
   }
 
-  IriTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
+  public IriTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
       IRI defaultValue) {
     super(identifier, name, required, defaultValue);
   }

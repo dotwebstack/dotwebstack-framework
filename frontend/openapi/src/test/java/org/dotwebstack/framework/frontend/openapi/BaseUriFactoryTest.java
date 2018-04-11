@@ -64,6 +64,27 @@ public class BaseUriFactoryTest {
   }
 
   @Test
+  public void newBaseUri_returnsBaseUriString_ifMultipleXForwardedHostsArePresent() {
+    // Arrange
+    String forwardedHost1 = "forwardedHost1";
+    String forwardedHost2 = "forwardedHost2";
+    // @formatter:off
+    Swagger swagger = new Swagger()
+        .scheme(Scheme.HTTP)
+        .basePath(basePath);
+    // @formatter:on
+    when(containerRequestMock.getRequestHeaders().getFirst(any())).thenReturn(
+        forwardedHost1 + ", " + forwardedHost2
+    );
+
+    // Act
+    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
+
+    // Assert
+    assertThat(baseUri, is(getUriString(Scheme.HTTP, forwardedHost1, basePath)));
+  }
+
+  @Test
   public void newBaseUri_returnsBaseUriString_ifXForwardedHostNotPresent() {
     // Arrange
     // @formatter:off
@@ -155,7 +176,6 @@ public class BaseUriFactoryTest {
 
     // Act
     BaseUriFactory.newBaseUri(containerRequestMock, swagger);
-    System.out.println(BaseUriFactory.newBaseUri(containerRequestMock, swagger));
   }
 
   private String getUriString(Scheme scheme, String host, String path) {

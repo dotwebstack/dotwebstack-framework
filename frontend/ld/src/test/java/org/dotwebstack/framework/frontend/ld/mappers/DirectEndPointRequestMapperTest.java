@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.frontend.ld.mappers;
 
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
@@ -12,24 +12,20 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.ApplicationProperties;
-import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.handlers.DirectEndPointRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestParameterMapper;
-import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
+import org.dotwebstack.framework.frontend.ld.handlers.RequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
@@ -46,7 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class LdEndPointRequestMapperTest {
+public class DirectEndPointRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -55,29 +51,13 @@ public class LdEndPointRequestMapperTest {
   private Stage stage;
 
   @Mock
-  private Site site;
-
-  @Mock
   private DirectEndPoint directEndPoint;
-
-  @Mock
-  private DynamicEndPoint dynamicEndPoint;
-
-  private Representation getRepresentation;
-
-  private Representation postRepresentation;
 
   @Mock
   private InformationProduct informationProduct;
 
   @Mock
   private DirectEndPointResourceProvider directEndPointResourceProvider;
-
-  @Mock
-  private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
-
-  @Mock
-  private LdEndPointRequestMapper ldEndPointRequestMapper;
 
   @Mock
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
@@ -92,23 +72,20 @@ public class LdEndPointRequestMapperTest {
   private RepresentationResourceProvider representationResourceProvider;
 
   @Mock
-  private StageResourceProvider stageResourceProvider;
-
-  @Mock
-  private ConfigurationBackend configurationBackend;
-
-  @Mock
-  private ApplicationProperties applicationProperties;
-
-  @Mock
   private ServiceRequestHandlerFactory transactionRequestHandlerFactory;
-
-  private RepresentationRequestHandler representationRequestHandler;
 
   @Mock
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
+  private DirectEndPointRequestMapper directEndPointRequestMapper;
+
   private HttpConfiguration httpConfiguration;
+
+  private Representation getRepresentation;
+
+  private Representation postRepresentation;
+
+  private RequestHandler representationRequestHandler;
 
   @Before
   public void setUp() {
@@ -128,28 +105,27 @@ public class LdEndPointRequestMapperTest {
     endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, directEndPoint);
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
-    ldEndPointRequestMapper =
-        new LdEndPointRequestMapper(directEndPointResourceProvider, dynamicEndPointResourceProvider,
-            supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
-            representationRequestHandlerFactory, transactionRequestHandlerFactory);
-    representationRequestHandler = new RepresentationRequestHandler(directEndPoint,
+    directEndPointRequestMapper = new DirectEndPointRequestMapper(directEndPointResourceProvider,
+        supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
+        representationRequestHandlerFactory, transactionRequestHandlerFactory);
+    representationRequestHandler = new DirectEndPointRequestHandler(directEndPoint,
         endPointRequestParameterMapper, representationResourceProvider);
 
-    when(representationRequestHandlerFactory.newEndPointRequestHandler(
-        isA(AbstractEndPoint.class))).thenReturn(representationRequestHandler);
+    when(representationRequestHandlerFactory.newRepresentationRequestHandler(
+        isA(DirectEndPoint.class))).thenReturn(representationRequestHandler);
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    LdEndPointRequestMapper ldEndPointRequestMapper =
-        new LdEndPointRequestMapper(directEndPointResourceProvider, dynamicEndPointResourceProvider,
+    DirectEndPointRequestMapper directEndPointRequestMapper =
+        new DirectEndPointRequestMapper(directEndPointResourceProvider,
             supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
             representationRequestHandlerFactory, transactionRequestHandlerFactory);
 
     // Assert
-    assertThat(ldEndPointRequestMapper, not(nullValue()));
+    assertThat(directEndPointRequestMapper, not(nullValue()));
   }
 
   @Test
@@ -159,7 +135,7 @@ public class LdEndPointRequestMapperTest {
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     // Act
-    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
+    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
 
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
@@ -167,7 +143,7 @@ public class LdEndPointRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(2));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(resource.getResourceMethods(), hasSize(1));
+    assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
   }
 
   @Test
@@ -179,7 +155,7 @@ public class LdEndPointRequestMapperTest {
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
+    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -194,7 +170,7 @@ public class LdEndPointRequestMapperTest {
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
+    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -216,7 +192,7 @@ public class LdEndPointRequestMapperTest {
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
+    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
@@ -239,7 +215,7 @@ public class LdEndPointRequestMapperTest {
     when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    ldEndPointRequestMapper.loadEndPoints(httpConfiguration);
+    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));

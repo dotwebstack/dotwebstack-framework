@@ -6,12 +6,14 @@ import static org.junit.Assert.assertThat;
 import io.swagger.models.properties.LongProperty;
 import io.swagger.models.properties.StringProperty;
 import java.math.BigInteger;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -19,6 +21,9 @@ public class LongSchemaMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
+
+  @Mock
+  private TupleEntity tupleEntityMock;
 
   private LongSchemaMapper schemaMapper;
 
@@ -37,14 +42,14 @@ public class LongSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema,
+    schemaMapper.mapTupleValue(schema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    BigInteger result = schemaMapper.mapTupleValue(schema,
+    BigInteger result = schemaMapper.mapTupleValue(schema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR).build());
 
     // Assert

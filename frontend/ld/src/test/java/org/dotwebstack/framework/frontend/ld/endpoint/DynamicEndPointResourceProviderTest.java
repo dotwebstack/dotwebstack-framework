@@ -62,9 +62,6 @@ public class DynamicEndPointResourceProviderTest {
   private StageResourceProvider stageResourceProvider;
 
   @Mock
-  private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
-
-  @Mock
   private Stage stage;
 
   @Mock
@@ -73,7 +70,9 @@ public class DynamicEndPointResourceProviderTest {
   @Mock
   private GraphQuery graphQuery;
 
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
+  private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
 
   @Before
   public void setUp() {
@@ -86,46 +85,6 @@ public class DynamicEndPointResourceProviderTest {
     when(stageResourceProvider.get(any())).thenReturn(stage);
     when(parameterMapperResourceProvider.get(any())).thenReturn(parameterMapper);
     when(applicationProperties.getSystemGraph()).thenReturn(DBEERPEDIA.SYSTEM_GRAPH_IRI);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(null, applicationProperties,
-        parameterMapperResourceProvider, stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingApplicationProperties() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(configurationBackend, null, parameterMapperResourceProvider,
-        stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingParameterMapperResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(configurationBackend, applicationProperties, null,
-        stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingStageResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(configurationBackend, applicationProperties,
-        parameterMapperResourceProvider, null);
   }
 
   @Test
@@ -195,4 +154,5 @@ public class DynamicEndPointResourceProviderTest {
     assertThat(dynamicEndPoint.getStage(), equalTo(stage));
     assertThat(dynamicEndPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
   }
+
 }
