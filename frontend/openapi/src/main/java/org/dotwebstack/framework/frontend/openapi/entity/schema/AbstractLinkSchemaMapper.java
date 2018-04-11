@@ -7,6 +7,8 @@ import io.swagger.models.properties.ObjectProperty;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import javax.ws.rs.core.UriBuilder;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -32,8 +34,8 @@ abstract class AbstractLinkSchemaMapper implements SchemaMapper<ObjectProperty, 
 
     // @formatter:off
     operationParams.stream()
-        .filter(AbstractLinkSchemaMapper::isQueryParameter)
-        .map(AbstractLinkSchemaMapper::castToQueryParameter)
+        .filter(isQueryParameter())
+        .map(toQueryParameter())
         .filter(p -> requestParams.get(p.getName()) != null)
         .filter(p -> p.getDefault() == null
             || !requestParams.get(p.getName()).equals(p.getDefault().toString()))
@@ -80,8 +82,8 @@ abstract class AbstractLinkSchemaMapper implements SchemaMapper<ObjectProperty, 
 
     // @formatter:off
     return operationParams.stream()
-        .filter(AbstractLinkSchemaMapper::isQueryParameter)
-        .map(AbstractLinkSchemaMapper::castToQueryParameter)
+        .filter(isQueryParameter())
+        .map(toQueryParameter())
         .filter(p -> mapsToTermParameter(p, termParameter))
         .findFirst()
         .orElseThrow(() -> new SchemaMapperRuntimeException(String.format(
@@ -89,12 +91,12 @@ abstract class AbstractLinkSchemaMapper implements SchemaMapper<ObjectProperty, 
     // @formatter:on
   }
 
-  private static boolean isQueryParameter(Parameter parameter) {
-    return parameter.getIn().equalsIgnoreCase("query");
+  private static Function<Parameter, QueryParameter> toQueryParameter() {
+    return parameter -> (QueryParameter) parameter;
   }
 
-  private static QueryParameter castToQueryParameter(Parameter parameter) {
-    return (QueryParameter) parameter;
+  private static Predicate<Parameter> isQueryParameter() {
+    return parameter -> parameter.getIn().equalsIgnoreCase("query");
   }
 
   private static boolean mapsToTermParameter(QueryParameter parameter, IRI termParameter) {
