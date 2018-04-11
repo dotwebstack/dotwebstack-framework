@@ -21,9 +21,11 @@ public class ErrorIntegrationModule implements HttpModule {
     Resource.Builder otherBuilder = Resource.builder("/{domain}/extended-exception");
     otherBuilder.addMethod(HttpMethod.GET) //
         .handledBy(context -> {
+          Map<String, Object> innerDetails = new HashMap<>();
+          innerDetails.put("name", "dummy");
+          innerDetails.put("reason", "because I said so");
           Map<String, Object> details = new HashMap<>();
-          details.put("detailkey", "detailvalue");
-          details.put("otherkey", "othervalue");
+          details.put("detailkey", innerDetails);
           throw new ExtendedProblemDetailException("extended-message", Status.BAD_REQUEST, details);
         });
     httpConfiguration.registerResources(otherBuilder.build());

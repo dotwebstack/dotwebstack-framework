@@ -114,8 +114,9 @@ public class ErrorIntegrationTest {
     assertEquals(Status.BAD_REQUEST.getStatusCode(), jsonNode.get("status").asInt());
     assertEquals(Status.BAD_REQUEST.getReasonPhrase(), jsonNode.get("title").asText());
     assertEquals("extended-message", jsonNode.get("detail").asText());
-    assertNotNull("no debugInfo key found in returned Json", jsonNode.get("debugInfo"));
-    assertEquals("detailvalue", jsonNode.get("debugInfo").get("detailkey").asText());
+    assertNotNull("no detailkey found in returned Json", jsonNode.get("detailkey"));
+    assertEquals("dummy", jsonNode.get("detailkey").get("name").asText());
+    assertEquals("because I said so", jsonNode.get("detailkey").get("reason").asText());
   }
 
 }
