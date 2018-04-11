@@ -1,0 +1,47 @@
+package org.dotwebstack.framework.frontend.ld.handlers;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Response;
+import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
+import org.dotwebstack.framework.frontend.ld.representation.Representation;
+import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+
+public class DynamicEndPointRequestHandler extends RequestHandler<DynamicEndPoint> {
+
+  public DynamicEndPointRequestHandler(DynamicEndPoint endpoint,
+      EndPointRequestParameterMapper endPointRequestParameterMapper,
+      RepresentationResourceProvider representationResourceProvider) {
+    super(endpoint, endPointRequestParameterMapper, representationResourceProvider);
+  }
+
+  @Override
+  public Response apply(ContainerRequestContext containerRequestContext) {
+    // String path = containerRequestContext.getUriInfo().getPath();
+
+    Map<String, String> parameterValues = new HashMap<>();
+    containerRequestContext.getUriInfo().getPathParameters().forEach(
+        (key, value) -> parameterValues.put(key, value.get(0)));
+
+    final String request = containerRequestContext.getRequest().getMethod();
+    if (request.equals(HttpMethod.GET)) {
+      parameterValues.putAll((endpoint.getParameterMapper().map(containerRequestContext)));
+      Optional<String> subjectParameter = Optional.ofNullable(parameterValues.get("subject"));
+      if (subjectParameter.isPresent()) {
+        for (Representation resp : representationResourceProvider.getAll().values()) {
+          String appliesTo = getUrl(resp, parameterValues);
+          if (appliesTo.equals(subjectParameter.get())) {
+            return applyRepresentation(resp, containerRequestContext, parameterValues);
+          }
+        }
+      }
+    }
+    throw new ConfigurationException(String.format("Result type %s not supported for endpoint %s",
+        request, endpoint.getIdentifier()));
+  }
+
+}
