@@ -6,20 +6,20 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DirectEndPointRequestHandler extends RequestHandler<DirectEndPoint> {
+public class DirectEndpointRequestHandler extends RequestHandler<DirectEndpoint> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DirectEndPointRequestHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DirectEndpointRequestHandler.class);
 
-  public DirectEndPointRequestHandler(DirectEndPoint endpoint,
-      EndPointRequestParameterMapper endPointRequestParameterMapper,
+  public DirectEndpointRequestHandler(DirectEndpoint endpoint,
+      EndpointRequestParameterMapper endpointRequestParameterMapper,
       RepresentationResourceProvider representationResourceProvider) {
-    super(endpoint, endPointRequestParameterMapper, representationResourceProvider);
+    super(endpoint, endpointRequestParameterMapper, representationResourceProvider);
   }
 
   @Override

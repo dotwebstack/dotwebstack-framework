@@ -7,9 +7,8 @@ import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -20,11 +19,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @org.springframework.stereotype.Service
-public class DirectEndPointRequestMapper {
+public class DirectEndpointRequestMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DirectEndPointRequestMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DirectEndpointRequestMapper.class);
 
-  private final DirectEndPointResourceProvider directEndPointResourceProvider;
+  private final DirectEndpointResourceProvider directEndpointResourceProvider;
 
   private final SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
@@ -35,21 +34,21 @@ public class DirectEndPointRequestMapper {
   private final ServiceRequestHandlerFactory serviceRequestHandlerFactory;
 
   @Autowired
-  public DirectEndPointRequestMapper(
-      @NonNull DirectEndPointResourceProvider directEndPointResourceProvider,
+  public DirectEndpointRequestMapper(
+      @NonNull DirectEndpointResourceProvider directEndpointResourceProvider,
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,
       @NonNull RepresentationRequestHandlerFactory representationRequestHandlerFactory,
       @NonNull ServiceRequestHandlerFactory serviceRequestHandlerFactory) {
-    this.directEndPointResourceProvider = directEndPointResourceProvider;
+    this.directEndpointResourceProvider = directEndpointResourceProvider;
     this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
     this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
     this.representationRequestHandlerFactory = representationRequestHandlerFactory;
     this.serviceRequestHandlerFactory = serviceRequestHandlerFactory;
   }
 
-  public void loadDirectEndPoints(HttpConfiguration httpConfiguration) {
-    for (DirectEndPoint endPoint : directEndPointResourceProvider.getAll().values()) {
+  public void loadDirectEndpoints(HttpConfiguration httpConfiguration) {
+    for (DirectEndpoint endPoint : directEndpointResourceProvider.getAll().values()) {
       if (endPoint.getStage() != null) {
         mapService(endPoint, httpConfiguration);
         mapRepresentation(endPoint, httpConfiguration);
@@ -59,7 +58,7 @@ public class DirectEndPointRequestMapper {
     }
   }
 
-  private void mapService(DirectEndPoint endPoint, HttpConfiguration httpConfiguration) {
+  private void mapService(DirectEndpoint endPoint, HttpConfiguration httpConfiguration) {
     String basePath = endPoint.getStage().getFullPath();
     String absolutePath = basePath.concat(endPoint.getPathPattern());
     final Optional<Service> deleteService = Optional.ofNullable(endPoint.getDeleteService());
@@ -73,16 +72,16 @@ public class DirectEndPointRequestMapper {
         service -> registerTransaction(service, HttpMethod.PUT, absolutePath, httpConfiguration));
   }
 
-  private void mapRepresentation(AbstractEndPoint endPoint, HttpConfiguration httpConfiguration) {
+  private void mapRepresentation(DirectEndpoint endPoint, HttpConfiguration httpConfiguration) {
     String basePath = endPoint.getStage().getFullPath();
     String absolutePath = basePath.concat(endPoint.getPathPattern());
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-    Optional.ofNullable(((DirectEndPoint) endPoint).getGetRepresentation()).ifPresent(
+    Optional.ofNullable(endPoint.getGetRepresentation()).ifPresent(
         getRepresentation -> buildResource(httpConfiguration, resourceBuilder, absolutePath,
-            HttpMethod.GET, getRepresentation, (DirectEndPoint) endPoint));
-    Optional.ofNullable(((DirectEndPoint) endPoint).getPostRepresentation()).ifPresent(
+            HttpMethod.GET, getRepresentation, endPoint));
+    Optional.ofNullable(endPoint.getPostRepresentation()).ifPresent(
         postRepresentation -> buildResource(httpConfiguration, resourceBuilder, absolutePath,
-            HttpMethod.POST, postRepresentation, (DirectEndPoint) endPoint));
+            HttpMethod.POST, postRepresentation, endPoint));
   }
 
   private void registerTransaction(Service service, String httpMethod, String absolutePath,
@@ -96,12 +95,12 @@ public class DirectEndPointRequestMapper {
 
   private void buildResource(HttpConfiguration httpConfiguration,
       final Resource.Builder resourceBuilder, String absolutePath, String httpMethod,
-      Representation representation, DirectEndPoint endPoint) {
+      Representation representation, DirectEndpoint endPoint) {
     Optional.ofNullable(representation).ifPresent(
-        optionalRepresentation -> Optional.ofNullable(endPoint).ifPresent(optionalEndPoint -> {
+        optionalRepresentation -> Optional.ofNullable(endPoint).ifPresent(optionalEndpoint -> {
           resourceBuilder.addMethod(httpMethod).handledBy(
               representationRequestHandlerFactory.newRepresentationRequestHandler(
-                  optionalEndPoint)).produces(supportedWriterMediaTypesScanner.getMediaTypes(
+                  optionalEndpoint)).produces(supportedWriterMediaTypesScanner.getMediaTypes(
                       optionalRepresentation.getInformationProduct().getResultType())).nameBindings(
                           ExpandFormatParameter.class);
           LOG.debug("Found representation {} for method {}", representation.getIdentifier(),

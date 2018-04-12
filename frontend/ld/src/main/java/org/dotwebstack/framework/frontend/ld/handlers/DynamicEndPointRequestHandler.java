@@ -2,21 +2,20 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 
-public class DynamicEndPointRequestHandler extends RequestHandler<DynamicEndPoint> {
+public class DynamicEndpointRequestHandler extends RequestHandler<DynamicEndpoint> {
 
-  public DynamicEndPointRequestHandler(DynamicEndPoint endpoint,
-      EndPointRequestParameterMapper endPointRequestParameterMapper,
+  public DynamicEndpointRequestHandler(DynamicEndpoint endpoint,
+      EndpointRequestParameterMapper endpointRequestParameterMapper,
       RepresentationResourceProvider representationResourceProvider) {
-    super(endpoint, endPointRequestParameterMapper, representationResourceProvider);
+    super(endpoint, endpointRequestParameterMapper, representationResourceProvider);
   }
 
   @Override
@@ -28,11 +27,11 @@ public class DynamicEndPointRequestHandler extends RequestHandler<DynamicEndPoin
     final String request = containerRequestContext.getRequest().getMethod();
     if (request.equals(HttpMethod.GET)) {
       parameterValues.putAll((endpoint.getParameterMapper().map(containerRequestContext)));
-      Optional<String> subjectParameter = Optional.ofNullable(parameterValues.get("subject"));
-      if (subjectParameter.isPresent()) {
+      String subjectParameter = parameterValues.get("subject");
+      if (subjectParameter != null) {
         for (Representation resp : representationResourceProvider.getAll().values()) {
           String appliesTo = getUrl(resp, parameterValues);
-          if (appliesTo.equals(subjectParameter.get())) {
+          if (appliesTo.equals(subjectParameter)) {
             return applyRepresentation(resp, containerRequestContext, parameterValues);
           }
         }
