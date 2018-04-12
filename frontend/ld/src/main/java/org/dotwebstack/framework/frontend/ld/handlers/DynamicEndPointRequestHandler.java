@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
@@ -28,11 +27,11 @@ public class DynamicEndPointRequestHandler extends RequestHandler<DynamicEndPoin
     final String request = containerRequestContext.getRequest().getMethod();
     if (request.equals(HttpMethod.GET)) {
       parameterValues.putAll((endpoint.getParameterMapper().map(containerRequestContext)));
-      Optional<String> subjectParameter = Optional.ofNullable(parameterValues.get("subject"));
-      if (subjectParameter.isPresent()) {
+      String subjectParameter = parameterValues.get("subject");
+      if (subjectParameter != null) {
         for (Representation resp : representationResourceProvider.getAll().values()) {
           String appliesTo = getUrl(resp, parameterValues);
-          if (appliesTo.equals(subjectParameter.get())) {
+          if (appliesTo.equals(subjectParameter)) {
             return applyRepresentation(resp, containerRequestContext, parameterValues);
           }
         }
