@@ -19,8 +19,8 @@ import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint.Builder;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.handlers.DynamicEndpointRequestHandlers;
-import org.dotwebstack.framework.frontend.ld.handlers.EndpointRequestParameterMappers;
+import org.dotwebstack.framework.frontend.ld.handlers.DynamicEndpointRequestHandler;
+import org.dotwebstack.framework.frontend.ld.handlers.EndpointRequestParameterMapper;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.RequestHandler;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
@@ -37,7 +37,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DynamicEndpointRequestMappersTests {
+public class DynamicEndpointRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -55,7 +55,7 @@ public class DynamicEndpointRequestMappersTests {
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
   @Mock
-  private EndpointRequestParameterMappers endpointRequestParameterMappers;
+  private EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
@@ -70,7 +70,7 @@ public class DynamicEndpointRequestMappersTests {
 
   private RequestHandler<DynamicEndpoint> representationRequestHandler;
 
-  private DynamicEndpointRequestMappers dynamicEndpointRequestMappers;
+  private DynamicEndpointRequestMapper dynamicEndpointRequestMapper;
 
 
   @Before
@@ -84,11 +84,10 @@ public class DynamicEndpointRequestMappersTests {
     endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, dynamicEndpoint);
     when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
-    dynamicEndpointRequestMappers =
-        new DynamicEndpointRequestMappers(dynamicEndpointResourceProvider,
-            supportedWriterMediaTypesScanner, representationRequestHandlerFactory);
-    representationRequestHandler = new DynamicEndpointRequestHandlers(dynamicEndpoint,
-        endpointRequestParameterMappers, representationResourceProvider);
+    dynamicEndpointRequestMapper = new DynamicEndpointRequestMapper(dynamicEndpointResourceProvider,
+        supportedWriterMediaTypesScanner, representationRequestHandlerFactory);
+    representationRequestHandler = new DynamicEndpointRequestHandler(dynamicEndpoint,
+        endpointRequestParameterMapper, representationResourceProvider);
 
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
         isA(DynamicEndpoint.class))).thenReturn(representationRequestHandler);
@@ -98,18 +97,18 @@ public class DynamicEndpointRequestMappersTests {
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    DynamicEndpointRequestMappers dynamicEndpointRequestMappers =
-        new DynamicEndpointRequestMappers(dynamicEndpointResourceProvider,
+    DynamicEndpointRequestMapper dynamicEndpointRequestMapper =
+        new DynamicEndpointRequestMapper(dynamicEndpointResourceProvider,
             supportedWriterMediaTypesScanner, representationRequestHandlerFactory);
 
     // Assert
-    assertThat(dynamicEndpointRequestMappers, not(nullValue()));
+    assertThat(dynamicEndpointRequestMapper, not(nullValue()));
   }
 
   @Test
   public void loadRepresentations_MapRepresentation_WithValidData() {
     // Act / Arrange
-    dynamicEndpointRequestMappers.loadDynamicEndpoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
@@ -130,7 +129,7 @@ public class DynamicEndpointRequestMappersTests {
     when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    dynamicEndpointRequestMappers.loadDynamicEndpoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -145,7 +144,7 @@ public class DynamicEndpointRequestMappersTests {
     when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    dynamicEndpointRequestMappers.loadDynamicEndpoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -164,7 +163,7 @@ public class DynamicEndpointRequestMappersTests {
     when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    dynamicEndpointRequestMappers.loadDynamicEndpoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
@@ -184,7 +183,7 @@ public class DynamicEndpointRequestMappersTests {
     when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    dynamicEndpointRequestMappers.loadDynamicEndpoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));

@@ -12,14 +12,14 @@ import org.dotwebstack.framework.frontend.ld.representation.RepresentationResour
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DirectEndpointRequestHandlers extends RequestHandler<DirectEndpoint> {
+public class DirectEndpointRequestHandler extends RequestHandler<DirectEndpoint> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DirectEndpointRequestHandlers.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DirectEndpointRequestHandler.class);
 
-  public DirectEndpointRequestHandlers(DirectEndpoint endpoint,
-      EndpointRequestParameterMappers endpointRequestParameterMappers,
+  public DirectEndpointRequestHandler(DirectEndpoint endpoint,
+      EndpointRequestParameterMapper endpointRequestParameterMapper,
       RepresentationResourceProvider representationResourceProvider) {
-    super(endpoint, endpointRequestParameterMappers, representationResourceProvider);
+    super(endpoint, endpointRequestParameterMapper, representationResourceProvider);
   }
 
   @Override

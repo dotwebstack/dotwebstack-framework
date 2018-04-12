@@ -40,14 +40,14 @@ public class ServiceRequestHandlerTest {
   private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
   @Mock
-  private EndpointRequestParameterMappers endpointRequestParameterMappers;
+  private EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   private ServiceRequestHandler serviceRequestHandler;
 
   @Before
   public void setUp() {
     serviceRequestHandler = new ServiceRequestHandler(service, supportedReaderMediaTypesScanner,
-        endpointRequestParameterMappers);
+        endpointRequestParameterMapper);
   }
 
   @Test

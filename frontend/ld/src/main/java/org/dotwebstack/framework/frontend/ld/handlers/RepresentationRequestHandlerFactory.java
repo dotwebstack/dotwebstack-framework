@@ -9,26 +9,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepresentationRequestHandlerFactory {
 
-  private final EndpointRequestParameterMappers endpointRequestParameterMappers;
+  private final EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   private final RepresentationResourceProvider representationResourceProvider;
 
   public RepresentationRequestHandlerFactory(
-      @NonNull EndpointRequestParameterMappers endpointRequestParameterMappers,
+      @NonNull EndpointRequestParameterMapper endpointRequestParameterMapper,
       @NonNull RepresentationResourceProvider representationResourceProvider) {
-    this.endpointRequestParameterMappers = endpointRequestParameterMappers;
+    this.endpointRequestParameterMapper = endpointRequestParameterMapper;
     this.representationResourceProvider = representationResourceProvider;
   }
 
   public RequestHandler<DirectEndpoint> newRepresentationRequestHandler(
       @NonNull DirectEndpoint endpoint) {
-    return new DirectEndpointRequestHandlers(endpoint, endpointRequestParameterMappers,
+    return new DirectEndpointRequestHandler(endpoint, endpointRequestParameterMapper,
         representationResourceProvider);
   }
 
   public RequestHandler<DynamicEndpoint> newRepresentationRequestHandler(
       @NonNull DynamicEndpoint endpoint) {
-    return new DynamicEndpointRequestHandlers(endpoint, endpointRequestParameterMappers,
+    return new DynamicEndpointRequestHandler(endpoint, endpointRequestParameterMapper,
         representationResourceProvider);
   }
 
