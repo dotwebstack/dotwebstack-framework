@@ -36,12 +36,6 @@ public class ValidationStepExecutorTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private Resource elmoConfigurationResource;
-
-  @Mock
-  private Resource elmoShapesResource;
-
-  @Mock
   private ShaclValidator shaclValidator;
 
   @Mock
@@ -52,9 +46,6 @@ public class ValidationStepExecutorTest {
 
   @Mock
   private Resource shapesResource;
-
-  @Mock
-  private ValidationReport report;
 
   private Model transactionModel;
 
@@ -69,7 +60,6 @@ public class ValidationStepExecutorTest {
   @Before
   public void setUp() throws IOException {
     transactionModel = new LinkedHashModel();
-    elmoConfigurationResource = mock(Resource.class);
     shaclValidator = mock(ShaclValidator.class);
     when(shapesResource.getInputStream()).thenReturn(new InputStreamResource(
         new ClassPathResource("/shaclvalidation/shapes.trig").getInputStream()).getInputStream());
@@ -80,8 +70,6 @@ public class ValidationStepExecutorTest {
     when(invalidDataResource.getInputStream()).thenReturn(
         new InputStreamResource(new ClassPathResource(
             "/shaclvalidation/invalidData.trig").getInputStream()).getInputStream());
-
-    report = mock(ValidationReport.class);
   }
 
   @Test
