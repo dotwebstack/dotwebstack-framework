@@ -76,6 +76,11 @@
       <artifactId>jsonassert</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.taxonic.carml</groupId>
+      <artifactId>carml-engine</artifactId>
+      <version>0.1.2</version>
+    </dependency>
   </dependencies>
 
 </project>

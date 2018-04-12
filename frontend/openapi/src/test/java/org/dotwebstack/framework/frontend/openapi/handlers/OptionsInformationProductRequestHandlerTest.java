@@ -23,7 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class OptionsRequestHandlerTest {
+public class OptionsInformationProductRequestHandlerTest {
 
   @Mock
   private ContainerRequestContext requestContext;

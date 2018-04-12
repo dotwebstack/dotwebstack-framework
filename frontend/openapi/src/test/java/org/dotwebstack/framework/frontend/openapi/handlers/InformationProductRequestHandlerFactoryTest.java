@@ -22,10 +22,16 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RequestHandlerFactoryTest {
+public class InformationProductRequestHandlerFactoryTest {
 
   @Mock
-  private RequestParameterMapper requestParameterMapperMock;
+  private InformationProductRequestParameterMapper requestParameterMapperMock;
+
+  @Mock
+  private TransactionRequestParameterMapper transactionRequestParameterMapper;
+
+  @Mock
+  private TransactionBodyMapper transactionBodyMapper;
 
   @Mock
   private RequestParameterExtractor requestParameterExtractorMock;
@@ -41,7 +47,8 @@ public class RequestHandlerFactoryTest {
   @Before
   public void setUp() {
     requestHandlerFactory =
-        new RequestHandlerFactory(requestParameterMapperMock, requestParameterExtractorMock);
+        new RequestHandlerFactory(requestParameterMapperMock, transactionRequestParameterMapper,
+            transactionBodyMapper, requestParameterExtractorMock);
   }
 
   @Test
@@ -56,8 +63,9 @@ public class RequestHandlerFactoryTest {
     Response response = new Response();
 
     // Act
-    RequestHandler result =
-        requestHandlerFactory.newRequestHandler(apiOperation, product, response, swaggerMock);
+    InformationProductRequestHandler result =
+        requestHandlerFactory.newInformationProductRequestHandler(apiOperation, product, response,
+            swaggerMock);
 
 
     // Assert

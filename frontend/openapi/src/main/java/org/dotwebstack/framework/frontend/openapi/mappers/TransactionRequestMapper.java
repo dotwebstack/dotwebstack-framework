@@ -13,8 +13,8 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
-import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
+import org.dotwebstack.framework.transaction.Transaction;
+import org.dotwebstack.framework.transaction.TransactionResourceProvider;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -26,26 +26,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class InformationProductRequestMapper implements RequestMapper {
+public class TransactionRequestMapper implements RequestMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(InformationProductRequestMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TransactionRequestMapper.class);
 
-  private final InformationProductResourceProvider informationProductResourceProvider;
+  private final TransactionResourceProvider transactionResourceProvider;
 
   private final RequestHandlerFactory requestHandlerFactory;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
-  public InformationProductRequestMapper(
-      @NonNull InformationProductResourceProvider informationProductLoader,
+  public TransactionRequestMapper(
+      @NonNull TransactionResourceProvider transactionResourceProvider,
       @NonNull RequestHandlerFactory requestHandlerFactory) {
-    this.informationProductResourceProvider = informationProductLoader;
+    this.transactionResourceProvider = transactionResourceProvider;
     this.requestHandlerFactory = requestHandlerFactory;
   }
 
   public Boolean supportsVendorExtension(String key) {
-    return (key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
+    return (key.equals(OpenApiSpecificationExtensions.TRANSACTION));
   }
 
   public Resource map(Swagger swagger, Path pathItem, ApiOperation apiOperation,
@@ -58,31 +58,31 @@ public class InformationProductRequestMapper implements RequestMapper {
           "Resource '%s' does not specify a status %s response.", absolutePath, okStatusCode));
     }
 
-    List<String> produces =
-        getOperation.getProduces() != null ? getOperation.getProduces() : swagger.getProduces();
+    List<String> consumes =
+        getOperation.getConsumes() != null ? getOperation.getConsumes() : swagger.getConsumes();
 
-    if (produces == null) {
+    if (consumes == null) {
       throw new ConfigurationException(
-          String.format("Path '%s' should produce at least one media type.", absolutePath));
+          String.format("Path '%s' should consume at least one media type.", absolutePath));
     }
 
     Response response = getOperation.getResponses().get(okStatusCode);
 
-    IRI informationProductIdentifier =
+    IRI transactionIdentifier =
         valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
-            OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
+            OpenApiSpecificationExtensions.TRANSACTION));
 
-    InformationProduct informationProduct =
-        informationProductResourceProvider.get(informationProductIdentifier);
+    Transaction transaction =
+        transactionResourceProvider.get(transactionIdentifier);
 
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
     ResourceMethod.Builder methodBuilder =
         resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
-            requestHandlerFactory.newInformationProductRequestHandler(apiOperation,
-                informationProduct, response, swagger));
+            requestHandlerFactory.newTransactionRequestHandler(apiOperation, transaction, response,
+                swagger));
 
-    produces.forEach(methodBuilder::produces);
+    consumes.forEach(methodBuilder::consumes);
 
     resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(new OptionsRequestHandler(pathItem));
 

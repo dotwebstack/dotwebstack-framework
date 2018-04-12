@@ -37,7 +37,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RequestParameterMapperTest {
+public class InformationProductRequestParameterMapperTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -54,7 +54,7 @@ public class RequestParameterMapperTest {
 
   private Parameter<?> parameter2;
 
-  private RequestParameterMapper mapper;
+  private InformationProductRequestParameterMapper mapper;
 
   private RequestParameters requestParameters;
 
@@ -71,7 +71,7 @@ public class RequestParameterMapperTest {
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
         ImmutableList.of(parameter, parameter2), templateProcessorMock);
 
-    mapper = new RequestParameterMapper();
+    mapper = new InformationProductRequestParameterMapper();
   }
 
   @Test

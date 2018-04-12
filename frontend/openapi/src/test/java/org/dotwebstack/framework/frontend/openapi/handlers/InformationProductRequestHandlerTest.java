@@ -50,7 +50,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RequestHandlerTest {
+public class InformationProductRequestHandlerTest {
 
   private static final SimpleValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
@@ -70,21 +70,21 @@ public class RequestHandlerTest {
   private ApiRequestValidator apiRequestValidatorMock;
 
   @Mock
-  private RequestParameterMapper requestParameterMapperMock;
+  private InformationProductRequestParameterMapper requestParameterMapperMock;
 
   @Mock
   private Swagger swaggerMock;
 
   private io.swagger.models.Response entityResponse;
 
-  private RequestHandler requestHandler;
+  private InformationProductRequestHandler informationProductRequestHandler;
 
   @Before
   public void setUp() throws URISyntaxException {
     entityResponse = new io.swagger.models.Response();
-    requestHandler = new RequestHandler(apiOperationMock, informationProductMock,
-        new io.swagger.models.Response(), requestParameterMapperMock, apiRequestValidatorMock,
-        swaggerMock);
+    informationProductRequestHandler = new InformationProductRequestHandler(apiOperationMock,
+        informationProductMock, new io.swagger.models.Response(), requestParameterMapperMock,
+        apiRequestValidatorMock, swaggerMock);
 
     when(containerRequestMock.getBaseUri()).thenReturn(new URI("http://host:123/path"));
 
@@ -110,7 +110,7 @@ public class RequestHandlerTest {
     when(informationProductMock.getResultType()).thenReturn(ResultType.TUPLE);
 
     // Act
-    Response response = requestHandler.apply(containerRequestMock);
+    Response response = informationProductRequestHandler.apply(containerRequestMock);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -140,7 +140,7 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    Response response = requestHandler.apply(containerRequestMock);
+    Response response = informationProductRequestHandler.apply(containerRequestMock);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -182,7 +182,7 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    Response response = requestHandler.apply(containerRequestMock);
+    Response response = informationProductRequestHandler.apply(containerRequestMock);
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
@@ -218,7 +218,7 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    requestHandler.apply(containerRequestMock);
+    informationProductRequestHandler.apply(containerRequestMock);
   }
 
   @Test
@@ -245,7 +245,7 @@ public class RequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
     // Act
-    requestHandler.apply(containerRequestMock);
+    informationProductRequestHandler.apply(containerRequestMock);
   }
 
   @Test
@@ -256,7 +256,7 @@ public class RequestHandlerTest {
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
     // Act
-    Response response = requestHandler.apply(containerRequestMock);
+    Response response = informationProductRequestHandler.apply(containerRequestMock);
 
     // Assert
     assertThat(response.getStatus(),

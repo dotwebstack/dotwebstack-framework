@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Optional;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -45,13 +46,17 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
   private InformationProductRequestMapper informationProductRequestMapper;
 
+  private TransactionRequestMapper transactionRequestMapper;
+
   @Autowired
   public OpenApiRequestMapper(@NonNull SwaggerParser openApiParser,
       @NonNull ApplicationProperties applicationProperties,
-      @NonNull InformationProductRequestMapper informationProductRequestMapper) {
+      @NonNull InformationProductRequestMapper informationProductRequestMapper,
+      @NonNull TransactionRequestMapper transactionRequestMapper) {
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
     this.informationProductRequestMapper = informationProductRequestMapper;
+    this.transactionRequestMapper = transactionRequestMapper;
   }
 
   @Override
@@ -104,9 +109,15 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
       String absolutePath = basePath.concat(path);
 
-      if (informationProductRequestMapper.supportsVendorExtension(
-          getOperation.getVendorExtensions().keySet().stream().findFirst().get())) {
+      Optional<String> vendorExtension =
+          getOperation.getVendorExtensions().keySet().stream().findFirst();
+      if (vendorExtension.isPresent()
+          && informationProductRequestMapper.supportsVendorExtension(vendorExtension.get())) {
         httpConfiguration.registerResources(informationProductRequestMapper.map(swagger, pathItem,
+            apiOperation, getOperation, absolutePath));
+      } else if (vendorExtension.isPresent()
+          && transactionRequestMapper.supportsVendorExtension(vendorExtension.get())) {
+        httpConfiguration.registerResources(transactionRequestMapper.map(swagger, pathItem,
             apiOperation, getOperation, absolutePath));
       } else {
         LOG.warn("Path '{}' is not mapped to an information product or transaction.", absolutePath);

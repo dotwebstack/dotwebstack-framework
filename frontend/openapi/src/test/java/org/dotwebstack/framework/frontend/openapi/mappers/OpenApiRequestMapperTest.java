@@ -1,10 +1,11 @@
-package org.dotwebstack.framework.frontend.openapi;
+package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -40,13 +41,14 @@ import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.handlers.InformationProductRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
-import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
-import org.dotwebstack.framework.frontend.openapi.mappers.OpenApiRequestMapper;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.TransactionResourceProvider;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
@@ -57,7 +59,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
@@ -97,8 +98,15 @@ public class OpenApiRequestMapperTest {
   @Mock
   private RequestHandlerFactory requestHandlerFactoryMock;
 
+  private InformationProductRequestMapper informationProductRequestMapper;
+
+  private TransactionRequestMapper transactionRequestMapper;
+
   @Mock
-  private RequestHandler requestHandlerMock;
+  private InformationProductRequestHandler informationProductRequestHandlerMock;
+
+  @Mock
+  private TransactionResourceProvider transactionResourceProvider;
 
   private ResourceLoader resourceLoader;
 
@@ -109,13 +117,17 @@ public class OpenApiRequestMapperTest {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
-    requestMapper = new OpenApiRequestMapper(informationProductResourceProviderMock,
-        openApiParserMock, applicationPropertiesMock, requestHandlerFactoryMock);
+    informationProductRequestMapper = new InformationProductRequestMapper(
+        informationProductResourceProviderMock,requestHandlerFactoryMock);
+    transactionRequestMapper = new TransactionRequestMapper(
+        transactionResourceProvider, requestHandlerFactoryMock);
+    requestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
+        informationProductRequestMapper, transactionRequestMapper);
     requestMapper.setResourceLoader(resourceLoader);
     requestMapper.setEnvironment(environmentMock);
 
-    when(requestHandlerFactoryMock.newRequestHandler(Mockito.any(), Mockito.any(), Mockito.any(),
-        Mockito.any())).thenReturn(requestHandlerMock);
+    when(requestHandlerFactoryMock.newInformationProductRequestHandler(any(), any(),
+        any(), any())).thenReturn(informationProductRequestHandlerMock);
   }
 
   @Test
@@ -246,7 +258,7 @@ public class OpenApiRequestMapperTest {
     assertThat(getMethod.getProducedTypes(),
         contains(MediaType.TEXT_PLAIN_TYPE, MediaType.APPLICATION_JSON_TYPE));
     assertThat(getMethod.getInvocable().getHandler().getInstance(null),
-        sameInstance(requestHandlerMock));
+        sameInstance(informationProductRequestHandlerMock));
 
     ResourceMethod optionsMethod = resource.getResourceMethods().get(1);
     assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));

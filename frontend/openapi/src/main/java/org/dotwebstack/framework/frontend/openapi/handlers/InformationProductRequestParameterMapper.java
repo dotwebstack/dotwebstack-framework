@@ -16,9 +16,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-class RequestParameterMapper {
+class InformationProductRequestParameterMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RequestParameterMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(
+      InformationProductRequestParameterMapper.class);
 
   Map<String, String> map(@NonNull Operation operation, @NonNull InformationProduct product,
       @NonNull RequestParameters requestParameters) {
@@ -72,5 +73,6 @@ class RequestParameterMapper {
     }
     return result;
   }
+
 }
 

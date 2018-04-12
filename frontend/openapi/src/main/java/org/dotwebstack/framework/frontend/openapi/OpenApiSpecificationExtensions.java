@@ -6,6 +6,8 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String INFORMATION_PRODUCT = DOTWEBSTACK_PREFIX.concat("information-product");
 
+  public static final String TRANSACTION = DOTWEBSTACK_PREFIX.concat("transaction");
+
   public static final String PARAMETER = DOTWEBSTACK_PREFIX.concat("parameter");
 
   public static final String LDPATH = DOTWEBSTACK_PREFIX.concat("ldpath");
@@ -70,6 +72,8 @@ public final class OpenApiSpecificationExtensions {
    * @see #CONTEXT_LINKS
    */
   public static final String KEY_LDPATH = DOTWEBSTACK_PREFIX.concat("key-ldpath");
+
+  public static final String RML_MAPPING = DOTWEBSTACK_PREFIX.concat("rml-mapping");
 
   private OpenApiSpecificationExtensions() {
     throw new IllegalStateException(
