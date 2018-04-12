@@ -350,6 +350,7 @@ public final class DBEERPEDIA {
     SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
 
     VALIDATION_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ValidationStep");
+
     SERVICE_DELETE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "deleteService");
     SERVICE_POST = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "postService");
     SERVICE_PUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "putService");

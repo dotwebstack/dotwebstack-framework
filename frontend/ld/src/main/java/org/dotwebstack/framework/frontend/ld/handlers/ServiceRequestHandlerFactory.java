@@ -9,18 +9,18 @@ public class ServiceRequestHandlerFactory {
 
   private final SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
-  private final EndPointRequestParameterMapper endPointRequestParameterMapper;
+  private final EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   public ServiceRequestHandlerFactory(
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,
-      @NonNull EndPointRequestParameterMapper endPointRequestParameterMapper) {
+      @NonNull EndpointRequestParameterMapper endpointRequestParameterMapper) {
     this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
-    this.endPointRequestParameterMapper = endPointRequestParameterMapper;
+    this.endpointRequestParameterMapper = endpointRequestParameterMapper;
   }
 
   public ServiceRequestHandler newServiceRequestHandler(@NonNull Service service) {
     return new ServiceRequestHandler(service, supportedReaderMediaTypesScanner,
-        endPointRequestParameterMapper);
+        endpointRequestParameterMapper);
   }
 
 }

@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint.Builder;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DirectEndPointTest {
+public class DirectEndpointTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -44,13 +44,13 @@ public class DirectEndPointTest {
   private Stage stage;
 
   @Test
-  public void build_CreateDirectEndPoint_WithValidData() {
+  public void build_CreateDirectEndpoint_WithValidData() {
     // Assert
-    DirectEndPoint directEndPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).build();
+    DirectEndpoint directEndpoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).build();
 
     // Act
-    assertThat(directEndPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
-    assertThat(directEndPoint.getPathPattern(), equalTo(pathPattern));
+    assertThat(directEndpoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
+    assertThat(directEndpoint.getPathPattern(), equalTo(pathPattern));
   }
 
   @Test
@@ -72,23 +72,23 @@ public class DirectEndPointTest {
   }
 
   @Test
-  public void build_CreateDirectEndPointComplete_WithValidData() {
+  public void build_CreateDirectEndpointComplete_WithValidData() {
     // Assert
-    DirectEndPoint directEndPoint =
-        (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).postRepresentation(
+    DirectEndpoint directEndpoint =
+        (DirectEndpoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).postRepresentation(
             postRepresentation).getRepresentation(getRespresentation).postService(
                 postService).putService(putService).deleteService(deleteService).label(label).stage(
                     stage).build();
 
     // Act
-    assertThat(directEndPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
-    assertThat(directEndPoint.getPathPattern(), equalTo(pathPattern));
-    assertThat(directEndPoint.getLabel(), equalTo(label));
-    assertThat(directEndPoint.getStage(), equalTo(stage));
-    assertThat(directEndPoint.getGetRepresentation(), equalTo(getRespresentation));
-    assertThat(directEndPoint.getPostRepresentation(), equalTo(postRepresentation));
-    assertThat(directEndPoint.getDeleteService(), equalTo(deleteService));
-    assertThat(directEndPoint.getPostService(), equalTo(postService));
-    assertThat(directEndPoint.getPutService(), equalTo(putService));
+    assertThat(directEndpoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
+    assertThat(directEndpoint.getPathPattern(), equalTo(pathPattern));
+    assertThat(directEndpoint.getLabel(), equalTo(label));
+    assertThat(directEndpoint.getStage(), equalTo(stage));
+    assertThat(directEndpoint.getGetRepresentation(), equalTo(getRespresentation));
+    assertThat(directEndpoint.getPostRepresentation(), equalTo(postRepresentation));
+    assertThat(directEndpoint.getDeleteService(), equalTo(deleteService));
+    assertThat(directEndpoint.getPostService(), equalTo(postService));
+    assertThat(directEndpoint.getPutService(), equalTo(putService));
   }
 }

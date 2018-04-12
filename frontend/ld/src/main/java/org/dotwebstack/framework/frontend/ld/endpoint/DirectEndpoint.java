@@ -5,7 +5,7 @@ import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.eclipse.rdf4j.model.Resource;
 
-public class DirectEndPoint extends AbstractEndPoint {
+public class DirectEndpoint extends AbstractEndpoint {
 
   private Representation getRepresentation;
 
@@ -17,7 +17,7 @@ public class DirectEndPoint extends AbstractEndPoint {
 
   private Service putService;
 
-  public DirectEndPoint(Builder builder) {
+  public DirectEndpoint(Builder builder) {
     super(builder);
     this.getRepresentation = builder.getRepresentation;
     this.postRepresentation = builder.postRepresentation;
@@ -46,7 +46,7 @@ public class DirectEndPoint extends AbstractEndPoint {
     return putService;
   }
 
-  public static class Builder extends EndPointBuilder<Builder> {
+  public static class Builder extends EndpointBuilder<Builder> {
 
     private Representation getRepresentation;
 
@@ -87,8 +87,8 @@ public class DirectEndPoint extends AbstractEndPoint {
       return this;
     }
 
-    public DirectEndPoint build() {
-      return new DirectEndPoint(this);
+    public DirectEndpoint build() {
+      return new DirectEndpoint(this);
     }
   }
 

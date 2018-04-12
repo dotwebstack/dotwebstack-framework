@@ -20,8 +20,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
@@ -47,7 +47,7 @@ public class RepresentationRequestHandlerTest {
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private DirectEndPoint endPoint;
+  private DirectEndpoint endPoint;
 
   @Mock
   private Representation representation;
@@ -61,14 +61,14 @@ public class RepresentationRequestHandlerTest {
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
 
-  private EndPointRequestParameterMapper endPointRequestParameterMapper;
+  private EndpointRequestParameterMapper endpointRequestParameterMapper;
 
-  private RequestHandler<DirectEndPoint> getRequestHandler;
+  private RequestHandler<DirectEndpoint> getRequestHandler;
 
   @Before
   public void setUp() {
-    endPointRequestParameterMapper = new EndPointRequestParameterMapper();
-    getRequestHandler = new DirectEndPointRequestHandler(endPoint, endPointRequestParameterMapper,
+    endpointRequestParameterMapper = new EndpointRequestParameterMapper();
+    getRequestHandler = new DirectEndpointRequestHandler(endPoint, endpointRequestParameterMapper,
         representationResourceProvider);
     when(endPoint.getGetRepresentation()).thenReturn(representation);
     when(endPoint.getPostRepresentation()).thenReturn(representation);
@@ -146,12 +146,12 @@ public class RepresentationRequestHandlerTest {
     when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
-    DynamicEndPoint dynamicEndPoint = mock(DynamicEndPoint.class);
-    when(dynamicEndPoint.getParameterMapper()).thenReturn(mock(ParameterMapper.class));
+    DynamicEndpoint dynamicEndpoint = mock(DynamicEndpoint.class);
+    when(dynamicEndpoint.getParameterMapper()).thenReturn(mock(ParameterMapper.class));
     when(representationResourceProvider.getAll()).thenReturn(allRepresentations);
     when(representation.getAppliesTo()).thenReturn(ImmutableList.of(appliesTo));
-    RequestHandler<DynamicEndPoint> requestHandler = new DynamicEndPointRequestHandler(
-        dynamicEndPoint, endPointRequestParameterMapper, representationResourceProvider);
+    RequestHandler<DynamicEndpoint> requestHandler = new DynamicEndpointRequestHandler(
+        dynamicEndpoint, endpointRequestParameterMapper, representationResourceProvider);
 
     // Act
     Response response = requestHandler.apply(containerRequestContext);
@@ -190,7 +190,7 @@ public class RepresentationRequestHandlerTest {
   }
 
   @Test
-  public void apply_ConfigurationException_WhenUnsupportedRequestDirectEndPoint() {
+  public void apply_ConfigurationException_WhenUnsupportedRequestDirectEndpoint() {
     // Arrange
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("Result type %s not supported for endpoint %s",
@@ -210,7 +210,7 @@ public class RepresentationRequestHandlerTest {
   }
 
   @Test
-  public void apply_ConfigurationException_WhenUnsupportedRequestDynamicEndPoint() {
+  public void apply_ConfigurationException_WhenUnsupportedRequestDynamicEndpoint() {
     // Arrange
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("Result type %s not supported for endpoint %s",
@@ -222,10 +222,10 @@ public class RepresentationRequestHandlerTest {
     when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.PUT);
-    DynamicEndPoint dynamicEndPoint = mock(DynamicEndPoint.class);
-    when(dynamicEndPoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
-    RequestHandler<DynamicEndPoint> requestHandler = new DynamicEndPointRequestHandler(
-        dynamicEndPoint, endPointRequestParameterMapper, representationResourceProvider);
+    DynamicEndpoint dynamicEndpoint = mock(DynamicEndpoint.class);
+    when(dynamicEndpoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
+    RequestHandler<DynamicEndpoint> requestHandler = new DynamicEndpointRequestHandler(
+        dynamicEndpoint, endpointRequestParameterMapper, representationResourceProvider);
 
     // Act
     requestHandler.apply(containerRequestContext);

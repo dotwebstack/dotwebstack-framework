@@ -254,6 +254,7 @@ public final class ELMO {
     POST_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "postRepresentation");
 
     CONFORMS_TO_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "conformsTo");
+
     SERVICE_POST_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "postService");
     SERVICE_PUT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "putService");
     SERVICE_DELETE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "deleteService");

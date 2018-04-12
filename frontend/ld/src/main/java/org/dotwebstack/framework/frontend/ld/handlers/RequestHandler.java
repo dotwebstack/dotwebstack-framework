@@ -20,20 +20,20 @@ public abstract class RequestHandler<O> implements Inflector<ContainerRequestCon
 
   protected final O endpoint;
 
-  protected final EndPointRequestParameterMapper endPointRequestParameterMapper;
+  protected final EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   protected final RepresentationResourceProvider representationResourceProvider;
 
   public RequestHandler(@NonNull O endpoint,
-      @NonNull EndPointRequestParameterMapper endPointRequestParameterMapper,
+      @NonNull EndpointRequestParameterMapper endpointRequestParameterMapper,
       @NonNull RepresentationResourceProvider representationResourceProvider) {
     this.endpoint = endpoint;
-    this.endPointRequestParameterMapper = endPointRequestParameterMapper;
+    this.endpointRequestParameterMapper = endpointRequestParameterMapper;
     this.representationResourceProvider = representationResourceProvider;
   }
 
-  protected EndPointRequestParameterMapper getEndPointRequestParameterMapper() {
-    return endPointRequestParameterMapper;
+  protected EndpointRequestParameterMapper getEndpointRequestParameterMapper() {
+    return endpointRequestParameterMapper;
   }
 
   protected String getUrl(Representation representation, Map<String, String> parameterValues) {
@@ -51,7 +51,7 @@ public abstract class RequestHandler<O> implements Inflector<ContainerRequestCon
 
     InformationProduct informationProduct = representation.getInformationProduct();
 
-    endPointRequestParameterMapper.map(informationProduct, containerRequestContext).forEach(
+    endpointRequestParameterMapper.map(informationProduct, containerRequestContext).forEach(
         parameterValues::put);
     representation.getParameterMappers().forEach(
         parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));

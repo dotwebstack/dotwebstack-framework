@@ -6,7 +6,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint.Builder;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint.Builder;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Model;
@@ -18,14 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DynamicEndPointResourceProvider extends AbstractResourceProvider<DynamicEndPoint> {
+public class DynamicEndpointResourceProvider extends AbstractResourceProvider<DynamicEndpoint> {
 
   private ParameterMapperResourceProvider parameterMapperResourceProvider;
 
   private StageResourceProvider stageResourceProvider;
 
   @Autowired
-  public DynamicEndPointResourceProvider(ConfigurationBackend configurationBackend,
+  public DynamicEndpointResourceProvider(ConfigurationBackend configurationBackend,
       ApplicationProperties applicationProperties,
       @NonNull ParameterMapperResourceProvider parameterMapperResourceProvider,
       @NonNull StageResourceProvider stageResourceProvider) {
@@ -44,13 +44,13 @@ public class DynamicEndPointResourceProvider extends AbstractResourceProvider<Dy
   }
 
   @Override
-  protected DynamicEndPoint createResource(Model model, Resource identifier) {
+  protected DynamicEndpoint createResource(Model model, Resource identifier) {
     final String pathPattern = getObjectString(model, identifier, ELMO.PATH_PATTERN).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> statement has been found for pathPattern <%s>.",
                 ELMO.PATH_PATTERN, identifier)));
 
-    final DynamicEndPoint.Builder builder = new Builder(identifier, pathPattern);
+    final DynamicEndpoint.Builder builder = new Builder(identifier, pathPattern);
     getObjectResource(model, identifier, ELMO.PARAMETER_MAPPER_PROP).ifPresent(
         resource -> builder.parameterMapper(parameterMapperResourceProvider.get(resource)));
     getObjectString(model, identifier, RDFS.LABEL).ifPresent(builder::label);

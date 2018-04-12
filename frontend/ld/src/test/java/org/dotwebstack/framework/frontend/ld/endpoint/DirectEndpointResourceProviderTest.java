@@ -41,10 +41,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DirectEndPointResourceProviderTest {
+public class DirectEndpointResourceProviderTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
+
+  private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Mock
   private ConfigurationBackend configurationBackend;
@@ -68,22 +70,20 @@ public class DirectEndPointResourceProviderTest {
   private ServiceResourceProvider serviceResourceProvider;
 
   @Mock
-  private Stage stage;
+  private Representation representation;
 
   @Mock
-  private Representation representation;
+  private Stage stage;
 
   @Mock
   private GraphQuery graphQuery;
 
-  private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
-
-  private DirectEndPointResourceProvider endPointResourceProvider;
+  private DirectEndpointResourceProvider endPointResourceProvider;
 
   @Before
   public void setUp() {
     endPointResourceProvider =
-        new DirectEndPointResourceProvider(configurationBackend, applicationProperties,
+        new DirectEndpointResourceProvider(configurationBackend, applicationProperties,
             stageResourceProvider, representationResourceProvider, serviceResourceProvider);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
@@ -96,7 +96,7 @@ public class DirectEndPointResourceProviderTest {
   }
 
   @Test
-  public void loadResources_LoadEndPoint_WithValidData() {
+  public void loadResources_LoadEndpoint_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -109,13 +109,13 @@ public class DirectEndPointResourceProviderTest {
 
     // Assert
     assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(1));
-    AbstractEndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
+    AbstractEndpoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
     assertThat(endPoint, is(not(nullValue())));
     assertThat(endPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
   }
 
   @Test
-  public void loadResources_LoadEndPointComplete_WithValidData() {
+  public void loadResources_LoadEndpointComplete_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -142,7 +142,7 @@ public class DirectEndPointResourceProviderTest {
 
     // Assert
     assertThat(endPointResourceProvider.getAll().entrySet(), hasSize(1));
-    DirectEndPoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
+    DirectEndpoint endPoint = endPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
     assertThat(endPoint, is(not(nullValue())));
     assertThat(endPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
     assertThat(endPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
@@ -155,7 +155,7 @@ public class DirectEndPointResourceProviderTest {
   }
 
   @Test
-  public void loadResources_LoadDirectEndPoint_MissingPathPattern() {
+  public void loadResources_LoadDirectEndpoint_MissingPathPattern() {
     // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("No <%s> statement has been found for pathPattern <%s>.",
