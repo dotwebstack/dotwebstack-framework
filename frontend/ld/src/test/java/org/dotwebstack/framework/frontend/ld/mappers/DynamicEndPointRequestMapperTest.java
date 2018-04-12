@@ -68,7 +68,7 @@ public class DynamicEndPointRequestMapperTest {
 
   private HttpConfiguration httpConfiguration;
 
-  private RequestHandler representationRequestHandler;
+  private RequestHandler<DynamicEndPoint> representationRequestHandler;
 
   private DynamicEndPointRequestMapper dynamicEndPointRequestMapper;
 
