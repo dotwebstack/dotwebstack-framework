@@ -274,7 +274,7 @@ elmo-shape:Transaction a sh:NodeShape;
     sh:node elmo-shape:FlowList;
     sh:maxCount 1;
   ];
-  # Sequential flows are not supported yet, but we won't deny such a configuration
+  # Parallel flows are not supported yet, but we won't deny such a configuration
   sh:property [
     sh:path elmo:parallelFlow;
     sh:node elmo-shape:FlowList;
