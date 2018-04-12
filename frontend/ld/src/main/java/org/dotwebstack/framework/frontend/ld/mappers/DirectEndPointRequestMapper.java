@@ -7,7 +7,6 @@ import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
@@ -73,16 +72,16 @@ public class DirectEndPointRequestMapper {
         service -> registerTransaction(service, HttpMethod.PUT, absolutePath, httpConfiguration));
   }
 
-  private void mapRepresentation(AbstractEndPoint endPoint, HttpConfiguration httpConfiguration) {
+  private void mapRepresentation(DirectEndPoint endPoint, HttpConfiguration httpConfiguration) {
     String basePath = endPoint.getStage().getFullPath();
     String absolutePath = basePath.concat(endPoint.getPathPattern());
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-    Optional.ofNullable(((DirectEndPoint) endPoint).getGetRepresentation()).ifPresent(
+    Optional.ofNullable(endPoint.getGetRepresentation()).ifPresent(
         getRepresentation -> buildResource(httpConfiguration, resourceBuilder, absolutePath,
-            HttpMethod.GET, getRepresentation, (DirectEndPoint) endPoint));
-    Optional.ofNullable(((DirectEndPoint) endPoint).getPostRepresentation()).ifPresent(
+            HttpMethod.GET, getRepresentation, endPoint));
+    Optional.ofNullable(endPoint.getPostRepresentation()).ifPresent(
         postRepresentation -> buildResource(httpConfiguration, resourceBuilder, absolutePath,
-            HttpMethod.POST, postRepresentation, (DirectEndPoint) endPoint));
+            HttpMethod.POST, postRepresentation, endPoint));
   }
 
   private void registerTransaction(Service service, String httpMethod, String absolutePath,
