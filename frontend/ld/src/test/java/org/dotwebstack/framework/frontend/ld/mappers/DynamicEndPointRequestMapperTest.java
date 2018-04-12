@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.HttpMethod;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
@@ -112,11 +113,11 @@ public class DynamicEndPointRequestMapperTest {
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
     final ResourceMethod method = resource.getResourceMethods().get(0);
-    // TODO: Do something with `method`
     assertThat(httpConfiguration.getResources(), hasSize(1));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
     assertThat(resource.getResourceMethods(), hasSize(1));
+    assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
   }
 
   @Test
