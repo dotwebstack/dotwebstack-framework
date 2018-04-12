@@ -45,27 +45,39 @@ public class DirectEndpointResourceProviderTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
+
   private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
   @Mock
   private ConfigurationBackend configurationBackend;
+
   @Mock
   private SailRepository configurationRepository;
+
   @Mock
   private SailRepositoryConnection configurationRepositoryConnection;
+
   @Mock
   private ApplicationProperties applicationProperties;
+
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
+
   @Mock
   private StageResourceProvider stageResourceProvider;
+
   @Mock
   private ServiceResourceProvider serviceResourceProvider;
-  @Mock
-  private Stage stage;
+
   @Mock
   private Representation representation;
+
+  @Mock
+  private Stage stage;
+
   @Mock
   private GraphQuery graphQuery;
+
   private DirectEndpointResourceProvider endPointResourceProvider;
 
   @Before
