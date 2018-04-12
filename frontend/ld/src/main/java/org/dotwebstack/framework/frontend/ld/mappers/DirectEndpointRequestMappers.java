@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @org.springframework.stereotype.Service
-public class DirectEndpointRequestMapper {
+public class DirectEndpointRequestMappers {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DirectEndpointRequestMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DirectEndpointRequestMappers.class);
 
   private final DirectEndpointResourceProvider directEndpointResourceProvider;
 
@@ -34,7 +34,7 @@ public class DirectEndpointRequestMapper {
   private final ServiceRequestHandlerFactory serviceRequestHandlerFactory;
 
   @Autowired
-  public DirectEndpointRequestMapper(
+  public DirectEndpointRequestMappers(
       @NonNull DirectEndpointResourceProvider directEndpointResourceProvider,
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,

@@ -42,7 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DirectEndpointRequestMapperTest {
+public class DirectEndpointRequestMappersTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -79,7 +79,7 @@ public class DirectEndpointRequestMapperTest {
 
   private RequestHandler<DirectEndpoint> representationRequestHandler;
 
-  private DirectEndpointRequestMapper directEndpointRequestMapper;
+  private DirectEndpointRequestMappers directEndpointRequestMappers;
 
   private HttpConfiguration httpConfiguration;
 
@@ -105,7 +105,7 @@ public class DirectEndpointRequestMapperTest {
     endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, directEndpoint);
     when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
-    directEndpointRequestMapper = new DirectEndpointRequestMapper(directEndpointResourceProvider,
+    directEndpointRequestMappers = new DirectEndpointRequestMappers(directEndpointResourceProvider,
         supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
         representationRequestHandlerFactory, transactionRequestHandlerFactory);
     representationRequestHandler = new DirectEndpointRequestHandler(directEndpoint,
@@ -119,13 +119,13 @@ public class DirectEndpointRequestMapperTest {
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    DirectEndpointRequestMapper directEndpointRequestMapper =
-        new DirectEndpointRequestMapper(directEndpointResourceProvider,
+    DirectEndpointRequestMappers directEndpointRequestMappers =
+        new DirectEndpointRequestMappers(directEndpointResourceProvider,
             supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
             representationRequestHandlerFactory, transactionRequestHandlerFactory);
 
     // Assert
-    assertThat(directEndpointRequestMapper, not(nullValue()));
+    assertThat(directEndpointRequestMappers, not(nullValue()));
   }
 
   @Test
@@ -135,7 +135,7 @@ public class DirectEndpointRequestMapperTest {
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     // Act
-    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
+    directEndpointRequestMappers.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
@@ -155,7 +155,7 @@ public class DirectEndpointRequestMapperTest {
     when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
+    directEndpointRequestMappers.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -170,7 +170,7 @@ public class DirectEndpointRequestMapperTest {
     when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
+    directEndpointRequestMappers.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -192,7 +192,7 @@ public class DirectEndpointRequestMapperTest {
     when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
+    directEndpointRequestMappers.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
@@ -215,7 +215,7 @@ public class DirectEndpointRequestMapperTest {
     when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
+    directEndpointRequestMappers.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
