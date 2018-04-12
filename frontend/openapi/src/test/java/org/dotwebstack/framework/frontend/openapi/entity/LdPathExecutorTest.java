@@ -12,7 +12,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -23,9 +22,6 @@ public class LdPathExecutorTest {
 
   @Mock
   private GraphEntity entityMock;
-
-  @Before
-  public void setUp() {}
 
   @Test
   public void ldPathQuery_ReturnsResult_ForQuery() {

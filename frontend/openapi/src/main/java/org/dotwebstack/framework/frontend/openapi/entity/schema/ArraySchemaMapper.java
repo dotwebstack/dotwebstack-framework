@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -19,6 +20,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayProperty, Object> {
+
+  @Override
+  protected Set<String> getSupportedVendorExtensions() {
+    return new HashSet<>();
+  }
 
   @Override
   public Object mapGraphValue(@NonNull ArrayProperty property, @NonNull GraphEntity graphEntity,
@@ -85,13 +91,9 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
     }
   }
 
-  // XXX: Het is gebruikelijk om de klassenaam over te nemen als naam van je variabele als deze niet
-  // te lang is. Dat zou hier dus neerkomen op `Literal literal`
-
-  // XXX: Wat is de betekenis van hetgene dat deze method retourneert? En waarom Object?
   @Override
-  Object convertToType(Literal l) {
-    return l.integerValue();
+  Object convertToType(Literal literal) {
+    return literal.integerValue();
   }
 
   @Override

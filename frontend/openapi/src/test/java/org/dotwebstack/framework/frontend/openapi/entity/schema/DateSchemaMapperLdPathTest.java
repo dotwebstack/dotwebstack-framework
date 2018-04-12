@@ -1,11 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -41,70 +39,54 @@ public class DateSchemaMapperLdPathTest {
   private static final Literal VALUE =
       VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE, XMLSchema.DATE);
 
-
-  private DateSchemaMapper schemaMapper;
-
-  private DateProperty property;
-
   @Mock
-  private GraphEntity entityMock;
-
+  private GraphEntity graphEntityMock;
   @Mock
-  private Value subjectMock;
-
-  private SchemaMapperAdapter mapperAdapter;
-
+  private Value valueMock;
   @Mock
   private LdPathExecutor ldPathExecutorMock;
 
+  private DateSchemaMapper dateSchemaMapper;
+  private DateProperty dateProperty;
+  private SchemaMapperAdapter schemaMapperAdapter;
+
   @Before
   public void setUp() {
-    schemaMapper = new DateSchemaMapper();
-    property = new DateProperty();
+    dateSchemaMapper = new DateSchemaMapper();
+    dateProperty = new DateProperty();
 
-    mapperAdapter = new SchemaMapperAdapter(Collections.singletonList(schemaMapper));
+    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(dateSchemaMapper));
 
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
-  // XXX: Naamgeving test.
   @Test
-  public void mapGraphValueTest() {
+  public void mapGraphValue_ReturnsLocalDate_ForLdPath() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    dateProperty.setVendorExtensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
     Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE, XMLSchema.DATE);
 
-    when(ldPathExecutorMock.ldPathQuery(subjectMock, "ld-path")).thenReturn(
+    when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(
         ImmutableList.of(literal));
 
     // Act
-    LocalDate result = schemaMapper.mapGraphValue(property, entityMock,
-        ValueContext.builder().value(subjectMock).build(), mapperAdapter);
+    LocalDate result = dateSchemaMapper.mapGraphValue(dateProperty, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(EXPECTED_LOCAL_DATE));
   }
 
   @Test
-  public void mapGraphValue_ReturnsNull_WhenNoLdPathHasBeenSupplied() {
-    // Act
-    LocalDate result = schemaMapper.mapGraphValue(property, entityMock,
-        ValueContext.builder().value(VALUE).build(), mapperAdapter);
-
-    // Assert
-    assertThat(result, nullValue());
-    verifyZeroInteractions(ldPathExecutorMock);
-  }
-
-  @Test
   public void mapGraphValue_ReturnsLocalDate_WhenSupportedLiteralLdPathIsDefined() {
     // Arrange
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
-    when(ldPathExecutorMock.ldPathQuery(eq(subjectMock), anyString())).thenReturn(
+    dateProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE));
 
-    LocalDate result = schemaMapper.mapGraphValue(property, entityMock,
-        ValueContext.builder().value(subjectMock).build(), mapperAdapter);
+    LocalDate result = dateSchemaMapper.mapGraphValue(dateProperty, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(VALUE.calendarValue().toString()));

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.Property;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -29,16 +30,16 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class AbstractSubjectQuerySchemaMapperTest {
 
-  @Mock
-  private GraphEntity entityMock;
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
+  @Mock
+  private GraphEntity graphEntityMock;
   @Mock
   private Property propertyMock;
 
-  private final AbstractSubjectQuerySchemaMapper mapper = new TestSubjectQuerySchemaMapper();
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
+  private final AbstractSubjectQuerySchemaMapper abstractSubjectQuerySchemaMapper =
+          new TestSubjectQuerySchemaMapper();
 
   @Before
   public void before() {
@@ -46,7 +47,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.FTE, "42").subject(DBEERPEDIA.MAXIMUS).add(RDF.TYPE,
             DBEERPEDIA.BREWERY_TYPE).build();
 
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
+    when(graphEntityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
   }
 
   @Test
@@ -58,7 +59,8 @@ public class AbstractSubjectQuerySchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
 
     // Act
-    Set<Resource> results = mapper.getSubjects(propertyMock, entityMock);
+    Set<Resource> results =
+        abstractSubjectQuerySchemaMapper.getSubjects(propertyMock, graphEntityMock);
 
     // Assert
     assertThat(results, hasSize(is(0)));
@@ -73,7 +75,8 @@ public class AbstractSubjectQuerySchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
 
     // Act
-    Set<Resource> results = mapper.getSubjects(propertyMock, entityMock);
+    Set<Resource> results =
+        abstractSubjectQuerySchemaMapper.getSubjects(propertyMock, graphEntityMock);
 
     // Assert
     assertThat(results, hasSize(is(2)));
@@ -92,7 +95,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
 
     // Act
-    mapper.getSubjects(propertyMock, entityMock);
+    abstractSubjectQuerySchemaMapper.getSubjects(propertyMock, graphEntityMock);
   }
 
   @Test
@@ -108,7 +111,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(vendorExtensions);
 
     // Act
-    mapper.getSubjects(propertyMock, entityMock);
+    abstractSubjectQuerySchemaMapper.getSubjects(propertyMock, graphEntityMock);
   }
 
   @Test
@@ -117,7 +120,7 @@ public class AbstractSubjectQuerySchemaMapperTest {
     when(propertyMock.getVendorExtensions()).thenReturn(ImmutableMap.of());
 
     // Act
-    boolean result = mapper.hasSubjectQueryVendorExtension(propertyMock);
+    boolean result = abstractSubjectQuerySchemaMapper.hasSubjectQueryVendorExtension(propertyMock);
 
     // Assert
     assertThat(result, is(false));
@@ -130,13 +133,18 @@ public class AbstractSubjectQuerySchemaMapperTest {
         ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY, "queryString"));
 
     // Act
-    boolean result = mapper.hasSubjectQueryVendorExtension(propertyMock);
+    boolean result = abstractSubjectQuerySchemaMapper.hasSubjectQueryVendorExtension(propertyMock);
 
     // Assert
     assertThat(result, is(true));
   }
 
   private static class TestSubjectQuerySchemaMapper extends AbstractSubjectQuerySchemaMapper {
+
+    @Override
+    protected Set<String> getSupportedVendorExtensions() {
+      return new HashSet<>();
+    }
 
     @Override
     public Object mapTupleValue(Property schema, ValueContext valueContext) {
@@ -154,10 +162,9 @@ public class AbstractSubjectQuerySchemaMapperTest {
       throw new UnsupportedOperationException();
     }
 
-    // XXX: Is null wat je hier wil retourneren?
     @Override
     Object convertToType(Literal literal) {
-      return null;
+      return literal;
     }
 
     @Override

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SchemaMapperAdapter {
 
-  private ImmutableList<SchemaMapper<? extends Property, ?>> schemaMappers;
+  private final ImmutableList<SchemaMapper<? extends Property, ?>> schemaMappers;
 
   @Autowired
   public SchemaMapperAdapter(@NonNull List<SchemaMapper<? extends Property, ?>> schemaMappers) {

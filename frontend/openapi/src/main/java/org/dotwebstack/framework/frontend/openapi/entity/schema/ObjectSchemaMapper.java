@@ -22,9 +22,13 @@ import org.springframework.stereotype.Service;
 public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectProperty, Object> {
 
   @Override
-  public Object mapGraphValue(@NonNull ObjectProperty property,
-      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  protected Set<String> getSupportedVendorExtensions() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Object mapGraphValue(@NonNull ObjectProperty property, @NonNull GraphEntity graphEntity,
+      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext newValueContext = populateValueContextWithVendorExtensions(property, valueContext);
 
     return handleProperty(property, graphEntity, newValueContext, schemaMapperAdapter);
@@ -46,7 +50,6 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
   private static boolean hasVendorExtensionExcludePropertiesWhenEmptyOrNull(Property propValue) {
     return hasVendorExtensionWithValue(propValue,
         OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
-
   }
 
   private Object handleProperty(ObjectProperty property, GraphEntity graphEntity,

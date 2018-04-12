@@ -2,16 +2,11 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.BooleanProperty;
-
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.eclipse.rdf4j.model.Literal;
@@ -30,37 +25,24 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class BooleanSchemaMapperConstantValueTest {
 
   @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  public ExpectedException thrown = ExpectedException.none();
 
   private static final String CONSTANT_VALUE = OpenApiSpecificationExtensions.CONSTANT_VALUE;
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
   @Mock
-  private GraphEntity entityMock;
+  private GraphEntity graphEntityMock;
 
-  private SchemaMapperAdapter mapperAdapter;
-  private BooleanProperty property;
-  private BooleanSchemaMapper mapper;
+  private SchemaMapperAdapter schemaMapperAdapter;
+  private BooleanProperty booleanProperty;
   private ValueContext valueContext;
 
   @Before
   public void setUp() {
-    mapper = new BooleanSchemaMapper();
-    property = new BooleanProperty();
-    mapperAdapter = new SchemaMapperAdapter(Collections.singletonList(mapper));
+    booleanProperty = new BooleanProperty();
+    schemaMapperAdapter =
+        new SchemaMapperAdapter(Collections.singletonList(new BooleanSchemaMapper()));
     valueContext = ValueContext.builder().build();
-  }
-
-  @Test
-  public void mapGraphValue_ReturnsBooleanValue_WhenStringConstantValueIsDefined() {
-    // Arrange
-    property.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, "true"));
-
-    // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
-
-    // Assert
-    assertBooleanTrue(result);
   }
 
   private void assertBooleanTrue(Object result) {
@@ -68,14 +50,27 @@ public class BooleanSchemaMapperConstantValueTest {
     assertThat(result, is(true));
   }
 
+  @Test
+  public void mapGraphValue_ReturnsBooleanValue_WhenStringConstantValueIsDefined() {
+    // Arrange
+    booleanProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, "true"));
+
+    // Act
+    Object result = schemaMapperAdapter.mapGraphValue(booleanProperty, graphEntityMock,
+        valueContext, schemaMapperAdapter);
+
+    // Assert
+    assertBooleanTrue(result);
+  }
 
   @Test
   public void mapGraphValue_ReturnsBooleanValue_WhenBooleanConstantValueIsDefined() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, true));
+    booleanProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, true));
 
     // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
+    Object result = schemaMapperAdapter.mapGraphValue(booleanProperty, graphEntityMock,
+        valueContext, schemaMapperAdapter);
 
     // Assert
     assertBooleanTrue(result);
@@ -86,50 +81,14 @@ public class BooleanSchemaMapperConstantValueTest {
     // Arrange
     Literal literal = VALUE_FACTORY.createLiteral("true", XMLSchema.BOOLEAN);
 
-    property.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
+    booleanProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
+    Object result = schemaMapperAdapter.mapGraphValue(booleanProperty, graphEntityMock,
+        valueContext, schemaMapperAdapter);
 
     // Assert
     assertBooleanTrue(result);
   }
-
-  @Test
-  public void mapGraphValue_ReturnsNull_ForNullConstantValue() {
-    // Arrange
-    property.setVendorExtensions(nullableMapOf(CONSTANT_VALUE));
-
-    // Act
-    Object result = mapperAdapter.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
-
-    // Assert
-    assertNull(result);
-  }
-
-  @Test
-  public void mapGraphValue_ThrowsException_ForNullConstantAndRequiredProperty() {
-    // Arrange
-    property.setVendorExtensions(nullableMapOf(CONSTANT_VALUE));
-    property.setRequired(true);
-
-    // Assert
-    expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(
-        "BooleanProperty has 'x-dotwebstack-constant-value' vendor extension that is null, "
-            + "but the property is required");
-
-    // Act
-    mapper.mapGraphValue(property, entityMock, valueContext, mapperAdapter);
-  }
-
-  private static Map<String, Object> nullableMapOf(String key) {
-    Map<String, Object> result = new HashMap<>();
-
-    result.put(key, null);
-
-    return result;
-  }
-
 
 }

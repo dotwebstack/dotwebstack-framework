@@ -40,19 +40,20 @@ abstract class AbstractSubjectQuerySchemaMapper<S extends Property, T>
           (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT_QUERY);
 
       return Rdf4jUtils.evaluateSingleBindingSelectQuery(entity.getRepository(), query);
-    } catch (QueryEvaluationException e) {
-      throw new SchemaMapperRuntimeException(e);
+    } catch (QueryEvaluationException qee) {
+      throw new SchemaMapperRuntimeException(qee);
     }
   }
 
   /**
-   * @return Applies the subject query and returns the single subject, or {@code null} if no subject
+   * Applies the subject query.
+   * @return the single subject, or {@code null} if no subject
    *         can be found.
    * @throws SchemaMapperRuntimeException If the property is required, and no subject can be found.
    * @throws SchemaMapperRuntimeException If more than one subject has been found.
    * @see #getSubjects(Property, GraphEntity)
    */
-  protected final Value getSubject(@NonNull Property property, @NonNull GraphEntity graphEntity) {
+  final Value getSubject(@NonNull Property property, @NonNull GraphEntity graphEntity) {
     Set<Resource> subjects = getSubjects(property, graphEntity);
 
     if (subjects.isEmpty()) {

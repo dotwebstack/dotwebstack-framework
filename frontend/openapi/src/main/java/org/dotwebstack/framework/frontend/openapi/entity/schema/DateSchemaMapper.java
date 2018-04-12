@@ -6,6 +6,7 @@ import io.swagger.models.properties.Property;
 import java.time.LocalDate;
 import java.util.Set;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -15,9 +16,16 @@ import org.springframework.stereotype.Service;
 class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
-  // XXX: Mag de input null zijn? En is public de juiste accessibility?
+  private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
+      OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
+
   @Override
-  public String expectedException(String ldPathQuery) {
+  protected Set<String> getSupportedVendorExtensions() {
+    return SUPPORTED_VENDOR_EXTENSIONS;
+  }
+
+  @Override
+  String expectedException(String ldPathQuery) {
     return String.format(
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         ldPathQuery, XMLSchema.DATE.stringValue());
@@ -37,7 +45,4 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
   }
-
-  // XXX: Netjes!
-
 }

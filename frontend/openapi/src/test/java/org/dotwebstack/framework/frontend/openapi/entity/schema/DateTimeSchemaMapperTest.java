@@ -26,21 +26,18 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DateTimeSchemaMapperTest {
 
-  private static final String DUMMY_EXPR = "dummyExpr()";
-  private static final Literal VALUE_3 = SimpleValueFactory.getInstance().createLiteral("foo");
-
   @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  public ExpectedException thrown = ExpectedException.none();
+
+  private static final String DUMMY_EXPR = "dummyExpr()";
+  private static final Literal VALUE = SimpleValueFactory.getInstance().createLiteral("foo");
 
   @Mock
-  private GraphEntity entityMock;
-
+  private GraphEntity graphEntityMock;
   @Mock
-  private SchemaMapperAdapter schemaMapperAdapter;
-
+  private SchemaMapperAdapter schemaMapperAdapterMock;
   @Mock
-  private Value context;
-
+  private Value valueMock;
   @Mock
   private LdPathExecutor ldPathExecutor;
 
@@ -51,10 +48,8 @@ public class DateTimeSchemaMapperTest {
   public void setUp() {
     schemaMapper = new DateTimeSchemaMapper();
     property = new DateTimeProperty();
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
-
-  // XXX: Zie opmerkingen in DateSchemaMapper
 
   @Test
   public void supports_ReturnsTrue_ForDateTimeProperty() {
@@ -68,18 +63,18 @@ public class DateTimeSchemaMapperTest {
   @Test
   public void mapGraphValue_ThrowsException_ForUnsupportedType() {
     // Assert
-    expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(String.format(
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage(String.format(
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         DUMMY_EXPR, XMLSchema.DATETIME.stringValue()));
 
     // Arrange
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
-    when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
-        ImmutableList.of(VALUE_3));
+    when(ldPathExecutor.ldPathQuery(eq(valueMock), anyString())).thenReturn(
+        ImmutableList.of(VALUE));
 
     // Act
-    schemaMapper.mapGraphValue(property, entityMock, ValueContext.builder().value(context).build(),
-        schemaMapperAdapter);
+    schemaMapper.mapGraphValue(property, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapterMock);
   }
 }

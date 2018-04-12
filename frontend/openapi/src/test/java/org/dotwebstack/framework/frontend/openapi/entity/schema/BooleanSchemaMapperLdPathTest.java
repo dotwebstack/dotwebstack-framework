@@ -32,48 +32,41 @@ public class BooleanSchemaMapperLdPathTest {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
-  private BooleanSchemaMapper schemaMapper;
-
-  private BooleanProperty property;
-
   @Mock
-  private GraphEntity entityMock;
+  private GraphEntity graphEntityMock;
   @Mock
-  private Value subjectMock;
-
-  private SchemaMapperAdapter mapperAdapter;
-
+  private Value valueMock;
   @Mock
   private LdPathExecutor ldPathExecutorMock;
-  private ValueContext valueContext;
 
+  private BooleanSchemaMapper booleanSchemaMapper;
+  private BooleanProperty booleanProperty;
+  private SchemaMapperAdapter schemaMapperAdapter;
 
   @Before
   public void setUp() {
-    schemaMapper = new BooleanSchemaMapper();
-    property = new BooleanProperty();
+    booleanSchemaMapper = new BooleanSchemaMapper();
+    booleanProperty = new BooleanProperty();
 
-    mapperAdapter = new SchemaMapperAdapter(Collections.singletonList(schemaMapper));
-    valueContext = ValueContext.builder().build();
-
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(booleanSchemaMapper));
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
   @Test
   public void mapGraphValueTest() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    booleanProperty.setVendorExtensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
     Literal literal = VALUE_FACTORY.createLiteral("true", XMLSchema.BOOLEAN);
 
-    when(ldPathExecutorMock.ldPathQuery(subjectMock, "ld-path")).thenReturn(
-            ImmutableList.of(literal));
+    when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(
+        ImmutableList.of(literal));
 
     // Act
-    Boolean result = schemaMapper.mapGraphValue(property, entityMock,
-            ValueContext.builder().value(subjectMock).build(), mapperAdapter);
+    Boolean result = booleanSchemaMapper.mapGraphValue(booleanProperty, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, is(true));
   }
-
 }

@@ -6,6 +6,7 @@ import io.swagger.models.properties.Property;
 import java.time.LocalDateTime;
 import java.util.Set;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -15,18 +16,24 @@ import org.springframework.stereotype.Service;
 class DateTimeSchemaMapper extends AbstractSchemaMapper<DateTimeProperty, LocalDateTime> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATETIME);
 
-  // XXX: Mag de input null zijn? En is public de juiste accessibility?
+  private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
+      OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
+
   @Override
-  public String expectedException(String ldPathQuery) {
+  protected Set<String> getSupportedVendorExtensions() {
+    return SUPPORTED_VENDOR_EXTENSIONS;
+  }
+
+  @Override
+  String expectedException(String ldPathQuery) {
     return String.format(
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         ldPathQuery, XMLSchema.DATETIME.stringValue());
   }
 
-  // XXX: Wat je doet in de DateSchemaMapper werkt niet voor DateTime?
   @Override
   LocalDateTime convertToType(Literal literal) {
-    return literal.calendarValue().toGregorianCalendar().toZonedDateTime().toLocalDateTime();
+    return LocalDateTime.parse(literal.calendarValue().toString());
   }
 
   @Override

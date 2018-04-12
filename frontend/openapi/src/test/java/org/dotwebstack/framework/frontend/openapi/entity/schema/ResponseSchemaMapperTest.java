@@ -41,17 +41,13 @@ public class ResponseSchemaMapperTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Mock
-  private GraphEntity entityMock;
-
+  private GraphEntity graphEntityMock;
   @Mock
   private LdPathExecutor ldPathExecutorMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
-
-  private ResponseSchemaMapper schemaMapper;
-
+  private ResponseSchemaMapper responseSchemaMapper;
   private ObjectProperty objectProperty;
-
   private Response response;
 
   @Before
@@ -59,12 +55,12 @@ public class ResponseSchemaMapperTest {
     objectProperty = new ObjectProperty();
     response = new Response().schema(objectProperty);
 
-    schemaMapper = new ResponseSchemaMapper();
+    responseSchemaMapper = new ResponseSchemaMapper();
 
     schemaMapperAdapter = new SchemaMapperAdapter(
-        Arrays.asList(new StringSchemaMapper(), schemaMapper, new ObjectSchemaMapper()));
+        Arrays.asList(new StringSchemaMapper(), responseSchemaMapper, new ObjectSchemaMapper()));
 
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
   @Test
@@ -78,14 +74,14 @@ public class ResponseSchemaMapperTest {
 
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
+    when(graphEntityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
-        ValueContext.builder().value(null).build(), schemaMapperAdapter);
+    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response),
+        graphEntityMock, ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(Map.class));
@@ -109,14 +105,14 @@ public class ResponseSchemaMapperTest {
 
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
+    when(graphEntityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
-        ValueContext.builder().value(null).build(), schemaMapperAdapter);
+    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response),
+        graphEntityMock, ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, instanceOf(Map.class));
@@ -139,11 +135,11 @@ public class ResponseSchemaMapperTest {
         ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
 
     Model model = new ModelBuilder().build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
+    when(graphEntityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
-        ValueContext.builder().value(null).build(), schemaMapperAdapter);
+    Object result = schemaMapperAdapter.mapGraphValue(new ResponseProperty(response),
+        graphEntityMock, ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, nullValue());
@@ -167,10 +163,10 @@ public class ResponseSchemaMapperTest {
     objectProperty.setRequired(true);
 
     Model model = new ModelBuilder().build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
+    when(graphEntityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
+    schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), graphEntityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
   }
 
@@ -194,17 +190,17 @@ public class ResponseSchemaMapperTest {
         DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).subject(
             DBEERPEDIA.MAXIMUS).add(RDF.TYPE, DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME,
                 DBEERPEDIA.MAXIMUS_NAME).build();
-    when(entityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
+    when(graphEntityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), entityMock,
+    schemaMapperAdapter.mapGraphValue(new ResponseProperty(response), graphEntityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
   }
 
   @Test
   public void support_ReturnsTrue_ForResponseProperty() {
     // Act
-    boolean result = schemaMapper.supports(new ResponseProperty(response));
+    boolean result = responseSchemaMapper.supports(new ResponseProperty(response));
 
     // Assert
     assertThat(result, is(true));
@@ -213,7 +209,7 @@ public class ResponseSchemaMapperTest {
   @Test
   public void support_ReturnsFalse_ForNonResponseProperty() {
     // Act
-    boolean result = schemaMapper.supports(new ArrayProperty());
+    boolean result = responseSchemaMapper.supports(new ArrayProperty());
 
     // Assert
     assertThat(result, is(false));
@@ -222,7 +218,7 @@ public class ResponseSchemaMapperTest {
   @Test
   public void getSupportedDataTypes_ReturnsEmptySet() {
     // Act
-    Set<IRI> result = schemaMapper.getSupportedDataTypes();
+    Set<IRI> result = responseSchemaMapper.getSupportedDataTypes();
 
     // Assert
     assertThat(result, empty());

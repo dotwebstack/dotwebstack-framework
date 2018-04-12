@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -12,6 +13,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProperty, Object> {
+
+  @Override
+  protected Set<String> getSupportedVendorExtensions() {
+    return new HashSet<>();
+  }
 
   @Override
   public Object mapTupleValue(@NonNull ResponseProperty schema, @NonNull ValueContext value) {
@@ -42,10 +48,8 @@ class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProp
     return schema instanceof ResponseProperty;
   }
 
-  // XXX: Waarom is deze methode protected? Accessibility van deze methode is niet gelijk in alle
-  // SchemaMappers?
   @Override
-  protected Object convertToType(Literal literal) {
+  Object convertToType(Literal literal) {
     throw new UnsupportedOperationException();
   }
 

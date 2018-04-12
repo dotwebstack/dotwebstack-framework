@@ -26,61 +26,55 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class DateSchemaMapperTest {
 
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
   private static final String DUMMY_EXPR = "dummyExpr()";
   private static final Literal VALUE_3 = SimpleValueFactory.getInstance().createLiteral("foo");
 
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
-
   @Mock
-  private GraphEntity entityMock;
-
+  private GraphEntity graphEntityMock;
   @Mock
   private SchemaMapperAdapter schemaMapperAdapter;
-
   @Mock
-  private Value context;
-
+  private Value valueMock;
   @Mock
-  private LdPathExecutor ldPathExecutor;
+  private LdPathExecutor ldPathExecutorMock;
 
-  private DateSchemaMapper schemaMapper;
-  private DateProperty property;
+  private DateSchemaMapper dateSchemaMapper;
+  private DateProperty dateProperty;
 
   @Before
   public void setUp() {
-    schemaMapper = new DateSchemaMapper();
-    property = new DateProperty();
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
+    dateSchemaMapper = new DateSchemaMapper();
+    dateProperty = new DateProperty();
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
-  // XXX: En als je een niet-DateProperty meegeeft?
   @Test
   public void supports_ReturnsTrue_ForDateProperty() {
     // Act
-    boolean result = schemaMapper.supports(property);
+    boolean result = dateSchemaMapper.supports(dateProperty);
 
     // Arrange
     assertThat(result, is(true));
   }
 
-  // XXX: Hier missen nog een paar testen voor de andere methoden in de klasse
-
   @Test
   public void mapGraphValue_ThrowsException_ForUnsupportedType() {
     // Assert
-    expectedException.expect(SchemaMapperRuntimeException.class);
-    expectedException.expectMessage(String.format(
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage(String.format(
         "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
         DUMMY_EXPR, XMLSchema.DATE.stringValue()));
 
     // Arrange
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
-    when(ldPathExecutor.ldPathQuery(eq(context), anyString())).thenReturn(
+    dateProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE_3));
 
     // Act
-    schemaMapper.mapGraphValue(property, entityMock, ValueContext.builder().value(context).build(),
-        schemaMapperAdapter);
+    dateSchemaMapper.mapGraphValue(dateProperty, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 }

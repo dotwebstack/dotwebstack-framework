@@ -36,16 +36,17 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class RefSchemaMapperTest {
 
-  private static final String DUMMY_REF = "#/entityMock/fooModel";
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  private static final String DUMMY_REF = "#/graphEntityMock/fooModel";
   private static final String KEY_1 = "one";
   private static final String KEY_2 = "_two";
-
   private static final StringProperty PROPERTY_1 = new StringProperty();
   private static final IntegerProperty PROPERTY_2 = new IntegerProperty();
   private static final Literal VALUE_1 = SimpleValueFactory.getInstance().createLiteral("CONSTANT");
   private static final Literal VALUE_2 =
       SimpleValueFactory.getInstance().createLiteral("123", XMLSchema.INTEGER);
-
   private static final String LD_PATH_QUERY = ".";
 
   static {
@@ -53,28 +54,21 @@ public class RefSchemaMapperTest {
     PROPERTY_2.getVendorExtensions().put(OpenApiSpecificationExtensions.LDPATH, LD_PATH_QUERY);
   }
 
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
-
-  private final RefSchemaMapper schemaMapper;
-
   @Mock
-  private GraphEntity entityMock;
-
+  private GraphEntity graphEntityMock;
   @Mock
-  private Value context;
-
+  private Value valueMock;
   @Mock
-  private LdPathExecutor ldPathExecutor;
+  private LdPathExecutor ldPathExecutorMock;
 
-  private RefProperty property;
-
+  private final RefSchemaMapper refSchemaMapper;
+  private RefProperty refProperty;
   private SchemaMapperAdapter schemaMapperAdapter;
 
   public RefSchemaMapperTest() {
     List<SchemaMapper<? extends Property, ?>> mappers = new ArrayList<>();
-    schemaMapper = new RefSchemaMapper();
-    mappers.add(schemaMapper);
+    refSchemaMapper = new RefSchemaMapper();
+    mappers.add(refSchemaMapper);
     mappers.add(new IntegerSchemaMapper());
     mappers.add(new StringSchemaMapper());
     schemaMapperAdapter = new SchemaMapperAdapter(mappers);
@@ -82,13 +76,13 @@ public class RefSchemaMapperTest {
 
   @Before
   public void setUp() {
-    property = new RefProperty();
+    refProperty = new RefProperty();
   }
 
   @Test
   public void supports_ReturnsTrue_ForRefProperty() {
     // Act
-    boolean result = schemaMapper.supports(property);
+    boolean result = refSchemaMapper.supports(refProperty);
 
     // Assert
     assertTrue(result);
@@ -97,34 +91,35 @@ public class RefSchemaMapperTest {
   @Test
   public void mapGraphValue_ThrowsException_WhenRefCannotBeResolved() {
     // Arrange
-    property.set$ref(DUMMY_REF);
-    when(entityMock.getSwaggerDefinitions()).thenReturn(ImmutableMap.of());
+    refProperty.set$ref(DUMMY_REF);
+    when(graphEntityMock.getSwaggerDefinitions()).thenReturn(ImmutableMap.of());
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format("Unable to resolve reference to swagger model: '%s'.",
-        property.getSimpleRef()));
+        refProperty.getSimpleRef()));
 
     // Act
-    schemaMapper.mapGraphValue(property, entityMock, ValueContext.builder().value(context).build(),
-        schemaMapperAdapter);
+    refSchemaMapper.mapGraphValue(refProperty, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
   @Test
   public void mapGraphValue_ReturnsResults_WhenRefCanBeResolved() {
     // Arrange
-    property.set$ref(DUMMY_REF);
+    refProperty.set$ref(DUMMY_REF);
     Model refModel = new ModelImpl();
     refModel.setProperties(ImmutableMap.of(KEY_1, PROPERTY_1, KEY_2, PROPERTY_2));
 
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
-    when(entityMock.getSwaggerDefinitions()).thenReturn(
-        ImmutableMap.of(property.getSimpleRef(), refModel));
-    when(ldPathExecutor.ldPathQuery(context, LD_PATH_QUERY)).thenReturn(ImmutableList.of(VALUE_2));
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(graphEntityMock.getSwaggerDefinitions()).thenReturn(
+        ImmutableMap.of(refProperty.getSimpleRef(), refModel));
+    when(ldPathExecutorMock.ldPathQuery(valueMock, LD_PATH_QUERY)).thenReturn(
+        ImmutableList.of(VALUE_2));
 
     // Act
-    Map<String, Object> result = (Map<String, Object>) schemaMapper.mapGraphValue(property,
-        entityMock, ValueContext.builder().value(context).build(), schemaMapperAdapter);
+    Map<String, Object> result = (Map<String, Object>) refSchemaMapper.mapGraphValue(refProperty,
+        graphEntityMock, ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(2));

@@ -1,11 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -36,76 +34,59 @@ public class DateTimeSchemaMapperLdPathTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   private static final String DUMMY_EXPR = "dummyExpr()";
-
   private static final String EXPECTED_LOCAL_DATE_TIME = "1982-11-25T10:10:10";
-
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
-
   private static final Literal VALUE =
       SimpleValueFactory.getInstance().createLiteral(EXPECTED_LOCAL_DATE_TIME, XMLSchema.DATETIME);
 
-  private DateTimeSchemaMapper schemaMapper;
-  private DateTimeProperty property;
-
   @Mock
-  private GraphEntity entityMock;
-
+  private GraphEntity graphEntityMock;
   @Mock
-  private Value subjectMock;
-
-  private SchemaMapperAdapter mapperAdapter;
-
+  private Value valueMock;
   @Mock
   private LdPathExecutor ldPathExecutorMock;
 
+  private DateTimeSchemaMapper dateTimeSchemaMapper;
+  private DateTimeProperty dateTimeProperty;
+  private SchemaMapperAdapter schemaMapperAdapter;
+
   @Before
   public void setUp() {
-    schemaMapper = new DateTimeSchemaMapper();
-    property = new DateTimeProperty();
+    dateTimeSchemaMapper = new DateTimeSchemaMapper();
+    dateTimeProperty = new DateTimeProperty();
 
-    mapperAdapter = new SchemaMapperAdapter(Collections.singletonList(schemaMapper));
+    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(dateTimeSchemaMapper));
 
-    when(entityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
-  // XXX: Naamgeving test.
   @Test
-  public void mapGraphValueTest() {
+  public void mapGraphValue_returnsLocalDateTime__WhenSupportedLiteralLdPathIsDefined() {
     // Arrange
-    property.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    dateTimeProperty.setVendorExtensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
     Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE_TIME, XMLSchema.DATETIME);
 
-    when(ldPathExecutorMock.ldPathQuery(subjectMock, "ld-path")).thenReturn(
+    when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(
         ImmutableList.of(literal));
 
     // Act
-    LocalDateTime result = schemaMapper.mapGraphValue(property, entityMock,
-        ValueContext.builder().value(subjectMock).build(), mapperAdapter);
+    LocalDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeProperty, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(EXPECTED_LOCAL_DATE_TIME));
   }
 
   @Test
-  public void mapGraphValue_ReturnsLocalDateTime_WhenNoLdPathHasBeenSupplied() {
-    // Act
-    LocalDateTime result = schemaMapper.mapGraphValue(property, entityMock,
-        ValueContext.builder().value(VALUE).build(), mapperAdapter);
-
-    // Assert
-    assertThat(result, is(nullValue()));
-    verifyZeroInteractions(ldPathExecutorMock);
-  }
-
-  @Test
   public void mapGraphValue_ReturnsLocalDateTime_ForLdPath() {
     // Arrange
-    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
-    when(ldPathExecutorMock.ldPathQuery(eq(subjectMock), anyString())).thenReturn(
+    dateTimeProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE));
 
-    LocalDateTime result = schemaMapper.mapGraphValue(property, entityMock,
-        ValueContext.builder().value(subjectMock).build(), mapperAdapter);
+    LocalDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeProperty, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(EXPECTED_LOCAL_DATE_TIME));

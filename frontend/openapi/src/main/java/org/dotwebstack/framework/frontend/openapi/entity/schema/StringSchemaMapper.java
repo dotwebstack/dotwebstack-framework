@@ -27,6 +27,13 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   static final String KEY = "key";
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
+  private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
+      OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
+
+  @Override
+  protected Set<String> getSupportedVendorExtensions() {
+    return SUPPORTED_VENDOR_EXTENSIONS;
+  }
 
   @Override
   public String mapGraphValue(@NonNull StringProperty property, @NonNull GraphEntity graphEntity,
@@ -43,16 +50,13 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       return handleContextLinkVendorExtension(property, graphEntity, valueContext);
     }
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-      LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
-      return handleLdPathVendorExtension(property, valueContext.getValue(), ldPathExecutor);
+      return handleLdPathVendorExtension(property, valueContext, graphEntity);
     }
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
       return handleConstantValueVendorExtension(property);
     }
 
-    // XXX: Heb je iets gedaan met onderstaande TODO?
-    // TODO: check usage of following code block
     if (valueContext.getValue() != null) {
       return valueContext.getValue().stringValue();
     } else if (property.getRequired()) {
@@ -93,7 +97,6 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
         }
       }
     }
-
     return null;
   }
 
@@ -104,7 +107,6 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       throw new SchemaMapperRuntimeException(
           String.format("Property '%s' should be defined as %s.", key, clazz.getSimpleName()));
     }
-
     return clazz.cast(value);
   }
 
@@ -141,9 +143,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
 
       return graphEntity.getBaseUri() + relativeLinkPropertiesMap.get(PATTERN).replace("$1",
           queryResult.iterator().next().stringValue());
-
     }
-
     return graphEntity.getBaseUri() + relativeLinkPropertiesMap.get(PATTERN);
   }
 
@@ -164,60 +164,16 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
         OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
         OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
-    long nrOfSupportedVendorExtentionsPresent =
+    long nrOfSupportedVendorExtensionsPresent =
         property.getVendorExtensions().keySet().stream().filter(
             supportedVendorExtensions::contains).count();
-    if (nrOfSupportedVendorExtentionsPresent > 1) {
+    if (nrOfSupportedVendorExtensionsPresent > 1) {
       throw new SchemaMapperRuntimeException(String.format(
           "A string object must have either no, a '%s', '%s' or '%s' property. "
               + "A string object cannot have a combination of these.",
           OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
           OpenApiSpecificationExtensions.CONSTANT_VALUE));
     }
-  }
-
-  // XXX: Lijkt heel veel op de methode in de AbstractSchemaMapper. Kan je die gebruiken?
-  @Override
-  String handleConstantValueVendorExtension(StringProperty property) {
-    Object value =
-        property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
-
-    if (value != null) {
-      if (isSupportedLiteral(value)) {
-        return ((Value) value).stringValue();
-      }
-      return value.toString();
-    }
-    if (property.getRequired()) {
-      throw new SchemaMapperRuntimeException(String.format(
-          "String property has '%s' vendor extension that is null, but the property is required.",
-          OpenApiSpecificationExtensions.CONSTANT_VALUE));
-    }
-    return null;
-  }
-
-  // XXX: Zelfde opmerking als hierboven
-  private String handleLdPathVendorExtension(StringProperty property, Value context,
-      LdPathExecutor ldPathExecutor) {
-    String ldPathQuery =
-        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
-
-    if (ldPathQuery == null) {
-      if (property.getRequired()) {
-        throw new SchemaMapperRuntimeException(String.format(
-            "String property has '%s' vendor extension that is null, but the property is required.",
-            OpenApiSpecificationExtensions.LDPATH));
-      }
-      return null;
-    }
-
-    /* at this point we're sure that ld-path is not null */
-    Collection<Value> queryResult = ldPathExecutor.ldPathQuery(context, ldPathQuery);
-    if (!property.getRequired() && queryResult.isEmpty()) {
-      return null;
-    }
-
-    return getSingleStatement(queryResult, ldPathQuery).stringValue();
   }
 
   @Override
