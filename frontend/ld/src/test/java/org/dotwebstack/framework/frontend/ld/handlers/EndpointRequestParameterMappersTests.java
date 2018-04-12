@@ -28,7 +28,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EndpointRequestParameterMapperTest {
+public class EndpointRequestParameterMappersTests {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -48,7 +48,7 @@ public class EndpointRequestParameterMapperTest {
 
   private Parameter<?> optionalParameter;
 
-  private EndpointRequestParameterMapper endpointRequestParameterMapper;
+  private EndpointRequestParameterMappers endpointRequestParameterMappers;
 
   @Before
   public void setUp() {
@@ -64,7 +64,7 @@ public class EndpointRequestParameterMapperTest {
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
         ImmutableList.of(requiredParameter, optionalParameter), templateProcessorMock);
 
-    endpointRequestParameterMapper = new EndpointRequestParameterMapper();
+    endpointRequestParameterMappers = new EndpointRequestParameterMappers();
 
     uriInfoMock = mock(UriInfo.class);
     when(contextMock.getUriInfo()).thenReturn(uriInfoMock);
@@ -79,7 +79,7 @@ public class EndpointRequestParameterMapperTest {
         ResultType.GRAPH, ImmutableList.of(), templateProcessorMock);
 
     // Act
-    Map<String, String> result = endpointRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = endpointRequestParameterMappers.map(product, contextMock);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -96,7 +96,7 @@ public class EndpointRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, String> result = endpointRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = endpointRequestParameterMappers.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -110,7 +110,7 @@ public class EndpointRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, String> result = endpointRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = endpointRequestParameterMappers.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(0));
@@ -127,7 +127,7 @@ public class EndpointRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, String> result = endpointRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = endpointRequestParameterMappers.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(1));
@@ -142,7 +142,7 @@ public class EndpointRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, String> result = endpointRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = endpointRequestParameterMappers.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(0));
@@ -160,7 +160,7 @@ public class EndpointRequestParameterMapperTest {
     when(uriInfoMock.getQueryParameters()).thenReturn(queryParameters);
 
     // Act
-    Map<String, String> result = endpointRequestParameterMapper.map(product, contextMock);
+    Map<String, String> result = endpointRequestParameterMappers.map(product, contextMock);
 
     // Assert
     assertThat(result.size(), is(2));

@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DynamicEndpointRequestMapper {
+public class DynamicEndpointRequestMappers {
 
   private static final Logger LOG = LoggerFactory.getLogger(DirectEndpointRequestMapper.class);
 
@@ -26,7 +26,7 @@ public class DynamicEndpointRequestMapper {
   private final RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   @Autowired
-  public DynamicEndpointRequestMapper(
+  public DynamicEndpointRequestMappers(
       @NonNull DynamicEndpointResourceProvider dynamicEndpointResourceProvider,
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
       @NonNull RepresentationRequestHandlerFactory representationRequestHandlerFactory) {

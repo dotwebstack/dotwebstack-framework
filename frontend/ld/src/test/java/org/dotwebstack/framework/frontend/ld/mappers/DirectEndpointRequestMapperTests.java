@@ -22,8 +22,8 @@ import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint.Builder;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.handlers.DirectEndpointRequestHandler;
-import org.dotwebstack.framework.frontend.ld.handlers.EndpointRequestParameterMapper;
+import org.dotwebstack.framework.frontend.ld.handlers.DirectEndpointRequestHandlers;
+import org.dotwebstack.framework.frontend.ld.handlers.EndpointRequestParameterMappers;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.RequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
@@ -42,7 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DirectEndpointRequestMapperTest {
+public class DirectEndpointRequestMapperTests {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -66,7 +66,7 @@ public class DirectEndpointRequestMapperTest {
   private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
   @Mock
-  private EndpointRequestParameterMapper endpointRequestParameterMapper;
+  private EndpointRequestParameterMappers endpointRequestParameterMappers;
 
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
@@ -108,8 +108,8 @@ public class DirectEndpointRequestMapperTest {
     directEndpointRequestMapper = new DirectEndpointRequestMapper(directEndpointResourceProvider,
         supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
         representationRequestHandlerFactory, transactionRequestHandlerFactory);
-    representationRequestHandler = new DirectEndpointRequestHandler(directEndpoint,
-        endpointRequestParameterMapper, representationResourceProvider);
+    representationRequestHandler = new DirectEndpointRequestHandlers(directEndpoint,
+        endpointRequestParameterMappers, representationResourceProvider);
 
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
         isA(DirectEndpoint.class))).thenReturn(representationRequestHandler);

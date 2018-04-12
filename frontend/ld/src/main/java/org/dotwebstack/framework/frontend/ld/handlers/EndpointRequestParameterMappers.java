@@ -12,7 +12,7 @@ import org.dotwebstack.framework.transaction.Transaction;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EndpointRequestParameterMapper {
+public class EndpointRequestParameterMappers {
 
   Map<String, String> map(@NonNull InformationProduct informationProduct,
       @NonNull ContainerRequestContext context) {

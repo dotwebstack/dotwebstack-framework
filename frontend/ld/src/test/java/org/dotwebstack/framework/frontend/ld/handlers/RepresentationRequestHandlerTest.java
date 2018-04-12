@@ -61,14 +61,14 @@ public class RepresentationRequestHandlerTest {
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
 
-  private EndpointRequestParameterMapper endpointRequestParameterMapper;
+  private EndpointRequestParameterMappers endpointRequestParameterMappers;
 
   private RequestHandler<DirectEndpoint> getRequestHandler;
 
   @Before
   public void setUp() {
-    endpointRequestParameterMapper = new EndpointRequestParameterMapper();
-    getRequestHandler = new DirectEndpointRequestHandler(endPoint, endpointRequestParameterMapper,
+    endpointRequestParameterMappers = new EndpointRequestParameterMappers();
+    getRequestHandler = new DirectEndpointRequestHandlers(endPoint, endpointRequestParameterMappers,
         representationResourceProvider);
     when(endPoint.getGetRepresentation()).thenReturn(representation);
     when(endPoint.getPostRepresentation()).thenReturn(representation);
@@ -150,8 +150,8 @@ public class RepresentationRequestHandlerTest {
     when(dynamicEndpoint.getParameterMapper()).thenReturn(mock(ParameterMapper.class));
     when(representationResourceProvider.getAll()).thenReturn(allRepresentations);
     when(representation.getAppliesTo()).thenReturn(ImmutableList.of(appliesTo));
-    RequestHandler<DynamicEndpoint> requestHandler = new DynamicEndpointRequestHandler(
-        dynamicEndpoint, endpointRequestParameterMapper, representationResourceProvider);
+    RequestHandler<DynamicEndpoint> requestHandler = new DynamicEndpointRequestHandlers(
+        dynamicEndpoint, endpointRequestParameterMappers, representationResourceProvider);
 
     // Act
     Response response = requestHandler.apply(containerRequestContext);
@@ -224,8 +224,8 @@ public class RepresentationRequestHandlerTest {
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.PUT);
     DynamicEndpoint dynamicEndpoint = mock(DynamicEndpoint.class);
     when(dynamicEndpoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
-    RequestHandler<DynamicEndpoint> requestHandler = new DynamicEndpointRequestHandler(
-        dynamicEndpoint, endpointRequestParameterMapper, representationResourceProvider);
+    RequestHandler<DynamicEndpoint> requestHandler = new DynamicEndpointRequestHandlers(
+        dynamicEndpoint, endpointRequestParameterMappers, representationResourceProvider);
 
     // Act
     requestHandler.apply(containerRequestContext);

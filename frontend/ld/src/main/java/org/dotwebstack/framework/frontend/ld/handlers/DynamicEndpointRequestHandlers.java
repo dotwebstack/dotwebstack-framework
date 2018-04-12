@@ -10,12 +10,12 @@ import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 
-public class DynamicEndpointRequestHandler extends RequestHandler<DynamicEndpoint> {
+public class DynamicEndpointRequestHandlers extends RequestHandler<DynamicEndpoint> {
 
-  public DynamicEndpointRequestHandler(DynamicEndpoint endpoint,
-      EndpointRequestParameterMapper endpointRequestParameterMapper,
+  public DynamicEndpointRequestHandlers(DynamicEndpoint endpoint,
+      EndpointRequestParameterMappers endpointRequestParameterMappers,
       RepresentationResourceProvider representationResourceProvider) {
-    super(endpoint, endpointRequestParameterMapper, representationResourceProvider);
+    super(endpoint, endpointRequestParameterMappers, representationResourceProvider);
   }
 
   @Override

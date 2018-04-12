@@ -5,7 +5,7 @@ import org.dotwebstack.framework.frontend.http.FormatPreMatchingRequestFilter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.HttpModule;
 import org.dotwebstack.framework.frontend.ld.mappers.DirectEndpointRequestMapper;
-import org.dotwebstack.framework.frontend.ld.mappers.DynamicEndpointRequestMapper;
+import org.dotwebstack.framework.frontend.ld.mappers.DynamicEndpointRequestMappers;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ public class LdModule implements HttpModule {
 
   private final DirectEndpointRequestMapper directEndpointRequestMapper;
 
-  private final DynamicEndpointRequestMapper dynamicEndpointRequestMapper;
+  private final DynamicEndpointRequestMappers dynamicEndpointRequestMappers;
 
   private final LdRedirectionRequestMapper ldRedirectionRequestMapper;
 
@@ -24,12 +24,12 @@ public class LdModule implements HttpModule {
   private final SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
   @Autowired
-  public LdModule(@NonNull DynamicEndpointRequestMapper dynamicEndpointRequestMapper,
+  public LdModule(@NonNull DynamicEndpointRequestMappers dynamicEndpointRequestMappers,
       @NonNull DirectEndpointRequestMapper directEndpointRequestMapper,
       @NonNull LdRedirectionRequestMapper ldRedirectionRequestMapper,
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner) {
-    this.dynamicEndpointRequestMapper = dynamicEndpointRequestMapper;
+    this.dynamicEndpointRequestMappers = dynamicEndpointRequestMappers;
     this.directEndpointRequestMapper = directEndpointRequestMapper;
     this.ldRedirectionRequestMapper = ldRedirectionRequestMapper;
     this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
@@ -39,7 +39,7 @@ public class LdModule implements HttpModule {
   @Override
   public void initialize(@NonNull HttpConfiguration httpConfiguration) {
     httpConfiguration.register(FormatPreMatchingRequestFilter.class);
-    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
+    dynamicEndpointRequestMappers.loadDynamicEndpoints(httpConfiguration);
     directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
     ldRedirectionRequestMapper.loadRedirections(httpConfiguration);
 

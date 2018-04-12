@@ -9,7 +9,7 @@ import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScannerTest.StubGraphEntityWriter;
 import org.dotwebstack.framework.frontend.ld.mappers.DirectEndpointRequestMapper;
-import org.dotwebstack.framework.frontend.ld.mappers.DynamicEndpointRequestMapper;
+import org.dotwebstack.framework.frontend.ld.mappers.DynamicEndpointRequestMappers;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,7 +31,7 @@ public class LdModuleTest {
   private DirectEndpointRequestMapper directEndpointRequestMapper;
 
   @Mock
-  private DynamicEndpointRequestMapper dynamicEndpointRequestMapper;
+  private DynamicEndpointRequestMappers dynamicEndpointRequestMappers;
 
   @Mock
   private LdRedirectionRequestMapper ldRedirectionRequestMapper;
@@ -46,7 +46,7 @@ public class LdModuleTest {
 
   @Before
   public void setUp() {
-    ldModule = new LdModule(dynamicEndpointRequestMapper, directEndpointRequestMapper,
+    ldModule = new LdModule(dynamicEndpointRequestMappers, directEndpointRequestMapper,
         ldRedirectionRequestMapper, supportedWriterMediaTypesScanner,
         supportedReaderMediaTypesScanner);
     ldModule.initialize(httpConfiguration);

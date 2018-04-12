@@ -20,7 +20,7 @@ public class RepresentationRequestHandlerFactoryTest {
   DirectEndpoint endPoint;
 
   @Mock
-  EndpointRequestParameterMapper endpointRequestParameterMapper;
+  EndpointRequestParameterMappers endpointRequestParameterMappers;
 
   @Mock
   RepresentationResourceProvider representationResourceProvider;
@@ -28,7 +28,7 @@ public class RepresentationRequestHandlerFactoryTest {
   @Before
   public void setUp() {
     representationRequestHandlerFactory = new RepresentationRequestHandlerFactory(
-        endpointRequestParameterMapper, representationResourceProvider);
+        endpointRequestParameterMappers, representationResourceProvider);
   }
 
   @Test
@@ -40,8 +40,8 @@ public class RepresentationRequestHandlerFactoryTest {
         representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint);
 
     // Assert
-    assertThat(representationRequestHandler.getEndpointRequestParameterMapper(),
-        sameInstance(endpointRequestParameterMapper));
+    assertThat(representationRequestHandler.getEndpointRequestParameterMappers(),
+        sameInstance(endpointRequestParameterMappers));
   }
 
 }
