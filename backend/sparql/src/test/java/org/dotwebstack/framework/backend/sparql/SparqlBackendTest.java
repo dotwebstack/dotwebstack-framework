@@ -169,10 +169,6 @@ public class SparqlBackendTest {
 
     UpdateStepExecutor updateStepExecutorMock = mock(UpdateStepExecutor.class);
 
-    // TODO: Do something with the mocks below, or clean up
-    Parameter<?> requiredParameterMock = mock(Parameter.class);
-    Parameter<?> optionalParameterMock = mock(Parameter.class);
-
     when(updateStepFactory.create(updateStep, backend)).thenReturn(updateStepExecutorMock);
 
     // Act
