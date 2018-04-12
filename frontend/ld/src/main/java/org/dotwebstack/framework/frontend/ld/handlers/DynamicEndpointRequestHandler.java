@@ -6,16 +6,16 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 
-public class DynamicEndPointRequestHandler extends RequestHandler<DynamicEndPoint> {
+public class DynamicEndpointRequestHandler extends RequestHandler<DynamicEndpoint> {
 
-  public DynamicEndPointRequestHandler(DynamicEndPoint endpoint,
-      EndPointRequestParameterMapper endPointRequestParameterMapper,
+  public DynamicEndpointRequestHandler(DynamicEndpoint endpoint,
+      EndpointRequestParameterMapper endpointRequestParameterMapper,
       RepresentationResourceProvider representationResourceProvider) {
-    super(endpoint, endPointRequestParameterMapper, representationResourceProvider);
+    super(endpoint, endpointRequestParameterMapper, representationResourceProvider);
   }
 
   @Override

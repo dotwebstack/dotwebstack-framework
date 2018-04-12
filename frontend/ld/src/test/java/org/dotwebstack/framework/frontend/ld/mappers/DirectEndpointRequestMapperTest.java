@@ -19,11 +19,11 @@ import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.handlers.DirectEndPointRequestHandler;
-import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestParameterMapper;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint.Builder;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.handlers.DirectEndpointRequestHandler;
+import org.dotwebstack.framework.frontend.ld.handlers.EndpointRequestParameterMapper;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.RequestHandler;
 import org.dotwebstack.framework.frontend.ld.handlers.ServiceRequestHandlerFactory;
@@ -42,7 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DirectEndPointRequestMapperTest {
+public class DirectEndpointRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -51,13 +51,13 @@ public class DirectEndPointRequestMapperTest {
   private Stage stage;
 
   @Mock
-  private DirectEndPoint directEndPoint;
+  private DirectEndpoint directEndpoint;
 
   @Mock
   private InformationProduct informationProduct;
 
   @Mock
-  private DirectEndPointResourceProvider directEndPointResourceProvider;
+  private DirectEndpointResourceProvider directEndpointResourceProvider;
 
   @Mock
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
@@ -66,7 +66,7 @@ public class DirectEndPointRequestMapperTest {
   private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
   @Mock
-  private EndPointRequestParameterMapper endPointRequestParameterMapper;
+  private EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
@@ -77,9 +77,9 @@ public class DirectEndPointRequestMapperTest {
   @Mock
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
-  private RequestHandler<DirectEndPoint> representationRequestHandler;
+  private RequestHandler<DirectEndpoint> representationRequestHandler;
 
-  private DirectEndPointRequestMapper directEndPointRequestMapper;
+  private DirectEndpointRequestMapper directEndpointRequestMapper;
 
   private HttpConfiguration httpConfiguration;
 
@@ -94,38 +94,38 @@ public class DirectEndPointRequestMapperTest {
     postRepresentation = new Representation.RepresentationBuilder(
         DBEERPEDIA.BREWERY_REPRESENTATION).informationProduct(informationProduct).build();
 
-    when(directEndPoint.getStage()).thenReturn(stage);
-    when(directEndPoint.getStage().getFullPath()).thenReturn(
+    when(directEndpoint.getStage()).thenReturn(stage);
+    when(directEndpoint.getStage().getFullPath()).thenReturn(
         "/" + DBEERPEDIA.ORG_HOST + DBEERPEDIA.BASE_PATH.getLabel());
-    when(directEndPoint.getPathPattern()).thenReturn(DBEERPEDIA.PATH_PATTERN_VALUE);
-    when(directEndPoint.getGetRepresentation()).thenReturn(getRepresentation);
-    when(directEndPoint.getPostRepresentation()).thenReturn(postRepresentation);
+    when(directEndpoint.getPathPattern()).thenReturn(DBEERPEDIA.PATH_PATTERN_VALUE);
+    when(directEndpoint.getGetRepresentation()).thenReturn(getRepresentation);
+    when(directEndpoint.getPostRepresentation()).thenReturn(postRepresentation);
 
-    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
-    endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, directEndPoint);
-    when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndpoint> endPointMap = new HashMap<>();
+    endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, directEndpoint);
+    when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
-    directEndPointRequestMapper = new DirectEndPointRequestMapper(directEndPointResourceProvider,
+    directEndpointRequestMapper = new DirectEndpointRequestMapper(directEndpointResourceProvider,
         supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
         representationRequestHandlerFactory, transactionRequestHandlerFactory);
-    representationRequestHandler = new DirectEndPointRequestHandler(directEndPoint,
-        endPointRequestParameterMapper, representationResourceProvider);
+    representationRequestHandler = new DirectEndpointRequestHandler(directEndpoint,
+        endpointRequestParameterMapper, representationResourceProvider);
 
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
-        isA(DirectEndPoint.class))).thenReturn(representationRequestHandler);
+        isA(DirectEndpoint.class))).thenReturn(representationRequestHandler);
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    DirectEndPointRequestMapper directEndPointRequestMapper =
-        new DirectEndPointRequestMapper(directEndPointResourceProvider,
+    DirectEndpointRequestMapper directEndpointRequestMapper =
+        new DirectEndpointRequestMapper(directEndpointResourceProvider,
             supportedWriterMediaTypesScanner, supportedReaderMediaTypesScanner,
             representationRequestHandlerFactory, transactionRequestHandlerFactory);
 
     // Assert
-    assertThat(directEndPointRequestMapper, not(nullValue()));
+    assertThat(directEndpointRequestMapper, not(nullValue()));
   }
 
   @Test
@@ -135,7 +135,7 @@ public class DirectEndPointRequestMapperTest {
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
     // Act
-    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
+    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
@@ -149,13 +149,13 @@ public class DirectEndPointRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithoutStage() {
     // Arrange
-    directEndPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
-    endPointMap.put(directEndPoint.getIdentifier(), directEndPoint);
-    when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    directEndpoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndpoint> endPointMap = new HashMap<>();
+    endPointMap.put(directEndpoint.getIdentifier(), directEndpoint);
+    when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
+    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -164,13 +164,13 @@ public class DirectEndPointRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithNullStage() {
     // Arrange
-    directEndPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
-    endPointMap.put(directEndPoint.getIdentifier(), directEndPoint);
-    when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    directEndpoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndpoint> endPointMap = new HashMap<>();
+    endPointMap.put(directEndpoint.getIdentifier(), directEndpoint);
+    when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
+    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -182,17 +182,17 @@ public class DirectEndPointRequestMapperTest {
     when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
         new MediaType[] {MediaType.valueOf("text/turtle")});
 
-    DirectEndPoint endPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
+    DirectEndpoint endPoint = (DirectEndpoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(getRepresentation).stage(stage).build();
-    DirectEndPoint samePathEndPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
+    DirectEndpoint samePathEndpoint = (DirectEndpoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(getRepresentation).stage(stage).build();
-    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndpoint> endPointMap = new HashMap<>();
     endPointMap.put(endPoint.getIdentifier(), endPoint);
-    endPointMap.put(samePathEndPoint.getIdentifier(), samePathEndPoint);
-    when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    endPointMap.put(samePathEndpoint.getIdentifier(), samePathEndpoint);
+    when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
+    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
@@ -207,15 +207,15 @@ public class DirectEndPointRequestMapperTest {
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
-    DirectEndPoint endPoint = (DirectEndPoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
+    DirectEndpoint endPoint = (DirectEndpoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(getRepresentation).stage(stage).build();
 
-    Map<org.eclipse.rdf4j.model.Resource, DirectEndPoint> endPointMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, DirectEndpoint> endPointMap = new HashMap<>();
     endPointMap.put(endPoint.getIdentifier(), endPoint);
-    when(directEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    when(directEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    directEndPointRequestMapper.loadDirectEndPoints(httpConfiguration);
+    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));

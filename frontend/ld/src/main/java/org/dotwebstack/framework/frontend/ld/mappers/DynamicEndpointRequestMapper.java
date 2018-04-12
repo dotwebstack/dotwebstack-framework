@@ -5,8 +5,8 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.glassfish.jersey.server.model.Resource;
 import org.slf4j.Logger;
@@ -15,28 +15,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DynamicEndPointRequestMapper {
+public class DynamicEndpointRequestMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DirectEndPointRequestMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DirectEndpointRequestMapper.class);
 
-  private final DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
+  private final DynamicEndpointResourceProvider dynamicEndpointResourceProvider;
 
   private final SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
   private final RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   @Autowired
-  public DynamicEndPointRequestMapper(
-      @NonNull DynamicEndPointResourceProvider dynamicEndPointResourceProvider,
+  public DynamicEndpointRequestMapper(
+      @NonNull DynamicEndpointResourceProvider dynamicEndpointResourceProvider,
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
       @NonNull RepresentationRequestHandlerFactory representationRequestHandlerFactory) {
-    this.dynamicEndPointResourceProvider = dynamicEndPointResourceProvider;
+    this.dynamicEndpointResourceProvider = dynamicEndpointResourceProvider;
     this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
     this.representationRequestHandlerFactory = representationRequestHandlerFactory;
   }
 
-  public void loadDynamicEndPoints(HttpConfiguration httpConfiguration) {
-    for (DynamicEndPoint endPoint : dynamicEndPointResourceProvider.getAll().values()) {
+  public void loadDynamicEndpoints(HttpConfiguration httpConfiguration) {
+    for (DynamicEndpoint endPoint : dynamicEndpointResourceProvider.getAll().values()) {
       if (endPoint.getStage() != null) {
         mapService(endPoint, httpConfiguration);
       } else {
@@ -45,7 +45,7 @@ public class DynamicEndPointRequestMapper {
     }
   }
 
-  private void mapService(DynamicEndPoint endPoint, HttpConfiguration httpConfiguration) {
+  private void mapService(DynamicEndpoint endPoint, HttpConfiguration httpConfiguration) {
     String basePath = endPoint.getStage().getFullPath();
     String absolutePath = basePath.concat(endPoint.getPathPattern());
     Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);

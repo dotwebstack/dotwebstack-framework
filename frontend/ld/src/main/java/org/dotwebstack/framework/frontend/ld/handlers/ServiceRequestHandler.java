@@ -26,14 +26,14 @@ public class ServiceRequestHandler implements Inflector<ContainerRequestContext,
 
   private final SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
-  private final EndPointRequestParameterMapper endPointRequestParameterMapper;
+  private final EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   public ServiceRequestHandler(@NonNull Service service,
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,
-      @NonNull EndPointRequestParameterMapper endPointRequestParameterMapper) {
+      @NonNull EndpointRequestParameterMapper endpointRequestParameterMapper) {
     this.service = service;
     this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
-    this.endPointRequestParameterMapper = endPointRequestParameterMapper;
+    this.endpointRequestParameterMapper = endpointRequestParameterMapper;
   }
 
   @Override
@@ -61,7 +61,7 @@ public class ServiceRequestHandler implements Inflector<ContainerRequestContext,
     }
 
     Map<String, String> parameterValues = new HashMap<>();
-    endPointRequestParameterMapper.map(service.getTransaction(), containerRequestContext).forEach(
+    endpointRequestParameterMapper.map(service.getTransaction(), containerRequestContext).forEach(
         parameterValues::put);
 
     service.getParameterMappers().forEach(

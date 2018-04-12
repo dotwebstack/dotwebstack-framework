@@ -16,11 +16,11 @@ import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.site.Site;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScanner;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint.Builder;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.handlers.DynamicEndPointRequestHandler;
-import org.dotwebstack.framework.frontend.ld.handlers.EndPointRequestParameterMapper;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint.Builder;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.handlers.DynamicEndpointRequestHandler;
+import org.dotwebstack.framework.frontend.ld.handlers.EndpointRequestParameterMapper;
 import org.dotwebstack.framework.frontend.ld.handlers.RepresentationRequestHandlerFactory;
 import org.dotwebstack.framework.frontend.ld.handlers.RequestHandler;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
@@ -37,7 +37,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DynamicEndPointRequestMapperTest {
+public class DynamicEndpointRequestMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -46,16 +46,16 @@ public class DynamicEndPointRequestMapperTest {
   private Stage stage;
 
   @Mock
-  private DynamicEndPoint dynamicEndPoint;
+  private DynamicEndpoint dynamicEndpoint;
 
   @Mock
-  private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
+  private DynamicEndpointResourceProvider dynamicEndpointResourceProvider;
 
   @Mock
   private SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner;
 
   @Mock
-  private EndPointRequestParameterMapper endPointRequestParameterMapper;
+  private EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   @Mock
   private RepresentationResourceProvider representationResourceProvider;
@@ -68,47 +68,47 @@ public class DynamicEndPointRequestMapperTest {
 
   private HttpConfiguration httpConfiguration;
 
-  private RequestHandler<DynamicEndPoint> representationRequestHandler;
+  private RequestHandler<DynamicEndpoint> representationRequestHandler;
 
-  private DynamicEndPointRequestMapper dynamicEndPointRequestMapper;
+  private DynamicEndpointRequestMapper dynamicEndpointRequestMapper;
 
 
   @Before
   public void setUp() {
-    when(dynamicEndPoint.getStage()).thenReturn(stage);
-    when(dynamicEndPoint.getStage().getFullPath()).thenReturn(
+    when(dynamicEndpoint.getStage()).thenReturn(stage);
+    when(dynamicEndpoint.getStage().getFullPath()).thenReturn(
         "/" + DBEERPEDIA.ORG_HOST + DBEERPEDIA.BASE_PATH.getLabel());
-    when(dynamicEndPoint.getPathPattern()).thenReturn(DBEERPEDIA.PATH_PATTERN_VALUE);
+    when(dynamicEndpoint.getPathPattern()).thenReturn(DBEERPEDIA.PATH_PATTERN_VALUE);
 
-    Map<org.eclipse.rdf4j.model.Resource, DynamicEndPoint> endPointMap = new HashMap<>();
-    endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, dynamicEndPoint);
-    when(dynamicEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    Map<org.eclipse.rdf4j.model.Resource, DynamicEndpoint> endPointMap = new HashMap<>();
+    endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, dynamicEndpoint);
+    when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
-    dynamicEndPointRequestMapper = new DynamicEndPointRequestMapper(dynamicEndPointResourceProvider,
+    dynamicEndpointRequestMapper = new DynamicEndpointRequestMapper(dynamicEndpointResourceProvider,
         supportedWriterMediaTypesScanner, representationRequestHandlerFactory);
-    representationRequestHandler = new DynamicEndPointRequestHandler(dynamicEndPoint,
-        endPointRequestParameterMapper, representationResourceProvider);
+    representationRequestHandler = new DynamicEndpointRequestHandler(dynamicEndpoint,
+        endpointRequestParameterMapper, representationResourceProvider);
 
     when(representationRequestHandlerFactory.newRepresentationRequestHandler(
-        isA(DynamicEndPoint.class))).thenReturn(representationRequestHandler);
+        isA(DynamicEndpoint.class))).thenReturn(representationRequestHandler);
     httpConfiguration = new HttpConfiguration(ImmutableList.of());
   }
 
   @Test
   public void constructor_DoesNotThrowExceptions_WithValidData() {
     // Arrange / Act
-    DynamicEndPointRequestMapper dynamicEndPointRequestMapper =
-        new DynamicEndPointRequestMapper(dynamicEndPointResourceProvider,
+    DynamicEndpointRequestMapper dynamicEndpointRequestMapper =
+        new DynamicEndpointRequestMapper(dynamicEndpointResourceProvider,
             supportedWriterMediaTypesScanner, representationRequestHandlerFactory);
 
     // Assert
-    assertThat(dynamicEndPointRequestMapper, not(nullValue()));
+    assertThat(dynamicEndpointRequestMapper, not(nullValue()));
   }
 
   @Test
   public void loadRepresentations_MapRepresentation_WithValidData() {
     // Act / Arrange
-    dynamicEndPointRequestMapper.loadDynamicEndPoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
@@ -123,13 +123,13 @@ public class DynamicEndPointRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithoutStage() {
     // Arrange
-    dynamicEndPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<org.eclipse.rdf4j.model.Resource, DynamicEndPoint> endPointMap = new HashMap<>();
-    endPointMap.put(dynamicEndPoint.getIdentifier(), dynamicEndPoint);
-    when(dynamicEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    dynamicEndpoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
+    Map<org.eclipse.rdf4j.model.Resource, DynamicEndpoint> endPointMap = new HashMap<>();
+    endPointMap.put(dynamicEndpoint.getIdentifier(), dynamicEndpoint);
+    when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    dynamicEndPointRequestMapper.loadDynamicEndPoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -138,13 +138,13 @@ public class DynamicEndPointRequestMapperTest {
   @Test
   public void loadRepresentations_MapRepresentation_WithNullStage() {
     // Arrange
-    dynamicEndPoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
-    Map<org.eclipse.rdf4j.model.Resource, DynamicEndPoint> endPointMap = new HashMap<>();
-    endPointMap.put(dynamicEndPoint.getIdentifier(), dynamicEndPoint);
-    when(dynamicEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    dynamicEndpoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, DBEERPEDIA.PATH_PATTERN_VALUE).build();
+    Map<org.eclipse.rdf4j.model.Resource, DynamicEndpoint> endPointMap = new HashMap<>();
+    endPointMap.put(dynamicEndpoint.getIdentifier(), dynamicEndpoint);
+    when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    dynamicEndPointRequestMapper.loadDynamicEndPoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(0));
@@ -153,17 +153,17 @@ public class DynamicEndPointRequestMapperTest {
   @Test
   public void loadRepresentations_IgnoreSecondRepresentation_WhenAddedTwice() {
     // Arrange
-    DynamicEndPoint endPoint = (DynamicEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
+    DynamicEndpoint endPoint = (DynamicEndpoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).parameterMapper(parameterMapper).stage(stage).build();
-    DynamicEndPoint samePathEndPoint = (DynamicEndPoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
+    DynamicEndpoint samePathEndpoint = (DynamicEndpoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).parameterMapper(parameterMapper).stage(stage).build();
-    Map<org.eclipse.rdf4j.model.Resource, DynamicEndPoint> endPointMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, DynamicEndpoint> endPointMap = new HashMap<>();
     endPointMap.put(endPoint.getIdentifier(), endPoint);
-    endPointMap.put(samePathEndPoint.getIdentifier(), samePathEndPoint);
-    when(dynamicEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    endPointMap.put(samePathEndpoint.getIdentifier(), samePathEndpoint);
+    when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    dynamicEndPointRequestMapper.loadDynamicEndPoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));
@@ -175,15 +175,15 @@ public class DynamicEndPointRequestMapperTest {
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).build();
-    DynamicEndPoint endPoint = (DynamicEndPoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
+    DynamicEndpoint endPoint = (DynamicEndpoint) new Builder(DBEERPEDIA.DEFAULT_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).parameterMapper(parameterMapper).stage(stage).build();
 
-    Map<org.eclipse.rdf4j.model.Resource, DynamicEndPoint> endPointMap = new HashMap<>();
+    Map<org.eclipse.rdf4j.model.Resource, DynamicEndpoint> endPointMap = new HashMap<>();
     endPointMap.put(endPoint.getIdentifier(), endPoint);
-    when(dynamicEndPointResourceProvider.getAll()).thenReturn(endPointMap);
+    when(dynamicEndpointResourceProvider.getAll()).thenReturn(endPointMap);
 
     // Act
-    dynamicEndPointRequestMapper.loadDynamicEndPoints(httpConfiguration);
+    dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
 
     // Assert
     assertThat(httpConfiguration.getResources(), hasSize(1));

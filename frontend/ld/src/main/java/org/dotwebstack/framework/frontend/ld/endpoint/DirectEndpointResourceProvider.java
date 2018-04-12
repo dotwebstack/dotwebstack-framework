@@ -6,7 +6,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint.Builder;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint.Builder;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.frontend.ld.service.ServiceResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DirectEndPointResourceProvider extends AbstractResourceProvider<DirectEndPoint> {
+public class DirectEndpointResourceProvider extends AbstractResourceProvider<DirectEndpoint> {
 
   private final StageResourceProvider stageResourceProvider;
 
@@ -28,7 +28,7 @@ public class DirectEndPointResourceProvider extends AbstractResourceProvider<Dir
   private final ServiceResourceProvider serviceResourceProvider;
 
   @Autowired
-  public DirectEndPointResourceProvider(ConfigurationBackend configurationBackend,
+  public DirectEndpointResourceProvider(ConfigurationBackend configurationBackend,
       ApplicationProperties applicationProperties,
       @NonNull StageResourceProvider stageResourceProvider,
       @NonNull RepresentationResourceProvider representationResourceProvider,
@@ -49,13 +49,13 @@ public class DirectEndPointResourceProvider extends AbstractResourceProvider<Dir
   }
 
   @Override
-  protected DirectEndPoint createResource(@NonNull Model model, @NonNull Resource identifier) {
+  protected DirectEndpoint createResource(@NonNull Model model, @NonNull Resource identifier) {
     String pathPattern = getObjectString(model, identifier, ELMO.PATH_PATTERN).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> statement has been found for pathPattern <%s>.",
                 ELMO.PATH_PATTERN, identifier)));
 
-    final DirectEndPoint.Builder builder = new Builder(identifier, pathPattern);
+    final DirectEndpoint.Builder builder = new Builder(identifier, pathPattern);
     getObjectString(model, identifier, RDFS.LABEL).ifPresent(builder::label);
     getObjectResource(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));

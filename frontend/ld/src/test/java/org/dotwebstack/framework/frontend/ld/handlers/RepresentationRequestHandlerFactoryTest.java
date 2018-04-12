@@ -3,7 +3,7 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 import static org.hamcrest.core.IsSame.sameInstance;
 import static org.junit.Assert.assertThat;
 
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPoint;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,10 +17,10 @@ public class RepresentationRequestHandlerFactoryTest {
   RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
   @Mock
-  DirectEndPoint endPoint;
+  DirectEndpoint endPoint;
 
   @Mock
-  EndPointRequestParameterMapper endPointRequestParameterMapper;
+  EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   @Mock
   RepresentationResourceProvider representationResourceProvider;
@@ -28,7 +28,7 @@ public class RepresentationRequestHandlerFactoryTest {
   @Before
   public void setUp() {
     representationRequestHandlerFactory = new RepresentationRequestHandlerFactory(
-        endPointRequestParameterMapper, representationResourceProvider);
+        endpointRequestParameterMapper, representationResourceProvider);
   }
 
   @Test
@@ -40,8 +40,8 @@ public class RepresentationRequestHandlerFactoryTest {
         representationRequestHandlerFactory.newRepresentationRequestHandler(endPoint);
 
     // Assert
-    assertThat(representationRequestHandler.getEndPointRequestParameterMapper(),
-        sameInstance(endPointRequestParameterMapper));
+    assertThat(representationRequestHandler.getEndpointRequestParameterMapper(),
+        sameInstance(endpointRequestParameterMapper));
   }
 
 }

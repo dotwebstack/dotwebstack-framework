@@ -11,8 +11,8 @@ import org.dotwebstack.framework.backend.sparql.SparqlBackend;
 import org.dotwebstack.framework.frontend.http.layout.LayoutResourceProvider;
 import org.dotwebstack.framework.frontend.http.site.SiteResourceProvider;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
-import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndPointResourceProvider;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpointResourceProvider;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpointResourceProvider;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.frontend.ld.service.ServiceResourceProvider;
@@ -57,10 +57,10 @@ public class ConfigurationIntegrationTest {
   private LayoutResourceProvider layoutResourceProvider;
 
   @Autowired
-  private DirectEndPointResourceProvider directEndPointResourceProvider;
+  private DirectEndpointResourceProvider directEndpointResourceProvider;
 
   @Autowired
-  private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
+  private DynamicEndpointResourceProvider dynamicEndpointResourceProvider;
 
   @Autowired
   private StepResourceProvider stepResourceProvider;
@@ -98,12 +98,12 @@ public class ConfigurationIntegrationTest {
     String cssResource = layoutResourceProvider.get(DBEERPEDIA.LAYOUT).getOptions().get(
         valueFactory.createIRI("http://www.w3.org/1999/xhtml/vocab#stylesheet")).stringValue();
     assertThat(cssResource, equalTo("stage-layout.css"));
-    assertThat(directEndPointResourceProvider.getAll().entrySet(), hasSize(8));
-    assertThat(dynamicEndPointResourceProvider.getAll().entrySet(), hasSize(1));
-    assertThat(dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT), notNullValue());
-    assertThat(dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT).getLabel(),
+    assertThat(directEndpointResourceProvider.getAll().entrySet(), hasSize(8));
+    assertThat(dynamicEndpointResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(dynamicEndpointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT), notNullValue());
+    assertThat(dynamicEndpointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT).getLabel(),
         notNullValue());
-    assertThat(directEndPointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
+    assertThat(directEndpointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
     assertThat(stepResourceProvider.getAll().entrySet(), hasSize(7));
     assertThat(stepResourceProvider.get(DBEERPEDIA.PERSISTENCE_STEP), notNullValue());
     assertThat(serviceResourceProvider.getAll().entrySet(), hasSize(3));

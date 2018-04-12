@@ -8,8 +8,8 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.ld.SupportedWriterMediaTypesScannerTest.StubGraphEntityWriter;
-import org.dotwebstack.framework.frontend.ld.mappers.DirectEndPointRequestMapper;
-import org.dotwebstack.framework.frontend.ld.mappers.DynamicEndPointRequestMapper;
+import org.dotwebstack.framework.frontend.ld.mappers.DirectEndpointRequestMapper;
+import org.dotwebstack.framework.frontend.ld.mappers.DynamicEndpointRequestMapper;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,10 +28,10 @@ public class LdModuleTest {
   private HttpConfiguration httpConfiguration = new HttpConfiguration(ImmutableList.of());
 
   @Mock
-  private DirectEndPointRequestMapper directEndPointRequestMapper;
+  private DirectEndpointRequestMapper directEndpointRequestMapper;
 
   @Mock
-  private DynamicEndPointRequestMapper dynamicEndPointRequestMapper;
+  private DynamicEndpointRequestMapper dynamicEndpointRequestMapper;
 
   @Mock
   private LdRedirectionRequestMapper ldRedirectionRequestMapper;
@@ -46,7 +46,7 @@ public class LdModuleTest {
 
   @Before
   public void setUp() {
-    ldModule = new LdModule(dynamicEndPointRequestMapper, directEndPointRequestMapper,
+    ldModule = new LdModule(dynamicEndpointRequestMapper, directEndpointRequestMapper,
         ldRedirectionRequestMapper, supportedWriterMediaTypesScanner,
         supportedReaderMediaTypesScanner);
     ldModule.initialize(httpConfiguration);

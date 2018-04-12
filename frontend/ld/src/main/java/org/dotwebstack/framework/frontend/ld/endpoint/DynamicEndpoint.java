@@ -4,11 +4,11 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.eclipse.rdf4j.model.Resource;
 
-public class DynamicEndPoint extends AbstractEndPoint {
+public class DynamicEndpoint extends AbstractEndpoint {
 
   private ParameterMapper parameterMapper;
 
-  private DynamicEndPoint(Builder builder) {
+  private DynamicEndpoint(Builder builder) {
     super(builder);
     this.parameterMapper = builder.parameterMapper;
   }
@@ -17,7 +17,7 @@ public class DynamicEndPoint extends AbstractEndPoint {
     return parameterMapper;
   }
 
-  public static class Builder extends EndPointBuilder<Builder> {
+  public static class Builder extends EndpointBuilder<Builder> {
 
     private ParameterMapper parameterMapper;
 
@@ -30,8 +30,8 @@ public class DynamicEndPoint extends AbstractEndPoint {
       return this;
     }
 
-    public DynamicEndPoint build() {
-      return new DynamicEndPoint(this);
+    public DynamicEndpoint build() {
+      return new DynamicEndpoint(this);
     }
   }
 
