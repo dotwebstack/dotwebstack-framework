@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("static-access")
 public class AbstractSubjectSchemaMapperTest {
 
   @Mock
@@ -31,7 +32,7 @@ public class AbstractSubjectSchemaMapperTest {
   @Mock
   private Property schemaMock;
 
-  private AbstractSubjectSchemaMapper mapper = new TestSubjectSchemaMapper();
+  private final AbstractSubjectSchemaMapper mapper = new TestSubjectSchemaMapper();
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();

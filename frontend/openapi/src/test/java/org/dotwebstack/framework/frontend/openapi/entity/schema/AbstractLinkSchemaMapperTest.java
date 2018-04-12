@@ -31,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("static-access")
 public class AbstractLinkSchemaMapperTest {
 
   private final String baseUri = "http://localhost:8080/api/v2";

@@ -6,7 +6,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
-import org.dotwebstack.framework.transaction.Transaction;
+import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.dotwebstack.framework.transaction.flow.Flow;
 import org.dotwebstack.framework.transaction.flow.FlowExecutor;
 import org.junit.Before;
@@ -19,13 +19,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 
 @RunWith(MockitoJUnitRunner.class)
-public class TransactionRequestHandlerTest {
+public class ServiceRequestHandlerTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private Transaction transaction;
+  private Service service;
 
   @Mock
   private Flow flow;
@@ -40,20 +40,20 @@ public class TransactionRequestHandlerTest {
   private SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner;
 
   @Mock
-  private RepresentationRequestParameterMapper representationRequestParameterMapper;
+  private EndpointRequestParameterMapper endpointRequestParameterMapper;
 
-  private TransactionRequestHandler transactionRequestHandler;
+  private ServiceRequestHandler serviceRequestHandler;
 
   @Before
   public void setUp() {
-    transactionRequestHandler = new TransactionRequestHandler(transaction,
-        supportedReaderMediaTypesScanner, representationRequestParameterMapper);
+    serviceRequestHandler = new ServiceRequestHandler(service, supportedReaderMediaTypesScanner,
+        endpointRequestParameterMapper);
   }
 
   @Test
   public void apply_ExpectNotAcceptableResponse_WhenNoSupportedMediaTypes() {
     // Act
-    Response response = transactionRequestHandler.apply(containerRequestContext);
+    Response response = serviceRequestHandler.apply(containerRequestContext);
 
     // Assert
     assertThat(response.getStatus(), equalTo(HttpStatus.NOT_ACCEPTABLE.value()));
