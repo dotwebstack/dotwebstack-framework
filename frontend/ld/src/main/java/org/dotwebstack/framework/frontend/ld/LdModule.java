@@ -4,7 +4,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.FormatPreMatchingRequestFilter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.http.HttpModule;
-import org.dotwebstack.framework.frontend.ld.mappers.DirectEndpointRequestMappers;
+import org.dotwebstack.framework.frontend.ld.mappers.DirectEndpointRequestMapper;
 import org.dotwebstack.framework.frontend.ld.mappers.DynamicEndpointRequestMapper;
 import org.dotwebstack.framework.frontend.ld.mappers.LdRedirectionRequestMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class LdModule implements HttpModule {
 
-  private final DirectEndpointRequestMappers directEndpointRequestMappers;
+  private final DirectEndpointRequestMapper directEndpointRequestMapper;
 
   private final DynamicEndpointRequestMapper dynamicEndpointRequestMapper;
 
@@ -25,12 +25,12 @@ public class LdModule implements HttpModule {
 
   @Autowired
   public LdModule(@NonNull DynamicEndpointRequestMapper dynamicEndpointRequestMapper,
-      @NonNull DirectEndpointRequestMappers directEndpointRequestMappers,
+      @NonNull DirectEndpointRequestMapper directEndpointRequestMapper,
       @NonNull LdRedirectionRequestMapper ldRedirectionRequestMapper,
       @NonNull SupportedWriterMediaTypesScanner supportedWriterMediaTypesScanner,
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner) {
     this.dynamicEndpointRequestMapper = dynamicEndpointRequestMapper;
-    this.directEndpointRequestMappers = directEndpointRequestMappers;
+    this.directEndpointRequestMapper = directEndpointRequestMapper;
     this.ldRedirectionRequestMapper = ldRedirectionRequestMapper;
     this.supportedWriterMediaTypesScanner = supportedWriterMediaTypesScanner;
     this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
@@ -40,7 +40,7 @@ public class LdModule implements HttpModule {
   public void initialize(@NonNull HttpConfiguration httpConfiguration) {
     httpConfiguration.register(FormatPreMatchingRequestFilter.class);
     dynamicEndpointRequestMapper.loadDynamicEndpoints(httpConfiguration);
-    directEndpointRequestMappers.loadDirectEndpoints(httpConfiguration);
+    directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
     ldRedirectionRequestMapper.loadRedirections(httpConfiguration);
 
     supportedWriterMediaTypesScanner.getGraphEntityWriters().forEach(httpConfiguration::register);
