@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
@@ -37,46 +38,34 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DynamicEndPointResourceProviderTest {
+public class DynamicEndpointResourceProviderTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
-
+  private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
   @Mock
   private ConfigurationBackend configurationBackend;
-
   @Mock
   private SailRepository configurationRepository;
-
   @Mock
   private SailRepositoryConnection configurationRepositoryConnection;
-
   @Mock
   private ApplicationProperties applicationProperties;
-
   @Mock
   private ParameterMapperResourceProvider parameterMapperResourceProvider;
-
   @Mock
   private StageResourceProvider stageResourceProvider;
-
-  @Mock
-  private DynamicEndPointResourceProvider dynamicEndPointResourceProvider;
-
   @Mock
   private Stage stage;
-
   @Mock
   private ParameterMapper parameterMapper;
-
   @Mock
   private GraphQuery graphQuery;
-
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private DynamicEndpointResourceProvider dynamicEndpointResourceProvider;
 
   @Before
   public void setUp() {
-    dynamicEndPointResourceProvider = new DynamicEndPointResourceProvider(configurationBackend,
+    dynamicEndpointResourceProvider = new DynamicEndpointResourceProvider(configurationBackend,
         applicationProperties, parameterMapperResourceProvider, stageResourceProvider);
 
     when(configurationBackend.getRepository()).thenReturn(configurationRepository);
@@ -88,47 +77,7 @@ public class DynamicEndPointResourceProviderTest {
   }
 
   @Test
-  public void constructor_ThrowsException_WithMissingConfigurationBackend() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(null, applicationProperties,
-        parameterMapperResourceProvider, stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingApplicationProperties() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(configurationBackend, null, parameterMapperResourceProvider,
-        stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingParameterMapperResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(configurationBackend, applicationProperties, null,
-        stageResourceProvider);
-  }
-
-  @Test
-  public void constructor_ThrowsException_WithMissingStageResourceProvider() {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    new DynamicEndPointResourceProvider(configurationBackend, applicationProperties,
-        parameterMapperResourceProvider, null);
-  }
-
-  @Test
-  public void loadResources_LoadEndPoint_WithValidData() {
+  public void loadResources_LoadEndpoint_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -139,18 +88,36 @@ public class DynamicEndPointResourceProviderTest {
                 DBEERPEDIA.SUBJECT_FROM_URL))));
 
     // Act
-    dynamicEndPointResourceProvider.loadResources();
+    dynamicEndpointResourceProvider.loadResources();
 
     // Assert
-    assertThat(dynamicEndPointResourceProvider.getAll().entrySet(), hasSize(1));
-    DynamicEndPoint dynamicEndPoint = dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
-    assertThat(dynamicEndPoint, is(not(nullValue())));
-    assertThat(dynamicEndPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
-    assertThat(dynamicEndPoint.getParameterMapper(), equalTo(parameterMapper));
+    assertThat(dynamicEndpointResourceProvider.getAll().entrySet(), hasSize(1));
+    DynamicEndpoint dynamicEndpoint = dynamicEndpointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
+    assertThat(dynamicEndpoint, is(not(nullValue())));
+    assertThat(dynamicEndpoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
+    assertThat(dynamicEndpoint.getParameterMapper(), equalTo(parameterMapper));
   }
 
   @Test
-  public void loadResources_LoadEndPointComplete_WithValidData() {
+  public void loadResources_LoadDynamicEndpoint_MissingPathPattern() {
+    // Assert
+    thrown.expect(ConfigurationException.class);
+    thrown.expectMessage(String.format("No <%s> statement has been found for pathPattern <%s>.",
+        ELMO.PATH_PATTERN, DBEERPEDIA.DOC_ENDPOINT));
+
+    // Arrange
+    when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
+        ImmutableList.of(
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, RDF.TYPE, ELMO.DYNAMIC_ENDPOINT),
+            valueFactory.createStatement(DBEERPEDIA.DOC_ENDPOINT, ELMO.PARAMETER_MAPPER_PROP,
+                DBEERPEDIA.SUBJECT_FROM_URL))));
+
+    // Act
+    dynamicEndpointResourceProvider.loadResources();
+  }
+
+  @Test
+  public void loadResources_LoadEndpointComplete_WithValidData() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -165,15 +132,16 @@ public class DynamicEndPointResourceProviderTest {
                 DBEERPEDIA.SECOND_STAGE))));
 
     // Act
-    dynamicEndPointResourceProvider.loadResources();
+    dynamicEndpointResourceProvider.loadResources();
 
     // Assert
-    assertThat(dynamicEndPointResourceProvider.getAll().entrySet(), hasSize(1));
-    DynamicEndPoint dynamicEndPoint = dynamicEndPointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
-    assertThat(dynamicEndPoint, is(not(nullValue())));
-    assertThat(dynamicEndPoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
-    assertThat(dynamicEndPoint.getParameterMapper(), equalTo(parameterMapper));
-    assertThat(dynamicEndPoint.getStage(), equalTo(stage));
-    assertThat(dynamicEndPoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
+    assertThat(dynamicEndpointResourceProvider.getAll().entrySet(), hasSize(1));
+    DynamicEndpoint dynamicEndpoint = dynamicEndpointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT);
+    assertThat(dynamicEndpoint, is(not(nullValue())));
+    assertThat(dynamicEndpoint.getPathPattern(), equalTo(DBEERPEDIA.PATH_PATTERN.toString()));
+    assertThat(dynamicEndpoint.getParameterMapper(), equalTo(parameterMapper));
+    assertThat(dynamicEndpoint.getStage(), equalTo(stage));
+    assertThat(dynamicEndpoint.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
   }
+
 }

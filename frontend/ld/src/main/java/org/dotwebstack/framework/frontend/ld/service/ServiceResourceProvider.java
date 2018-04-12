@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.representation;
+package org.dotwebstack.framework.frontend.ld.service;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
@@ -7,6 +7,7 @@ import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.http.stage.StageResourceProvider;
 import org.dotwebstack.framework.frontend.ld.appearance.AppearanceResourceProvider;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourceProvider;
+import org.dotwebstack.framework.frontend.ld.service.Service.Builder;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.transaction.TransactionResourceProvider;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -14,15 +15,10 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-@Service
-public class RepresentationResourceProvider extends AbstractResourceProvider<Representation> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(RepresentationResourceProvider.class);
+@org.springframework.stereotype.Service
+public class ServiceResourceProvider extends AbstractResourceProvider<Service> {
 
   private final InformationProductResourceProvider informationProductResourceProvider;
 
@@ -35,7 +31,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   private final ParameterMapperResourceProvider parameterMapperResourceProvider;
 
   @Autowired
-  public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
+  public ServiceResourceProvider(ConfigurationBackend configurationBackend,
       @NonNull InformationProductResourceProvider informationProductResourceProvider,
       @NonNull TransactionResourceProvider transactionResourceProvider,
       @NonNull AppearanceResourceProvider appearanceResourceProvider,
@@ -55,15 +51,14 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     final String query = "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a ?type . }";
 
     final GraphQuery graphQuery = conn.prepareGraphQuery(query);
-    graphQuery.setBinding("type", ELMO.REPRESENTATION);
+    graphQuery.setBinding("type", ELMO.SERVICE);
 
     return graphQuery;
   }
 
   @Override
-  protected Representation createResource(Model model, Resource identifier) {
-    final Representation.RepresentationBuilder builder =
-        new Representation.RepresentationBuilder(identifier);
+  protected Service createResource(Model model, Resource identifier) {
+    final Service.Builder builder = new Builder(identifier);
 
     getObjectResource(model, identifier, ELMO.INFORMATION_PRODUCT_PROP).ifPresent(
         iri -> builder.informationProduct(informationProductResourceProvider.get(iri)));
@@ -79,13 +74,4 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
     return builder.build();
   }
-
-  @Override
-  protected void finalizeResource(Model model, Representation resource) {
-    getObjectResources(model, resource.getIdentifier(), ELMO.CONTAINS_PROP).stream().forEach(
-        iri -> resource.addSubRepresentation(this.get(iri)));
-
-    LOG.info("Updated resource: <{}>", resource.getIdentifier());
-  }
-
 }

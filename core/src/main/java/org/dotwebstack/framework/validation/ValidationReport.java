@@ -10,17 +10,20 @@ import org.apache.jena.rdf.model.impl.PropertyImpl;
 
 public class ValidationReport {
 
-  private static final String DESCRIPTION_RESULT_MESSAGE =
-      "http://www.w3.org/ns/shacl#resultMessage";
+  private static final String NAMESPACE = "http://www.w3.org/ns/shacl#";
 
-  private static final String DESCRIPTION_FOCUS_NODE = "http://www.w3.org/ns/shacl#focusNode";
+  private static final String DESCRIPTION_RESULT_MESSAGE = "resultMessage";
 
-  private static final String DESCRIPTION_CONFORMS = "http://www.w3.org/ns/shacl#conforms";
+  private static final String DESCRIPTION_FOCUS_NODE = "focusNode";
 
-  private static final String DESCRIPTION_RESULT = "http://www.w3.org/ns/shacl#result";
+  private static final String DESCRIPTION_CONFORMS = "conforms";
+
+  private static final String DESCRIPTION_RESULT = "result";
 
   @java.lang.SuppressWarnings("squid:S1075")
-  private static final String DESCRIPTION_RESULT_PATH = "http://www.w3.org/ns/shacl#resultPath";
+  private static final String DESCRIPTION_RESULT_PATH = "resultPath";
+
+  private static final String DESCRIPTION_RESULT_VALUE = "value";
 
   private final Model reportModel;
 
@@ -34,11 +37,11 @@ public class ValidationReport {
 
   private void parseValidationResult() {
     final NodeIterator isValidProperty =
-        reportModel.listObjectsOfProperty(new PropertyImpl(DESCRIPTION_CONFORMS));
+        reportModel.listObjectsOfProperty(new PropertyImpl(NAMESPACE + DESCRIPTION_CONFORMS));
     final boolean isValid = isValidProperty.next().asLiteral().getBoolean();
     if (!isValid) {
       for (Object subject : reportModel.listObjectsOfProperty(
-          new PropertyImpl(DESCRIPTION_RESULT)).toSet()) {
+          new PropertyImpl(NAMESPACE + DESCRIPTION_RESULT)).toSet()) {
         errors.put(subject.toString(), createErrorObject(reportModel, (Resource) subject));
       }
     }
@@ -53,12 +56,19 @@ public class ValidationReport {
   }
 
   private Violation createErrorObject(Model model, Resource subject) {
-    final String resultPath = model.listObjectsOfProperty(subject,
-        new PropertyImpl(DESCRIPTION_RESULT_PATH)).next().toString();
+    final String resultPath;
+    if (model.listObjectsOfProperty(subject,
+        new PropertyImpl(NAMESPACE + DESCRIPTION_RESULT_PATH)).hasNext()) {
+      resultPath = model.listObjectsOfProperty(subject,
+          new PropertyImpl(NAMESPACE + DESCRIPTION_RESULT_PATH)).next().toString();
+    } else {
+      resultPath = model.listObjectsOfProperty(subject,
+          new PropertyImpl(NAMESPACE + DESCRIPTION_RESULT_VALUE)).next().toString();
+    }
     final String resultMessage = model.listObjectsOfProperty(subject,
-        new PropertyImpl(DESCRIPTION_RESULT_MESSAGE)).next().toString();
+        new PropertyImpl(NAMESPACE + DESCRIPTION_RESULT_MESSAGE)).next().toString();
     final String focusNode = model.listObjectsOfProperty(subject,
-        new PropertyImpl(DESCRIPTION_FOCUS_NODE)).next().toString();
+        new PropertyImpl(NAMESPACE + DESCRIPTION_FOCUS_NODE)).next().toString();
 
     return new Violation(focusNode, resultMessage, resultPath);
   }

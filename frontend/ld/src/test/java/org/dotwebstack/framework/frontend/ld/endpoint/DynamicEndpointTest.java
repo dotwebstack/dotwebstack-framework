@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import org.dotwebstack.framework.frontend.http.stage.Stage;
-import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndPoint.Builder;
+import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint.Builder;
 import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapper;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Rule;
@@ -15,7 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DynamicEndPointTest {
+public class DynamicEndpointTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
@@ -31,15 +31,25 @@ public class DynamicEndPointTest {
   private Stage stage;
 
   @Test
-  public void build_CreateDynamicEndPoint_WithValidData() {
+  public void build_CreateDynamicEndpoint_WithValidBasicData() {
     // Assert
-    DynamicEndPoint dynamicEndPoint =
+    DynamicEndpoint dynamicEndpoint = new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).build();
+
+    // Act
+    assertThat(dynamicEndpoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
+    assertThat(dynamicEndpoint.getPathPattern(), equalTo(pathPattern));
+  }
+
+  @Test
+  public void build_CreateDynamicEndpoint_WithValidData() {
+    // Assert
+    DynamicEndpoint dynamicEndpoint =
         new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).parameterMapper(parameterMapper).build();
 
     // Act
-    assertThat(dynamicEndPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
-    assertThat(dynamicEndPoint.getPathPattern(), equalTo(pathPattern));
-    assertThat(dynamicEndPoint.getParameterMapper(), equalTo(parameterMapper));
+    assertThat(dynamicEndpoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
+    assertThat(dynamicEndpoint.getPathPattern(), equalTo(pathPattern));
+    assertThat(dynamicEndpoint.getParameterMapper(), equalTo(parameterMapper));
   }
 
   @Test
@@ -61,18 +71,18 @@ public class DynamicEndPointTest {
   }
 
   @Test
-  public void build_CreateDynamicEndPointComplete_WithValidData() {
+  public void build_CreateDynamicEndpointComplete_WithValidData() {
     // Assert
-    DynamicEndPoint dynamicEndPoint =
-        (DynamicEndPoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).parameterMapper(
+    DynamicEndpoint dynamicEndpoint =
+        (DynamicEndpoint) new Builder(DBEERPEDIA.DOC_ENDPOINT, pathPattern).parameterMapper(
             parameterMapper).label(label).stage(stage).build();
 
     // Act
-    assertThat(dynamicEndPoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
-    assertThat(dynamicEndPoint.getPathPattern(), equalTo(pathPattern));
-    assertThat(dynamicEndPoint.getParameterMapper(), equalTo(parameterMapper));
-    assertThat(dynamicEndPoint.getLabel(), equalTo(label));
-    assertThat(dynamicEndPoint.getStage(), equalTo(stage));
+    assertThat(dynamicEndpoint.getIdentifier(), equalTo(DBEERPEDIA.DOC_ENDPOINT));
+    assertThat(dynamicEndpoint.getPathPattern(), equalTo(pathPattern));
+    assertThat(dynamicEndpoint.getParameterMapper(), equalTo(parameterMapper));
+    assertThat(dynamicEndpoint.getLabel(), equalTo(label));
+    assertThat(dynamicEndpoint.getStage(), equalTo(stage));
   }
 
 }

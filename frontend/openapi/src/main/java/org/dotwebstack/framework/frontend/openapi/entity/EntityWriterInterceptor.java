@@ -34,28 +34,6 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
     this.tupleEntityMapper = tupleEntityMapper;
   }
 
-  @Override
-  public void aroundWriteTo(@NonNull WriterInterceptorContext context) throws IOException {
-    MediaType mediaType = context.getMediaType();
-
-    if (context.getEntity() instanceof TupleEntity) {
-      TupleEntity entity = (TupleEntity) context.getEntity();
-      Object mappedEntity = tupleEntityMapper.map(entity, mediaType);
-      context.setEntity(mappedEntity);
-    }
-
-    if (context.getEntity() instanceof GraphEntity) {
-      GraphEntity entity = (GraphEntity) context.getEntity();
-      Object mappedEntity = graphEntityMapper.map(entity, mediaType);
-      context.setEntity(mappedEntity);
-
-      Map<String, Object> headers = createResponseHeaders(entity);
-      headers.entrySet().forEach(e -> context.getHeaders().add(e.getKey(), e.getValue()));
-    }
-
-    context.proceed();
-  }
-
   private static Map<String, Object> createResponseHeaders(GraphEntity entity) {
     Response response = entity.getResponse();
     Map<String, Property> headers = response.getHeaders();
@@ -86,6 +64,28 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
     }
 
     return result;
+  }
+
+  @Override
+  public void aroundWriteTo(@NonNull WriterInterceptorContext context) throws IOException {
+    MediaType mediaType = context.getMediaType();
+
+    if (context.getEntity() instanceof TupleEntity) {
+      TupleEntity entity = (TupleEntity) context.getEntity();
+      Object mappedEntity = tupleEntityMapper.map(entity, mediaType);
+      context.setEntity(mappedEntity);
+    }
+
+    if (context.getEntity() instanceof GraphEntity) {
+      GraphEntity entity = (GraphEntity) context.getEntity();
+      Object mappedEntity = graphEntityMapper.map(entity, mediaType);
+      context.setEntity(mappedEntity);
+
+      Map<String, Object> headers = createResponseHeaders(entity);
+      headers.entrySet().forEach(e -> context.getHeaders().add(e.getKey(), e.getValue()));
+    }
+
+    context.proceed();
   }
 
 }

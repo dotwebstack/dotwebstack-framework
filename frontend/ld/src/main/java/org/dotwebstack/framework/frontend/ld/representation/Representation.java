@@ -21,7 +21,7 @@ public class Representation {
 
   private Appearance appearance;
 
-  private List<String> pathPatterns;
+  private List<String> appliesTo;
 
   private List<ParameterMapper> parameterMappers;
 
@@ -29,9 +29,9 @@ public class Representation {
 
   private List<Representation> subRepresentations;
 
-  private Representation(Builder builder) {
+  protected Representation(RepresentationBuilder<?> builder) {
     identifier = builder.identifier;
-    pathPatterns = builder.pathPatterns;
+    appliesTo = builder.appliesTo;
     parameterMappers = builder.parameterMappers;
     stage = builder.stage;
     informationProduct = builder.informationProduct;
@@ -56,8 +56,8 @@ public class Representation {
     return appearance;
   }
 
-  public Collection<String> getPathPatterns() {
-    return pathPatterns;
+  public Collection<String> getAppliesTo() {
+    return appliesTo;
   }
 
   public List<ParameterMapper> getParameterMappers() {
@@ -76,7 +76,7 @@ public class Representation {
     this.subRepresentations.add(subRepresentation);
   }
 
-  public static class Builder {
+  public static class RepresentationBuilder<E extends RepresentationBuilder<E>> {
 
     private Resource identifier;
 
@@ -86,7 +86,7 @@ public class Representation {
 
     private Appearance appearance;
 
-    private List<String> pathPatterns = new ArrayList<>();
+    private List<String> appliesTo = new ArrayList<>();
 
     private List<ParameterMapper> parameterMappers = new ArrayList<>();
 
@@ -94,52 +94,52 @@ public class Representation {
 
     private List<Representation> subRepresentations = new ArrayList<>();
 
-    public Builder(@NonNull Resource identifier) {
+    public RepresentationBuilder(@NonNull Resource identifier) {
       this.identifier = identifier;
     }
 
-    public Builder(@NonNull Representation representation) {
+    public RepresentationBuilder(@NonNull Representation representation) {
       this.identifier = representation.identifier;
       this.informationProduct = representation.informationProduct;
       this.transaction = representation.transaction;
       this.appearance = representation.appearance;
-      this.pathPatterns = representation.pathPatterns;
+      this.appliesTo = representation.appliesTo;
       this.parameterMappers = representation.parameterMappers;
       this.stage = representation.stage;
       this.subRepresentations = representation.subRepresentations;
     }
 
-    public Builder informationProduct(InformationProduct informationProduct) {
+    public RepresentationBuilder informationProduct(InformationProduct informationProduct) {
       this.informationProduct = informationProduct;
       return this;
     }
 
-    public Builder transaction(Transaction transaction) {
+    public RepresentationBuilder transaction(Transaction transaction) {
       this.transaction = transaction;
       return this;
     }
 
-    public Builder appearance(Appearance appearance) {
+    public RepresentationBuilder appearance(Appearance appearance) {
       this.appearance = appearance;
       return this;
     }
 
-    public Builder stage(Stage stage) {
+    public RepresentationBuilder stage(Stage stage) {
       this.stage = stage;
       return this;
     }
 
-    public Builder pathPattern(String pathPattern) {
-      this.pathPatterns.add(pathPattern);
+    public RepresentationBuilder appliesTo(String appliesTo) {
+      this.appliesTo.add(appliesTo);
       return this;
     }
 
-    public Builder parameterMapper(ParameterMapper parameterMapper) {
+    public RepresentationBuilder parameterMapper(ParameterMapper parameterMapper) {
       this.parameterMappers.add(parameterMapper);
       return this;
     }
 
-    public Builder subRepresentation(Representation subRespresentation) {
+    public RepresentationBuilder subRepresentation(Representation subRespresentation) {
       this.subRepresentations.add(subRespresentation);
       return this;
     }

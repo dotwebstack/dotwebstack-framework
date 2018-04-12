@@ -22,7 +22,7 @@ GRAPH dbeerpedia:Theatre {
     """
   .
   dbeerpedia:AssertIfNotExists a elmo:AssertionStep;
-  	rdfs:label "Davo should exists";
+   	rdfs:label "Davo should exists";
   	elmo:assert """
   	  ASK  { ?s <http://www.w3.org/2000/01/rdf-schema#label> \"Davo brouwerij Deventer\"
   	  }
