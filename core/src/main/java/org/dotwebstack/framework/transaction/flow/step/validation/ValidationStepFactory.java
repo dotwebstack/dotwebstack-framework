@@ -5,7 +5,6 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.RDF4JException;
@@ -34,7 +33,7 @@ public class ValidationStepFactory implements StepFactory {
   }
 
   @Override
-  public Step create(Model stepModel, Resource identifier) {
+  public ValidationStep create(Model stepModel, Resource identifier) {
     final IRI conformsTo = getObjectIRI(stepModel, identifier, ELMO.CONFORMS_TO_PROP).orElseThrow(
         () -> new ConfigurationException(
             String.format("No <%s> statement has been found for validation step <%s>.",
