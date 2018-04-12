@@ -77,6 +77,8 @@ public class DirectEndPointRequestMapperTest {
   @Mock
   private RepresentationRequestHandlerFactory representationRequestHandlerFactory;
 
+  private RequestHandler<DirectEndPoint> representationRequestHandler;
+
   private DirectEndPointRequestMapper directEndPointRequestMapper;
 
   private HttpConfiguration httpConfiguration;
@@ -84,8 +86,6 @@ public class DirectEndPointRequestMapperTest {
   private Representation getRepresentation;
 
   private Representation postRepresentation;
-
-  private RequestHandler representationRequestHandler;
 
   @Before
   public void setUp() {
