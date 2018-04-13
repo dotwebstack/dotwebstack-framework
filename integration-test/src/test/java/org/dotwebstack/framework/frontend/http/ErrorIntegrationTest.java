@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.http;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -69,7 +70,7 @@ public class ErrorIntegrationTest {
   }
 
   @Test
-  public void get_ReturnsErrorResponseWithoutExposingDetails_ForUnexpectedRuntimeException()
+  public void get_ReturnsErrorResponseWithoutInvalidParams_ForUnexpectedRuntimeException()
       throws Exception {
     // Act
     Response response = target.path("/runtime-exception").request().get();
@@ -85,6 +86,8 @@ public class ErrorIntegrationTest {
             + " did not contain 'An error occured from which the server was unable to recover.'",
         jsonNode.get("detail").asText().contains(
             "An error occured from which the server was unable to recover."));
+
+    assertNull("There should be no invalidParams attribute", jsonNode.get("invalidParams"));
 
   }
 
