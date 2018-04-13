@@ -8,6 +8,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -21,7 +22,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
   protected abstract Set<String> getSupportedVendorExtensions();
 
   @Override
-  public T mapTupleValue(@NonNull S schema, @NonNull ValueContext valueContext) {
+  public T mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity, @NonNull ValueContext valueContext) {
     return convertToType(SchemaMapperUtils.castLiteralValue(valueContext.getValue()));
   }
 
@@ -112,20 +113,22 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
   }
 
   /**
-   * Validates the vendor extensions that are declared on the Property. A Property should have
-   * exactly one of the vendor extensions declared in supportedExtensions
+   * Validates the vendor extensions that are declared on the Property. A Property
+   * should have exactly one of the vendor extensions declared in supportedExtensions
    *
    * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
    *         are encountered.
    */
-  private void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
+  protected void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
     if (property.getVendorExtensions().keySet().stream().filter(
-        supportedExtensions::contains).count() != 1) {
+            supportedExtensions::contains).count() != 1) {
 
-      String message = String.format(
-          "%s object must have one of: %s. This object cannot have a combination of these.",
-          property.getClass().getSimpleName(),
-          supportedExtensions.toString().replaceAll("[\\[\\]]", "'").replaceAll(", ", "', '"));
+      String message = property.getClass().getSimpleName()
+          + " object must have one of: "
+          + supportedExtensions.toString()
+              .replaceAll("[\\[\\]]", "'")
+              .replaceAll(", ", "', '")
+          + ". This object cannot have a combination of these.";
 
       throw new SchemaMapperRuntimeException(message);
     }

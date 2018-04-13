@@ -3,7 +3,7 @@ GRAPH dbeerpedia:Theatre {
   dbeerpedia:Backend a elmo:SparqlBackend;
     elmo:endpoint "http://localhost:8900/sparql"^^xsd:anyURI;
   .
-  
+
   dbeerpedia:IdFilter a elmo:TermParameter;
     elmo:name "id";
     elmo:shape [
@@ -11,21 +11,21 @@ GRAPH dbeerpedia:Theatre {
       sh:minLength 2;
     ];
   .
-  
+
   dbeerpedia:SubjectParameter a elmo:TermParameter;
     elmo:name "SUBJECT";
     elmo:shape [
       sh:nodeKind sh:IRI;
     ];
   .
-  
+
   dbeerpedia:FteParam a elmo:TermParameter;
     elmo:name "fte";
     elmo:shape [
     	sh:datatype xsd:string;
     ];
   .
-  
+
   dbeerpedia:TupleBreweries a elmo:InformationProduct;
     rdfs:label "Beer breweries in The Netherlands";
     elmo:backend dbeerpedia:Backend;
@@ -33,7 +33,7 @@ GRAPH dbeerpedia:Theatre {
     elmo:optionalParameter dbeerpedia:FteParam;
     elmo:query "SELECT ?name WHERE { ?s rdfs:label ?name . ?s a <http://dbeerpedia.org#Brewery> }";
   .
-  
+
   dbeerpedia:TupleBrewery a elmo:InformationProduct;
     rdfs:label "A single beer brewery in The Netherlands with an ID equal to the supplied ID";
     elmo:backend dbeerpedia:Backend;
@@ -57,6 +57,8 @@ GRAPH dbeerpedia:Theatre {
     elmo:backend dbeerpedia:Backend;
     elmo:resultType elmo-resulttype:Graph;
     elmo:optionalParameter dbeerpedia:IdFilter;
+    elmo:optionalParameter elmo:PageParameter;
+    elmo:optionalParameter elmo:PageSizeParameter;
     elmo:query "CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o . ?s a <http://dbeerpedia.org#Brewery> }";
   .
 

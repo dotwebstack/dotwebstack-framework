@@ -10,6 +10,7 @@ import io.swagger.models.properties.StringProperty;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -27,6 +28,8 @@ public class BooleanSchemaMapperTest {
 
   @Mock
   private GraphEntity graphEntityMock;
+  @Mock
+  private TupleEntity tupleEntityMock;
 
   private BooleanSchemaMapper booleanSchemaMapper;
   private BooleanProperty booleanProperty;
@@ -46,14 +49,14 @@ public class BooleanSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    booleanSchemaMapper.mapTupleValue(booleanProperty,
+        booleanSchemaMapper.mapTupleValue(booleanProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
-  public void mapTupleValue_ReturnValue_ForLiterals() {
+  public void mapTupleValue_ReturnsValue_ForLiterals() {
     // Arrange & Act
-    Boolean result = booleanSchemaMapper.mapTupleValue(booleanProperty,
+    Boolean result = booleanSchemaMapper.mapTupleValue(booleanProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
 
     // Assert

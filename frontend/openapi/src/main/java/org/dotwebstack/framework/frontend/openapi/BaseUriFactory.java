@@ -86,7 +86,8 @@ public class BaseUriFactory {
 
   private static Optional<String> getForwardedHostFromRequestHeader(
       ContainerRequest containerRequest) {
-    return Optional.ofNullable(containerRequest.getRequestHeaders().getFirst("x-forwarded-host"));
+    return Optional.ofNullable(containerRequest.getRequestHeaders().getFirst("x-forwarded-host"))
+        .map(header -> header.split(",")[0]);
   }
 
   private static String getHostFromRequest(ContainerRequest containerRequest) {

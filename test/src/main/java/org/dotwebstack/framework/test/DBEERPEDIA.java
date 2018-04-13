@@ -14,6 +14,8 @@ public final class DBEERPEDIA {
 
   public static final Literal BASE_PATH;
 
+  public static final IRI SHACL_CONCEPT_GRAPHNAME;
+
   public static final String TITLE = "Dbeerpedia";
 
   public static final IRI NAME;
@@ -174,6 +176,8 @@ public final class DBEERPEDIA {
 
   public static final IRI BREWERY_TYPE;
 
+  public static final IRI WINERY_TYPE;
+
   public static final IRI LAYOUT;
 
   public static final IRI LAYOUT_NL;
@@ -181,6 +185,8 @@ public final class DBEERPEDIA {
   public static final Literal LAYOUT_VALUE;
 
   public static final Literal LAYOUT_NL_VALUE;
+
+  public static final IRI APPLIES_TO;
 
   public static final IRI DOC_ENDPOINT;
 
@@ -198,12 +204,21 @@ public final class DBEERPEDIA {
 
   public static final IRI POST_UPDATE_STEP;
 
+  public static final IRI VALIDATION_STEP;
+
   public static final IRI TRANSACTION;
 
   public static final IRI SEQUENTIAL_FLOW;
 
+  public static final IRI SERVICE_POST;
+
+  public static final IRI SERVICE_PUT;
+
+  public static final IRI SERVICE_DELETE;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    SHACL_CONCEPT_GRAPHNAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ConceptShapeGraph");
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
     SITE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Stage");
@@ -306,9 +321,13 @@ public final class DBEERPEDIA {
 
     BREWERY_TYPE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Brewery");
 
+    WINERY_TYPE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Winery");
+
     LAYOUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayout");
 
     LAYOUT_NL = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "BeerLayoutNL");
+
+    APPLIES_TO = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "appliesTo");
 
     DOC_ENDPOINT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "DocEndpoint");
 
@@ -329,6 +348,12 @@ public final class DBEERPEDIA {
     TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
 
     SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
+
+    VALIDATION_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ValidationStep");
+
+    SERVICE_DELETE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "deleteService");
+    SERVICE_POST = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "postService");
+    SERVICE_PUT = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "putService");
   }
 
   private DBEERPEDIA() {

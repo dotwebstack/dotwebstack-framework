@@ -66,8 +66,8 @@ public class SparqlBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackend.Builder(null, repository, informationProductFactory,
-        persistenceStepFactory, updateStepFactory);
+    new SparqlBackend.Builder(null, repository, informationProductFactory, persistenceStepFactory,
+        updateStepFactory);
   }
 
   @Test
@@ -86,8 +86,8 @@ public class SparqlBackendTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, null,
-        persistenceStepFactory, updateStepFactory);
+    new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, null, persistenceStepFactory,
+        updateStepFactory);
   }
 
   @Test
@@ -151,8 +151,8 @@ public class SparqlBackendTest {
     PersistenceInsertIntoGraphStepExecutor persistenceStepExecutorMock =
         mock(PersistenceInsertIntoGraphStepExecutor.class);
 
-    when(persistenceStepFactory.create(persistenceStep, model, backend))
-        .thenReturn(persistenceStepExecutorMock);
+    when(persistenceStepFactory.create(persistenceStep, model, backend)).thenReturn(
+        persistenceStepExecutorMock);
 
     // Act
     StepExecutor stepExecutor = backend.createPersistenceStepExecutor(persistenceStep, model);
@@ -168,9 +168,6 @@ public class SparqlBackendTest {
         informationProductFactory, persistenceStepFactory, updateStepFactory).build();
 
     UpdateStepExecutor updateStepExecutorMock = mock(UpdateStepExecutor.class);
-
-    Parameter<?> requiredParameterMock = mock(Parameter.class);
-    Parameter<?> optionalParameterMock = mock(Parameter.class);
 
     when(updateStepFactory.create(updateStep, backend)).thenReturn(updateStepExecutorMock);
 

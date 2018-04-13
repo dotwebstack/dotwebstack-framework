@@ -96,6 +96,7 @@ public class FileConfigurationBackend
       LOG.warn("No model resources found in path:{}/model", resourcePath);
       return;
     }
+
     RepositoryConnection repositoryConnection;
     try {
       repositoryConnection = repository.getConnection();

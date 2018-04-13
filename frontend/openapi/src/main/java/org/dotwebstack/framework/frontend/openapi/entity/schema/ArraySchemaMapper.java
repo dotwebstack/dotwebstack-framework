@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
@@ -24,6 +25,11 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
   @Override
   protected Set<String> getSupportedVendorExtensions() {
     return new HashSet<>();
+  }
+  @Override
+  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull TupleEntity entity,
+                              @NonNull ValueContext valueContext) {
+    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override
@@ -105,7 +111,5 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
   protected Set<IRI> getSupportedDataTypes() {
     return ImmutableSet.of();
   }
-
-
 
 }

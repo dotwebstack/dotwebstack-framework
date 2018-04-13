@@ -2,7 +2,7 @@ package org.dotwebstack.framework.frontend.openapi;
 
 public final class OpenApiSpecificationExtensions {
 
-  public static final String DOTWEBSTACK_PREFIX = "x-dotwebstack-";
+  private static final String DOTWEBSTACK_PREFIX = "x-dotwebstack-";
 
   public static final String INFORMATION_PRODUCT = DOTWEBSTACK_PREFIX.concat("information-product");
 
@@ -14,9 +14,13 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String TYPE = DOTWEBSTACK_PREFIX.concat("type");
 
-  public static final String CONSTANT_VALUE = DOTWEBSTACK_PREFIX.concat("constant-value");
+  public static final String TYPE_SELF_LINK = "self-link";
 
-  public static final String SUBJECT_QUERY = DOTWEBSTACK_PREFIX.concat("subject-query");
+  public static final String TYPE_NEXT_LINK = "next-link";
+
+  public static final String TYPE_PREV_LINK = "prev-link";
+
+  public static final String CONSTANT_VALUE = DOTWEBSTACK_PREFIX.concat("constant-value");
 
   public static final String RELATIVE_LINK = DOTWEBSTACK_PREFIX.concat("relative-link");
 
@@ -24,17 +28,20 @@ public final class OpenApiSpecificationExtensions {
       DOTWEBSTACK_PREFIX.concat("exclude-properties-when-empty-or-null");
 
   /**
-   * Use this vendor extension to configure when an endpoint should give a HTTP 404 response. The
-   * value of this vendor extension should configure a SPARQL ASK query which will be applied to the
-   * resulting linked data from the back end. If the ASK query returns false, a 404 response is
-   * returned. If the query returns true, the default flow is continued.
+   * Use this vendor extension to configure how the subject resources can be extracted from a graph
+   * result. The value of this vendor extension should configure a SPARQL SELECT query which will be
+   * applied to the resulting linked data from the back end. The query must select a single binding
+   * which is used to retrieve the set of subject resources. If the extension is accompanied by a
+   * 404 response definition, an empty set of subjects will result in a 404 response status.
    * <ul>
    * <li>The vendor extension should be applied on the operation level;</li>
-   * <li>The extension should be accompanied by a 404 response (and vice versa);</li>
+   * <li>The extension can be accompanied by a 404 response, to add 404 status behavior;</li>
    * <li>See the dotwebstack-integration-test/.../OpenApiIntegrationTest for an usage example.</li>
    * </ul>
    */
-  public static final String RESULT_FOUND_QUERY = DOTWEBSTACK_PREFIX.concat("result-found-query");
+  public static final String SUBJECT_QUERY = DOTWEBSTACK_PREFIX.concat("subject-query");
+
+  public static final String SUBJECT = DOTWEBSTACK_PREFIX.concat("subject");
 
   /**
    * Handles "x-dotwebstack-context-links" vendor extension. <br/>
@@ -50,7 +57,7 @@ public final class OpenApiSpecificationExtensions {
    *     link-choices:
    *       # value of the key is compared (case-insensitive) with result of x-dotwebstack-key-ldpath
    *     - key: "bestemmingsplan"
-   *       # this relative link is chosen 
+   *       # this relative link is chosen
    *       # if value of key above equals to result of x-dotwebstack-key-ldpath
    *       x-dotwebstack-relative-link:
    *         pattern: /bestemmingsplangebieden/$1

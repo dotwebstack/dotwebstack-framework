@@ -11,7 +11,7 @@ public class IntegerTermParameter extends TermParameter<Integer> {
     this(identifier, name, required, null);
   }
 
-  IntegerTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
+  public IntegerTermParameter(@NonNull Resource identifier, @NonNull String name, boolean required,
       Integer defaultValue) {
     super(identifier, name, required, defaultValue);
   }

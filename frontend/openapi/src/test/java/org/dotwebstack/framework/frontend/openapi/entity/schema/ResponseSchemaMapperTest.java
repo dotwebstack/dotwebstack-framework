@@ -1,13 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.Response;
@@ -31,14 +29,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import static org.hamcrest.Matchers.instanceOf;
+import com.google.common.base.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ResponseSchemaMapperTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
+
+  @Captor
+  private ArgumentCaptor<ValueContext> valueContextCaptor;
 
   @Mock
   private GraphEntity graphEntityMock;
@@ -93,7 +98,7 @@ public class ResponseSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_SwitchesContext_WhenSubjectQueryHasBeenDefined() {
+  public void mapGraphValue_DoesNotSwitchContext_WhenSubjectExtIsNotEnabled() {
     // Arrange
     response.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
         String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE)));

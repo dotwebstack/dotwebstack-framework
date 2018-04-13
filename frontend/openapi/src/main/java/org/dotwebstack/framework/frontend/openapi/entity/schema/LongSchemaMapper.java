@@ -11,6 +11,7 @@ import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,7 +28,9 @@ public class LongSchemaMapper extends AbstractSchemaMapper<LongProperty, Long> {
   }
 
   @Override
-  public Long mapTupleValue(@NonNull LongProperty schema, @NonNull ValueContext valueContext) {
+
+  public Long mapTupleValue(@NonNull LongProperty schema, @NonNull TupleEntity entity,
+      @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
   }
 

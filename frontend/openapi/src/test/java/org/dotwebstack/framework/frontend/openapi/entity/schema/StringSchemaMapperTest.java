@@ -17,6 +17,7 @@ import java.util.Map;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -34,11 +35,13 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class StringSchemaMapperTest {
 
+  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
+
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
-
+  @Mock
+  private TupleEntity tupleEntityMock;
   @Mock
   private GraphEntity graphEntityMock;
   @Mock
@@ -62,7 +65,7 @@ public class StringSchemaMapperTest {
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    String result = stringSchemaMapper.mapTupleValue(stringProperty,
+    String result = stringSchemaMapper.mapTupleValue(stringProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert

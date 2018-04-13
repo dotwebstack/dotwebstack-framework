@@ -34,6 +34,7 @@ public class DateSchemaMapperTest {
 
   @Mock
   private GraphEntity graphEntityMock;
+
   @Mock
   private SchemaMapperAdapter schemaMapperAdapter;
   @Mock

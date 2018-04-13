@@ -14,6 +14,7 @@ import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -43,6 +44,8 @@ public class IntegerSchemaMapperTest {
   private Value valueMock;
   @Mock
   private LdPathExecutor ldPathExecutorMock;
+  @Mock
+  private TupleEntity tupleEntityMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
   private IntegerSchemaMapper integerSchemaMapper;
@@ -64,14 +67,14 @@ public class IntegerSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    integerSchemaMapper.mapTupleValue(integerProperty,
+    integerSchemaMapper.mapTupleValue(integerProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Integer result = (Integer) integerSchemaMapper.mapTupleValue(integerProperty,
+    Integer result = (Integer) integerSchemaMapper.mapTupleValue(integerProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
 
     // Assert

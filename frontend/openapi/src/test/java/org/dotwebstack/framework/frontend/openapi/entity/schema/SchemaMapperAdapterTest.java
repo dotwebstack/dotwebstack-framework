@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.StringProperty;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,6 +26,8 @@ public class SchemaMapperAdapterTest {
 
   @Mock
   private SchemaMapper<StringProperty, String> stringSchemaMapperMock;
+  @Mock
+  private TupleEntity tupleEntityMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
 
@@ -45,7 +48,7 @@ public class SchemaMapperAdapterTest {
         integerProperty.getClass().getName()));
 
     // Act
-    schemaMapperAdapter.mapTupleValue(integerProperty,
+    schemaMapperAdapter.mapTupleValue(integerProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
@@ -56,10 +59,12 @@ public class SchemaMapperAdapterTest {
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
     when(stringSchemaMapperMock.supports(stringProperty)).thenReturn(true);
     when(stringSchemaMapperMock.mapTupleValue(any(StringProperty.class),
+    when(stringSchemaMapperMock.supports(stringProperty)).thenReturn(true);
+    when(stringSchemaMapperMock.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
         any(ValueContext.class))).thenReturn(expectedValue);
 
     // Act
-    Object value = schemaMapperAdapter.mapTupleValue(stringProperty,
+    Object value = schemaMapperAdapter.mapTupleValue(stringProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert

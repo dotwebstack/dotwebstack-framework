@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.StringProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
@@ -41,6 +42,8 @@ public class StringSchemaMapperRelativeLinkTest {
   private GraphEntity graphEntityMock;
   @Mock
   private LdPathExecutor ldPathExecutorMock;
+  @Mock
+  private RequestContext requestContextMock;
 
   private ValueContext valueContext;
   private SchemaMapperAdapter schemaMapperAdapter;
@@ -54,7 +57,9 @@ public class StringSchemaMapperRelativeLinkTest {
     schemaMapperAdapter = new SchemaMapperAdapter(ImmutableList.of(schemaMapper));
     valueContext = ValueContext.builder().value(VALUE_1).build();
 
-    when(graphEntityMock.getBaseUri()).thenReturn(BASE_URL);
+
+    when(requestContextMock.getBaseUri()).thenReturn(BASE_URL);
+    when(graphEntityMock.getRequestContext()).thenReturn(requestContextMock);
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 

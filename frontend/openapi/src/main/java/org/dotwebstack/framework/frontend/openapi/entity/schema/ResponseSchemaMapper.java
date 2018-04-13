@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -20,7 +21,7 @@ class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProp
   }
 
   @Override
-  public Object mapTupleValue(@NonNull ResponseProperty schema, @NonNull ValueContext value) {
+  public Object mapTupleValue(@NonNull ResponseProperty schema,  @NonNull TupleEntity entity, @NonNull ValueContext value) {
     throw new UnsupportedOperationException();
   }
 

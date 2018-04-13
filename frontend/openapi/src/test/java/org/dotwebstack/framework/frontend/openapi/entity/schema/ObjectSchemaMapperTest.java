@@ -1,10 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,11 +15,7 @@ import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.models.properties.StringProperty;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.Rdf4jUtils;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -34,6 +27,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -134,10 +128,10 @@ public class ObjectSchemaMapperTest {
 
     // Assert
     assertThat(result.keySet(), hasSize(4));
-    assertThat(result, hasEntry(KEY_1, com.google.common.base.Optional.of(STR_VALUE_1)));
-    assertThat(result, hasEntry(KEY_2, com.google.common.base.Optional.of(STR_VALUE_2)));
-    assertThat(result, hasEntry(KEY_3, com.google.common.base.Optional.of(VALUE_3)));
-    assertThat(result, hasEntry(KEY_4, com.google.common.base.Optional.absent()));
+    assertThat(result, hasEntry(KEY_1, Optional.of(STR_VALUE_1)));
+    assertThat(result, hasEntry(KEY_2, Optional.of(STR_VALUE_2)));
+    assertThat(result, hasEntry(KEY_3, Optional.of(VALUE_3)));
+    assertThat(result, hasEntry(KEY_4, Optional.absent()));
   }
 
   @Test
@@ -194,29 +188,29 @@ public class ObjectSchemaMapperTest {
   public void mapGraphValue_SwitchesContext_WhenSubjectQueryHasBeenDefined() {
     // Arrange
     objectProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
-        String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
-        OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
+            String.format("SELECT ?s WHERE { ?s <%s> <%s>}", RDF.TYPE, DBEERPEDIA.BREWERY_TYPE),
+            OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()));
     objectProperty.setProperties(
-        ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
+            ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), new StringProperty()));
 
     Model model = new ModelBuilder().subject(DBEERPEDIA.BROUWTOREN).add(RDF.TYPE,
-        DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).build();
+            DBEERPEDIA.BREWERY_TYPE).add(DBEERPEDIA.NAME, DBEERPEDIA.BROUWTOREN_NAME).build();
     when(graphEntityMock.getRepository()).thenReturn(Rdf4jUtils.asRepository(model));
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
-        DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
+            DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
     Object result = schemaMapperAdapter.mapGraphValue(objectProperty, graphEntityMock,
-        ValueContext.builder().value(null).build(), schemaMapperAdapter);
+            ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
-    assertThat(result, instanceOf(Map.class));
+    assertThat(result, Matchers.instanceOf(Map.class));
 
     Map map = (Map) result;
 
     assertThat(map, is(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(),
-        Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue()))));
+            Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue()))));
   }
 
   @Test
@@ -316,7 +310,6 @@ public class ObjectSchemaMapperTest {
     // Assert
     assertThat(result, is(false));
   }
-
 
   @Test
   public void getSupportedDataTypes_ReturnsEmptySet() {

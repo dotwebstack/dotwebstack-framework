@@ -66,16 +66,13 @@ public class RepresentationResourceProviderTest {
   private StageResourceProvider stageResourceProvider;
 
   @Mock
-  private RepresentationResourceProvider representationResourceProvider;
-
-  @Mock
   private ParameterMapperResourceProvider parameterMapperResourceProvider;
 
   @Mock
   private InformationProduct informationProduct;
 
   @Mock
-  Transaction transaction;
+  private Transaction transaction;
 
   @Mock
   private Stage stage;
@@ -98,7 +95,9 @@ public class RepresentationResourceProviderTest {
   @Mock
   private GraphQuery graphQuery;
 
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
+  private RepresentationResourceProvider representationResourceProvider;
 
   @Before
   public void setUp() {
@@ -145,7 +144,7 @@ public class RepresentationResourceProviderTest {
 
     // Act
     new RepresentationResourceProvider(configurationBackend, informationProductResourceProvider,
-        transactionResourceProvider,null, stageResourceProvider, parameterMapperResourceProvider,
+        transactionResourceProvider, null, stageResourceProvider, parameterMapperResourceProvider,
         applicationProperties);
   }
 
@@ -181,7 +180,7 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
-                ELMO.PATH_PATTERN, DBEERPEDIA.PATH_PATTERN),
+                ELMO.APPLIES_TO_PROP, DBEERPEDIA.APPLIES_TO),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
@@ -198,8 +197,8 @@ public class RepresentationResourceProviderTest {
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
     assertThat(representation, is(not(nullValue())));
     assertThat(representation.getInformationProduct(), equalTo(informationProduct));
-    assertThat(representation.getPathPatterns().toArray()[0],
-        equalTo(DBEERPEDIA.PATH_PATTERN.stringValue()));
+    assertThat(representation.getAppliesTo().toArray()[0],
+        equalTo(DBEERPEDIA.APPLIES_TO.stringValue()));
     assertThat(representation.getStage(), equalTo(stage));
     assertThat(representation.getAppearance(), equalTo(appearance));
     assertThat(representation.getParameterMappers(), contains(parameterMapper));
@@ -215,9 +214,10 @@ public class RepresentationResourceProviderTest {
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.INFORMATION_PRODUCT_PROP, DBEERPEDIA.PERCENTAGES_INFORMATION_PRODUCT),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
-                ELMO.PATH_PATTERN, valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "helloWorld")),
+                ELMO.APPLIES_TO_PROP, valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "helloWorld")),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
-                ELMO.PATH_PATTERN, valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "this/is/sparta")),
+                ELMO.APPLIES_TO_PROP,
+                valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "this/is/sparta")),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
                 ELMO.STAGE_PROP, DBEERPEDIA.STAGE),
             valueFactory.createStatement(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION,
@@ -232,9 +232,9 @@ public class RepresentationResourceProviderTest {
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
     assertThat(representation, is(not(nullValue())));
     assertThat(representation.getInformationProduct(), equalTo(informationProduct));
-    assertThat(representation.getPathPatterns().toArray()[1],
+    assertThat(representation.getAppliesTo().toArray()[1],
         equalTo(DBEERPEDIA.NAMESPACE + "helloWorld"));
-    assertThat(representation.getPathPatterns().toArray()[0],
+    assertThat(representation.getAppliesTo().toArray()[0],
         equalTo(DBEERPEDIA.NAMESPACE + "this/is/sparta"));
     assertThat(representation.getStage(), equalTo(stage));
     assertThat(representation.getAppearance(), equalTo(appearance));
@@ -277,12 +277,12 @@ public class RepresentationResourceProviderTest {
     // Assert
     Representation graphBreweryRepresentation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
-    assertThat(graphBreweryRepresentation.getPathPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(graphBreweryRepresentation.getAppliesTo(), is(Collections.EMPTY_LIST));
     assertThat(graphBreweryRepresentation.getStage(), not(nullValue()));
     assertThat(graphBreweryRepresentation.getInformationProduct(), not(nullValue()));
     Representation tupleBreweryRepresentation =
         representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION);
-    assertThat(tupleBreweryRepresentation.getPathPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(tupleBreweryRepresentation.getAppliesTo(), is(Collections.EMPTY_LIST));
     assertThat(tupleBreweryRepresentation.getStage(), not(nullValue()));
     assertThat(tupleBreweryRepresentation.getInformationProduct(), not(nullValue()));
     Representation subRepresentation = representationResourceProvider.get(subRepresentationName);
@@ -361,7 +361,7 @@ public class RepresentationResourceProviderTest {
   }
 
   @Test
-  public void loadResources_LoadRepresentation_WithMissingPathPatterns() {
+  public void loadResources_LoadRepresentation_WithMissingAppliesTo() {
     // Arrange
     when(graphQuery.evaluate()).thenReturn(new IteratingGraphQueryResult(ImmutableMap.of(),
         ImmutableList.of(
@@ -378,7 +378,7 @@ public class RepresentationResourceProviderTest {
     // Assert
     Representation representation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
-    assertThat(representation.getPathPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(representation.getAppliesTo(), is(Collections.EMPTY_LIST));
     assertThat(representation.getStage(), not(nullValue()));
     assertThat(representation.getInformationProduct(), not(nullValue()));
   }
@@ -396,7 +396,7 @@ public class RepresentationResourceProviderTest {
     // Assert
     Representation representation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
-    assertThat(representation.getPathPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(representation.getAppliesTo(), is(Collections.EMPTY_LIST));
     assertThat(representation.getStage(), is(nullValue()));
     assertThat(representation.getInformationProduct(), is(nullValue()));
   }
@@ -427,12 +427,12 @@ public class RepresentationResourceProviderTest {
     // Assert
     Representation graphBreweryRepresentation =
         representationResourceProvider.get(DBEERPEDIA.GRAPH_BREWERY_LIST_REPRESENTATION);
-    assertThat(graphBreweryRepresentation.getPathPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(graphBreweryRepresentation.getAppliesTo(), is(Collections.EMPTY_LIST));
     assertThat(graphBreweryRepresentation.getStage(), not(nullValue()));
     assertThat(graphBreweryRepresentation.getInformationProduct(), not(nullValue()));
     Representation tupleBreweryRepresentation =
         representationResourceProvider.get(DBEERPEDIA.TUPLE_BREWERY_LIST_REPRESENTATION);
-    assertThat(tupleBreweryRepresentation.getPathPatterns(), is(Collections.EMPTY_LIST));
+    assertThat(tupleBreweryRepresentation.getAppliesTo(), is(Collections.EMPTY_LIST));
     assertThat(tupleBreweryRepresentation.getStage(), not(nullValue()));
     assertThat(tupleBreweryRepresentation.getInformationProduct(), not(nullValue()));
     assertThat(tupleBreweryRepresentation.getSubRepresentations(),

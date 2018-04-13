@@ -45,11 +45,6 @@ public class BooleanSchemaMapperConstantValueTest {
     valueContext = ValueContext.builder().build();
   }
 
-  private void assertBooleanTrue(Object result) {
-    assertThat(result, instanceOf(Boolean.class));
-    assertThat(result, is(true));
-  }
-
   @Test
   public void mapGraphValue_ReturnsBooleanValue_WhenStringConstantValueIsDefined() {
     // Arrange
@@ -90,5 +85,8 @@ public class BooleanSchemaMapperConstantValueTest {
     // Assert
     assertBooleanTrue(result);
   }
-
+  private static void assertBooleanTrue(Object result) {
+    assertThat(result, instanceOf(Boolean.class));
+    assertThat(result, is(true));
+  }
 }

@@ -17,17 +17,16 @@ public class SupportedReaderMediaTypesScanner {
 
   private static final Logger LOG = LoggerFactory.getLogger(SupportedReaderMediaTypesScanner.class);
 
-  private List<MessageBodyReader<Model>> modelReaders = new ArrayList<>();
+  private final List<MessageBodyReader<Model>> modelReaders = new ArrayList<>();
 
-  private List<MediaType> mediaTypes = new ArrayList<>();
+  private final List<MediaType> mediaTypes = new ArrayList<>();
 
   @Autowired
-  public SupportedReaderMediaTypesScanner(
-      List<MessageBodyReader> modelReaders) {
+  public SupportedReaderMediaTypesScanner(List<MessageBodyReader<Model>> modelReaders) {
     loadSupportedMediaTypes(modelReaders);
   }
 
-  private void loadSupportedMediaTypes(List<MessageBodyReader> modelReaders) {
+  private void loadSupportedMediaTypes(List<MessageBodyReader<Model>> modelReaders) {
     modelReaders.forEach(reader -> {
       Consumes consumesAnnotation = reader.getClass().getAnnotation(Consumes.class);
       if (consumesAnnotation == null) {
@@ -38,13 +37,13 @@ public class SupportedReaderMediaTypesScanner {
       }
 
       this.modelReaders.add(reader);
-      for (String mediaType: consumesAnnotation.value()) {
+      for (String mediaType : consumesAnnotation.value()) {
         mediaTypes.add(MediaType.valueOf(mediaType));
       }
     });
   }
 
-  public List<MessageBodyReader> getModelReaders() {
+  public List<MessageBodyReader<Model>> getModelReaders() {
     return ImmutableList.copyOf(modelReaders);
   }
 

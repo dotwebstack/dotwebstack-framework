@@ -6,15 +6,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.swagger.models.properties.StringProperty;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.eclipse.rdf4j.model.Literal;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Assert;
@@ -36,6 +34,8 @@ public class StringSchemaMapperContextLinksTest {
 
   @Mock
   private GraphEntity graphEntityMock;
+  @Mock
+  private RequestContext requestContext;
   @Mock
   private LdPathExecutor ldPathExecutorMock;
 
@@ -134,7 +134,7 @@ public class StringSchemaMapperContextLinksTest {
         Lists.newArrayList(SimpleValueFactory.getInstance().createLiteral("object_type_2"));
     when(ldPathExecutorMock.ldPathQuery(VALUE, "key / path")).thenReturn(realKeyResult);
 
-    when(graphEntityMock.getBaseUri()).thenReturn("/base");
+    when(requestContext.getBaseUri()).thenReturn("/base");
 
     // Act
     Object result = schemaMapper.mapGraphValue(stringProperty, graphEntityMock, valueContext,

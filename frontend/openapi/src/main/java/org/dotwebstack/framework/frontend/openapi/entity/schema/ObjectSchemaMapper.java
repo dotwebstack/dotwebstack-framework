@@ -13,6 +13,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
@@ -23,6 +24,12 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
 
   @Override
   protected Set<String> getSupportedVendorExtensions() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Object mapTupleValue(@NonNull ObjectProperty schema, @NonNull TupleEntity entity,
+                              @NonNull ValueContext valueContext) {
     throw new UnsupportedOperationException();
   }
 
@@ -79,10 +86,10 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
   }
 
   private Map<String, Object> handleLdPathVendorExtension(ObjectProperty property,
-      GraphEntity entityBuilderContext, ValueContext valueContext, String ldPathQuery,
+      GraphEntity graphEntity, ValueContext valueContext, String ldPathQuery,
       SchemaMapperAdapter schemaMapperAdapter) {
 
-    LdPathExecutor ldPathExecutor = entityBuilderContext.getLdPathExecutor();
+    LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
@@ -103,13 +110,14 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
     ValueContext newValueContext =
         valueContext.toBuilder().value(queryResult.iterator().next()).build();
 
-    return handleProperties(property, entityBuilderContext, newValueContext, schemaMapperAdapter);
+    return handleProperties(property, graphEntity, newValueContext, schemaMapperAdapter);
   }
 
   private Map<String, Object> handleProperties(ObjectProperty property,
       GraphEntity entityBuilderContext, ValueContext valueContext,
       SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+
     property.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue, entityBuilderContext,
           valueContext, schemaMapperAdapter);
@@ -118,6 +126,7 @@ public class ObjectSchemaMapper extends AbstractSubjectQuerySchemaMapper<ObjectP
         builder.put(propKey, Optional.fromNullable(propertyResult));
       }
     });
+
     return builder.build();
   }
 
