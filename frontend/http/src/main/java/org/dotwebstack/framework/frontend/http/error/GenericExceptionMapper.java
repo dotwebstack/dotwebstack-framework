@@ -21,7 +21,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
     }
 
     Status status = Status.INTERNAL_SERVER_ERROR;
-    ProblemDetails problemDetails = createProblemDetails(cause, status, identifier);
+    ProblemDetails problemDetails = createProblemDetails(status, identifier);
 
     return Response //
         .status(status) //
@@ -34,8 +34,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
     return UUID.randomUUID().toString().substring(0, 8);
   }
 
-  private ProblemDetails createProblemDetails(Exception exception, Status status,
-      String identifier) {
+  private ProblemDetails createProblemDetails(Status status, String identifier) {
     return ProblemDetails.builder()//
         .withStatus(status.getStatusCode())//
         .withTitle(status.getReasonPhrase())//
