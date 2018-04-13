@@ -8,12 +8,10 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @PreMatching
-@Provider
 public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(HostPreMatchingRequestFilter.class);
