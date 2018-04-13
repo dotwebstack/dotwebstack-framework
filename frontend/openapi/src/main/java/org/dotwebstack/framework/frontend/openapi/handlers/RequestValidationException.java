@@ -1,17 +1,15 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import java.util.Map;
-import javax.ws.rs.core.Response.Status;
-import org.dotwebstack.framework.frontend.http.error.ExtendedProblemDetailException;
+import java.util.List;
+import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException;
 
 @SuppressWarnings("squid:MaximumInheritanceDepth")
-public class RequestValidationException extends ExtendedProblemDetailException {
+public class RequestValidationException extends InvalidParamsBadRequestException {
 
   private static final long serialVersionUID = -2378432429849852636L;
 
-  public RequestValidationException(String message, Status status,
-      Map<String, Object> extendedDetails) {
-    super(message, status, extendedDetails);
+  public RequestValidationException(String message, List<InvalidParameter> extendedDetails) {
+    super(message, extendedDetails);
   }
 
 

@@ -33,8 +33,8 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplica
 
     problemDetails.setDetail(e.getMessage());
 
-    if (e instanceof ExtendedProblemDetailException) {
-      problemDetails.setExtendedDetails(((ExtendedProblemDetailException) e).getExtendedDetails());
+    if (e instanceof InvalidParamsBadRequestException) {
+      problemDetails.setInvalidParams(((InvalidParamsBadRequestException) e).getExtendedDetails());
     }
 
     return problemDetails;

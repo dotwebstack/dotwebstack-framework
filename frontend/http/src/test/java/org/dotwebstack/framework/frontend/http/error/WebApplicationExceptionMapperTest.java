@@ -5,12 +5,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.frontend.http.MediaTypes;
+import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException.InvalidParameter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,11 +56,13 @@ public class WebApplicationExceptionMapperTest {
   public void toResponse_ReturnsResponseBasedOnRequestValidationException_WhenCalled()
       throws Exception {
     // Arrange
-    Map<String, Object> detailsMap = new HashMap<>();
+    Map<String, String> detailsMap = new HashMap<>();
     detailsMap.put("detail1", "value1");
     detailsMap.put("detail2", "value2");
-    ExtendedProblemDetailException x =
-        new ExtendedProblemDetailException("message", Status.BAD_REQUEST, detailsMap);
+    List<InvalidParamsBadRequestException.InvalidParameter> details = new ArrayList<>();
+    details.add(new InvalidParameter("detail1", "value1"));
+    details.add(new InvalidParameter("detail2", "value2"));
+    InvalidParamsBadRequestException x = new InvalidParamsBadRequestException("message", details);
 
     // Act
     Response response = webApplicationExceptionMapper.toResponse(x);
@@ -65,11 +70,11 @@ public class WebApplicationExceptionMapperTest {
     // Assert
     assertThat(response.getStatusInfo(), equalTo(Status.BAD_REQUEST));
     assertThat(response.getMediaType(), equalTo(MediaTypes.PROBLEM_JSON));
-    ProblemDetails details = (ProblemDetails) response.getEntity();
-    assertEquals(Status.BAD_REQUEST.getStatusCode(), details.getStatus());
-    assertEquals(Status.BAD_REQUEST.getReasonPhrase(), details.getTitle());
-    assertEquals("message", details.getDetail());
-    assertEquals(2, details.getExtendedDetails().size());
+    ProblemDetails problemdetails = (ProblemDetails) response.getEntity();
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), problemdetails.getStatus());
+    assertEquals(Status.BAD_REQUEST.getReasonPhrase(), problemdetails.getTitle());
+    assertEquals("message", problemdetails.getDetail());
+    assertEquals(2, problemdetails.getExtendedDetails().size());
   }
 
 }
