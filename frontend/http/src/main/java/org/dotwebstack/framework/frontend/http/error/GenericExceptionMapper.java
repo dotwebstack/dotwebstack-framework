@@ -38,8 +38,9 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
     return ProblemDetails.builder()//
         .withStatus(status.getStatusCode())//
         .withTitle(status.getReasonPhrase())//
-        .withDetail(String.format("An error occured from which the server was unable "
-            + "to recover. Please contact the system administrator with the following details: '%s'",
+        .withDetail(String.format(
+            "An error occured from which the server was unable to recover."
+                + "Please contact the system administrator with the following details: '%s'",
             exception.getMessage()))//
         .build();
   }
