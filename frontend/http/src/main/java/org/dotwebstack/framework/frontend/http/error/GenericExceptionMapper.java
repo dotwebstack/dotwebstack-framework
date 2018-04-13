@@ -21,7 +21,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
     }
 
     Status status = Status.INTERNAL_SERVER_ERROR;
-    ProblemDetails problemDetails = createProblemDetails(cause, status);
+    ProblemDetails problemDetails = createProblemDetails(cause, status, identifier);
 
     return Response //
         .status(status) //
@@ -34,14 +34,15 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
     return UUID.randomUUID().toString().substring(0, 8);
   }
 
-  private ProblemDetails createProblemDetails(Exception exception, Status status) {
+  private ProblemDetails createProblemDetails(Exception exception, Status status,
+      String identifier) {
     return ProblemDetails.builder()//
         .withStatus(status.getStatusCode())//
         .withTitle(status.getReasonPhrase())//
         .withDetail(String.format(
             "An error occured from which the server was unable to recover."
                 + "Please contact the system administrator with the following details: '%s'",
-            exception.getMessage()))//
+            identifier))//
         .build();
   }
 
