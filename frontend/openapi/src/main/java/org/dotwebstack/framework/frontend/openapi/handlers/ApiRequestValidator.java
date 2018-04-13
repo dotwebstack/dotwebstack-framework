@@ -14,12 +14,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException.InvalidParameter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class ApiRequestValidator {
-  private static final Logger LOG = LoggerFactory.getLogger(ApiRequestValidator.class);
-
   private static final List<String> FILTERED_HEADERS = ImmutableList.of("accept", "content-type");
 
   private final RequestValidator requestValidator;
@@ -65,8 +61,6 @@ class ApiRequestValidator {
     ValidationReport report = requestValidator.validateRequest(builder.build(), apiOperation);
 
     if (report.hasErrors()) {
-      LOG.error("Request parameter validation failed, with following errors: {}",
-          report.getMessages());
       throw createException(report);
     }
 
