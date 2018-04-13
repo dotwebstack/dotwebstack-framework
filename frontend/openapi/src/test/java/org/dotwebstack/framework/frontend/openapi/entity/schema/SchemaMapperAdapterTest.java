@@ -58,8 +58,6 @@ public class SchemaMapperAdapterTest {
     StringProperty stringProperty = new StringProperty();
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
     when(stringSchemaMapperMock.supports(stringProperty)).thenReturn(true);
-    when(stringSchemaMapperMock.mapTupleValue(any(StringProperty.class),
-    when(stringSchemaMapperMock.supports(stringProperty)).thenReturn(true);
     when(stringSchemaMapperMock.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
         any(ValueContext.class))).thenReturn(expectedValue);
 

@@ -9,11 +9,13 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.Property;
+import java.util.HashSet;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.junit.Rule;
 import org.junit.Test;
@@ -118,6 +120,11 @@ public class AbstractSubjectSchemaMapperTest {
   private static class TestSubjectSchemaMapper extends AbstractSubjectSchemaMapper {
 
     @Override
+    protected Set<String> getSupportedVendorExtensions() {
+      return new HashSet<>();
+    }
+
+    @Override
     public Object mapTupleValue(Property schema, TupleEntity entity, ValueContext valueContext) {
       throw new UnsupportedOperationException();
     }
@@ -126,6 +133,11 @@ public class AbstractSubjectSchemaMapperTest {
     public Object mapGraphValue(Property schema, GraphEntity entity, ValueContext valueContext,
         SchemaMapperAdapter schemaMapperAdapter) {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    Object convertToType(Literal literal) {
+      return literal;
     }
 
     @Override

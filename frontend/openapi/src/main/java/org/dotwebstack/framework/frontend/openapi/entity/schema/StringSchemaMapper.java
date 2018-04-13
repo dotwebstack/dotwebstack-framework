@@ -28,8 +28,11 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   static final String KEY = "key";
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
-  private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
-      OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
+
+  private static final ImmutableSet<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
+          OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
+          OpenApiSpecificationExtensions.CONSTANT_VALUE);
+
 
   @Override
   protected Set<String> getSupportedVendorExtensions() {
@@ -170,13 +173,9 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
    */
   private void validateVendorExtensions(StringProperty property) {
 
-    ImmutableSet<String> supportedVendorExtensions = ImmutableSet.of(
-        OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
-        OpenApiSpecificationExtensions.CONSTANT_VALUE);
-
     long nrOfSupportedVendorExtensionsPresent =
         property.getVendorExtensions().keySet().stream().filter(
-            supportedVendorExtensions::contains).count();
+                SUPPORTED_VENDOR_EXTENSIONS::contains).count();
     if (nrOfSupportedVendorExtensionsPresent > 1) {
       throw new SchemaMapperRuntimeException(String.format(
           "A string object must have either no, a '%s', '%s' or '%s' property. "

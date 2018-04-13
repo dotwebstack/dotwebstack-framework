@@ -13,7 +13,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProperty, Object> {
+class ResponseSchemaMapper extends AbstractSubjectSchemaMapper<ResponseProperty, Object> {
 
   @Override
   protected Set<String> getSupportedVendorExtensions() {
@@ -30,7 +30,7 @@ class ResponseSchemaMapper extends AbstractSubjectQuerySchemaMapper<ResponseProp
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
-    if (hasSubjectQueryVendorExtension(property)) {
+    if (hasSubjectVendorExtension(property)) {
       Value value = getSubject(property, graphEntity);
 
       if (value == null) {

@@ -20,7 +20,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayProperty, Object> {
+public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty, Object> {
 
   @Override
   protected Set<String> getSupportedVendorExtensions() {
@@ -37,8 +37,8 @@ public class ArraySchemaMapper extends AbstractSubjectQuerySchemaMapper<ArrayPro
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    if (hasSubjectQueryVendorExtension(property)) {
-      Set<Resource> subjects = getSubjects(property, graphEntity);
+    if (hasSubjectVendorExtension(property)) {
+      Set<Resource> subjects = graphEntity.getSubjects();
 
       subjects.forEach(subject -> {
         ValueContext subjectContext = valueContext.toBuilder().value(subject).build();
