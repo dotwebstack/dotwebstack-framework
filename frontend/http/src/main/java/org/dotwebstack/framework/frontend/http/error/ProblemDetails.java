@@ -18,6 +18,15 @@ import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestExce
 @JsonInclude(Include.NON_NULL)
 public class ProblemDetails {
 
+  private ProblemDetails(String title, int status, String detail,
+      List<InvalidParameter> extendedDetails) {
+    super();
+    this.title = title;
+    this.status = status;
+    this.detail = detail;
+    this.invalidParameters = extendedDetails;
+  }
+
   private String title;
   private int status;
   private String detail;
@@ -28,38 +37,57 @@ public class ProblemDetails {
    */
   @JsonProperty("invalidParams")
   @JsonInclude(Include.NON_EMPTY)
-  private List<InvalidParameter> extendedDetails = new ArrayList<>();
+  private List<InvalidParameter> invalidParameters = new ArrayList<>();
 
   public String getTitle() {
     return title;
-  }
-
-  void setTitle(String title) {
-    this.title = title;
   }
 
   public int getStatus() {
     return status;
   }
 
-  void setStatus(int status) {
-    this.status = status;
-  }
-
   public String getDetail() {
     return detail;
   }
 
-  void setDetail(String detail) {
-    this.detail = detail;
-  }
-
-  public void setInvalidParams(List<InvalidParameter> list) {
-    this.extendedDetails = list;
-  }
-
   // @JsonAnyGetter
-  public List<InvalidParameter> getExtendedDetails() {
-    return extendedDetails;
+  public List<InvalidParameter> getInvalidParameters() {
+    return invalidParameters;
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+    private String title;
+    private int status;
+    private String detail;
+    private List<InvalidParameter> invalidParameters = new ArrayList<>();
+
+    public Builder withTitle(String title) {
+      this.title = title;
+      return this;
+    }
+
+    public Builder withDetail(String detail) {
+      this.detail = detail;
+      return this;
+    }
+
+    public Builder withStatus(int status) {
+      this.status = status;
+      return this;
+    }
+
+    public Builder withInvalidParameters(List<InvalidParameter> params) {
+      this.invalidParameters = params;
+      return this;
+    }
+
+    public ProblemDetails build() {
+      return new ProblemDetails(title, status, detail, invalidParameters);
+    }
   }
 }

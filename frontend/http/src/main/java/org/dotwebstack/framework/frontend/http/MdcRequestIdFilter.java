@@ -8,13 +8,10 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.ext.Provider;
 import org.slf4j.MDC;
 
 @PreMatching
-@Provider
 public class MdcRequestIdFilter implements ContainerRequestFilter, ContainerResponseFilter {
-
 
   private static final String REQUEST_ID_MDC_KEY = "REQUEST_ID";
 
@@ -29,6 +26,5 @@ public class MdcRequestIdFilter implements ContainerRequestFilter, ContainerResp
       ContainerResponseContext responseContext) throws IOException {
     MDC.remove(REQUEST_ID_MDC_KEY);
   }
-
 
 }

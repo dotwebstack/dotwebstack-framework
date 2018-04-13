@@ -12,12 +12,12 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
   private static final Logger LOG = LoggerFactory.getLogger(GenericExceptionMapper.class);
 
   @Override
-  public Response toResponse(Exception throwable) {
+  public Response toResponse(Exception cause) {
 
-    LOG.error(throwable.getMessage(), throwable);
+    LOG.error(cause.getMessage(), cause);
 
     Status status = Status.INTERNAL_SERVER_ERROR;
-    ProblemDetails problemDetails = createProblemDetails(throwable, status);
+    ProblemDetails problemDetails = createProblemDetails(cause, status);
 
     return Response //
         .status(status) //
@@ -27,15 +27,13 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
   }
 
   private ProblemDetails createProblemDetails(Exception throwable, Status status) {
-    ProblemDetails problemDetails = new ProblemDetails();
-
-    problemDetails.setStatus(status.getStatusCode());
-    problemDetails.setTitle(status.getReasonPhrase());
-    problemDetails.setDetail(String.format("An error occured from which the server was unable "
-        + "to recover. Please contact the system administrator with the following details: '%s'",
-        throwable.getMessage()));
-
-    return problemDetails;
+    return ProblemDetails.builder()//
+        .withStatus(status.getStatusCode())//
+        .withTitle(status.getReasonPhrase())//
+        .withDetail(String.format("An error occured from which the server was unable "
+            + "to recover. Please contact the system administrator with the following details: '%s'",
+            throwable.getMessage()))//
+        .build();
   }
 
 

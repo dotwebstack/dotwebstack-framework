@@ -7,12 +7,9 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
-import javax.ws.rs.ext.Provider;
 
 @PreMatching
-@Provider
 public class RequestIdFilter implements ContainerRequestFilter, ContainerResponseFilter {
-
 
   private static final String X_REQUEST_ID_HEADER = "X-Request-ID";
   public static final String REQUEST_ID_PROPERTY = "REQUEST_ID";

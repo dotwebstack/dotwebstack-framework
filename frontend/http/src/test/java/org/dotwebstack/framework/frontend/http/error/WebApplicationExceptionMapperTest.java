@@ -49,7 +49,7 @@ public class WebApplicationExceptionMapperTest {
     assertEquals(Status.NOT_ACCEPTABLE.getStatusCode(), details.getStatus());
     assertEquals(Status.NOT_ACCEPTABLE.getReasonPhrase(), details.getTitle());
     assertEquals("unacceptable!", details.getDetail());
-    assertEquals(0, details.getExtendedDetails().size());
+    assertEquals(0, details.getInvalidParameters().size());
   }
 
   @Test
@@ -74,7 +74,7 @@ public class WebApplicationExceptionMapperTest {
     assertEquals(Status.BAD_REQUEST.getStatusCode(), problemdetails.getStatus());
     assertEquals(Status.BAD_REQUEST.getReasonPhrase(), problemdetails.getTitle());
     assertEquals("message", problemdetails.getDetail());
-    assertEquals(2, problemdetails.getExtendedDetails().size());
+    assertEquals(2, problemdetails.getInvalidParameters().size());
   }
 
 }

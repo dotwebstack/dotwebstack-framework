@@ -42,13 +42,14 @@ public class ServletErrorHandlerTest {
   public void apply_ReturnsExceptionBasedOnStatusCodeParameter_WhenStatusCodeIsKnown() {
     // Arrange
     pathParameters.add("statusCode", "406");
+
+    // Assert
     thrown.expect(WebApplicationException.class);
     thrown.expectMessage("HTTP 406 Not Acceptable");
 
     // Act
     servletErrorHandler.apply(context);
 
-    // Assert
   }
 
   @Test

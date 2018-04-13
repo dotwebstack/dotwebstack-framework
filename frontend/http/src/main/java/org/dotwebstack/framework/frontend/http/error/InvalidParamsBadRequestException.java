@@ -8,7 +8,7 @@ public class InvalidParamsBadRequestException extends WebApplicationException {
 
   private static final long serialVersionUID = 4523810251268331255L;
 
-  private final transient List<InvalidParameter> extendedDetails;
+  private final List<InvalidParameter> extendedDetails;
 
   public InvalidParamsBadRequestException(String message, List<InvalidParameter> extendedDetails) {
     super(message, Status.BAD_REQUEST);

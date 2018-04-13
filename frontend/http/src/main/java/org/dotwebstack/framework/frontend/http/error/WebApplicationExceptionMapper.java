@@ -7,16 +7,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.http.error.ProblemDetails.Builder;
 
 public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplicationException> {
 
   @Override
-  public Response toResponse(@NonNull WebApplicationException e) {
-
-
-    Status status = Status.fromStatusCode(e.getResponse().getStatus());
-    ProblemDetails problemDetails = createProblemDetails(e, status);
-
+  public Response toResponse(@NonNull WebApplicationException waException) {
+    Status status = Status.fromStatusCode(waException.getResponse().getStatus());
+    ProblemDetails problemDetails = createProblemDetails(waException, status);
 
     return Response //
         .status(status) //
@@ -25,18 +23,17 @@ public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplica
         .build();
   }
 
-  private ProblemDetails createProblemDetails(WebApplicationException e, Status status) {
-    ProblemDetails problemDetails = new ProblemDetails();
-
-    problemDetails.setStatus(status.getStatusCode());
-    problemDetails.setTitle(status.getReasonPhrase());
-
-    problemDetails.setDetail(e.getMessage());
-
-    if (e instanceof InvalidParamsBadRequestException) {
-      problemDetails.setInvalidParams(((InvalidParamsBadRequestException) e).getExtendedDetails());
+  private ProblemDetails createProblemDetails(WebApplicationException waException, Status status) {
+    Builder builder = ProblemDetails.builder()//
+        .withStatus(status.getStatusCode())//
+        .withTitle(status.getReasonPhrase())//
+        .withDetail(waException.getMessage());
+    if (waException instanceof InvalidParamsBadRequestException) {
+      builder.withInvalidParameters(
+          ((InvalidParamsBadRequestException) waException).getExtendedDetails());
     }
 
-    return problemDetails;
+    return builder.build();
   }
+
 }
