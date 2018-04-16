@@ -41,7 +41,11 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
     String forwardedHost = containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
     LOG.debug("x-forwarded-host: {}", forwardedHost);
 
-    return forwardedHost == null || forwardedHost.equals("") ? uri.getHost()
-        : forwardedHost.split(",")[0];
+    if (forwardedHost == null || forwardedHost.equals("")) {
+      return uri.getHost();
+    } else {
+      // remove port if present
+      return UriBuilder.fromUri("http://" + forwardedHost.split(",")[0]).build().getHost();
+    }
   }
 }

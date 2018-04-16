@@ -36,6 +36,8 @@ public class HostPreMatchingRequestFilterTest {
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
 
     URI uri = URI.create("http://" + DBEERPEDIA.ORG_HOST + "/beer");
+    when(uriInfo.getAbsolutePath()).thenReturn(uri);
+
     when(uriInfo.getRequestUriBuilder()).thenReturn(UriBuilder.fromUri(uri));
   }
 
