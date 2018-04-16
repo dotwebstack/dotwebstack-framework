@@ -42,25 +42,36 @@ public class DynamicEndpointResourceProviderTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
+
   private final ValueFactory valueFactory = SimpleValueFactory.getInstance();
+
   @Mock
   private ConfigurationBackend configurationBackend;
+
   @Mock
   private SailRepository configurationRepository;
+
   @Mock
   private SailRepositoryConnection configurationRepositoryConnection;
+
   @Mock
   private ApplicationProperties applicationProperties;
+
   @Mock
   private ParameterMapperResourceProvider parameterMapperResourceProvider;
+
   @Mock
   private StageResourceProvider stageResourceProvider;
+
   @Mock
   private Stage stage;
+
   @Mock
   private ParameterMapper parameterMapper;
+
   @Mock
   private GraphQuery graphQuery;
+
   private DynamicEndpointResourceProvider dynamicEndpointResourceProvider;
 
   @Before

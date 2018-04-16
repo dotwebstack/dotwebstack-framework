@@ -104,13 +104,14 @@ public class ConfigurationIntegrationTest {
     assertThat(dynamicEndpointResourceProvider.get(DBEERPEDIA.DOC_ENDPOINT).getLabel(),
         notNullValue());
     assertThat(directEndpointResourceProvider.get(DBEERPEDIA.DEFAULT_ENDPOINT), notNullValue());
-    assertThat(stepResourceProvider.getAll().entrySet(), hasSize(7));
+    assertThat(stepResourceProvider.getAll().entrySet(), hasSize(8));
     assertThat(stepResourceProvider.get(DBEERPEDIA.PERSISTENCE_STEP), notNullValue());
     assertThat(serviceResourceProvider.getAll().entrySet(), hasSize(3));
     assertThat(stepResourceProvider.get(DBEERPEDIA.ASSERTION_IF_EXIST_STEP), notNullValue());
     assertThat(stepResourceProvider.get(DBEERPEDIA.ASSERTION_IF_NOT_EXIST_STEP), notNullValue());
     assertThat(stepResourceProvider.get(DBEERPEDIA.PRE_UPDATE_STEP), notNullValue());
     assertThat(stepResourceProvider.get(DBEERPEDIA.POST_UPDATE_STEP), notNullValue());
+    assertThat(stepResourceProvider.get(DBEERPEDIA.VALIDATION_STEP), notNullValue());
   }
 
 }

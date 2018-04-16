@@ -14,6 +14,8 @@ public final class DBEERPEDIA {
 
   public static final Literal BASE_PATH;
 
+  public static final IRI SHACL_CONCEPT_GRAPHNAME;
+
   public static final String TITLE = "Dbeerpedia";
 
   public static final IRI NAME;
@@ -202,6 +204,8 @@ public final class DBEERPEDIA {
 
   public static final IRI POST_UPDATE_STEP;
 
+  public static final IRI VALIDATION_STEP;
+
   public static final IRI TRANSACTION;
 
   public static final IRI SEQUENTIAL_FLOW;
@@ -214,6 +218,7 @@ public final class DBEERPEDIA {
 
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
+    SHACL_CONCEPT_GRAPHNAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ConceptShapeGraph");
     SYSTEM_GRAPH_IRI = valueFactory.createIRI(DBEERPEDIA.SYSTEM_GRAPH);
     SITE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Site");
     STAGE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Stage");
@@ -343,6 +348,8 @@ public final class DBEERPEDIA {
     TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
 
     SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
+
+    VALIDATION_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ValidationStep");
 
     SERVICE_DELETE = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "deleteService");
     SERVICE_POST = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "postService");

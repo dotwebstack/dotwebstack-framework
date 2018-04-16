@@ -11,6 +11,8 @@ public final class ELMO {
 
   public static final IRI SHACL_GRAPHNAME;
 
+  public static final IRI SHACL_CONCEPT_GRAPHNAME;
+
   public static final IRI CONTAINS_PROP;
 
   public static final IRI INFORMATION_PRODUCT;
@@ -133,6 +135,8 @@ public final class ELMO {
 
   public static final IRI TARGET_GRAPH_PROP;
 
+  public static final IRI CONFORMS_TO_PROP;
+
   public static final IRI SERVICE;
 
   public static final IRI SERVICE_POST_PROP;
@@ -153,6 +157,8 @@ public final class ELMO {
     CONFIG_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Config");
 
     SHACL_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "Shacl");
+
+    SHACL_CONCEPT_GRAPHNAME = valueFactory.createIRI(ELMO.NAMESPACE, "ConceptShapeGraph");
 
     // Classes
     INFORMATION_PRODUCT = valueFactory.createIRI(ELMO.NAMESPACE, "InformationProduct");
@@ -246,6 +252,8 @@ public final class ELMO {
 
     GET_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "getRepresentation");
     POST_REPRESENTATION_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "postRepresentation");
+
+    CONFORMS_TO_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "conformsTo");
 
     SERVICE_POST_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "postService");
     SERVICE_PUT_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "putService");

@@ -1,0 +1,12 @@
+ex:Marco a ex:Persoon;
+  ex:naam "Marco";
+.
+
+ex:Nanda a ex:Persoon;
+  ex:naam "Nanda";
+ .
+
+ex:HuwelijkMarcoNanda a ex:Huwelijk;
+  ex:lid ex:Marco;
+  ex:lid ex:Nanda;
+.

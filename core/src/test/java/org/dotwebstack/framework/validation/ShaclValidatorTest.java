@@ -64,24 +64,6 @@ public class ShaclValidatorTest {
   }
 
   @Test
-  public void validate_ThrowNullPointerException_NullDataResource() throws Exception {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    shaclValidator.validate(null, RdfModelTransformer.getModel(shapesResource.getInputStream()));
-  }
-
-  @Test
-  public void validate_ThrowNullPointerException_NullShapesResource() throws Exception {
-    // Assert
-    thrown.expect(NullPointerException.class);
-
-    // Act
-    shaclValidator.validate(RdfModelTransformer.getModel(validDataResource.getInputStream()), null);
-  }
-
-  @Test
   public void validate_NoErrors_validConfiguration() throws Exception {
     // Act
     final ValidationReport report =

@@ -6,10 +6,17 @@ GRAPH dbeerpedia:Theatre {
       dbeerpedia:PreUpdateStep
       dbeerpedia:AssertIfNotExists
       dbeerpedia:AssertIfExists
+      dbeerpedia:ValidationStep
       dbeerpedia:PersistenceStep
       dbeerpedia:PostUpdateStep
     );
   .
+
+  dbeerpedia:ValidationStep a elmo:ValidationStep;
+    rdfs:label "validation to check concept";
+    elmo:conformsTo dbeerpedia:ConceptShapeGraph;
+  .
+
   dbeerpedia:PreUpdateStep a elmo:UpdateStep;
   	rdfs:label "Pre update";
     elmo:backend elmo:TransactionRepository;
@@ -71,4 +78,16 @@ GRAPH dbeerpedia:Theatre {
       elmo:targetGraph <http://dotwebstack.org/all-concepts>;
     ])
   .
+}
+
+#Concept Shape graph
+GRAPH dbeerpedia:ConceptShapeGraph {
+	# Constraint: a concept should have a prefLabel
+	dbeerpedia:ConceptShape a sh:NodeShape;
+		sh:targetClass skos:Concept;
+		sh:property [
+			sh:path skos:prefLabel;
+			sh:minCount 1;
+		];
+	.
 }

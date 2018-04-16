@@ -1,0 +1,1033 @@
+# baseURI: http://dotwebstack.org/def/elmo-shacl#
+
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix sh: <http://www.w3.org/ns/shacl#>.
+@prefix dc: <http://purl.org/dc/elements/1.1/>.
+@prefix skos: <http://www.w3.org/2004/02/skos/core#>.
+@prefix http: <http://www.w3.org/2011/http#>.
+@prefix xhtml: <http://www.w3.org/1999/xhtml/vocab#>.
+
+@prefix elmo-shape: <http://dotwebstack.org/def/elmo-shacl#> .
+@prefix elmo-schemes: <http://dotwebstack.org/def/elmo/>.
+@prefix elmo-rt: <http://dotwebstack.org/def/elmo/result-type/>.
+@prefix elmo: <http://dotwebstack.org/def/elmo#>.
+
+GRAPH elmo:Shacl {
+elmo-shape:
+  rdfs:label "SHACL for ELMO"@en;
+  rdfs:comment "This shapes graph can be used to validate dotwebstack configurations. It can also be used to create a visual representation of the structure"@en;
+  sh:declare [
+    sh:prefix "elmo-shape";
+    sh:namespace "http://dotwebstack.org/def/elmo-shacl#";
+  ]
+.
+
+# =========
+# System configuration shapes
+#
+elmo-shape:Theatre a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:Theatre;
+  rdfs:label "Theatre shape"@en;
+  sh:name "elmo:Theatre";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Theatre;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "rdfs:label";
+    sh:path rdfs:label;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "dc:title";
+    sh:path dc:title;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "elmo:layout";
+    sh:path elmo:layout;
+    sh:maxCount 1;
+    sh:class elmo:Layout;
+  ];
+  sh:property [
+    sh:name "elmo:defaultBackend";
+    sh:path elmo:defaultBackend;
+    sh:maxCount 1;
+    sh:class elmo:Backend;
+  ];
+.
+elmo-shape:Site a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:Site;
+  rdfs:label "Site shape"@en;
+  sh:name "elmo:Site";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Site;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:domain";
+    sh:path elmo:domain;
+    sh:maxCount 1;
+    sh:datatype xsd:string
+  ];
+  sh:property [
+    sh:name "rdfs:label";
+    sh:path rdfs:label;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "dc:title";
+    sh:path dc:title;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "elmo:layout";
+    sh:path elmo:layout;
+    sh:class elmo:Layout;
+    sh:maxCount 1
+  ];
+  sh:property [
+    sh:name "elmo:defaultBackend";
+    sh:path elmo:defaultBackend;
+    sh:maxCount 1;
+    sh:class elmo:Backend;
+  ];
+.
+elmo-shape:Stage a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:Stage;
+  rdfs:label "Stage shape"@en;
+  sh:name "elmo:Stage";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Stage;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:site";
+    sh:path elmo:site;
+    sh:class elmo:Site;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "sh:basePath";
+    sh:path elmo:basePath;
+    sh:minCount 0;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "rdfs:label";
+    sh:path rdfs:label;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "dc:title";
+    sh:path dc:title;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "elmo:layout";
+    sh:path elmo:layout;
+    sh:class elmo:Layout;
+    sh:maxCount 1
+  ];
+  sh:property [
+    sh:name "elmo:defaultBackend";
+    sh:path elmo:defaultBackend;
+    sh:maxCount 1;
+    sh:class elmo:Backend;
+  ];
+.
+elmo-shape:Layout a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:Layout;
+  rdfs:label "Layout shape"@en;
+  sh:name "elmo:Layout";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Layout;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "rdfs:label";
+    sh:path rdfs:label;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "xhtml:stylesheet";
+    sh:path xhtml:stylesheet;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+.
+
+# =========
+# Backstage and core layers vocabulary
+#
+elmo-shape:InformationProduct a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:InformationProduct;
+  rdfs:label "Information product shape"@en;
+  sh:name "elmo:InformationProduct";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:InformationProduct;
+  ];
+  sh:property [
+    sh:name "rdfs:label";
+    sh:path rdfs:label;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "elmo:query";
+    sh:path elmo:query;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:resultType";
+    sh:path elmo:resultType;
+    sh:class elmo:ResultType;
+    sh:defaultValue elmo-rt:Graph;
+    sh:node elmo-shape:ResultType;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:path";
+    sh:path elmo:path;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:backend";
+    sh:path elmo:backend;
+    sh:class elmo:Backend; #This condition will fail if rdfs:subClassOf triple is not added for subclasses of elmo:Backend;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:optionalParameter";
+    sh:path elmo:optionalParameter;
+    sh:class elmo:Parameter;
+  ];
+  sh:property [
+    sh:name "elmo:requiredParameter";
+    sh:path elmo:requiredParameter;
+    sh:class elmo:Parameter;
+  ];
+  # Link to elmo:Representation
+  sh:property [
+    sh:path [sh:inversePath elmo:informationProduct ];
+    sh:node elmo-shape:InformationProductRepresentation;
+    sh:class elmo:Representation;
+  ]
+.
+elmo-shape:ResultType a sh:NodeShape;
+  rdfs:label "ResultType shape"@en;
+  sh:name "elmo:ResultType";
+  sh:property [
+    sh:path skos:inScheme;
+    sh:hasValue elmo-schemes:result-types;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+.
+
+elmo-shape:Transaction a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:Transaction;
+  rdfs:label "Transaction shape"@en;
+  sh:name "elmo:Transaction";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Transaction;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path elmo:sequentialFlow;
+    sh:name "elmo:sequentialFlow";
+    sh:node elmo-shape:FlowList;
+    sh:maxCount 1;
+  ];
+# At first, only sequential flows
+#  sh:property [
+#    sh:path elmo:parallelFlow;
+#    sh:node elmo-shape:FlowList;
+#    sh:maxCount 1;
+#  ];
+# Maybe a default backend for a transaction might be nice, first version is without such a default
+#  sh:property [
+#    sh:name "elmo:backend";
+#    sh:path elmo:backend;
+#    sh:class elmo:Backend;
+#    sh:maxCount 1;
+#  ];
+# Design issue: transformers are part of the front-end, and not transactions
+#  sh:property [
+#    sh:name "elmo:transformer";
+#    sh:path elmo:transformer;
+#    sh:class elmo:Transformer;
+#    sh:maxCount 1;
+#  ];
+  sh:property [
+    sh:name "elmo:optionalParameter";
+    sh:path elmo:optionalParameter;
+    sh:class elmo:Parameter;
+  ];
+  sh:property [
+    sh:name "elmo:requiredParameter";
+    sh:path elmo:requiredParameter;
+    sh:class elmo:Parameter;
+  ];
+  # Link to elmo:Representation
+#  sh:property [
+#    sh:path [sh:inversePath elmo:transaction ];
+#    sh:node elmo-shape:TransactionRepresentation;
+#    sh:class elmo:Representation;
+#  ];
+.
+
+elmo-shape:Step a sh:NodeShape;
+  sh:targetClass elmo:Step;
+  rdfs:label "Step shape";
+  sh:name "elmo:Step";
+  sh:property [
+    sh:path rdfs:label;
+    sh:name "rdfs:label";
+    sh:datatype xsd:string;
+  ];
+.
+
+elmo-shape:ValidationStep a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:ValidationStep;
+  rdfs:label "Validation step shape"@en;
+  sh:name "elmo:ValidationStep";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:ValidationStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
+  ];
+  sh:property [
+    sh:name "elmo:conformsTo";
+    sh:path elmo:conformsTo;
+    sh:nodeKind sh:IRI;
+  ];
+  sh:property [
+      sh:path elmo:backend;
+      sh:name "elmo:backend";
+      sh:class elmo:Backend;
+    ];
+.
+elmo-shape:AssertionStep a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:AssertionStep;
+  rdfs:label "Assertion step shape"@en;
+  sh:name "elmo:AssertionStep";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:AssertionStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
+  ];
+  sh:property [
+    sh:name "elmo:assert";
+    sh:path elmo:assert;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:assertNot";
+    sh:path elmo:assertNot;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+.
+
+elmo-shape:UpdateStep a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:UpdateStep;
+  rdfs:label "Update step shape"@en;
+  sh:name "elmo:UpdateStep";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:UpdateStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
+  ];
+  sh:property [
+    sh:path elmo:backend;
+    sh:name "elmo:backend";
+    sh:class elmo:Backend;
+  ];
+  sh:property [
+    sh:name "elmo:query";
+    sh:path elmo:query;
+    sh:datatype xsd:string;
+  ];
+.
+
+elmo-shape:PersistenceStep a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:PersistenceStep;
+  rdfs:label "Persistence step shape"@en;
+  sh:name "elmo:PersistenceStep";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:PersistenceStep;
+  ];
+  sh:property [
+      sh:name "rdfs:label";
+      sh:path rdfs:label;
+  ];
+  sh:property [
+    sh:path elmo:backend;
+    sh:name "elmo:backend";
+    sh:class elmo:Backend;
+  ];
+  sh:property [
+    sh:name "elmo:persistenceStrategy";
+    sh:path elmo:persistenceStrategy;
+    sh:class elmo:PersistenceStrategy;
+    sh:node elmo-shape:PersistenceStrategy;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:targetGraph";
+    sh:path elmo:targetGraph;
+    sh:nodeKind sh:IRI;
+  ];
+  sh:property [
+    sh:name "elmo:uriTemplate";
+    sh:path elmo:uriTemplate;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+.
+
+elmo-shape:Parameter a sh:NodeShape;
+  sh:targetClass elmo:Parameter;
+  rdfs:label "Parameter shape"@en;
+  sh:name "elmo:Parameter";
+  sh:property [
+    sh:path elmo:name;
+    sh:name "elmo:name";
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ];
+.
+elmo-shape:TermParameter a sh:NodeShape;
+  sh:targetClass elmo:TermParameter;
+  sh:name "elmo:TermParameter";
+  sh:property [
+    sh:path elmo:shape;
+    sh:name "elmo:shape";
+    # direct property or node with properties
+    sh:node [ sh:xone (elmo-shape:URIParameterPropertyShape elmo-shape:StringParameterPropertyShape elmo-shape:IntegerParameterPropertyShape) ];
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+.
+elmo-shape:Paginator a sh:NodeShape;
+  sh:targetClass elmo:Paginator;
+  sh:name "elmo:Paginator";
+.
+elmo-shape:SpatialReprojector a sh:NodeShape;
+  sh:targetClass elmo:SpatialReprojector;
+  sh:name "elmo:SpatialReprojector"
+.
+
+elmo-shape:URIParameterPropertyShape a sh:NodeShape;
+  sh:closed true;
+  rdfs:label "URIParameterPropertyShape shape"@en;
+  sh:name "sh:PropertyShape (URI)";
+  sh:property [
+    sh:path sh:nodeKind;
+    sh:name "sh:nodeKind";
+    sh:hasValue sh:IRI;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path sh:regex;
+    sh:name "sh:regex";
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+.
+
+elmo-shape:StringParameterPropertyShape a sh:NodeShape;
+  sh:closed true;
+  rdfs:label "StringParameterPropertyShape shape"@en;
+  sh:name "sh:PropertyShape (String)";
+  sh:property [
+    sh:path sh:datatype;
+    sh:name "sh:datatype";
+    sh:hasValue xsd:string;
+    sh:class rdfs:Datatype;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path sh:defaultValue;
+    sh:name "sh:defaultValue";
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path sh:regex;
+    sh:name "sh:regex";
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path sh:minLength;
+    sh:name "sh:minLength";
+    sh:datatype xsd:integer;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path sh:maxLength;
+    sh:name "sh:maxLength";
+    sh:datatype xsd:integer;
+    sh:maxCount 1;
+  ];
+.
+
+elmo-shape:IntegerParameterPropertyShape a sh:NodeShape;
+  sh:closed true;
+  rdfs:label "IntegerParameterPropertyShape shape"@en;
+  sh:name "sh:PropertyShape (Integer)";
+  sh:property [
+    sh:path sh:datatype;
+    sh:name "sh:datatype";
+    sh:hasValue xsd:integer;
+    sh:class rdfs:Datatype;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path sh:defaultValue;
+    sh:name "sh:defaultValue";
+    sh:datatype xsd:integer;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path sh:minInclusive;
+    sh:name "sh:minInclusive";
+    sh:datatype xsd:integer;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path sh:maxInclusive;
+    sh:name "sh:maxInclusive";
+    sh:datatype xsd:integer;
+    sh:maxCount 1;
+  ];
+.
+
+#Placeholder, for viewing preferences
+elmo-shape:Datatype a sh:NodeShape;
+  sh:targetClass rdfs:Datatype;
+  sh:name "rdfs:Datatype";
+.
+elmo-shape:NodeKind a sh:NodeKind;
+  sh:targetClass sh:NodeKind;
+  sh:name "sh:NodeKind";
+.
+elmo-shape:string sh:targetNode xsd:string;
+  sh:name "xsd:string";
+.
+elmo-shape:integer sh:targetNode xsd:integer;
+  sh:name "xsd:integer";
+.
+elmo-shape:IRI sh:targetNode sh:IRI;
+  sh:name "sh:IRI";
+.
+
+elmo-shape:PersistenceStrategy a sh:NodeShape;
+  rdfs:label "PersistenceStrategy shape"@en;
+  sh:name "elmo:PersistenceStrategy";
+  sh:property [
+    sh:path skos:inScheme;
+    sh:hasValue elmo-schemes:persistence-strategy;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+.
+
+elmo-shape:Backend a sh:NodeShape;
+  sh:targetClass elmo:Backend;
+  rdfs:label "Backend shape"@en;
+  sh:name "elmo:Backend";
+  sh:property [
+    sh:name "rdfs:label";
+    sh:path rdfs:label;
+    sh:datatype xsd:string;
+  ];
+.
+
+elmo-shape:Transformer a sh:NodeShape;
+  sh:targetClass elmo:Transformer;
+  rdfs:label "Transformer shape"@en;
+  sh:name "elmo:Transformer";
+.
+
+elmo-shape:FlowList a sh:NodeShape;
+  rdfs:label "FlowList shape"@en;
+  sh:name "rdf:List of elmo:Step";
+  sh:property [
+    sh:path ([sh:zeroOrMorePath rdf:rest] rdf:first);
+    sh:minCount 1;
+    sh:class elmo:Step;
+  ];
+.
+
+elmo-shape:RMLTransformer a sh:NodeShape;
+  sh:targetClass elmo:RMLTransformer;
+  rdfs:label "RMLTransformer shape"@en;
+  sh:name "elmo:RMLTransformer";
+  sh:property [
+    sh:name "elmo:sourceGraph";
+    sh:path elmo:sourceGraph;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+.
+elmo-shape:XSLTransformer a sh:NodeShape;
+  sh:targetClass elmo:XSLTransformer;
+  sh:name "elmo:XSLTransformer";
+  sh:property [
+    sh:name "elmo:stylesheet";
+    sh:path elmo:stylesheet;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+.
+
+# =========
+# Backstage extensions, with IP constraints
+#
+elmo-shape:SparqlBackend a sh:NodeShape;
+  sh:targetClass elmo:SparqlBackend;
+  rdfs:label "Sparql backend shape"@en;
+  sh:name "elmo:SparqlBackend";
+  sh:property [
+    sh:name "elmo:endpoint";
+    sh:path elmo:endpoint;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:datatype xsd:anyURI;
+  ];
+#  sh:property [
+#    sh:path [sh:inversePath elmo:backend ];
+#    sh:node [
+#      rdfs:label "IP constraints for sparql backend";
+#      sh:name "elmo:InformationProduct (Sparql)";
+#      sh:property [
+#        sh:path elmo:query;
+#        sh:name "elmo:query";
+#        sh:minCount 1;
+#        sh:maxCount 1;
+#      ];
+#    ];
+#    sh:class elmo:InformationProduct;
+#  ]
+.
+
+elmo-shape:ElasticSearchBackend a sh:NodeShape;
+  sh:targetClass elmo:ElasticSearchBackend;
+  rdfs:label "Elastic search backend shape"@en;
+  sh:name "elmo:ElasticSearchBackend";
+  sh:property [
+    sh:name "elmo:endpoint";
+    sh:path elmo:endpoint;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:datatype xsd:anyURI;
+  ];
+  sh:property [
+    sh:path [sh:inversePath elmo:backend ];
+    sh:node [
+      rdfs:label "IP constraints for sparql backend";
+      sh:name "elmo:InformationProduct (Elastic search)";
+      sh:property [
+        sh:path elmo:query;
+        sh:name "elmo:query";
+        sh:minCount 1;
+        sh:maxCount 1;
+      ];
+      sh:property [
+        sh:path elmo:path;
+        sh:name "elmo:path";
+        sh:minCount 1;
+        sh:maxCount 1;
+      ];
+    ];
+    sh:class elmo:InformationProduct;
+  ]
+.
+
+elmo-shape:FileBackend a sh:NodeShape;
+  sh:targetClass elmo:FileBackend;
+  rdfs:label "File backend shape"@en;
+  sh:name "elmo:FileBackend";
+  sh:property [
+    sh:name "elmo:endpoint";
+    sh:path elmo:endpoint;
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:datatype xsd:anyURI;
+  ];
+  sh:property [
+    sh:path [sh:inversePath elmo:backend ];
+    sh:node [
+      rdfs:label "IP constraints for file backend";
+      sh:name "elmo:InformationProduct (File)";
+      sh:property [
+        sh:path elmo:path;
+        sh:name "elmo:path";
+        sh:minCount 1;
+        sh:maxCount 1;
+      ];
+    ];
+    sh:class elmo:InformationProduct;
+  ]
+.
+
+# =========
+# Frontend vocabulary
+#
+elmo-shape:Redirection a sh:NodeShape;
+  sh:closed true;
+  sh:targetClass elmo:Redirection;
+  rdfs:label "Redirection shape"@en;
+  sh:name "elmo:Redirection";
+  sh:property [
+    sh:name "rdfs:label";
+    sh:path rdfs:label;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Redirection;
+    sh:maxCount 1
+  ];
+  sh:property [
+    sh:name "elmo:stage";
+    sh:path elmo:stage
+  ];
+  sh:property [
+    sh:name "elmo:pathPattern";
+    sh:path elmo:pathPattern;
+    sh:datatype xsd:string;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:redirectTemplate";
+    sh:path elmo:redirectTemplate;
+    sh:datatype xsd:string;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+.
+
+elmo-shape:Representation a sh:NodeShape;
+  sh:targetClass elmo:Representation;
+  rdfs:label "Representation shape"@en;
+  sh:name "elmo:Representation";
+  sh:property [
+    sh:name "rdfs:label";
+    sh:path rdfs:label;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "elmo:name";
+    sh:path elmo:name;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:pathPattern";
+    sh:path elmo:pathPattern;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "elmo:uriPattern";
+    sh:path elmo:uriPattern;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "elmo:appliesTo";
+    sh:path elmo:appliesTo;
+    sh:nodeKind sh:BlankNode;
+  ];
+  sh:property [
+    sh:name "elmo:pageTemplate";
+    sh:path elmo:pageTemplate;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:appearance";
+    sh:path elmo:appearance;
+    sh:nodeKind sh:BlankNodeOrIRI;
+    sh:node elmo-shape:Appearance;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:parameterMapper";
+    sh:path elmo:parameterMapper;
+    sh:class elmo:ParameterMapper;
+  ];
+  sh:property [
+    sh:path [sh:inversePath elmo:contains ];
+    sh:node elmo-shape:TopLevelRepresentation;
+    sh:class elmo:Representation;
+  ];
+.
+
+elmo-shape:ParameterMapper a sh:NodeShape;
+  sh:targetClass elmo:ParameterMapper;
+  rdfs:label "Parameter mapper shape"@en;
+  sh:name "elmo:ParameterMapper";
+  sh:closed true;
+  sh:property [
+    sh:path rdf:type;
+    # No specific value, because subtypes of elmo:ParameterMapper are also allowed
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:name";
+    sh:path elmo:name;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:target";
+    sh:path elmo:target;
+    sh:class elmo:Parameter;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:source";
+    sh:path elmo:source;
+    sh:maxCount 1;
+    sh:class rdf:Property;
+    sh:node elmo-shape:MapperSource;
+    sh:in (http:requestURI)
+  ];
+  sh:property [
+    sh:name "elmo:pattern";
+    sh:path elmo:pattern;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "elmo:template";
+    sh:path elmo:template;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ];
+.
+
+#Placeholder, for viewing preferences
+elmo-shape:MapperSource a sh:NodeShape;
+  sh:name "rdf:Property";
+.
+elmo-shape:requestURI sh:targetNode http:requestURI;
+  sh:name "http:requestURI";
+.
+
+elmo-shape:UriParameterMapper a sh:NodeShape;
+  sh:targetClass elmo:UriParameterMapper;
+  rdfs:label "UriParameterMapper shape"@en;
+  sh:name "elmo:UriParameterMapper";
+.
+
+elmo-shape:Appearance a sh:NodeShape;
+  sh:targetClass elmo:Appearance;
+  rdfs:label "Appearance shape"@en;
+  sh:name "elmo:Appearance";
+  sh:closed true;
+  sh:property [
+    sh:path rdf:type;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:index";
+    sh:path elmo:index;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:fragment";
+    sh:path elmo:fragment;
+    sh:nodeKind sh:BlankNodeOrIRI;
+    sh:node elmo-shape:Fragment;
+  ];
+.
+
+elmo-shape:TopLevelRepresentation a sh:NodeShape;
+  rdfs:label "RP constraints for transactions";
+  sh:name "elmo:Representation (Top level)";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Representation;
+  ];
+  sh:property [
+    sh:path elmo:contains;
+    sh:name "elmo:contains";
+    sh:class elmo:Representation;
+    sh:minCount 1;
+    # elmo:contains might also refer to a rdf:List of elmo:Representations to facilitate the order in which child representations are presented
+  ];
+.
+elmo-shape:TransactionRepresentation a sh:NodeShape;
+  rdfs:label "RP constraints for transactions";
+  sh:name "elmo:Representation (Transaction)";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Representation;
+  ];
+  sh:property [
+    sh:path elmo:putTransaction;
+    sh:name "elmo:putTransaction";
+    sh:class elmo:Transaction;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path elmo:postTransaction;
+    sh:name "elmo:postTransaction";
+    sh:class elmo:Transaction;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path elmo:deleteTransaction;
+    sh:name "elmo:deleteTransaction";
+    sh:class elmo:Transaction;
+    sh:maxCount 1;
+  ];
+.
+elmo-shape:InformationProductRepresentation a sh:NodeShape;
+  rdfs:label "RP constraints for transactions";
+  sh:name "elmo:Representation (Information Product)";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Representation;
+  ];
+  sh:property [
+    sh:path elmo:informationProduct;
+    sh:name "elmo:informationProduct";
+    sh:class elmo:InformationProduct;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+.
+elmo-shape:DataRepresentation a sh:NodeShape;
+  rdfs:label "RP constraints for transactions";
+  sh:name "elmo:Representation (Data)";
+  sh:property [
+    sh:path rdf:type;
+    sh:hasValue elmo:Representation;
+  ];
+  sh:property [
+    sh:path elmo:data;
+    sh:name "elmo:data";
+    sh:class rdfs:Resource;
+    sh:minCount 1;
+  ];
+  # Data representations should not have properties like informationProduct or transaction
+.
+
+elmo-shape:Fragment a sh:NodeShape;
+  sh:closed true;
+  rdfs:label "Fragment shape";
+  sh:name "elmo:Fragment";
+  sh:targetClass elmo:Fragment;
+  sh:property [
+    sh:name "elmo:appliesTo";
+    sh:path elmo:appliesTo;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "rdfs:label";
+    sh:path rdfs:label;
+    sh:datatype rdf:langString
+  ];
+  sh:property [
+    sh:name "elmo:appearance";
+    sh:path elmo:appearance;
+    sh:maxCount 1;
+    sh:nodeKind sh:IRI;
+  ];
+  sh:property [
+    sh:name "elmo:index";
+    sh:path elmo:index;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:name";
+    sh:path elmo:name;
+    sh:maxCount 1;
+    sh:datatype xsd:string
+  ];
+  sh:property [
+    sh:name "rdf:value";
+    sh:path rdf:value;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "xhtml:link";
+    sh:path xhtml:link;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "xhtml:stylesheet";
+    sh:path xhtml:stylesheet;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
+    sh:name "xhtml:glossary";
+    sh:path xhtml:glossary;
+    sh:maxCount 1;
+    sh:nodeKind sh:IRI;
+  ];
+  sh:property [
+    sh:name "elmo:valueDatatype";
+    sh:path elmo:valueDatatype;
+    sh:maxCount 1;
+    sh:nodeKind sh:IRI;
+  ];
+  sh:property [
+    sh:name "elmo:valueTemplate";
+    sh:path elmo:valueTemplate;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ];
+.
+}
