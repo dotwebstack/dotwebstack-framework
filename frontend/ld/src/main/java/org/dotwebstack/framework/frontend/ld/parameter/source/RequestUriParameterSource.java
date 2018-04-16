@@ -15,13 +15,14 @@ public class RequestUriParameterSource implements ParameterSource {
   @Override
   public String getValue(ContainerRequestContext containerRequestContext) {
     URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
-
+    String xForwardedHost = containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
+    String toBeRemoved =
+        xForwardedHost == null || xForwardedHost.equals("") ? uri.getHost() : xForwardedHost;
 
     /*
      * Remove first 'domain' part of path that we have added in HostPreMatchingRequestFilter
      */
-    String path = uri.getPath().replaceAll(
-        "^/" + containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST), "");
+    String path = uri.getPath().replaceAll("^/" + toBeRemoved, "");
 
     return String.format("%s://%s%s", uri.getScheme(), uri.getHost(), path);
   }
