@@ -15,9 +15,10 @@ public class RequestUriParameterSource implements ParameterSource {
   @Override
   public String getValue(ContainerRequestContext containerRequestContext) {
     URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
-    String xForwardedHost = containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
+    String forwardedHost =
+        containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST).split(",")[0];
     String toBeRemoved =
-        xForwardedHost == null || xForwardedHost.equals("") ? uri.getHost() : xForwardedHost;
+        forwardedHost == null || forwardedHost.equals("") ? uri.getHost() : forwardedHost;
 
     /*
      * Remove first 'domain' part of path that we have added in HostPreMatchingRequestFilter
