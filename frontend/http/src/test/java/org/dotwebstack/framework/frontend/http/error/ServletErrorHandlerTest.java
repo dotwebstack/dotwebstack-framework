@@ -1,14 +1,10 @@
 package org.dotwebstack.framework.frontend.http.error;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,17 +39,17 @@ public class ServletErrorHandlerTest {
   }
 
   @Test
-  public void apply_ReturnsResponseBasedOnStatusCodeParameter_WhenStatusCodeIsKnown() {
+  public void apply_ReturnsExceptionBasedOnStatusCodeParameter_WhenStatusCodeIsKnown() {
     // Arrange
     pathParameters.add("statusCode", "406");
 
-    // Act
-    Response response = servletErrorHandler.apply(context);
-
     // Assert
-    assertThat(response.getStatusInfo(), equalTo(Status.NOT_ACCEPTABLE));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.getEntity().toString(), equalTo(Status.NOT_ACCEPTABLE.getReasonPhrase()));
+    thrown.expect(WebApplicationException.class);
+    thrown.expectMessage("HTTP 406 Not Acceptable");
+
+    // Act
+    servletErrorHandler.apply(context);
+
   }
 
   @Test

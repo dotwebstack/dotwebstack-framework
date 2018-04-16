@@ -18,6 +18,10 @@ public class MediaTypes {
 
   public static final String RDFXML = "application/rdf+xml";
 
+  public static final String APPLICATION_PROBLEM_JSON = "application/problem+json";
+
+  public static final MediaType PROBLEM_JSON = MediaType.valueOf(APPLICATION_PROBLEM_JSON);
+
   public static final MediaType RDFXML_TYPE = MediaType.valueOf(RDFXML);
 
   public static final String SPARQL_RESULTS_JSON = "application/sparql-results+json";

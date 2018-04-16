@@ -7,19 +7,15 @@ import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.model.SimpleRequest.Builder;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import io.swagger.models.Swagger;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException.InvalidParameter;
 
 class ApiRequestValidator {
-  private static final Logger LOG = LoggerFactory.getLogger(ApiRequestValidator.class);
-
   private static final List<String> FILTERED_HEADERS = ImmutableList.of("accept", "content-type");
 
   private final RequestValidator requestValidator;
@@ -65,8 +61,6 @@ class ApiRequestValidator {
     ValidationReport report = requestValidator.validateRequest(builder.build(), apiOperation);
 
     if (report.hasErrors()) {
-      LOG.error("Request parameter validation failed, with following errors: {}",
-          report.getMessages());
       throw createException(report);
     }
 
@@ -75,20 +69,12 @@ class ApiRequestValidator {
 
   private RequestValidationException createException(ValidationReport report) {
 
-    ImmutableList.Builder<Object> invalidParamsBuilder = new ImmutableList.Builder<>();
 
-    report.getMessages().forEach(message -> {
-      ImmutableMap.Builder<String, String> paramBuilder = new ImmutableMap.Builder<>();
-      paramBuilder.put("name", message.getKey());
-      paramBuilder.put("reason", message.getMessage());
-      invalidParamsBuilder.add(paramBuilder.build());
-    });
+    List<InvalidParameter> invalidParams = report.getMessages().stream() //
+        .map(message -> new InvalidParameter(message.getKey(), message.getMessage())) //
+        .collect(Collectors.toList());
 
-    ImmutableMap<String, Object> details =
-        ImmutableMap.of("invalid-params", invalidParamsBuilder.build());
-
-    return new RequestValidationException("Request parameters didn't validate.", Status.BAD_REQUEST,
-        details);
+    return new RequestValidationException("Request parameters didn't validate.", invalidParams);
   }
 
 }
