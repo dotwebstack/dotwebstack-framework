@@ -24,9 +24,8 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
     UriInfo uriInfo = requestContext.getUriInfo();
     UriBuilder hostUriBuilder = uriInfo.getRequestUriBuilder();
 
-    URI builtRequestUri = hostUriBuilder.build();
     String addedDomain = getAddedDomain(requestContext);
-    String replacementUri = addedDomain + builtRequestUri.getPath();
+    String replacementUri = addedDomain + hostUriBuilder.build().getPath();
     hostUriBuilder.replacePath(replacementUri);
 
     LOG.debug("Set new request path to {} (was {})", hostUriBuilder, uriInfo.getAbsolutePath());
