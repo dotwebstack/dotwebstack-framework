@@ -25,10 +25,8 @@ public class AssertionStepFactory implements StepFactory {
 
   @Override
   public AssertionStep create(@NonNull Model stepModel, @NonNull Resource identifier) {
-    AssertionStep.Builder builder =
-        new AssertionStep.Builder(identifier);
-    getObjectString(stepModel, identifier, RDFS.LABEL).ifPresent(
-        builder::label);
+    AssertionStep.Builder builder = new AssertionStep.Builder(identifier);
+    getObjectString(stepModel, identifier, RDFS.LABEL).ifPresent(builder::label);
     builder.assertion(getObjectString(stepModel, identifier, ELMO.ASSERT),
         getObjectString(stepModel, identifier, ELMO.ASSERT_NOT));
 
