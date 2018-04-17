@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
-    <version>0.0.28-SNAPSHOT</version>
+    <version>0.0.27-SNAPSHOT</version>
   </parent>
 
   <artifactId>dotwebstack-test</artifactId>
