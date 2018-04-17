@@ -2,6 +2,7 @@ package org.dotwebstack.framework.transaction.flow.step.assertion;
 
 import java.util.Optional;
 import lombok.NonNull;
+import org.dotwebstack.framework.queryvisitor.FederatedQueryVisitor;
 import org.dotwebstack.framework.transaction.flow.step.StepFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -9,6 +10,9 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.query.parser.ParsedQuery;
+import org.eclipse.rdf4j.query.parser.QueryParser;
+import org.eclipse.rdf4j.query.parser.sparql.SPARQLParserFactory;
 import org.springframework.stereotype.Service;
 
 @Service
