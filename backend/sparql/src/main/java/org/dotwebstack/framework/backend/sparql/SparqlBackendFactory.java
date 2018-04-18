@@ -56,7 +56,7 @@ class SparqlBackendFactory implements BackendFactory {
     repository.initialize();
 
     return new SparqlBackend.Builder(identifier, repository, informationProductFactory,
-        persistenceStepFactory, updateStepFactory).build();
+        persistenceStepFactory, updateStepFactory, endpoint).build();
   }
 
   @Override

@@ -11,6 +11,7 @@ import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.dotwebstack.framework.transaction.flow.step.update.UpdateStep;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -19,6 +20,8 @@ import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 public class SparqlBackend implements Backend {
 
   private Resource identifier;
+
+  private Literal endpoint;
 
   private SPARQLRepository repository;
 
@@ -36,6 +39,7 @@ public class SparqlBackend implements Backend {
     informationProductFactory = builder.informationProductFactory;
     persistenceStepFactory = builder.persistenceStepFactory;
     updateStepFactory = builder.updateStepFactory;
+    endpoint = builder.endpoint;
   }
 
   @Override
@@ -72,9 +76,16 @@ public class SparqlBackend implements Backend {
     return repositoryConnection;
   }
 
+  @Override
+  public Literal getEndpoint() {
+    return endpoint;
+  }
+
   public static class Builder {
 
     private Resource identifier;
+
+    private Literal endpoint;
 
     private SPARQLRepository repository;
 
@@ -87,12 +98,13 @@ public class SparqlBackend implements Backend {
     public Builder(@NonNull Resource identifier, @NonNull SPARQLRepository repository,
         @NonNull SparqlBackendInformationProductFactory informationProductFactory,
         @NonNull SparqlBackendPersistenceStepFactory persistenceStepFactory,
-        @NonNull SparqlBackendUpdateStepFactory updateStepFactory) {
+        @NonNull SparqlBackendUpdateStepFactory updateStepFactory, @NonNull Literal endpoint) {
       this.identifier = identifier;
       this.repository = repository;
       this.informationProductFactory = informationProductFactory;
       this.persistenceStepFactory = persistenceStepFactory;
       this.updateStepFactory = updateStepFactory;
+      this.endpoint = endpoint;
     }
 
     public SparqlBackend build() {

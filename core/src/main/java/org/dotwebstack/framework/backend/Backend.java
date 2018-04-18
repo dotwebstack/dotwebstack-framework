@@ -6,6 +6,7 @@ import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.dotwebstack.framework.transaction.flow.step.update.UpdateStep;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 
@@ -20,5 +21,7 @@ public interface Backend {
       Model transactionModel);
 
   StepExecutor createUpdateStepExecutor(UpdateStep updateStep);
+
+  Literal getEndpoint();
 
 }
