@@ -26,8 +26,7 @@ public class AssertionStep implements Step {
 
   public StepExecutor createStepExecutor(
       @NonNull RepositoryConnection transactionRepositoryConnection) {
-    return new AssertionTransactionRepositoryExecutor(this,
-        transactionRepositoryConnection);
+    return new AssertionTransactionRepositoryExecutor(this, transactionRepositoryConnection);
   }
 
   public Resource getIdentifier() {

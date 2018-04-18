@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 
+import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Model;
@@ -16,10 +17,14 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AssertionStepFactoryTest {
+
+  @Mock
+  private BackendResourceProvider backendResourceProvider;
 
   private AssertionStep assertionStep;
 
@@ -30,7 +35,7 @@ public class AssertionStepFactoryTest {
   @Before
   public void setup() {
     // Arrange
-    assertionStepFactory = new AssertionStepFactory();
+    assertionStepFactory = new AssertionStepFactory(backendResourceProvider);
   }
 
   @Test
