@@ -14,9 +14,13 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriTemplate;
 
 public abstract class RequestHandler<O> implements Inflector<ContainerRequestContext, Response> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RequestHandler.class);
 
   protected final O endpoint;
 
@@ -36,11 +40,19 @@ public abstract class RequestHandler<O> implements Inflector<ContainerRequestCon
     return endpointRequestParameterMapper;
   }
 
-  protected String getUrl(Representation representation, Map<String, String> parameterValues) {
+  protected String getUrl(Representation representation, Map<String, String> parameterValues,
+      ContainerRequestContext containerRequestContext) {
     String url = "";
-    for (String appliesTo : representation.getAppliesTo()) {
-      UriTemplate template = new UriTemplate(appliesTo);
-      url = template.expand(parameterValues).toString();
+    try {
+      representation.getParameterMappers().forEach(
+          parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
+      for (String appliesTo : representation.getAppliesTo()) {
+        UriTemplate template = new UriTemplate(appliesTo);
+        url = template.expand(parameterValues).toString();
+      }
+    } catch (IllegalArgumentException ex) {
+      LOG.warn("No parameters found for representation {}", representation.getIdentifier());
+      ex.printStackTrace();
     }
     return url;
   }
