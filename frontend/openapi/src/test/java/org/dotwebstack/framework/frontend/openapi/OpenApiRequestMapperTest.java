@@ -7,7 +7,6 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -185,8 +184,7 @@ public class OpenApiRequestMapperTest {
     requestMapper.map(httpConfigurationMock);
 
     // Assert
-    // the spec resource is always made available
-    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
+    verifyZeroInteractions(httpConfigurationMock);
   }
 
   // @Test
@@ -212,8 +210,7 @@ public class OpenApiRequestMapperTest {
     requestMapper.map(httpConfigurationMock);
 
     // Assert
-    // the spec resource is always made available
-    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
+    verifyZeroInteractions(httpConfigurationMock);
   }
 
 
@@ -235,29 +232,25 @@ public class OpenApiRequestMapperTest {
     requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
 
-    Resource apiResource = resourceCaptor.getAllValues().get(0);
-    assertThat(resourceCaptor.getAllValues(), hasSize(2));
-    assertThat(apiResource.getPath(),
+    Resource resource = resourceCaptor.getValue();
+    assertThat(resourceCaptor.getAllValues(), hasSize(1));
+    assertThat(resource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/breweries"));
-    assertThat(apiResource.getResourceMethods(), hasSize(2));
+    assertThat(resource.getResourceMethods(), hasSize(2));
 
-    ResourceMethod getMethod = apiResource.getResourceMethods().get(0);
+    ResourceMethod getMethod = resource.getResourceMethods().get(0);
     assertThat(getMethod.getHttpMethod(), equalTo(HttpMethod.GET));
     assertThat(getMethod.getProducedTypes(),
         contains(MediaType.TEXT_PLAIN_TYPE, MediaType.APPLICATION_JSON_TYPE));
     assertThat(getMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(requestHandlerMock));
 
-    ResourceMethod optionsMethod = apiResource.getResourceMethods().get(1);
+    ResourceMethod optionsMethod = resource.getResourceMethods().get(1);
     assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));
     assertThat(optionsMethod.getInvocable().getHandler().getHandlerClass(),
         equalTo(OptionsRequestHandler.class));
-
-    Resource specResource = resourceCaptor.getAllValues().get(1);
-    assertThat(specResource.getPath(),
-        equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/docs/_spec"));
   }
 
   @Test
@@ -275,8 +268,8 @@ public class OpenApiRequestMapperTest {
     requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
-    Resource resource = resourceCaptor.getAllValues().get(0);
+    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
+    Resource resource = resourceCaptor.getValue();
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
   }
 
@@ -350,8 +343,8 @@ public class OpenApiRequestMapperTest {
     requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
-    Resource resource = resourceCaptor.getAllValues().get(0);
+    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
+    Resource resource = resourceCaptor.getValue();
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
   }
@@ -435,15 +428,14 @@ public class OpenApiRequestMapperTest {
     requestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
-    ResourceMethod method = resourceCaptor.getAllValues().get(0).getResourceMethods().get(0);
+    verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
+    ResourceMethod method = resourceCaptor.getValue().getResourceMethods().get(0);
     assertThat(method.getProducedTypes(), hasSize(1));
     assertThat(method.getProducedTypes().get(0), equalTo(MediaType.APPLICATION_JSON_TYPE));
   }
 
   private Swagger mockDefinition() throws IOException {
-    String specString = "swagger: \"2.0\"\n" + "info:\n" + "  title: API\n" + "  version: 1.0";
-    byte[] bytes = specString.getBytes(Charsets.UTF_8);
+    byte[] bytes = "spec".getBytes(Charsets.UTF_8);
     when(fileResourceMock.getInputStream()).thenReturn(new ByteArrayInputStream(bytes));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[] {fileResourceMock});
@@ -453,7 +445,7 @@ public class OpenApiRequestMapperTest {
     definitions.put("myref", myref);
     Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
     swagger.setDefinitions(definitions);
-    when(openApiParserMock.parse(specString)).thenReturn(swagger);
+    when(openApiParserMock.parse("spec")).thenReturn(swagger);
 
     return swagger;
   }
