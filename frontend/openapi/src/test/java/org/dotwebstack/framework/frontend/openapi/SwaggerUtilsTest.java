@@ -96,7 +96,7 @@ public class SwaggerUtilsTest {
             mockEnvironment).getInputStream();
     ObjectNode specNode = mapper.readValue(originalInputStream, ObjectNode.class);
     String original = mapper.writer().writeValueAsString(specNode);
-    assertTrue("The original should have vendor extensions", original.contains("x-"));
+    assertTrue("The original should have vendor extensions", original.contains("x-dotwebstack"));
 
 
     InputStream testInputStream =
@@ -111,7 +111,8 @@ public class SwaggerUtilsTest {
     String stripped = mapper.writer().writeValueAsString(removedNode);
 
     assertNotEquals(original, stripped);
-    assertFalse("No vendor extensions should exist, but some are found!", stripped.contains("x-"));
+    assertFalse("No vendor extensions should exist, but some are found!",
+        stripped.contains("x-dotwebstack"));
   }
 
 }

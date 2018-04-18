@@ -23,6 +23,8 @@ import lombok.NonNull;
 
 public final class SwaggerUtils {
 
+  private static final String VENDOR_EXTENSION_DOTWEBSTACK = "x-dotwebstack";
+
   private SwaggerUtils() {}
 
   public static RequestValidator createValidator(@NonNull Swagger swagger) {
@@ -35,7 +37,7 @@ public final class SwaggerUtils {
   /**
    * @param swagger Swagger specification
    * @param path path of the requested operation
-   *             @param apiPath path of
+   * @param apiPath path of
    * @return {@link ApiOperation} if the provided swagger does contain the requested method at the
    *         provided path, <code>null</code> otherwise
    */
@@ -83,7 +85,7 @@ public final class SwaggerUtils {
   private static void removeExtensionNodesFromObject(ObjectNode node) {
     List<String> passedFields = new ArrayList<>();
     node.fieldNames().forEachRemaining(name -> {
-      if (!name.startsWith("x-")) {
+      if (!name.startsWith(VENDOR_EXTENSION_DOTWEBSTACK)) {
         passedFields.add(name);
       }
     });

@@ -44,7 +44,7 @@ public class OpenApiSpecHandlerTest {
     YAMLMapper mapper = new YAMLMapper();
     // the result is valid yaml;
     mapper.readTree(result);
-    assertFalse(result.contains("x-"));
+    assertFalse(result.contains("x-dotwebstack"));
 
   }
 
