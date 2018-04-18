@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.http.stage.Stage;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
@@ -29,6 +30,7 @@ import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -51,6 +53,9 @@ public class RepresentationRequestHandlerTest {
 
   @Mock
   private Representation representation;
+
+  @Mock
+  private Stage stage;
 
   @Mock
   private ContainerRequestContext containerRequestContext;
@@ -134,6 +139,7 @@ public class RepresentationRequestHandlerTest {
     when(informationProduct.getResult(any())).thenReturn(queryResult);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
     when(representation.getInformationProduct()).thenReturn(informationProduct);
+    when(representation.getStage()).thenReturn(stage);
 
     UriInfo uriInfo = mock(UriInfo.class);
     final String appliesTo = "subjectValue";
@@ -148,8 +154,11 @@ public class RepresentationRequestHandlerTest {
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
     DynamicEndpoint dynamicEndpoint = mock(DynamicEndpoint.class);
     when(dynamicEndpoint.getParameterMapper()).thenReturn(mock(ParameterMapper.class));
+    when(dynamicEndpoint.getStage()).thenReturn(stage);
     when(representationResourceProvider.getAll()).thenReturn(allRepresentations);
     when(representation.getAppliesTo()).thenReturn(ImmutableList.of(appliesTo));
+    when(representation.getStage().getIdentifier()).thenReturn(mock(IRI.class));
+    when(dynamicEndpoint.getStage().getIdentifier()).thenReturn(mock(IRI.class));
     RequestHandler<DynamicEndpoint> requestHandler = new DynamicEndpointRequestHandler(
         dynamicEndpoint, endpointRequestParameterMapper, representationResourceProvider);
 
