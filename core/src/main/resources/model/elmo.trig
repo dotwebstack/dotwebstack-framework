@@ -221,6 +221,11 @@ elmo:optionalParameter a owl:ObjectProperty;
   rdfs:comment "States the optional parameter(s) for an information product, transaction or query";
   rdfs:range elmo:Parameter;
 .
+elmo:password a owl:ObjectProperty;
+  rdfs:label "password"@en;
+  rdfs:comment "Defines the password for a particular backend"@en;
+  rdfs:range elmo:Backend;
+.
 elmo:persistenceStrategy a owl:ObjectProperty;
   rdfs:label "persistenceStrategy"@en;
   rdfs:comment "Defines the way that the result of a transaction is stored within the persistence layer";
@@ -289,6 +294,11 @@ elmo:transformer a owl:ObjectProperty;
 elmo:uriTemplate a owl:DatatypeProperty;
   rdfs:label "uriTemplate"@en;
   rdfs:comment "Specifies the template that is used for minting a URI during a transaction.";
+.
+elmo:username a owl:ObjectProperty;
+  rdfs:label "password"@en;
+  rdfs:comment "Defines the username for a particular backend"@en;
+  rdfs:range elmo:Backend;
 .
 
 # =========

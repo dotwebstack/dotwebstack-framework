@@ -648,6 +648,18 @@ elmo-shape:SparqlBackend a sh:NodeShape;
     sh:datatype xsd:anyURI;
   ];
   sh:property [
+    sh:name "elmo:username";
+    sh:path elmo:username;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:name "elmo:password";
+    sh:path elmo:password;
+    sh:datatype xsd:string;
+    sh:maxCount 1;
+  ];
+  sh:property [
     sh:path [sh:inversePath elmo:backend ];
     sh:xone (
       [
