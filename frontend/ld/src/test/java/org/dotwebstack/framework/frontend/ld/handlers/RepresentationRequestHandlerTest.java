@@ -227,8 +227,6 @@ public class RepresentationRequestHandlerTest {
 
     UriInfo uriInfo = mock(UriInfo.class);
     MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
     when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.PUT);
     DynamicEndpoint dynamicEndpoint = mock(DynamicEndpoint.class);

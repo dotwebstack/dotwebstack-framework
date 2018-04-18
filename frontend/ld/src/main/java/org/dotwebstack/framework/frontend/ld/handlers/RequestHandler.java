@@ -52,7 +52,6 @@ public abstract class RequestHandler<O> implements Inflector<ContainerRequestCon
       }
     } catch (IllegalArgumentException ex) {
       LOG.warn("No parameters found for representation {}", representation.getIdentifier());
-      ex.printStackTrace();
     }
     return url;
   }
