@@ -18,17 +18,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriTemplate;
 
-public abstract class RequestHandler<O> implements Inflector<ContainerRequestContext, Response> {
+public abstract class RequestHandler<T> implements Inflector<ContainerRequestContext, Response> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestHandler.class);
 
-  protected final O endpoint;
+  protected final T endpoint;
 
   protected final EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   protected final RepresentationResourceProvider representationResourceProvider;
 
-  public RequestHandler(@NonNull O endpoint,
+  public RequestHandler(@NonNull T endpoint,
       @NonNull EndpointRequestParameterMapper endpointRequestParameterMapper,
       @NonNull RepresentationResourceProvider representationResourceProvider) {
     this.endpoint = endpoint;
