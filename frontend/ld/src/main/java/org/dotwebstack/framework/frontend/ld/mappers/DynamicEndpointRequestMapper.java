@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DynamicEndpointRequestMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DirectEndpointRequestMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DynamicEndpointRequestMapper.class);
 
   private final DynamicEndpointResourceProvider dynamicEndpointResourceProvider;
 
