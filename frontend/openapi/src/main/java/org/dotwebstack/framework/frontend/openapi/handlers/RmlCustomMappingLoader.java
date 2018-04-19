@@ -24,11 +24,11 @@ import org.eclipse.rdf4j.model.Resource;
 /*
 temp: can be removed when added to Carml
  */
-public class RmlMappingLoader {
+public class RmlCustomMappingLoader {
 
   private RmlConstantShorthandExpander shorthandExpander;
 
-  public RmlMappingLoader(
+  public RmlCustomMappingLoader(
       RmlConstantShorthandExpander shorthandExpander
   ) {
     this.shorthandExpander = shorthandExpander;
@@ -72,8 +72,8 @@ public class RmlMappingLoader {
     new AddTermTypes().run();
   }
 
-  public static RmlMappingLoader build() {
-    return new RmlMappingLoader(
+  public static RmlCustomMappingLoader build() {
+    return new RmlCustomMappingLoader(
         new RmlConstantShorthandExpander()
     );
   }

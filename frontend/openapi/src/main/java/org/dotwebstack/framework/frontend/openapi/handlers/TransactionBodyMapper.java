@@ -44,7 +44,7 @@ class TransactionBodyMapper {
         LOG.debug("Vendor extensions for body parameter '{}': {}", openApiParameter.getName(),
             vendorExtensions);
 
-        Resource rmlMapping = (Resource)vendorExtensions.get(
+        String rmlMapping = (String)vendorExtensions.get(
             OpenApiSpecificationExtensions.RML_MAPPING);
 
         if (rmlMapping == null) {
@@ -54,8 +54,8 @@ class TransactionBodyMapper {
 
         String value = requestParameters.getRawBody();
 
-        Set<TriplesMap> mapping = RmlMappingLoader.build().load(
-            rmlMappingResourceProvider.get(rmlMapping).getModel());
+        Set<TriplesMap> mapping = RmlCustomMappingLoader.build().load(
+              rmlMappingResourceProvider.get(rmlMapping).getModel());
 
         RmlMapper mapper = RmlMapper.newBuilder().build();
 

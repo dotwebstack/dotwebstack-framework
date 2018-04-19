@@ -4,9 +4,9 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public final class RML {
+public final class R2RML {
 
-  private static final String NAMESPACE_BASE = "http://semweb.mmlab.be/ns/rml";
+  private static final String NAMESPACE_BASE = "http://www.w3.org/ns/r2rml";
 
   private static final String NAMESPACE = NAMESPACE_BASE + "#";
 
@@ -15,12 +15,12 @@ public final class RML {
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    TRIPLES_MAP = valueFactory.createIRI(RML.NAMESPACE, "TriplesMap");
+    TRIPLES_MAP = valueFactory.createIRI(R2RML.NAMESPACE, "TriplesMap");
   }
 
-  private RML() {
+  private R2RML() {
     throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", RML.class));
+        String.format("%s is not meant to be instantiated.", R2RML.class));
   }
 
 }

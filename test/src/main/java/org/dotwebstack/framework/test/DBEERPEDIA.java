@@ -216,6 +216,8 @@ public final class DBEERPEDIA {
 
   public static final IRI SERVICE_DELETE;
 
+  public static final IRI RML_MAPPING;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SHACL_CONCEPT_GRAPHNAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ConceptShapeGraph");
@@ -346,6 +348,8 @@ public final class DBEERPEDIA {
     POST_UPDATE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PostUpdateStep");
 
     TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
+
+    RML_MAPPING = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "RmlMapping");
 
     SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
 
