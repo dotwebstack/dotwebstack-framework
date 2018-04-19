@@ -9,6 +9,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,7 +29,7 @@ public class FormatPreMatchingRequestFilterTest {
   private ContainerRequestContext containerRequestContext;
 
   @Mock
-  MultivaluedHashMap headers;
+  MultivaluedHashMap<String, String> headers;
 
   @Mock
   private UriInfo uriInfo;
@@ -43,7 +44,7 @@ public class FormatPreMatchingRequestFilterTest {
   @Test
   public void filter_AddAcceptHeader_WhenFormatIsJson() throws Exception {
     // Arrange
-    MultivaluedHashMap queryParameters = new MultivaluedHashMap();
+    MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<String, String>();
     queryParameters.add("format", "json");
     when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
@@ -60,7 +61,7 @@ public class FormatPreMatchingRequestFilterTest {
   @Test
   public void filter_AddAcceptHeader_WhenFormatIsXml() throws Exception {
     // Arrange
-    MultivaluedHashMap queryParameters = new MultivaluedHashMap();
+    MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<String, String>();
     queryParameters.add("format", "xml");
     when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
@@ -77,7 +78,7 @@ public class FormatPreMatchingRequestFilterTest {
   @Test
   public void filter_AddAcceptHeader_WhenFormatIsTtl() throws Exception {
     // Arrange
-    MultivaluedHashMap queryParameters = new MultivaluedHashMap();
+    MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<String, String>();
     queryParameters.add("format", "ttl");
     when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
@@ -93,7 +94,7 @@ public class FormatPreMatchingRequestFilterTest {
   @Test
   public void filter_DoNothing_WhenFormatIsUnknown() throws Exception {
     // Arrange
-    MultivaluedHashMap queryParameters = new MultivaluedHashMap();
+    MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<String, String>();
     queryParameters.add("format", "unknown");
     when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);

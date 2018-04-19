@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.http.error;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
@@ -25,8 +25,8 @@ public class ServletErrorHandler implements Inflector<ContainerRequestContext, R
       throw new IllegalArgumentException(String.format("Status code '%s' is unknown.", statusCode));
     }
 
-    return Response.status(responseStatus).type(MediaType.TEXT_PLAIN_TYPE).entity(
-        responseStatus.getReasonPhrase()).build();
+    // we let the exceptionmapper handle this uniformly
+    throw new WebApplicationException(responseStatus);
   }
 
 }

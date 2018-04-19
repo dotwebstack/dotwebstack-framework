@@ -17,9 +17,9 @@ public class UriParameterMapper extends AbstractParameterMapper {
 
   private static final IRI type = ELMO.URI_PARAMETER_MAPPER;
 
-  private String pattern;
+  private final String pattern;
 
-  private String template;
+  private final String template;
 
   protected UriParameterMapper(UriParameterMapperBuilder builder) {
     super(builder);
@@ -42,6 +42,7 @@ public class UriParameterMapper extends AbstractParameterMapper {
       if (uriTemplatePattern.match(input, map)) {
         UriTemplate replacement = new UriTemplate(template);
         output = replacement.createURI(map);
+        LOG.debug("Pattern {} matched with value {}", pattern, input);
       } else {
         LOG.debug("Pattern {} not matched with value {}", pattern, input);
       }
