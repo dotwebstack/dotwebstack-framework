@@ -35,9 +35,7 @@ public class RmlMappingResourceProvider
 
   @Override
   protected GraphQuery getQueryForResources(RepositoryConnection conn) {
-    String query = "CONSTRUCT { ?s ?p ?o . ?o ?op ?oo . ?oo ?oop ?ooo } "
-        + "WHERE { ?s ?p ?o . ?s rdf:type ?type "
-        + "OPTIONAL { ?o ?op ?oo OPTIONAL { ?oo ?oop ?ooo } } } ";
+    String query = "CONSTRUCT { ?s a ?type } WHERE { ?s a ?type }";
     GraphQuery graphQuery = conn.prepareGraphQuery(query);
     graphQuery.setBinding("type", R2RML.TRIPLES_MAP);
 
@@ -68,7 +66,7 @@ public class RmlMappingResourceProvider
     }
 
     String query = "CONSTRUCT { ?rmlmapping ?p ?o . ?o ?op ?oo . ?oo ?oop ?ooo } "
-        + "WHERE { ?s ?p ?o . ?s rdf:type ?type "
+        + "WHERE { ?rmlmapping ?p ?o . ?rmlmapping rdf:type ?type "
         + "OPTIONAL { ?o ?op ?oo OPTIONAL { ?oo ?oop ?ooo } } } ";
     GraphQuery graphQuery = repositoryConnection.prepareGraphQuery(query);
     graphQuery.setBinding("rmlmapping", identifier);
