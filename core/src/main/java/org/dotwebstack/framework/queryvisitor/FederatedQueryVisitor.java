@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.queryvisitor;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
@@ -13,21 +15,23 @@ public class FederatedQueryVisitor extends AbstractQueryModelVisitor {
 
   private BackendResourceProvider backendResourceProvider;
 
-  private Backend backend;
+  private Map<Resource, Backend> replaceableBackends;
 
   public FederatedQueryVisitor(@NonNull BackendResourceProvider backendResourceProvider) {
     this.backendResourceProvider = backendResourceProvider;
+    replaceableBackends = new HashMap<>();
   }
 
-  public Backend getBackend() {
-    return backend;
+  public Map<Resource, Backend> getReplaceableBackends() {
+    return replaceableBackends;
   }
 
   @Override
   public void meet(Service service) {
     final Resource backendIir = (Resource) service.getServiceRef().getValue();
-    backend = Optional.of(backendResourceProvider.get(backendIir)).orElseThrow(
+    final Backend backend = Optional.of(backendResourceProvider.get(backendIir)).orElseThrow(
         () -> new ConfigurationException(String.format("Backend {%s} not found.", backendIir)));
+    replaceableBackends.put(backendIir, backend);
   }
 
 }
