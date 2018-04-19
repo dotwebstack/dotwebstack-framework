@@ -17,8 +17,8 @@ import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourcePr
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.frontend.ld.service.ServiceResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
+import org.dotwebstack.framework.rml.RmlMappingResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
-import org.dotwebstack.framework.transaction.RmlMappingResourceProvider;
 import org.dotwebstack.framework.transaction.TransactionResourceProvider;
 import org.dotwebstack.framework.transaction.flow.step.StepResourceProvider;
 import org.eclipse.rdf4j.model.ValueFactory;

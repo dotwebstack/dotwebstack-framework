@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.transaction;
+package org.dotwebstack.framework.rml;
 
 import com.taxonic.carml.vocab.Rdf.Carml;
 import com.taxonic.carml.vocab.Rml;

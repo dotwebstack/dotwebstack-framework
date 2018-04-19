@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.transaction;
+package org.dotwebstack.framework.rml;
 
 import lombok.NonNull;
 import org.eclipse.rdf4j.model.Model;
