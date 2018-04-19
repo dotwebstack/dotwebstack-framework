@@ -86,8 +86,10 @@ public class InformationProductRequestMapper implements RequestMapper {
 
     resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(new OptionsRequestHandler(pathItem));
 
-    LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
-        absolutePath);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
+          absolutePath);
+    }
 
     return resourceBuilder.build();
   }
