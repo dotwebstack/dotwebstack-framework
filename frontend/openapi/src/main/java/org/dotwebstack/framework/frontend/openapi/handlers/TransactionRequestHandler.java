@@ -76,7 +76,7 @@ public final class TransactionRequestHandler
     Map<String, String> parameterValues =
         requestParameterMapper.map(operation, transaction, requestParameters);
 
-    Model transactionModel = transactionBodyMapper.map(operation, transaction, requestParameters);
+    Model transactionModel = transactionBodyMapper.map(operation, requestParameters);
 
     TransactionHandler transactionHandler = new TransactionHandler(
         new SailRepository(new MemoryStore()), transaction, transactionModel);

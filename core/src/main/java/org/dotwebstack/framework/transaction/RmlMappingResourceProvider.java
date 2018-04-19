@@ -44,7 +44,7 @@ public class RmlMappingResourceProvider
 
   @Override
   protected RmlMapping createResource(Model model, Resource identifier) {
-    IRI type = getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
+    getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
         () -> new ConfigurationException(String.format(
             "No <%s> statement has been found for rml mapping <%s>.", RDF.TYPE, identifier)));
     return new RmlMapping.Builder(identifier, getModel(identifier)).build();
