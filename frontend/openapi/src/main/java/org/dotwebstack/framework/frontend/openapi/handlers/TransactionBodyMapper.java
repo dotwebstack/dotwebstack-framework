@@ -10,6 +10,7 @@ import java.util.Set;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.transaction.RmlMapping;
 import org.dotwebstack.framework.transaction.RmlMappingResourceProvider;
 import org.eclipse.rdf4j.model.Model;
 import org.slf4j.Logger;
@@ -38,23 +39,23 @@ class TransactionBodyMapper {
         LOG.debug("Vendor extensions for body parameter '{}': {}", openApiParameter.getName(),
             vendorExtensions);
 
-        String rmlMapping = (String)vendorExtensions.get(
+        String rmlMappingName = (String)vendorExtensions.get(
             OpenApiSpecificationExtensions.RML_MAPPING);
 
-        if (rmlMapping == null) {
+        if (rmlMappingName == null) {
           throw new RequestHandlerRuntimeException(
               "Vendor extension x-dotwebstack-rml-mapping not found for body parameter");
         }
 
         String value = requestParameters.getRawBody();
 
-        Set<TriplesMap> mapping = RmlCustomMappingLoader.build().load(
-              rmlMappingResourceProvider.get(rmlMapping).getModel());
+        RmlMapping rmlMapping = rmlMappingResourceProvider.get(rmlMappingName);
+        Set<TriplesMap> mapping = RmlCustomMappingLoader.build().load(rmlMapping.getModel());
 
         RmlMapper mapper = RmlMapper.newBuilder().build();
 
         InputStream inputStream = IOUtils.toInputStream(value);
-        mapper.bindInputStream("stream-A", inputStream);
+        mapper.bindInputStream(rmlMapping.getStreamName(), inputStream);
 
         return mapper.map(mapping);
       }

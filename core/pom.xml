@@ -87,6 +87,12 @@
       <artifactId>jena-arq</artifactId>
       <version>3.4.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.taxonic.carml</groupId>
+      <artifactId>carml-model</artifactId>
+      <version>RELEASE</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
 </project>

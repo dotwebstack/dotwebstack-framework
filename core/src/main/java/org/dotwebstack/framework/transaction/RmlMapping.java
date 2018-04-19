@@ -10,9 +10,12 @@ public class RmlMapping {
 
   private Model model;
 
+  private String streamName;
+
   public RmlMapping(@NonNull Builder builder) {
     this.identifier = builder.identifier;
     this.model = builder.model;
+    this.streamName = builder.streamName;
   }
 
   public Resource getIdentifier() {
@@ -23,15 +26,22 @@ public class RmlMapping {
     return model;
   }
 
+  public String getStreamName() {
+    return streamName;
+  }
+
   public static final class Builder {
 
     private Resource identifier;
 
     private Model model;
 
-    public Builder(@NonNull Resource identifier, @NonNull Model model) {
+    private String streamName;
+
+    public Builder(@NonNull Resource identifier, @NonNull Model model, @NonNull String streamName) {
       this.identifier = identifier;
       this.model = model;
+      this.streamName = streamName;
     }
 
     public RmlMapping build() {
