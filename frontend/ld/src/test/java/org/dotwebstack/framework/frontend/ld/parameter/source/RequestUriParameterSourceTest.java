@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import java.net.URI;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
+import org.dotwebstack.framework.frontend.http.HostPreMatchingRequestFilter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,15 +32,18 @@ public class RequestUriParameterSourceTest {
   }
 
   @Test
-  public void createUriParameterSource_ValidPath_WhenContextIsProvided() {
+  public void getValue_ReturnsValidPath_WhenAddedDomainIsPresent() {
     // Arange
-    URI uri = URI.create("http://" + DBEERPEDIA.ORG_HOST + "/beer");
+    URI uri = URI.create("http://" + DBEERPEDIA.ORG_HOST + "/foo/beer");
 
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
     when(uriInfo.getAbsolutePath()).thenReturn(uri);
+    when(containerRequestContext.getProperty(HostPreMatchingRequestFilter.ADDED_DOMAIN)).thenReturn(
+        "foo");
 
     // Act/Assert
     assertThat(requestUriParameterSource.getValue(containerRequestContext),
-        equalTo(uri.getScheme() + "://" + uri.getHost() + uri.getPath()));
+        equalTo(uri.getScheme() + "://" + uri.getHost() + "/beer"));
   }
+
 }

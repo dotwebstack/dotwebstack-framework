@@ -14,7 +14,9 @@ import org.slf4j.LoggerFactory;
 @PreMatching
 public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
 
+  public static final String ADDED_DOMAIN = "addedDomain";
   private static final Logger LOG = LoggerFactory.getLogger(HostPreMatchingRequestFilter.class);
+
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -22,21 +24,28 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
     UriInfo uriInfo = requestContext.getUriInfo();
     UriBuilder hostUriBuilder = uriInfo.getRequestUriBuilder();
 
-    // get host from header forwarded host if set
-    String forwardedHost = requestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
-    LOG.debug("x-forwarded-host: {}", forwardedHost);
-    URI builtRequestUri = hostUriBuilder.build();
-    String replacementUri = builtRequestUri.getHost() + builtRequestUri.getPath();
-    if (forwardedHost != null) {
-      UriBuilder forwardedHostUriBuilder =
-          UriBuilder.fromUri("http://" + forwardedHost.split(",")[0]);
-      replacementUri = forwardedHostUriBuilder.build().getHost() + builtRequestUri.getPath();
-    }
+    String addedDomain = getAddedDomain(requestContext);
+    String replacementUri = addedDomain + hostUriBuilder.build().getPath();
     hostUriBuilder.replacePath(replacementUri);
 
     LOG.debug("Set new request path to {} (was {})", hostUriBuilder, uriInfo.getAbsolutePath());
 
     requestContext.setRequestUri(hostUriBuilder.build());
+    requestContext.setProperty(ADDED_DOMAIN, addedDomain);
   }
 
+  private String getAddedDomain(ContainerRequestContext containerRequestContext) {
+    URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
+
+    // get host from header forwarded host if set
+    String forwardedHost = containerRequestContext.getHeaderString(HttpHeaders.X_FORWARDED_HOST);
+    LOG.debug("x-forwarded-host: {}", forwardedHost);
+
+    if (forwardedHost == null || forwardedHost.equals("")) {
+      return uri.getHost();
+    } else {
+      // remove port if present
+      return UriBuilder.fromUri("http://" + forwardedHost.split(",")[0]).build().getHost();
+    }
+  }
 }
