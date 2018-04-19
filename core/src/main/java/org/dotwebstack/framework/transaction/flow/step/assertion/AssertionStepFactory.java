@@ -76,7 +76,7 @@ public class AssertionStepFactory implements StepFactory {
         return Optional.of(setBackendUri(assertionQuery.get(), visitor.getReplaceableBackends()));
       }
     }
-    return Optional.empty();
+    return assertionQuery;
   }
 
   private String setBackendUri(String query, Map<Resource, Backend> backends) {
