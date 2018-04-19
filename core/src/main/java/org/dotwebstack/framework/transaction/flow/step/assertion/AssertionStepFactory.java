@@ -59,16 +59,12 @@ public class AssertionStepFactory implements StepFactory {
     final Optional<String> assertionQuery = getObjectString(stepModel, identifier, ELMO.ASSERT);
     final Optional<String> assertionNotQuery =
         getObjectString(stepModel, identifier, ELMO.ASSERT_NOT);
-
-    builder.assertion(assertionQuery, assertionNotQuery);
-    // builder.assertion(transformQuery(assertionQuery), transformQuery(assertionNotQuery));
+    builder.assertion(transformQuery(assertionQuery), transformQuery(assertionNotQuery));
     return builder.build();
   }
 
   private Optional<String> transformQuery(Optional<String> assertionQuery) {
-
     if (assertionQuery.isPresent()) {
-      System.out.println("before transform: \n" + assertionQuery.get());
       SPARQLParserFactory sparqlParserFactory = new SPARQLParserFactory();
       QueryParser queryParser = sparqlParserFactory.getParser();
 
