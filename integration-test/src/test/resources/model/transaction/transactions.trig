@@ -55,6 +55,9 @@ GRAPH dbeerpedia:Theatre {
           SERVICE dbeerpedia:Backend {
             ?city rdfs:label ?label
         }
+        SERVICE dbeerpedia:MyBackend {
+            ?city rdfs:label ?label
+        }
   		}
   	'''
   .

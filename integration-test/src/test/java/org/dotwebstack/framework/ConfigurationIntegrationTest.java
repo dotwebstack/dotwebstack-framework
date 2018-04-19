@@ -76,7 +76,7 @@ public class ConfigurationIntegrationTest {
     assertThat(siteResourceProvider.get(DBEERPEDIA.SITE), notNullValue());
     assertThat(stageResourceProvider.getAll().entrySet(), hasSize(1));
     assertThat(stageResourceProvider.get(DBEERPEDIA.STAGE), notNullValue());
-    assertThat(backendResourceProvider.getAll().entrySet(), hasSize(1));
+    assertThat(backendResourceProvider.getAll().entrySet(), hasSize(2));
     assertThat(backendResourceProvider.get(DBEERPEDIA.BACKEND), instanceOf(SparqlBackend.class));
     assertThat(informationProductResourceProvider.getAll().entrySet(), hasSize(4));
     assertThat(informationProductResourceProvider.get(DBEERPEDIA.TUPLE_BREWERIES), notNullValue());
