@@ -72,8 +72,56 @@ public class AssertionStepFactory implements StepFactory {
           queryParser.parseQuery(assertionQuery.get(), ELMO.CONFIG_GRAPHNAME.toString());
       FederatedQueryVisitor visitor = new FederatedQueryVisitor(backendResourceProvider);
       parsedQuery.getTupleExpr().visit(visitor);
+      if (visitor.getReplaceableBackends().size() > 0) {
+        return Optional.of(setBackendUri(assertionQuery.get(), visitor.getReplaceableBackends()));
+      }
     }
     return Optional.empty();
+  }
+
+  private String setBackendUri(String query, Map<Resource, Backend> backends) {
+    String transformedQuery = "";
+    Matcher serviceMatcher = regexService.matcher(query);
+    Map<String, IRI> prefixesMap = getPrefixesMap(query);
+    while (serviceMatcher.find()) {
+      Pair<String, String> servicePair = getPair(serviceMatcher.toMatchResult().group());
+      StringBuilder backendKey = new StringBuilder();
+      backendKey.append(prefixesMap.get(servicePair.getKey()));
+      backendKey.append(servicePair.getValue());
+      String replaceString =
+          "SERVICE " + backends.get(valueFactory.createIRI(backendKey.toString())).getEndpoint();
+      transformedQuery = query.replace(serviceMatcher.toMatchResult().group(), replaceString);
+      query = transformedQuery;
+    }
+    return transformedQuery;
+  }
+
+  private Map<String, IRI> getPrefixesMap(String query) {
+    Map<String, IRI> prefixesMap = new HashMap<>();
+    Matcher matcher = regexPrefix.matcher(query);
+    while (matcher.find()) {
+      Pair<String, String> pair = getPair(matcher.toMatchResult().group());
+      if (pair != null) {
+        prefixesMap.put(pair.getKey(), valueFactory.createIRI(pair.getValue()));
+      }
+    }
+    return prefixesMap;
+  }
+
+  private Pair<String, String> getPair(String statement) {
+    String[] allComponents = statement.split("\\s+");
+    if (allComponents.length == 3) {
+      final String key = allComponents[1].substring(0, allComponents[1].length() - 1);
+      final String value = allComponents[2].substring(1, allComponents[2].length() - 1);
+      return new Pair<>(key, value);
+    } else if (allComponents.length == 2) {
+      String[] keyValueElements = allComponents[1].split(":");
+      if (keyValueElements.length == 2) {
+        return new Pair<>(keyValueElements[0], keyValueElements[1]);
+      }
+    }
+    LOG.warn("Could not get key|value of statement {}", statement);
+    return null;
   }
 
   private Optional<String> getObjectString(Model model, Resource subject, IRI predicate) {
