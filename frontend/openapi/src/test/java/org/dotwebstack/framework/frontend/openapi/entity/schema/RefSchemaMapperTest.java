@@ -145,11 +145,13 @@ public class RefSchemaMapperTest {
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
     when(graphEntityMock.getSwaggerDefinitions()).thenReturn(
         ImmutableMap.of(refProperty.getSimpleRef(), refModel));
-    when(ldPathExecutorMock.ldPathQuery(valueMock, LD_PATH_QUERY)).thenReturn(ImmutableList.of(VALUE_2));
+    when(ldPathExecutorMock.ldPathQuery(valueMock, LD_PATH_QUERY)).thenReturn(
+        ImmutableList.of(VALUE_2));
 
     // Act
-    Map<String, Optional> result = (Map<String, Optional>) refSchemaMapper.mapGraphValue(refProperty,
-        graphEntityMock, ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+    Map<String, Optional> result =
+        (Map<String, Optional>) refSchemaMapper.mapGraphValue(refProperty, graphEntityMock,
+            ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(2));

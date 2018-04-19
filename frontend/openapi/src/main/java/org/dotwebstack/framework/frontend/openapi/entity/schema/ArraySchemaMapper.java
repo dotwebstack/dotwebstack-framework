@@ -26,6 +26,7 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
   protected Set<String> getSupportedVendorExtensions() {
     return new HashSet<>();
   }
+
   @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull TupleEntity entity,
                               @NonNull ValueContext valueContext) {

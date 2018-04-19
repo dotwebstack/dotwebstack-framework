@@ -8,10 +8,10 @@ import javax.validation.constraints.NotNull;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.springframework.stereotype.Service;
 
 @Service

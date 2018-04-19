@@ -22,7 +22,8 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
   protected abstract Set<String> getSupportedVendorExtensions();
 
   @Override
-  public T mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity, @NonNull ValueContext valueContext) {
+  public T mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity,
+      @NonNull ValueContext valueContext) {
     return convertToType(SchemaMapperUtils.castLiteralValue(valueContext.getValue()));
   }
 
@@ -113,21 +114,18 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
   }
 
   /**
-   * Validates the vendor extensions that are declared on the Property. A Property
-   * should have exactly one of the vendor extensions declared in supportedExtensions
+   * Validates the vendor extensions that are declared on the Property. A Property should have
+   * exactly one of the vendor extensions declared in supportedExtensions
    *
    * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
    *         are encountered.
    */
   protected void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
     if (property.getVendorExtensions().keySet().stream().filter(
-            supportedExtensions::contains).count() != 1) {
+        supportedExtensions::contains).count() != 1) {
 
-      String message = property.getClass().getSimpleName()
-          + " object must have one of: "
-          + supportedExtensions.toString()
-              .replaceAll("[\\[\\]]", "'")
-              .replaceAll(", ", "', '")
+      String message = property.getClass().getSimpleName() + " object must have one of: "
+          + supportedExtensions.toString().replaceAll("[\\[\\]]", "'").replaceAll(", ", "', '")
           + ". This object cannot have a combination of these.";
 
       throw new SchemaMapperRuntimeException(message);

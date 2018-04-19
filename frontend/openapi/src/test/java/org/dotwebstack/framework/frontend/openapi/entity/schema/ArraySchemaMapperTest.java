@@ -1,7 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.*;
+
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -172,7 +176,7 @@ public class ArraySchemaMapperTest {
     // Assert
     assertThat(result, instanceOf(List.class));
 
-    List<Optional<String>> list = (List) result;
+    List<Optional<String>> list = (List<Optional<String>>) result;
 
     assertThat(list, contains(Optional.of(DBEERPEDIA.BROUWTOREN_NAME.stringValue()),
         Optional.of(DBEERPEDIA.MAXIMUS_NAME.stringValue())));
@@ -182,10 +186,11 @@ public class ArraySchemaMapperTest {
   public void mapGraphValue_ReturnsArrayOfObjects_WhenSubjectExtEnabled() {
     // Arrange
     arrayProperty.setItems(objectProperty);
-    arrayProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT, true));
+    arrayProperty.setVendorExtensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT, true));
 
     when(graphEntityMock.getSubjects()).thenReturn(
-            ImmutableSet.of(DBEERPEDIA.BROUWTOREN, DBEERPEDIA.MAXIMUS));
+        ImmutableSet.of(DBEERPEDIA.BROUWTOREN, DBEERPEDIA.MAXIMUS));
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN, "name")).thenReturn(
         ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME));
@@ -199,7 +204,7 @@ public class ArraySchemaMapperTest {
     // Assert
     assertThat(result, instanceOf(List.class));
 
-    List<Optional<String>> list = (List) result;
+    List<Optional<String>> list = (List<Optional<String>>) result;
 
     assertThat(list,
         containsInAnyOrder(

@@ -41,7 +41,8 @@ public class DateTimeSchemaMapperConstantValueTest {
   @Before
   public void setUp() {
     dateTimeProperty = new DateTimeProperty();
-    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(new DateTimeSchemaMapper()));
+    schemaMapperAdapter =
+        new SchemaMapperAdapter(Collections.singletonList(new DateTimeSchemaMapper()));
     valueContext = ValueContext.builder().build();
   }
 

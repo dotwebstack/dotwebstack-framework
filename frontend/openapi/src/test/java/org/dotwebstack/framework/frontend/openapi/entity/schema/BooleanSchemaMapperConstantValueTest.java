@@ -85,6 +85,7 @@ public class BooleanSchemaMapperConstantValueTest {
     // Assert
     assertBooleanTrue(result);
   }
+
   private static void assertBooleanTrue(Object result) {
     assertThat(result, instanceOf(Boolean.class));
     assertThat(result, is(true));

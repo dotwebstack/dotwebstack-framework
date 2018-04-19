@@ -21,7 +21,8 @@ class ResponseSchemaMapper extends AbstractSubjectSchemaMapper<ResponseProperty,
   }
 
   @Override
-  public Object mapTupleValue(@NonNull ResponseProperty schema,  @NonNull TupleEntity entity, @NonNull ValueContext value) {
+  public Object mapTupleValue(@NonNull ResponseProperty schema, @NonNull TupleEntity entity,
+      @NonNull ValueContext value) {
     throw new UnsupportedOperationException();
   }
 

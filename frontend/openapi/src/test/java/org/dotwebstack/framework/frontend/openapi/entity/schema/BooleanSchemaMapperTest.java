@@ -49,7 +49,7 @@ public class BooleanSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-        booleanSchemaMapper.mapTupleValue(booleanProperty, tupleEntityMock,
+    booleanSchemaMapper.mapTupleValue(booleanProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
