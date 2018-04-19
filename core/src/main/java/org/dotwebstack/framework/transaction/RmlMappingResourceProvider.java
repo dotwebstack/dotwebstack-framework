@@ -11,7 +11,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryResults;
@@ -44,9 +43,6 @@ public class RmlMappingResourceProvider
 
   @Override
   protected RmlMapping createResource(Model model, Resource identifier) {
-    getObjectIRI(model, identifier, RDF.TYPE).orElseThrow(
-        () -> new ConfigurationException(String.format(
-            "No <%s> statement has been found for rml mapping <%s>.", RDF.TYPE, identifier)));
     return new RmlMapping.Builder(identifier, getModel(identifier)).build();
   }
 
