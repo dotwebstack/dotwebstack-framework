@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi;
 
+import static javax.ws.rs.HttpMethod.GET;
+
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
@@ -23,6 +25,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.handlers.OpenApiSpecHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -31,6 +34,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.Resource.Builder;
 import org.glassfish.jersey.server.model.ResourceMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,13 +101,16 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       InputStream inputStream =
           new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
       String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
-
       if (!StringUtils.isBlank(result)) {
         Swagger swagger = openApiParser.parse(result);
         mapOpenApiDefinition(swagger, httpConfiguration);
+        String basePath = createBasePath(swagger);
+        addSpecResource(result, basePath, httpConfiguration);
       }
     }
   }
+
+
 
   private void mapOpenApiDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(swagger);
@@ -168,6 +175,18 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
       LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
           absolutePath);
     });
+  }
+
+  private void addSpecResource(String yaml, String basePath, HttpConfiguration httpConfiguration)
+      throws IOException {
+    OpenApiSpecHandler handler = new OpenApiSpecHandler(yaml);
+
+    Builder specResourceBuilder = Resource.builder().path(basePath + "/docs/_spec");
+    specResourceBuilder//
+        .addMethod(GET)//
+        .produces("text/yaml")//
+        .handledBy(handler);
+    httpConfiguration.registerResources(specResourceBuilder.build());
   }
 
   /**

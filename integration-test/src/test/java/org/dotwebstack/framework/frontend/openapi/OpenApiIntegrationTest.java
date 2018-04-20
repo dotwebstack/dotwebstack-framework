@@ -3,8 +3,11 @@ package org.dotwebstack.framework.frontend.openapi;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.HttpMethod;
@@ -57,6 +60,29 @@ public class OpenApiIntegrationTest {
     System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
     SparqlHttpStub.start();
   }
+
+  @Test
+  public void get_GetSpec_ThroughOpenApi() throws Exception {
+    // Arrange
+
+    // Act
+    Response response =
+        target.path("/dbp/api/v1/docs/_spec").request().header(HttpHeaders.CONTENT_TYPE,
+            ContentType.APPLICATION_JSON.toString()).get();
+
+    // Assert
+    assertThat(response.getHeaderString("Content-Type"), equalTo("text/yaml"));
+    String responseYaml = response.readEntity(String.class);
+    // the response should be valid Yaml
+    YAMLMapper mapper = new YAMLMapper();
+    mapper.readTree(responseYaml);
+    // the x-dotwebstack should have been removed
+    assertFalse("x- header found in: " + responseYaml, responseYaml.contains("x-"));
+    assertTrue("Swagger spec definition not found in: " + responseYaml,
+        responseYaml.contains("swagger: 2.0"));
+    assertTrue("DBeerPedia not found in: " + responseYaml, responseYaml.contains("DBeerPedia API"));
+  }
+
 
   @Test
   public void get_GetBreweryCollection_ThroughOpenApi() throws JSONException {
