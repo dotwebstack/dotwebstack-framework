@@ -42,7 +42,7 @@ public class AbstractSchemaMapperTest {
 
   private SchemaMapperAdapter schemaMapperAdapter;
   private final AbstractSchemaMapper abstractSchemaMapper =
-          new AbstractSchemaMapperTest.TestSchemaMapper();
+      new AbstractSchemaMapperTest.TestSchemaMapper();
 
   @Before
   public void setUp() {
@@ -193,7 +193,7 @@ public class AbstractSchemaMapperTest {
     }
 
     @Override
-    Object convertToType(Literal literal) {
+    protected Object convertToType(Literal literal) {
       return null;
     }
 

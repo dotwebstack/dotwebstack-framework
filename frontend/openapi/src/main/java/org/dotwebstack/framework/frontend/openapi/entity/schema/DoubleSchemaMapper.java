@@ -37,7 +37,7 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
   }
 
   @Override
-  Double convertToType(Literal literal) {
+  protected Double convertToType(Literal literal) {
     return literal.doubleValue();
   }
 

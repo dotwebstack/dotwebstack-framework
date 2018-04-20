@@ -24,7 +24,7 @@ class BooleanSchemaMapper extends AbstractSchemaMapper<BooleanProperty, Boolean>
   }
 
   @Override
-  Boolean convertToType(Literal literal) {
+  protected Boolean convertToType(Literal literal) {
     return literal.booleanValue();
   }
 

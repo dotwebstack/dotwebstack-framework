@@ -95,7 +95,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     return ldPathQuery;
   }
 
-  abstract T convertToType(Literal literal);
+  protected abstract T convertToType(Literal literal);
 
   static Value getSingleStatement(@NonNull Collection<Value> queryResult,
       @NonNull String ldPathQuery) {
@@ -120,7 +120,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
    * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
    *         are encountered.
    */
-  protected void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
+  private void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
     if (property.getVendorExtensions().keySet().stream().filter(
         supportedExtensions::contains).count() != 1) {
 

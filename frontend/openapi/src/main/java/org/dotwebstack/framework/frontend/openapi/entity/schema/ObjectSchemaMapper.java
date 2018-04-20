@@ -143,7 +143,7 @@ public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectProper
   }
 
   @Override
-  Object convertToType(Literal literal) {
+  protected Object convertToType(Literal literal) {
     return literal;
   }
 

@@ -99,7 +99,7 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
   }
 
   @Override
-  Object convertToType(Literal literal) {
+  protected Object convertToType(Literal literal) {
     return literal.integerValue();
   }
 

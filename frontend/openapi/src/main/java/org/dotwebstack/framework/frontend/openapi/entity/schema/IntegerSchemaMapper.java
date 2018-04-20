@@ -31,7 +31,7 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
   }
 
   @Override
-  Integer convertToType(Literal literal) {
+  protected Integer convertToType(Literal literal) {
     return literal.intValue();
   }
 

@@ -28,24 +28,24 @@ import org.mockito.junit.MockitoJUnitRunner;
 @SuppressWarnings("static-access")
 public class AbstractSubjectSchemaMapperTest {
 
-  @Mock
-  private GraphEntity entityMock;
-
-  @Mock
-  private Property schemaMock;
-
-  private final AbstractSubjectSchemaMapper mapper = new TestSubjectSchemaMapper();
-
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+
+  @Mock
+  private GraphEntity graphEntityMock;
+  @Mock
+  private Property propertyMock;
+
+  private final AbstractSubjectSchemaMapper abstractSubjectSchemaMapper =
+      new TestSubjectSchemaMapper();
 
   @Test
   public void hasSubjectQueryVendorExt_ReturnsFalse_WhenPropDoesNotHaveSubjectQueryVendorExt() {
     // Arrange
-    when(schemaMock.getVendorExtensions()).thenReturn(ImmutableMap.of());
+    when(propertyMock.getVendorExtensions()).thenReturn(ImmutableMap.of());
 
     // Act
-    boolean result = mapper.hasSubjectVendorExtension(schemaMock);
+    boolean result = abstractSubjectSchemaMapper.hasSubjectVendorExtension(propertyMock);
 
     // Assert
     assertThat(result, is(false));
@@ -54,11 +54,11 @@ public class AbstractSubjectSchemaMapperTest {
   @Test
   public void hasSubjectQueryVendorExt_ReturnsTrue_WhenPropDoesHaveSubjectQueryVendorExt() {
     // Arrange
-    when(schemaMock.getVendorExtensions()).thenReturn(
+    when(propertyMock.getVendorExtensions()).thenReturn(
         ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT, true));
 
     // Act
-    boolean result = mapper.hasSubjectVendorExtension(schemaMock);
+    boolean result = abstractSubjectSchemaMapper.hasSubjectVendorExtension(propertyMock);
 
     // Assert
     assertThat(result, is(true));
@@ -67,11 +67,11 @@ public class AbstractSubjectSchemaMapperTest {
   @Test
   public void getSubject_ReturnsNull_ForOptionalPropertyWithZeroSubjects() {
     // Arrange
-    when(schemaMock.getRequired()).thenReturn(false);
-    when(entityMock.getSubjects()).thenReturn(ImmutableSet.of());
+    when(propertyMock.getRequired()).thenReturn(false);
+    when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
-    Value subject = mapper.getSubject(schemaMock, entityMock);
+    Value subject = abstractSubjectSchemaMapper.getSubject(propertyMock, graphEntityMock);
 
     // Assert
     assertThat(subject, is(nullValue()));
@@ -80,10 +80,10 @@ public class AbstractSubjectSchemaMapperTest {
   @Test
   public void getSubject_ReturnsSubject_ForPropertyWithOneSubject() {
     // Arrange
-    when(entityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
+    when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
 
     // Act
-    Value subject = mapper.getSubject(schemaMock, entityMock);
+    Value subject = abstractSubjectSchemaMapper.getSubject(propertyMock, graphEntityMock);
 
     // Assert
     assertThat(subject, equalTo(DBEERPEDIA.BROUWTOREN));
@@ -96,11 +96,11 @@ public class AbstractSubjectSchemaMapperTest {
     thrown.expectMessage("Expected a single subject, but subject query yielded no results.");
 
     // Arrange
-    when(schemaMock.getRequired()).thenReturn(true);
-    when(entityMock.getSubjects()).thenReturn(ImmutableSet.of());
+    when(propertyMock.getRequired()).thenReturn(true);
+    when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
-    mapper.getSubject(schemaMock, entityMock);
+    abstractSubjectSchemaMapper.getSubject(propertyMock, graphEntityMock);
   }
 
   @Test
@@ -110,11 +110,11 @@ public class AbstractSubjectSchemaMapperTest {
     thrown.expectMessage("Expected a single subject, but subject query yielded multiple results.");
 
     // Arrange
-    when(entityMock.getSubjects()).thenReturn(
+    when(graphEntityMock.getSubjects()).thenReturn(
         ImmutableSet.of(DBEERPEDIA.BROUWTOREN, DBEERPEDIA.MAXIMUS));
 
     // Act
-    mapper.getSubject(schemaMock, entityMock);
+    abstractSubjectSchemaMapper.getSubject(propertyMock, graphEntityMock);
   }
 
   private static class TestSubjectSchemaMapper extends AbstractSubjectSchemaMapper {
@@ -136,7 +136,7 @@ public class AbstractSubjectSchemaMapperTest {
     }
 
     @Override
-    Object convertToType(Literal literal) {
+    protected Object convertToType(Literal literal) {
       return literal;
     }
 
