@@ -224,7 +224,8 @@ elmo:optionalParameter a owl:ObjectProperty;
 elmo:password a owl:ObjectProperty;
   rdfs:label "password"@en;
   rdfs:comment "Defines the password for a particular backend"@en;
-  rdfs:range elmo:Backend;
+  rdfs:range xsd:string;
+  rdfs:domain elmo:Backend;
 .
 elmo:persistenceStrategy a owl:ObjectProperty;
   rdfs:label "persistenceStrategy"@en;
@@ -298,7 +299,8 @@ elmo:uriTemplate a owl:DatatypeProperty;
 elmo:username a owl:ObjectProperty;
   rdfs:label "password"@en;
   rdfs:comment "Defines the username for a particular backend"@en;
-  rdfs:range elmo:Backend;
+  rdfs:range xsd:string;
+  rdfs:domain elmo:Backend;
 .
 
 # =========
