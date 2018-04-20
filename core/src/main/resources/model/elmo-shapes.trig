@@ -355,18 +355,33 @@ elmo-shape:AssertionStep a sh:NodeShape;
       sh:name "rdfs:label";
       sh:path rdfs:label;
   ];
+  # Because the shape is closed, properties are expected (even if they are specified within sh:xone)
   sh:property [
-    sh:name "elmo:assert";
     sh:path elmo:assert;
-    sh:datatype xsd:string;
-    sh:maxCount 1;
   ];
   sh:property [
-    sh:name "elmo:assertNot";
     sh:path elmo:assertNot;
-    sh:datatype xsd:string;
-    sh:maxCount 1;
   ];
+  sh:xone (
+    [
+      sh:property [
+        sh:name "elmo:assert";
+        sh:path elmo:assert;
+        sh:datatype xsd:string;
+        sh:minCount 1;
+        sh:maxCount 1;
+      ]
+    ]
+    [
+      sh:property [
+        sh:name "elmo:assertNot";
+        sh:path elmo:assertNot;
+        sh:datatype xsd:string;
+        sh:minCount 1;
+        sh:maxCount 1;
+      ]
+    ]
+  )
 .
 
 elmo-shape:UpdateStep a sh:NodeShape;
