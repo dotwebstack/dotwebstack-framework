@@ -304,18 +304,20 @@ public class StringSchemaMapperTest {
 
   @Test
   public void mapGraphValue_ThrowsException_ForNullLdPathAndRequiredProperty() {
+
+    //TODO: moet er een value mee worden gegeven? Klopt deze test wel?
+
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage("StringProperty has 'x-dotwebstack-ldpath' "
-        + "vendor extension that is null, but the property is required.");
+    thrown.expectMessage("No result for required property.");
 
     // Arrange
-    stringProperty.setVendorExtensions(nullableMapOf(OpenApiSpecificationExtensions.LDPATH, null));
+    // stringProperty.setVendorExtensions(ImmutableMap.of());
     stringProperty.setRequired(true);
 
     // Act
     stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
-        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+        ValueContext.builder().build(), schemaMapperAdapter);
   }
 
   @Test

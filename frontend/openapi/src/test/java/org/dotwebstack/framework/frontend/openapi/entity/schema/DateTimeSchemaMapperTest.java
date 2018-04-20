@@ -14,7 +14,6 @@ import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,8 +64,8 @@ public class DateTimeSchemaMapperTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format(
-        "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
-        DUMMY_EXPR, XMLSchema.DATETIME.stringValue()));
+        "LDPathQuery '%s' yielded a value which is not a literal of supported type",
+        DUMMY_EXPR));
 
     // Arrange
     property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);

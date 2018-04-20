@@ -40,25 +40,27 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
       return handleConstantValueVendorExtension(property);
     }
-    throw new IllegalStateException();
+    throw new IllegalStateException(String.format(
+        "Property %s cannot be mapped, no LDpath or ConstantValue defined.", property.toString()));
   }
 
   T handleConstantValueVendorExtension(S property) {
     Object value =
         property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
-    if (value != null) {
-      if (isSupportedLiteral(value)) {
-        return convertToType(((Literal) value));
-      }
+    validateRequired(property, OpenApiSpecificationExtensions.CONSTANT_VALUE, value);
 
-      Literal literal =
-          VALUE_FACTORY.createLiteral(value.toString(), getSupportedDataTypes().iterator().next());
-      return convertToType(literal);
-    } else {
-      handleRequired(property, OpenApiSpecificationExtensions.CONSTANT_VALUE);
+    if (value == null) {
+      return null;
     }
-    return null;
+
+    if (isSupportedLiteral(value)) {
+      return convertToType(((Literal) value));
+    }
+
+    Literal literal =
+        VALUE_FACTORY.createLiteral(value.toString(), getSupportedDataTypes().iterator().next());
+    return convertToType(literal);
   }
 
   T handleLdPathVendorExtension(@NonNull S property, @NonNull ValueContext valueContext,
@@ -66,33 +68,37 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
+
     if (ldPathQuery == null) {
-      if (isSupportedLiteral(valueContext.getValue())) {
-        return convertToType(((Literal) valueContext.getValue()));
-      } else {
-        handleRequired(property, OpenApiSpecificationExtensions.LDPATH);
-      }
-    } else {
-      LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
-      Collection<Value> queryResult =
-          ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
-
-      if (!property.getRequired() && queryResult.isEmpty()) {
-        return null;
-      }
-
-      Value value = getSingleStatement(queryResult, ldPathQuery);
-      try {
-        return convertToType((Literal) value);
-      } catch (IllegalArgumentException | ClassCastException ex) {
-        throw new SchemaMapperRuntimeException(expectedException(ldPathQuery));
-      }
+      return handleLdPathVendorExtensionWithoutLdPath(property, valueContext);
     }
-    return null;
+
+    LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
+    Collection<Value> queryResult =
+        ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
+
+    if (!property.getRequired() && queryResult.isEmpty()) {
+      return null;
+    }
+
+    Value value = getSingleStatement(queryResult, ldPathQuery);
+    try {
+      return convertToType((Literal) value);
+    } catch (RuntimeException ex) {
+      throw new SchemaMapperRuntimeException(String.format(
+          "[%s] LDPathQuery '%s' yielded a value which is not a literal of supported type <%s>",
+          this.getClass().getSimpleName(), ldPathQuery, getSupportedDataTypes()));
+    }
   }
 
-  String expectedException(String ldPathQuery) {
-    return ldPathQuery;
+  private T handleLdPathVendorExtensionWithoutLdPath(@NonNull S property,
+      @NonNull ValueContext valueContext) {
+    validateRequired(property, OpenApiSpecificationExtensions.LDPATH, valueContext.getValue());
+
+    if (isSupportedLiteral(valueContext.getValue())) {
+      return convertToType(((Literal) valueContext.getValue()));
+    }
+    return null;
   }
 
   protected abstract T convertToType(Literal literal);
@@ -162,8 +168,8 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     return value instanceof Literal && isDataTypeSupported((Literal) value);
   }
 
-  private void handleRequired(Property property, String vendorExtension) {
-    if (property.getRequired()) {
+  private void validateRequired(Property property, String vendorExtension, Object value) {
+    if (value == null && property.getRequired()) {
       String message =
           String.format("%s has '%s' vendor extension that is null, but the property is required.",
               property.getClass().getSimpleName(), vendorExtension);

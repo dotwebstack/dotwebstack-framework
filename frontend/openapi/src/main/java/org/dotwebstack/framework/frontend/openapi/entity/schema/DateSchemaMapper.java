@@ -25,13 +25,6 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   }
 
   @Override
-  String expectedException(String ldPathQuery) {
-    return String.format(
-        "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
-        ldPathQuery, XMLSchema.DATE.stringValue());
-  }
-
-  @Override
   public boolean supports(@NonNull Property schema) {
     return schema instanceof DateProperty;
   }

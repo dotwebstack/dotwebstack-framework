@@ -25,13 +25,6 @@ class DateTimeSchemaMapper extends AbstractSchemaMapper<DateTimeProperty, LocalD
   }
 
   @Override
-  String expectedException(String ldPathQuery) {
-    return String.format(
-        "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
-        ldPathQuery, XMLSchema.DATETIME.stringValue());
-  }
-
-  @Override
   protected LocalDateTime convertToType(Literal literal) {
     return LocalDateTime.parse(literal.calendarValue().toString());
   }

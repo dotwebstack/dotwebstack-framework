@@ -24,13 +24,6 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Obje
   }
 
   @Override
-  String expectedException(String ldPathQuery) {
-    return String.format(
-            "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
-            ldPathQuery, XMLSchema.INTEGER.stringValue());
-  }
-
-  @Override
   protected Integer convertToType(Literal literal) {
     return literal.intValue();
   }

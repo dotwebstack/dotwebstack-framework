@@ -25,13 +25,6 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<DoubleProperty, Double> {
   }
 
   @Override
-  String expectedException(String ldPathQuery) {
-    return String.format(
-            "LDPath query '%s' yielded a value which is not a literal of supported type: <%s>",
-            ldPathQuery, XMLSchema.DOUBLE.stringValue());
-  }
-
-  @Override
   public boolean supports(@NonNull Property schema) {
     return schema instanceof DoubleProperty;
   }

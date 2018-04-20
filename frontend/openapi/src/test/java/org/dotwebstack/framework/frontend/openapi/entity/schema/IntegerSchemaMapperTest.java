@@ -118,9 +118,9 @@ public class IntegerSchemaMapperTest {
   public void mapGraphValue_ThrowsException_ForUnsupportedType() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage("dummyExpr()");
-    thrown.expectMessage("LDPath query");
-    thrown.expectMessage("yielded a value which is not a literal of supported type:");
+    thrown.expectMessage(String.format(
+        "LDPathQuery '%s' yielded a value which is not a literal of supported type",
+        DUMMY_EXPR));
 
     // Arrange
     integerProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
