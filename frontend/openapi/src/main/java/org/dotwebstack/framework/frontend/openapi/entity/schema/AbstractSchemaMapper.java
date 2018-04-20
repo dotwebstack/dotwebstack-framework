@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import io.swagger.models.properties.Property;
+import io.swagger.models.properties.StringProperty;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -82,6 +83,9 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     }
 
     Value value = getSingleStatement(queryResult, ldPathQuery);
+    if (property instanceof StringProperty) {
+      return (T) value.stringValue();
+    }
     try {
       return convertToType((Literal) value);
     } catch (RuntimeException ex) {

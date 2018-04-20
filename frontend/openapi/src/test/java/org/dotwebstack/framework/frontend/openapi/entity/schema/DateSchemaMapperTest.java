@@ -68,8 +68,6 @@ public class DateSchemaMapperTest {
         "LDPathQuery '%s' yielded a value which is not a literal of supported type",
         DUMMY_EXPR));
 
-
-
     // Arrange
     dateProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
