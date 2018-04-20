@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -26,6 +27,7 @@ public class OpenApiSpecHandlerTest {
         "basePath: /dbp/api/v1\n" + //
         "produces:\n" + //
         "  - application/json\n" + //
+        // these should all be removed
         "x-dotwebstack-ldpath-namespaces:\n" + //
         "  dbeerpedia: http://dbeerpedia.org#\n" + //
         "  elmo: http://dotwebstack.org/def/elmo#\n" + //
@@ -34,6 +36,7 @@ public class OpenApiSpecHandlerTest {
         "paths:\n" + //
         "  /breweries:\n" + //
         "    get:\n" + //
+        // and this should be removed too
         "      x-dotwebstack-information-product: \"http://dbeerpedia.org#TupleBreweries\"";
 
     // Act
@@ -45,6 +48,18 @@ public class OpenApiSpecHandlerTest {
     // the result is valid yaml;
     mapper.readTree(result);
     assertFalse(result.contains("x-dotwebstack"));
+    String expectedYaml = "---\n" + //
+        "swagger: 2.0\n" + //
+        "info:\n" + //
+        "  title: \"DBeerPedia API\"\n" + //
+        "  version: 1.0\n" + //
+        "basePath: \"/dbp/api/v1\"\n" + //
+        "produces:\n" + //
+        "- \"application/json\"\n" + //
+        "paths:\n" + //
+        "  /breweries:\n" + //
+        "    get: {}\n"; //
+    assertEquals(expectedYaml, result);
 
   }
 

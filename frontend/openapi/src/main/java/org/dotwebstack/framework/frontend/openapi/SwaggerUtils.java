@@ -59,8 +59,8 @@ public final class SwaggerUtils {
         : null;
   }
 
-  public static ObjectNode removeVendorExtensions(InputStream specStream, YAMLMapper mapper)
-      throws IOException {
+  public static ObjectNode removeVendorExtensions(@NonNull InputStream specStream,
+      @NonNull YAMLMapper mapper) throws IOException {
     ObjectNode specNode = mapper.readValue(specStream, ObjectNode.class);
     removeExtensionNodes(specNode);
 
@@ -73,9 +73,9 @@ public final class SwaggerUtils {
       removeExtensionNodesFromObject((ObjectNode) node);
     } else if (node.isArray()) {
       ArrayNode arrayNode = (ArrayNode) node;
-      arrayNode.forEach(elt -> {
-        if (elt.isContainerNode()) {
-          removeExtensionNodes((ContainerNode<?>) elt);
+      arrayNode.forEach(arrayElement -> {
+        if (arrayElement.isContainerNode()) {
+          removeExtensionNodes((ContainerNode<?>) arrayElement);
         }
       });
     }

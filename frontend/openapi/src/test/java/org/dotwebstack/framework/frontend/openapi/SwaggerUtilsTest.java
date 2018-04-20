@@ -8,6 +8,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -27,7 +30,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StreamUtils;
 
@@ -85,9 +87,8 @@ public class SwaggerUtilsTest {
   public void removeVendorExtensions_removesAll() throws Exception {
 
     // Arrange
-    Environment mockEnvironment = Mockito.mock(Environment.class);
-    Mockito.when(mockEnvironment.getProperty(Mockito.anyString())).thenReturn(
-        "some-environment-value");
+    Environment mockEnvironment = mock(Environment.class);
+    when(mockEnvironment.getProperty(anyString())).thenReturn("some-environment-value");
 
     YAMLMapper mapper = new YAMLMapper();
 
@@ -98,11 +99,8 @@ public class SwaggerUtilsTest {
     String original = mapper.writer().writeValueAsString(specNode);
     assertTrue("The original should have vendor extensions", original.contains("x-dotwebstack"));
 
-
     InputStream testInputStream =
         new ByteArrayInputStream(original.getBytes(Charset.forName("UTF-8")));
-
-
 
     // Act
     ObjectNode removedNode = SwaggerUtils.removeVendorExtensions(testInputStream, mapper);

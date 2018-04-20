@@ -65,14 +65,12 @@ public class OpenApiIntegrationTest {
   public void get_GetSpec_ThroughOpenApi() throws Exception {
     // Arrange
 
-
     // Act
     Response response =
         target.path("/dbp/api/v1/docs/_spec").request().header(HttpHeaders.CONTENT_TYPE,
             ContentType.APPLICATION_JSON.toString()).get();
 
     // Assert
-
     assertThat(response.getHeaderString("Content-Type"), equalTo("text/yaml"));
     String responseYaml = response.readEntity(String.class);
     // the response should be valid Yaml
