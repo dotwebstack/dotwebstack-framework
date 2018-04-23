@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Optional;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
@@ -105,7 +106,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
         Swagger swagger = openApiParser.parse(result);
         mapOpenApiDefinition(swagger, httpConfiguration);
         String basePath = createBasePath(swagger);
-        addSpecResource(result, basePath, httpConfiguration);
+        addSpecResource(result, swagger, httpConfiguration);
       }
     }
   }
@@ -177,16 +178,22 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     });
   }
 
-  private void addSpecResource(String yaml, String basePath, HttpConfiguration httpConfiguration)
+  private void addSpecResource(String yaml, Swagger swagger, HttpConfiguration httpConfiguration)
       throws IOException {
     OpenApiSpecHandler handler = new OpenApiSpecHandler(yaml);
-
-    Builder specResourceBuilder = Resource.builder().path(basePath + "/docs/_spec");
+    String basePath = createBasePath(swagger);
+    String specEndpoint = getSpecEndpoint(swagger).orElse("/");
+    Builder specResourceBuilder = Resource.builder().path(basePath + specEndpoint);
     specResourceBuilder//
         .addMethod(GET)//
         .produces("text/yaml")//
         .handledBy(handler);
     httpConfiguration.registerResources(specResourceBuilder.build());
+  }
+
+  private Optional<String> getSpecEndpoint(Swagger swagger) {
+    return Optional.ofNullable(swagger.getVendorExtensions()).map(
+        map -> (String) map.get(OpenApiSpecificationExtensions.SPEC_ENDPOINT));
   }
 
   /**
