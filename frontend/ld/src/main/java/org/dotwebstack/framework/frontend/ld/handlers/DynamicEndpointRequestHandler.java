@@ -40,14 +40,10 @@ public class DynamicEndpointRequestHandler extends RequestHandler<DynamicEndpoin
             String.format("Endpoint {%s} has no stage", endpoint.getIdentifier()));
       }
       for (Representation resp : representationResourceProvider.getAll().values()) {
-        if (endpoint.getParameterMapper() != null) {
-          String appliesTo = getUrl(resp, parameterValues, containerRequestContext);
-          if (appliesTo.equals(subjectParameter)
-              && endpoint.getStage().getIdentifier().equals(resp.getStage().getIdentifier())) {
+        if (resp.getStage().getIdentifier().equals(endpoint.getStage().getIdentifier())) {
+          if (match(resp, subjectParameter)) {
             return applyRepresentation(resp, containerRequestContext, parameterValues);
           }
-        } else if (match(resp, subjectParameter)) {
-          return applyRepresentation(resp, containerRequestContext, parameterValues);
         }
       }
       throw new ConfigurationException(
