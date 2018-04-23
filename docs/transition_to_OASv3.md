@@ -1,8 +1,8 @@
-# OASv3 overstap
+# Transition to OASv3 
 
 ## OASv2 vs OASv3 parser
 
-Herbruikbare onderdelen die in `components` gedefinieerd kunnen worden:
+Reusable fields that can be defined in the `components` object:
 * schemas
 * responses
 * parameters
@@ -13,22 +13,22 @@ Herbruikbare onderdelen die in `components` gedefinieerd kunnen worden:
 * links
 * callbacks
 
-Zelfde functionaliteit, nieuwe locatie:
+Same functionality, new location:
 `swagger` --> `openapi`
 `host` + `basePath` + `schemes` --> `server`
 `definitions` + `parameters` + `responses` --> `components`
 `securityDefinitions` --> `security`
-`consumes` --> `content` in een `requestbody`
-`produces` --> `content` in een `response`
+`consumes` --> `content` in a `requestbody`
+`produces` --> `content` in a `response`
 
 
-## Waar zijn wijzigingen in de code nodig?
+## Required changes in the dotwebstack-framework codebase
 
-De swagger parser is ondertussen van de RC-status af, versie 2.0.0 is beschikbaar:
+The swagger parser has recently lost its RC status, version 2.0.0 (supporting OASv3) has recently been released:
 * Maven: https://mvnrepository.com/artifact/io.swagger.parser.v3/swagger-parser-v3/2.0.0
 * GitHub: https://github.com/swagger-api/swagger-parser/tree/v2.0.0
 
-swagger-parser dependency moet omgezet worden naar:
+The `swagger-parser dependency` has to be changed to:
 ```
     <dependency>
       <groupId>io.swagger.parser.v3</groupId>
@@ -37,30 +37,25 @@ swagger-parser dependency moet omgezet worden naar:
     </dependency>
 ```
 
-Een groot deel van de elementen uit het model van OASv2 parser bestaat nog. Ook de utilities e.d. zijn vernieuwd. Echter: 
+The majority of the elements from the model used by the OASv2 parser still exists in the model used by the OASv3 parser. However:
+* Property classes --> Schema classes
+* The OASv3 parser model makes use of inner classes and enums more often
+* The `BodyParameter` doesn't exist anymore; it is replaced with a `RequestBody` which has been effectively split off from the other parameters (and according to the OASv3 specification isn't a parameter anymore)
+* The Path - Operation model has been altered and now strictly follows the model as defined by the OASv3 spec.
 
-* Property klasses --> Schema klasses
-* Er zit meer in inner enums/klasses
-* BodyParameter bestaat niet meer; de vervangende `RequestBody` vertoont nu afwijkend gedrag van de andere parameters (valt volgens de spec ook niet meer onder de parameters)
-* Path - Operation relatie is aangepast en volgt nu precies de opbouw van de elementen zoals gedefinieerd in de spec
+The dotwebstack-framework only requires changes in the `openapi` module:
+* OpenApiRequestMapper, RequestParameterMapper: Significant refactoring needed. These classes utilize the parser and the model intensively.
+* Other: Imports need fixes because of classname changes. Some classes may require a tad more work because elements have been shifted around in the model
 
-In het dotwebstack-framework zijn alleen aanpassingen nodig in de `openapi` module:
-
-* OpenApiRequestMapper, RequestParameterMapper: Significante refactoring nodig. Hier wordt veel gebruik gemaakt van de parser en een groot deel van het model.
-* Overig: Vooral imports fixen ivm naamwijziging. Hier en daar licht refactor werk nodig door verschuivingen van elementen in het model.
-
-Daarnaast hebben we een vrij sterke afhankelijkheid op de Atlassian `swagger-request-validator` library. Deze ondersteunt op dit moment OASv3 nog niet. Versie 2.0.0, op dit moment in de maak, gaat dit wel doen. Voortgang hiervan kan [hier](https://bitbucket.org/atlassian/swagger-request-validator/issues/113/v20-swagger-request-validator-v2) gevolgd worden.
+Besides the dependency on the `swagger-parser`, the dotwebstack-framework has a dependency on the Atlassian `swagger-request-validator` library (which is dependent on the `swagger-parser`). This library doesn't support OASv3 yet. Version 2.0, currently under development, will. Progress can be checked  [here](https://bitbucket.org/atlassian/swagger-request-validator/issues/113/v20-swagger-request-validator-v2).
 
 
-## OAS splitsen
+## A multi-file OAS
 
-*Documentatie*
+*Documentation*
 * https://swagger.io/docs/specification/using-ref/
 
-*Wat afsplitsen?*
-* Parameters die we in meerdere APIs gebruiken, e.g. alles uit de `_kadasterdataplatform.trig` file
-* Error en ExtendedError
-* Responses die we in meerdere APIs gebruiken, e.g. 400, 401, 403, 406, 503
-
-
-
+*What do we split off? (Kadaster Dataplatform specific section)*
+* Parameters used in multiple APIs, e.g. everything from the `_kadasterdataplatform.trig` file 
+* Error en ExtendedError definitions
+* Responses used in multiple APIs, e.g. 400, 401, 403, 406, 503
