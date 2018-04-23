@@ -1,0 +1,28 @@
+GRAPH dbeerpedia:Theatre {
+
+  # Transaction: replace resource from graph
+  dbeerpedia:InsertConcept a elmo:Transaction;
+    elmo:sequentialFlow (
+      dbeerpedia:AssertNoDuplicated
+    );
+  .
+
+  dbeerpedia:AssertNoDuplicated a elmo:AssertionStep;
+  	rdfs:label "The concept already exists";
+  	elmo:assertNot '''
+  	PREFIX dbo: <http://dbpedia.org/ontology/>
+  	PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+  	PREFIX dbeerpedia: <http://dbeerpedia.org#>
+  	SELECT ?city ?label (lang(?label) as ?lang)
+  	WHERE {
+       ?city a dbo:City
+          SERVICE dbeerpedia:Backend {
+            ?city rdfs:label ?label
+        }
+        SERVICE dbeerpedia:MyBackend {
+            ?city rdfs:label ?label
+        }
+  		}
+  	'''
+  .
+}
