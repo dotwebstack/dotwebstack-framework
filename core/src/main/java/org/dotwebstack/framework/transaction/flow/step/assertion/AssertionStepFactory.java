@@ -9,6 +9,7 @@ import javafx.util.Pair;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
+import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.queryvisitor.FederatedQueryVisitor;
 import org.dotwebstack.framework.transaction.flow.step.StepFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
@@ -22,15 +23,11 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.QueryParser;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParserFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AssertionStepFactory implements StepFactory {
-
-  private static final Logger LOG = LoggerFactory.getLogger(AssertionStepFactory.class);
 
   private static final Pattern regexPrefix = Pattern.compile(
       "(prefix)\\b\\s*[a-zA-Z0-9]\\w*\\s*\\:\\s*\\<.*\\>", Pattern.CASE_INSENSITIVE);
@@ -102,9 +99,7 @@ public class AssertionStepFactory implements StepFactory {
     Matcher matcher = regexPrefix.matcher(query);
     while (matcher.find()) {
       Pair<String, String> pair = getPair(matcher.toMatchResult().group());
-      if (pair != null) {
-        prefixesMap.put(pair.getKey(), valueFactory.createIRI(pair.getValue()));
-      }
+      prefixesMap.put(pair.getKey(), valueFactory.createIRI(pair.getValue()));
     }
     return prefixesMap;
   }
@@ -121,8 +116,8 @@ public class AssertionStepFactory implements StepFactory {
         return new Pair<>(keyValueElements[0], keyValueElements[1]);
       }
     }
-    LOG.warn("Could not get key|value of statement {}", statement);
-    return null;
+    throw new ConfigurationException(
+        String.format("Could not get key|value of statement {%s}", statement));
   }
 
   private Optional<String> getObjectString(Model model, Resource subject, IRI predicate) {
