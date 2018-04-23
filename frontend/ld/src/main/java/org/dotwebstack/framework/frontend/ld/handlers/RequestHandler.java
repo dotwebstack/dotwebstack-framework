@@ -14,12 +14,8 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class RequestHandler<T> implements Inflector<ContainerRequestContext, Response> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(RequestHandler.class);
 
   protected final T endpoint;
 
