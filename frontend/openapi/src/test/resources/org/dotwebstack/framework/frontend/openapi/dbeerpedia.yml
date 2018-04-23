@@ -1,0 +1,263 @@
+swagger: 2.0
+info:
+  title: DBeerPedia API
+  version: 1.0
+host: %{dotwebstack.config.host}
+basePath: /dbp/api/v1
+produces:
+  - application/json
+x-dotwebstack-ldpath-namespaces:
+  dbeerpedia: http://dbeerpedia.org#
+  elmo: http://dotwebstack.org/def/elmo#
+  rdfs: http://www.w3.org/2000/01/rdf-schema#
+  xsd: http://www.w3.org/2001/XMLSchema#
+paths:
+  /breweries:
+    get:
+      x-dotwebstack-information-product: "http://dbeerpedia.org#TupleBreweries"
+      parameters:
+      - name: fte
+        in: query
+        description: Aantal FTE
+        required: false
+        type: integer
+        x-dotwebstack-parameter: "http://dbeerpedia.org#FteParam"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: array
+            items:
+              type: object
+              required:
+                - naam
+                - sinds
+                - fte
+                - oprichting
+                - plaats
+              properties:
+                naam:
+                  type: string
+                  format: string
+                sinds:
+                  type: integer
+                  format: int32
+                fte:
+                  type: number
+                  format: double
+                oprichting:
+                  type: string
+                  format: datetime
+                plaats:
+                  type: string
+                  format: string
+  /breweries/{id}:
+    get:
+      x-dotwebstack-information-product: "http://dbeerpedia.org#TupleBrewery"
+      parameters:
+      - name: id
+        in: path
+        description: Identifier
+        required: true
+        type: string
+        x-dotwebstack-parameter: "http://dbeerpedia.org#IdFilter"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            required:
+              - naam
+              - sinds
+              - fte
+              - oprichting
+              - plaats
+            properties:
+              naam:
+                type: string
+                format: string
+              sinds:
+                type: integer
+                format: int32
+              fte:
+                type: number
+                format: double
+              oprichting:
+                type: string
+                format: datetime
+              plaats:
+                type: string
+                format: string
+  /graph-breweries:
+    get:
+      x-dotwebstack-information-product: "http://dbeerpedia.org#GraphBreweries"
+      x-dotwebstack-subject-query: >
+        SELECT ?s
+        WHERE {
+          ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbeerpedia.org#Brewery>
+        }
+      parameters:
+      - name: id
+        in: path
+        required: false
+        type: string
+        x-dotwebstack-parameter: "http://dbeerpedia.org#IdFilter"
+      - name: page
+        in: query
+        required: false
+        type: integer
+        minimum: 1
+        default: 1
+        x-dotwebstack-parameter: "http://dotwebstack.org/def/elmo#PageParameter"
+      - name: pageSize
+        in: query
+        required: false
+        type: integer
+        enum: [10, 20, 50, 100]
+        default: 10
+        x-dotwebstack-parameter: "http://dotwebstack.org/def/elmo#PageSizeParameter"
+      responses:
+        200:
+          schema:
+            type: object
+            required:
+              - _embedded
+              - _links
+            properties:
+              _embedded:
+                type: object
+                required:
+                  - breweries
+                properties:
+                  breweries:
+                    type: array
+                    x-dotwebstack-subject: true
+                    items:
+                      type: object
+                      required:
+                        - naam
+                        - sinds
+                        - fte
+                        - oprichting
+                        - plaats
+                      properties:
+                        naam:
+                          type: string
+                          format: string
+                          x-dotwebstack-ldpath: "dbeerpedia:Name"
+                        sinds:
+                          type: integer
+                          format: int32
+                          x-dotwebstack-ldpath: "dbeerpedia:Since"
+                        fte:
+                          type: number
+                          format: double
+                          x-dotwebstack-ldpath: "dbeerpedia:FTE"
+                        oprichting:
+                          type: string
+                          format: datetime
+                          x-dotwebstack-ldpath: "dbeerpedia:Foundation"
+                        plaats:
+                          type: string
+                          format: string
+                          x-dotwebstack-ldpath: "dbeerpedia:Place"
+              _links:
+                x-dotwebstack-exclude-properties-when-empty-or-null: true
+                type: object
+                required:
+                  - self
+                properties:
+                  self:
+                    type: object
+                    x-dotwebstack-type: self-link
+                    required:
+                      - href
+                    properties:
+                      href:
+                        type: string
+                        format: uri
+                  prev:
+                    type: object
+                    x-dotwebstack-type: prev-link
+                    required:
+                      - href
+                    properties:
+                      href:
+                        type: string
+                        format: uri
+                  next:
+                    type: object
+                    x-dotwebstack-type: next-link
+                    required:
+                      - href
+                    properties:
+                      href:
+                        type: string
+                        format: uri
+        404:
+          description: "Status 404"
+  /graph-breweries/{id}:
+    get:
+      x-dotwebstack-information-product: "http://dbeerpedia.org#GraphBreweries"
+      x-dotwebstack-subject-query: >
+        SELECT ?s
+        WHERE {
+          ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbeerpedia.org#Brewery>
+        }
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+        x-dotwebstack-parameter: "http://dbeerpedia.org#IdFilter"
+      responses:
+        200:
+          x-dotwebstack-subject: true
+          description: OK
+          schema:
+            $ref: "#/definitions/Brewery"
+
+definitions:
+  Brewery:
+    type: object
+    required:
+      - naam
+      - sinds
+      - fte
+      - oprichting
+      - plaats
+      - _links
+    properties:
+      naam:
+        type: string
+        format: string
+        x-dotwebstack-ldpath: "dbeerpedia:Name"
+      sinds:
+        type: integer
+        format: int32
+        x-dotwebstack-ldpath: "dbeerpedia:Since"
+      fte:
+        type: number
+        format: double
+        x-dotwebstack-ldpath: "dbeerpedia:FTE"
+      oprichting:
+        type: string
+        format: datetime
+        x-dotwebstack-ldpath: "dbeerpedia:Foundation"
+      plaats:
+        type: string
+        format: string
+        x-dotwebstack-ldpath: "dbeerpedia:Place"
+      _links:
+        type: object
+        required:
+          - self
+        properties:
+          self:
+            type: object
+            x-dotwebstack-type: self-link
+            required:
+              - href
+            properties:
+              href:
+                type: string

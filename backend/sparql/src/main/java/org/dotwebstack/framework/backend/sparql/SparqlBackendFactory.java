@@ -21,11 +21,11 @@ import org.springframework.stereotype.Service;
 @Service
 class SparqlBackendFactory implements BackendFactory {
 
-  private SparqlBackendInformationProductFactory informationProductFactory;
+  private final SparqlBackendInformationProductFactory informationProductFactory;
 
-  private SparqlBackendPersistenceStepFactory persistenceStepFactory;
+  private final SparqlBackendPersistenceStepFactory persistenceStepFactory;
 
-  private SparqlBackendUpdateStepFactory updateStepFactory;
+  private final SparqlBackendUpdateStepFactory updateStepFactory;
 
   @Autowired
   public SparqlBackendFactory(
@@ -52,6 +52,16 @@ class SparqlBackendFactory implements BackendFactory {
     }
 
     SPARQLRepository repository = new SPARQLRepository(endpoint.stringValue());
+
+    Literal username =
+        Models.objectLiteral(backendModel.filter(identifier, ELMO.USERNAME, null)).orElse(null);
+
+    Literal password =
+        Models.objectLiteral(backendModel.filter(identifier, ELMO.PASSWORD, null)).orElse(null);
+
+    if (!(username == null || password == null)) {
+      repository.setUsernameAndPassword(username.stringValue(), password.stringValue());
+    }
 
     repository.initialize();
 
