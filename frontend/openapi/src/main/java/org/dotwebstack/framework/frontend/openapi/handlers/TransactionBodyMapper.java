@@ -13,6 +13,8 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 import org.dotwebstack.framework.rml.RmlMapping;
 import org.dotwebstack.framework.rml.RmlMappingResourceProvider;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,8 @@ class TransactionBodyMapper {
   private static final Logger LOG = LoggerFactory.getLogger(TransactionBodyMapper.class);
 
   private RmlMappingResourceProvider rmlMappingResourceProvider;
+
+  private static final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
   public TransactionBodyMapper(@NonNull RmlMappingResourceProvider rmlMappingResourceProvider) {
@@ -49,7 +53,8 @@ class TransactionBodyMapper {
 
         String value = requestParameters.getRawBody();
 
-        RmlMapping rmlMapping = rmlMappingResourceProvider.get(rmlMappingName);
+        RmlMapping rmlMapping = rmlMappingResourceProvider.get(
+            valueFactory.createIRI(rmlMappingName));
         Set<TriplesMap> mapping = RmlCustomMappingLoader.build().load(rmlMapping.getModel());
 
         RmlMapper mapper = RmlMapper.newBuilder().build();

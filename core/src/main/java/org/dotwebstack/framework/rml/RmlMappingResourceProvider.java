@@ -7,13 +7,11 @@ import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.rml.RmlMapping.Builder;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.dotwebstack.framework.vocabulary.R2RML;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
@@ -29,9 +27,9 @@ import org.springframework.stereotype.Service;
 public class RmlMappingResourceProvider
     extends AbstractResourceProvider<RmlMapping> {
 
-  private static final ValueFactory valueFactory = SimpleValueFactory.getInstance();
-
   private static final String STREAMNAME = "streamName";
+
+  private RepositoryConnection repositoryConnection;
 
   @Autowired
   public RmlMappingResourceProvider(ConfigurationBackend configurationBackend,
@@ -50,24 +48,22 @@ public class RmlMappingResourceProvider
 
   @Override
   protected RmlMapping createResource(Model model, Resource identifier) {
-    return new RmlMapping.Builder(identifier, getModel(identifier),
-        getStreamName(identifier)).build();
-  }
-
-  public RmlMapping get(String identifier) {
-    IRI resource = valueFactory.createIRI(identifier);
-    return get(resource);
-  }
-
-  private Model getModel(Resource identifier) {
-    final RepositoryConnection repositoryConnection;
-    final Model model;
-
     try {
       repositoryConnection = configurationBackend.getRepository().getConnection();
     } catch (RepositoryException e) {
       throw new ConfigurationException("Error while getting repository connection.", e);
     }
+
+    RmlMapping rmlMapping = new Builder(identifier, getModel(identifier),
+        getStreamName(identifier)).build();
+
+    repositoryConnection.close();
+
+    return rmlMapping;
+  }
+
+  private Model getModel(Resource identifier) {
+    final Model model;
 
     String query = "CONSTRUCT { ?rmlmapping ?p ?o . ?o ?op ?oo . ?oo ?oop ?ooo } "
         + "WHERE { ?rmlmapping ?p ?o . ?rmlmapping a ?type "
@@ -85,22 +81,13 @@ public class RmlMappingResourceProvider
       model = QueryResults.asModel(graphQuery.evaluate());
     } catch (QueryEvaluationException e) {
       throw new ConfigurationException("Error while evaluating SPARQL query.", e);
-    } finally {
-      repositoryConnection.close();
     }
 
     return model;
   }
 
   private String getStreamName(Resource identifier) {
-    final RepositoryConnection repositoryConnection;
     final String streamName;
-
-    try {
-      repositoryConnection = configurationBackend.getRepository().getConnection();
-    } catch (RepositoryException e) {
-      throw new ConfigurationException("Error while getting repository connection.", e);
-    }
 
     String query = String.format("SELECT ?streamName "
         + "WHERE { ?rmlmapping ?p ?o . ?rmlmapping a ?type "
@@ -120,8 +107,6 @@ public class RmlMappingResourceProvider
       queryResults = QueryResults.asList(tupleQuery.evaluate());
     } catch (QueryEvaluationException e) {
       throw new ConfigurationException("Error while evaluating SPARQL query.", e);
-    } finally {
-      repositoryConnection.close();
     }
 
     if (queryResults.isEmpty() || queryResults.get(0).getValue(STREAMNAME) == null) {
