@@ -88,8 +88,9 @@ public class AssertionStepFactory implements StepFactory {
       StringBuilder backendKey = new StringBuilder();
       backendKey.append(prefixesMap.get(servicePair.getKey()));
       backendKey.append(servicePair.getValue());
-      String replaceString =
-          "SERVICE " + backends.get(valueFactory.createIRI(backendKey.toString())).getEndpoint();
+      String replaceString = "SERVICE <"
+          + backends.get(valueFactory.createIRI(backendKey.toString())).getEndpoint().stringValue()
+          + ">";
       transformedQuery = query.replace(serviceMatcher.toMatchResult().group(), replaceString);
       query = transformedQuery;
     }
