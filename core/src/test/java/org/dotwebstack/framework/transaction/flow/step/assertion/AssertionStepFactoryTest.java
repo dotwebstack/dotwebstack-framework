@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableBiMap;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -42,7 +41,6 @@ public class AssertionStepFactoryTest {
   public void setup() {
     // Arrange
     assertionStepFactory = new AssertionStepFactory(backendResourceProvider);
-    when(backendResourceProvider.getAll()).thenReturn(ImmutableBiMap.of());
     Backend backend = mock(Backend.class);
     when(backend.getEndpoint()).thenReturn(mock(Literal.class));
     when(backend.getEndpoint().stringValue()).thenReturn("http://localhost:8080/sparql");
