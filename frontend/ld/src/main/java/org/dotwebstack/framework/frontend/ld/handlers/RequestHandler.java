@@ -16,7 +16,6 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.util.UriTemplate;
 
 public abstract class RequestHandler<T> implements Inflector<ContainerRequestContext, Response> {
 
@@ -38,22 +37,6 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
 
   protected EndpointRequestParameterMapper getEndpointRequestParameterMapper() {
     return endpointRequestParameterMapper;
-  }
-
-  protected String getUrl(Representation representation, Map<String, String> parameterValues,
-      ContainerRequestContext containerRequestContext) {
-    String url = "";
-    try {
-      representation.getParameterMappers().forEach(
-          parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
-      for (String appliesTo : representation.getAppliesTo()) {
-        UriTemplate template = new UriTemplate(appliesTo);
-        url = template.expand(parameterValues).toString();
-      }
-    } catch (IllegalArgumentException ex) {
-      LOG.warn("No parameters found for representation {}", representation.getIdentifier());
-    }
-    return url;
   }
 
   protected Response applyRepresentation(@NonNull Representation representation,

@@ -28,7 +28,6 @@ public class DynamicEndpointRequestHandler extends RequestHandler<DynamicEndpoin
       Optional.ofNullable(containerRequestContext.getUriInfo().getQueryParameters()).ifPresent(
           parameters -> parameters.forEach(
               (key, value) -> value.forEach(val -> parameterValues.put(key, val))));
-
       containerRequestContext.getUriInfo().getPathParameters().forEach(
           (key, value) -> value.forEach(val -> parameterValues.put(key, val)));
       Optional.ofNullable(endpoint.getParameterMapper()).ifPresent(
