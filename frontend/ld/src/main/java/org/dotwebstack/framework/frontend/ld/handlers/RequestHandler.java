@@ -14,17 +14,16 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
-import org.springframework.web.util.UriTemplate;
 
-public abstract class RequestHandler<O> implements Inflector<ContainerRequestContext, Response> {
+public abstract class RequestHandler<T> implements Inflector<ContainerRequestContext, Response> {
 
-  protected final O endpoint;
+  protected final T endpoint;
 
   protected final EndpointRequestParameterMapper endpointRequestParameterMapper;
 
   protected final RepresentationResourceProvider representationResourceProvider;
 
-  public RequestHandler(@NonNull O endpoint,
+  public RequestHandler(@NonNull T endpoint,
       @NonNull EndpointRequestParameterMapper endpointRequestParameterMapper,
       @NonNull RepresentationResourceProvider representationResourceProvider) {
     this.endpoint = endpoint;
@@ -34,15 +33,6 @@ public abstract class RequestHandler<O> implements Inflector<ContainerRequestCon
 
   protected EndpointRequestParameterMapper getEndpointRequestParameterMapper() {
     return endpointRequestParameterMapper;
-  }
-
-  protected String getUrl(Representation representation, Map<String, String> parameterValues) {
-    String url = "";
-    for (String appliesTo : representation.getAppliesTo()) {
-      UriTemplate template = new UriTemplate(appliesTo);
-      url = template.expand(parameterValues).toString();
-    }
-    return url;
   }
 
   protected Response applyRepresentation(@NonNull Representation representation,

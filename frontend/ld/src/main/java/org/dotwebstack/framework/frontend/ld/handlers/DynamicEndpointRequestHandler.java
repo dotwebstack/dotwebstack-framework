@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
@@ -9,6 +10,7 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.endpoint.DynamicEndpoint;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+import org.springframework.web.util.UriTemplate;
 
 public class DynamicEndpointRequestHandler extends RequestHandler<DynamicEndpoint> {
 
@@ -20,26 +22,46 @@ public class DynamicEndpointRequestHandler extends RequestHandler<DynamicEndpoin
 
   @Override
   public Response apply(ContainerRequestContext containerRequestContext) {
-    Map<String, String> parameterValues = new HashMap<>();
-    containerRequestContext.getUriInfo().getPathParameters().forEach(
-        (key, value) -> parameterValues.put(key, value.get(0)));
-
     final String request = containerRequestContext.getRequest().getMethod();
     if (request.equals(HttpMethod.GET)) {
-      parameterValues.putAll((endpoint.getParameterMapper().map(containerRequestContext)));
+      Map<String, String> parameterValues = new HashMap<>();
+      Optional.ofNullable(containerRequestContext.getUriInfo().getQueryParameters()).ifPresent(
+          parameters -> parameters.forEach(
+              (key, value) -> value.forEach(val -> parameterValues.put(key, val))));
+      containerRequestContext.getUriInfo().getPathParameters().forEach(
+          (key, value) -> value.forEach(val -> parameterValues.put(key, val)));
+      Optional.ofNullable(endpoint.getParameterMapper()).ifPresent(
+          mapper -> parameterValues.putAll((mapper.map(containerRequestContext))));
+
       String subjectParameter = parameterValues.get("subject");
-      if (subjectParameter != null) {
-        for (Representation resp : representationResourceProvider.getAll().values()) {
-          String appliesTo = getUrl(resp, parameterValues);
-          if (appliesTo.equals(subjectParameter)) {
-            return applyRepresentation(resp, containerRequestContext, parameterValues);
-          }
+      if (endpoint.getStage() == null) {
+        throw new ConfigurationException(
+            String.format("Endpoint {%s} has no stage", endpoint.getIdentifier()));
+      }
+      for (Representation resp : representationResourceProvider.getAll().values()) {
+        if (resp.getStage().getIdentifier().equals(endpoint.getStage().getIdentifier())
+            && match(resp, subjectParameter)) {
+          return applyRepresentation(resp, containerRequestContext, parameterValues);
         }
       }
+      throw new ConfigurationException(
+          String.format("Found no representation for {%s} subject {%s}", endpoint.getIdentifier(),
+              subjectParameter));
     }
-
     throw new ConfigurationException(String.format("Result type %s not supported for endpoint %s",
         request, endpoint.getIdentifier()));
+  }
+
+  private boolean match(Representation representation, String subjectParameter) {
+    boolean match = false;
+    if (subjectParameter != null) {
+      for (String appliesTo : representation.getAppliesTo()) {
+        UriTemplate template = new UriTemplate(appliesTo);
+        match = (template.matches(subjectParameter) && endpoint.getStage().getIdentifier().equals(
+            representation.getStage().getIdentifier()));
+      }
+    }
+    return match;
   }
 
 }
