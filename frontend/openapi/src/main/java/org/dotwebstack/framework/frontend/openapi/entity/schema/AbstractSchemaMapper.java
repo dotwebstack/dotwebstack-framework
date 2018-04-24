@@ -55,12 +55,12 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     }
 
     if (isSupportedLiteral(value)) {
-      return convertLiteralToType(((Literal) value));
+      return convertToType(((Literal) value));
     }
 
     Literal literal =
         VALUE_FACTORY.createLiteral(value.toString(), getSupportedDataTypes().iterator().next());
-    return convertLiteralToType(literal);
+    return convertToType(literal);
   }
 
   T handleLdPathVendorExtension(@NonNull S property, @NonNull ValueContext valueContext,
@@ -96,12 +96,10 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     validateRequired(property, OpenApiSpecificationExtensions.LDPATH, valueContext.getValue());
 
     if (isSupportedLiteral(valueContext.getValue())) {
-      return convertLiteralToType(((Literal) valueContext.getValue()));
+      return convertToType((valueContext.getValue()));
     }
     return null;
   }
-
-  protected abstract T convertLiteralToType(Literal literal);
 
   private T convertToType(Value value) {
     if (value instanceof Literal) {
@@ -110,6 +108,8 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
       return convertValueToType(value);
     }
   }
+
+  protected abstract T convertLiteralToType(Literal literal);
 
   protected T convertValueToType(Value value) {
     throw new UnsupportedOperationException();

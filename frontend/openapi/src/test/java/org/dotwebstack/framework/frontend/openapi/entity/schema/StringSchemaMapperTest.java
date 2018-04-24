@@ -379,7 +379,7 @@ public class StringSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsStringValue_LDPathWithIri() {
+  public void mapGraphValue_ReturnsStringValue_LdPathWithIri() {
 
     // Arrange
     stringProperty.setVendorExtensions(

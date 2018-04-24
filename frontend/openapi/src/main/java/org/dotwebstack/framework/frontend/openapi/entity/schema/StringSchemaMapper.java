@@ -72,7 +72,6 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     } else if (property.getRequired()) {
       throw new SchemaMapperRuntimeException("No result for required property.");
     }
-
     return null;
   }
 
