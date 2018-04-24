@@ -7,6 +7,7 @@ import io.swagger.models.parameters.BodyParameter;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
+import javax.ws.rs.BadRequestException;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -21,16 +22,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-class TransactionBodyMapper {
+class TransactionRequestBodyMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TransactionBodyMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TransactionRequestBodyMapper.class);
 
   private RmlMappingResourceProvider rmlMappingResourceProvider;
 
   private static final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
-  public TransactionBodyMapper(@NonNull RmlMappingResourceProvider rmlMappingResourceProvider) {
+  public TransactionRequestBodyMapper(@NonNull RmlMappingResourceProvider
+      rmlMappingResourceProvider) {
     this.rmlMappingResourceProvider = rmlMappingResourceProvider;
   }
 
@@ -52,6 +54,10 @@ class TransactionBodyMapper {
         }
 
         String value = requestParameters.getRawBody();
+
+        if (value == null) {
+          throw new BadRequestException("Body is empty");
+        }
 
         RmlMapping rmlMapping = rmlMappingResourceProvider.get(
             valueFactory.createIRI(rmlMappingName));

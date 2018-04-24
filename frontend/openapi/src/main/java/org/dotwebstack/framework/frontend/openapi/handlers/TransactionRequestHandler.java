@@ -37,7 +37,7 @@ public final class TransactionRequestHandler
 
   private final TransactionRequestParameterMapper requestParameterMapper;
 
-  private final TransactionBodyMapper transactionBodyMapper;
+  private final TransactionRequestBodyMapper transactionRequestBodyMapper;
 
   private final Swagger swagger;
 
@@ -46,14 +46,14 @@ public final class TransactionRequestHandler
   TransactionRequestHandler(@NonNull ApiOperation apiOperation, @NonNull Transaction transaction,
       @NonNull io.swagger.models.Response response,
       @NonNull TransactionRequestParameterMapper requestParameterMapper,
-      @NonNull TransactionBodyMapper transactionBodyMapper,
+      @NonNull TransactionRequestBodyMapper transactionRequestBodyMapper,
       @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;
     this.transaction = transaction;
     this.response = response;
     this.requestParameterMapper = requestParameterMapper;
-    this.transactionBodyMapper = transactionBodyMapper;
+    this.transactionRequestBodyMapper = transactionRequestBodyMapper;
     this.swagger = swagger;
   }
 
@@ -76,7 +76,7 @@ public final class TransactionRequestHandler
     Map<String, String> parameterValues =
         requestParameterMapper.map(operation, transaction, requestParameters);
 
-    Model transactionModel = transactionBodyMapper.map(operation, requestParameters);
+    Model transactionModel = transactionRequestBodyMapper.map(operation, requestParameters);
 
     TransactionHandler transactionHandler = new TransactionHandler(
         new SailRepository(new MemoryStore()), transaction, transactionModel);

@@ -216,6 +216,8 @@ public final class DBEERPEDIA {
 
   public static final IRI SERVICE_DELETE;
 
+  public static final String RML_MAPPING_NAME = DBEERPEDIA.NAMESPACE + "RmlMapping";
+
   public static final IRI RML_MAPPING;
 
   public static final IRI RML_MAPPING2;
@@ -351,7 +353,7 @@ public final class DBEERPEDIA {
 
     TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
 
-    RML_MAPPING = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "RmlMapping");
+    RML_MAPPING = valueFactory.createIRI(RML_MAPPING_NAME);
 
     RML_MAPPING2 = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "RmlMapping2");
 

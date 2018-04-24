@@ -16,7 +16,7 @@ public class RequestHandlerFactory {
 
   private final TransactionRequestParameterMapper transactionRequestParameterMapper;
   
-  private final TransactionBodyMapper transactionBodyMapper;
+  private final TransactionRequestBodyMapper transactionRequestBodyMapper;
 
   private final RequestParameterExtractor requestParameterExtractor;
 
@@ -24,11 +24,11 @@ public class RequestHandlerFactory {
   public RequestHandlerFactory(
       @NonNull InformationProductRequestParameterMapper informationProductRequestParameterMapper,
       @NonNull TransactionRequestParameterMapper transactionRequestParameterMapper,
-      @NonNull TransactionBodyMapper transactionBodyMapper,
+      @NonNull TransactionRequestBodyMapper transactionRequestBodyMapper,
       @NonNull RequestParameterExtractor requestParameterExtractor) {
     this.informationProductRequestParameterMapper = informationProductRequestParameterMapper;
     this.transactionRequestParameterMapper = transactionRequestParameterMapper;
-    this.transactionBodyMapper = transactionBodyMapper;
+    this.transactionRequestBodyMapper = transactionRequestBodyMapper;
     this.requestParameterExtractor = requestParameterExtractor;
   }
 
@@ -46,7 +46,7 @@ public class RequestHandlerFactory {
       @NonNull Transaction transaction, @NonNull Response response,
       @NonNull Swagger swagger) {
     return new TransactionRequestHandler(apiOperation, transaction, response, 
-        transactionRequestParameterMapper, transactionBodyMapper,
+        transactionRequestParameterMapper, transactionRequestBodyMapper,
         new ApiRequestValidator(SwaggerUtils.createValidator(swagger), requestParameterExtractor),
         swagger);
   }
