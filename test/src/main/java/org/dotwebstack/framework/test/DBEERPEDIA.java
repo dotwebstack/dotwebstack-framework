@@ -44,6 +44,10 @@ public final class DBEERPEDIA {
 
   public static final IRI SECOND_BACKEND;
 
+  public static final Literal USERNAME;
+
+  public static final Literal PASSWORD;
+
   public static final Literal ENDPOINT;
 
   public static final IRI BREWERIES;
@@ -254,6 +258,8 @@ public final class DBEERPEDIA {
     BACKEND = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Backend");
     SECOND_BACKEND = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "SecondBackend");
     ENDPOINT = valueFactory.createLiteral("http://localhost:8080/sparql", XMLSchema.ANYURI);
+    USERNAME = valueFactory.createLiteral("john_doe", XMLSchema.STRING);
+    PASSWORD = valueFactory.createLiteral("supersecret", XMLSchema.STRING);
 
     BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "Breweries");
     TUPLE_BREWERIES = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "TupleBreweries");

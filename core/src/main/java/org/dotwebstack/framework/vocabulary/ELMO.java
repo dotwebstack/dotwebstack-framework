@@ -55,6 +55,10 @@ public final class ELMO {
 
   public static final IRI SPARQL_BACKEND;
 
+  public static final IRI USERNAME;
+
+  public static final IRI PASSWORD;
+
   public static final IRI BASE_PATH;
 
   public static final IRI SITE_PROP;
@@ -206,6 +210,8 @@ public final class ELMO {
     PATH_PATTERN = valueFactory.createIRI(ELMO.NAMESPACE, "pathPattern");
     PARAMETER_MAPPER_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "parameterMapper");
     BACKEND_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "backend");
+    USERNAME = valueFactory.createIRI(ELMO.NAMESPACE, "username");
+    PASSWORD = valueFactory.createIRI(ELMO.NAMESPACE, "password");
     STAGE_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "stage");
 
     SEQUENTIAL_FLOW_PROP = valueFactory.createIRI(ELMO.NAMESPACE, "sequentialFlow");

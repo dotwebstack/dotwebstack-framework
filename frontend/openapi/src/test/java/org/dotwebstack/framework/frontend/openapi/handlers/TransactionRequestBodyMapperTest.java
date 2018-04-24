@@ -113,7 +113,7 @@ public class TransactionRequestBodyMapperTest {
 
     // Act
     org.eclipse.rdf4j.model.Model resultModel = transactionRequestBodyMapper.map(operation,
-     requestParameters);
+        requestParameters);
 
     // Assert
     assertThat(resultModel.size(), equalTo(4));

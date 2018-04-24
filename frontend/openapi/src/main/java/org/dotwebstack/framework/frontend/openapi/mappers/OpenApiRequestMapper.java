@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
+import static javax.ws.rs.HttpMethod.GET;
+
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
@@ -21,6 +23,9 @@ import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
+import org.dotwebstack.framework.frontend.openapi.handlers.OpenApiSpecHandler;
+import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.Resource.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,13 +90,16 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
       InputStream inputStream =
           new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
       String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
-
       if (!StringUtils.isBlank(result)) {
         Swagger swagger = openApiParser.parse(result);
         mapOpenApiDefinition(swagger, httpConfiguration);
+        String basePath = createBasePath(swagger);
+        addSpecResource(result, basePath, httpConfiguration);
       }
     }
   }
+
+
 
   private void mapOpenApiDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(swagger);
@@ -123,6 +131,18 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
         LOG.warn("Path '{}' is not mapped to an information product or transaction.", absolutePath);
       }
     });
+  }
+
+  private void addSpecResource(String yaml, String basePath, HttpConfiguration httpConfiguration)
+      throws IOException {
+    OpenApiSpecHandler handler = new OpenApiSpecHandler(yaml);
+
+    Builder specResourceBuilder = Resource.builder().path(basePath + "/docs/_spec");
+    specResourceBuilder//
+        .addMethod(GET)//
+        .produces("text/yaml")//
+        .handledBy(handler);
+    httpConfiguration.registerResources(specResourceBuilder.build());
   }
 
   /**
