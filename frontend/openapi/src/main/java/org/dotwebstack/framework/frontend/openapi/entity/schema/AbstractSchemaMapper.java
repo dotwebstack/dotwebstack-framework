@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import io.swagger.models.properties.Property;
-import io.swagger.models.properties.StringProperty;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +24,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
   @Override
   public T mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
-    return convertToType(SchemaMapperUtils.castLiteralValue(valueContext.getValue()));
+    return convertLiteralToType(SchemaMapperUtils.castLiteralValue(valueContext.getValue()));
   }
 
   @Override
@@ -56,19 +55,18 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     }
 
     if (isSupportedLiteral(value)) {
-      return convertToType(((Literal) value));
+      return convertLiteralToType(((Literal) value));
     }
 
     Literal literal =
         VALUE_FACTORY.createLiteral(value.toString(), getSupportedDataTypes().iterator().next());
-    return convertToType(literal);
+    return convertLiteralToType(literal);
   }
 
   T handleLdPathVendorExtension(@NonNull S property, @NonNull ValueContext valueContext,
       @NonNull GraphEntity graphEntity) {
     String ldPathQuery =
         (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
-
 
     if (ldPathQuery == null) {
       return handleLdPathVendorExtensionWithoutLdPath(property, valueContext);
@@ -83,15 +81,13 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     }
 
     Value value = getSingleStatement(queryResult, ldPathQuery);
-    if (property instanceof StringProperty) {
-      return (T) value.stringValue();
-    }
+
     try {
-      return convertToType((Literal) value);
+      return convertToType(value);
     } catch (RuntimeException ex) {
       throw new SchemaMapperRuntimeException(String.format(
           "[%s] LDPathQuery '%s' yielded a value which is not a literal of supported type <%s>",
-          this.getClass().getSimpleName(), ldPathQuery, getSupportedDataTypes()));
+          this.getClass().getSimpleName(), ldPathQuery, getSupportedDataTypes()), ex);
     }
   }
 
@@ -100,12 +96,24 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     validateRequired(property, OpenApiSpecificationExtensions.LDPATH, valueContext.getValue());
 
     if (isSupportedLiteral(valueContext.getValue())) {
-      return convertToType(((Literal) valueContext.getValue()));
+      return convertLiteralToType(((Literal) valueContext.getValue()));
     }
     return null;
   }
 
-  protected abstract T convertToType(Literal literal);
+  protected abstract T convertLiteralToType(Literal literal);
+
+  private T convertToType(Value value) {
+    if (value instanceof Literal) {
+      return convertLiteralToType((Literal) value);
+    } else {
+      return convertValueToType(value);
+    }
+  }
+
+  protected T convertValueToType(Value value) {
+    throw new UnsupportedOperationException();
+  }
 
   static Value getSingleStatement(@NonNull Collection<Value> queryResult,
       @NonNull String ldPathQuery) {

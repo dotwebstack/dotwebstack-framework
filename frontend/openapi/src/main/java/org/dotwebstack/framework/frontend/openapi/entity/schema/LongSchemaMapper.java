@@ -41,7 +41,7 @@ public class LongSchemaMapper extends AbstractSchemaMapper<LongProperty, Long> {
   }
 
   @Override
-  protected Long convertToType(Literal literal) {
+  protected Long convertLiteralToType(Literal literal) {
     return literal.longValue();
   }
 

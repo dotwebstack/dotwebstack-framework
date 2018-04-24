@@ -30,7 +30,7 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   }
 
   @Override
-  protected LocalDate convertToType(Literal literal) {
+  protected LocalDate convertLiteralToType(Literal literal) {
     return LocalDate.parse(literal.calendarValue().toString());
   }
 

@@ -136,7 +136,7 @@ public class AbstractSubjectSchemaMapperTest {
     }
 
     @Override
-    protected Object convertToType(Literal literal) {
+    protected Object convertLiteralToType(Literal literal) {
       return literal;
     }
 

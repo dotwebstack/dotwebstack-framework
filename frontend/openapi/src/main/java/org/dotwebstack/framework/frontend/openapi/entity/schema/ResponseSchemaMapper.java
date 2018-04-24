@@ -51,7 +51,7 @@ class ResponseSchemaMapper extends AbstractSubjectSchemaMapper<ResponseProperty,
   }
 
   @Override
-  protected Object convertToType(Literal literal) {
+  protected Object convertLiteralToType(Literal literal) {
     throw new UnsupportedOperationException();
   }
 

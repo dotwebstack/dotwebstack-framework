@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
@@ -305,7 +306,7 @@ public class StringSchemaMapperTest {
   @Test
   public void mapGraphValue_ThrowsException_ForNullLdPathAndRequiredProperty() {
 
-    //TODO: moet er een value mee worden gegeven? Klopt deze test wel?
+    // TODO: moet er een value mee worden gegeven? Klopt deze test wel?
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
@@ -375,6 +376,30 @@ public class StringSchemaMapperTest {
     // Act
     stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+  }
+
+  @Test
+  public void mapGraphValue_ReturnsStringValue_LDPathWithIri() {
+
+    // Arrange
+    stringProperty.setVendorExtensions(
+        nullableMapOf(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    stringProperty.setRequired(true);
+
+    Value stringValue = VALUE_FACTORY.createIRI(
+        "http://www.ruimtelijkeplannen.nl/documents/NL.IMRO.0345.Lunenburg1-vg01/",
+        "vb_NL.IMRO.0345.Lunenburg1-vg01.pdf");
+
+    when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(
+        ImmutableList.of(stringValue));
+
+    // Act
+    String response = stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+
+    // Assert
+    assertEquals("http://www.ruimtelijkeplannen.nl/documents/NL.IMRO.0345.Lunenburg1-vg01/"
+        + "vb_NL.IMRO.0345.Lunenburg1-vg01.pdf", response);
   }
 
   private static Map<String, Object> nullableMapOf(String key, Object val) {

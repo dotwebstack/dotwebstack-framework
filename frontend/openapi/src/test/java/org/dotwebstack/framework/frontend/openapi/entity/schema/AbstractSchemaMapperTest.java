@@ -193,7 +193,7 @@ public class AbstractSchemaMapperTest {
     }
 
     @Override
-    protected Object convertToType(Literal literal) {
+    protected Object convertLiteralToType(Literal literal) {
       return null;
     }
 

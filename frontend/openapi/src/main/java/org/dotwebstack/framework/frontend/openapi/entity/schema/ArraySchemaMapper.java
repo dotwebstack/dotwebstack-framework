@@ -29,7 +29,7 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
 
   @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull TupleEntity entity,
-                              @NonNull ValueContext valueContext) {
+      @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
@@ -98,8 +98,9 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
     }
   }
 
+
   @Override
-  protected Object convertToType(Literal literal) {
+  protected Object convertLiteralToType(Literal literal) {
     return literal.integerValue();
   }
 

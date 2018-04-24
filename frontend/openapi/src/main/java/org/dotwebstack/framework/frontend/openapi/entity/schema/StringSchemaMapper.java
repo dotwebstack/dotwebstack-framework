@@ -30,8 +30,8 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.STRING, RDF.LANGSTRING);
 
   private static final ImmutableSet<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
-          OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
-          OpenApiSpecificationExtensions.CONSTANT_VALUE);
+      OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
+      OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
 
   @Override
@@ -133,7 +133,6 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
           String.format("Property '%s' should have a '%s' property.",
               OpenApiSpecificationExtensions.RELATIVE_LINK, PATTERN));
     }
-
     String baseUri = graphEntity.getRequestContext().getBaseUri();
 
     if (relativeLinkPropertiesMap.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
@@ -156,7 +155,6 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       return baseUri + relativeLinkPropertiesMap.get(PATTERN).replace("$1",
           queryResult.iterator().next().stringValue());
     }
-
     return baseUri + relativeLinkPropertiesMap.get(PATTERN);
   }
 
@@ -175,7 +173,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
 
     long nrOfSupportedVendorExtensionsPresent =
         property.getVendorExtensions().keySet().stream().filter(
-                SUPPORTED_VENDOR_EXTENSIONS::contains).count();
+            SUPPORTED_VENDOR_EXTENSIONS::contains).count();
     if (nrOfSupportedVendorExtensionsPresent > 1) {
       throw new SchemaMapperRuntimeException(String.format(
           "A string object must have either no, a '%s', '%s' or '%s' property. "
@@ -191,13 +189,18 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   }
 
   @Override
-  protected String convertToType(Literal literal) {
+  protected Set<IRI> getSupportedDataTypes() {
+    return SUPPORTED_TYPES;
+  }
+
+  @Override
+  protected String convertLiteralToType(Literal literal) {
     return literal.stringValue();
   }
 
   @Override
-  protected Set<IRI> getSupportedDataTypes() {
-    return SUPPORTED_TYPES;
+  protected String convertValueToType(Value value) {
+    return value.stringValue();
   }
 
 }

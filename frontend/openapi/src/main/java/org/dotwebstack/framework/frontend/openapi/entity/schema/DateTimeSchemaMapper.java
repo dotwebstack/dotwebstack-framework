@@ -25,7 +25,7 @@ class DateTimeSchemaMapper extends AbstractSchemaMapper<DateTimeProperty, LocalD
   }
 
   @Override
-  protected LocalDateTime convertToType(Literal literal) {
+  protected LocalDateTime convertLiteralToType(Literal literal) {
     return LocalDateTime.parse(literal.calendarValue().toString());
   }
 
