@@ -20,18 +20,25 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
-
     UriInfo uriInfo = requestContext.getUriInfo();
     UriBuilder hostUriBuilder = uriInfo.getRequestUriBuilder();
 
     String addedDomain = getAddedDomain(requestContext);
-    String replacementUri = addedDomain + hostUriBuilder.build().getPath();
+    String replacementUri = addDocRoot(addedDomain, hostUriBuilder.build().getPath());
     hostUriBuilder.replacePath(replacementUri);
 
     LOG.debug("Set new request path to {} (was {})", hostUriBuilder, uriInfo.getAbsolutePath());
 
     requestContext.setRequestUri(hostUriBuilder.build());
     requestContext.setProperty(ADDED_DOMAIN, addedDomain);
+  }
+
+  private String addDocRoot(String addedDomain, String path) {
+    if (path.contains("/assets/")) {
+      String temp = path.split("/assets/")[1];
+      return "/assets/" + temp;
+    }
+    return addedDomain + path;
   }
 
   private String getAddedDomain(ContainerRequestContext containerRequestContext) {
