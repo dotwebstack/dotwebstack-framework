@@ -7,6 +7,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.transaction.Transaction;
+import org.dotwebstack.framework.transaction.TransactionHandlerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,16 +21,19 @@ public class RequestHandlerFactory {
 
   private final RequestParameterExtractor requestParameterExtractor;
 
+  private final TransactionHandlerFactory transactionHandlerFactory;
 
   public RequestHandlerFactory(
       @NonNull InformationProductRequestParameterMapper informationProductRequestParameterMapper,
       @NonNull TransactionRequestParameterMapper transactionRequestParameterMapper,
       @NonNull TransactionRequestBodyMapper transactionRequestBodyMapper,
-      @NonNull RequestParameterExtractor requestParameterExtractor) {
+      @NonNull RequestParameterExtractor requestParameterExtractor,
+      @NonNull TransactionHandlerFactory transactionHandlerFactory) {
     this.informationProductRequestParameterMapper = informationProductRequestParameterMapper;
     this.transactionRequestParameterMapper = transactionRequestParameterMapper;
     this.transactionRequestBodyMapper = transactionRequestBodyMapper;
     this.requestParameterExtractor = requestParameterExtractor;
+    this.transactionHandlerFactory = transactionHandlerFactory;
   }
 
   public InformationProductRequestHandler newInformationProductRequestHandler(
@@ -48,8 +52,7 @@ public class RequestHandlerFactory {
     return new TransactionRequestHandler(apiOperation, transaction, response, 
         transactionRequestParameterMapper, transactionRequestBodyMapper,
         new ApiRequestValidator(SwaggerUtils.createValidator(swagger), requestParameterExtractor),
-        swagger);
+        swagger, transactionHandlerFactory);
   }
-
 
 }

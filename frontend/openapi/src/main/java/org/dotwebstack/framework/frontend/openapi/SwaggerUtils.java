@@ -51,6 +51,9 @@ public final class SwaggerUtils {
     if (apiPath.getPost() != null) {
       realMethod = Method.POST;
     }
+    if (apiPath.getPut() != null) {
+      realMethod = Method.PUT;
+    }
     ApiOperationMatch apiOperationMatch =
         new ApiOperationResolver(swagger, null).findApiOperation(path, realMethod);
 

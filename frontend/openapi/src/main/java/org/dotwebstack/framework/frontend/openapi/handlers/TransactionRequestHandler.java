@@ -4,7 +4,6 @@ import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import java.util.Map;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -14,10 +13,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.transaction.Transaction;
 import org.dotwebstack.framework.transaction.TransactionHandler;
+import org.dotwebstack.framework.transaction.TransactionHandlerFactory;
 import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,11 +41,14 @@ public final class TransactionRequestHandler
 
   private final ApiRequestValidator apiRequestValidator;
 
+  private final TransactionHandlerFactory transactionHandlerFactory;
+
   TransactionRequestHandler(@NonNull ApiOperation apiOperation, @NonNull Transaction transaction,
       @NonNull io.swagger.models.Response response,
       @NonNull TransactionRequestParameterMapper requestParameterMapper,
       @NonNull TransactionRequestBodyMapper transactionRequestBodyMapper,
-      @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
+      @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger,
+      @NonNull TransactionHandlerFactory transactionHandlerFactory) {
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;
     this.transaction = transaction;
@@ -55,11 +56,9 @@ public final class TransactionRequestHandler
     this.requestParameterMapper = requestParameterMapper;
     this.transactionRequestBodyMapper = transactionRequestBodyMapper;
     this.swagger = swagger;
+    this.transactionHandlerFactory = transactionHandlerFactory;
   }
 
-  /**
-   * @throws NotFoundException If the requested resource cannot be found.
-   */
   @Override
   public Response apply(@NonNull ContainerRequestContext context) {
     UriInfo uriInfo = context.getUriInfo();
@@ -78,8 +77,8 @@ public final class TransactionRequestHandler
 
     Model transactionModel = transactionRequestBodyMapper.map(operation, requestParameters);
 
-    TransactionHandler transactionHandler = new TransactionHandler(
-        new SailRepository(new MemoryStore()), transaction, transactionModel);
+    TransactionHandler transactionHandler =
+        transactionHandlerFactory.newTransactionHandler(transaction, transactionModel);
     try {
       transactionHandler.execute(parameterValues);
     } catch (StepFailureException e) {

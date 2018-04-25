@@ -99,8 +99,6 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     }
   }
 
-
-
   private void mapOpenApiDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(swagger);
 

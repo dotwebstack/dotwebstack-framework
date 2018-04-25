@@ -7,6 +7,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.service.Service;
+import org.dotwebstack.framework.transaction.TransactionHandlerFactory;
 import org.dotwebstack.framework.transaction.flow.Flow;
 import org.dotwebstack.framework.transaction.flow.FlowExecutor;
 import org.junit.Before;
@@ -42,12 +43,15 @@ public class ServiceRequestHandlerTest {
   @Mock
   private EndpointRequestParameterMapper endpointRequestParameterMapper;
 
+  @Mock
+  private TransactionHandlerFactory transactionHandlerFactory;
+
   private ServiceRequestHandler serviceRequestHandler;
 
   @Before
   public void setUp() {
     serviceRequestHandler = new ServiceRequestHandler(service, supportedReaderMediaTypesScanner,
-        endpointRequestParameterMapper);
+        endpointRequestParameterMapper, transactionHandlerFactory);
   }
 
   @Test
