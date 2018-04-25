@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.openapi.mappers;
 import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
-import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import java.util.List;
 import javax.ws.rs.HttpMethod;
@@ -65,8 +64,6 @@ public class TransactionRequestMapper implements RequestMapper {
       throw new ConfigurationException(
           String.format("Path '%s' should consume at least one media type.", absolutePath));
     }
-
-    Response response = getOperation.getResponses().get(okStatusCode);
 
     IRI transactionIdentifier =
         valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
