@@ -79,8 +79,7 @@ public class TransactionRequestMapper implements RequestMapper {
 
     ResourceMethod.Builder methodBuilder =
         resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
-            requestHandlerFactory.newTransactionRequestHandler(apiOperation, transaction, response,
-                swagger));
+            requestHandlerFactory.newTransactionRequestHandler(apiOperation, transaction, swagger));
 
     consumes.forEach(methodBuilder::consumes);
 

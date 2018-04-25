@@ -30,9 +30,6 @@ public final class TransactionRequestHandler
   @Getter(AccessLevel.PACKAGE)
   private final Transaction transaction;
 
-  @Getter(AccessLevel.PACKAGE)
-  private final io.swagger.models.Response response;
-
   private final TransactionRequestParameterMapper requestParameterMapper;
 
   private final TransactionRequestBodyMapper transactionRequestBodyMapper;
@@ -44,7 +41,6 @@ public final class TransactionRequestHandler
   private final TransactionHandlerFactory transactionHandlerFactory;
 
   TransactionRequestHandler(@NonNull ApiOperation apiOperation, @NonNull Transaction transaction,
-      @NonNull io.swagger.models.Response response,
       @NonNull TransactionRequestParameterMapper requestParameterMapper,
       @NonNull TransactionRequestBodyMapper transactionRequestBodyMapper,
       @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger,
@@ -52,7 +48,6 @@ public final class TransactionRequestHandler
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;
     this.transaction = transaction;
-    this.response = response;
     this.requestParameterMapper = requestParameterMapper;
     this.transactionRequestBodyMapper = transactionRequestBodyMapper;
     this.swagger = swagger;

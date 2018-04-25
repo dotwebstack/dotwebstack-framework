@@ -76,9 +76,8 @@ public class TransactionRequestHandlerTest {
   @Before
   public void setUp() {
     transactionRequestHandler = new TransactionRequestHandler(apiOperationMock,
-        transactionMock, new io.swagger.models.Response(), requestParameterMapperMock,
-        transactionRequestBodyMapper, apiRequestValidatorMock, swaggerMock,
-        transactionHandlerFactory);
+        transactionMock, requestParameterMapperMock, transactionRequestBodyMapper,
+        apiRequestValidatorMock, swaggerMock, transactionHandlerFactory);
 
     RequestParameters requestParameters = new RequestParameters();
     when(apiRequestValidatorMock.validate(apiOperationMock, swaggerMock,

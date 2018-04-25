@@ -89,15 +89,13 @@ public class RequestHandlerFactoryTest {
     Resource transactionIdentifier = mock(Resource.class);
     Model model = mock(Model.class);
     Transaction transaction = new Transaction.Builder(transactionIdentifier).build();
-    Response response = new Response();
 
     // Act
     TransactionRequestHandler result = requestHandlerFactory
-        .newTransactionRequestHandler(apiOperation, transaction, response, swaggerMock);
+        .newTransactionRequestHandler(apiOperation, transaction, swaggerMock);
 
     // Assert
     assertThat(result.getTransaction(), sameInstance(transaction));
-    assertThat(result.getResponse(), is(response));
   }
 
 }

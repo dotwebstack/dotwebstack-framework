@@ -124,8 +124,8 @@ public class TransactionRequestMapperTest {
     requestMapper.setResourceLoader(resourceLoader);
     requestMapper.setEnvironment(environmentMock);
 
-    when(requestHandlerFactoryMock.newTransactionRequestHandler(any(), any(),
-        any(), any())).thenReturn(transactionRequestHandlerMock);
+    when(requestHandlerFactoryMock.newTransactionRequestHandler(any(), any(), any()))
+        .thenReturn(transactionRequestHandlerMock);
   }
 
   @Test

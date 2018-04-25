@@ -47,9 +47,8 @@ public class RequestHandlerFactory {
   }
 
   public TransactionRequestHandler newTransactionRequestHandler(@NonNull ApiOperation apiOperation,
-      @NonNull Transaction transaction, @NonNull Response response,
-      @NonNull Swagger swagger) {
-    return new TransactionRequestHandler(apiOperation, transaction, response, 
+      @NonNull Transaction transaction, @NonNull Swagger swagger) {
+    return new TransactionRequestHandler(apiOperation, transaction,
         transactionRequestParameterMapper, transactionRequestBodyMapper,
         new ApiRequestValidator(SwaggerUtils.createValidator(swagger), requestParameterExtractor),
         swagger, transactionHandlerFactory);
