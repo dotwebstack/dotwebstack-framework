@@ -197,9 +197,4 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     return literal.stringValue();
   }
 
-  @Override
-  protected String convertValueToType(Value value) {
-    return value.stringValue();
-  }
-
 }

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.test;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -220,6 +219,10 @@ public final class DBEERPEDIA {
 
   public static final IRI SERVICE_DELETE;
 
+  public static final Literal BROUWTOREN_DATETIME_OF_FIRST_BEER;
+
+  public static final IRI FIRSTBEER;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SHACL_CONCEPT_GRAPHNAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ConceptShapeGraph");
@@ -271,7 +274,7 @@ public final class DBEERPEDIA {
     BROUWTOREN_NAME = valueFactory.createLiteral("Brouwtoren");
     BROUWTOREN_YEAR_OF_FOUNDATION = valueFactory.createLiteral(2014);
     BROUWTOREN_DATE_OF_FOUNDATION =
-        valueFactory.createLiteral(createDate(2014, Calendar.JANUARY, 1));
+        valueFactory.createLiteral(createDate(2014, 1, 1).toString(), XMLSchema.DATE);
     BROUWTOREN_CRAFT_MEMBER = valueFactory.createLiteral(true);
     BROUWTOREN_FTE = valueFactory.createLiteral(1.8);
     BROUWTOREN_LITERS_PER_YEAR = valueFactory.createLiteral(Long.MAX_VALUE);
@@ -282,7 +285,7 @@ public final class DBEERPEDIA {
     MAXIMUS_NAME = valueFactory.createLiteral("Maximus");
     MAXIMUS_YEAR_OF_FOUNDATION = valueFactory.createLiteral(2012);
     MAXIMUS_DATE_OF_FOUNDATION =
-        valueFactory.createLiteral(createDate(2012, Calendar.SEPTEMBER, 27));
+        valueFactory.createLiteral(createDate(2012, 9, 27).toString(), XMLSchema.DATE);
     MAXIMUS_FTE = valueFactory.createLiteral(2.4);
     MAXIMUS_PLACE = valueFactory.createLiteral("Utrecht");
 
@@ -367,12 +370,8 @@ public final class DBEERPEDIA {
         String.format("%s is not meant to be instantiated.", DBEERPEDIA.class));
   }
 
-  private static Date createDate(int year, int month, int day) {
-    Calendar calendar = Calendar.getInstance();
-    calendar.set(Calendar.YEAR, year);
-    calendar.set(Calendar.MONTH, month);
-    calendar.set(Calendar.DAY_OF_MONTH, day);
-    return calendar.getTime();
+  private static LocalDate createDate(int year, int month, int day) {
+    return LocalDate.of(year, month, day);
   }
 
 }

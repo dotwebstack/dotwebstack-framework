@@ -54,13 +54,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
       return null;
     }
 
-    if (isSupportedLiteral(value)) {
-      return convertToType(((Literal) value));
-    }
-
-    Literal literal =
-        VALUE_FACTORY.createLiteral(value.toString(), getSupportedDataTypes().iterator().next());
-    return convertToType(literal);
+    return convertToType(value);
   }
 
   T handleLdPathVendorExtension(@NonNull S property, @NonNull ValueContext valueContext,
@@ -101,8 +95,8 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     return null;
   }
 
-  private T convertToType(Value value) {
-    if (value instanceof Literal) {
+  private T convertToType(Object value) {
+    if (isSupportedLiteral(value)) {
       return convertLiteralToType((Literal) value);
     } else {
       return convertValueToType(value);
@@ -111,8 +105,10 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
 
   protected abstract T convertLiteralToType(Literal literal);
 
-  protected T convertValueToType(Value value) {
-    throw new UnsupportedOperationException();
+  private T convertValueToType(Object value) {
+    Literal literal =
+        VALUE_FACTORY.createLiteral(value.toString(), getSupportedDataTypes().iterator().next());
+    return convertLiteralToType(literal);
   }
 
   static Value getSingleStatement(@NonNull Collection<Value> queryResult,
