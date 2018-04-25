@@ -5,7 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.DateTimeProperty;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -29,7 +29,7 @@ public class DateTimeSchemaMapperConstantValueTest {
 
   private static final String CONSTANT_VALUE = OpenApiSpecificationExtensions.CONSTANT_VALUE;
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
-  private static final String EXPECTED_LOCAL_DATE_TIME = "1982-11-25T10:10:10";
+  private static final String EXPECTED_LOCAL_DATE_TIME = "1982-11-25T10:10:10+01:00";
 
   @Mock
   private GraphEntity graphEntityMock;
@@ -52,7 +52,7 @@ public class DateTimeSchemaMapperConstantValueTest {
     dateTimeProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, EXPECTED_LOCAL_DATE_TIME));
 
     // Act
-    LocalDateTime result = (LocalDateTime) schemaMapperAdapter.mapGraphValue(dateTimeProperty,
+    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeProperty,
         graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert
@@ -67,7 +67,7 @@ public class DateTimeSchemaMapperConstantValueTest {
     dateTimeProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    LocalDateTime result = (LocalDateTime) schemaMapperAdapter.mapGraphValue(dateTimeProperty,
+    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeProperty,
         graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert

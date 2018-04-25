@@ -3,7 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.DateTimeProperty;
 import io.swagger.models.properties.Property;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -13,7 +13,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-class DateTimeSchemaMapper extends AbstractSchemaMapper<DateTimeProperty, LocalDateTime> {
+class DateTimeSchemaMapper extends AbstractSchemaMapper<DateTimeProperty, ZonedDateTime> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATETIME);
 
   private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
@@ -25,8 +25,8 @@ class DateTimeSchemaMapper extends AbstractSchemaMapper<DateTimeProperty, LocalD
   }
 
   @Override
-  protected LocalDateTime convertLiteralToType(Literal literal) {
-    return LocalDateTime.parse(literal.calendarValue().toString());
+  protected ZonedDateTime convertLiteralToType(Literal literal) {
+    return ZonedDateTime.parse(literal.stringValue());
   }
 
   @Override

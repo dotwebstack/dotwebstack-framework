@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.properties.DateTimeProperty;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -34,7 +34,7 @@ public class DateTimeSchemaMapperLdPathTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   private static final String DUMMY_EXPR = "dummyExpr()";
-  private static final String EXPECTED_LOCAL_DATE_TIME = "1982-11-25T10:10:10";
+  private static final String EXPECTED_LOCAL_DATE_TIME = "1982-11-25T10:10:10+01:00";
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
   private static final Literal VALUE =
       SimpleValueFactory.getInstance().createLiteral(EXPECTED_LOCAL_DATE_TIME, XMLSchema.DATETIME);
@@ -61,7 +61,7 @@ public class DateTimeSchemaMapperLdPathTest {
   }
 
   @Test
-  public void mapGraphValue_returnsLocalDateTime__WhenSupportedLiteralLdPathIsDefined() {
+  public void mapGraphValue_returnsZonedlDateTime__WhenSupportedLiteralLdPathIsDefined() {
     // Arrange
     dateTimeProperty.setVendorExtensions(
         ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
@@ -71,7 +71,7 @@ public class DateTimeSchemaMapperLdPathTest {
         ImmutableList.of(literal));
 
     // Act
-    LocalDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeProperty, graphEntityMock,
+    ZonedDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeProperty, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -79,13 +79,13 @@ public class DateTimeSchemaMapperLdPathTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsLocalDateTime_ForLdPath() {
+  public void mapGraphValue_ReturnsZonedDateTime_ForLdPath() {
     // Arrange
     dateTimeProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE));
 
-    LocalDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeProperty, graphEntityMock,
+    ZonedDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeProperty, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert

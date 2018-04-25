@@ -3,6 +3,8 @@ package org.dotwebstack.framework.test;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -284,7 +286,8 @@ public final class DBEERPEDIA {
 
     FIRSTBEER = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "FirstBeer");
     BROUWTOREN_DATETIME_OF_FIRST_BEER = valueFactory.createLiteral(
-        LocalDateTime.of(LocalDate.of(2012, 12, 25), LocalTime.of(12, 12, 12)).toString(),
+        ZonedDateTime.of(LocalDateTime.of(LocalDate.of(2012, 12, 25), LocalTime.of(12, 12, 12)),
+            ZoneId.systemDefault()).toString(),
         XMLSchema.DATETIME);
 
     MAXIMUS = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
