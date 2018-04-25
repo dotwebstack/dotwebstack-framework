@@ -324,6 +324,7 @@ public class OpenApiIntegrationTest {
           .add(DBEERPEDIA.NAME,DBEERPEDIA.BROUWTOREN_NAME)
           .add(DBEERPEDIA.FTE,DBEERPEDIA.BROUWTOREN_FTE)
           .add(DBEERPEDIA.FOUNDATION,DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION)
+          .add(DBEERPEDIA.FIRSTBEER, DBEERPEDIA.BROUWTOREN_DATETIME_OF_FIRST_BEER)
           .add(DBEERPEDIA.PLACE,DBEERPEDIA.BROUWTOREN_PLACE)
           .add(DBEERPEDIA.FTE,DBEERPEDIA.BROUWTOREN_FTE)
           .add(DBEERPEDIA.SINCE,DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION)
@@ -348,6 +349,7 @@ public class OpenApiIntegrationTest {
         .put("fte", DBEERPEDIA.BROUWTOREN_FTE.doubleValue())
         .put("oprichting", DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue())
         .put("plaats", DBEERPEDIA.BROUWTOREN_PLACE.stringValue())
+        .put("eersteBier", DBEERPEDIA.BROUWTOREN_DATETIME_OF_FIRST_BEER.stringValue())
         .put("_links", ImmutableMap.of("self", ImmutableMap.of("href",
             String.format("https://localhost:%d/dbp/api/v1/graph-breweries/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c", port))))
         .build());

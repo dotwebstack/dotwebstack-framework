@@ -282,9 +282,9 @@ public final class DBEERPEDIA {
     BROUWTOREN_LITERS_PER_YEAR = valueFactory.createLiteral(Long.MAX_VALUE);
     BROUWTOREN_PLACE = valueFactory.createLiteral("Nijmegen");
 
-    FIRSTBEER = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "FirstBeer");
+    FIRSTBEER = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "FirstBeer");
     BROUWTOREN_DATETIME_OF_FIRST_BEER = valueFactory.createLiteral(
-        LocalDateTime.of(LocalDate.of(2012, 12, 25), LocalTime.of(12, 12)).toString(),
+        LocalDateTime.of(LocalDate.of(2012, 12, 25), LocalTime.of(12, 12, 12)).toString(),
         XMLSchema.DATETIME);
 
     MAXIMUS = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,

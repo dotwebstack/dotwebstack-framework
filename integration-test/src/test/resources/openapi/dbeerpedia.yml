@@ -248,6 +248,10 @@ definitions:
         type: string
         format: string
         x-dotwebstack-ldpath: "dbeerpedia:Place"
+      eersteBier:
+        type: string
+        format: date-time
+        x-dotwebstack-ldpath: "dbeerpedia:FirstBeer"
       _links:
         type: object
         required:
