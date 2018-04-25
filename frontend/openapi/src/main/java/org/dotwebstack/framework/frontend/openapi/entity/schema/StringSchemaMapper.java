@@ -33,7 +33,6 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.RELATIVE_LINK,
       OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
-
   @Override
   protected Set<String> getSupportedVendorExtensions() {
     return SUPPORTED_VENDOR_EXTENSIONS;
@@ -197,4 +196,13 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
     return literal.stringValue();
   }
 
+  @Override
+  protected String convertValueToType(Value value) {
+    return value.toString();
+  }
+
+  @Override
+  protected boolean isDataTypeSupported(Literal value) {
+    return value != null;
+  }
 }

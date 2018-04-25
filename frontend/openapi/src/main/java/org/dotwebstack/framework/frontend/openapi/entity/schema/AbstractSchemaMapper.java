@@ -54,7 +54,15 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
       return null;
     }
 
-    return convertToType(value);
+    Literal literal;
+    if (value instanceof Literal) {
+      literal = (Literal) value;
+    } else {
+      literal =
+          VALUE_FACTORY.createLiteral(value.toString(), getSupportedDataTypes().iterator().next());
+    }
+
+    return convertToType(literal);
   }
 
   T handleLdPathVendorExtension(@NonNull S property, @NonNull ValueContext valueContext,
@@ -95,7 +103,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     return null;
   }
 
-  private T convertToType(Object value) {
+  private T convertToType(Value value) {
     if (isSupportedLiteral(value)) {
       return convertLiteralToType((Literal) value);
     } else {
@@ -105,10 +113,8 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
 
   protected abstract T convertLiteralToType(Literal literal);
 
-  private T convertValueToType(Object value) {
-    Literal literal =
-        VALUE_FACTORY.createLiteral(value.toString(), getSupportedDataTypes().iterator().next());
-    return convertLiteralToType(literal);
+  protected T convertValueToType(Value value) {
+    throw new UnsupportedOperationException();
   }
 
   static Value getSingleStatement(@NonNull Collection<Value> queryResult,
@@ -148,7 +154,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
 
   protected abstract Set<IRI> getSupportedDataTypes();
 
-  private boolean isDataTypeSupported(Literal value) {
+  protected boolean isDataTypeSupported(Literal value) {
     return value != null
         && getSupportedDataTypes().stream().anyMatch(x -> x.equals(value.getDatatype()));
   }
@@ -172,7 +178,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
    * @return <code>true</code> if given value is literal which supports one of given data types,
    *         <code>false</code> otherwise.
    */
-  private boolean isSupportedLiteral(Object value) {
+  private boolean isSupportedLiteral(Value value) {
     return value instanceof Literal && isDataTypeSupported((Literal) value);
   }
 
