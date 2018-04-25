@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -279,6 +281,11 @@ public final class DBEERPEDIA {
     BROUWTOREN_FTE = valueFactory.createLiteral(1.8);
     BROUWTOREN_LITERS_PER_YEAR = valueFactory.createLiteral(Long.MAX_VALUE);
     BROUWTOREN_PLACE = valueFactory.createLiteral("Nijmegen");
+
+    FIRSTBEER = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE, "FirstBeer");
+    BROUWTOREN_DATETIME_OF_FIRST_BEER = valueFactory.createLiteral(
+        LocalDateTime.of(LocalDate.of(2012, 12, 25), LocalTime.of(12, 12)).toString(),
+        XMLSchema.DATETIME);
 
     MAXIMUS = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/0c0d7df2-a830-11e7-abc4-cec278b6b50a");
