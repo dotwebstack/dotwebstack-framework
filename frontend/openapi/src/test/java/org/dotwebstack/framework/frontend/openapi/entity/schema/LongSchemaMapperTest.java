@@ -25,14 +25,13 @@ public class LongSchemaMapperTest {
   @Mock
   private TupleEntity tupleEntityMock;
 
-  private LongSchemaMapper schemaMapper;
-
-  private LongProperty schema;
+  private LongSchemaMapper longSchemaMapper;
+  private LongProperty longProperty;
 
   @Before
   public void setUp() {
-    schemaMapper = new LongSchemaMapper();
-    schema = new LongProperty();
+    longSchemaMapper = new LongSchemaMapper();
+    longProperty = new LongProperty();
   }
 
   @Test
@@ -42,24 +41,24 @@ public class LongSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, tupleEntityMock,
+    longSchemaMapper.mapTupleValue(longProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    BigInteger result = schemaMapper.mapTupleValue(schema, tupleEntityMock,
+    Long result = longSchemaMapper.mapTupleValue(longProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR).build());
 
     // Assert
-    assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR.integerValue()));
+    assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_LITERS_PER_YEAR.longValue()));
   }
 
   @Test
   public void supports_ReturnsTrue_ForLongProperty() {
     // Arrange & Act
-    Boolean supported = schemaMapper.supports(schema);
+    Boolean supported = longSchemaMapper.supports(longProperty);
 
     // Assert
     assertThat(supported, equalTo(true));
@@ -68,10 +67,9 @@ public class LongSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForNonLongProperty() {
     // Arrange & Act
-    Boolean supported = schemaMapper.supports(new StringProperty());
+    Boolean supported = longSchemaMapper.supports(new StringProperty());
 
     // Assert
     assertThat(supported, equalTo(false));
   }
-
 }

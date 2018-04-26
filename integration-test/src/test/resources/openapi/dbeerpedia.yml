@@ -47,7 +47,7 @@ paths:
                   format: double
                 oprichting:
                   type: string
-                  format: datetime
+                  format: date
                 plaats:
                   type: string
                   format: string
@@ -84,7 +84,7 @@ paths:
                 format: double
               oprichting:
                 type: string
-                format: datetime
+                format: date
               plaats:
                 type: string
                 format: string
@@ -155,7 +155,7 @@ paths:
                           x-dotwebstack-ldpath: "dbeerpedia:FTE"
                         oprichting:
                           type: string
-                          format: datetime
+                          format: date
                           x-dotwebstack-ldpath: "dbeerpedia:Foundation"
                         plaats:
                           type: string
@@ -242,12 +242,16 @@ definitions:
         x-dotwebstack-ldpath: "dbeerpedia:FTE"
       oprichting:
         type: string
-        format: datetime
+        format: date
         x-dotwebstack-ldpath: "dbeerpedia:Foundation"
       plaats:
         type: string
         format: string
         x-dotwebstack-ldpath: "dbeerpedia:Place"
+      eersteBier:
+        type: string
+        format: date-time
+        x-dotwebstack-ldpath: "dbeerpedia:FirstBeer"
       _links:
         type: object
         required:

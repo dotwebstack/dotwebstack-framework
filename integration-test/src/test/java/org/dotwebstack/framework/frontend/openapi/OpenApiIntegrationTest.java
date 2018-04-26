@@ -12,6 +12,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import io.swagger.models.HttpMethod;
 import java.io.IOException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -323,6 +325,7 @@ public class OpenApiIntegrationTest {
           .add(DBEERPEDIA.NAME,DBEERPEDIA.BROUWTOREN_NAME)
           .add(DBEERPEDIA.FTE,DBEERPEDIA.BROUWTOREN_FTE)
           .add(DBEERPEDIA.FOUNDATION,DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION)
+          .add(DBEERPEDIA.FIRSTBEER, DBEERPEDIA.BROUWTOREN_DATETIME_OF_FIRST_BEER)
           .add(DBEERPEDIA.PLACE,DBEERPEDIA.BROUWTOREN_PLACE)
           .add(DBEERPEDIA.FTE,DBEERPEDIA.BROUWTOREN_FTE)
           .add(DBEERPEDIA.SINCE,DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION)
@@ -340,6 +343,9 @@ public class OpenApiIntegrationTest {
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
+    ZonedDateTime dateTime =
+        ZonedDateTime.parse(DBEERPEDIA.BROUWTOREN_DATETIME_OF_FIRST_BEER.stringValue());
+    String firstBeerDateTime = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(dateTime);
     // @formatter:off
     JSONObject expected = new JSONObject(ImmutableMap.<String, Object>builder()
         .put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue())
@@ -347,6 +353,7 @@ public class OpenApiIntegrationTest {
         .put("fte", DBEERPEDIA.BROUWTOREN_FTE.doubleValue())
         .put("oprichting", DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue())
         .put("plaats", DBEERPEDIA.BROUWTOREN_PLACE.stringValue())
+        .put("eersteBier", firstBeerDateTime)
         .put("_links", ImmutableMap.of("self", ImmutableMap.of("href",
             String.format("https://localhost:%d/dbp/api/v1/graph-breweries/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c", port))))
         .build());
@@ -355,5 +362,4 @@ public class OpenApiIntegrationTest {
     String result = response.readEntity(String.class);
     JSONAssert.assertEquals(expected.toString(), result, true);
   }
-
 }

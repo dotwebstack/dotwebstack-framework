@@ -25,8 +25,7 @@ public class SchemaMapperAdapterTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private SchemaMapper<StringProperty, String> stringSchemaMapper;
-
+  private SchemaMapper<StringProperty, String> stringSchemaMapperMock;
   @Mock
   private TupleEntity tupleEntityMock;
 
@@ -34,40 +33,39 @@ public class SchemaMapperAdapterTest {
 
   @Before
   public void setUp() {
-    schemaMapperAdapter = new SchemaMapperAdapter(ImmutableList.of(stringSchemaMapper));
+    schemaMapperAdapter = new SchemaMapperAdapter(ImmutableList.of(stringSchemaMapperMock));
   }
 
   @Test
   public void mapTupleValue_ThrowsException_WhenNoSupportingMapperFound() {
     // Arrange
-    IntegerProperty schema = new IntegerProperty();
-    when(stringSchemaMapper.supports(schema)).thenReturn(false);
+    IntegerProperty integerProperty = new IntegerProperty();
+    when(stringSchemaMapperMock.supports(integerProperty)).thenReturn(false);
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage(
-        String.format("No schema mapper available for '%s'.", schema.getClass().getName()));
+    thrown.expectMessage(String.format("No schema mapper available for '%s'.",
+        integerProperty.getClass().getName()));
 
     // Act
-    schemaMapperAdapter.mapTupleValue(schema, tupleEntityMock,
+    schemaMapperAdapter.mapTupleValue(integerProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
   public void mapTupleValue_ReturnsHandledValue_WhenSupportingMapperFound() {
     // Arrange
-    StringProperty schema = new StringProperty();
+    StringProperty stringProperty = new StringProperty();
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
-    when(stringSchemaMapper.supports(schema)).thenReturn(true);
-    when(stringSchemaMapper.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+    when(stringSchemaMapperMock.supports(stringProperty)).thenReturn(true);
+    when(stringSchemaMapperMock.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
         any(ValueContext.class))).thenReturn(expectedValue);
 
     // Act
-    Object value = schemaMapperAdapter.mapTupleValue(schema, tupleEntityMock,
+    Object value = schemaMapperAdapter.mapTupleValue(stringProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert
     assertThat(value, equalTo(expectedValue));
   }
-
 }
