@@ -66,9 +66,8 @@ public class OpenApiIntegrationTest {
     // Arrange
 
     // Act
-    Response response =
-        target.path("/dbp/api/v1/docs/_spec").request().header(HttpHeaders.CONTENT_TYPE,
-            ContentType.APPLICATION_JSON.toString()).get();
+    Response response = target.path("/dbp/api/v1/").request().header(HttpHeaders.CONTENT_TYPE,
+        ContentType.APPLICATION_JSON.toString()).get();
 
     // Assert
     assertThat(response.getHeaderString("Content-Type"), equalTo("text/yaml"));
