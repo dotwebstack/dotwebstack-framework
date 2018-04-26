@@ -32,7 +32,7 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
 
   @Override
   public void execute(@NonNull Collection<Parameter> parameters,
-        @NonNull Map<String, String> parameterValues) {
+      @NonNull Map<String, String> parameterValues) {
     queryEvaluator.add(backend.getConnection(), transactionModel, persistenceStep.getTargetGraph());
   }
 
