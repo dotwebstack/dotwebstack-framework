@@ -14,6 +14,8 @@ public final class OpenApiSpecificationExtensions {
 
   public static final String LDPATH_NAMESPACES = DOTWEBSTACK_PREFIX.concat("ldpath-namespaces");
 
+  public static final String SPEC_ENDPOINT = DOTWEBSTACK_PREFIX.concat("spec-endpoint");
+
   public static final String TYPE = DOTWEBSTACK_PREFIX.concat("type");
 
   public static final String TYPE_SELF_LINK = "self-link";

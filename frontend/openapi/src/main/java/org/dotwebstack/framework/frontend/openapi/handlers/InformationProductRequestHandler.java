@@ -133,8 +133,8 @@ public final class InformationProductRequestHandler
 
     try {
       return Rdf4jUtils.evaluateSingleBindingSelectQuery(repository, subjectQuery);
-    } catch (QueryEvaluationException e) {
-      throw new RequestHandlerRuntimeException(e);
+    } catch (QueryEvaluationException qee) {
+      throw new RequestHandlerRuntimeException(qee);
     }
   }
 

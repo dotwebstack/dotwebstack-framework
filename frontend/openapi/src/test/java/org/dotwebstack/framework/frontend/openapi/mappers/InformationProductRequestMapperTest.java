@@ -132,13 +132,15 @@ public class InformationProductRequestMapperTest {
   public void map_EndpointsCorrectly_WithValidData() throws IOException {
     // Arrange
     Property schema = mock(Property.class);
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
-        ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path(
-            "/breweries",
-            new Path().get(new Operation().vendorExtensions(
-                ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
-                    DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-                        new Response().schema(schema))));
+    mockDefinition().vendorExtension(OpenApiSpecificationExtensions.SPEC_ENDPOINT,
+        "/docs/_spec").host(DBEERPEDIA.OPENAPI_HOST).basePath(
+            DBEERPEDIA.OPENAPI_BASE_PATH).produces(
+                ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path(
+                    "/breweries",
+                    new Path().get(new Operation().vendorExtensions(
+                        ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                            DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
+                                new Response().schema(schema))));
     when(informationProductResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProductMock);
 
@@ -169,6 +171,31 @@ public class InformationProductRequestMapperTest {
     Resource specResource = resourceCaptor.getAllValues().get(1);
     assertThat(specResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/docs/_spec"));
+  }
+
+  @Test
+  public void map_SpecEndpointCorrectly_whenNotGiven() throws Exception {
+    // Arrange
+    Property schema = mock(Property.class);
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
+        ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path(
+            "/breweries",
+            new Path().get(new Operation().vendorExtensions(
+                ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
+                    DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
+                        new Response().schema(schema))));
+    when(informationProductResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
+        informationProductMock);
+
+    // Act
+    requestMapper.map(httpConfigurationMock);
+
+    // Assert
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
+
+    Resource specResource = resourceCaptor.getAllValues().get(1);
+    assertThat(specResource.getPath(),
+        equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/"));
   }
 
   @Test

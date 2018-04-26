@@ -116,29 +116,31 @@ public class TransactionRequestMapperTest {
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
     informationProductRequestMapper = new InformationProductRequestMapper(
-        informationProductResourceProviderMock,requestHandlerFactoryMock);
-    transactionRequestMapper = new TransactionRequestMapper(
-        transactionResourceProviderMock, requestHandlerFactoryMock);
+        informationProductResourceProviderMock, requestHandlerFactoryMock);
+    transactionRequestMapper =
+        new TransactionRequestMapper(transactionResourceProviderMock, requestHandlerFactoryMock);
     requestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
         informationProductRequestMapper, transactionRequestMapper);
     requestMapper.setResourceLoader(resourceLoader);
     requestMapper.setEnvironment(environmentMock);
 
-    when(requestHandlerFactoryMock.newTransactionRequestHandler(any(), any(), any()))
-        .thenReturn(transactionRequestHandlerMock);
+    when(requestHandlerFactoryMock.newTransactionRequestHandler(any(), any(), any())).thenReturn(
+        transactionRequestHandlerMock);
   }
 
   @Test
   public void map_PostEndpointsCorrectly_WithValidData() throws IOException {
     // Arrange
     Property schema = mock(Property.class);
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).consumes(
-        ImmutableList.of(MediaType.APPLICATION_JSON)).path(
-            "/breweries",
-            new Path().post(new Operation().vendorExtensions(
-                ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
-                    DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-                        new Response().schema(schema))));
+    mockDefinition().vendorExtension(OpenApiSpecificationExtensions.SPEC_ENDPOINT,
+        "/docs/_spec").host(DBEERPEDIA.OPENAPI_HOST).basePath(
+            DBEERPEDIA.OPENAPI_BASE_PATH).consumes(
+                ImmutableList.of(MediaType.APPLICATION_JSON)).path(
+                    "/breweries",
+                    new Path().post(new Operation().vendorExtensions(
+                        ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
+                            DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
+                                new Response().schema(schema))));
     when(transactionResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(transactionMock);
 
     // Act
@@ -155,8 +157,7 @@ public class TransactionRequestMapperTest {
 
     ResourceMethod getMethod = apiResource.getResourceMethods().get(0);
     assertThat(getMethod.getHttpMethod(), equalTo(HttpMethod.POST));
-    assertThat(getMethod.getConsumedTypes(),
-        contains(MediaType.APPLICATION_JSON_TYPE));
+    assertThat(getMethod.getConsumedTypes(), contains(MediaType.APPLICATION_JSON_TYPE));
     assertThat(getMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(transactionRequestHandlerMock));
 
@@ -174,13 +175,15 @@ public class TransactionRequestMapperTest {
   public void map_PutEndpointsCorrectly_WithValidData() throws IOException {
     // Arrange
     Property schema = mock(Property.class);
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).consumes(
-        ImmutableList.of(MediaType.APPLICATION_JSON)).path(
-        "/breweries",
-        new Path().put(new Operation().vendorExtensions(
-            ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
-                DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-            new Response().schema(schema))));
+    mockDefinition().vendorExtension(OpenApiSpecificationExtensions.SPEC_ENDPOINT,
+        "/docs/_spec").host(DBEERPEDIA.OPENAPI_HOST).basePath(
+            DBEERPEDIA.OPENAPI_BASE_PATH).consumes(
+                ImmutableList.of(MediaType.APPLICATION_JSON)).path(
+                    "/breweries",
+                    new Path().put(new Operation().vendorExtensions(
+                        ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
+                            DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
+                                new Response().schema(schema))));
     when(transactionResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(transactionMock);
 
     // Act
@@ -197,8 +200,7 @@ public class TransactionRequestMapperTest {
 
     ResourceMethod getMethod = apiResource.getResourceMethods().get(0);
     assertThat(getMethod.getHttpMethod(), equalTo(HttpMethod.PUT));
-    assertThat(getMethod.getConsumedTypes(),
-        contains(MediaType.APPLICATION_JSON_TYPE));
+    assertThat(getMethod.getConsumedTypes(), contains(MediaType.APPLICATION_JSON_TYPE));
     assertThat(getMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(transactionRequestHandlerMock));
 
@@ -215,8 +217,9 @@ public class TransactionRequestMapperTest {
   @Test
   public void mapEndpointWithoutBasePath() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).consumes(MediaType.APPLICATION_JSON)
-        .path("/breweries", new Path().post(new Operation().vendorExtensions(
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).consumes(MediaType.APPLICATION_JSON).path(
+        "/breweries",
+        new Path().post(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
                 DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
                     new Response().schema(mock(Property.class)))));
@@ -234,11 +237,10 @@ public class TransactionRequestMapperTest {
   @Test
   public void map_ThrowsException_EndpointWithoutProduces() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
-        new Path().put(new Operation().vendorExtensions(
-            ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
-                DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-                    new Response().schema(mock(Property.class)))));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries", new Path().put(
+        new Operation().vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
+            DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
+                new Response().schema(mock(Property.class)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -252,10 +254,9 @@ public class TransactionRequestMapperTest {
   @Test
   public void map_ThrowsException_EndpointWithoutResponses() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(
-            ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
-                DBEERPEDIA.BREWERIES.stringValue()))));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries", new Path().get(
+        new Operation().vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
+            DBEERPEDIA.BREWERIES.stringValue()))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -269,11 +270,10 @@ public class TransactionRequestMapperTest {
   @Test
   public void map_ThrowsException_EndpointWithoutOkResponse() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(
-            ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
-                DBEERPEDIA.BREWERIES.stringValue())).response(201,
-                    new Response().schema(mock(Property.class)))));
+    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries", new Path().get(
+        new Operation().vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.TRANSACTION,
+            DBEERPEDIA.BREWERIES.stringValue())).response(201,
+                new Response().schema(mock(Property.class)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);

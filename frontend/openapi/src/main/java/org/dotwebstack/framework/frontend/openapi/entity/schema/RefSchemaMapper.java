@@ -24,9 +24,10 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
   }
 
   @Override
-  public Object mapGraphValue(@NonNull RefProperty schema, @NonNull GraphEntity entity,
+  public Object mapGraphValue(@NonNull RefProperty schema, @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    Model refModel = entity.getSwaggerDefinitions().get(schema.getSimpleRef());
+
+    Model refModel = graphEntity.getSwaggerDefinitions().get(schema.getSimpleRef());
 
     if (refModel == null) {
       throw new SchemaMapperRuntimeException(String.format(
@@ -48,7 +49,7 @@ public class RefSchemaMapper implements SchemaMapper<RefProperty, Object> {
 
     Builder<String, Object> builder = ImmutableMap.builder();
     refModel.getProperties().forEach(
-        mapPropertiesInRef(entity, valueContext, schemaMapperAdapter, builder, showWhenNull));
+        mapPropertiesInRef(graphEntity, valueContext, schemaMapperAdapter, builder, showWhenNull));
 
     return builder.build();
   }

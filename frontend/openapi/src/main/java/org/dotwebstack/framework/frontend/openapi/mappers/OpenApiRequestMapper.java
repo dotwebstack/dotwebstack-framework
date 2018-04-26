@@ -22,6 +22,7 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.dotwebstack.framework.frontend.openapi.handlers.OpenApiSpecHandler;
 import org.glassfish.jersey.server.model.Resource;
@@ -93,8 +94,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
       if (!StringUtils.isBlank(result)) {
         Swagger swagger = openApiParser.parse(result);
         mapOpenApiDefinition(swagger, httpConfiguration);
-        String basePath = createBasePath(swagger);
-        addSpecResource(result, basePath, httpConfiguration);
+        addSpecResource(result, swagger, httpConfiguration);
       }
     }
   }
@@ -131,16 +131,22 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     });
   }
 
-  private void addSpecResource(String yaml, String basePath, HttpConfiguration httpConfiguration)
+  private void addSpecResource(String yaml, Swagger swagger, HttpConfiguration httpConfiguration)
       throws IOException {
     OpenApiSpecHandler handler = new OpenApiSpecHandler(yaml);
-
-    Builder specResourceBuilder = Resource.builder().path(basePath + "/docs/_spec");
+    String basePath = createBasePath(swagger);
+    String specEndpoint = getSpecEndpoint(swagger).orElse("/");
+    Builder specResourceBuilder = Resource.builder().path(basePath + specEndpoint);
     specResourceBuilder//
         .addMethod(GET)//
         .produces("text/yaml")//
         .handledBy(handler);
     httpConfiguration.registerResources(specResourceBuilder.build());
+  }
+
+  private Optional<String> getSpecEndpoint(Swagger swagger) {
+    return Optional.ofNullable(swagger.getVendorExtensions()).map(
+        map -> (String) map.get(OpenApiSpecificationExtensions.SPEC_ENDPOINT));
   }
 
   /**
