@@ -90,4 +90,21 @@ public class QueryEvaluator {
     }
   }
 
+  private String getInsertQuery(Model model, IRI targetGraph) {
+    StringBuilder insertQueryBuilder = new StringBuilder();
+    insertQueryBuilder.append("INSERT {");
+    insertQueryBuilder.append("GRAPH <" + targetGraph.stringValue() + "> {");
+    model.stream().forEach(statement -> insertQueryBuilder.append(statement.getSubject() + " "
+        + statement.getPredicate() + " " + statement.getObject() + " ."));
+    insertQueryBuilder.append("}};");
+    final String insertQuery = insertQueryBuilder.toString();
+    LOG.debug("Transformed INSERT query: \n%s", insertQuery);
+
+    return insertQuery;
+  }
+
+  private boolean queryContainsBNode(Model model) {
+    return model.subjects().stream().anyMatch(subject -> subject instanceof BNode);
+  }
+
 }
