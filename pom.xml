@@ -258,8 +258,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.21.0</version>
                 <configuration>
-                    <!-- Fix for Mockito issue on Windows Subsystem for Linux -->
-                    <!--<argLine>-XX:+StartAttachListener</argLine>-->
                     <systemPropertyVariables>
                         <sun.net.http.allowRestrictedHeaders>true</sun.net.http.allowRestrictedHeaders>
                     </systemPropertyVariables>
