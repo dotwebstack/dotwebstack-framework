@@ -98,7 +98,7 @@ public class QueryEvaluator {
         + statement.getPredicate() + " " + statement.getObject() + " ."));
     insertQueryBuilder.append("}};");
     final String insertQuery = insertQueryBuilder.toString();
-    LOG.debug("Transformed INSERT query: \n%s", insertQuery);
+    LOG.debug("Transformed INSERT query: \n{}", insertQuery);
 
     return insertQuery;
   }
