@@ -4,6 +4,7 @@ import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.RDF4JException;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
@@ -14,10 +15,14 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class QueryEvaluator {
+
+  private static final Logger LOG = LoggerFactory.getLogger(QueryEvaluator.class);
 
   public Object evaluate(@NonNull RepositoryConnection repositoryConnection, @NonNull String query,
       @NonNull Map<String, Value> bindings) {
