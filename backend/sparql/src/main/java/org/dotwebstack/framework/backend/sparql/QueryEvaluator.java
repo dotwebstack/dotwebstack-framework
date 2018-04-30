@@ -60,10 +60,14 @@ public class QueryEvaluator {
       @NonNull IRI targetGraph) {
 
     try {
-      repositoryConnection.add(model, targetGraph);
+      if (queryContainsBNode(model)) {
+        repositoryConnection.prepareGraphQuery(getInsertQuery(model, targetGraph));
+      } else {
+        repositoryConnection.add(model, targetGraph);
+      }
     } catch (RDF4JException e) {
-      throw new BackendException(String.format("Data could not be added into graph: %s",
-          e.getMessage()), e);
+      throw new BackendException(
+          String.format("Data could not be added into graph: %s", e.getMessage()), e);
     }
   }
 
