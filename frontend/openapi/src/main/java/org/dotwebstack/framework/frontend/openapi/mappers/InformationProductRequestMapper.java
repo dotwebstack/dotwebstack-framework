@@ -7,12 +7,10 @@ import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -85,8 +83,6 @@ public class InformationProductRequestMapper implements RequestMapper {
                 informationProduct, response, swagger));
 
     produces.forEach(methodBuilder::produces);
-
-    resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(new OptionsRequestHandler(pathItem));
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),

@@ -7,6 +7,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
+import io.swagger.models.Path;
 import io.swagger.models.RefModel;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.BodyParameter;
@@ -18,6 +19,7 @@ import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -27,6 +29,7 @@ import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.dotwebstack.framework.frontend.openapi.handlers.OpenApiSpecHandler;
+import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.Resource.Builder;
 import org.slf4j.Logger;
@@ -101,26 +104,32 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
-      Collection<ApiOperation> apiOperations = SwaggerUtils.extractApiOperations(swagger, path,
-          pathItem);
-      apiOperations.forEach(apiOperation -> {
+      Collection<ApiOperation> apiOperations =
+          SwaggerUtils.extractApiOperations(swagger, path, pathItem);
+      String absolutePath = basePath.concat(path);
+
+      boolean optionsRequestHandlerAdded = false;
+      for (ApiOperation apiOperation : apiOperations) {
         Operation operation = apiOperation.getOperation();
 
         validateOperation(apiOperation, swagger);
 
-        String absolutePath = basePath.concat(path);
+        Optional<RequestMapper> requestMapper = requestMappers.stream().filter(
+            mapper -> mapper.supportsVendorExtension(operation.getVendorExtensions())).findFirst();
 
-        Optional<RequestMapper> requestMapper = requestMappers.stream().filter(mapper ->
-            mapper.supportsVendorExtension(operation.getVendorExtensions())).findFirst();
+        requestMapper.ifPresent(mapper -> httpConfiguration.registerResources(
+            mapper.map(swagger, pathItem, apiOperation, operation, absolutePath)));
 
-        requestMapper.ifPresent(mapper -> httpConfiguration.registerResources(mapper.map(
-            swagger, pathItem, apiOperation, operation, absolutePath)));
-
-        if (!requestMapper.isPresent()) {
+        if (requestMapper.isPresent()) {
+          if (!optionsRequestHandlerAdded) {
+            httpConfiguration.registerResources(mapOptionsRequestHandler(pathItem, absolutePath));
+            optionsRequestHandlerAdded = true;
+          }
+        } else {
           LOG.warn("Path '{}' is not mapped to an information product or transaction.",
               absolutePath);
         }
-      });
+      }
     });
   }
 
@@ -187,6 +196,17 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     }
 
     return basePath;
+  }
+
+  private Resource mapOptionsRequestHandler(Path pathItem, String absolutePath) {
+    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
+    resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(new OptionsRequestHandler(pathItem));
+
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Mapped {} operation for request path {}", HttpMethod.OPTIONS, absolutePath);
+    }
+
+    return resourceBuilder.build();
   }
 
 }

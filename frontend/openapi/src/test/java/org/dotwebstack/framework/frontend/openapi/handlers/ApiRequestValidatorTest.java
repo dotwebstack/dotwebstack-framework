@@ -15,6 +15,8 @@ import io.swagger.parser.SwaggerParser;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.Collection;
+import java.util.Iterator;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -45,11 +47,13 @@ public class ApiRequestValidatorTest {
 
   private Path getPath = new Path();
   private Path postPath = new Path();
+  private Path putPath = new Path();
 
   @Before
   public void before() {
     getPath.set("get", new Operation());
     postPath.set("post", new Operation());
+    putPath.set("put", new Operation());
   }
 
   @Rule
@@ -150,6 +154,37 @@ public class ApiRequestValidatorTest {
     ContainerRequestContext mockPost = mockPost(body);
     ApiOperation apiOperation = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
         postPath).iterator().next();
+
+    RequestParameters requestParameters = new RequestParameters();
+    when(requestParameterExtractorMock.extract(apiOperation, swagger, mockPost)).thenReturn(
+        requestParameters);
+
+    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    ApiRequestValidator requestValidator =
+        new ApiRequestValidator(validator, requestParameterExtractorMock);
+
+    // Act
+    RequestParameters result = requestValidator.validate(apiOperation, swagger, mockPost);
+
+    // Assert
+    assertThat(result, sameInstance(requestParameters));
+  }
+
+  @Test
+  public void validate_DoesNotFail_ForValidGetPutAndPostRequest() throws URISyntaxException,
+      IOException {
+    // Arrange
+    Swagger swagger = createSwagger("get-put-post-request.yml");
+
+    String body = "{ \"someproperty\": \"one\" }";
+    ContainerRequestContext mockPost = mockPost(body);
+    Collection<ApiOperation> apiOperations = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
+        postPath);
+
+    Iterator<ApiOperation> apiOperationIterator = apiOperations.iterator();
+    ApiOperation apiOperation = apiOperationIterator.next();
+    ApiOperation apiOperation2 = apiOperationIterator.next();
+    //    ApiOperation apiOperation3 = apiOperationIterator.next();
 
     RequestParameters requestParameters = new RequestParameters();
     when(requestParameterExtractorMock.extract(apiOperation, swagger, mockPost)).thenReturn(

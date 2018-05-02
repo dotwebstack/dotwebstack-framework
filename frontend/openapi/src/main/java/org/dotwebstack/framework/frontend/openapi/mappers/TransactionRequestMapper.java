@@ -6,12 +6,10 @@ import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import java.util.List;
 import java.util.Map;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.transaction.Transaction;
 import org.dotwebstack.framework.transaction.TransactionResourceProvider;
@@ -81,8 +79,6 @@ public class TransactionRequestMapper implements RequestMapper {
             requestHandlerFactory.newTransactionRequestHandler(apiOperation, transaction, swagger));
 
     consumes.forEach(methodBuilder::consumes);
-
-    resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(new OptionsRequestHandler(pathItem));
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
