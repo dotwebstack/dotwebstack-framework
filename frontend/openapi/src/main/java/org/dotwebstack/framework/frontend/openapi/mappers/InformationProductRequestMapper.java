@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Operation;
-import io.swagger.models.Path;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import java.util.List;
@@ -48,7 +47,7 @@ public class InformationProductRequestMapper implements RequestMapper {
         key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
   }
 
-  public Resource map(Swagger swagger, Path pathItem, ApiOperation apiOperation,
+  public Boolean map(Resource.Builder resourceBuilder, Swagger swagger, ApiOperation apiOperation,
       Operation getOperation, String absolutePath) {
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());
 
@@ -75,8 +74,6 @@ public class InformationProductRequestMapper implements RequestMapper {
     InformationProduct informationProduct =
         informationProductResourceProvider.get(informationProductIdentifier);
 
-    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-
     ResourceMethod.Builder methodBuilder =
         resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
             requestHandlerFactory.newInformationProductRequestHandler(apiOperation,
@@ -89,7 +86,7 @@ public class InformationProductRequestMapper implements RequestMapper {
           absolutePath);
     }
 
-    return resourceBuilder.build();
+    return true;
   }
 
 }

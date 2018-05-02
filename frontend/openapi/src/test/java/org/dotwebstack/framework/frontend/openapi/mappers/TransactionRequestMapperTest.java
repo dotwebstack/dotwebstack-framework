@@ -145,13 +145,15 @@ public class TransactionRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
 
-    Resource apiResource = resourceCaptor.getAllValues().get(0);
-    assertThat(resourceCaptor.getAllValues(), hasSize(3));
+    List<Resource> apiResources = resourceCaptor.getAllValues();
+    assertThat(apiResources, hasSize(2));
+
+    Resource apiResource = apiResources.get(0);
     assertThat(apiResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/breweries"));
-    assertThat(apiResource.getResourceMethods(), hasSize(1));
+    assertThat(apiResource.getResourceMethods(), hasSize(2));
 
     ResourceMethod postMethod = apiResource.getResourceMethods().get(0);
     assertThat(postMethod.getHttpMethod(), equalTo(HttpMethod.POST));
@@ -159,13 +161,12 @@ public class TransactionRequestMapperTest {
     assertThat(postMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(transactionRequestHandlerMock));
 
-    apiResource = resourceCaptor.getAllValues().get(1);
-    ResourceMethod optionsMethod = apiResource.getResourceMethods().get(0);
+    ResourceMethod optionsMethod = apiResource.getResourceMethods().get(1);
     assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));
     assertThat(optionsMethod.getInvocable().getHandler().getHandlerClass(),
         equalTo(OptionsRequestHandler.class));
 
-    Resource specResource = resourceCaptor.getAllValues().get(2);
+    Resource specResource = apiResources.get(1);
     assertThat(specResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/docs/_spec"));
   }
@@ -189,28 +190,28 @@ public class TransactionRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
 
-    Resource apiResource = resourceCaptor.getAllValues().get(0);
-    assertThat(resourceCaptor.getAllValues(), hasSize(3));
+    List<Resource> apiResources = resourceCaptor.getAllValues();
+    assertThat(apiResources, hasSize(2));
+
+    Resource apiResource = apiResources.get(0);
     assertThat(apiResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/breweries"));
-    assertThat(apiResource.getResourceMethods(), hasSize(1));
+    assertThat(apiResource.getResourceMethods(), hasSize(2));
 
-    apiResource = resourceCaptor.getAllValues().get(0);
     ResourceMethod putMethod = apiResource.getResourceMethods().get(0);
     assertThat(putMethod.getHttpMethod(), equalTo(HttpMethod.PUT));
     assertThat(putMethod.getConsumedTypes(), contains(MediaType.APPLICATION_JSON_TYPE));
     assertThat(putMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(transactionRequestHandlerMock));
 
-    apiResource = resourceCaptor.getAllValues().get(1);
-    ResourceMethod optionsMethod = apiResource.getResourceMethods().get(0);
+    ResourceMethod optionsMethod = apiResource.getResourceMethods().get(1);
     assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));
     assertThat(optionsMethod.getInvocable().getHandler().getHandlerClass(),
         equalTo(OptionsRequestHandler.class));
 
-    Resource specResource = resourceCaptor.getAllValues().get(2);
+    Resource specResource = resourceCaptor.getAllValues().get(1);
     assertThat(specResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/docs/_spec"));
   }
@@ -239,37 +240,34 @@ public class TransactionRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(4)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
 
     List<Resource> apiResources = resourceCaptor.getAllValues();
-    assertThat(apiResources, hasSize(4));
+    assertThat(apiResources, hasSize(2));
 
     Resource apiResource = apiResources.get(0);
     assertThat(apiResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/breweries"));
-    assertThat(apiResource.getResourceMethods(), hasSize(1));
+    assertThat(apiResource.getResourceMethods(), hasSize(3));
 
-    ResourceMethod putMethod = apiResource.getResourceMethods().stream().filter(resourceMethod ->
-        resourceMethod.equals(HttpMethod.PUT)).findFirst().get();
+    ResourceMethod putMethod = apiResources.get(0).getResourceMethods().get(2);
     assertThat(putMethod.getHttpMethod(), equalTo(HttpMethod.PUT));
     assertThat(putMethod.getConsumedTypes(), contains(MediaType.APPLICATION_JSON_TYPE));
     assertThat(putMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(transactionRequestHandlerMock));
 
-    Resource optionsResource = resourceCaptor.getAllValues().get(1);
-    ResourceMethod optionsMethod = optionsResource.getResourceMethods().get(0);
+    ResourceMethod optionsMethod = apiResources.get(0).getResourceMethods().get(1);
     assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));
     assertThat(optionsMethod.getInvocable().getHandler().getHandlerClass(),
         equalTo(OptionsRequestHandler.class));
 
-    Resource postResource = resourceCaptor.getAllValues().get(2);
-    ResourceMethod postMethod = postResource.getResourceMethods().get(0);
+    ResourceMethod postMethod = apiResources.get(0).getResourceMethods().get(0);
     assertThat(postMethod.getHttpMethod(), equalTo(HttpMethod.POST));
     assertThat(postMethod.getConsumedTypes(), contains(MediaType.APPLICATION_JSON_TYPE));
     assertThat(postMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(transactionRequestHandlerMock));
 
-    Resource specResource = resourceCaptor.getAllValues().get(3);
+    Resource specResource = apiResources.get(1);
     assertThat(specResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/docs/_spec"));
   }
@@ -289,7 +287,7 @@ public class TransactionRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
     Resource resource = resourceCaptor.getAllValues().get(0);
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
   }
@@ -361,7 +359,7 @@ public class TransactionRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
     Resource resource = resourceCaptor.getAllValues().get(0);
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
@@ -445,7 +443,7 @@ public class TransactionRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
     ResourceMethod method = resourceCaptor.getAllValues().get(0).getResourceMethods().get(0);
     assertThat(method.getConsumedTypes(), hasSize(1));
     assertThat(method.getConsumedTypes().get(0), equalTo(MediaType.APPLICATION_JSON_TYPE));

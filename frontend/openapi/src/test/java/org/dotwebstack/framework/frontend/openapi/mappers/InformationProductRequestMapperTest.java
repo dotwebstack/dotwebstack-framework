@@ -146,13 +146,13 @@ public class InformationProductRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
 
     Resource apiResource = resourceCaptor.getAllValues().get(0);
-    assertThat(resourceCaptor.getAllValues(), hasSize(3));
+    assertThat(resourceCaptor.getAllValues(), hasSize(2));
     assertThat(apiResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/breweries"));
-    assertThat(apiResource.getResourceMethods(), hasSize(1));
+    assertThat(apiResource.getResourceMethods(), hasSize(2));
 
     ResourceMethod getMethod = apiResource.getResourceMethods().get(0);
     assertThat(getMethod.getHttpMethod(), equalTo(HttpMethod.GET));
@@ -161,13 +161,12 @@ public class InformationProductRequestMapperTest {
     assertThat(getMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(informationProductRequestHandlerMock));
 
-    Resource optionsResource = resourceCaptor.getAllValues().get(1);
-    ResourceMethod optionsMethod = optionsResource.getResourceMethods().get(0);
+    ResourceMethod optionsMethod = apiResource.getResourceMethods().get(1);
     assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));
     assertThat(optionsMethod.getInvocable().getHandler().getHandlerClass(),
         equalTo(OptionsRequestHandler.class));
 
-    Resource specResource = resourceCaptor.getAllValues().get(2);
+    Resource specResource = resourceCaptor.getAllValues().get(1);
     assertThat(specResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/docs/_spec"));
   }
@@ -190,9 +189,9 @@ public class InformationProductRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
 
-    Resource specResource = resourceCaptor.getAllValues().get(2);
+    Resource specResource = resourceCaptor.getAllValues().get(1);
     assertThat(specResource.getPath(),
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/"));
   }
@@ -212,7 +211,7 @@ public class InformationProductRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
     Resource resource = resourceCaptor.getAllValues().get(0);
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
   }
@@ -287,7 +286,7 @@ public class InformationProductRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
     Resource resource = resourceCaptor.getAllValues().get(0);
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
@@ -372,7 +371,7 @@ public class InformationProductRequestMapperTest {
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    verify(httpConfigurationMock, times(3)).registerResources(resourceCaptor.capture());
+    verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
     ResourceMethod method = resourceCaptor.getAllValues().get(0).getResourceMethods().get(0);
     assertThat(method.getProducedTypes(), hasSize(1));
     assertThat(method.getProducedTypes().get(0), equalTo(MediaType.APPLICATION_JSON_TYPE));

@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Operation;
-import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +46,7 @@ public class TransactionRequestMapper implements RequestMapper {
         key.equals(OpenApiSpecificationExtensions.TRANSACTION));
   }
 
-  public Resource map(Swagger swagger, Path pathItem, ApiOperation apiOperation,
+  public Boolean map(Resource.Builder resourceBuilder, Swagger swagger, ApiOperation apiOperation,
       Operation operation, String absolutePath) {
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());
 
@@ -72,8 +71,6 @@ public class TransactionRequestMapper implements RequestMapper {
     Transaction transaction =
         transactionResourceProvider.get(transactionIdentifier);
 
-    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-
     ResourceMethod.Builder methodBuilder =
         resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
             requestHandlerFactory.newTransactionRequestHandler(apiOperation, transaction, swagger));
@@ -85,7 +82,7 @@ public class TransactionRequestMapper implements RequestMapper {
           absolutePath);
     }
 
-    return resourceBuilder.build();
+    return true;
   }
 
 }
