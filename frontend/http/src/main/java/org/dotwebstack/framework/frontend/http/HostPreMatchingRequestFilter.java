@@ -33,14 +33,6 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
     requestContext.setProperty(ADDED_DOMAIN, addedDomain);
   }
 
-  private String addDocRoot(String addedDomain, String path) {
-    if (path.contains("/assets/")) {
-      String temp = path.split("/assets/")[1];
-      return "/assets/" + temp;
-    }
-    return addedDomain + path;
-  }
-
   private String getAddedDomain(ContainerRequestContext containerRequestContext) {
     URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
 
