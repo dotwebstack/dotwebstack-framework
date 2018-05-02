@@ -7,7 +7,6 @@ import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.rml.RmlMapping.Builder;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.dotwebstack.framework.vocabulary.R2RML;
 import org.eclipse.rdf4j.model.Model;
@@ -50,24 +49,25 @@ public class RmlMappingResourceProvider
   protected RmlMapping createResource(Model model, Resource identifier) {
     try {
       repositoryConnection = configurationBackend.getRepository().getConnection();
-    } catch (RepositoryException e) {
-      throw new ConfigurationException("Error while getting repository connection.", e);
+    } catch (RepositoryException repositoryException) {
+      throw new ConfigurationException("Error while getting repository connection.",
+          repositoryException);
     }
 
-    RmlMapping rmlMapping = new Builder(identifier, getModel(identifier),
-        getStreamName(identifier)).build();
+    RmlMapping rmlMappingBuilder = new RmlMapping.Builder(identifier).model(getModel(identifier))
+        .streamName(getStreamName(identifier)).build();
 
     repositoryConnection.close();
 
-    return rmlMapping;
+    return rmlMappingBuilder;
   }
 
   private Model getModel(Resource identifier) {
     final Model model;
 
-    String query = "CONSTRUCT { ?rmlmapping ?p ?o . ?o ?op ?oo . ?oo ?oop ?ooo } "
-        + "WHERE { ?rmlmapping ?p ?o . ?rmlmapping a ?type "
-        + "OPTIONAL { ?o ?op ?oo OPTIONAL { ?oo ?oop ?ooo } } } ";
+    String query = "CONSTRUCT { ?rmlmapping ?p ?o1 . ?o1 ?p2 ?o2 . ?o2 ?p3 ?o3 } "
+        + "WHERE { ?rmlmapping ?p ?o1 . ?rmlmapping a ?type "
+        + "OPTIONAL { ?o1 ?p2 ?o2 OPTIONAL { ?o2 ?p3 ?o3 } } } ";
     GraphQuery graphQuery = repositoryConnection.prepareGraphQuery(query);
     graphQuery.setBinding("rmlmapping", identifier);
     graphQuery.setBinding("type", R2RML.TRIPLES_MAP);
@@ -79,16 +79,15 @@ public class RmlMappingResourceProvider
 
     try {
       model = QueryResults.asModel(graphQuery.evaluate());
-    } catch (QueryEvaluationException e) {
-      throw new ConfigurationException("Error while evaluating SPARQL query.", e);
+    } catch (QueryEvaluationException queryEvaluationException) {
+      throw new ConfigurationException("Error while evaluating SPARQL query.",
+          queryEvaluationException);
     }
 
     return model;
   }
 
   private String getStreamName(Resource identifier) {
-    final String streamName;
-
     String query = String.format("SELECT ?streamName "
         + "WHERE { ?rmlmapping ?p ?o . ?rmlmapping a ?type "
         + "OPTIONAL { ?o <%s> ?oo OPTIONAL { ?oo <%s> ?streamName } } } ",
@@ -103,20 +102,14 @@ public class RmlMappingResourceProvider
     tupleQuery.setDataset(simpleDataset);
 
     List<BindingSet> queryResults;
-    try {
-      queryResults = QueryResults.asList(tupleQuery.evaluate());
-    } catch (QueryEvaluationException e) {
-      throw new ConfigurationException("Error while evaluating SPARQL query.", e);
-    }
+    queryResults = QueryResults.asList(tupleQuery.evaluate());
 
     if (queryResults.isEmpty() || queryResults.get(0).getValue(STREAMNAME) == null) {
       throw new ConfigurationException(
           String.format("%s not set for RmlMapping %s", STREAMNAME, identifier));
     }
 
-    streamName = queryResults.get(0).getValue(STREAMNAME).stringValue();
-
-    return streamName;
+    return  queryResults.get(0).getValue(STREAMNAME).stringValue();
   }
 
 }

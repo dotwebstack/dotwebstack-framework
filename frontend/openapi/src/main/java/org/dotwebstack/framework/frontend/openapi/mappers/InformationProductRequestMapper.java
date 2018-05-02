@@ -6,6 +6,7 @@ import io.swagger.models.Path;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
@@ -44,8 +45,9 @@ public class InformationProductRequestMapper implements RequestMapper {
     this.requestHandlerFactory = requestHandlerFactory;
   }
 
-  public Boolean supportsVendorExtension(String key) {
-    return (key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
+  public Boolean supportsVendorExtension(Map<String, Object> vendorExtensions) {
+    return vendorExtensions.keySet().stream().anyMatch(key ->
+        key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
   }
 
   public Resource map(Swagger swagger, Path pathItem, ApiOperation apiOperation,

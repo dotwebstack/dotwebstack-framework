@@ -103,7 +103,8 @@ public class ApiRequestValidatorTest {
     Swagger swagger = createSwagger("simple-getHeader.yml");
 
     ContainerRequestContext mockGet = mockGet();
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", getPath);
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
+        getPath).iterator().next();
 
     when(requestParameterExtractorMock.extract(apiOperation, swagger, mockGet)).thenReturn(
         new RequestParameters());
@@ -125,7 +126,8 @@ public class ApiRequestValidatorTest {
     // Arrange
     Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
 
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", getPath);
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
+        getPath).iterator().next();
     ContainerRequestContext mockGet = mockGet();
 
     when(requestParameterExtractorMock.extract(apiOperation, swagger, mockGet)).thenReturn(
@@ -146,7 +148,8 @@ public class ApiRequestValidatorTest {
 
     String body = "{ \"someproperty\": \"one\" }";
     ContainerRequestContext mockPost = mockPost(body);
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", postPath);
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
+        postPath).iterator().next();
 
     RequestParameters requestParameters = new RequestParameters();
     when(requestParameterExtractorMock.extract(apiOperation, swagger, mockPost)).thenReturn(
@@ -172,7 +175,8 @@ public class ApiRequestValidatorTest {
     Swagger swagger = createSwagger("post-request.yml");
 
     ContainerRequestContext mockPost = mockPost("{ \"prop\": \"one\" }");
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, "/endpoint", postPath);
+    ApiOperation apiOperation = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
+        postPath).iterator().next();
 
     RequestParameters requestParameters = new RequestParameters();
 

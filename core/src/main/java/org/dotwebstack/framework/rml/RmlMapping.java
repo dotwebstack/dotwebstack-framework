@@ -38,10 +38,18 @@ public class RmlMapping {
 
     private String streamName;
 
-    public Builder(@NonNull Resource identifier, @NonNull Model model, @NonNull String streamName) {
+    public Builder(@NonNull Resource identifier) {
       this.identifier = identifier;
+    }
+
+    public Builder model(@NonNull Model model) {
       this.model = model;
+      return this;
+    }
+
+    public Builder streamName(@NonNull String streamName) {
       this.streamName = streamName;
+      return this;
     }
 
     public RmlMapping build() {

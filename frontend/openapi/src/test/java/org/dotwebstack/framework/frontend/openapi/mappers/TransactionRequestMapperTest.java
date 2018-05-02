@@ -99,30 +99,28 @@ public class TransactionRequestMapperTest {
   @Mock
   private RequestHandlerFactory requestHandlerFactoryMock;
 
-  private InformationProductRequestMapper informationProductRequestMapper;
-
-  private TransactionRequestMapper transactionRequestMapper;
+  private List<RequestMapper> requestMappers = new ArrayList<>();
 
   @Mock
   private TransactionRequestHandler transactionRequestHandlerMock;
 
   private ResourceLoader resourceLoader;
 
-  private OpenApiRequestMapper requestMapper;
+  private OpenApiRequestMapper openApiRequestMapper;
 
   @Before
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
-    informationProductRequestMapper = new InformationProductRequestMapper(
-        informationProductResourceProviderMock, requestHandlerFactoryMock);
-    transactionRequestMapper =
-        new TransactionRequestMapper(transactionResourceProviderMock, requestHandlerFactoryMock);
-    requestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
-        informationProductRequestMapper, transactionRequestMapper);
-    requestMapper.setResourceLoader(resourceLoader);
-    requestMapper.setEnvironment(environmentMock);
+    requestMappers.add(new InformationProductRequestMapper(informationProductResourceProviderMock, 
+        requestHandlerFactoryMock));
+    requestMappers.add(new TransactionRequestMapper(transactionResourceProviderMock, 
+        requestHandlerFactoryMock));
+    openApiRequestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
+        requestMappers);
+    openApiRequestMapper.setResourceLoader(resourceLoader);
+    openApiRequestMapper.setEnvironment(environmentMock);
 
     when(requestHandlerFactoryMock.newTransactionRequestHandler(any(), any(), any())).thenReturn(
         transactionRequestHandlerMock);
@@ -144,7 +142,7 @@ public class TransactionRequestMapperTest {
     when(transactionResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(transactionMock);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
@@ -187,7 +185,7 @@ public class TransactionRequestMapperTest {
     when(transactionResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(transactionMock);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
@@ -226,7 +224,7 @@ public class TransactionRequestMapperTest {
     when(transactionResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(transactionMock);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
@@ -248,7 +246,7 @@ public class TransactionRequestMapperTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -264,7 +262,7 @@ public class TransactionRequestMapperTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -281,7 +279,7 @@ public class TransactionRequestMapperTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -298,7 +296,7 @@ public class TransactionRequestMapperTest {
         "/breweries", new Path().get(newOp));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
@@ -345,7 +343,7 @@ public class TransactionRequestMapperTest {
     thrown.expectMessage(String.format("No object property in body parameter"));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
   }
 
@@ -367,7 +365,7 @@ public class TransactionRequestMapperTest {
     thrown.expectMessage(String.format("No object property in body parameter"));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
   }
 
@@ -382,7 +380,7 @@ public class TransactionRequestMapperTest {
     when(transactionResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(transactionMock);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());

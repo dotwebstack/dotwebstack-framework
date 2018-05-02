@@ -27,7 +27,8 @@ public class RmlMappingTest {
     streamName = "streamName";
 
     // Act
-    RmlMapping rmlMapping = new RmlMapping.Builder(identifier, model, streamName).build();
+    RmlMapping rmlMapping = new RmlMapping.Builder(identifier).model(model).streamName(streamName)
+        .build();
 
     // Assert
     assertThat(rmlMapping.getIdentifier(), equalTo(identifier));

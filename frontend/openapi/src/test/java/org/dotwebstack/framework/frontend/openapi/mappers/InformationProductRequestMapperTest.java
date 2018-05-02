@@ -96,9 +96,7 @@ public class InformationProductRequestMapperTest {
   @Mock
   private RequestHandlerFactory requestHandlerFactoryMock;
 
-  private InformationProductRequestMapper informationProductRequestMapper;
-
-  private TransactionRequestMapper transactionRequestMapper;
+  private List<RequestMapper> requestMappers = new ArrayList<>();
 
   @Mock
   private InformationProductRequestHandler informationProductRequestHandlerMock;
@@ -108,21 +106,21 @@ public class InformationProductRequestMapperTest {
 
   private ResourceLoader resourceLoader;
 
-  private OpenApiRequestMapper requestMapper;
+  private OpenApiRequestMapper openApiRequestMapper;
 
   @Before
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
-    informationProductRequestMapper = new InformationProductRequestMapper(
-        informationProductResourceProviderMock,requestHandlerFactoryMock);
-    transactionRequestMapper = new TransactionRequestMapper(
-        transactionResourceProvider, requestHandlerFactoryMock);
-    requestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
-        informationProductRequestMapper, transactionRequestMapper);
-    requestMapper.setResourceLoader(resourceLoader);
-    requestMapper.setEnvironment(environmentMock);
+    requestMappers.add(new InformationProductRequestMapper(informationProductResourceProviderMock,
+        requestHandlerFactoryMock));
+    requestMappers.add(new TransactionRequestMapper(transactionResourceProvider,
+        requestHandlerFactoryMock));
+    openApiRequestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
+        requestMappers);
+    openApiRequestMapper.setResourceLoader(resourceLoader);
+    openApiRequestMapper.setEnvironment(environmentMock);
 
     when(requestHandlerFactoryMock.newInformationProductRequestHandler(any(), any(),
         any(), any())).thenReturn(informationProductRequestHandlerMock);
@@ -145,7 +143,7 @@ public class InformationProductRequestMapperTest {
         informationProductMock);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
@@ -188,7 +186,7 @@ public class InformationProductRequestMapperTest {
         informationProductMock);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
@@ -210,7 +208,7 @@ public class InformationProductRequestMapperTest {
         informationProductMock);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
@@ -233,7 +231,7 @@ public class InformationProductRequestMapperTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries"));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -250,7 +248,7 @@ public class InformationProductRequestMapperTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -268,7 +266,7 @@ public class InformationProductRequestMapperTest {
         "/" + DBEERPEDIA.OPENAPI_HOST + "/breweries", Status.OK.getStatusCode()));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -285,7 +283,7 @@ public class InformationProductRequestMapperTest {
         "/breweries", new Path().get(newOp));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());
@@ -332,7 +330,7 @@ public class InformationProductRequestMapperTest {
     thrown.expectMessage(String.format("No object property in body parameter"));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
   }
 
@@ -354,7 +352,7 @@ public class InformationProductRequestMapperTest {
     thrown.expectMessage(String.format("No object property in body parameter"));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
   }
 
@@ -370,7 +368,7 @@ public class InformationProductRequestMapperTest {
         informationProductMock);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verify(httpConfigurationMock, times(2)).registerResources(resourceCaptor.capture());

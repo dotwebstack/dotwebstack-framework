@@ -4,9 +4,9 @@ import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import java.util.Map;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -71,15 +71,14 @@ public final class TransactionRequestHandler
         requestParameterMapper.map(operation, transaction, requestParameters);
 
     Model transactionModel = transactionRequestBodyMapper.map(operation, requestParameters);
+    LOG.debug("Transaction model after rml mapping: {}", transactionModel);
 
     TransactionHandler transactionHandler =
         transactionHandlerFactory.newTransactionHandler(transaction, transactionModel);
     try {
       transactionHandler.execute(parameterValues);
-    } catch (StepFailureException e) {
-      return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
-    } catch (RuntimeException e) {
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+    } catch (StepFailureException stepFailureException) {
+      throw new BadRequestException(stepFailureException.getMessage());
     }
 
     return Response.ok().build();

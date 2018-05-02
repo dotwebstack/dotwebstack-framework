@@ -1,13 +1,11 @@
-package org.dotwebstack.framework.informationproduct;
+package org.dotwebstack.framework.param;
 
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.term.IntegerTermParameter;
 import org.dotwebstack.framework.param.term.StringTermParameter;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -16,7 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class InformationProductUtilsTest {
+public class ParameterUtilsTest {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
@@ -28,18 +26,18 @@ public class InformationProductUtilsTest {
   @Test
   public void getParameter_ReturnsParameter_ForId() {
     // Arrange
-    InformationProduct productMock = mock(InformationProduct.class);
+    Collection<Parameter> parameterCollection = new ArrayList<>();
 
     StringTermParameter contentCrsParam = new StringTermParameter(
         VALUE_FACTORY.createIRI(NAMESPACE_RO, "ContentCrsParameter"), "Content-Crs", true);
     IntegerTermParameter pageParam =
         new IntegerTermParameter(VALUE_FACTORY.createIRI(NAMESPACE_RO, "xPaginationPageParameter"),
             "x-Pagination-Page", false);
-
-    when(productMock.getParameters()).thenReturn(ImmutableList.of(contentCrsParam, pageParam));
+    parameterCollection.add(contentCrsParam);
+    parameterCollection.add(pageParam);
 
     // Act
-    Parameter result = InformationProductUtils.getParameter(productMock,
+    Parameter result = ParameterUtils.getParameter(parameterCollection,
         NAMESPACE_RO + "xPaginationPageParameter");
 
     // Assert
@@ -54,13 +52,14 @@ public class InformationProductUtilsTest {
         NAMESPACE_RO + "ContentCrsParameter"));
 
     // Arrange
-    InformationProduct productMock = mock(InformationProduct.class);
-    when(productMock.getParameters()).thenReturn(ImmutableList.of(
-        new StringTermParameter(VALUE_FACTORY.createIRI("http://foo#", "bar"), "bar", true),
-        new StringTermParameter(VALUE_FACTORY.createIRI("http://baz#", "qux"), "qux", false)));
+    Collection<Parameter> parameterCollection = new ArrayList<>();
+    parameterCollection.add(new StringTermParameter(
+        VALUE_FACTORY.createIRI("http://foo#", "bar"), "bar", true));
+    parameterCollection.add(new StringTermParameter(
+        VALUE_FACTORY.createIRI("http://baz#", "qux"), "qux", false));
 
     // Act
-    InformationProductUtils.getParameter(productMock, NAMESPACE_RO + "ContentCrsParameter");
+    ParameterUtils.getParameter(parameterCollection, NAMESPACE_RO + "ContentCrsParameter");
   }
 
 }

@@ -68,6 +68,8 @@ class TransactionRequestBodyMapper {
         InputStream inputStream = IOUtils.toInputStream(value);
         mapper.bindInputStream(rmlMapping.getStreamName(), inputStream);
 
+        LOG.debug("Apply rml mapping: {}", mapping);
+
         return mapper.map(mapping);
       }
     }

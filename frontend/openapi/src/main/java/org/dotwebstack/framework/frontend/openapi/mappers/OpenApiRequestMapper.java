@@ -15,6 +15,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
@@ -50,19 +52,15 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
   private Environment environment;
 
-  private InformationProductRequestMapper informationProductRequestMapper;
-
-  private TransactionRequestMapper transactionRequestMapper;
+  private List<RequestMapper> requestMappers;
 
   @Autowired
   public OpenApiRequestMapper(@NonNull SwaggerParser openApiParser,
       @NonNull ApplicationProperties applicationProperties,
-      @NonNull InformationProductRequestMapper informationProductRequestMapper,
-      @NonNull TransactionRequestMapper transactionRequestMapper) {
+      @NonNull List<RequestMapper> requestMappers) {
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
-    this.informationProductRequestMapper = informationProductRequestMapper;
-    this.transactionRequestMapper = transactionRequestMapper;
+    this.requestMappers = requestMappers;
   }
 
   @Override
@@ -103,31 +101,26 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
-      ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, pathItem);
+      Collection<ApiOperation> apiOperations = SwaggerUtils.extractApiOperations(swagger, path,
+          pathItem);
+      apiOperations.forEach(apiOperation -> {
+        Operation operation = apiOperation.getOperation();
 
-      if (apiOperation == null) {
-        return;
-      }
+        validateOperation(apiOperation, swagger);
 
-      Operation getOperation = apiOperation.getOperation();
+        String absolutePath = basePath.concat(path);
 
-      validateOperation(apiOperation, swagger);
+        Optional<RequestMapper> requestMapper = requestMappers.stream().filter(mapper ->
+            mapper.supportsVendorExtension(operation.getVendorExtensions())).findFirst();
 
-      String absolutePath = basePath.concat(path);
+        requestMapper.ifPresent(mapper -> httpConfiguration.registerResources(mapper.map(
+            swagger, pathItem, apiOperation, operation, absolutePath)));
 
-      Optional<String> vendorExtension =
-          getOperation.getVendorExtensions().keySet().stream().findFirst();
-      if (vendorExtension.isPresent()
-          && informationProductRequestMapper.supportsVendorExtension(vendorExtension.get())) {
-        httpConfiguration.registerResources(informationProductRequestMapper.map(swagger, pathItem,
-            apiOperation, getOperation, absolutePath));
-      } else if (vendorExtension.isPresent()
-          && transactionRequestMapper.supportsVendorExtension(vendorExtension.get())) {
-        httpConfiguration.registerResources(transactionRequestMapper.map(swagger, pathItem,
-            apiOperation, getOperation, absolutePath));
-      } else {
-        LOG.warn("Path '{}' is not mapped to an information product or transaction.", absolutePath);
-      }
+        if (!requestMapper.isPresent()) {
+          LOG.warn("Path '{}' is not mapped to an information product or transaction.",
+              absolutePath);
+        }
+      });
     });
   }
 

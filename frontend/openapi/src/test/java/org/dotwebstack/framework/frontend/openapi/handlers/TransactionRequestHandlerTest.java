@@ -16,6 +16,7 @@ import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.param.Parameter;
@@ -38,6 +39,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TransactionRequestHandlerTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Rule
   public final ExpectedException exception = ExpectedException.none();
@@ -112,7 +116,7 @@ public class TransactionRequestHandlerTest {
   }
 
   @Test
-  public void apply_ReturnsBadRequestResponse_WhenTransactionStepFails() {
+  public void apply_ThrowBadRequestException_WhenTransactionStepFails() {
     // Arrange
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
@@ -122,29 +126,11 @@ public class TransactionRequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
     Mockito.doThrow(new StepFailureException(null)).when(transactionHandler).execute(any());
 
-    // Act
-    Response response = transactionRequestHandler.apply(containerRequestMock);
-
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.BAD_REQUEST.getStatusCode()));
-  }
-
-  @Test
-  public void apply_ReturnsInternalServerErrorResponse_WhenRuntimeException() {
-    // Arrange
-    ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
-    when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
-
-    Operation operation =
-        new Operation().response(Status.OK.getStatusCode(), new io.swagger.models.Response());
-    when(apiOperationMock.getOperation()).thenReturn(operation);
-    Mockito.doThrow(new RuntimeException()).when(transactionHandler).execute(any());
+    thrown.expect(BadRequestException.class);
 
     // Act
     Response response = transactionRequestHandler.apply(containerRequestMock);
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
   }
 
 }

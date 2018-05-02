@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.openapi;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
@@ -24,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.junit.Before;
@@ -50,15 +50,16 @@ public class SwaggerUtilsTest {
     path = "/endpoint";
     method = new Path();
     method.set("get", new Operation());
-
   }
 
   @Test
   public void extractApiOperation_ReturnsValidApiOperation_WithSpecifiedGet() throws IOException {
     path = "/endpoint";
 
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, method);
+    Collection<ApiOperation> apiOperations = SwaggerUtils.extractApiOperations(swagger, path,
+        method);
 
+    ApiOperation apiOperation = apiOperations.stream().findFirst().get();
     Operation operation = apiOperation.getOperation();
 
     assertThat(apiOperation.getMethod(), is(HttpMethod.GET));
@@ -71,9 +72,10 @@ public class SwaggerUtilsTest {
   public void extractApiOperation_ReturnsNull_WithUnspecifiedGet() throws IOException {
     path = "/unknown";
 
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, method);
+    Collection<ApiOperation> apiOperations = SwaggerUtils.extractApiOperations(swagger, path,
+        method);
 
-    assertThat(apiOperation, nullValue());
+    assertThat(apiOperations.size(), is(0));
   }
 
   private static Swagger createSwagger() throws IOException {
@@ -85,7 +87,6 @@ public class SwaggerUtilsTest {
 
   @Test
   public void removeVendorExtensions_removesAll() throws Exception {
-
     // Arrange
     Environment mockEnvironment = mock(Environment.class);
     when(mockEnvironment.getProperty(anyString())).thenReturn("some-environment-value");

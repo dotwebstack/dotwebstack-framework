@@ -5,6 +5,7 @@ import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Swagger;
 import java.util.List;
+import java.util.Map;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
@@ -43,22 +44,23 @@ public class TransactionRequestMapper implements RequestMapper {
     this.requestHandlerFactory = requestHandlerFactory;
   }
 
-  public Boolean supportsVendorExtension(String key) {
-    return (key.equals(OpenApiSpecificationExtensions.TRANSACTION));
+  public Boolean supportsVendorExtension(Map<String, Object> vendorExtensions) {
+    return vendorExtensions.keySet().stream().anyMatch(key ->
+        key.equals(OpenApiSpecificationExtensions.TRANSACTION));
   }
 
   public Resource map(Swagger swagger, Path pathItem, ApiOperation apiOperation,
-      Operation getOperation, String absolutePath) {
+      Operation operation, String absolutePath) {
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());
 
-    if (getOperation.getResponses() == null
-        || !getOperation.getResponses().containsKey(okStatusCode)) {
+    if (operation.getResponses() == null
+        || !operation.getResponses().containsKey(okStatusCode)) {
       throw new ConfigurationException(String.format(
           "Resource '%s' does not specify a status %s response.", absolutePath, okStatusCode));
     }
 
     List<String> consumes =
-        getOperation.getConsumes() != null ? getOperation.getConsumes() : swagger.getConsumes();
+        operation.getConsumes() != null ? operation.getConsumes() : swagger.getConsumes();
 
     if (consumes == null) {
       throw new ConfigurationException(
@@ -66,7 +68,7 @@ public class TransactionRequestMapper implements RequestMapper {
     }
 
     IRI transactionIdentifier =
-        valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
+        valueFactory.createIRI((String) operation.getVendorExtensions().get(
             OpenApiSpecificationExtensions.TRANSACTION));
 
     Transaction transaction =

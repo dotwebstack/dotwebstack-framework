@@ -18,7 +18,9 @@ import io.swagger.parser.SwaggerParser;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -72,30 +74,28 @@ public class OpenApiRequestMapperTest {
   @Mock
   private RequestHandlerFactory requestHandlerFactoryMock;
 
-  private InformationProductRequestMapper informationProductRequestMapper;
-
-  private TransactionRequestMapper transactionRequestMapper;
+  private List<RequestMapper> requestMappers = new ArrayList<>();
 
   @Mock
   private TransactionResourceProvider transactionResourceProvider;
 
   private ResourceLoader resourceLoader;
 
-  private OpenApiRequestMapper requestMapper;
+  private OpenApiRequestMapper openApiRequestMapper;
 
   @Before
   public void setUp() {
     resourceLoader =
         mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
     when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
-    informationProductRequestMapper = new InformationProductRequestMapper(
-        informationProductResourceProviderMock,requestHandlerFactoryMock);
-    transactionRequestMapper = new TransactionRequestMapper(
-        transactionResourceProvider, requestHandlerFactoryMock);
-    requestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
-        informationProductRequestMapper, transactionRequestMapper);
-    requestMapper.setResourceLoader(resourceLoader);
-    requestMapper.setEnvironment(environmentMock);
+    requestMappers.add(new InformationProductRequestMapper(informationProductResourceProviderMock,
+        requestHandlerFactoryMock));
+    requestMappers.add(new TransactionRequestMapper(transactionResourceProvider,
+        requestHandlerFactoryMock));
+    openApiRequestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
+        requestMappers);
+    openApiRequestMapper.setResourceLoader(resourceLoader);
+    openApiRequestMapper.setEnvironment(environmentMock);
   }
 
   @Test
@@ -105,7 +105,7 @@ public class OpenApiRequestMapperTest {
         new org.springframework.core.io.Resource[0]);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verifyZeroInteractions(informationProductResourceProviderMock);
@@ -119,7 +119,7 @@ public class OpenApiRequestMapperTest {
         new org.springframework.core.io.Resource[] {new ByteArrayResource(new byte[0])});
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verifyZeroInteractions(informationProductResourceProviderMock);
@@ -133,7 +133,7 @@ public class OpenApiRequestMapperTest {
         FileNotFoundException.class);
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     verifyZeroInteractions(informationProductResourceProviderMock);
@@ -152,7 +152,7 @@ public class OpenApiRequestMapperTest {
             DBEERPEDIA.OPENAPI_DESCRIPTION));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
   }
 
   @Test
@@ -162,7 +162,7 @@ public class OpenApiRequestMapperTest {
         new Path().get(new Operation()));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     // the spec resource is always made available
@@ -176,7 +176,7 @@ public class OpenApiRequestMapperTest {
         new Path().put(new Operation()));
 
     // Act
-    requestMapper.map(httpConfigurationMock);
+    openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     // the spec resource is always made available

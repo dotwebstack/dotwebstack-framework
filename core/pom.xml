@@ -91,7 +91,6 @@
       <groupId>com.taxonic.carml</groupId>
       <artifactId>carml-model</artifactId>
       <version>RELEASE</version>
-      <scope>compile</scope>
     </dependency>
   </dependencies>
 
