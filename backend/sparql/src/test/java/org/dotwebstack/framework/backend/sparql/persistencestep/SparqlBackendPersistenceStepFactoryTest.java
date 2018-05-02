@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.sparql.persistencestep;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
@@ -48,21 +49,26 @@ public class SparqlBackendPersistenceStepFactoryTest {
   @Mock
   private QueryEvaluator queryEvaluator;
 
+  @Mock
+  private ApplicationProperties applicationProperties;
+
   private SparqlBackendPersistenceStepFactory sparqlBackendPersistenceStepFactory;
 
   private PersistenceStep persistenceStep;
 
   @Before
   public void setup() {
-    sparqlBackendPersistenceStepFactory = new SparqlBackendPersistenceStepFactory(queryEvaluator);
+    sparqlBackendPersistenceStepFactory =
+        new SparqlBackendPersistenceStepFactory(queryEvaluator, applicationProperties);
   }
 
   @Test
   public void create_GetPersistenceStepExecutor_WhenSupported() {
     // Arrange
-    persistenceStep = new PersistenceStep.Builder(identifier, backendResourceProvider)
-        .persistenceStrategy(ELMO.PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH).backend(backend)
-        .targetGraph(targetGraph).build();
+    persistenceStep =
+        new PersistenceStep.Builder(identifier, backendResourceProvider).persistenceStrategy(
+            ELMO.PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH).backend(backend).targetGraph(
+                targetGraph).build();
 
     // Act
     PersistenceInsertIntoGraphStepExecutor persistenceInsertIntoGraphStepExecutor =
@@ -77,9 +83,9 @@ public class SparqlBackendPersistenceStepFactoryTest {
   @Test
   public void create_ThrowException_WhenStrategyIsNotSupported() {
     // Arrange
-    persistenceStep = new PersistenceStep.Builder(identifier, backendResourceProvider)
-        .persistenceStrategy(ELMO.PERSISTENCE_STRATEGY_UNKNOWN).backend(backend)
-        .targetGraph(targetGraph).build();
+    persistenceStep =
+        new PersistenceStep.Builder(identifier, backendResourceProvider).persistenceStrategy(
+            ELMO.PERSISTENCE_STRATEGY_UNKNOWN).backend(backend).targetGraph(targetGraph).build();
 
     // Assert
     thrown.expect(ConfigurationException.class);
