@@ -110,11 +110,11 @@ public class QueryEvaluator {
       LOG.debug("Insert data into graph {}", systemGraph);
     } else {
       model.contexts().forEach(graphName -> {
-        LOG.debug("Insert data into graph {}", graphName);
         repositoryConnection.add(
             model.stream().filter(statement -> statement.getContext().equals(graphName)).collect(
                 Collectors.toList()),
             graphName);
+        LOG.debug("Insert data into graph {}", graphName);
       });
     }
   }
