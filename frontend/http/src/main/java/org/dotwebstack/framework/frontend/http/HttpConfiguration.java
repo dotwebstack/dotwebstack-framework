@@ -20,8 +20,7 @@ public class HttpConfiguration extends ResourceConfig {
     register(WebApplicationExceptionMapper.class);
     register(GenericExceptionMapper.class);
 
-    property(ServletProperties.FILTER_STATIC_CONTENT_REGEX,
-        "\\/(robots.txt|([\\w-]+\\/)?(assets|webjars)\\/.*)");
+    property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(robots.txt|(assets|webjars)/.*)");
     property(ServerProperties.WADL_FEATURE_DISABLE, true);
 
     httpModules.forEach(module -> module.initialize(this));
