@@ -1,12 +1,15 @@
 package org.dotwebstack.framework.backend.sparql;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.NonNull;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.Query;
@@ -57,13 +60,14 @@ public class QueryEvaluator {
   }
 
   public void add(@NonNull RepositoryConnection repositoryConnection, @NonNull Model model,
-      @NonNull IRI targetGraph) {
+      @NonNull ApplicationProperties applicationProperties) {
+    final IRI systemGraph = applicationProperties.getSystemGraph();
 
     try {
       if (queryContainsBNode(model)) {
-        repositoryConnection.prepareGraphQuery(getInsertQuery(model, targetGraph));
+        repositoryConnection.prepareGraphQuery(getInsertQuery(model, systemGraph));
       } else {
-        repositoryConnection.add(model, targetGraph);
+        addMultipleStatements(repositoryConnection, model, systemGraph);
       }
     } catch (RDF4JException e) {
       throw new BackendException(
