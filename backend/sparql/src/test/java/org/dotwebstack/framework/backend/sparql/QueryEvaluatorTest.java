@@ -12,10 +12,15 @@ import com.google.common.collect.ImmutableMap;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -250,6 +255,83 @@ public class QueryEvaluatorTest {
 
     // Act
     queryEvaluator.add(repositoryConnection, model, applicationProperties);
+  }
+
+  @Test
+  public void add_InsertQuery_WithBNodeData() {
+    // Arrange
+    Model model = new LinkedHashModel();
+    final BNode bNode = valueFactory.createBNode();
+    model.add(valueFactory.createStatement(bNode, RDF.TYPE, ELMO.ENDPOINT));
+    StringBuilder insertQueryBuilder = new StringBuilder();
+    insertQueryBuilder.append("INSERT {\n");
+    insertQueryBuilder.append(
+        "GRAPH <" + applicationProperties.getSystemGraph().stringValue() + "> {\n");
+    insertQueryBuilder.append(" " + bNode);
+    insertQueryBuilder.append(" <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ");
+    insertQueryBuilder.append(" <http://dotwebstack.org/def/elmo#Endpoint> ");
+    insertQueryBuilder.append(".\n");
+    insertQueryBuilder.append("}\n};\n");
+    final String query = insertQueryBuilder.toString();
+
+    // Act
+    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+
+    // Assert
+    verify(repositoryConnection, times(1)).prepareGraphQuery(query);
+  }
+
+  @Test
+  public void add_InsertQuery_WithGraphName() {
+    // Arrange
+    final BNode bNode = valueFactory.createBNode();
+    Model model = new LinkedHashModel();
+    final IRI context = valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre");
+    model.add(valueFactory.createStatement(bNode, RDF.TYPE, ELMO.ENDPOINT, context));
+    StringBuilder insertQueryBuilder = new StringBuilder();
+    insertQueryBuilder.append("INSERT {\n");
+    insertQueryBuilder.append(
+        "GRAPH <" + applicationProperties.getSystemGraph().stringValue() + "> {\n");
+    insertQueryBuilder.append(" " + bNode);
+    insertQueryBuilder.append(" <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ");
+    insertQueryBuilder.append(" <http://dotwebstack.org/def/elmo#Endpoint> ");
+    insertQueryBuilder.append(".\n");
+    insertQueryBuilder.append("}\n};\n");
+    final String query = insertQueryBuilder.toString();
+
+    // Act
+    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+
+    // Assert
+    verify(repositoryConnection, times(1)).prepareGraphQuery(query);
+  }
+
+  @Test
+  public void add_Statements_WithGraphName() {
+    // Arrange
+    Model model = new LinkedHashModel();
+    final IRI context = valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre");
+    model.add(valueFactory.createStatement(ELMO.ENDPOINT, RDF.TYPE, ELMO.ENDPOINT));
+
+    // Act
+    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+
+    // Assert
+    verify(repositoryConnection, times(1)).add(model, context);
+  }
+
+  @Test
+  public void add_Statements_WithSystemGraphName() {
+    // Arrange
+    Model model = new LinkedHashModel();
+    final IRI context = valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre");
+    model.add(valueFactory.createStatement(ELMO.ENDPOINT, RDF.TYPE, ELMO.ENDPOINT, context));
+
+    // Act
+    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+
+    // Assert
+    verify(repositoryConnection, times(1)).add(model, context);
   }
 
 }
