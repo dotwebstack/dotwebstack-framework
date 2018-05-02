@@ -9,6 +9,7 @@ import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.GraphQuery;
@@ -125,9 +126,9 @@ public class QueryEvaluator {
     if (!model.contexts().isEmpty()) {
       model.contexts().forEach(graphName -> {
         if (graphName != null) {
-          insertQueryBuilder.append("GRAPH <" + graphName.stringValue() + "> {\n");
+          insertQueryBuilder.append(getGraphString(graphName));
         } else {
-          insertQueryBuilder.append("GRAPH <" + systemGraph.stringValue() + "> {\n");
+          insertQueryBuilder.append(getGraphString(systemGraph));
         }
         model.forEach(statement -> {
           insertQueryBuilder.append(getSubjectString(statement));
@@ -173,6 +174,10 @@ public class QueryEvaluator {
       return " " + statement.getObject();
     }
     return " <" + statement.getObject() + "> ";
+  }
+
+  private String getGraphString(Resource graphName) {
+    return "GRAPH <" + graphName.stringValue() + "> {\n";
   }
 
   private boolean queryContainsBNode(Model model) {

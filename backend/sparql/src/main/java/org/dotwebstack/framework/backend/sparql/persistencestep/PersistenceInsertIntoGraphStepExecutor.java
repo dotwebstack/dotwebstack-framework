@@ -17,8 +17,6 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
 
   private Model transactionModel;
 
-  private PersistenceStep persistenceStep;
-
   private QueryEvaluator queryEvaluator;
 
   private ApplicationProperties applicationProperties;
@@ -30,7 +28,6 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
     super(persistenceStep);
     this.backend = backend;
     this.transactionModel = transactionModel;
-    this.persistenceStep = persistenceStep;
     this.queryEvaluator = queryEvaluator;
     this.applicationProperties = applicationProperties;
   }
