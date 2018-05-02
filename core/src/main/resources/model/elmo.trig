@@ -26,6 +26,7 @@ elmo:TransactionRepository a elmo:Backend;
 #
 xsd:string a rdfs:Datatype.
 xsd:integer a rdfs:Datatype.
+xsd:boolean a rdfs:Datatype.
 http:requestURI a rdf:Property.
 
 # =========

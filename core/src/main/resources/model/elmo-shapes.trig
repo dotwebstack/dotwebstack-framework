@@ -466,7 +466,7 @@ elmo-shape:TermParameter a sh:NodeShape;
     sh:path elmo:shape;
     sh:name "elmo:shape";
     # direct property or node with properties
-    sh:node [ sh:xone (elmo-shape:URIParameterPropertyShape elmo-shape:StringParameterPropertyShape elmo-shape:IntegerParameterPropertyShape) ];
+    sh:node [ sh:xone (elmo-shape:URIParameterPropertyShape elmo-shape:StringParameterPropertyShape elmo-shape:IntegerParameterPropertyShape elmo-shape:BooleanParameterPropertyShape) ];
     sh:minCount 1;
     sh:maxCount 1;
   ];
@@ -565,6 +565,26 @@ elmo-shape:IntegerParameterPropertyShape a sh:NodeShape;
     sh:path sh:maxInclusive;
     sh:name "sh:maxInclusive";
     sh:datatype xsd:integer;
+    sh:maxCount 1;
+  ];
+.
+
+elmo-shape:BooleanParameterPropertyShape a sh:NodeShape;
+  sh:closed true;
+  rdfs:label "BooleanParameterPropertyShape shape"@en;
+  sh:name "sh:PropertyShape (Boolean)";
+  sh:property [
+    sh:path sh:datatype;
+    sh:name "sh:datatype";
+    sh:hasValue xsd:boolean;
+    sh:class rdfs:Datatype;
+    sh:minCount 1;
+    sh:maxCount 1;
+  ];
+  sh:property [
+    sh:path sh:defaultValue;
+    sh:name "sh:defaultValue";
+    sh:datatype xsd:boolean;
     sh:maxCount 1;
   ];
 .
