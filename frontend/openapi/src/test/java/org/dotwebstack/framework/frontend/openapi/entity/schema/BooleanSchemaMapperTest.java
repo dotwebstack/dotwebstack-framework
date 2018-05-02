@@ -24,41 +24,39 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class BooleanSchemaMapperTest {
 
   @Rule
-  public final ExpectedException exception = ExpectedException.none();
+  public final ExpectedException thrown = ExpectedException.none();
 
+  @Mock
+  private GraphEntity graphEntityMock;
   @Mock
   private TupleEntity tupleEntityMock;
 
-  private BooleanSchemaMapper schemaMapper;
-
-  private BooleanProperty schema;
-
-  @Mock
-  private GraphEntity entitymock;
+  private BooleanSchemaMapper booleanSchemaMapper;
+  private BooleanProperty booleanProperty;
   private SchemaMapperAdapter schemaMapperAdapter;
 
   @Before
   public void setUp() {
-    schemaMapper = new BooleanSchemaMapper();
-    schema = new BooleanProperty();
-    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(schemaMapper));
+    booleanSchemaMapper = new BooleanSchemaMapper();
+    booleanProperty = new BooleanProperty();
+    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(booleanSchemaMapper));
   }
 
   @Test
   public void mapTupleValue_ThrowsException_ForNonLiterals() {
     // Assert
-    exception.expect(SchemaMapperRuntimeException.class);
-    exception.expectMessage("Value is not a literal value.");
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    schemaMapper.mapTupleValue(schema, tupleEntityMock,
+    booleanSchemaMapper.mapTupleValue(booleanProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnsValue_ForLiterals() {
     // Arrange & Act
-    Boolean result = schemaMapper.mapTupleValue(schema, tupleEntityMock,
+    Boolean result = booleanSchemaMapper.mapTupleValue(booleanProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
 
     // Assert
@@ -68,7 +66,7 @@ public class BooleanSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForBooleanProperty() {
     // Arrange & Act
-    Boolean supported = schemaMapper.supports(schema);
+    Boolean supported = booleanSchemaMapper.supports(booleanProperty);
 
     // Assert
     assertThat(supported, equalTo(true));
@@ -77,7 +75,7 @@ public class BooleanSchemaMapperTest {
   @Test
   public void supports_ReturnsFalse_ForNonBooleanProperty() {
     // Arrange & Act
-    Boolean supported = schemaMapper.supports(new StringProperty());
+    Boolean supported = booleanSchemaMapper.supports(new StringProperty());
 
     // Assert
     assertThat(supported, equalTo(false));
@@ -85,19 +83,20 @@ public class BooleanSchemaMapperTest {
 
   @Test
   public void mapGraphValue_ThrowsEx_MultipleVendorExtensions() {
-    // Arrange
-    schema.vendorExtension(OpenApiSpecificationExtensions.LDPATH, "ld-Path");
-    schema.vendorExtension(CONSTANT_VALUE, "true");
-    final ValueContext context = ValueContext.builder().build();
-
     // Assert
-    exception.expect(SchemaMapperRuntimeException.class);
-    exception.expectMessage("BooleanProperty ");
-    exception.expectMessage(CONSTANT_VALUE);
-    exception.expectMessage(LDPATH);
+    thrown.expect(SchemaMapperRuntimeException.class);
+    thrown.expectMessage("BooleanProperty ");
+    thrown.expectMessage(CONSTANT_VALUE);
+    thrown.expectMessage(LDPATH);
+
+    // Arrange
+    booleanProperty.vendorExtension(OpenApiSpecificationExtensions.LDPATH, "ld-Path");
+    booleanProperty.vendorExtension(CONSTANT_VALUE, "true");
+    ValueContext valueContext = ValueContext.builder().build();
 
     // Act
-    schemaMapper.mapGraphValue(schema, entitymock, context, schemaMapperAdapter);
+    booleanSchemaMapper.mapGraphValue(booleanProperty, graphEntityMock, valueContext,
+        schemaMapperAdapter);
   }
 
 }

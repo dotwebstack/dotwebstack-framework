@@ -14,5 +14,4 @@ public interface SchemaMapper<S extends Property, T> {
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter);
 
   boolean supports(Property schema);
-
 }
