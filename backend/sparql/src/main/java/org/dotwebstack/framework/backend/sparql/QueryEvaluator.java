@@ -94,17 +94,85 @@ public class QueryEvaluator {
     }
   }
 
-  private String getInsertQuery(Model model, IRI targetGraph) {
+  private void addMultipleStatements(@NonNull RepositoryConnection repositoryConnection,
+      @NonNull Model model, @NonNull IRI systemGraph) {
+    if (model.contexts().size() == 1) {
+      final IRI graphName = (IRI) model.contexts().iterator().next();
+      if (graphName != null) {
+        repositoryConnection.add(model, graphName);
+        LOG.debug("Insert data into model graph {}", graphName);
+      } else {
+        repositoryConnection.add(model, systemGraph);
+        LOG.debug("Insert data into default graph {}", systemGraph);
+      }
+    } else if (model.contexts().isEmpty()) {
+      repositoryConnection.add(model, systemGraph);
+      LOG.debug("Insert data into graph {}", systemGraph);
+    } else {
+      model.contexts().forEach(graphName -> {
+        LOG.debug("Insert data into graph {}", graphName);
+        repositoryConnection.add(
+            model.stream().filter(statement -> statement.getContext().equals(graphName)).collect(
+                Collectors.toList()),
+            graphName);
+      });
+    }
+  }
+
+  private String getInsertQuery(Model model, IRI systemGraph) {
     StringBuilder insertQueryBuilder = new StringBuilder();
-    insertQueryBuilder.append("INSERT {");
-    insertQueryBuilder.append("GRAPH <" + targetGraph.stringValue() + "> {");
-    model.stream().forEach(statement -> insertQueryBuilder.append(statement.getSubject() + " "
-        + statement.getPredicate() + " " + statement.getObject() + " ."));
-    insertQueryBuilder.append("}};");
+    insertQueryBuilder.append("INSERT {\n");
+    if (!model.contexts().isEmpty()) {
+      model.contexts().forEach(graphName -> {
+        if (graphName != null) {
+          insertQueryBuilder.append("GRAPH <" + graphName.stringValue() + "> {\n");
+        } else {
+          insertQueryBuilder.append("GRAPH <" + systemGraph.stringValue() + "> {\n");
+        }
+        model.forEach(statement -> {
+          insertQueryBuilder.append(getSubjectString(statement));
+          insertQueryBuilder.append(getPredicateString(statement));
+          insertQueryBuilder.append(getObjectString(statement));
+          insertQueryBuilder.append(".\n");
+        });
+        insertQueryBuilder.append("}\n};\n");
+      });
+    } else {
+      insertQueryBuilder.append("GRAPH <" + systemGraph.stringValue() + "> {\n");
+      model.forEach(statement -> {
+        insertQueryBuilder.append(getSubjectString(statement));
+        insertQueryBuilder.append(getPredicateString(statement));
+        insertQueryBuilder.append(getObjectString(statement));
+        insertQueryBuilder.append(".\n");
+      });
+      insertQueryBuilder.append("}\n};\n");
+    }
+
     final String insertQuery = insertQueryBuilder.toString();
     LOG.debug("Transformed INSERT query: \n{}", insertQuery);
 
     return insertQuery;
+  }
+
+  private String getSubjectString(Statement statement) {
+    if (statement.getSubject() instanceof BNode) {
+      return " " + statement.getSubject();
+    }
+    return " <" + statement.getSubject() + "> ";
+  }
+
+  private String getPredicateString(Statement statement) {
+    if (statement.getPredicate() instanceof BNode) {
+      return " " + statement.getPredicate();
+    }
+    return " <" + statement.getPredicate() + "> ";
+  }
+
+  private String getObjectString(Statement statement) {
+    if (statement.getObject() instanceof BNode) {
+      return " " + statement.getObject();
+    }
+    return " <" + statement.getObject() + "> ";
   }
 
   private boolean queryContainsBNode(Model model) {
