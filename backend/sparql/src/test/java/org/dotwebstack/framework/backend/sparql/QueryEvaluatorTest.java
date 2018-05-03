@@ -308,7 +308,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void add_Statements_WithGraphName() {
+  public void add_Statements_WithSystemGraphName() {
     // Arrange
     Model model = new LinkedHashModel();
     final IRI context = valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre");
@@ -322,7 +322,7 @@ public class QueryEvaluatorTest {
   }
 
   @Test
-  public void add_Statements_WithSystemGraphName() {
+  public void add_Statements_WithGraphName() {
     // Arrange
     Model model = new LinkedHashModel();
     final IRI context = valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre");
