@@ -127,7 +127,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
         }
       }
 
-      if (resourceBuilder.build().getAllMethods().size() > 0) {
+      if (!resourceBuilder.build().getAllMethods().isEmpty()) {
         resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(
             new OptionsRequestHandler(pathItem));
         httpConfiguration.registerResources(resourceBuilder.build());
