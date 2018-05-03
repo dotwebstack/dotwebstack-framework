@@ -33,13 +33,13 @@ public class StageTest {
 
   @Test
   public void build_CreatesStage_WithValidData() {
-    // Act
-    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(
-        DBEERPEDIA.BASE_PATH.stringValue()).layout(layout).title(DBEERPEDIA.TITLE).build();
-
     // Arrange
     when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
     when(siteMock.getDomain()).thenReturn(DBEERPEDIA.NL_HOST);
+
+    // Act
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(
+        DBEERPEDIA.BASE_PATH.stringValue()).layout(layout).title(DBEERPEDIA.TITLE).build();
 
     // Assert
     assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -52,15 +52,15 @@ public class StageTest {
 
   @Test
   public void build_CreatesStage_WithValidDataAndBNode() {
+    // Arrange
+    when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
+    when(siteMock.getDomain()).thenReturn(DBEERPEDIA.NL_HOST);
+
     // Act
     final BNode blankNode = valueFactory.createBNode();
     Stage stage =
         new Stage.Builder(blankNode, siteMock).basePath(DBEERPEDIA.BASE_PATH.stringValue()).layout(
             layout).title(DBEERPEDIA.TITLE).build();
-
-    // Arrange
-    when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
-    when(siteMock.getDomain()).thenReturn(DBEERPEDIA.NL_HOST);
 
     // Assert
     assertThat(stage.getIdentifier(), equalTo(blankNode));
@@ -73,16 +73,16 @@ public class StageTest {
 
   @Test
   public void build_CreateStage_WithValidSiteAndBasePath() {
+    // Arrange
+    when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
+    when(siteMock.getDomain()).thenReturn(DBEERPEDIA.NL_HOST);
+    when(siteMock.getBasePath()).thenReturn("basePath");
+
     // Act
     final BNode blankNode = valueFactory.createBNode();
     final Stage stage =
         new Stage.Builder(blankNode, siteMock).basePath(DBEERPEDIA.BASE_PATH.stringValue()).layout(
             layout).title(DBEERPEDIA.TITLE).build();
-
-    // Arrange
-    when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
-    when(siteMock.getDomain()).thenReturn(DBEERPEDIA.NL_HOST);
-    when(siteMock.getBasePath()).thenReturn("basePath");
 
     // Assert
     assertThat(stage.getIdentifier(), equalTo(blankNode));
@@ -95,12 +95,12 @@ public class StageTest {
 
   @Test
   public void build_CreatesStage_WhenMatchAllDomain() {
+    // Arrange
+    when(siteMock.isMatchAllDomain()).thenReturn(Boolean.TRUE);
+
     // Act
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).basePath(
         DBEERPEDIA.BASE_PATH.stringValue()).layout(layout).build();
-
-    // Arrange
-    when(siteMock.isMatchAllDomain()).thenReturn(Boolean.TRUE);
 
     // Assert
     assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
@@ -112,12 +112,12 @@ public class StageTest {
 
   @Test
   public void build_CreatesStageDefaults_WhenBasePathNotProvided() {
-    // Act
-    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).layout(layout).build();
-
     // Arrange
     when(siteMock.isMatchAllDomain()).thenReturn(Boolean.FALSE);
     when(siteMock.getDomain()).thenReturn(DBEERPEDIA.NL_HOST);
+
+    // Act
+    Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, siteMock).layout(layout).build();
 
     // Assert
     assertThat(stage.getIdentifier(), equalTo(DBEERPEDIA.BREWERIES));
