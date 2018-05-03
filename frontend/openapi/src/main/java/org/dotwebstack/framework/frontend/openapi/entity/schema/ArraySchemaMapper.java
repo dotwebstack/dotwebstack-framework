@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import io.swagger.models.properties.ArrayProperty;
 import io.swagger.models.properties.Property;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -13,6 +14,7 @@ import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
@@ -21,34 +23,38 @@ import org.springframework.stereotype.Service;
 public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty, Object> {
 
   @Override
+  protected Set<String> getSupportedVendorExtensions() {
+    return new HashSet<>();
+  }
+
+  @Override
   public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ArrayProperty schema, @NonNull GraphEntity entity,
+  public Object mapGraphValue(@NonNull ArrayProperty property, @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    if (hasSubjectVendorExtension(schema)) {
-      Set<Resource> subjects = entity.getSubjects();
+    if (hasSubjectVendorExtension(property)) {
+      Set<Resource> subjects = graphEntity.getSubjects();
 
       subjects.forEach(subject -> {
         ValueContext subjectContext = valueContext.toBuilder().value(subject).build();
 
-        builder.add(schemaMapperAdapter.mapGraphValue(schema.getItems(), entity, subjectContext,
-            schemaMapperAdapter));
+        builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntity,
+            subjectContext, schemaMapperAdapter));
       });
     } else if (valueContext.getValue() != null) {
-      if (schema.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(schema, entity, valueContext, schemaMapperAdapter, builder);
+      if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+        queryAndValidate(property, graphEntity, valueContext, schemaMapperAdapter, builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
             "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
       }
     }
-
     return builder.build();
   }
 
@@ -70,7 +76,6 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
       builder.add(innerPropertySolved);
 
     });
-
   }
 
   private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {
@@ -91,6 +96,12 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
               + " specified in the OpenAPI specification.",
           queryResult.size(), maxItems));
     }
+  }
+
+
+  @Override
+  protected Object convertLiteralToType(Literal literal) {
+    return literal.integerValue();
   }
 
   @Override

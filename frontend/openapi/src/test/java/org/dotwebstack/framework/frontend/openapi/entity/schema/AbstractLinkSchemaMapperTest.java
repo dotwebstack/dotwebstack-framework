@@ -54,16 +54,15 @@ public class AbstractLinkSchemaMapperTest {
   @Mock
   private NormalisedPath requestPathMock;
 
-  private ObjectProperty schema;
-
-  private AbstractLinkSchemaMapper schemaMapper;
+  private ObjectProperty objectProperty;
+  private AbstractLinkSchemaMapper abstractLinkSchemaMapper;
 
   @Before
   public void setUp() {
-    schemaMapper = new TestLinkSchemaMapper();
+    abstractLinkSchemaMapper = new TestLinkSchemaMapper();
 
-    schema = new ObjectProperty();
-    schema.setVendorExtension(OpenApiSpecificationExtensions.TYPE,
+    objectProperty = new ObjectProperty();
+    objectProperty.setVendorExtension(OpenApiSpecificationExtensions.TYPE,
         OpenApiSpecificationExtensions.TYPE_SELF_LINK);
 
     when(apiOperationMock.getRequestPath()).thenReturn(requestPathMock);
@@ -80,7 +79,7 @@ public class AbstractLinkSchemaMapperTest {
     when(requestPathMock.normalised()).thenReturn("/breweries");
 
     // Act
-    URI result = schemaMapper.buildUri(requestContextMock, null);
+    URI result = abstractLinkSchemaMapper.buildUri(requestContextMock, null);
 
     // Assert
     assertThat(result, equalTo(URI.create(baseUri + "/breweries")));
@@ -93,7 +92,7 @@ public class AbstractLinkSchemaMapperTest {
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("id", "123"));
 
     // Act
-    URI result = schemaMapper.buildUri(requestContextMock, null);
+    URI result = abstractLinkSchemaMapper.buildUri(requestContextMock, null);
 
     // Assert
     assertThat(result, equalTo(URI.create(baseUri + "/breweries/123")));
@@ -110,7 +109,7 @@ public class AbstractLinkSchemaMapperTest {
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "b", "456"));
 
     // Act
-    URI result = schemaMapper.buildUri(requestContextMock, null);
+    URI result = abstractLinkSchemaMapper.buildUri(requestContextMock, null);
 
     // Assert
     assertThat(result, equalTo(URI.create(baseUri + "/breweries?a=123&b=456")));
@@ -127,7 +126,7 @@ public class AbstractLinkSchemaMapperTest {
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "b", "456"));
 
     // Act
-    URI result = schemaMapper.buildUri(requestContextMock, null);
+    URI result = abstractLinkSchemaMapper.buildUri(requestContextMock, null);
 
     // Assert
     assertThat(result, equalTo(URI.create(baseUri + "/breweries?b=456")));
@@ -142,7 +141,7 @@ public class AbstractLinkSchemaMapperTest {
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "c", "456"));
 
     // Act
-    URI result = schemaMapper.buildUri(requestContextMock, null);
+    URI result = abstractLinkSchemaMapper.buildUri(requestContextMock, null);
 
     // Assert
     assertThat(result, equalTo(URI.create(baseUri + "/breweries?a=123")));
@@ -157,7 +156,7 @@ public class AbstractLinkSchemaMapperTest {
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123"));
 
     // Act
-    URI result = schemaMapper.buildUri(requestContextMock, ImmutableMap.of("b", "456"));
+    URI result = abstractLinkSchemaMapper.buildUri(requestContextMock, ImmutableMap.of("b", "456"));
 
     // Assert
     assertThat(result, equalTo(URI.create(baseUri + "/breweries?a=123&b=456")));
@@ -172,7 +171,7 @@ public class AbstractLinkSchemaMapperTest {
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123"));
 
     // Act
-    URI result = schemaMapper.buildUri(requestContextMock, ImmutableMap.of("a", "456"));
+    URI result = abstractLinkSchemaMapper.buildUri(requestContextMock, ImmutableMap.of("a", "456"));
 
     // Assert
     assertThat(result, equalTo(URI.create(baseUri + "/breweries?a=456")));
@@ -185,7 +184,7 @@ public class AbstractLinkSchemaMapperTest {
     when(informationProductMock.getParameters()).thenReturn(ImmutableSet.of(parameter));
 
     // Act
-    IntegerTermParameter result = schemaMapper.getPageTermParameter(requestContextMock);
+    IntegerTermParameter result = abstractLinkSchemaMapper.getPageTermParameter(requestContextMock);
 
     // Assert
     assertThat(result, sameInstance(parameter));
@@ -200,7 +199,7 @@ public class AbstractLinkSchemaMapperTest {
     when(informationProductMock.getParameters()).thenReturn(ImmutableSet.of());
 
     // Act
-    schemaMapper.getPageTermParameter(requestContextMock);
+    abstractLinkSchemaMapper.getPageTermParameter(requestContextMock);
   }
 
   @Test
@@ -211,7 +210,8 @@ public class AbstractLinkSchemaMapperTest {
     when(informationProductMock.getParameters()).thenReturn(ImmutableSet.of(parameter));
 
     // Act
-    IntegerTermParameter result = schemaMapper.getPageSizeTermParameter(requestContextMock);
+    IntegerTermParameter result =
+        abstractLinkSchemaMapper.getPageSizeTermParameter(requestContextMock);
 
     // Assert
     assertThat(result, sameInstance(parameter));
@@ -226,7 +226,7 @@ public class AbstractLinkSchemaMapperTest {
     when(informationProductMock.getParameters()).thenReturn(ImmutableSet.of());
 
     // Act
-    schemaMapper.getPageSizeTermParameter(requestContextMock);
+    abstractLinkSchemaMapper.getPageSizeTermParameter(requestContextMock);
   }
 
   @Test
@@ -238,7 +238,7 @@ public class AbstractLinkSchemaMapperTest {
     when(operationMock.getParameters()).thenReturn(ImmutableList.of(parameter));
 
     // Act
-    QueryParameter result = schemaMapper.getPageQueryParameter(requestContextMock);
+    QueryParameter result = abstractLinkSchemaMapper.getPageQueryParameter(requestContextMock);
 
     // Assert
     assertThat(result, sameInstance(parameter));
@@ -253,7 +253,7 @@ public class AbstractLinkSchemaMapperTest {
     when(operationMock.getParameters()).thenReturn(ImmutableList.of());
 
     // Act
-    schemaMapper.getPageQueryParameter(requestContextMock);
+    abstractLinkSchemaMapper.getPageQueryParameter(requestContextMock);
   }
 
   private static class TestLinkSchemaMapper extends AbstractLinkSchemaMapper {

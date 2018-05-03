@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.DateProperty;
+import io.swagger.models.properties.DateTimeProperty;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
@@ -23,40 +23,39 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DateSchemaMapperTest {
+public class DateTimeSchemaMapperTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   private static final String DUMMY_EXPR = "dummyExpr()";
-  private static final Literal VALUE_3 = SimpleValueFactory.getInstance().createLiteral("foo");
+  private static final Literal VALUE = SimpleValueFactory.getInstance().createLiteral("foo");
 
   @Mock
   private GraphEntity graphEntityMock;
-
   @Mock
-  private SchemaMapperAdapter schemaMapperAdapter;
+  private SchemaMapperAdapter schemaMapperAdapterMock;
   @Mock
   private Value valueMock;
   @Mock
-  private LdPathExecutor ldPathExecutorMock;
+  private LdPathExecutor ldPathExecutor;
 
-  private DateSchemaMapper dateSchemaMapper;
-  private DateProperty dateProperty;
+  private DateTimeSchemaMapper schemaMapper;
+  private DateTimeProperty property;
 
   @Before
   public void setUp() {
-    dateSchemaMapper = new DateSchemaMapper();
-    dateProperty = new DateProperty();
-    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    schemaMapper = new DateTimeSchemaMapper();
+    property = new DateTimeProperty();
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutor);
   }
 
   @Test
-  public void supports_ReturnsTrue_ForDateProperty() {
+  public void supports_ReturnsTrue_ForDateTimeProperty() {
     // Act
-    boolean result = dateSchemaMapper.supports(dateProperty);
+    boolean result = schemaMapper.supports(property);
 
-    // Arrange
+    // Assert
     assertThat(result, is(true));
   }
 
@@ -69,12 +68,12 @@ public class DateSchemaMapperTest {
         DUMMY_EXPR));
 
     // Arrange
-    dateProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
-    when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
-        ImmutableList.of(VALUE_3));
+    property.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    when(ldPathExecutor.ldPathQuery(eq(valueMock), anyString())).thenReturn(
+        ImmutableList.of(VALUE));
 
     // Act
-    dateSchemaMapper.mapGraphValue(dateProperty, graphEntityMock,
-        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+    schemaMapper.mapGraphValue(property, graphEntityMock,
+        ValueContext.builder().value(valueMock).build(), schemaMapperAdapterMock);
   }
 }

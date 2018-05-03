@@ -41,7 +41,6 @@ public class ResponseSchemaMapperTest {
 
   @Mock
   private GraphEntity graphEntityMock;
-
   @Mock
   private SchemaMapperAdapter schemaMapperAdapterMock;
 
@@ -61,11 +60,11 @@ public class ResponseSchemaMapperTest {
 
     // Act
     schemaMapper.mapGraphValue(responseProperty, graphEntityMock, valueContext,
-        schemaMapperAdapterMock);
+            schemaMapperAdapterMock);
 
     // Assert
     verify(schemaMapperAdapterMock).mapGraphValue(eq(schemaProperty), eq(graphEntityMock),
-        valueContextCaptor.capture(), eq(schemaMapperAdapterMock));
+            valueContextCaptor.capture(), eq(schemaMapperAdapterMock));
     assertThat(valueContextCaptor.getValue().getValue(), is(nullValue()));
   }
 
@@ -75,17 +74,17 @@ public class ResponseSchemaMapperTest {
     ValueContext valueContext = ValueContext.builder().build();
     Property schemaProperty = mock(Property.class);
     ResponseProperty responseProperty = new ResponseProperty(
-        new Response().vendorExtension(OpenApiSpecificationExtensions.SUBJECT, true).schema(
-            schemaProperty));
+            new Response().vendorExtension(OpenApiSpecificationExtensions.SUBJECT, true).schema(
+                    schemaProperty));
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
 
     // Act
     schemaMapper.mapGraphValue(responseProperty, graphEntityMock, valueContext,
-        schemaMapperAdapterMock);
+            schemaMapperAdapterMock);
 
     // Assert
     verify(schemaMapperAdapterMock).mapGraphValue(eq(schemaProperty), eq(graphEntityMock),
-        valueContextCaptor.capture(), eq(schemaMapperAdapterMock));
+            valueContextCaptor.capture(), eq(schemaMapperAdapterMock));
     assertThat(valueContextCaptor.getValue().getValue(), equalTo(DBEERPEDIA.BROUWTOREN));
   }
 
@@ -95,13 +94,13 @@ public class ResponseSchemaMapperTest {
     ValueContext valueContext = ValueContext.builder().build();
     Property schemaProperty = mock(Property.class);
     ResponseProperty responseProperty = new ResponseProperty(
-        new Response().vendorExtension(OpenApiSpecificationExtensions.SUBJECT, true).schema(
-            schemaProperty));
+            new Response().vendorExtension(OpenApiSpecificationExtensions.SUBJECT, true).schema(
+                    schemaProperty));
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
     Object result = schemaMapper.mapGraphValue(responseProperty, graphEntityMock, valueContext,
-        schemaMapperAdapterMock);
+            schemaMapperAdapterMock);
 
     // Assert
     verifyZeroInteractions(schemaMapperAdapterMock);
