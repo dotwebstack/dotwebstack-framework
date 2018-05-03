@@ -13,7 +13,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.GraphQuery;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.impl.SimpleDataset;
@@ -77,12 +76,7 @@ public class RmlMappingResourceProvider
     simpleDataset.addDefaultGraph(ELMO.CONFIG_GRAPHNAME);
     graphQuery.setDataset(simpleDataset);
 
-    try {
-      model = QueryResults.asModel(graphQuery.evaluate());
-    } catch (QueryEvaluationException queryEvaluationException) {
-      throw new ConfigurationException("Error while evaluating SPARQL query.",
-          queryEvaluationException);
-    }
+    model = QueryResults.asModel(graphQuery.evaluate());
 
     return model;
   }
