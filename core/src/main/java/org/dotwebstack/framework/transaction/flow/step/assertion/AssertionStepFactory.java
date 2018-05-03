@@ -69,7 +69,7 @@ public class AssertionStepFactory implements StepFactory {
           queryParser.parseQuery(assertionQuery.get(), ELMO.CONFIG_GRAPHNAME.toString());
       FederatedQueryVisitor visitor = new FederatedQueryVisitor(backendResourceProvider);
       parsedQuery.getTupleExpr().visit(visitor);
-      if (visitor.getReplaceableBackends().size() > 0) {
+      if (!visitor.getReplaceableBackends().isEmpty()) {
         return Optional.of(setBackendUri(assertionQuery.get(), visitor.getReplaceableBackends()));
       }
     }
