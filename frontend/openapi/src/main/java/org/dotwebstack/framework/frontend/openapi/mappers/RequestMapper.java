@@ -10,7 +10,7 @@ public interface RequestMapper {
 
   Boolean supportsVendorExtension(Map<String, Object> vendorExtensions);
 
-  Boolean map(Resource.Builder resourceBuilder, Swagger swagger, ApiOperation apiOperation,
+  void map(Resource.Builder resourceBuilder, Swagger swagger, ApiOperation apiOperation,
       Operation getOperation, String absolutePath);
 
 }

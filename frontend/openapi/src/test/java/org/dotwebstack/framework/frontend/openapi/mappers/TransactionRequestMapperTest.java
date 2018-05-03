@@ -250,22 +250,25 @@ public class TransactionRequestMapperTest {
         equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/breweries"));
     assertThat(apiResource.getResourceMethods(), hasSize(3));
 
-    ResourceMethod putMethod = apiResources.get(0).getResourceMethods().get(2);
+    ResourceMethod putMethod = apiResources.get(0).getResourceMethods().stream().filter(
+        resourceMethod -> resourceMethod.getHttpMethod().equals(HttpMethod.PUT)).findFirst().get();
     assertThat(putMethod.getHttpMethod(), equalTo(HttpMethod.PUT));
     assertThat(putMethod.getConsumedTypes(), contains(MediaType.APPLICATION_JSON_TYPE));
     assertThat(putMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(transactionRequestHandlerMock));
 
-    ResourceMethod optionsMethod = apiResources.get(0).getResourceMethods().get(1);
-    assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));
-    assertThat(optionsMethod.getInvocable().getHandler().getHandlerClass(),
-        equalTo(OptionsRequestHandler.class));
-
-    ResourceMethod postMethod = apiResources.get(0).getResourceMethods().get(0);
-    assertThat(postMethod.getHttpMethod(), equalTo(HttpMethod.POST));
+    ResourceMethod postMethod = apiResources.get(0).getResourceMethods().stream().filter(
+        resourceMethod -> resourceMethod.getHttpMethod().equals(HttpMethod.POST)).findFirst().get();
     assertThat(postMethod.getConsumedTypes(), contains(MediaType.APPLICATION_JSON_TYPE));
     assertThat(postMethod.getInvocable().getHandler().getInstance(null),
         sameInstance(transactionRequestHandlerMock));
+
+    ResourceMethod optionsMethod = apiResources.get(0).getResourceMethods().stream().filter(
+        resourceMethod -> resourceMethod.getHttpMethod().equals(HttpMethod.OPTIONS)).findFirst()
+        .get();
+    assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));
+    assertThat(optionsMethod.getInvocable().getHandler().getHandlerClass(),
+        equalTo(OptionsRequestHandler.class));
 
     Resource specResource = apiResources.get(1);
     assertThat(specResource.getPath(),

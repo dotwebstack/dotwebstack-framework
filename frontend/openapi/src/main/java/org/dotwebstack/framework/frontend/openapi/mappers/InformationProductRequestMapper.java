@@ -47,7 +47,7 @@ public class InformationProductRequestMapper implements RequestMapper {
         key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
   }
 
-  public Boolean map(Resource.Builder resourceBuilder, Swagger swagger, ApiOperation apiOperation,
+  public void map(Resource.Builder resourceBuilder, Swagger swagger, ApiOperation apiOperation,
       Operation getOperation, String absolutePath) {
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());
 
@@ -85,8 +85,6 @@ public class InformationProductRequestMapper implements RequestMapper {
       LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
           absolutePath);
     }
-
-    return true;
   }
 
 }

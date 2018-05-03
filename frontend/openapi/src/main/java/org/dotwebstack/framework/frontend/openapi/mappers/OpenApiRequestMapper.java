@@ -109,7 +109,6 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
-      boolean optionsRequestHandlerAdded = false;
       for (ApiOperation apiOperation : apiOperations) {
         Operation operation = apiOperation.getOperation();
 
@@ -118,21 +117,19 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
         Optional<RequestMapper> optionalRequestMapper = requestMappers.stream().filter(
             mapper -> mapper.supportsVendorExtension(operation.getVendorExtensions())).findFirst();
 
-        if (optionalRequestMapper.isPresent()) {
-          RequestMapper requestMapper = optionalRequestMapper.get();
-          if (requestMapper.map(resourceBuilder, swagger, apiOperation, operation, absolutePath)
-              && !optionsRequestHandlerAdded) {
-            resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(
-                new OptionsRequestHandler(pathItem));
-            optionsRequestHandlerAdded = true;
-          }
-        } else {
+        optionalRequestMapper.ifPresent(mapper ->
+            mapper.map(resourceBuilder, swagger, apiOperation, operation, absolutePath)
+        );
+
+        if (!optionalRequestMapper.isPresent()) {
           LOG.warn("Path '{}' is not mapped to an information product or transaction.",
               absolutePath);
         }
       }
 
       if (resourceBuilder.build().getAllMethods().size() > 0) {
+        resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(
+            new OptionsRequestHandler(pathItem));
         httpConfiguration.registerResources(resourceBuilder.build());
       }
     });
