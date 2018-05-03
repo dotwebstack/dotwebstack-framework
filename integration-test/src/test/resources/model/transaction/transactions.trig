@@ -89,13 +89,13 @@ GRAPH dbeerpedia:Theatre {
       ] ;
 
       rr:subjectMap [
-        rr:template "http://www.example.com/{name}" ;
+        rr:template "http://dbeerpedia.org/{name}" ;
       ] ;
 
       rr:predicateObjectMap [
         rr:predicate ex:ownsCar ;
         rr:objectMap [
-          carml:multiReference "cars" ;
+          carml:multiReference "beers" ;
           rr:datatype xsd:string ;
         ] ;
       ] ;
