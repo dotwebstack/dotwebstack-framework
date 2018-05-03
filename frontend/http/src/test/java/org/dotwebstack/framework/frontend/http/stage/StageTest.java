@@ -75,7 +75,7 @@ public class StageTest {
   public void build_CreatesStage_WithValidDataAndSiteBasePath() {
     // Act
     final BNode blankNode = valueFactory.createBNode();
-    Stage stage =
+    final Stage stage =
         new Stage.Builder(blankNode, siteMock).basePath(DBEERPEDIA.BASE_PATH.stringValue()).layout(
             layout).title(DBEERPEDIA.TITLE).build();
 
