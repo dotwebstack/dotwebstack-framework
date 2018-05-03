@@ -28,10 +28,10 @@ public class FederatedQueryVisitor extends AbstractQueryModelVisitor {
 
   @Override
   public void meet(Service service) {
-    final Resource backendIir = (Resource) service.getServiceRef().getValue();
-    final Backend backend = Optional.of(backendResourceProvider.get(backendIir)).orElseThrow(
-        () -> new ConfigurationException(String.format("Backend {%s} not found.", backendIir)));
-    replaceableBackends.put(backendIir, backend);
+    final Resource backendIri = (Resource) service.getServiceRef().getValue();
+    final Backend backend = Optional.of(backendResourceProvider.get(backendIri)).orElseThrow(
+        () -> new ConfigurationException(String.format("Backend {%s} not found.", backendIri)));
+    replaceableBackends.put(backendIri, backend);
   }
 
 }
