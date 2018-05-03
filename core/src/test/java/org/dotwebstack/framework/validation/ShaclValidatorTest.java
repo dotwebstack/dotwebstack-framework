@@ -102,19 +102,20 @@ public class ShaclValidatorTest {
     // Assert
     assertThat(report.isValid(), equalTo(false));
     assertThat(report.getErrors().size(), equalTo(3));
-    assertThat(report.getErrors().values().stream().map(Violation::getReport).filter(
+    assertThat(report.getErrors().values().stream().map(Violation::getReport).anyMatch(
         ("Invalid configuration at path [http://example.org#lid] on node "
             + "[http://example.org#HuwelijkMarcoNanda] with error message "
-            + "[More than 2 values]")::equals).findFirst().isPresent(),
+            + "[More than 2 values]")::equals),
         equalTo(true));
-    assertThat(report.getErrors().values().stream().map(Violation::getReport).filter(
-        ("Invalid configuration at path [http://example.org#lid] on node "
-            + "[http://example.org#HuwelijkMarcoNanda] with error message "
-            + "[Value does not have shape <http://example.org/shape#Persoon>]")::equals).findFirst().isPresent(),
+    assertThat(
+        report.getErrors().values().stream().map(Violation::getReport).anyMatch(
+            ("Invalid configuration at path [http://example.org#lid] on node "
+                + "[http://example.org#HuwelijkMarcoNanda] with error message "
+                + "[Value does not have shape <http://example.org/shape#Persoon>]")::equals),
         equalTo(true));
-    assertThat(report.getErrors().values().stream().map(Violation::getReport).filter(
+    assertThat(report.getErrors().values().stream().map(Violation::getReport).anyMatch(
         ("Invalid configuration at path [http://example.org#naam] on node [http://example.org#Bobby]"
-            + " with error message [More than 1 values]")::equals).findFirst().isPresent(),
+            + " with error message [More than 1 values]")::equals),
         equalTo(true));
   }
 

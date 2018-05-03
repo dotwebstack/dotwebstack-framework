@@ -20,6 +20,7 @@ import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.dotwebstack.framework.transaction.flow.step.update.UpdateStep;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
@@ -60,6 +61,9 @@ public class SparqlBackendTest {
   @Mock
   private UpdateStep updateStep;
 
+  @Mock
+  private Literal endpoint;
+
   @Test
   public void constructor_ThrowsException_WithMissingIdentifier() {
     // Assert
@@ -67,7 +71,7 @@ public class SparqlBackendTest {
 
     // Act
     new SparqlBackend.Builder(null, repository, informationProductFactory, persistenceStepFactory,
-        updateStepFactory);
+        updateStepFactory, endpoint);
   }
 
   @Test
@@ -77,7 +81,7 @@ public class SparqlBackendTest {
 
     // Act
     new SparqlBackend.Builder(DBEERPEDIA.BACKEND, null, informationProductFactory,
-        persistenceStepFactory, updateStepFactory);
+        persistenceStepFactory, updateStepFactory, endpoint);
   }
 
   @Test
@@ -87,14 +91,14 @@ public class SparqlBackendTest {
 
     // Act
     new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository, null, persistenceStepFactory,
-        updateStepFactory);
+        updateStepFactory, endpoint);
   }
 
   @Test
   public void build_CreatesBackend_WithCorrectData() {
     // Act
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
-        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+        informationProductFactory, persistenceStepFactory, updateStepFactory, endpoint).build();
 
     // Assert
     assertThat(backend.getIdentifier(), equalTo(DBEERPEDIA.BACKEND));
@@ -105,7 +109,7 @@ public class SparqlBackendTest {
   public void getConnection_ReusesConnection_WhenCalledTwice() {
     // Arrange
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
-        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+        informationProductFactory, persistenceStepFactory, updateStepFactory, endpoint).build();
     when(repository.getConnection()).thenReturn(mock(RepositoryConnection.class));
 
     // Act
@@ -122,7 +126,7 @@ public class SparqlBackendTest {
   public void createInformationProduct_CreatesInformationProduct_WithValidData() {
     // Arrange
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
-        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+        informationProductFactory, persistenceStepFactory, updateStepFactory, endpoint).build();
 
     InformationProduct informationProductMock = mock(InformationProduct.class);
 
@@ -146,7 +150,7 @@ public class SparqlBackendTest {
   public void createPersistenceStepExecutor_CreatesPersistenceStepExecutor_WithValidData() {
     // Arrange
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
-        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+        informationProductFactory, persistenceStepFactory, updateStepFactory, endpoint).build();
 
     PersistenceInsertIntoGraphStepExecutor persistenceStepExecutorMock =
         mock(PersistenceInsertIntoGraphStepExecutor.class);
@@ -165,7 +169,7 @@ public class SparqlBackendTest {
   public void createUpdateStepExecutor_CreatesUpdateStepExecutor_WithValidData() {
     // Arrange
     SparqlBackend backend = new SparqlBackend.Builder(DBEERPEDIA.BACKEND, repository,
-        informationProductFactory, persistenceStepFactory, updateStepFactory).build();
+        informationProductFactory, persistenceStepFactory, updateStepFactory, endpoint).build();
 
     UpdateStepExecutor updateStepExecutorMock = mock(UpdateStepExecutor.class);
 

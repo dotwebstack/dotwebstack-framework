@@ -15,6 +15,7 @@ import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.dotwebstack.framework.transaction.TransactionHandler;
 import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
+import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
@@ -71,7 +72,7 @@ public class ServiceRequestHandler implements Inflector<ContainerRequestContext,
         new SailRepository(new MemoryStore()), service.getTransaction(), transactionModel);
     try {
       transactionHandler.execute(parameterValues);
-    } catch (StepFailureException e) {
+    } catch (StepFailureException | ShaclValidationException e) {
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (RuntimeException e) {
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
