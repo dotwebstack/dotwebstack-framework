@@ -97,25 +97,21 @@ public class QueryEvaluator {
 
   private void addMultipleStatements(@NonNull RepositoryConnection repositoryConnection,
       @NonNull Model model, @NonNull IRI systemGraph) {
-    if (model.contexts().size() == 1) {
-      final IRI graphName = (IRI) model.contexts().iterator().next();
-      if (graphName != null) {
-        repositoryConnection.add(model, graphName);
-        LOG.debug("Insert data into model graph {}", graphName);
-      } else {
-        repositoryConnection.add(model, systemGraph);
-        LOG.debug("Insert data into default graph {}", systemGraph);
-      }
-    } else if (model.contexts().isEmpty()) {
+    if (model.contexts().isEmpty()) {
       repositoryConnection.add(model, systemGraph);
       LOG.debug("Insert data into graph {}", systemGraph);
     } else {
       model.contexts().forEach(graphName -> {
-        repositoryConnection.add(
-            model.stream().filter(statement -> statement.getContext().equals(graphName)).collect(
-                Collectors.toList()),
-            graphName);
-        LOG.debug("Insert data into graph {}", graphName);
+        if (graphName != null) {
+          repositoryConnection.add(
+              model.stream().filter(statement -> statement.getContext().equals(graphName)).collect(
+                  Collectors.toList()),
+              graphName);
+          LOG.debug("Insert data into graph {}", graphName);
+        } else {
+          repositoryConnection.add(model, systemGraph);
+          LOG.debug("Insert data into default graph {}", systemGraph);
+        }
       });
     }
   }
