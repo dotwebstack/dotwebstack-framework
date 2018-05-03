@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.NonNull;
@@ -15,14 +16,14 @@ class InformationProductRequestParameterMapper extends AbstractRequestParameterM
       @NonNull RequestParameters requestParameters) {
     Map<String, String> result = new HashMap<>();
 
-    for (io.swagger.models.parameters.Parameter openApiParameter : operation.getParameters()) {
+    for (Parameter openApiParameter : operation.getParameters()) {
 
       if (openApiParameter instanceof BodyParameter) {
         result.putAll(getBodyParameters(product.getParameters(), requestParameters,
             (BodyParameter) openApiParameter));
       } else {
-        result.putAll(getOtherParameter(product.getParameters(), requestParameters,
-            openApiParameter));
+        result.putAll(
+            getOtherParameters(product.getParameters(), requestParameters, openApiParameter));
       }
     }
     return result;

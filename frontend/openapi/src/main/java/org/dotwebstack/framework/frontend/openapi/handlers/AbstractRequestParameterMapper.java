@@ -16,15 +16,13 @@ import org.springframework.stereotype.Service;
 @Service
 abstract class AbstractRequestParameterMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(
-      AbstractRequestParameterMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractRequestParameterMapper.class);
 
   protected Map<String, String> getBodyParameters(@NonNull Collection<Parameter> parameters,
       @NonNull RequestParameters requestParameters, BodyParameter openApiParameter) {
     Map<String, String> result = new HashMap<>();
 
-    Collection<Property> properties =
-        (openApiParameter).getSchema().getProperties().values();
+    Collection<Property> properties = openApiParameter.getSchema().getProperties().values();
     for (Property property : properties) {
       Map<String, Object> vendorExtensions = property.getVendorExtensions();
 
@@ -48,7 +46,7 @@ abstract class AbstractRequestParameterMapper {
     return result;
   }
 
-  protected Map<String, String> getOtherParameter(Collection<Parameter> parameters,
+  protected Map<String, String> getOtherParameters(Collection<Parameter> parameters,
       @NonNull RequestParameters requestParameters,
       io.swagger.models.parameters.Parameter openApiParameter) {
     Map<String, String> result = new HashMap<>();

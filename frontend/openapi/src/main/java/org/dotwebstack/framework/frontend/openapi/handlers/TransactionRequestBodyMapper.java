@@ -31,8 +31,8 @@ class TransactionRequestBodyMapper {
   private static final ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
   @Autowired
-  public TransactionRequestBodyMapper(@NonNull RmlMappingResourceProvider
-      rmlMappingResourceProvider) {
+  public TransactionRequestBodyMapper(
+      @NonNull RmlMappingResourceProvider rmlMappingResourceProvider) {
     this.rmlMappingResourceProvider = rmlMappingResourceProvider;
   }
 
@@ -45,8 +45,8 @@ class TransactionRequestBodyMapper {
         LOG.debug("Vendor extensions for body parameter '{}': {}", openApiParameter.getName(),
             vendorExtensions);
 
-        String rmlMappingName = (String)vendorExtensions.get(
-            OpenApiSpecificationExtensions.RML_MAPPING);
+        String rmlMappingName =
+            (String) vendorExtensions.get(OpenApiSpecificationExtensions.RML_MAPPING);
 
         if (rmlMappingName == null) {
           throw new RequestHandlerRuntimeException(
@@ -59,8 +59,8 @@ class TransactionRequestBodyMapper {
           throw new BadRequestException("Body is empty");
         }
 
-        RmlMapping rmlMapping = rmlMappingResourceProvider.get(
-            valueFactory.createIRI(rmlMappingName));
+        RmlMapping rmlMapping =
+            rmlMappingResourceProvider.get(valueFactory.createIRI(rmlMappingName));
         Set<TriplesMap> mapping = RmlCustomMappingLoader.build().load(rmlMapping.getModel());
 
         RmlMapper mapper = RmlMapper.newBuilder().build();
@@ -74,7 +74,7 @@ class TransactionRequestBodyMapper {
       }
     }
 
-    throw new RequestHandlerRuntimeException("body parameter not found");
+    throw new RequestHandlerRuntimeException("Body parameter not found");
   }
 
 }

@@ -22,37 +22,26 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 
 /*
-temp: can be removed when added to Carml
+ * temp: can be removed when added to Carml
  */
 public class RmlCustomMappingLoader {
 
   private RmlConstantShorthandExpander shorthandExpander;
 
-  public RmlCustomMappingLoader(
-      RmlConstantShorthandExpander shorthandExpander
-  ) {
+  public RmlCustomMappingLoader(RmlConstantShorthandExpander shorthandExpander) {
     this.shorthandExpander = shorthandExpander;
   }
 
   public Set<TriplesMap> load(Model originalModel) {
-    return
-        ImmutableSet.<TriplesMap>copyOf(
-            RdfObjectLoader.load(
-                selectTriplesMaps,
-                CarmlTriplesMap.class,
-                originalModel,
-                shorthandExpander,
-                this::addTermTypes,
-                m -> {
-                  m.addDecidableType(Rdf.Carml.Stream, NameableStream.class);
-                  m.addDecidableType(Rdf.Carml.XmlDocument, XmlSource.class);
-                  m.addDecidableType(Rdf.Carml.FileSource, FileSource.class);
-                  m.bindInterfaceImplementation(NameableStream.class, CarmlStream.class);
-                  m.bindInterfaceImplementation(XmlSource.class, CarmlXmlSource.class);
-                  m.bindInterfaceImplementation(FileSource.class, CarmlFileSource.class);
-                }
-            )
-        );
+    return ImmutableSet.<TriplesMap>copyOf(RdfObjectLoader.load(selectTriplesMaps,
+        CarmlTriplesMap.class, originalModel, shorthandExpander, this::addTermTypes, mapper -> {
+          mapper.addDecidableType(Rdf.Carml.Stream, NameableStream.class);
+          mapper.addDecidableType(Rdf.Carml.XmlDocument, XmlSource.class);
+          mapper.addDecidableType(Rdf.Carml.FileSource, FileSource.class);
+          mapper.bindInterfaceImplementation(NameableStream.class, CarmlStream.class);
+          mapper.bindInterfaceImplementation(XmlSource.class, CarmlXmlSource.class);
+          mapper.bindInterfaceImplementation(FileSource.class, CarmlFileSource.class);
+        }));
   }
 
   private void addTermTypes(MappingCache cache) {
@@ -73,16 +62,9 @@ public class RmlCustomMappingLoader {
   }
 
   public static RmlCustomMappingLoader build() {
-    return new RmlCustomMappingLoader(
-        new RmlConstantShorthandExpander()
-    );
+    return new RmlCustomMappingLoader(new RmlConstantShorthandExpander());
   }
 
   private static Function<Model, Set<Resource>> selectTriplesMaps =
-      model ->
-          ImmutableSet.copyOf(
-              model
-                  .filter(null, Rdf.Rml.logicalSource, null)
-                  .subjects()
-          );
+      model -> ImmutableSet.copyOf(model.filter(null, Rdf.Rml.logicalSource, null).subjects());
 }

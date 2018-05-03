@@ -17,7 +17,7 @@ class TransactionRequestParameterMapper extends AbstractRequestParameterMapper {
 
     for (io.swagger.models.parameters.Parameter openApiParameter : operation.getParameters()) {
       if (!(openApiParameter instanceof BodyParameter)) {
-        result.putAll(getOtherParameter(transaction.getParameters(), requestParameters,
+        result.putAll(getOtherParameters(transaction.getParameters(), requestParameters,
             openApiParameter));
       }
     }
