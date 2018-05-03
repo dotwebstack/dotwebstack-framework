@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.stream.Collectors;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -331,7 +332,8 @@ public class QueryEvaluatorTest {
     queryEvaluator.add(repositoryConnection, model, applicationProperties);
 
     // Assert
-    verify(repositoryConnection, times(1)).add(model, context);
+    verify(repositoryConnection, times(1)).add(model.stream().collect(Collectors.toList()),
+        context);
   }
 
 }

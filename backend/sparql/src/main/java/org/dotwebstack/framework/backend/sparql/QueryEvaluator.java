@@ -119,7 +119,16 @@ public class QueryEvaluator {
   private String getInsertQuery(Model model, IRI systemGraph) {
     StringBuilder insertQueryBuilder = new StringBuilder();
     insertQueryBuilder.append("INSERT {\n");
-    if (!model.contexts().isEmpty()) {
+    if (model.contexts().isEmpty()) {
+      insertQueryBuilder.append("GRAPH <" + systemGraph.stringValue() + "> {\n");
+      model.forEach(statement -> {
+        insertQueryBuilder.append(getSubjectString(statement));
+        insertQueryBuilder.append(getPredicateString(statement));
+        insertQueryBuilder.append(getObjectString(statement));
+        insertQueryBuilder.append(".\n");
+      });
+      insertQueryBuilder.append("}\n};\n");
+    } else {
       model.contexts().forEach(graphName -> {
         if (graphName != null) {
           insertQueryBuilder.append(getGraphString(graphName));
@@ -134,15 +143,6 @@ public class QueryEvaluator {
         });
         insertQueryBuilder.append("}\n};\n");
       });
-    } else {
-      insertQueryBuilder.append("GRAPH <" + systemGraph.stringValue() + "> {\n");
-      model.forEach(statement -> {
-        insertQueryBuilder.append(getSubjectString(statement));
-        insertQueryBuilder.append(getPredicateString(statement));
-        insertQueryBuilder.append(getObjectString(statement));
-        insertQueryBuilder.append(".\n");
-      });
-      insertQueryBuilder.append("}\n};\n");
     }
 
     final String insertQuery = insertQueryBuilder.toString();
