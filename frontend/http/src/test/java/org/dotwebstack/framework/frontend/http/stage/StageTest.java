@@ -72,7 +72,7 @@ public class StageTest {
   }
 
   @Test
-  public void build_CreatesStage_WithValidDataAndSiteBasePath() {
+  public void build_CreateStage_WithValidSiteAndBasePath() {
     // Act
     final BNode blankNode = valueFactory.createBNode();
     final Stage stage =
