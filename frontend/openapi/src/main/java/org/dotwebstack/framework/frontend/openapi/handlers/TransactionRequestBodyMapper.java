@@ -4,6 +4,7 @@ import com.taxonic.carml.engine.RmlMapper;
 import com.taxonic.carml.model.TriplesMap;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.Parameter;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +38,7 @@ class TransactionRequestBodyMapper {
   }
 
   Model map(@NonNull Operation operation, @NonNull RequestParameters requestParameters) {
-    for (io.swagger.models.parameters.Parameter openApiParameter : operation.getParameters()) {
+    for (Parameter openApiParameter : operation.getParameters()) {
 
       if (openApiParameter instanceof BodyParameter) {
         Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
