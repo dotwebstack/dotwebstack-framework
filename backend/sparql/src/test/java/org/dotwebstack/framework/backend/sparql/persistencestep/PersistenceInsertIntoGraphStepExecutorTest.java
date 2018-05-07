@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.backend.sparql.persistencestep;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +15,7 @@ import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
 import org.dotwebstack.framework.backend.sparql.SparqlBackend;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,6 +49,20 @@ public class PersistenceInsertIntoGraphStepExecutorTest {
   @Test
   public void execute_AddModelIntoGraph_WithValidData() {
     // Arrange
+    persistenceInsertIntoGraphStepExecutor = new PersistenceInsertIntoGraphStepExecutor(
+        persistenceStep, transactionModel, sparqlBackend, queryEvaluator, applicationProperties);
+
+    // Act
+    persistenceInsertIntoGraphStepExecutor.execute(parameters, parameterValues);
+
+    // Assert
+    verify(queryEvaluator, times(1)).add(any(), any(), any());
+  }
+
+  @Test
+  public void execute_AddModelIntoTargetGraph_WithValidData() {
+    // Arrange
+    when(persistenceStep.getTargetGraph()).thenReturn(mock(IRI.class));
     persistenceInsertIntoGraphStepExecutor = new PersistenceInsertIntoGraphStepExecutor(
         persistenceStep, transactionModel, sparqlBackend, queryEvaluator, applicationProperties);
 
