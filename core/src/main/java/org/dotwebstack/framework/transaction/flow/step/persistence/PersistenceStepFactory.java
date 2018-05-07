@@ -35,6 +35,7 @@ public class PersistenceStepFactory implements StepFactory {
         builder::persistenceStrategy);
     getObjectIRI(stepModel, identifier, ELMO.BACKEND_PROP).ifPresent(
         iri -> builder.backend(backendResourceProvider.get(iri)));
+    getObjectIRI(stepModel, identifier, ELMO.TARGET_GRAPH_PROP).ifPresent(builder::targetGraph);
 
     return builder.build();
   }
