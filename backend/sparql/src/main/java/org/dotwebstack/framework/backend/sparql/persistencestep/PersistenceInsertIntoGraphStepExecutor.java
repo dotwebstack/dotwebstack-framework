@@ -35,7 +35,12 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
   @Override
   public void execute(@NonNull Collection<Parameter> parameters,
       @NonNull Map<String, String> parameterValues) {
-    queryEvaluator.add(backend.getConnection(), transactionModel, applicationProperties);
+    if (step.getTargetGraph() != null) {
+      queryEvaluator.add(backend.getConnection(), transactionModel, step.getTargetGraph());
+    } else {
+      queryEvaluator.add(backend.getConnection(), transactionModel,
+          applicationProperties.getSystemGraph());
+    }
   }
 
 }
