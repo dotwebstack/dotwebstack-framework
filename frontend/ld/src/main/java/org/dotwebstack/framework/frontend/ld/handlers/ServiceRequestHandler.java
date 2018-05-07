@@ -16,6 +16,7 @@ import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.dotwebstack.framework.transaction.TransactionHandler;
 import org.dotwebstack.framework.transaction.TransactionHandlerFactory;
 import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
+import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.eclipse.rdf4j.model.Model;
 import org.glassfish.jersey.process.Inflector;
 
@@ -74,7 +75,7 @@ public class ServiceRequestHandler implements Inflector<ContainerRequestContext,
         transactionHandlerFactory.newTransactionHandler(service.getTransaction(), transactionModel);
     try {
       transactionHandler.execute(parameterValues);
-    } catch (StepFailureException e) {
+    } catch (StepFailureException | ShaclValidationException e) {
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (RuntimeException e) {
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();

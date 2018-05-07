@@ -4,6 +4,7 @@ GRAPH dbeerpedia:Theatre {
   dbeerpedia:InsertConcept a elmo:Transaction;
     elmo:sequentialFlow (
       dbeerpedia:PreUpdateStep
+      #dbeerpedia:AssertNoDuplicated
       dbeerpedia:AssertIfNotExists
       dbeerpedia:AssertIfExists
       dbeerpedia:ValidationStep
@@ -41,6 +42,24 @@ GRAPH dbeerpedia:Theatre {
   	  ASK  { ?s <http://www.w3.org/2000/01/rdf-schema#label> \"Brouwtoren\"
   	  }
   	"""
+  .
+  dbeerpedia:AssertNoDuplicated a elmo:AssertionStep;
+  	rdfs:label "The concept already exists";
+  	elmo:assertNot '''
+  	PREFIX dbo: <http://dbpedia.org/ontology/>
+  	PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+  	PREFIX dbeerpedia: <http://dbeerpedia.org#>
+  	SELECT ?city ?label (lang(?label) as ?lang)
+  	WHERE {
+       ?city a dbo:City
+          SERVICE dbeerpedia:Backend {
+            ?city rdfs:label ?label
+        }
+        SERVICE dbeerpedia:MyBackend {
+            ?city rdfs:label ?label
+        }
+  		}
+  	'''
   .
   dbeerpedia:PersistenceStep a elmo:PersistenceStep;
   	rdfs:label "Persist into all concepts graph";
