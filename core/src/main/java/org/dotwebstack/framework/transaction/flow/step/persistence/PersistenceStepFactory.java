@@ -18,7 +18,7 @@ public class PersistenceStepFactory implements StepFactory {
   private BackendResourceProvider backendResourceProvider;
 
   @Autowired
-  public PersistenceStepFactory(@NonNull  BackendResourceProvider backendResourceProvider) {
+  public PersistenceStepFactory(@NonNull BackendResourceProvider backendResourceProvider) {
     this.backendResourceProvider = backendResourceProvider;
   }
 

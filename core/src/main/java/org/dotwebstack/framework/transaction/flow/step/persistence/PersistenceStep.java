@@ -5,6 +5,7 @@ import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.transaction.flow.step.Step;
 import org.dotwebstack.framework.transaction.flow.step.StepExecutor;
+import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -31,12 +32,15 @@ public class PersistenceStep implements Step {
     this.backendResourceProvider = builder.backendResourceProvider;
   }
 
-  public StepExecutor createStepExecutor(@NonNull RepositoryConnection
-      transactionRepositoryConnection) {
-    Model transactionModel = QueryResults.asModel(transactionRepositoryConnection
-        .getStatements(null, null, null));
-    return backendResourceProvider.get(backend.getIdentifier())
-        .createPersistenceStepExecutor(this, transactionModel);
+  public StepExecutor createStepExecutor(
+      @NonNull RepositoryConnection transactionRepositoryConnection) {
+    Model transactionModel =
+        QueryResults.asModel(transactionRepositoryConnection.getStatements(null, null, null));
+    if (!transactionModel.isEmpty()) {
+      return backendResourceProvider.get(backend.getIdentifier()).createPersistenceStepExecutor(
+          this, transactionModel);
+    }
+    throw new StepFailureException("Transaction repository is empty");
   }
 
   public Resource getIdentifier() {

@@ -60,8 +60,8 @@ public class PersistenceStepFactoryTest {
   public void create_CreatePersistenceStep_WithValidData() {
     // Arrange
     Model stepModel = new LinkedHashModel();
-    stepModel.add(valueFactory.createStatement(DBEERPEDIA.PERSISTENCE_STEP, RDF.TYPE,
-        ELMO.PERSISTENCE_STEP));
+    stepModel.add(
+        valueFactory.createStatement(DBEERPEDIA.PERSISTENCE_STEP, RDF.TYPE, ELMO.PERSISTENCE_STEP));
     stepModel.add(valueFactory.createStatement(DBEERPEDIA.PERSISTENCE_STEP,
         ELMO.PERSISTENCE_STRATEGY_PROP, ELMO.PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH));
     stepModel.add(valueFactory.createStatement(DBEERPEDIA.PERSISTENCE_STEP, ELMO.BACKEND_PROP,
@@ -77,7 +77,6 @@ public class PersistenceStepFactoryTest {
     assertThat(persistenceStep.getPersistenceStrategy(),
         equalTo(ELMO.PERSISTENCE_STRATEGY_INSERT_INTO_GRAPH));
     assertThat(persistenceStep.getBackend(), equalTo(backend));
-    assertThat(persistenceStep.getTargetGraph(), equalTo(DBEERPEDIA.SYSTEM_GRAPH_IRI));
   }
 
 }

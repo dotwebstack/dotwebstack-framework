@@ -9,11 +9,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.stream.Collectors;
+import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.BackendException;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -43,9 +51,9 @@ public class QueryEvaluatorTest {
 
   private static final String BOOLEAN_QUERY = "ASK { ?s ?p ?o}";
 
-  private static final String INSERT_QUERY = "INSERT DATA {"
-      + "<http://dbeerpedia.org/id/brewery/0c0d7df2-a830-11e7-abc4-cec278b6b50a>"
-      + " <http://www.w3.org/2000/01/rdf-schema#label> \"Maximus\" .}";
+  private static final String INSERT_QUERY =
+      "INSERT DATA {" + "<http://dbeerpedia.org/id/brewery/0c0d7df2-a830-11e7-abc4-cec278b6b50a>"
+          + " <http://www.w3.org/2000/01/rdf-schema#label> \"Maximus\" .}";
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -57,13 +65,18 @@ public class QueryEvaluatorTest {
   private Model model;
 
   @Mock
-  private IRI targetGraphIri;
+  private ApplicationProperties applicationProperties;
 
   private QueryEvaluator queryEvaluator;
+
+  private ValueFactory valueFactory;
 
   @Before
   public void setUp() {
     queryEvaluator = new QueryEvaluator();
+    valueFactory = SimpleValueFactory.getInstance();
+    when(applicationProperties.getSystemGraph()).thenReturn(
+        valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre"));
   }
 
   @Test
@@ -99,10 +112,10 @@ public class QueryEvaluatorTest {
   @Test
   public void add_AddModel_WithValidModel() {
     // Act
-    queryEvaluator.add(repositoryConnection, model, targetGraphIri);
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
-    verify(repositoryConnection, times(1)).add(model, targetGraphIri);
+    verify(repositoryConnection, times(1)).add(model, applicationProperties.getSystemGraph());
   }
 
   @Test
@@ -236,13 +249,91 @@ public class QueryEvaluatorTest {
   public void add_ThrowsException_WithRdf4jError() {
     // Arrange
     doThrow(new RDFParseException("Parse error")).when(repositoryConnection).add(model,
-        targetGraphIri);
+        valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre"));
 
     // Assert
     thrown.expect(BackendException.class);
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, targetGraphIri);
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+  }
+
+  @Test
+  public void add_InsertQuery_WithBNodeData() {
+    // Arrange
+    Model model = new LinkedHashModel();
+    final BNode bNode = valueFactory.createBNode();
+    model.add(valueFactory.createStatement(bNode, RDF.TYPE, ELMO.ENDPOINT));
+    StringBuilder insertQueryBuilder = new StringBuilder();
+    insertQueryBuilder.append("INSERT {\n");
+    insertQueryBuilder.append(
+        "GRAPH <" + applicationProperties.getSystemGraph().stringValue() + "> {\n");
+    insertQueryBuilder.append(" " + bNode);
+    insertQueryBuilder.append(" <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ");
+    insertQueryBuilder.append(" <http://dotwebstack.org/def/elmo#Endpoint> ");
+    insertQueryBuilder.append(".\n");
+    insertQueryBuilder.append("}\n};\n");
+    final String query = insertQueryBuilder.toString();
+
+    // Act
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+
+    // Assert
+    verify(repositoryConnection, times(1)).prepareGraphQuery(query);
+  }
+
+  @Test
+  public void add_InsertQuery_WithGraphName() {
+    // Arrange
+    final BNode bNode = valueFactory.createBNode();
+    Model model = new LinkedHashModel();
+    final IRI context = valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre");
+    model.add(valueFactory.createStatement(bNode, RDF.TYPE, ELMO.ENDPOINT, context));
+    StringBuilder insertQueryBuilder = new StringBuilder();
+    insertQueryBuilder.append("INSERT {\n");
+    insertQueryBuilder.append(
+        "GRAPH <" + applicationProperties.getSystemGraph().stringValue() + "> {\n");
+    insertQueryBuilder.append(" " + bNode);
+    insertQueryBuilder.append(" <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ");
+    insertQueryBuilder.append(" <http://dotwebstack.org/def/elmo#Endpoint> ");
+    insertQueryBuilder.append(".\n");
+    insertQueryBuilder.append("}\n};\n");
+    final String query = insertQueryBuilder.toString();
+
+    // Act
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+
+    // Assert
+    verify(repositoryConnection, times(1)).prepareGraphQuery(query);
+  }
+
+  @Test
+  public void add_Statements_WithSystemGraphName() {
+    // Arrange
+    Model model = new LinkedHashModel();
+    final IRI context = valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre");
+    model.add(valueFactory.createStatement(ELMO.ENDPOINT, RDF.TYPE, ELMO.ENDPOINT));
+
+    // Act
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+
+    // Assert
+    verify(repositoryConnection, times(1)).add(model, context);
+  }
+
+  @Test
+  public void add_Statements_WithGraphName() {
+    // Arrange
+    Model model = new LinkedHashModel();
+    final IRI context = valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre");
+    model.add(valueFactory.createStatement(ELMO.ENDPOINT, RDF.TYPE, ELMO.ENDPOINT, context));
+
+    // Act
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+
+    // Assert
+    verify(repositoryConnection, times(1)).add(model.stream().collect(Collectors.toList()),
+        context);
   }
 
 }
