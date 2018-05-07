@@ -39,8 +39,7 @@ public class TransactionHandler {
     RDFWriter writer = Rio.createWriter(RDFFormat.TURTLE, stringWriter);
     repositoryConnection.prepareGraphQuery(QueryLanguage.SPARQL,
         "CONSTRUCT {?s ?p ?o } WHERE {?s ?p ?o } ").evaluate(writer);
-    LOG.debug("Transaction repository before starting flow execution:\n{}",
-        stringWriter);
+    LOG.debug("Transaction repository before starting flow execution:\n{}", stringWriter);
 
     transaction.getFlow().getExecutor(repositoryConnection).execute(transaction.getParameters(),
         parameterValues);

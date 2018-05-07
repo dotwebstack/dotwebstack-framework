@@ -1,27 +1,26 @@
-package org.dotwebstack.framework.informationproduct;
+package org.dotwebstack.framework.param;
 
+import java.util.Collection;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.param.Parameter;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public final class InformationProductUtils {
+public final class ParameterUtils {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
-  private InformationProductUtils() {}
+  private ParameterUtils() {}
 
   /**
-   * @throws ConfigurationException If no Parameter can be found within the supplied
-   *         InformationProduct for the given ID.
+   * @throws ConfigurationException If no Parameter can be found within the supplied Parameters
    */
-  public static Parameter getParameter(@NonNull InformationProduct product,
+  public static Parameter getParameter(@NonNull Collection<Parameter> parameters,
       @NonNull String parameterId) {
     IRI iri = VALUE_FACTORY.createIRI((String) parameterId);
 
-    for (Parameter<?> p : product.getParameters()) {
+    for (Parameter<?> p : parameters) {
       if (p.getIdentifier().equals(iri)) {
         return p;
       }

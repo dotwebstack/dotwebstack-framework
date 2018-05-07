@@ -32,9 +32,10 @@ import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class RequestHandler implements Inflector<ContainerRequestContext, Response> {
+public final class InformationProductRequestHandler
+    implements Inflector<ContainerRequestContext, Response> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RequestHandler.class);
+  private static final Logger LOG = LoggerFactory.getLogger(InformationProductRequestHandler.class);
 
   private final ApiOperation apiOperation;
 
@@ -44,15 +45,15 @@ public final class RequestHandler implements Inflector<ContainerRequestContext, 
   @Getter(AccessLevel.PACKAGE)
   private final io.swagger.models.Response response;
 
-  private final RequestParameterMapper requestParameterMapper;
+  private final InformationProductRequestParameterMapper requestParameterMapper;
 
   private final Swagger swagger;
 
   private final ApiRequestValidator apiRequestValidator;
 
-  RequestHandler(@NonNull ApiOperation apiOperation, @NonNull InformationProduct informationProduct,
-      @NonNull io.swagger.models.Response response,
-      @NonNull RequestParameterMapper requestParameterMapper,
+  InformationProductRequestHandler(@NonNull ApiOperation apiOperation,
+      @NonNull InformationProduct informationProduct, @NonNull io.swagger.models.Response response,
+      @NonNull InformationProductRequestParameterMapper requestParameterMapper,
       @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;

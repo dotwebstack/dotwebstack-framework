@@ -17,6 +17,7 @@ import org.dotwebstack.framework.frontend.ld.parameter.ParameterMapperResourcePr
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
 import org.dotwebstack.framework.frontend.ld.service.ServiceResourceProvider;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
+import org.dotwebstack.framework.rml.RmlMappingResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.transaction.TransactionResourceProvider;
 import org.dotwebstack.framework.transaction.flow.step.StepResourceProvider;
@@ -46,6 +47,9 @@ public class ConfigurationIntegrationTest {
 
   @Autowired
   private TransactionResourceProvider transactionResourceProvider;
+
+  @Autowired
+  private RmlMappingResourceProvider rmlMappingResourceProvider;
 
   @Autowired
   private RepresentationResourceProvider representationResourceProvider;
@@ -112,6 +116,7 @@ public class ConfigurationIntegrationTest {
     assertThat(stepResourceProvider.get(DBEERPEDIA.PRE_UPDATE_STEP), notNullValue());
     assertThat(stepResourceProvider.get(DBEERPEDIA.POST_UPDATE_STEP), notNullValue());
     assertThat(stepResourceProvider.get(DBEERPEDIA.VALIDATION_STEP), notNullValue());
+    assertThat(rmlMappingResourceProvider.get(DBEERPEDIA.RML_MAPPING), notNullValue());
   }
 
 }

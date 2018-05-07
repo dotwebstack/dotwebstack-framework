@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.mappers.OpenApiRequestMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

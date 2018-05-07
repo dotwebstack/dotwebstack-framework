@@ -152,4 +152,5 @@ public class TransactionResourceProviderTest {
     assertThat(transaction, notNullValue());
     assertThat(transaction.getFlow(), notNullValue());
   }
+
 }

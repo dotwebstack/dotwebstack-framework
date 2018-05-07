@@ -19,14 +19,12 @@ import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
-import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.term.StringTermParameter;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.Transaction;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +35,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RequestParameterMapperTest {
+public class TransactionRequestParameterMapperTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -45,16 +43,13 @@ public class RequestParameterMapperTest {
   @Mock
   private ContainerRequestContext contextMock;
 
-  @Mock
-  private TemplateProcessor templateProcessorMock;
+  private Transaction transaction;
 
-  private InformationProduct product;
-
-  private Parameter<?> parameter;
+  private Parameter<?> parameter1;
 
   private Parameter<?> parameter2;
 
-  private RequestParameterMapper mapper;
+  private TransactionRequestParameterMapper transactionRequestParameterMapper;
 
   private RequestParameters requestParameters;
 
@@ -62,23 +57,22 @@ public class RequestParameterMapperTest {
   public void setUp() {
     SimpleValueFactory valueFactory = SimpleValueFactory.getInstance();
 
-    parameter =
-        new StringTermParameter(valueFactory.createIRI("http://parameter-iri"), "param1", true);
+    parameter1 =
+        new StringTermParameter(valueFactory.createIRI("http://parameter1-iri"), "param1", true);
     parameter2 =
         new StringTermParameter(valueFactory.createIRI("http://parameter2-iri"), "param2", true);
 
-    product = new TestInformationProduct(DBEERPEDIA.ORIGIN_INFORMATION_PRODUCT,
-        DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
-        ImmutableList.of(parameter, parameter2), templateProcessorMock);
+    transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION)
+        .parameters(ImmutableList.of(parameter1, parameter2)).build();
 
-    mapper = new RequestParameterMapper();
+    transactionRequestParameterMapper = new TransactionRequestParameterMapper();
   }
 
   @Test
   public void map_ReturnsEmptyMap_WhenOperationHasNoParameter() {
     // Arrange
     MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
-    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param1", ImmutableList.of("value1", "valueB"));
     mvMap.put("param2", ImmutableList.of("value2"));
 
     requestParameters = new RequestParameters();
@@ -87,7 +81,8 @@ public class RequestParameterMapperTest {
     Operation operation = new Operation();
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = transactionRequestParameterMapper.map(operation, transaction,
+        requestParameters);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -100,18 +95,19 @@ public class RequestParameterMapperTest {
     PathParameter pathParameter = new PathParameter();
 
     pathParameter.setVendorExtension("x-dotwebstack-another-vendor-extension",
-        parameter.getIdentifier().stringValue());
+        parameter1.getIdentifier().stringValue());
     operation.setParameters(ImmutableList.of(pathParameter));
 
     MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
-    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param1", ImmutableList.of("value1", "valueB"));
     mvMap.put("param2", ImmutableList.of("value2"));
 
     requestParameters = new RequestParameters();
     requestParameters.putAll(mvMap);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = transactionRequestParameterMapper.map(operation, transaction,
+        requestParameters);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -131,31 +127,31 @@ public class RequestParameterMapperTest {
     operation.setParameters(ImmutableList.of(parameter));
 
     MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
-    mvMap.put("param1", ImmutableList.of("value", "valueB"));
+    mvMap.put("param1", ImmutableList.of("value1", "valueB"));
     mvMap.put("param2", ImmutableList.of("value2"));
 
     requestParameters = new RequestParameters();
     requestParameters.putAll(mvMap);
 
     // Act
-    mapper.map(operation, product, requestParameters);
+    transactionRequestParameterMapper.map(operation, transaction, requestParameters);
   }
 
   @Test
   public void map_ReturnsCorrectParameterName_ForPathParameters() {
     // Arrange
-    PathParameter pathParameter = new PathParameter();
-    pathParameter.setName("param1");
-    pathParameter.setIn("path");
+    PathParameter pathParameter1 = new PathParameter();
+    pathParameter1.setName("param1");
+    pathParameter1.setIn("path");
 
     // Note this parameter has multiple vendor extensions
-    pathParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
-        parameter.getIdentifier().stringValue());
-    pathParameter.setVendorExtension("x-dotwebstack-another-vendor-extension", "foo");
+    pathParameter1.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+        parameter1.getIdentifier().stringValue());
+    pathParameter1.setVendorExtension("x-dotwebstack-another-vendor-extension", "foo");
 
     // Note this operation has multiple parameters
     Operation operation = new Operation();
-    operation.addParameter(pathParameter);
+    operation.addParameter(pathParameter1);
 
     PathParameter pathParameter2 = new PathParameter();
     pathParameter2.setName("param2");
@@ -168,18 +164,19 @@ public class RequestParameterMapperTest {
     MultivaluedMap<String, String> pathParameters = new MultivaluedHashMap<>();
 
     // Note there are multiple values for this parameter, to test that the first value is used only
-    pathParameters.put(pathParameter.getName(), ImmutableList.of("value", "valueB"));
+    pathParameters.put(pathParameter1.getName(), ImmutableList.of("value1", "valueB"));
     pathParameters.put(pathParameter2.getName(), ImmutableList.of("value2"));
 
     requestParameters = new RequestParameters();
     requestParameters.putAll(pathParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = transactionRequestParameterMapper.map(operation, transaction,
+        requestParameters);
 
     // Assert
     assertThat(result.size(), is(2));
-    assertThat(result, hasEntry(parameter.getName(), "value"));
+    assertThat(result, hasEntry(parameter1.getName(), "value1"));
     assertThat(result, hasEntry(parameter2.getName(), "value2"));
   }
 
@@ -190,23 +187,24 @@ public class RequestParameterMapperTest {
     queryParameter.setName("param1");
     queryParameter.setIn("query");
     queryParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
-        parameter.getIdentifier().stringValue());
+        parameter1.getIdentifier().stringValue());
 
     Operation operation = new Operation();
     operation.addParameter(queryParameter);
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
-    queryParameters.put(queryParameter.getName(), ImmutableList.of("value", "valueB"));
+    queryParameters.put(queryParameter.getName(), ImmutableList.of("value1", "valueB"));
 
     requestParameters = new RequestParameters();
     requestParameters.putAll(queryParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = transactionRequestParameterMapper.map(operation, transaction,
+        requestParameters);
 
     // Assert
     assertThat(result.size(), is(1));
-    assertThat(result, hasEntry(parameter.getName(), "value"));
+    assertThat(result, hasEntry(parameter1.getName(), "value1"));
   }
 
   @Test
@@ -216,67 +214,32 @@ public class RequestParameterMapperTest {
     headerParameter.setName("param1");
     headerParameter.setIn("header");
     headerParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
-        parameter.getIdentifier().stringValue());
+        parameter1.getIdentifier().stringValue());
 
     Operation operation = new Operation();
     operation.addParameter(headerParameter);
 
     MultivaluedMap<String, String> headerParameters = new MultivaluedHashMap<>();
-    headerParameters.put(headerParameter.getName(), ImmutableList.of("value", "valueB"));
+    headerParameters.put(headerParameter.getName(), ImmutableList.of("value1", "valueB"));
 
     requestParameters = new RequestParameters();
     requestParameters.putAll(headerParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = transactionRequestParameterMapper.map(operation, transaction,
+        requestParameters);
 
     // Assert
     assertThat(result.size(), is(1));
-    assertThat(result, hasEntry(parameter.getName(), "value"));
+    assertThat(result, hasEntry(parameter1.getName(), "value1"));
   }
 
   @Test
-  public void map_ReturnsCorrectParameterName_ForBodyParameter() {
+  public void map_ReturnsNothing_ForBodyParameter() {
     // Arrange
     Property property = new ObjectProperty();
     property.getVendorExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
-        parameter.getIdentifier().stringValue());
-    Property property2 = new ObjectProperty();
-    property2.getVendorExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
-        parameter2.getIdentifier().stringValue());
-
-    Model schema = new ModelImpl();
-    schema.setProperties(ImmutableMap.of("param1", property, "param2", property2));
-
-    BodyParameter bodyParameter = new BodyParameter();
-    bodyParameter.setName("body");
-    bodyParameter.setIn("body");
-    bodyParameter.setSchema(schema);
-
-    Operation operation = new Operation();
-    operation.addParameter(bodyParameter);
-
-    MultivaluedMap<String, String> bodyParameters = new MultivaluedHashMap<>();
-    bodyParameters.put("param1", ImmutableList.of("value"));
-    bodyParameters.put("param2", ImmutableList.of("value2"));
-
-    requestParameters = new RequestParameters();
-    requestParameters.putAll(bodyParameters);
-
-    // Act
-    Map<String, String> result = mapper.map(operation, product, requestParameters);
-
-    // Assert
-    assertThat(result.size(), is(2));
-    assertThat(result, hasEntry(parameter.getName(), "value"));
-    assertThat(result, hasEntry(parameter2.getName(), "value2"));
-  }
-
-  @Test
-  public void map_ReturnsEmptyMap_WhenBodyParameterHasNoPropertyWithParamVendorExtension() {
-    // Arrange
-    Property property = new ObjectProperty();
-    property.getVendorExtensions().put("x-dotwebstack-another-vendor-extension", "foo");
+        parameter1.getIdentifier().stringValue());
 
     Model schema = new ModelImpl();
     schema.setProperties(ImmutableMap.of("param1", property));
@@ -290,17 +253,17 @@ public class RequestParameterMapperTest {
     operation.addParameter(bodyParameter);
 
     MultivaluedMap<String, String> bodyParameters = new MultivaluedHashMap<>();
-    bodyParameters.put("param1", ImmutableList.of("value"));
+    bodyParameters.put("param1", ImmutableList.of("value1"));
 
     requestParameters = new RequestParameters();
     requestParameters.putAll(bodyParameters);
 
     // Act
-    Map<String, String> result = mapper.map(operation, product, requestParameters);
+    Map<String, String> result = transactionRequestParameterMapper.map(operation, transaction,
+        requestParameters);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
   }
-
 
 }

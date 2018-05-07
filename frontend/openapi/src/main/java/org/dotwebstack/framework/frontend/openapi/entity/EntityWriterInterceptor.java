@@ -13,8 +13,8 @@ import javax.ws.rs.ext.WriterInterceptorContext;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.informationproduct.InformationProductUtils;
 import org.dotwebstack.framework.param.Parameter;
+import org.dotwebstack.framework.param.ParameterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +57,7 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
 
       InformationProduct product = entity.getRequestContext().getInformationProduct();
       Parameter<?> parameter =
-          InformationProductUtils.getParameter(product, (String) parameterIdString);
+          ParameterUtils.getParameter(product.getParameters(), (String) parameterIdString);
       Object value = parameter.handle(entity.getRequestContext().getParameters());
 
       result.put(header.getKey(), value);

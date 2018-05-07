@@ -97,6 +97,28 @@ GRAPH dbeerpedia:Theatre {
       elmo:targetGraph <http://dotwebstack.org/all-concepts>;
     ])
   .
+  dbeerpedia:RmlMapping a rr:TriplesMap ;
+      rml:logicalSource [
+        rml:source [
+          a carml:Stream ;
+          carml:streamName "stream-A"
+        ] ;
+        rml:referenceFormulation ql:JSONPath ;
+        rml:iterator "$" ;
+      ] ;
+
+      rr:subjectMap [
+        rr:template "http://dbeerpedia.org/{name}" ;
+      ] ;
+
+      rr:predicateObjectMap [
+        rr:predicate ex:ownsCar ;
+        rr:objectMap [
+          carml:multiReference "beers" ;
+          rr:datatype xsd:string ;
+        ] ;
+      ] ;
+   .
 }
 
 #Concept Shape graph

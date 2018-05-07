@@ -18,7 +18,10 @@ import io.swagger.models.Swagger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.NonNull;
 
 public final class SwaggerUtils {
@@ -41,22 +44,30 @@ public final class SwaggerUtils {
    * @return {@link ApiOperation} if the provided swagger does contain the requested method at the
    *         provided path, <code>null</code> otherwise
    */
-  public static ApiOperation extractApiOperation(@NonNull Swagger swagger, @NonNull String path,
-      @NonNull Path apiPath) {
-    Method realMethod = Method.GET;
+  public static Collection<ApiOperation> extractApiOperations(@NonNull Swagger swagger,
+      @NonNull String path, @NonNull Path apiPath) {
+    Set<Method> realMethods = new HashSet<>();
+    realMethods.add(Method.GET);
 
-    if (apiPath.getGet() != null) {
-      realMethod = Method.GET;
-    }
     if (apiPath.getPost() != null) {
-      realMethod = Method.POST;
+      realMethods.add(Method.POST);
     }
-    ApiOperationMatch apiOperationMatch =
-        new ApiOperationResolver(swagger, null).findApiOperation(path, realMethod);
 
-    return apiOperationMatch.isPathFound() && apiOperationMatch.isOperationAllowed()
-        ? apiOperationMatch.getApiOperation()
-        : null;
+    if (apiPath.getPut() != null) {
+      realMethods.add(Method.PUT);
+    }
+
+    Set<ApiOperation> apiOperations = new HashSet<>();
+    realMethods.forEach(realMethod -> {
+      ApiOperationMatch apiOperationMatch =
+          new ApiOperationResolver(swagger, null).findApiOperation(path, realMethod);
+
+      if (apiOperationMatch.isPathFound() && apiOperationMatch.isOperationAllowed()) {
+        apiOperations.add(apiOperationMatch.getApiOperation());
+      }
+    });
+
+    return apiOperations;
   }
 
   public static ObjectNode removeVendorExtensions(@NonNull InputStream specStream,

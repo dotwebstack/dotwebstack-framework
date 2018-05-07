@@ -10,4 +10,9 @@
 @prefix config: <http://dotwebstack.org/configuration/>.
 @prefix http: <http://www.w3.org/2011/http#>.
 @prefix xhtml: <http://www.w3.org/1999/xhtml/vocab#>.
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix rml: <http://semweb.mmlab.be/ns/rml#>.
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix carml: <http://carml.taxonic.com/carml/> .
+@prefix ex: <http://www.example.com/> .
 

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.atlassian.oai.validator.model.ApiPathImpl;
@@ -15,6 +16,10 @@ import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.template.TemplateProcessor;
 import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.Transaction;
+import org.dotwebstack.framework.transaction.TransactionHandlerFactory;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,10 +30,19 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class RequestHandlerFactoryTest {
 
   @Mock
-  private RequestParameterMapper requestParameterMapperMock;
+  private InformationProductRequestParameterMapper requestParameterMapperMock;
+
+  @Mock
+  private TransactionRequestParameterMapper transactionRequestParameterMapper;
+
+  @Mock
+  private TransactionRequestBodyMapper transactionRequestBodyMapper;
 
   @Mock
   private RequestParameterExtractor requestParameterExtractorMock;
+
+  @Mock
+  private TransactionHandlerFactory transactionHandlerFactory;
 
   @Mock
   private Swagger swaggerMock;
@@ -41,11 +55,12 @@ public class RequestHandlerFactoryTest {
   @Before
   public void setUp() {
     requestHandlerFactory =
-        new RequestHandlerFactory(requestParameterMapperMock, requestParameterExtractorMock);
+        new RequestHandlerFactory(requestParameterMapperMock, transactionRequestParameterMapper,
+            transactionRequestBodyMapper, requestParameterExtractorMock, transactionHandlerFactory);
   }
 
   @Test
-  public void newGetRequestHandler_createsGetRequestHandler_WithValidData() {
+  public void new_createsInformationProductRequestHandler_WithValidData() {
     // Arrange
     Operation operation = new Operation();
     ApiOperation apiOperation = new ApiOperation(new ApiPathImpl("/", ""), new ApiPathImpl("/", ""),
@@ -56,13 +71,31 @@ public class RequestHandlerFactoryTest {
     Response response = new Response();
 
     // Act
-    RequestHandler result =
-        requestHandlerFactory.newRequestHandler(apiOperation, product, response, swaggerMock);
-
+    InformationProductRequestHandler result =
+        requestHandlerFactory.newInformationProductRequestHandler(apiOperation, product, response,
+            swaggerMock);
 
     // Assert
     assertThat(result.getInformationProduct(), sameInstance(product));
     assertThat(result.getResponse(), is(response));
+  }
+
+  @Test
+  public void new_createsTransactionRequestHandler_WithValidData() {
+    // Arrange
+    Operation operation = new Operation();
+    ApiOperation apiOperation = new ApiOperation(new ApiPathImpl("/", ""), new ApiPathImpl("/", ""),
+        HttpMethod.POST, operation);
+    Resource transactionIdentifier = mock(Resource.class);
+    Model model = mock(Model.class);
+    Transaction transaction = new Transaction.Builder(transactionIdentifier).build();
+
+    // Act
+    TransactionRequestHandler result = requestHandlerFactory
+        .newTransactionRequestHandler(apiOperation, transaction, swaggerMock);
+
+    // Assert
+    assertThat(result.getTransaction(), sameInstance(transaction));
   }
 
 }

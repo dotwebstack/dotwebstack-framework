@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi;
+package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import static javax.ws.rs.HttpMethod.GET;
 
@@ -8,7 +8,6 @@ import com.google.common.io.CharStreams;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
 import io.swagger.models.RefModel;
-import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.BodyParameter;
 import io.swagger.parser.SwaggerParser;
@@ -16,27 +15,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import javax.ws.rs.HttpMethod;
-import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
+import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.dotwebstack.framework.frontend.openapi.handlers.OpenApiSpecHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
-import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
-import org.dotwebstack.framework.informationproduct.InformationProduct;
-import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.Resource.Builder;
-import org.glassfish.jersey.server.model.ResourceMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,15 +42,11 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
 
 @Service
-class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
+public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
-  private final InformationProductResourceProvider informationProductResourceProvider;
-
   private final SwaggerParser openApiParser;
-
-  private final RequestHandlerFactory requestHandlerFactory;
 
   private ApplicationProperties applicationProperties;
 
@@ -64,16 +54,15 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private Environment environment;
 
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private List<RequestMapper> requestMappers;
 
   @Autowired
-  public OpenApiRequestMapper(@NonNull InformationProductResourceProvider informationProductLoader,
-      @NonNull SwaggerParser openApiParser, @NonNull ApplicationProperties applicationProperties,
-      @NonNull RequestHandlerFactory requestHandlerFactory) {
-    this.informationProductResourceProvider = informationProductLoader;
+  public OpenApiRequestMapper(@NonNull SwaggerParser openApiParser,
+      @NonNull ApplicationProperties applicationProperties,
+      @NonNull List<RequestMapper> requestMappers) {
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
-    this.requestHandlerFactory = requestHandlerFactory;
+    this.requestMappers = requestMappers;
   }
 
   @Override
@@ -86,7 +75,7 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     this.environment = environment;
   }
 
-  void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
+  public void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
     org.springframework.core.io.Resource[] resources;
 
     try {
@@ -110,70 +99,39 @@ class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
     }
   }
 
-
-
   private void mapOpenApiDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(swagger);
 
     swagger.getPaths().forEach((path, pathItem) -> {
-      ApiOperation apiOperation = SwaggerUtils.extractApiOperation(swagger, path, pathItem);
-
-      if (apiOperation == null) {
-        return;
-      }
-
-      Operation getOperation = apiOperation.getOperation();
-
-      validateOperation(apiOperation, swagger);
-
+      Collection<ApiOperation> apiOperations =
+          SwaggerUtils.extractApiOperations(swagger, path, pathItem);
       String absolutePath = basePath.concat(path);
-
-      if (!getOperation.getVendorExtensions().containsKey(
-          OpenApiSpecificationExtensions.INFORMATION_PRODUCT)) {
-        LOG.warn("Path '{}' is not mapped to an information product.", absolutePath);
-        return;
-      }
-
-      String okStatusCode = Integer.toString(Status.OK.getStatusCode());
-
-      if (getOperation.getResponses() == null
-          || !getOperation.getResponses().containsKey(okStatusCode)) {
-        throw new ConfigurationException(String.format(
-            "Resource '%s' does not specify a status %s response.", absolutePath, okStatusCode));
-      }
-
-      List<String> produces =
-          getOperation.getProduces() != null ? getOperation.getProduces() : swagger.getProduces();
-
-      if (produces == null) {
-        throw new ConfigurationException(
-            String.format("Path '%s' should produce at least one media type.", absolutePath));
-      }
-
-      Response response = getOperation.getResponses().get(okStatusCode);
-
-      IRI informationProductIdentifier =
-          valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
-              OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
-
-      InformationProduct informationProduct =
-          informationProductResourceProvider.get(informationProductIdentifier);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
-      ResourceMethod.Builder methodBuilder =
-          resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
-              requestHandlerFactory.newRequestHandler(apiOperation, informationProduct, response,
-                  swagger));
+      for (ApiOperation apiOperation : apiOperations) {
+        Operation operation = apiOperation.getOperation();
 
-      produces.forEach(methodBuilder::produces);
+        validateOperation(apiOperation, swagger);
 
-      resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(new OptionsRequestHandler(pathItem));
+        Optional<RequestMapper> optionalRequestMapper = requestMappers.stream().filter(
+            mapper -> mapper.supportsVendorExtension(operation.getVendorExtensions())).findFirst();
 
-      httpConfiguration.registerResources(resourceBuilder.build());
+        optionalRequestMapper.ifPresent(mapper ->
+            mapper.map(resourceBuilder, swagger, apiOperation, operation, absolutePath)
+        );
 
-      LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
-          absolutePath);
+        if (!optionalRequestMapper.isPresent()) {
+          LOG.warn("Path '{}' is not mapped to an information product or transaction.",
+              absolutePath);
+        }
+      }
+
+      if (!resourceBuilder.build().getAllMethods().isEmpty()) {
+        resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(
+            new OptionsRequestHandler(pathItem));
+        httpConfiguration.registerResources(resourceBuilder.build());
+      }
     });
   }
 

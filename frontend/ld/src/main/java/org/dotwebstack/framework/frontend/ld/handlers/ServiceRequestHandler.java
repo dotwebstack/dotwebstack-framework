@@ -14,11 +14,10 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.SupportedReaderMediaTypesScanner;
 import org.dotwebstack.framework.frontend.ld.service.Service;
 import org.dotwebstack.framework.transaction.TransactionHandler;
+import org.dotwebstack.framework.transaction.TransactionHandlerFactory;
 import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
 import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.repository.sail.SailRepository;
-import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.glassfish.jersey.process.Inflector;
 
 public class ServiceRequestHandler implements Inflector<ContainerRequestContext, Response> {
@@ -29,12 +28,16 @@ public class ServiceRequestHandler implements Inflector<ContainerRequestContext,
 
   private final EndpointRequestParameterMapper endpointRequestParameterMapper;
 
+  private final TransactionHandlerFactory transactionHandlerFactory;
+
   public ServiceRequestHandler(@NonNull Service service,
       @NonNull SupportedReaderMediaTypesScanner supportedReaderMediaTypesScanner,
-      @NonNull EndpointRequestParameterMapper endpointRequestParameterMapper) {
+      @NonNull EndpointRequestParameterMapper endpointRequestParameterMapper,
+      @NonNull TransactionHandlerFactory transactionHandlerFactory) {
     this.service = service;
     this.supportedReaderMediaTypesScanner = supportedReaderMediaTypesScanner;
     this.endpointRequestParameterMapper = endpointRequestParameterMapper;
+    this.transactionHandlerFactory = transactionHandlerFactory;
   }
 
   @Override
@@ -68,8 +71,8 @@ public class ServiceRequestHandler implements Inflector<ContainerRequestContext,
     service.getParameterMappers().forEach(
         parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
 
-    TransactionHandler transactionHandler = new TransactionHandler(
-        new SailRepository(new MemoryStore()), service.getTransaction(), transactionModel);
+    TransactionHandler transactionHandler =
+        transactionHandlerFactory.newTransactionHandler(service.getTransaction(), transactionModel);
     try {
       transactionHandler.execute(parameterValues);
     } catch (StepFailureException | ShaclValidationException e) {

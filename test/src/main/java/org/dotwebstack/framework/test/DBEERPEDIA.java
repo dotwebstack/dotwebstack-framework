@@ -223,6 +223,12 @@ public final class DBEERPEDIA {
 
   public static final IRI SERVICE_DELETE;
 
+  public static final String RML_MAPPING_NAME = DBEERPEDIA.NAMESPACE + "RmlMapping";
+
+  public static final IRI RML_MAPPING;
+
+  public static final IRI RML_MAPPING2;
+
   public static final Literal ASK_ALL_QUERY_SERVICE_TAG;
 
   public static final Literal BROUWTOREN_DATETIME_OF_FIRST_BEER;
@@ -369,6 +375,10 @@ public final class DBEERPEDIA {
     POST_UPDATE_STEP = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "PostUpdateStep");
 
     TRANSACTION = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "InsertConcept");
+
+    RML_MAPPING = valueFactory.createIRI(RML_MAPPING_NAME);
+
+    RML_MAPPING2 = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "RmlMapping2");
 
     SEQUENTIAL_FLOW = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "");
 
