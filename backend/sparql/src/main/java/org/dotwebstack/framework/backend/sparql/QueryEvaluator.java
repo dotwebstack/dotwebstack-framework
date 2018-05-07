@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.sparql;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.backend.BackendException;
 import org.eclipse.rdf4j.RDF4JException;
 import org.eclipse.rdf4j.model.BNode;
@@ -61,14 +60,12 @@ public class QueryEvaluator {
   }
 
   public void add(@NonNull RepositoryConnection repositoryConnection, @NonNull Model model,
-      @NonNull ApplicationProperties applicationProperties) {
-    final IRI systemGraph = applicationProperties.getSystemGraph();
-
+      @NonNull IRI targetGraph) {
     try {
       if (queryContainsBNode(model)) {
-        repositoryConnection.prepareGraphQuery(getInsertQuery(model, systemGraph));
+        repositoryConnection.prepareGraphQuery(getInsertQuery(model, targetGraph));
       } else {
-        addMultipleStatements(repositoryConnection, model, systemGraph);
+        addMultipleStatements(repositoryConnection, model, targetGraph);
       }
     } catch (RDF4JException e) {
       throw new BackendException(
