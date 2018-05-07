@@ -112,7 +112,7 @@ public class QueryEvaluatorTest {
   @Test
   public void add_AddModel_WithValidModel() {
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).add(model, applicationProperties.getSystemGraph());
@@ -255,7 +255,7 @@ public class QueryEvaluatorTest {
     thrown.expect(BackendException.class);
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
   }
 
   @Test
@@ -276,7 +276,7 @@ public class QueryEvaluatorTest {
     final String query = insertQueryBuilder.toString();
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).prepareGraphQuery(query);
@@ -301,7 +301,7 @@ public class QueryEvaluatorTest {
     final String query = insertQueryBuilder.toString();
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).prepareGraphQuery(query);
@@ -315,7 +315,7 @@ public class QueryEvaluatorTest {
     model.add(valueFactory.createStatement(ELMO.ENDPOINT, RDF.TYPE, ELMO.ENDPOINT));
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).add(model, context);
@@ -329,7 +329,7 @@ public class QueryEvaluatorTest {
     model.add(valueFactory.createStatement(ELMO.ENDPOINT, RDF.TYPE, ELMO.ENDPOINT, context));
 
     // Act
-    queryEvaluator.add(repositoryConnection, model, applicationProperties);
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
     verify(repositoryConnection, times(1)).add(model.stream().collect(Collectors.toList()),
