@@ -10,7 +10,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.queryvisitor.FederatedQueryVisitor;
+import org.dotwebstack.framework.query.visitor.FederatedQueryVisitor;
 import org.dotwebstack.framework.transaction.flow.step.StepFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.queryvisitor;
+package org.dotwebstack.framework.query.visitor;
 
 import java.util.HashMap;
 import java.util.Map;
