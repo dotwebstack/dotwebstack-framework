@@ -10,8 +10,12 @@ import org.dotwebstack.framework.config.ConfigurationException;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.algebra.Service;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FederatedQueryVisitor extends AbstractQueryModelVisitor {
+
+  private static final Logger LOG = LoggerFactory.getLogger(FederatedQueryVisitor.class);
 
   private BackendResourceProvider backendResourceProvider;
 
@@ -32,6 +36,7 @@ public class FederatedQueryVisitor extends AbstractQueryModelVisitor {
     final Backend backend = Optional.of(backendResourceProvider.get(backendIri)).orElseThrow(
         () -> new ConfigurationException(String.format("Backend {%s} not found.", backendIri)));
     replaceableBackends.put(backendIri, backend);
+    LOG.debug("Add backend {} to map of replaceableBackends map", backendIri);
   }
 
 }

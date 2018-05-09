@@ -33,12 +33,15 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
       @NonNull Map<String, String> parameterValues) {
     BooleanQuery preparedQuery;
     String query = step.getAssertionQuery();
+    LOG.debug("Execute assertion step {}", step.getIdentifier());
 
     try {
       preparedQuery = transactionConnection.prepareBooleanQuery(QueryLanguage.SPARQL, query);
     } catch (RDF4JException e) {
-      throw new BackendException(String.format("Query could not be prepared: %s (%s)",
-          query, e.getMessage()), e);
+      LOG.debug("Execution of the assertion step {} failed with query {}", step.getIdentifier(),
+          query);
+      throw new BackendException(
+          String.format("Query could not be prepared: %s (%s)", query, e.getMessage()), e);
     }
 
     bindParameters(parameters, parameterValues).forEach(preparedQuery::setBinding);
@@ -53,8 +56,10 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
         throw new StepFailureException(step.getLabel());
       }
     } catch (QueryEvaluationException e) {
-      throw new BackendException(String.format("Query could not be evaluated: %s (%s)",
-          query, e.getMessage()), e);
+      LOG.debug("Execution of the assertion step {} failed with query {}", step.getIdentifier(),
+          query);
+      throw new BackendException(
+          String.format("Query could not be evaluated: %s (%s)", query, e.getMessage()), e);
     }
   }
 

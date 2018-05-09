@@ -23,11 +23,15 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
 import org.eclipse.rdf4j.query.parser.QueryParser;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParserFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AssertionStepFactory implements StepFactory {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AssertionStepFactory.class);
 
   private static final Pattern regexPrefix = Pattern.compile(
       "(prefix)\\b\\s*[a-zA-Z0-9]\\w*\\s*\\:\\s*\\<.*\\>", Pattern.CASE_INSENSITIVE);
@@ -91,6 +95,7 @@ public class AssertionStepFactory implements StepFactory {
       transformedQuery = query.replace(serviceMatcher.toMatchResult().group(), replaceString);
       query = transformedQuery;
     }
+    LOG.debug("Transformed query result {}", transformedQuery);
     return transformedQuery;
   }
 
