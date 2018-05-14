@@ -17,6 +17,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.parser.ParsedQuery;
+import org.eclipse.rdf4j.query.parser.ParsedUpdate;
 import org.eclipse.rdf4j.query.parser.QueryParser;
 import org.eclipse.rdf4j.query.parser.sparql.SPARQLParserFactory;
 import org.slf4j.Logger;
@@ -44,20 +45,41 @@ public class QueryTransformator {
     this.backendResourceProvider = backendResourceProvider;
   }
 
-  public Optional<String> transformQuery(Optional<String> assertionQuery) {
-    if (assertionQuery.isPresent()) {
+  public String transformQuery(String query, IRI supportedStep) {
+    if (query != null) {
+      SPARQLParserFactory sparqlParserFactory = new SPARQLParserFactory();
+      QueryParser queryParser = sparqlParserFactory.getParser();
+      FederatedQueryVisitor visitor = new FederatedQueryVisitor(backendResourceProvider);
+      if (supportedStep.equals(ELMO.UPDATE_STEP)) {
+        ParsedUpdate parsedUpdate =
+            queryParser.parseUpdate(query, ELMO.CONFIG_GRAPHNAME.toString());
+
+        parsedUpdate.getUpdateExprs().stream().forEach(updateExprs -> updateExprs.visit(visitor));
+      } else {
+        ParsedQuery parsedQuery = queryParser.parseQuery(query, ELMO.CONFIG_GRAPHNAME.toString());
+        parsedQuery.getTupleExpr().visit(visitor);
+      }
+      if (!visitor.getReplaceableBackends().isEmpty()) {
+        return setBackendUri(query, visitor.getReplaceableBackends());
+      }
+    }
+    return query;
+  }
+
+  public Optional<String> transformQuery(Optional<String> query) {
+    if (query.isPresent()) {
       SPARQLParserFactory sparqlParserFactory = new SPARQLParserFactory();
       QueryParser queryParser = sparqlParserFactory.getParser();
 
       ParsedQuery parsedQuery =
-          queryParser.parseQuery(assertionQuery.get(), ELMO.CONFIG_GRAPHNAME.toString());
+          queryParser.parseQuery(query.get(), ELMO.CONFIG_GRAPHNAME.toString());
       FederatedQueryVisitor visitor = new FederatedQueryVisitor(backendResourceProvider);
       parsedQuery.getTupleExpr().visit(visitor);
       if (!visitor.getReplaceableBackends().isEmpty()) {
-        return Optional.of(setBackendUri(assertionQuery.get(), visitor.getReplaceableBackends()));
+        return Optional.of(setBackendUri(query.get(), visitor.getReplaceableBackends()));
       }
     }
-    return assertionQuery;
+    return query;
   }
 
   private String setBackendUri(String query, Map<Resource, Backend> backends) {
