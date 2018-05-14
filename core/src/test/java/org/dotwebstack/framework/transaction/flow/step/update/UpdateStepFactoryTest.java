@@ -66,22 +66,30 @@ public class UpdateStepFactoryTest {
   public void create_CreateUpdateStep_WithValidData() {
     // Arrange
     Model stepModel = new LinkedHashModel();
-    stepModel.add(valueFactory.createStatement(DBEERPEDIA.UPDATE_STEP, RDF.TYPE,
-        ELMO.UPDATE_STEP));
+    stepModel.add(valueFactory.createStatement(DBEERPEDIA.UPDATE_STEP, RDF.TYPE, ELMO.UPDATE_STEP));
     stepModel.add(valueFactory.createStatement(DBEERPEDIA.UPDATE_STEP, RDFS.LABEL,
         DBEERPEDIA.BREWERIES_LABEL));
     stepModel.add(valueFactory.createStatement(DBEERPEDIA.UPDATE_STEP, ELMO.QUERY,
-        DBEERPEDIA.SELECT_ALL_QUERY));
+        DBEERPEDIA.UPDATE_QUERY_SERVICE_TAG));
+    // stepModel.add(valueFactory.createStatement(DBEERPEDIA.UPDATE_STEP, ELMO.QUERY,
+    // DBEERPEDIA.SELECT_ALL_QUERY));
     stepModel.add(valueFactory.createStatement(DBEERPEDIA.UPDATE_STEP, ELMO.BACKEND_PROP,
         DBEERPEDIA.BACKEND));
+
+    Backend backend = mock(Backend.class);
+    when(backend.getEndpoint()).thenReturn(mock(Literal.class));
+    when(backend.getEndpoint().stringValue()).thenReturn("http://dbeerpedia.org#Backend");
+    when(backendResourceProvider.get(any())).thenReturn(backend);
 
     // Act
     updateStep = updateStepFactory.create(stepModel, DBEERPEDIA.UPDATE_STEP);
 
     // Assert
+    final Literal transformedQuery = valueFactory.createLiteral(
+        "PREFIX dbeerpedia: <http://dbeerpedia.org#> insert { ?concept rdfs:label ?label } where { ?s ?p ?o SERVICE <http://dbeerpedia.org#Backend> { ?s rdfs:label ?p. } }");
     assertThat(updateStep.getIdentifier(), equalTo(DBEERPEDIA.UPDATE_STEP));
     assertThat(updateStep.getLabel(), equalTo(DBEERPEDIA.BREWERIES_LABEL.stringValue()));
-    assertThat(updateStep.getQuery(), equalTo(DBEERPEDIA.SELECT_ALL_QUERY.stringValue()));
+    assertThat(updateStep.getQuery(), equalTo(transformedQuery.stringValue()));
     assertThat(updateStep.getBackendIri(), equalTo(DBEERPEDIA.BACKEND));
   }
 

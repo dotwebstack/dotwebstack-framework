@@ -87,9 +87,6 @@ public class AssertionStepFactoryTest {
   @Test
   public void create_CreateAssertionStep_WithValidDataAndServiceTag() {
     // Arrange
-    final Literal transformedQuery = valueFactory.createLiteral(
-        "PREFIX dbeerpedia: <http://dbeerpedia.org#> ASK WHERE { ?s ?p ?o SERVICE <http://localhost:8080/sparql> { ?s rdfs:label ?p } }");
-
     Model stepModel = new LinkedHashModel();
     stepModel.add(valueFactory.createStatement(DBEERPEDIA.ASSERTION_IF_EXIST_STEP, RDF.TYPE,
         ELMO.ASSERTION_STEP));
@@ -102,6 +99,9 @@ public class AssertionStepFactoryTest {
     assertionStep = assertionStepFactory.create(stepModel, DBEERPEDIA.ASSERTION_IF_EXIST_STEP);
 
     // Assert
+    final Literal transformedQuery = valueFactory.createLiteral(
+        "PREFIX dbeerpedia: <http://dbeerpedia.org#> ASK { ?s ?p ?o SERVICE "
+            + "<http://localhost:8080/sparql> { ?s ?p ?o } }");
     assertThat(assertionStep.getAssertionQuery(), equalTo(transformedQuery.stringValue()));
   }
 

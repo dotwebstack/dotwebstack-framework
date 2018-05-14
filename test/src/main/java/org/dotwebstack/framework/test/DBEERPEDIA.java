@@ -235,6 +235,8 @@ public final class DBEERPEDIA {
 
   public static final IRI FIRSTBEER;
 
+  public static final Literal UPDATE_QUERY_SERVICE_TAG;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SHACL_CONCEPT_GRAPHNAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ConceptShapeGraph");
@@ -281,7 +283,13 @@ public final class DBEERPEDIA {
     ASK_ALL_QUERY = valueFactory.createLiteral("ASK WHERE { ?s ?p ?o }");
     ASK2_ALL_QUERY = valueFactory.createLiteral("ASK WHERE { ?s a ?o }");
     ASK_ALL_QUERY_SERVICE_TAG = valueFactory.createLiteral(
-        "PREFIX dbeerpedia: <http://dbeerpedia.org#> ASK WHERE { ?s ?p ?o SERVICE dbeerpedia:Backend { ?s rdfs:label ?p } }");
+        "PREFIX dbeerpedia: <http://dbeerpedia.org#> ASK { ?s ?p ?o SERVICE "
+            + "dbeerpedia:Backend { ?s ?p ?o } }");
+    UPDATE_QUERY_SERVICE_TAG = valueFactory.createLiteral("PREFIX dbeerpedia: <http://dbeerpedia"
+        + ".org#> insert { ?concept rdfs:label ?label } where { ?s ?p ?o SERVICE "
+        + "dbeerpedia:Backend { ?s rdfs:label ?p. } }");
+
+
 
     BROUWTOREN = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c");
