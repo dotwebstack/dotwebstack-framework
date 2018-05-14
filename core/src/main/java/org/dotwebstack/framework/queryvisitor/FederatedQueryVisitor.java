@@ -11,7 +11,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.algebra.Service;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 
-public class FederatedQueryVisitor extends AbstractQueryModelVisitor {
+public class FederatedQueryVisitor extends AbstractQueryModelVisitor<RuntimeException> {
 
   private BackendResourceProvider backendResourceProvider;
 
