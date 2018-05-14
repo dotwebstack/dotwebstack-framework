@@ -4,11 +4,16 @@ import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
+import org.dotwebstack.framework.query.transformator.QueryTransformator;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -32,6 +37,8 @@ public class UpdateStepFactoryTest {
   @Mock
   private Backend backend;
 
+  private QueryTransformator queryTransformator;
+
   private UpdateStepFactory updateStepFactory;
 
   private ValueFactory valueFactory = SimpleValueFactory.getInstance();
@@ -39,7 +46,8 @@ public class UpdateStepFactoryTest {
   @Before
   public void setup() {
     // Arrange
-    updateStepFactory = new UpdateStepFactory(backendResourceProvider);
+    queryTransformator = new QueryTransformator(backendResourceProvider);
+    updateStepFactory = new UpdateStepFactory(backendResourceProvider, queryTransformator);
   }
 
   @Test

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.transaction.flow.step.update;
 import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
+import org.dotwebstack.framework.query.transformator.QueryTransformator;
 import org.dotwebstack.framework.transaction.flow.step.StepFactory;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
@@ -18,9 +19,13 @@ public class UpdateStepFactory implements StepFactory {
 
   private BackendResourceProvider backendResourceProvider;
 
+  private QueryTransformator queryTransformator;
+
   @Autowired
-  public UpdateStepFactory(@NonNull  BackendResourceProvider backendResourceProvider) {
+  public UpdateStepFactory(@NonNull BackendResourceProvider backendResourceProvider,
+      @NonNull QueryTransformator queryTransformator) {
     this.backendResourceProvider = backendResourceProvider;
+    this.queryTransformator = queryTransformator;
   }
 
   @Override
@@ -30,14 +35,11 @@ public class UpdateStepFactory implements StepFactory {
 
   @Override
   public UpdateStep create(@NonNull Model stepModel, @NonNull Resource identifier) {
-    UpdateStep.Builder builder =
-        new UpdateStep.Builder(identifier, backendResourceProvider);
-    getObjectString(stepModel, identifier, RDFS.LABEL).ifPresent(
-        builder::label);
+    UpdateStep.Builder builder = new UpdateStep.Builder(identifier, backendResourceProvider);
+    getObjectString(stepModel, identifier, RDFS.LABEL).ifPresent(builder::label);
     getObjectString(stepModel, identifier, ELMO.QUERY).ifPresent(
-        builder::query);
-    getObjectIRI(stepModel, identifier, ELMO.BACKEND_PROP).ifPresent(
-        builder::backend);
+        query -> builder.query(queryTransformator.transformQuery(query, ELMO.UPDATE_STEP)));
+    getObjectIRI(stepModel, identifier, ELMO.BACKEND_PROP).ifPresent(builder::backend);
 
     return builder.build();
   }
