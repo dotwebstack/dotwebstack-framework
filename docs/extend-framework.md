@@ -6,14 +6,18 @@ The dotwebstack framework is designed to be extended. The following extention po
 - Adding a new back-end;
 
 ## Adding a new front-end module
-Currently, two front-end modules are available in the dotwebstack-framework repository:
+All front-end modules implement and extend [jersey](https://jersey.github.io/) interfaces and classes.
 
-- ld, for returning Linked Data serialisations (RDF/XML, Turtle, JSON-LD) for dereferenceable URI's;
-- api, for dealing with RESTful API's that conform to the Open API Specification.
+The front-end uses one generic module, [http](https://github.com/dotwebstack/dotwebstack-framework/tree/master/frontend/http), from which all other front-end modules are derived. Among other tasks, the http module will look for other front-end modules and initialize them, so these modules can register the appropiate URL paths.
+
+Currently, two additional front-end modules are available in the dotwebstack-framework repository:
+
+- [ld](https://github.com/dotwebstack/dotwebstack-framework/tree/master/frontend/ld), for returning Linked Data serialisations (RDF/XML, Turtle, JSON-LD) for dereferenceable URI's;
+- [openapi](https://github.com/dotwebstack/dotwebstack-framework/tree/master/frontend/openapi), for dealing with RESTful API's that conform to the Open API Specification.
 
 The dotwebstack-theatre-legacy reponsitory contains a third module:
 
-- ui, for returning a HTML representation for dereferenceable URI's.
+- [ldtlegacy](https://github.com/dotwebstack/dotwebstack-theatre-legacy/tree/master/src/main/java/org/dotwebstack/ldtlegacy), for returning a HTML representation for dereferenceable URI's.
 
 Please look at the module implementation in the dotwebstack-theatre-legacy repository for guidance how to create your own module.
 
