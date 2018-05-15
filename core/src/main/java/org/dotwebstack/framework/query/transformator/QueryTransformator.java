@@ -54,7 +54,7 @@ public class QueryTransformator {
         ParsedUpdate parsedUpdate =
             queryParser.parseUpdate(query, ELMO.CONFIG_GRAPHNAME.toString());
 
-        parsedUpdate.getUpdateExprs().stream().forEach(updateExprs -> updateExprs.visit(visitor));
+        parsedUpdate.getUpdateExprs().forEach(updateExprs -> updateExprs.visit(visitor));
       } else {
         ParsedQuery parsedQuery = queryParser.parseQuery(query, ELMO.CONFIG_GRAPHNAME.toString());
         parsedQuery.getTupleExpr().visit(visitor);
