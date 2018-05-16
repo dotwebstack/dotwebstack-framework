@@ -30,12 +30,14 @@ public class UpdateTransactionRepositoryExecutor extends AbstractStepExecutor<Up
   @Override
   public void execute(@NonNull Collection<Parameter> parameters,
       @NonNull Map<String, String> parameterValues) {
+    LOG.debug("Execute update step {}", step.getIdentifier());
     Update preparedQuery;
     String query = step.getQuery();
 
     try {
       preparedQuery = transactionConnection.prepareUpdate(QueryLanguage.SPARQL, query);
     } catch (RDF4JException e) {
+      LOG.debug("Failed to prepare update step {} with query {}", step.getIdentifier(), query);
       throw new BackendException(
           String.format("Query could not be prepared: %s (%s)", query, e.getMessage()), e);
     }
@@ -44,8 +46,9 @@ public class UpdateTransactionRepositoryExecutor extends AbstractStepExecutor<Up
 
     try {
       preparedQuery.execute();
-      LOG.debug("Executed Update step {}", query);
+      LOG.debug("Executed Update step {} with query {}", step.getIdentifier(), query);
     } catch (QueryEvaluationException e) {
+      LOG.debug("Failed to execute update step {} with query {}", step.getIdentifier(), query);
       throw new BackendException(
           String.format("Query could not be executed: %s (%s)", query, e.getMessage()), e);
     }

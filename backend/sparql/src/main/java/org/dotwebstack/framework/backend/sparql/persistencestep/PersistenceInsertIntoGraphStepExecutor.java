@@ -10,8 +10,13 @@ import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.AbstractStepExecutor;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.eclipse.rdf4j.model.Model;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor<PersistenceStep> {
+
+  private static final Logger LOG =
+      LoggerFactory.getLogger(PersistenceInsertIntoGraphStepExecutor.class);
 
   private SparqlBackend backend;
 
@@ -36,8 +41,12 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
   public void execute(@NonNull Collection<Parameter> parameters,
       @NonNull Map<String, String> parameterValues) {
     if (step.getTargetGraph() != null) {
+      LOG.debug("Execute persistence step {} with targetGraph {}", step.getIdentifier(),
+          step.getTargetGraph());
       queryEvaluator.add(backend.getConnection(), transactionModel, step.getTargetGraph());
     } else {
+      LOG.debug("Execute persistence step {} with systemGraph {}", step.getIdentifier(),
+          applicationProperties.getSystemGraph());
       queryEvaluator.add(backend.getConnection(), transactionModel,
           applicationProperties.getSystemGraph());
     }

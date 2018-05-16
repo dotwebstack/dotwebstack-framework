@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
+import org.dotwebstack.framework.query.transformator.QueryTransformator;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.Literal;
@@ -31,6 +32,8 @@ public class AssertionStepFactoryTest {
   @Mock
   private BackendResourceProvider backendResourceProvider;
 
+  private QueryTransformator queryTransformator;
+
   private AssertionStep assertionStep;
 
   private AssertionStepFactory assertionStepFactory;
@@ -40,7 +43,8 @@ public class AssertionStepFactoryTest {
   @Before
   public void setup() {
     // Arrange
-    assertionStepFactory = new AssertionStepFactory(backendResourceProvider);
+    queryTransformator = new QueryTransformator(backendResourceProvider);
+    assertionStepFactory = new AssertionStepFactory(queryTransformator);
     Backend backend = mock(Backend.class);
     when(backend.getEndpoint()).thenReturn(mock(Literal.class));
     when(backend.getEndpoint().stringValue()).thenReturn("http://localhost:8080/sparql");
@@ -83,9 +87,6 @@ public class AssertionStepFactoryTest {
   @Test
   public void create_CreateAssertionStep_WithValidDataAndServiceTag() {
     // Arrange
-    final Literal transformedQuery = valueFactory.createLiteral(
-        "PREFIX dbeerpedia: <http://dbeerpedia.org#> ASK WHERE { ?s ?p ?o SERVICE <http://localhost:8080/sparql> { ?s rdfs:label ?p } }");
-
     Model stepModel = new LinkedHashModel();
     stepModel.add(valueFactory.createStatement(DBEERPEDIA.ASSERTION_IF_EXIST_STEP, RDF.TYPE,
         ELMO.ASSERTION_STEP));
@@ -98,6 +99,9 @@ public class AssertionStepFactoryTest {
     assertionStep = assertionStepFactory.create(stepModel, DBEERPEDIA.ASSERTION_IF_EXIST_STEP);
 
     // Assert
+    final Literal transformedQuery = valueFactory.createLiteral(
+        "PREFIX dbeerpedia: <http://dbeerpedia.org#> ASK { ?s ?p ?o SERVICE "
+            + "<http://localhost:8080/sparql> { ?s ?p ?o } }");
     assertThat(assertionStep.getAssertionQuery(), equalTo(transformedQuery.stringValue()));
   }
 
