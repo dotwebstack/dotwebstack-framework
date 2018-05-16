@@ -47,9 +47,15 @@ public class Stage {
 
   public String getFullPath() {
     if (getSite().isMatchAllDomain()) {
-      return "/" + PATH_DOMAIN_PARAMETER + getBasePath();
+      if (getSite().getBasePath() != null) {
+        return "/" + PATH_DOMAIN_PARAMETER + "/" + getSite().getBasePath() + getBasePath();
+      } else {
+        return "/" + PATH_DOMAIN_PARAMETER + getBasePath();
+      }
     }
-
+    if (getSite().getBasePath() != null) {
+      return "/" + getSite().getDomain() + "/" + getSite().getBasePath() + getBasePath();
+    }
     return "/" + getSite().getDomain() + getBasePath();
   }
 
