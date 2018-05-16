@@ -268,7 +268,7 @@ public class FileConfigurationBackendTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage("Error while loading RDF data.");
+    thrown.expectMessage("Configuration file <config.trig> could not be read.");
 
     // Act
     backend.loadResources();
