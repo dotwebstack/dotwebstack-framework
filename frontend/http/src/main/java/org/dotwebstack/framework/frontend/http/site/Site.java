@@ -12,10 +12,13 @@ public class Site {
 
   private Layout layout;
 
+  private String basePath;
+
   private Site(Builder builder) {
     this.domain = builder.domain;
     this.identifier = builder.identifier;
     this.layout = builder.layout;
+    this.basePath = builder.basePath;
   }
 
   public Resource getIdentifier() {
@@ -34,6 +37,10 @@ public class Site {
     return layout;
   }
 
+  public String getBasePath() {
+    return basePath;
+  }
+
   public static class Builder {
 
     private Resource identifier;
@@ -42,6 +49,8 @@ public class Site {
     private String domain = null;
 
     private Layout layout;
+
+    private String basePath;
 
     public Builder(@NonNull Resource identifier) {
       this.identifier = identifier;
@@ -58,6 +67,11 @@ public class Site {
 
     public Builder layout(@NonNull Layout layout) {
       this.layout = layout;
+      return this;
+    }
+
+    public Builder basePath(@NonNull String basePath) {
+      this.basePath = basePath;
       return this;
     }
 

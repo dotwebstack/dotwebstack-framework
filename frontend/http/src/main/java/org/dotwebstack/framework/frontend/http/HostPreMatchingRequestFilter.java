@@ -20,7 +20,6 @@ public class HostPreMatchingRequestFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
-
     UriInfo uriInfo = requestContext.getUriInfo();
     UriBuilder hostUriBuilder = uriInfo.getRequestUriBuilder();
 
