@@ -30,14 +30,16 @@ public class UpdateTransactionRepositoryExecutor extends AbstractStepExecutor<Up
   @Override
   public void execute(@NonNull Collection<Parameter> parameters,
       @NonNull Map<String, String> parameterValues) {
-    LOG.debug("Execute update step {}", step.getIdentifier());
+    LOG.debug("Execute update step {} for transaction repository\n{}", step.getIdentifier(),
+        getReposioryStatus(transactionConnection));
     Update preparedQuery;
     String query = step.getQuery();
 
     try {
       preparedQuery = transactionConnection.prepareUpdate(QueryLanguage.SPARQL, query);
     } catch (RDF4JException e) {
-      LOG.debug("Failed to prepare update step {} with query {}", step.getIdentifier(), query);
+      LOG.debug("Failed to prepare update step {} with query {} for transaction repository\n{}",
+          step.getIdentifier(), query, getReposioryStatus(transactionConnection));
       throw new BackendException(
           String.format("Query could not be prepared: %s (%s)", query, e.getMessage()), e);
     }
@@ -46,13 +48,14 @@ public class UpdateTransactionRepositoryExecutor extends AbstractStepExecutor<Up
 
     try {
       preparedQuery.execute();
-      LOG.debug("Executed Update step {} with query {}", step.getIdentifier(), query);
+      LOG.debug("Executed Update step {} with query {} for transaction repository\n{}",
+          step.getIdentifier(), query, getReposioryStatus(transactionConnection));
     } catch (QueryEvaluationException e) {
-      LOG.debug("Failed to execute update step {} with query {}", step.getIdentifier(), query);
+      LOG.debug("Failed to execute update step {} with query {} for transaction repository\n{}",
+          step.getIdentifier(), query, getReposioryStatus(transactionConnection));
       throw new BackendException(
           String.format("Query could not be executed: %s (%s)", query, e.getMessage()), e);
     }
   }
-
 
 }
