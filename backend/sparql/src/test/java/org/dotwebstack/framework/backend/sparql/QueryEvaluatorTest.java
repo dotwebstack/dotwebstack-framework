@@ -279,7 +279,7 @@ public class QueryEvaluatorTest {
     queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
-    verify(repositoryConnection, times(1)).prepareGraphQuery(query);
+    verify(repositoryConnection, times(1)).prepareGraphQuery(QueryLanguage.SPARQL, query);
   }
 
   @Test
@@ -304,7 +304,7 @@ public class QueryEvaluatorTest {
     queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
 
     // Assert
-    verify(repositoryConnection, times(1)).prepareGraphQuery(query);
+    verify(repositoryConnection, times(1)).prepareGraphQuery(QueryLanguage.SPARQL, query);
   }
 
   @Test

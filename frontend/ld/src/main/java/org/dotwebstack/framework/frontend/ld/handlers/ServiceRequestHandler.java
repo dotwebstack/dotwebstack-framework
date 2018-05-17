@@ -19,8 +19,12 @@ import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
 import org.dotwebstack.framework.validation.ShaclValidationException;
 import org.eclipse.rdf4j.model.Model;
 import org.glassfish.jersey.process.Inflector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServiceRequestHandler implements Inflector<ContainerRequestContext, Response> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ServiceRequestHandler.class);
 
   private final Service service;
 
@@ -76,8 +80,10 @@ public class ServiceRequestHandler implements Inflector<ContainerRequestContext,
     try {
       transactionHandler.execute(parameterValues);
     } catch (StepFailureException | ShaclValidationException e) {
+      LOG.error("Got this error {} during executing of the transaction handler", e);
       return Response.status(Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (RuntimeException e) {
+      LOG.error("Got this error {} during executing of the transaction handler", e);
       return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
     }
 
