@@ -63,7 +63,10 @@ public class QueryEvaluator {
       @NonNull IRI targetGraph) {
     try {
       if (queryContainsBNode(model)) {
-        repositoryConnection.prepareGraphQuery(getInsertQuery(model, targetGraph));
+        GraphQuery query = repositoryConnection.prepareGraphQuery(QueryLanguage.SPARQL,
+            getInsertQuery(model, targetGraph));
+        query.evaluate();
+        LOG.debug("Insert data into graph {}", targetGraph);
       } else {
         addMultipleStatements(repositoryConnection, model, targetGraph);
       }
