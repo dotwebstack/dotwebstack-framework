@@ -58,7 +58,7 @@ public class FileConfigurationBackendIntegrationTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage("Error while loading RDF data.");
+    thrown.expectMessage("Configuration file <dbeerpedia.trig> could not be read.");
     // Act
     fileConfigurationBackend.setEnvironment(environment);
     fileConfigurationBackend.loadResources();

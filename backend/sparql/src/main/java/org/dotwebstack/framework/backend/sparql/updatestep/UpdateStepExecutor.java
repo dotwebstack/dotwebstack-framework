@@ -44,6 +44,8 @@ public class UpdateStepExecutor extends AbstractStepExecutor<UpdateStep> {
     }
 
     queryEvaluator.update(sparqlBackend.getConnection(), step.getQuery(), bindings);
+    LOG.debug("Updated data for backend {} by update step {}", sparqlBackend.getIdentifier(),
+        step.getIdentifier());
   }
 
 }

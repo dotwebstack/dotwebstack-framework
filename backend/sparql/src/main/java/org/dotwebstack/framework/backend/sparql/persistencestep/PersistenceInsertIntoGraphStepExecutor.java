@@ -40,15 +40,23 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
   @Override
   public void execute(@NonNull Collection<Parameter> parameters,
       @NonNull Map<String, String> parameterValues) {
-    if (step.getTargetGraph() != null) {
-      LOG.debug("Execute persistence step {} with targetGraph {}", step.getIdentifier(),
-          step.getTargetGraph());
-      queryEvaluator.add(backend.getConnection(), transactionModel, step.getTargetGraph());
-    } else {
-      LOG.debug("Execute persistence step {} with systemGraph {}", step.getIdentifier(),
-          applicationProperties.getSystemGraph());
-      queryEvaluator.add(backend.getConnection(), transactionModel,
-          applicationProperties.getSystemGraph());
+    try {
+      if (step.getTargetGraph() != null) {
+        LOG.debug("Execute persistence step {} with targetGraph {}", step.getIdentifier(),
+            step.getTargetGraph());
+        queryEvaluator.add(backend.getConnection(), transactionModel, step.getTargetGraph());
+        LOG.debug("Added data into backend {} with graph {} by persistence step {}",
+            backend.getIdentifier(), step.getTargetGraph(), step.getIdentifier());
+      } else {
+        LOG.debug("Execute persistence step {} with systemGraph {}", step.getIdentifier(),
+            applicationProperties.getSystemGraph());
+        queryEvaluator.add(backend.getConnection(), transactionModel,
+            applicationProperties.getSystemGraph());
+        LOG.debug("Added data into backend {} with graph {} by persistence step {}",
+            backend.getIdentifier(), applicationProperties.getSystemGraph(), step.getIdentifier());
+      }
+    } catch (Exception ex) {
+      LOG.debug("Get error {} for persistence step {}", ex, step.getIdentifier());
     }
   }
 

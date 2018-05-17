@@ -63,13 +63,19 @@ public class QueryEvaluator {
       @NonNull IRI targetGraph) {
     try {
       if (queryContainsBNode(model)) {
-        repositoryConnection.prepareGraphQuery(getInsertQuery(model, targetGraph));
+        GraphQuery query = repositoryConnection.prepareGraphQuery(QueryLanguage.SPARQL,
+            getInsertQuery(model, targetGraph));
+        query.evaluate();
+        LOG.debug("Insert data into targetGraph {}", targetGraph);
       } else {
         addMultipleStatements(repositoryConnection, model, targetGraph);
       }
     } catch (RDF4JException e) {
+      LOG.debug("Data could not be added into graph: {}", e.getMessage());
       throw new BackendException(
           String.format("Data could not be added into graph: %s", e.getMessage()), e);
+    } catch (Exception ex) {
+      LOG.debug("Data could not be added into graph: {} \n {}", ex.getMessage(), ex);
     }
   }
 
@@ -96,7 +102,7 @@ public class QueryEvaluator {
       @NonNull Model model, @NonNull IRI systemGraph) {
     if (model.contexts().isEmpty()) {
       repositoryConnection.add(model, systemGraph);
-      LOG.debug("Insert data into graph {}", systemGraph);
+      LOG.debug("Insert data into systemGraph {}", systemGraph);
     } else {
       model.contexts().forEach(graphName -> {
         if (graphName != null) {
@@ -104,7 +110,7 @@ public class QueryEvaluator {
               model.stream().filter(statement -> statement.getContext().equals(graphName)).collect(
                   Collectors.toList()),
               graphName);
-          LOG.debug("Insert data into graph {}", graphName);
+          LOG.debug("Insert data into namedGraph {}", graphName);
         } else {
           repositoryConnection.add(model, systemGraph);
           LOG.debug("Insert data into default graph {}", systemGraph);

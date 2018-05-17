@@ -11,8 +11,12 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PersistenceStep implements Step {
+
+  private static final Logger LOG = LoggerFactory.getLogger(PersistenceStep.class);
 
   private Resource identifier;
 
@@ -40,6 +44,8 @@ public class PersistenceStep implements Step {
       return backendResourceProvider.get(backend.getIdentifier()).createPersistenceStepExecutor(
           this, transactionModel);
     }
+    LOG.debug("Could not create a persistence step {}, cause of an empty transaction repository",
+        identifier);
     throw new StepFailureException("Transaction repository is empty");
   }
 

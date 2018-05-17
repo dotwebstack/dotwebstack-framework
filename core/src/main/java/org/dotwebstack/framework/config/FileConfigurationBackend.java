@@ -33,6 +33,7 @@ import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.rio.RDFParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.EnvironmentAware;
@@ -159,6 +160,11 @@ public class FileConfigurationBackend
       streamList.add(new ByteArrayInputStream(outputStream.toByteArray()));
     } catch (IOException ex) {
       LOG.error("Configuration file {} could not be read.", resource.getFilename());
+      throw new ConfigurationException(
+          String.format("Configuration file <%s> could not be read.", resource.getFilename()));
+    } catch (RDFParseException ex) {
+      LOG.error("Configuration file {} could not be read, caused by this error {}",
+          resource.getFilename(), ex);
       throw new ConfigurationException(
           String.format("Configuration file <%s> could not be read.", resource.getFilename()));
     }

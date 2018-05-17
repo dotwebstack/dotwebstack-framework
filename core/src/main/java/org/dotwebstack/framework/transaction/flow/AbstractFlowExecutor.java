@@ -9,8 +9,7 @@ public abstract class AbstractFlowExecutor<T> implements FlowExecutor {
 
   RepositoryConnection repositoryConnection;
 
-  public AbstractFlowExecutor(@NonNull T flow,
-      @NonNull RepositoryConnection repositoryConnection) {
+  public AbstractFlowExecutor(@NonNull T flow, @NonNull RepositoryConnection repositoryConnection) {
     this.flow = flow;
     this.repositoryConnection = repositoryConnection;
   }

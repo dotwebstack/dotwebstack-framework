@@ -33,13 +33,16 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
       @NonNull Map<String, String> parameterValues) {
     BooleanQuery preparedQuery;
     String query = step.getAssertionQuery();
-    LOG.debug("Execute assertion step {}", step.getIdentifier());
+    LOG.debug("Execute assertion step {} for transaction repository\n{}", step.getIdentifier(),
+        getReposioryStatus(transactionConnection));
 
     try {
       preparedQuery = transactionConnection.prepareBooleanQuery(QueryLanguage.SPARQL, query);
     } catch (RDF4JException e) {
-      LOG.debug("Execution of the assertion step {} failed with query {}", step.getIdentifier(),
-          query);
+      LOG.debug(
+          "Execution of the assertion step {} failed with query {} for transaction "
+              + "repository\n{}",
+          step.getIdentifier(), query, getReposioryStatus(transactionConnection));
       throw new BackendException(
           String.format("Query could not be prepared: %s (%s)", query, e.getMessage()), e);
     }
@@ -52,12 +55,14 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
         returnValue = !returnValue;
       }
       if (!returnValue) {
-        LOG.debug("Assertion {} returned false", query);
+        LOG.debug("Assertion {} returned false for transaction repository\n{}", query,
+            getReposioryStatus(transactionConnection));
         throw new StepFailureException(step.getLabel());
       }
     } catch (QueryEvaluationException e) {
-      LOG.debug("Execution of the assertion step {} failed with query {}", step.getIdentifier(),
-          query);
+      LOG.debug(
+          "Execution of the assertion step {} failed with query {} for transaction repository\n{}",
+          step.getIdentifier(), query, getReposioryStatus(transactionConnection));
       throw new BackendException(
           String.format("Query could not be evaluated: %s (%s)", query, e.getMessage()), e);
     }
