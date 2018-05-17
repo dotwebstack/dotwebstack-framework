@@ -164,7 +164,7 @@ public class FileConfigurationBackend
           String.format("Configuration file <%s> could not be read.", resource.getFilename()));
     } catch (RDFParseException ex) {
       LOG.error("Configuration file {} could not be read, caused by this error {}",
-          resource.getFilename(), ex.toString());
+          resource.getFilename(), ex);
       throw new ConfigurationException(
           String.format("Configuration file <%s> could not be read.", resource.getFilename()));
     }

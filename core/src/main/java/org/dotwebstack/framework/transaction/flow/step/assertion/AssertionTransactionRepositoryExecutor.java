@@ -61,7 +61,7 @@ public class AssertionTransactionRepositoryExecutor extends AbstractStepExecutor
       }
     } catch (QueryEvaluationException e) {
       LOG.debug(
-          "Execution of the assertion step {} failed with query {} for transaction " + "repository",
+          "Execution of the assertion step {} failed with query {} for transaction repository",
           step.getIdentifier(), query, getReposioryStatus(transactionConnection));
       throw new BackendException(
           String.format("Query could not be evaluated: %s (%s)", query, e.getMessage()), e);
