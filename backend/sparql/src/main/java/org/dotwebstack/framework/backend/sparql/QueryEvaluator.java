@@ -66,7 +66,7 @@ public class QueryEvaluator {
         GraphQuery query = repositoryConnection.prepareGraphQuery(QueryLanguage.SPARQL,
             getInsertQuery(model, targetGraph));
         query.evaluate();
-        LOG.debug("Insert data into graph {}", targetGraph);
+        LOG.debug("Insert data into targetGraph {}", targetGraph);
       } else {
         addMultipleStatements(repositoryConnection, model, targetGraph);
       }
@@ -102,7 +102,7 @@ public class QueryEvaluator {
       @NonNull Model model, @NonNull IRI systemGraph) {
     if (model.contexts().isEmpty()) {
       repositoryConnection.add(model, systemGraph);
-      LOG.debug("Insert data into graph {}", systemGraph);
+      LOG.debug("Insert data into systemGraph {}", systemGraph);
     } else {
       model.contexts().forEach(graphName -> {
         if (graphName != null) {
@@ -110,7 +110,7 @@ public class QueryEvaluator {
               model.stream().filter(statement -> statement.getContext().equals(graphName)).collect(
                   Collectors.toList()),
               graphName);
-          LOG.debug("Insert data into graph {}", graphName);
+          LOG.debug("Insert data into namedGraph {}", graphName);
         } else {
           repositoryConnection.add(model, systemGraph);
           LOG.debug("Insert data into default graph {}", systemGraph);
