@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.query.transformator;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javafx.util.Pair;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.Backend;
 import org.dotwebstack.framework.backend.BackendResourceProvider;
@@ -87,7 +87,7 @@ public class QueryTransformator {
     Matcher serviceMatcher = regexService.matcher(query);
     Map<String, IRI> prefixesMap = getPrefixesMap(query);
     while (serviceMatcher.find()) {
-      Pair<String, String> servicePair = getPair(serviceMatcher.toMatchResult().group());
+      SimpleEntry<String, String> servicePair = getPair(serviceMatcher.toMatchResult().group());
       StringBuilder backendKey = new StringBuilder();
       backendKey.append(prefixesMap.get(servicePair.getKey()));
       backendKey.append(servicePair.getValue());
@@ -105,22 +105,22 @@ public class QueryTransformator {
     Map<String, IRI> prefixesMap = new HashMap<>();
     Matcher matcher = regexPrefix.matcher(query);
     while (matcher.find()) {
-      Pair<String, String> pair = getPair(matcher.toMatchResult().group());
+      SimpleEntry<String, String> pair = getPair(matcher.toMatchResult().group());
       prefixesMap.put(pair.getKey(), valueFactory.createIRI(pair.getValue()));
     }
     return prefixesMap;
   }
 
-  private Pair<String, String> getPair(String statement) {
+  private SimpleEntry<String, String> getPair(String statement) {
     String[] allComponents = statement.split("\\s+");
     if (allComponents.length == 3) {
       final String key = allComponents[1].substring(0, allComponents[1].length() - 1);
       final String value = allComponents[2].substring(1, allComponents[2].length() - 1);
-      return new Pair<>(key, value);
+      return new SimpleEntry<>(key, value);
     } else if (allComponents.length == 2) {
       String[] keyValueElements = allComponents[1].split(":");
       if (keyValueElements.length == 2) {
-        return new Pair<>(keyValueElements[0], keyValueElements[1]);
+        return new SimpleEntry<>(keyValueElements[0], keyValueElements[1]);
       }
     }
     throw new ConfigurationException(
