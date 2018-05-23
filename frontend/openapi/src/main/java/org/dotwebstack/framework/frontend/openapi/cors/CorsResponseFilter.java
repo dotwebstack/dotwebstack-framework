@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.cors;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
@@ -25,9 +23,9 @@ public class CorsResponseFilter implements ContainerResponseFilter {
   @Override
   public void filter(@NonNull ContainerRequestContext requestContext,
       @NonNull ContainerResponseContext responseContext) throws IOException {
-    if (!requestContext.getHeaders().containsKey(HttpHeaders.ORIGIN)) {
-      return;
-    }
+    // if (!requestContext.getHeaders().containsKey(HttpHeaders.ORIGIN)) {
+    // return;
+    // }
 
     if (javax.ws.rs.HttpMethod.OPTIONS.equals(requestContext.getMethod())) {
       handlePreflightRequest(requestContext, responseContext);
@@ -57,23 +55,24 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     allowedMethods.add(HttpMethod.HEAD);
     allowedMethods.add(HttpMethod.OPTIONS);
 
-    if (!allowedMethods.contains(HttpMethod.valueOf(actualRequestMethod))) {
-      return;
-    }
+    // if (!allowedMethods.contains(HttpMethod.valueOf(actualRequestMethod))) {
+    // return;
+    // }
 
-    // Validate "Access-Control-Request-Headers" header
-
-    String expectedHeadersStr =
-        requestContext.getHeaders().getFirst(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS);
-
-    if (expectedHeadersStr == null) {
-      expectedHeadersStr = "";
-    }
-
-    Set<String> expectedHeaders = ImmutableSet.copyOf(
-        Splitter.on(",").trimResults().omitEmptyStrings().split(expectedHeadersStr));
-
-    expectedHeaders = expectedHeaders.stream().map(String::toLowerCase).collect(Collectors.toSet());
+    // // Validate "Access-Control-Request-Headers" header
+    //
+    // String expectedHeadersStr =
+    // requestContext.getHeaders().getFirst(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS);
+    //
+    // if (expectedHeadersStr == null) {
+    // expectedHeadersStr = "";
+    // }
+    //
+    // Set<String> expectedHeaders = ImmutableSet.copyOf(
+    // Splitter.on(",").trimResults().omitEmptyStrings().split(expectedHeadersStr));
+    //
+    // expectedHeaders =
+    // expectedHeaders.stream().map(String::toLowerCase).collect(Collectors.toSet());
 
     List<Parameter> requestParameters =
         path.getOperationMap().get(HttpMethod.valueOf(actualRequestMethod)).getParameters();
@@ -84,13 +83,13 @@ public class CorsResponseFilter implements ContainerResponseFilter {
 
     allowedHeaders = allowedHeaders.stream().map(String::toLowerCase).collect(Collectors.toSet());
 
-    if (!expectedHeaders.isEmpty()) {
-      Set<String> diff = Sets.difference(expectedHeaders, allowedHeaders);
-
-      if (!diff.isEmpty()) {
-        return;
-      }
-    }
+    // if (!expectedHeaders.isEmpty()) {
+    // Set<String> diff = Sets.difference(expectedHeaders, allowedHeaders);
+    //
+    // if (!diff.isEmpty()) {
+    // return;
+    // }
+    // }
 
     // Add CORS headers
 
@@ -118,9 +117,9 @@ public class CorsResponseFilter implements ContainerResponseFilter {
 
     String statusCode = Integer.toString(responseContext.getStatus());
 
-    if (!operation.getResponses().containsKey(statusCode)) {
-      return;
-    }
+    // if (!operation.getResponses().containsKey(statusCode)) {
+    // return;
+    // }
 
     responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN,
         requestContext.getHeaders().getFirst(HttpHeaders.ORIGIN));
