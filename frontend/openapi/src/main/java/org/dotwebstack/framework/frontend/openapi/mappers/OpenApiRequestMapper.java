@@ -7,6 +7,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import io.swagger.models.ModelImpl;
 import io.swagger.models.Operation;
+import io.swagger.models.Path;
 import io.swagger.models.RefModel;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.BodyParameter;
@@ -46,6 +47,8 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
+  private static final Path specPath;
+
   private final SwaggerParser openApiParser;
 
   private ApplicationProperties applicationProperties;
@@ -55,6 +58,11 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
   private Environment environment;
 
   private List<RequestMapper> requestMappers;
+
+  static {
+    specPath = new Path();
+    specPath.setGet(new Operation());
+  }
 
   @Autowired
   public OpenApiRequestMapper(@NonNull SwaggerParser openApiParser,
@@ -117,9 +125,8 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
         Optional<RequestMapper> optionalRequestMapper = requestMappers.stream().filter(
             mapper -> mapper.supportsVendorExtension(operation.getVendorExtensions())).findFirst();
 
-        optionalRequestMapper.ifPresent(mapper ->
-            mapper.map(resourceBuilder, swagger, apiOperation, operation, absolutePath)
-        );
+        optionalRequestMapper.ifPresent(
+            mapper -> mapper.map(resourceBuilder, swagger, apiOperation, operation, absolutePath));
 
         if (!optionalRequestMapper.isPresent()) {
           LOG.warn("Path '{}' is not mapped to an information product or transaction.",
@@ -137,14 +144,16 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
   private void addSpecResource(String yaml, Swagger swagger, HttpConfiguration httpConfiguration)
       throws IOException {
-    OpenApiSpecHandler handler = new OpenApiSpecHandler(yaml);
     String basePath = createBasePath(swagger);
     String specEndpoint = getSpecEndpoint(swagger).orElse("/");
+    OpenApiSpecHandler handler = new OpenApiSpecHandler(yaml);
     Builder specResourceBuilder = Resource.builder().path(basePath + specEndpoint);
     specResourceBuilder//
         .addMethod(GET)//
         .produces("text/yaml")//
         .handledBy(handler);
+    specResourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(
+        new OptionsRequestHandler(specPath));
     httpConfiguration.registerResources(specResourceBuilder.build());
   }
 

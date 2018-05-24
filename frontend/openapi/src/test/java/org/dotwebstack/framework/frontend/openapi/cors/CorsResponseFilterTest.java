@@ -34,6 +34,7 @@ import org.springframework.http.HttpStatus;
 public class CorsResponseFilterTest {
 
   private static final String ORIGIN = "http://foo";
+  private static final String ALLOWED_ORIGIN = "*";
 
   @Mock
   private ContainerRequestContext requestContextMock;
@@ -55,23 +56,39 @@ public class CorsResponseFilterTest {
     when(requestContextMock.getHeaders()).thenReturn(requestHeaders);
 
     responseHeaders = new MultivaluedHashMap<>();
+    responseHeaders.add(HttpHeaders.ALLOW, "GET,HEAD,OPTIONS");
     when(responseContextMock.getHeaders()).thenReturn(responseHeaders);
   }
 
   @Test
-  public void filter_DoesNothing_ForAbsentOriginOnPreflightRequest() throws IOException {
+  public void filter_AddsCorsHeaders_ForAbsentOriginOnPreflightRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.OPTIONS, null);
+    requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET);
+
+    Path path = mock(Path.class);
+    when(path.getOperationMap()).thenReturn(
+        ImmutableMap.of(io.swagger.models.HttpMethod.GET, mock(Operation.class)));
+    when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.isEmpty(), is(true));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_MAX_AGE), equalTo(86400));
+    assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
+    List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
+        responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
+    assertThat(allowMethods,
+        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
+            io.swagger.models.HttpMethod.HEAD.toString(),
+            io.swagger.models.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
-  public void filter_DoesNothing_ForAbsentPathPropertyOnPreflightRequest() throws IOException {
+  public void filter_AddsCorsHeaders_ForAbsentPathPropertyOnPreflightRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.OPTIONS, ORIGIN);
 
@@ -79,11 +96,13 @@ public class CorsResponseFilterTest {
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.isEmpty(), is(true));
+    assertThat(responseHeaders.size(), is(2));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
   }
 
   @Test
-  public void filter_DoesNothing_ForAbsentRequestMethodOnPreflightRequest() throws IOException {
+  public void filter_AddsCorsHeaders_ForAbsentRequestMethodOnPreflightRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.OPTIONS, ORIGIN);
     when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(
@@ -93,11 +112,21 @@ public class CorsResponseFilterTest {
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.isEmpty(), is(true));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_MAX_AGE), equalTo(86400));
+    assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
+    List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
+        responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
+    assertThat(allowMethods,
+        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
+            io.swagger.models.HttpMethod.HEAD.toString(),
+            io.swagger.models.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
-  public void filter_DoesNothing_ForDisallowedRequestMethodOnPreflightRequest() throws IOException {
+  public void filter_AddsCorsHeaders_ForDisallowedRequestMethodOnPreflightRequest()
+      throws IOException {
     // Arrange
     prepareRequest(HttpMethod.OPTIONS, ORIGIN);
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.POST);
@@ -111,7 +140,16 @@ public class CorsResponseFilterTest {
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.isEmpty(), is(true));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_MAX_AGE), equalTo(86400));
+    assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
+    List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
+        responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
+    assertThat(allowMethods,
+        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
+            io.swagger.models.HttpMethod.HEAD.toString(),
+            io.swagger.models.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -130,7 +168,8 @@ public class CorsResponseFilterTest {
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), equalTo(ORIGIN));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
     assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_MAX_AGE), equalTo(86400));
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
@@ -142,11 +181,12 @@ public class CorsResponseFilterTest {
   }
 
   @Test
-  public void filter_DoesNothing_ForDisallowedRequestHeaderOnPreflightRequest() throws IOException {
+  public void filter_AddsCorsHeaders_ForDisallowedRequestHeaderOnPreflightRequest()
+      throws IOException {
     // Arrange
     prepareRequest(HttpMethod.OPTIONS, ORIGIN);
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET);
-    requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Suspicious-Header");
+    requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Unknown-Header");
 
     Path path = mock(Path.class);
     when(path.getOperationMap()).thenReturn(
@@ -157,7 +197,16 @@ public class CorsResponseFilterTest {
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.isEmpty(), is(true));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_MAX_AGE), equalTo(86400));
+    assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
+    List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
+        responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
+    assertThat(allowMethods,
+        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
+            io.swagger.models.HttpMethod.HEAD.toString(),
+            io.swagger.models.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -180,49 +229,69 @@ public class CorsResponseFilterTest {
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), equalTo(ORIGIN));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_MAX_AGE), equalTo(86400));
     List<String> allowHeaders = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS).toString());
     assertThat(allowHeaders, containsInAnyOrder("trusted-header", "other-header"));
+    List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
+        responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
+    assertThat(allowMethods,
+        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
+            io.swagger.models.HttpMethod.HEAD.toString(),
+            io.swagger.models.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
-  public void filter_DoesNothing_ForAbsentOriginOnActualRequest() throws IOException {
+  public void filter_AddsCorsHeaders_ForAbsentOriginOnActualRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.GET, null);
-
-    // Act
-    corsResponseFilter.filter(requestContextMock, responseContextMock);
-
-    // Assert
-    assertThat(responseHeaders.isEmpty(), is(true));
-  }
-
-  @Test
-  public void filter_DoesNothing_ForAbsentOperationPropertyOnActualRequest() throws IOException {
-    // Arrange
-    prepareRequest(HttpMethod.GET, ORIGIN);
-
-    // Act
-    corsResponseFilter.filter(requestContextMock, responseContextMock);
-
-    // Assert
-    assertThat(responseHeaders.isEmpty(), is(true));
-  }
-
-  @Test
-  public void filter_DoesNothing_ForUnknownResponseStatusOnActualRequest() throws IOException {
-    // Arrange
-    prepareRequest(HttpMethod.GET, ORIGIN);
-    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(
-        mock(Operation.class));
+    Operation operation = new Operation().response(HttpStatus.OK.value(), new Response());
+    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(operation);
     when(responseContextMock.getStatus()).thenReturn(HttpStatus.OK.value());
 
     // Act
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.isEmpty(), is(true));
+    assertThat(responseHeaders.size(), is(2));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
+    assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS), is(false));
+  }
+
+  @Test
+  public void filter_AddsCorsHeaders_ForAbsentOperationPropertyOnActualRequest()
+      throws IOException {
+    // Arrange
+    prepareRequest(HttpMethod.GET, ORIGIN);
+
+    // Act
+    corsResponseFilter.filter(requestContextMock, responseContextMock);
+
+    // Assert
+    assertThat(responseHeaders.size(), is(2));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
+  }
+
+  @Test
+  public void filter_AddsCorsHeaders_ForUnknownResponseStatusOnActualRequest() throws IOException {
+    // Arrange
+    prepareRequest(HttpMethod.GET, ORIGIN);
+    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(
+        mock(Operation.class));
+    when(responseContextMock.getStatus()).thenReturn(HttpStatus.I_AM_A_TEAPOT.value());
+
+    // Act
+    corsResponseFilter.filter(requestContextMock, responseContextMock);
+
+    // Assert
+    assertThat(responseHeaders.size(), is(2));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
+    assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS), is(false));
   }
 
   @Test
@@ -237,12 +306,13 @@ public class CorsResponseFilterTest {
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), equalTo(ORIGIN));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS), is(false));
   }
 
   @Test
-  public void filter_AddsCorsExposedHeaders_ForResponseWithHeadersHeadersOnActualRequest()
+  public void filter_AddsCorsExposedHeaders_ForResponseWithHeadersOnActualRequest()
       throws IOException {
     // Arrange
     prepareRequest(HttpMethod.GET, ORIGIN);
@@ -256,7 +326,8 @@ public class CorsResponseFilterTest {
     corsResponseFilter.filter(requestContextMock, responseContextMock);
 
     // Assert
-    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), equalTo(ORIGIN));
+    assertThat(responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
+        equalTo(ALLOWED_ORIGIN));
     List<String> exposedHeaders = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS).toString());
     assertThat(exposedHeaders, containsInAnyOrder("some-header", "other-header"));

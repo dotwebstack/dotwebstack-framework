@@ -173,7 +173,7 @@ public class OpenApiIntegrationTest {
     assertThat(allowMethods, containsInAnyOrder(HttpMethod.GET.toString(),
         HttpMethod.HEAD.toString(), HttpMethod.OPTIONS.toString()));
     assertThat(response.getHeaders().containsKey(
-        org.springframework.http.HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), is(false));
+        org.springframework.http.HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN), is(true));
   }
 
   @Test
@@ -188,7 +188,7 @@ public class OpenApiIntegrationTest {
     assertThat(
         response.getHeaders().getFirst(
             org.springframework.http.HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN),
-        equalTo("http://foo"));
+        equalTo("*"));
     List<String> allowMethods =
         Splitter.on(",").trimResults().splitToList(response.getHeaders().getFirst(
             org.springframework.http.HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
