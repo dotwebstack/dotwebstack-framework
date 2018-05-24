@@ -80,15 +80,15 @@ public class SparqlResultsXmlTupleEntityWriterTest extends SparqlResultsTupleEnt
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
-    final String checkResult = "<?xml version='1.0' encoding='UTF-8'?>\r\n"
-        + "<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\r\n\t<head>\r\n"
-        + "\t\t<variable name='beer'/>\r\n\t</head>\r\n\t<results>\r\n\t\t<result>\r\n"
-        + "\t\t\t<binding name='beer'>\r\n\t\t\t\t<literal>Heineken</literal>\r\n"
-        + "\t\t\t</binding>\r\n\t\t</result>\r\n\t\t<result>\r\n"
-        + "\t\t\t<binding name='beer'>\r\n\t\t\t\t<literal>Amstel</literal>\r\n"
-        + "\t\t\t</binding>\r\n\t\t</result>\r\n\t</results>\r\n</sparql>\r\n";
+    final String checkResult = "<?xml version='1.0' encoding='UTF-8'?>\n"
+        + "<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\n\t<head>\n"
+        + "\t\t<variable name='beer'/>\n\t</head>\n\t<results>\n\t\t<result>\n"
+        + "\t\t\t<binding name='beer'>\n\t\t\t\t<literal>Heineken</literal>\n"
+        + "\t\t\t</binding>\n\t\t</result>\n\t\t<result>\n"
+        + "\t\t\t<binding name='beer'>\n\t\t\t\t<literal>Amstel</literal>\n"
+        + "\t\t\t</binding>\n\t\t</result>\n\t</results>\n</sparql>\n";
 
-    assertThat(result, containsString(checkResult));
+    assertThat(result.replace("\r\n", "\n").replace("\r", "\n"), containsString(checkResult));
   }
 
 }

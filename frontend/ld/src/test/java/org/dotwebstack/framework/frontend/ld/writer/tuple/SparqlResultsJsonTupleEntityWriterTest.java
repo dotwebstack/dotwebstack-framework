@@ -108,14 +108,15 @@ public class SparqlResultsJsonTupleEntityWriterTest extends SparqlResultsTupleEn
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
-    final String checkResult = "{\r\n  \"head\" : {\r\n    \"vars\" : [\r\n"
-        + "      \"beer\"\r\n    ]\r\n  },\r\n  \"results\" : {\r\n"
-        + "    \"bindings\" : [\r\n      {\r\n        \"beer\" : {\r\n"
-        + "          \"type\" : \"literal\",\r\n          \"value\" : \"Heineken\"\r\n"
-        + "        }\r\n      },\r\n      {\r\n        \"beer\" : {\r\n"
-        + "          \"type\" : \"literal\",\r\n          \"value\" : \"Amstel\"\r\n"
-        + "        }\r\n      }\r\n    ]\r\n  }\r\n";
-    assertThat(result, containsString(checkResult));
+    final String checkResult = "{\n" + "  \"head\" : {\n" + "    \"vars\" : [\n"
+        + "      \"beer\"\n" + "    ]\n" + "  },\n" + "  \"results\" : {\n"
+        + "    \"bindings\" : [\n" + "      {\n" + "        \"beer\" : {\n"
+        + "          \"type\" : \"literal\",\n" + "          \"value\" : \"Heineken\"\n"
+        + "        }\n" + "      },\n" + "      {\n" + "        \"beer\" : {\n"
+        + "          \"type\" : \"literal\",\n" + "          \"value\" : \"Amstel\"\n"
+        + "        }\n" + "      }\n" + "    ]\n" + "  }\n";
+    // assertThat(result, containsString(checkResult));
+    assertThat(result.replace("\r\n", "\n").replace("\r", "\n"), containsString(checkResult));
   }
 
 }
