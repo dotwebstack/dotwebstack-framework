@@ -108,11 +108,14 @@ public class SparqlResultsJsonTupleEntityWriterTest extends SparqlResultsTupleEn
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
-    assertThat(result, containsString("{\"head\":{\"vars\":[\"beer\"]}"));
-    assertThat(result,
-        containsString(
-            "{\"bindings\":" + "[{\"beer\":{\"type\":\"literal\",\"value\":\"Heineken\"}},"
-                + "{\"beer\":{\"type\":\"literal\",\"value\":\"Amstel\"}}]}}"));
+    final String checkResult = "{\r\n  \"head\" : {\r\n    \"vars\" : [\r\n"
+        + "      \"beer\"\r\n    ]\r\n  },\r\n  \"results\" : {\r\n"
+        + "    \"bindings\" : [\r\n      {\r\n        \"beer\" : {\r\n"
+        + "          \"type\" : \"literal\",\r\n          \"value\" : \"Heineken\"\r\n"
+        + "        }\r\n      },\r\n      {\r\n        \"beer\" : {\r\n"
+        + "          \"type\" : \"literal\",\r\n          \"value\" : \"Amstel\"\r\n"
+        + "        }\r\n      }\r\n    ]\r\n  }\r\n";
+    assertThat(result, containsString(checkResult));
   }
 
 }

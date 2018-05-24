@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.ld.writer.tuple;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -80,13 +80,15 @@ public class SparqlResultsXmlTupleEntityWriterTest extends SparqlResultsTupleEnt
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
-    assertThat(result, containsString("sparql xmlns='http://www.w3.org/2005/sparql-results#'"));
-    assertThat(result, containsString("<head><variable name='beer'/></head>"));
-    assertThat(result,
-        containsString("<results>"
-            + "<result><binding name='beer'><literal>Heineken</literal></binding></result>"
-            + "<result><binding name='beer'><literal>Amstel</literal></binding></result>"
-            + "</results>"));
+    final String checkResult = "<?xml version='1.0' encoding='UTF-8'?>\r\n"
+        + "<sparql xmlns='http://www.w3.org/2005/sparql-results#'>\r\n\t<head>\r\n"
+        + "\t\t<variable name='beer'/>\r\n\t</head>\r\n\t<results>\r\n\t\t<result>\r\n"
+        + "\t\t\t<binding name='beer'>\r\n\t\t\t\t<literal>Heineken</literal>\r\n"
+        + "\t\t\t</binding>\r\n\t\t</result>\r\n\t\t<result>\r\n"
+        + "\t\t\t<binding name='beer'>\r\n\t\t\t\t<literal>Amstel</literal>\r\n"
+        + "\t\t\t</binding>\r\n\t\t</result>\r\n\t</results>\r\n</sparql>\r\n";
+
+    assertThat(result, containsString(checkResult));
   }
 
 }

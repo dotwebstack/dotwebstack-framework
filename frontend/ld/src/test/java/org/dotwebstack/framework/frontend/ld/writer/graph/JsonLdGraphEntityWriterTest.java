@@ -135,10 +135,11 @@ public class JsonLdGraphEntityWriterTest {
     // Assert
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
-    assertThat(result, containsString(
-        "[{\"@id\":\"http://dbeerpedia.org#Breweries\",\"@type\":[\"http://dbeerpedia.org#Backend\"]"));
-    assertThat(result, containsString(
-        "http://www.w3.org/2000/01/rdf-schema#label\":[{\"@value\":\"Beer breweries in The Netherlands\"}]}]"));
+    final String checkResult = "[ {\r\n  \"@id\" : \"http://dbeerpedia.org#Breweries\",\r\n "
+        + " \"@type\" : [ \"http://dbeerpedia.org#Backend\" ],\r\n "
+        + " \"http://www.w3.org/2000/01/rdf-schema#label\" : [ {\r\n "
+        + "   \"@value\" : \"Beer breweries in The Netherlands\"\r\n  } ]";
+    assertThat(result, containsString(checkResult));
   }
 
 }
