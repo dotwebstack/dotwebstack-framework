@@ -1,13 +1,15 @@
 package org.dotwebstack.framework.frontend.openapi.cors;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Sets;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.parameters.Parameter;
 import io.swagger.models.properties.Property;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +31,10 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     } else {
       handleActualRequest(requestContext, responseContext);
     }
+
+    // Add this header to every request
+
+    responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
   }
 
   private void handlePreflightRequest(ContainerRequestContext requestContext,
@@ -44,27 +50,24 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     String actualRequestMethod =
         requestContext.getHeaders().getFirst(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD);
 
-    if (actualRequestMethod == null) {
-      return;
+    String allowHeaderStr = responseContext.getHeaders().getFirst(HttpHeaders.ALLOW).toString();
+
+    Set<HttpMethod> allowedMethods =
+        ImmutableSet.copyOf(
+            Splitter.on(",").trimResults().omitEmptyStrings().split(allowHeaderStr)).stream().map(
+                HttpMethod::valueOf).collect(Collectors.toSet());
+
+    Set<String> allowedHeaders = Collections.emptySet();
+    Operation operation = path.getOperationMap().get(
+        actualRequestMethod == null ? "" : HttpMethod.valueOf(actualRequestMethod));
+    if (operation != null) {
+      List<Parameter> requestParameters = operation.getParameters();
+
+      allowedHeaders = requestParameters.stream().filter(p -> "header".equals(p.getIn())).map(
+          Parameter::getName).map(String::toLowerCase).collect(Collectors.toSet());
     }
 
-    Set<HttpMethod> allowedMethods = Sets.newHashSet(path.getOperationMap().keySet());
-    allowedMethods.add(HttpMethod.HEAD);
-    allowedMethods.add(HttpMethod.OPTIONS);
-
-    List<Parameter> requestParameters =
-        path.getOperationMap().get(HttpMethod.valueOf(actualRequestMethod)).getParameters();
-
-    Set<String> allowedHeaders =
-        requestParameters.stream().filter(p -> "header".equals(p.getIn())).map(
-            Parameter::getName).collect(Collectors.toSet());
-
-    allowedHeaders = allowedHeaders.stream().map(String::toLowerCase).collect(Collectors.toSet());
-
     // Add CORS headers
-
-    responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN,
-        requestContext.getHeaders().getFirst(HttpHeaders.ORIGIN));
 
     responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 86400);
 
@@ -90,9 +93,6 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     if (!operation.getResponses().containsKey(statusCode)) {
       return;
     }
-
-    responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN,
-        requestContext.getHeaders().getFirst(HttpHeaders.ORIGIN));
 
     Map<String, Property> responseHeaders = operation.getResponses().get(statusCode).getHeaders();
 
