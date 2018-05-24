@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.taxonic.carml.engine.RmlMapper;
+import com.taxonic.carml.logical_source_resolver.JsonPathResolver;
 import com.taxonic.carml.model.TriplesMap;
+import com.taxonic.carml.vocab.Rdf;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.BodyParameter;
 import io.swagger.models.parameters.Parameter;
@@ -26,10 +28,8 @@ import org.springframework.stereotype.Service;
 class TransactionRequestBodyMapper {
 
   private static final Logger LOG = LoggerFactory.getLogger(TransactionRequestBodyMapper.class);
-
-  private RmlMappingResourceProvider rmlMappingResourceProvider;
-
   private static final ValueFactory valueFactory = SimpleValueFactory.getInstance();
+  private RmlMappingResourceProvider rmlMappingResourceProvider;
 
   @Autowired
   public TransactionRequestBodyMapper(
@@ -64,7 +64,8 @@ class TransactionRequestBodyMapper {
             rmlMappingResourceProvider.get(valueFactory.createIRI(rmlMappingName));
         Set<TriplesMap> mapping = RmlCustomMappingLoader.build().load(rmlMapping.getModel());
 
-        RmlMapper mapper = RmlMapper.newBuilder().build();
+        RmlMapper mapper = RmlMapper.newBuilder().setLogicalSourceResolver(Rdf.Ql.JsonPath,
+            new JsonPathResolver()).build();
 
         InputStream inputStream = IOUtils.toInputStream(value);
         mapper.bindInputStream(rmlMapping.getStreamName(), inputStream);
