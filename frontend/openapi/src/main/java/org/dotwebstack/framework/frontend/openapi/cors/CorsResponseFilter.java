@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.cors;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
@@ -52,11 +50,6 @@ public class CorsResponseFilter implements ContainerResponseFilter {
 
     String allowHeaderStr = responseContext.getHeaders().getFirst(HttpHeaders.ALLOW).toString();
 
-    Set<HttpMethod> allowedMethods =
-        ImmutableSet.copyOf(
-            Splitter.on(",").trimResults().omitEmptyStrings().split(allowHeaderStr)).stream().map(
-                HttpMethod::valueOf).collect(Collectors.toSet());
-
     Set<String> allowedHeaders = Collections.emptySet();
     Operation operation = path.getOperationMap().get(
         actualRequestMethod == null ? "" : HttpMethod.valueOf(actualRequestMethod));
@@ -72,7 +65,7 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_MAX_AGE, 86400);
 
     responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS,
-        Joiner.on(", ").join(allowedMethods));
+        allowHeaderStr);
 
     if (!allowedHeaders.isEmpty()) {
       responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
