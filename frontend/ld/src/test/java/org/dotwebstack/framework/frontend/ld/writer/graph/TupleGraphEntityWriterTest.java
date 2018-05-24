@@ -97,7 +97,7 @@ public class TupleGraphEntityWriterTest {
     verify(outputStream).write(byteCaptor.capture(), anyInt(), anyInt());
     String result = new String(byteCaptor.getValue());
     assertThat(result,
-        containsString("<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend> ;"));
+        containsString("<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend>;"));
     assertThat(result, containsString(
         "<http://www.w3.org/2000/01/rdf-schema#label> \"Beer breweries in The Netherlands\""));
   }

@@ -105,12 +105,12 @@ public class TriGGraphEntityWriterTest {
     String result2 = new String(values.get(1));
 
     assertThat(result1,
-        containsString("<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend> ;"));
+        containsString("<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend>;"));
     assertThat(result1, containsString(
         "<http://www.w3.org/2000/01/rdf-schema#label> \"Beer breweries in The Netherlands\""));
 
     assertThat(result2,
-        containsString("<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend> ;"));
+        containsString("<http://dbeerpedia.org#Breweries> a <http://dbeerpedia.org#Backend>;"));
     assertThat(result2, containsString(
         "<http://www.w3.org/2000/01/rdf-schema#label> \"Beer breweries in The Netherlands\""));
   }

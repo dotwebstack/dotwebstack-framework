@@ -277,17 +277,18 @@ public class OpenApiIntegrationTest {
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
     JSONArray breweries = new JSONArray();
-    breweries.put(new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
-        DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.intValue()).put("fte",
-            DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
-                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
-                    DBEERPEDIA.MAXIMUS_PLACE.stringValue()));
     breweries.put(
         new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
             DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue()).put("fte",
                 DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
                     DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
                         DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
+    breweries.put(new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
+        DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.intValue()).put("fte",
+            DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
+                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
+                    DBEERPEDIA.MAXIMUS_PLACE.stringValue()));
+
 
     JSONObject expected = new JSONObject(ImmutableMap.of("_embedded",
         ImmutableMap.of("breweries", breweries), "_links",

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.rml;
 import com.taxonic.carml.vocab.Rdf.Carml;
 import com.taxonic.carml.vocab.Rml;
 import java.util.List;
+import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
@@ -86,13 +87,15 @@ public class RmlMappingResourceProvider extends AbstractResourceProvider<RmlMapp
     tupleQuery.setDataset(getSimpleDataset());
 
     List<BindingSet> queryResults = QueryResults.asList(tupleQuery.evaluate());
+    Optional<BindingSet> streamName =
+        queryResults.stream().filter(name -> name.getValue(STREAMNAME) != null).findFirst();
 
-    if (queryResults.isEmpty() || queryResults.get(0).getValue(STREAMNAME) == null) {
+    if (!streamName.isPresent()) {
       throw new ConfigurationException(
           String.format("%s not set for RmlMapping %s", STREAMNAME, identifier));
     }
 
-    return queryResults.get(0).getValue(STREAMNAME).stringValue();
+    return streamName.get().getValue(STREAMNAME).stringValue();
   }
 
   private SimpleDataset getSimpleDataset() {

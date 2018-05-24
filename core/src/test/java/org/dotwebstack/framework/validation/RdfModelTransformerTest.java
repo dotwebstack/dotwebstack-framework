@@ -95,17 +95,16 @@ public class RdfModelTransformerTest {
     // Assert
     assertNotNull(rdf4jModel);
     assertThat(rdf4jModel.toString(),
-        equalTo("[(http://example.org#Marco, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, "
-            + "http://example.org#Persoon) [null], (http://example.org#Marco, http://example.org#naam,"
-            + " \"Marco\"^^<http://www.w3.org/2001/XMLSchema#string>) [null], "
-            + "(http://example.org#Nanda, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, "
-            + "http://example.org#Persoon) [null], (http://example.org#Nanda, http://example.org#naam,"
-            + " \"Nanda\"^^<http://www.w3.org/2001/XMLSchema#string>) [null], "
-            + "(http://example.org#HuwelijkMarcoNanda, "
-            + "http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://example.org#Huwelijk) [null], "
+        equalTo("[(http://example.org#Marco, http://www.w3.org/1999/02/22-rdf-syntax-ns#type,"
+            + " http://example.org#Persoon) [null], (http://example.org#Marco, http://example.org#naam,"
+            + " \"Marco\") [null], (http://example.org#Nanda, "
+            + "http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://example.org#Persoon) [null],"
+            + " (http://example.org#Nanda, http://example.org#naam, \"Nanda\") [null], "
+            + "(http://example.org#HuwelijkMarcoNanda, http://www.w3.org/1999/02/22-rdf-syntax-ns#type,"
+            + " http://example.org#Huwelijk) [null], (http://example.org#HuwelijkMarcoNanda, "
+            + "http://example.org#lid, http://example.org#Marco) [null], "
             + "(http://example.org#HuwelijkMarcoNanda, http://example.org#lid, "
-            + "http://example.org#Marco) [null], (http://example.org#HuwelijkMarcoNanda,"
-            + " http://example.org#lid, http://example.org#Nanda) [null]]"));
+            + "http://example.org#Nanda) [null]]"));
   }
 
   @Test
@@ -117,17 +116,17 @@ public class RdfModelTransformerTest {
     // Assert
     assertNotNull(rdf4jModel);
     assertThat(rdf4jModel.toString(),
-        equalTo("[(http://example.org#Marco, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, "
-            + "http://example.org#Persoon) [null], (http://example.org#Marco, http://example.org#naam,"
-            + " \"Marco\"^^<http://www.w3.org/2001/XMLSchema#string>) [null], "
-            + "(http://example.org#Nanda, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, "
-            + "http://example.org#Persoon) [null], (http://example.org#Nanda, http://example.org#naam,"
-            + " \"Nanda\"^^<http://www.w3.org/2001/XMLSchema#string>) [null], "
+        equalTo("[(http://example.org#Marco, http://www.w3.org/1999/02/22-rdf-syntax-ns#type,"
+            + " http://example.org#Persoon) [null], (http://example.org#Marco, "
+            + "http://example.org#naam, \"Marco\") [null], (http://example.org#Nanda,"
+            + " http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://example.org#Persoon) [null],"
+            + " (http://example.org#Nanda, http://example.org#naam, \"Nanda\") [null], "
             + "(http://example.org#HuwelijkMarcoNanda, "
-            + "http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://example.org#Huwelijk) [null], "
+            + "http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://example.org#Huwelijk) [null],"
+            + " (http://example.org#HuwelijkMarcoNanda, "
+            + "http://example.org#lid, http://example.org#Marco) [null], "
             + "(http://example.org#HuwelijkMarcoNanda, http://example.org#lid, "
-            + "http://example.org#Marco) [null], (http://example.org#HuwelijkMarcoNanda,"
-            + " http://example.org#lid, http://example.org#Nanda) [null]]"));
+            + "http://example.org#Nanda) [null]]"));
   }
 
 }
