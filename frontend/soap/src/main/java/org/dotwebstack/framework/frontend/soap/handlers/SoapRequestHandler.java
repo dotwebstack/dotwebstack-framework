@@ -39,6 +39,19 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     LOG.debug("Handling SOAP request, SOAPAction: {}",soapAction);
     if (soapAction.equals(String.format("\"%s\"",SoapAction.GET_VEHICLE_NAMES))) {
       return MockResponse.GET_VEHICLE_NAMES;
+    } else if (soapAction.equals(String.format("\"%s\"",SoapAction.GET_DOMAIN_TABLE_NAMES))) {
+      return MockResponse.GET_DOMAIN_TABLE_NAMES;
+    } else if (soapAction.equals(String.format("\"%s\"",SoapAction.GET_DATE_LAST_PUBLISHED))) {
+      return MockResponse.GET_DATE_LAST_PUBLISHED;
+    } else if (soapAction.equals(String.format("\"%s\"",
+        SoapAction.GET_DOMAIN_TABLE_CHANGES_INFO))) {
+      return MockResponse.GET_DOMAIN_TABLE_CHANGES_INFO;
+    } else if (soapAction.equals(String.format("\"%s\"",SoapAction.GET_DOMAIN_TABLE_CHANGES))) {
+      return MockResponse.GET_DOMAIN_TABLE_CHANGES;
+    } else if (soapAction.equals(String.format("\"%s\"",SoapAction.GET_DOMAIN_TABLE_INFO))) {
+      return MockResponse.GET_DOMAIN_TABLE_INFO;
+    } else if (soapAction.equals(String.format("\"%s\"",SoapAction.GET_DOMAIN_TABLE))) {
+      return MockResponse.GET_DOMAIN_TABLE;
     } else {
       return ERROR_RESPONSE;
     }
