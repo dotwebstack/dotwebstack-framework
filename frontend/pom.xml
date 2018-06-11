@@ -18,6 +18,7 @@
     <module>http</module>
     <module>ld</module>
     <module>openapi</module>
+    <module>soap</module>
   </modules>
 
 </project>

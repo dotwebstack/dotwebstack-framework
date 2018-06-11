@@ -1,11 +1,10 @@
-package org.dotwebstack.framework.frontend.soap.handlers;
+package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
 import com.ibm.wsdl.extensions.schema.SchemaImpl;
 import java.io.File;
 import java.net.URL;
 import java.util.Map;
 import java.util.List;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Part;
@@ -18,52 +17,15 @@ import javax.wsdl.extensions.schema.SchemaImport;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.WSDLException;
 import javax.wsdl.xml.WSDLReader;
-
-import lombok.NonNull;
-
-import org.dotwebstack.framework.frontend.soap.wsdlreader.SchemaDefinitionWrapper;
-import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapContext;
-import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
-import org.glassfish.jersey.process.Inflector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
-public class SoapRequestHandler implements Inflector<ContainerRequestContext, String> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(SoapRequestHandler.class);
+public class Generator {
 
   private static final String DWS_NAMESPACE = "http://dotwebstack.org/wsdl-extension/";
   private static final String DWS_INFOPROD = "informationProduct";
 
-  private final Port wsdlPort;
-  
-  private static final String ERROR_RESPONSE = "<?xml version=\"1.0\"?>"
-      + "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">"
-      + "  <s:Body>"
-      + "    <s:Fault>"
-      + "      <faultcode xmlns:a=\"http://schemas.microsoft.com/ws/2005/05/addressing/none\">"
-          + "a:ActionNotSupported</faultcode>"
-      + "      <faultstring xml:lang=\"en-US\">The message with Action '%s' cannot be processed "
-          + "at the receiver, due to a ContractFilter mismatch at the EndpointDispatcher. This may "
-          + "be because of either a contract mismatch (mismatched Actions between sender and "
-          + "receiver) or a binding/security mismatch between the sender and the receiver.  Check "
-          + "that sender and receiver have the same contract and the same binding (including "
-          + "security requirements, e.g. Message, Transport, None).</faultstring>"
-      + "    </s:Fault>"
-      + "  </s:Body>"
-      + "</s:Envelope>";
-      
-  public SoapRequestHandler(@NonNull Port wsdlPort) {
-    this.wsdlPort = wsdlPort;
-  }
-
-  @Override
-  public String apply(ContainerRequestContext data) {
-    final String soapAction = data.getHeaderString("SOAPAction");
-    String msg = ERROR_RESPONSE;
-    LOG.debug("Handling SOAP request, SOAPAction: {}",soapAction);
-
+  public static void main(String[] args) {
+		
     try {
       // Read the wsdl
       System.out.println("SOAP generator, starting");
@@ -84,8 +46,29 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
  // java.lang.String	toString() 
       }          
 
-      // Scan the defined service and message-definition in order to
-      // find the received action request.
+      // Definition wsdlDefinition = wsdlReader.readWSDL(wsdlUrl.toString());
+      System.out.println("File loaded");
+      System.out.println("=======================");
+      
+      //Output the types defined in the wsdl
+      System.out.println("Types:");
+      Types wsdlTypes = wsdlDefinition.getTypes();
+      List<ExtensibilityElement> elements = wsdlTypes.getExtensibilityElements();
+      for (ExtensibilityElement element : elements) {
+        if ( element instanceof SchemaImpl ) {
+          Map<String, List> includes = ((SchemaImpl) element).getImports();
+          for (List<SchemaImport> includeList : includes.values()) {
+            for (SchemaImport schemaImport : includeList) {
+              Schema schema = schemaImport.getReferencedSchema();
+              SoapUtils.printSchema(wsdlDefinition, schema);
+            }
+          }
+          SoapUtils.printSchema(wsdlDefinition, (Schema) element);
+        } 
+      }
+      System.out.println("=======================");
+      
+      //Output the defined service and message-definition
       Map<String, Service> wsdlServices = wsdlDefinition.getServices();
       for (Service wsdlService : wsdlServices.values()) {
         System.out.println("- Service: " + wsdlService.getQName().getLocalPart());
@@ -99,15 +82,6 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
           List<BindingOperation> wsdlBindingOperations = wsdlPort.getBinding().getBindingOperations();
           for (BindingOperation wsdlBindingOperation : wsdlBindingOperations) {
             System.out.println("    - BindingOperation: " + wsdlBindingOperation.getName());
-            System.out.println("    - Comparing to: " + soapAction);
-
-            // Skip this binding operation if it does not match the required action.
-            if (soapAction.endsWith("/" + wsdlBindingOperation.getName())) {
-              continue;
-            }
-
-            System.out.println("    - found BindingOperation: " + wsdlBindingOperation.getName());
-
             Element docElement = wsdlBindingOperation.getOperation().getDocumentationElement();
             /*
             System.out.println("--- Documentation ---");
@@ -128,19 +102,17 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
             
             //Build the SOAP response for the specific message
             System.out.println("========");
-            msg = SoapUtils.buildSoapMessageFromOutput(new SchemaDefinitionWrapper(wsdlDefinition, wsdlUrl.toString()), wsdlPort.getBinding(), wsdlBindingOperation, SoapContext.DEFAULT);
+            String msg = SoapUtils.buildSoapMessageFromOutput(new SchemaDefinitionWrapper(wsdlDefinition, wsdlUrl.toString()), wsdlPort.getBinding(), wsdlBindingOperation, SoapContext.DEFAULT);
             System.out.println(msg);
             System.out.println("========");
-	    return msg;
           }
         }
       }
+
     }
     catch (Exception e) {
       System.out.println(e.getMessage());
     }
 
-    // No operation found. Return the error message.
-    return msg;
   }
 }
