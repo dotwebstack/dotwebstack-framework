@@ -1,0 +1,24 @@
+swagger: "2.0"
+info:
+  title: API
+  version: 1.0
+paths:
+  /endpoint:
+    post:
+      summary: "Test POST endpoint"
+      parameters:
+      - name: "body"
+        in: "body"
+        schema:
+          $ref: "#/definitions/SampleObject"
+      responses:
+        200:
+          description: OK
+definitions:
+  SampleObject:
+    type: "object"
+    required:
+    - "someproperty"
+    properties:
+      someproperty:
+        type: "string"
