@@ -1,0 +1,54 @@
+swagger: "2.0"
+info:
+  title: API
+  version: 1.0
+paths:
+  /endpoint:
+    get:
+      tags:
+      - "Bestemmingsplangebieden"
+      summary: "bestemmingsplangebieden"
+      produces:
+      - "application/hal+json"
+      - "application/problem+json"
+      parameters:
+      - name: "random-header-parameter"
+        in: "header"
+        required: true
+        type: "string"
+        description: "random-header-parameter"
+        default: "epsg:4258"
+        enum:
+        - "epsg:4258"
+        - "epsg:28992"
+      - name: "Accept-Crs"
+        in: "header"
+        required: true
+        type: "string"
+        description: "Gewenste CRS van de coördinaten in de response"
+        default: "epsg:4258"
+        enum:
+        - "epsg:4258"
+        - "epsg:28992"
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              int:
+                type: integer
+              int2:
+                type: integer
+                example: 94
+              str:
+                type: string
+              str2:
+                type: string
+                example: example
+              dec:
+                type: number
+              dec2:
+                type: number
+                example: 5.67
+

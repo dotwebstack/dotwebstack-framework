@@ -1,0 +1,198 @@
+swagger: "2.0"
+info:
+  title: "bla"
+  version: "0.1"
+x-ldpath-namespaces:
+  ex: http://example.org#
+  foaf: http://xmlns.com/foaf/0.1/
+  ro: http://data.informatiehuisruimte.nl/def/ro#
+paths:
+  /persons/{name}:
+    get:
+      responses:
+        200:
+          description: "OK"
+          schema:
+            title: "bla"
+            type: object
+            x-dotwebstack-subject-query: "SELECT ?s WHERE { ?s <http://xmlns.com/foaf/0.1/account> <http://example.com#account1> }"
+            properties:
+              _links:
+                x-exclude-empty-and-null-value-properties: true
+                type: object
+                properties:
+                  self:
+                    properties:
+                      href:
+                        type: string
+                        x-relative-link:
+                          pattern: /persons/$1
+                          x-ldpath: foaf:name
+                  arrayType:
+                    type: array
+                    x-ldpath: foaf:knows
+                    items:
+                      type: object
+                      properties:
+                        href:
+                          type: string
+                          x-relative-link:
+                            pattern: /persons/$1
+                            x-ldpath: foaf:name
+                        title:
+                          type: string
+                          x-ldpath: 'fn:concat(foaf:name, " link")'
+                  objectTypeWithLdPath:
+                    type: object
+                    x-ldpath: foaf:account
+                    properties:
+                      href:
+                        type: string
+                        x-ldpath: 'fn:concat(foaf:accountServiceHomepage, "/", foaf:accountName)'
+                      title:
+                        type: string
+                        x-ldpath: 'fn:concat("Link to account page for account ", foaf:accountName) :: xsd:string'
+                  objectTypeWithoutLdPath:
+                    type: object
+                    properties:
+                      href:
+                        type: string
+                        x-relative-link:
+                          pattern: /persons/$1
+                          x-ldpath: foaf:name
+                      title:
+                        type: string
+                        x-ldpath: 'fn:concat("Self-link for ", foaf:firstName, " ", foaf:lastName)'
+              firstName:
+                type: string
+                x-ldpath: foaf:firstName
+              lastName:
+                type: string
+                x-ldpath: foaf:lastName
+              gender:
+                type: string
+                x-ldpath: foaf:gender
+              account:
+                type: object
+                x-ldpath: foaf:account
+                properties:
+                  accountName:
+                    type: string
+                    x-ldpath: foaf:accountName
+                  accountServiceHomepage:
+                    type: string
+                    x-ldpath: foaf:accountServiceHomepage
+              knows:
+                type: array
+                x-ldpath: foaf:knows
+                items:
+                  type: object
+                  properties:
+                    firstName:
+                      type: string
+                      x-ldpath: foaf:firstName
+                    lastName:
+                      type: string
+                      x-ldpath: foaf:lastName
+
+  /persons:
+    get:
+      responses:
+        200:
+          description: "OK"
+          schema:
+            type: object
+            properties:
+              _links:
+                x-exclude-empty-and-null-value-properties: true
+                type: object
+                properties:
+                  self:
+                    type: object
+                    properties:
+                      href: 
+                        type: string
+                        x-relative-link:
+                          pattern: /persons
+
+  /unsupportedSchemaType:
+    get:
+      responses:
+        200:
+          schema:
+            type: string
+  /collectionWithoutEmbedded:
+    get:
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              someProperty:
+                type: string
+  /collectionWithEmbeddedNotAnObject:
+    get:
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              _embedded:
+                type: string
+  /collectionWithEmbeddedWithMultipleProperties:
+    get:
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              _embedded:
+                type: object
+                properties:
+                  property1:
+                    type: string
+                  property2:
+                    type: string
+  /collectionWithEmbeddedHavingSingleNonArrayProperty:
+    get:
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              _embedded:
+                type: object
+                properties:
+                  persons:
+                    type: string
+
+definitions:
+  tekst:
+    type: object
+    properties:
+      _embedded:
+        type: object
+        properties:
+          kinderenStrings:
+            type: array
+            x-ldpath: "fn:sort(ro:kind, ro:volgnummer, \"number\", \"desc\")"
+            items:
+              type: string
+              x-ldpath: ". :: xsd:string"
+          type:
+            type: string
+            x-ldpath: rdf:type
+          kinderen:
+            type: array
+            x-sortBy: "volgnummer"
+            x-ldpath: ro:kind
+            items:
+              type: object
+              properties:
+                volgnummer:
+                  type: string
+                  x-ldpath: ro:volgnummer
+                title:
+                  type: string
+                  x-ldpath: ...
+

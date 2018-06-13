@@ -1,0 +1,28 @@
+swagger: "2.0"
+info:
+  title: API
+  version: 1.0
+consumes:
+- "application/json"
+parameters:
+  pathParam:
+    name: pathParam
+    in: path
+    required: false
+    type: string
+    default: "abcd"
+  queryParam:
+    name: queryParam
+    in: query
+    required: false
+    type: string
+    default: "abcd"
+paths:
+  /endpoint:
+    get:
+      parameters:
+      - $ref: '#/parameters/pathParam'
+      - $ref: '#/parameters/queryParam'
+      responses:
+        200:
+          description: OK
