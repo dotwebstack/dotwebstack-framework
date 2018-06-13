@@ -34,7 +34,8 @@ public class SoapContext {
   private final SoapMultiValuesProvider multiValuesProvider;
 
   /**
-   * Constructor mainly for SpringFramework purposes, in any other case use the fluent builder interface;
+   * Constructor mainly for SpringFramework purposes, in any other case
+   * use the fluent builder interface;
    * #see builder() method
    *
    * @param exampleContent exampleContent
@@ -57,7 +58,8 @@ public class SoapContext {
   }
 
   /**
-   * Constructor mainly for SpringFramework purposes, in any other case use the fluent builder interface;
+   * Constructor mainly for SpringFramework purposes, in any other case
+   * use the fluent builder interface;
    * #see builder() method
    *
    * @param exampleContent exampleContent

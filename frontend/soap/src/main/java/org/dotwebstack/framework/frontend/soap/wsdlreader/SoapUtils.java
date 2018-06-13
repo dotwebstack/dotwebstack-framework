@@ -54,7 +54,7 @@ public class SoapUtils {
    *
    *
    ********************* */
-  public static String getLocationURI(ExtensibilityElement exElement) {
+  public static String getLocationUri(ExtensibilityElement exElement) {
     if (exElement instanceof SOAP12AddressImpl) {
       return ((SOAP12AddressImpl) exElement).getLocationURI();
     } else if (exElement instanceof SOAPAddressImpl) {
@@ -102,7 +102,12 @@ public class SoapUtils {
    *
    *
    ********************* */
-  private static void addHeaders(SchemaDefinitionWrapper definitionWrapper, List<WsdlUtils.SoapHeader> headers, SoapVersion soapVersion, XmlCursor cursor, SampleXmlUtil xmlGenerator) throws Exception {
+  private static void addHeaders(SchemaDefinitionWrapper definitionWrapper,
+      List<WsdlUtils.SoapHeader> headers,
+      SoapVersion soapVersion,
+      XmlCursor cursor,
+      SampleXmlUtil xmlGenerator)
+      throws Exception {
     // reposition
     cursor.toStartDoc();
     cursor.toChild(soapVersion.getEnvelopeQName());
@@ -124,14 +129,18 @@ public class SoapUtils {
 
       if (part != null) {
         createElementForPart(definitionWrapper, part, cursor, xmlGenerator);
-      }
-      else {
+      } else {
         System.out.println("Missing part for header; " + header.getPart());
       }
     }
   }
 
-  private static void createElementForPart(SchemaDefinitionWrapper definitionWrapper, Part part, XmlCursor cursor, SampleXmlUtil xmlGenerator) throws Exception {
+  private static void createElementForPart(
+      SchemaDefinitionWrapper definitionWrapper,
+      Part part,
+      XmlCursor cursor,
+      SampleXmlUtil xmlGenerator)
+      throws Exception {
     QName elementName = part.getElementName();
     QName typeName = part.getTypeName();
 
@@ -144,7 +153,8 @@ public class SoapUtils {
           cursor.toFirstChild();
           xmlGenerator.createSampleForType(elm.getAnnotation(), elm.getType(), cursor);
         } else {
-          System.out.println("Could not find element [" + elementName + "] specified in part [" + part.getName() + "]");
+          System.out.println("Could not find element [" + elementName
+              + "] specified in part [" + part.getName() + "]");
         }
       }
 
@@ -161,7 +171,8 @@ public class SoapUtils {
           cursor.toFirstChild();
           xmlGenerator.createSampleForType(null, type, cursor);
         } else {
-          System.out.println("Could not find type [" + typeName + "] specified in part [" + part.getName() + "]");
+          System.out.println("Could not find type [" + typeName
+              + "] specified in part [" + part.getName() + "]");
         }
       }
 
@@ -191,7 +202,12 @@ public class SoapUtils {
     throw new SoapBuilderException("SOAP binding not recognized");
   }
 
-  public static String buildSoapMessageFromOutput(SchemaDefinitionWrapper definitionWrapper, Binding binding, BindingOperation bindingOperation, SoapContext context) throws Exception {
+  public static String buildSoapMessageFromOutput(
+      SchemaDefinitionWrapper definitionWrapper,
+      Binding binding,
+      BindingOperation bindingOperation,
+      SoapContext context)
+      throws Exception {
     boolean inputSoapEncoded = WsdlUtils.isInputSoapEncoded(bindingOperation);
     SampleXmlUtil xmlGenerator = new SampleXmlUtil(inputSoapEncoded, context);
     SoapVersion soapVersion = getSoapVersion(binding);
@@ -240,7 +256,11 @@ public class SoapUtils {
     }
   }
 
-  private static void buildDocumentResponse(SchemaDefinitionWrapper definitionWrapper, BindingOperation bindingOperation, XmlCursor cursor, SampleXmlUtil xmlGenerator)
+  private static void buildDocumentResponse(
+      SchemaDefinitionWrapper definitionWrapper,
+      BindingOperation bindingOperation,
+      XmlCursor cursor,
+      SampleXmlUtil xmlGenerator)
       throws Exception {
     Part[] parts = WsdlUtils.getOutputParts(bindingOperation);
 
@@ -257,7 +277,12 @@ public class SoapUtils {
     }
   }
 
-  private static void buildRpcResponse(SchemaDefinitionWrapper definitionWrapper, BindingOperation bindingOperation, SoapVersion soapVersion, XmlCursor cursor, SampleXmlUtil xmlGenerator)
+  private static void buildRpcResponse(
+      SchemaDefinitionWrapper definitionWrapper,
+      BindingOperation bindingOperation,
+      SoapVersion soapVersion,
+      XmlCursor cursor,
+      SampleXmlUtil xmlGenerator)
       throws Exception {
     // rpc requests use the operation name as root element
     BindingOutput bindingOutput = bindingOperation.getBindingOutput();
@@ -266,7 +291,8 @@ public class SoapUtils {
 
     if (ns == null) {
       ns = WsdlUtils.getTargetNamespace(definitionWrapper.getDefinition());
-      System.out.println("missing namespace on soapbind:body for RPC response, using targetNamespace instead (BP violation)");
+      System.out.println("missing namespace on soapbind:body for RPC response, "
+          + "using targetNamespace instead (BP violation)");
     }
 
     cursor.beginElement(new QName(ns, bindingOperation.getName() + "Response"));
@@ -305,7 +331,8 @@ public class SoapUtils {
               System.out.println("Failed to find type [" + typeName + "]");
             }
           } else {
-            SchemaGlobalElement element = definitionWrapper.getSchemaTypeLoader().findElement(part.getElementName());
+            SchemaGlobalElement element =
+                definitionWrapper.getSchemaTypeLoader().findElement(part.getElementName());
             if (element != null) {
               XmlCursor c = cursor.newCursor();
               c.toLastChild();

@@ -5,18 +5,31 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-//import org.apache.commons.lang3.StringUtils;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
-import org.w3c.dom.*;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.ProcessingInstruction;
+import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -113,8 +126,30 @@ final class XmlUtils {
     return child == null ? null : getElementText(child);
   }
 
+  public static String getChildElementText(Element elm, String name, String defaultValue) {
+    String result = getChildElementText(elm, name);
+    return result == null ? defaultValue : result;
+  }
+
   public static Element getFirstChildElement(Element elm) {
     return getFirstChildElement(elm, null);
+  }
+
+  public static Element getFirstChildElement(Element elm, String name) {
+    if (elm == null) {
+      return null;
+    }
+
+    NodeList nl = elm.getChildNodes();
+    for (int c = 0; c < nl.getLength(); c++) {
+      Node node = nl.item(c);
+      if (node.getNodeType() == Node.ELEMENT_NODE
+          && (name == null || node.getNodeName().equals(name))) {
+        return (Element) node;
+      }
+    }
+
+    return null;
   }
 
   public static String getElementText(Element elm) {
@@ -135,11 +170,6 @@ final class XmlUtils {
     return null;
   }
 
-  public static String getChildElementText(Element elm, String name, String defaultValue) {
-    String result = getChildElementText(elm, name);
-    return result == null ? defaultValue : result;
-  }
-
   public static String getNodeValue(Node node) {
     if (node == null) {
       return null;
@@ -147,29 +177,11 @@ final class XmlUtils {
 
     if (node.getNodeType() == Node.ELEMENT_NODE) {
       return getElementText((Element) node);
-    }
-    else if (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
+    } else if (node.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
       return getFragmentText((DocumentFragment) node);
-    }
-    else {
+    } else {
       return node.getNodeValue();
     }
-  }
-
-  public static Element getFirstChildElement(Element elm, String name) {
-    if (elm == null) {
-      return null;
-    }
-
-    NodeList nl = elm.getChildNodes();
-    for (int c = 0; c < nl.getLength(); c++) {
-      Node node = nl.item(c);
-      if (node.getNodeType() == Node.ELEMENT_NODE && (name == null || node.getNodeName().equals(name))) {
-        return (Element) node;
-      }
-    }
-
-    return null;
   }
 
   public static Element getFirstChildElementIgnoreCase(Element elm, String name) {
@@ -180,7 +192,8 @@ final class XmlUtils {
     NodeList nl = elm.getChildNodes();
     for (int c = 0; c < nl.getLength(); c++) {
       Node node = nl.item(c);
-      if (node.getNodeType() == Node.ELEMENT_NODE && (name == null || node.getNodeName().equalsIgnoreCase(name))) {
+      if (node.getNodeType() == Node.ELEMENT_NODE
+          && (name == null || node.getNodeName().equalsIgnoreCase(name))) {
         return (Element) node;
       }
     }
@@ -188,7 +201,7 @@ final class XmlUtils {
     return null;
   }
 
-  public static Element getFirstChildElementNS(Element elm, String tns, String localName) {
+  public static Element getFirstChildElementNs(Element elm, String tns, String localName) {
     if (tns == null && localName == null) {
       return getFirstChildElement(elm);
     }
@@ -208,7 +221,8 @@ final class XmlUtils {
         return (Element) node;
       }
 
-      if (localName != null && tns.equals(node.getNamespaceURI()) && localName.equals(node.getLocalName())) {
+      if (localName != null && tns.equals(node.getNamespaceURI())
+          && localName.equals(node.getLocalName())) {
         return (Element) node;
       }
     }
@@ -227,7 +241,8 @@ final class XmlUtils {
       xmlObject = XmlObject.Factory.parse(xml);
 
       cursor = xmlObject.newCursor();
-      while (cursor.currentTokenType() != XmlCursor.TokenType.START && cursor.currentTokenType() != XmlCursor.TokenType.ENDDOC) {
+      while (cursor.currentTokenType() != XmlCursor.TokenType.START
+          && cursor.currentTokenType() != XmlCursor.TokenType.ENDDOC) {
         cursor.toNextToken();
       }
 
@@ -258,7 +273,7 @@ final class XmlUtils {
             .setSaveImplicitNamespaces(nsMap));
       }
     } catch (XmlException e) {
-
+      System.out.println("Caught XmlException in XmlUtils.removeUnneccessaryNamespaces");
     } finally {
       if (cursor != null) {
         cursor.dispose();
@@ -283,7 +298,8 @@ final class XmlUtils {
   }
 
 
-  public static XmlObject createXmlObject(String input, XmlOptions xmlOptions) throws XmlException {
+  public static XmlObject createXmlObject(String input, XmlOptions xmlOptions)
+      throws XmlException {
     return XmlObject.Factory.parse(input, xmlOptions);
   }
 
@@ -319,8 +335,7 @@ final class XmlUtils {
     } else if (node.getNodeType() == Node.TEXT_NODE) {
       if (text == null) {
         node.getParentNode().removeChild(node);
-      }
-      else {
+      } else {
         node.setNodeValue(text);
       }
     } else if (text != null) {
@@ -336,11 +351,9 @@ final class XmlUtils {
   public static QName getQName(Node node) {
     if (node == null) {
       return null;
-    }
-    else if (node.getNamespaceURI() == null) {
+    } else if (node.getNamespaceURI() == null) {
       return new QName(node.getNodeName());
-    }
-    else {
+    } else {
       return new QName(node.getNamespaceURI(), node.getLocalName());
     }
   }
@@ -406,8 +419,7 @@ final class XmlUtils {
       String prefix = name.getLocalPart();
       if (prefix.length() == 0) {
         prefix = "ns" + Integer.toString(++nsCnt);
-      }
-      else if (prefix.equals("xsd") || prefix.equals("xsi")) {
+      } else if (prefix.equals("xsd") || prefix.equals("xsi")) {
         continue;
       }
 

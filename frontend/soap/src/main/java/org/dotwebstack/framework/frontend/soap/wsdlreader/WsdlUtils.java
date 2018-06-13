@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
-//import org.apache.commons.lang3.StringUtils;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -9,13 +7,37 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.wsdl.*;
+import javax.wsdl.Binding;
+import javax.wsdl.BindingFault;
+import javax.wsdl.BindingInput;
+import javax.wsdl.BindingOperation;
+import javax.wsdl.BindingOutput;
+import javax.wsdl.Definition;
+import javax.wsdl.Fault;
+import javax.wsdl.Input;
+import javax.wsdl.Message;
+import javax.wsdl.Operation;
+import javax.wsdl.OperationType;
+import javax.wsdl.Output;
+import javax.wsdl.Part;
+import javax.wsdl.Port;
+import javax.wsdl.Service;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.mime.MIMEContent;
 import javax.wsdl.extensions.mime.MIMEMultipartRelated;
 import javax.wsdl.extensions.mime.MIMEPart;
-import javax.wsdl.extensions.soap.*;
-import javax.wsdl.extensions.soap12.*;
+import javax.wsdl.extensions.soap.SOAPAddress;
+import javax.wsdl.extensions.soap.SOAPBinding;
+import javax.wsdl.extensions.soap.SOAPBody;
+import javax.wsdl.extensions.soap.SOAPFault;
+import javax.wsdl.extensions.soap.SOAPHeader;
+import javax.wsdl.extensions.soap.SOAPOperation;
+import javax.wsdl.extensions.soap12.SOAP12Address;
+import javax.wsdl.extensions.soap12.SOAP12Binding;
+import javax.wsdl.extensions.soap12.SOAP12Body;
+import javax.wsdl.extensions.soap12.SOAP12Fault;
+import javax.wsdl.extensions.soap12.SOAP12Header;
+import javax.wsdl.extensions.soap12.SOAP12Operation;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
@@ -46,12 +68,16 @@ import javax.xml.namespace.QName;
  * @author Ole.Matzura
  */
 class WsdlUtils {
-  public static <T extends ExtensibilityElement> T getExtensiblityElement(List<?> list, Class<T> clazz) {
+  public static <T extends ExtensibilityElement> T getExtensiblityElement(
+      List<?> list,
+      Class<T> clazz) {
     List<T> elements = getExtensiblityElements(list, clazz);
     return elements.isEmpty() ? null : elements.get(0);
   }
 
-  public static <T extends ExtensibilityElement> List<T> getExtensiblityElements(List list, Class<T> clazz) {
+  public static <T extends ExtensibilityElement> List<T> getExtensiblityElements(
+      List list,
+      Class<T> clazz) {
     List<T> result = new ArrayList<T>();
 
     for (Iterator<T> i = list.iterator(); i.hasNext(); ) {
@@ -65,7 +91,9 @@ class WsdlUtils {
   }
 
 
-  public static Binding findBindingForOperation(Definition definition, BindingOperation bindingOperation) {
+  public static Binding findBindingForOperation(
+      Definition definition,
+      BindingOperation bindingOperation) {
     Map services = definition.getAllServices();
     Iterator<Service> s = services.values().iterator();
 
@@ -110,7 +138,8 @@ class WsdlUtils {
       return false;
     }
 
-    SOAPBody soapBody = WsdlUtils.getExtensiblityElement(bindingInput.getExtensibilityElements(), SOAPBody.class);
+    SOAPBody soapBody =
+        WsdlUtils.getExtensiblityElement(bindingInput.getExtensibilityElements(), SOAPBody.class);
 
     if (soapBody != null) {
       return soapBody.getUse() != null
@@ -119,7 +148,8 @@ class WsdlUtils {
           "http://schemas.xmlsoap.org/soap/encoding/"));
     }
 
-    SOAP12Body soap12Body = WsdlUtils.getExtensiblityElement(bindingInput.getExtensibilityElements(),
+    SOAP12Body soap12Body =
+        WsdlUtils.getExtensiblityElement(bindingInput.getExtensibilityElements(),
         SOAP12Body.class);
 
     if (soap12Body != null) {
@@ -142,7 +172,8 @@ class WsdlUtils {
       return false;
     }
 
-    SOAPBody soapBody = WsdlUtils.getExtensiblityElement(bindingOutput.getExtensibilityElements(), SOAPBody.class);
+    SOAPBody soapBody =
+        WsdlUtils.getExtensiblityElement(bindingOutput.getExtensibilityElements(), SOAPBody.class);
 
     if (soapBody != null) {
       return soapBody.getUse() != null
@@ -151,7 +182,8 @@ class WsdlUtils {
           "http://schemas.xmlsoap.org/soap/encoding/"));
     }
 
-    SOAP12Body soap12Body = WsdlUtils.getExtensiblityElement(bindingOutput.getExtensibilityElements(),
+    SOAP12Body soap12Body =
+        WsdlUtils.getExtensiblityElement(bindingOutput.getExtensibilityElements(),
         SOAP12Body.class);
 
     if (soap12Body != null) {
@@ -165,14 +197,16 @@ class WsdlUtils {
   }
 
   public static boolean isRpc(Definition definition, BindingOperation bindingOperation) {
-    SOAPOperation soapOperation = WsdlUtils.getExtensiblityElement(bindingOperation.getExtensibilityElements(),
+    SOAPOperation soapOperation =
+        WsdlUtils.getExtensiblityElement(bindingOperation.getExtensibilityElements(),
         SOAPOperation.class);
 
     if (soapOperation != null && soapOperation.getStyle() != null) {
       return soapOperation.getStyle().equalsIgnoreCase("rpc");
     }
 
-    SOAP12Operation soap12Operation = WsdlUtils.getExtensiblityElement(bindingOperation.getExtensibilityElements(),
+    SOAP12Operation soap12Operation =
+        WsdlUtils.getExtensiblityElement(bindingOperation.getExtensibilityElements(),
         SOAP12Operation.class);
 
     if (soap12Operation != null && soap12Operation.getStyle() != null) {
@@ -181,8 +215,8 @@ class WsdlUtils {
 
     Binding binding = findBindingForOperation(definition, bindingOperation);
     if (binding == null) {
-      System.out.println("Failed to find binding for operation [" + bindingOperation.getName() + "] in definition ["
-          + definition.getDocumentBaseURI() + "]");
+      System.out.println("Failed to find binding for operation [" + bindingOperation.getName()
+          + "] in definition [" + definition.getDocumentBaseURI() + "]");
       return false;
     }
 
@@ -197,8 +231,8 @@ class WsdlUtils {
       return "rpc".equalsIgnoreCase(soapBinding.getStyle());
     }
 
-    SOAP12Binding soap12Binding = WsdlUtils.getExtensiblityElement(binding.getExtensibilityElements(),
-        SOAP12Binding.class);
+    SOAP12Binding soap12Binding =
+        WsdlUtils.getExtensiblityElement(binding.getExtensibilityElements(), SOAP12Binding.class);
 
     if (soap12Binding != null) {
       return "rpc".equalsIgnoreCase(soap12Binding.getStyle());
@@ -226,7 +260,8 @@ class WsdlUtils {
     Message msg = input.getMessage();
 
     if (msg != null) {
-      SOAPBody soapBody = WsdlUtils.getExtensiblityElement(operation.getBindingInput().getExtensibilityElements(),
+      SOAPBody soapBody =
+          WsdlUtils.getExtensiblityElement(operation.getBindingInput().getExtensibilityElements(),
           SOAPBody.class);
 
       if (soapBody == null || soapBody.getParts() == null) {
@@ -274,7 +309,8 @@ class WsdlUtils {
       return new MIMEContent[0];
     }
 
-    MIMEMultipartRelated multipartOutput = WsdlUtils.getExtensiblityElement(output.getExtensibilityElements(),
+    MIMEMultipartRelated multipartOutput =
+        WsdlUtils.getExtensiblityElement(output.getExtensibilityElements(),
         MIMEMultipartRelated.class);
 
     return getContentParts(part, multipartOutput);
@@ -286,7 +322,8 @@ class WsdlUtils {
       return new MIMEContent[0];
     }
 
-    MIMEMultipartRelated multipartInput = WsdlUtils.getExtensiblityElement(bindingInput.getExtensibilityElements(),
+    MIMEMultipartRelated multipartInput =
+        WsdlUtils.getExtensiblityElement(bindingInput.getExtensibilityElements(),
         MIMEMultipartRelated.class);
 
     return getContentParts(part, multipartInput);
@@ -313,21 +350,27 @@ class WsdlUtils {
     return result.toArray(new MIMEContent[result.size()]);
   }
 
-  public static Part[] getFaultParts(BindingOperation bindingOperation, String faultName) throws Exception {
+  public static Part[] getFaultParts(
+      BindingOperation bindingOperation,
+      String faultName)
+      throws Exception {
     List<Part> result = new ArrayList<Part>();
 
     BindingFault bindingFault = bindingOperation.getBindingFault(faultName);
-    SOAPFault soapFault = WsdlUtils.getExtensiblityElement(bindingFault.getExtensibilityElements(), SOAPFault.class);
+    SOAPFault soapFault =
+        WsdlUtils.getExtensiblityElement(bindingFault.getExtensibilityElements(), SOAPFault.class);
 
     Operation operation = bindingOperation.getOperation();
     if (soapFault != null && soapFault.getName() != null) {
       Fault fault = operation.getFault(soapFault.getName());
       if (fault == null) {
-        throw new Exception("Missing Fault [" + soapFault.getName() + "] in operation [" + operation.getName() + "]");
+        throw new Exception("Missing Fault [" + soapFault.getName()
+            + "] in operation [" + operation.getName() + "]");
       }
       result.addAll(fault.getMessage().getOrderedParts(null));
     } else {
-      SOAP12Fault soap12Fault = WsdlUtils.getExtensiblityElement(bindingFault.getExtensibilityElements(),
+      SOAP12Fault soap12Fault =
+          WsdlUtils.getExtensiblityElement(bindingFault.getExtensibilityElements(),
           SOAP12Fault.class);
 
       if (soap12Fault != null && soap12Fault.getName() != null) {
@@ -364,7 +407,8 @@ class WsdlUtils {
           .getExtensiblityElement(bindingOutput.getExtensibilityElements(), SOAPBody.class);
 
       if (soapBody == null || soapBody.getParts() == null) {
-        SOAP12Body soap12Body = WsdlUtils.getExtensiblityElement(bindingOutput.getExtensibilityElements(),
+        SOAP12Body soap12Body =
+            WsdlUtils.getExtensiblityElement(bindingOutput.getExtensibilityElements(),
             SOAP12Body.class);
 
         if (soap12Body == null || soap12Body.getParts() == null) {
@@ -388,14 +432,16 @@ class WsdlUtils {
         }
       }
     } else {
-      System.out.println("Missing output message for binding operation [" + operation.getName() + "]");
+      System.out.println("Missing output message for binding operation ["
+          + operation.getName() + "]");
     }
 
     return result.toArray(new Part[result.size()]);
   }
 
   public static String getSoapEndpoint(Port port) {
-    SOAPAddress soapAddress = WsdlUtils.getExtensiblityElement(port.getExtensibilityElements(), SOAPAddress.class);
+    SOAPAddress soapAddress =
+        WsdlUtils.getExtensiblityElement(port.getExtensibilityElements(), SOAPAddress.class);
     if (soapAddress != null && StringUtils.isNotBlank(soapAddress.getLocationURI())) {
       try {
         return URLDecoder.decode(soapAddress.getLocationURI(), "UTF-8");
@@ -420,7 +466,8 @@ class WsdlUtils {
   }
 
   public static boolean replaceSoapEndpoint(Port port, String endpoint) {
-    SOAPAddress soapAddress = WsdlUtils.getExtensiblityElement(port.getExtensibilityElements(), SOAPAddress.class);
+    SOAPAddress soapAddress =
+        WsdlUtils.getExtensiblityElement(port.getExtensibilityElements(), SOAPAddress.class);
     if (soapAddress != null) {
       soapAddress.setLocationURI(endpoint);
       return true;
@@ -515,7 +562,8 @@ class WsdlUtils {
         result.add(new Soap11Header(header));
       }
     } else {
-      List<SOAP12Header> soap12Headers = WsdlUtils.getExtensiblityElements(list, SOAP12Header.class);
+      List<SOAP12Header> soap12Headers =
+          WsdlUtils.getExtensiblityElements(list, SOAP12Header.class);
       if (soap12Headers != null && !soap12Headers.isEmpty()) {
         for (SOAP12Header header : soap12Headers) {
           result.add(new Soap12Header(header));
@@ -527,8 +575,11 @@ class WsdlUtils {
   }
 
 
-  public static BindingOperation findBindingOperation(Binding binding, String bindingOperationName, String inputName,
-                            String outputName) {
+  public static BindingOperation findBindingOperation(
+      Binding binding,
+      String bindingOperationName,
+      String inputName,
+      String outputName) {
     if (binding == null) {
       return null;
     }
@@ -541,19 +592,23 @@ class WsdlUtils {
       outputName = ":none";
     }
 
-    BindingOperation result = binding.getBindingOperation(bindingOperationName, inputName, outputName);
+    BindingOperation result =
+        binding.getBindingOperation(bindingOperationName, inputName, outputName);
 
     if (result == null && (inputName.equals(":none") || outputName.equals(":none"))) {
       // fall back to this behaviour for WSDL4j 1.5.0 compatibility
-      result = binding.getBindingOperation(bindingOperationName, inputName.equals(":none") ? null : inputName,
-          outputName.equals(":none") ? null : outputName);
+      result = binding.getBindingOperation(bindingOperationName, inputName.equals(":none")
+          ? null
+          : inputName, outputName.equals(":none") ? null : outputName);
     }
     return result;
   }
 
 
   public static String getTargetNamespace(Definition definition) {
-    return definition.getTargetNamespace() == null ? XMLConstants.NULL_NS_URI : definition.getTargetNamespace();
+    return definition.getTargetNamespace() == null
+        ? XMLConstants.NULL_NS_URI
+        : definition.getTargetNamespace();
   }
 
 
