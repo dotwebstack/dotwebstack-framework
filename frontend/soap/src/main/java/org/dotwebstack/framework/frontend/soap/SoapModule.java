@@ -39,12 +39,13 @@ public class SoapModule implements HttpModule {
         .produces("application/soap+xml")//
         .handledBy(new SoapRequestHandler());
     httpConfiguration.registerResources(soapResourceBuilder.build());
-    LOG.debug("Mapped GET operation for request path {}",absolutePath);
+    LOG.debug("Mapped GET operation for request path {}", absolutePath);
     */
     
     try {
       requestMapper.map(httpConfiguration);
     } catch (IOException exp) {
+      LOG.error("IOException, message " + exp.getMessage());
       throw new ConfigurationException("Failed loading SOAP-WSDL definitions.", exp);
     }
   }

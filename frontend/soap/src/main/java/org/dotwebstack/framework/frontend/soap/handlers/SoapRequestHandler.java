@@ -67,7 +67,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     try {
       // Read the wsdl
       System.out.println("SOAP generator, starting");
-      URL wsdlUrl = new File("test-wsdl.xml").toURI().toURL();
+      URL wsdlUrl = new File("config/soap/test-wsdl.xml").toURI().toURL();
       WSDLReader wsdlReader = WSDLFactory.newInstance().newWSDLReader();
       //uncomment the line below, if you don't want any verbose output
       //wsdlReader.setFeature("javax.wsdl.verbose", false);
