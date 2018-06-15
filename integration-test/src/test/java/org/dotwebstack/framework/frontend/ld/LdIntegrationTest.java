@@ -234,7 +234,7 @@ public class LdIntegrationTest {
         target.path("/dbp/ld/v1/add-concept").request().post(Entity.entity(rdf, MediaTypes.RDFXML));
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(Status.BAD_REQUEST.getStatusCode()));
   }
 
 }

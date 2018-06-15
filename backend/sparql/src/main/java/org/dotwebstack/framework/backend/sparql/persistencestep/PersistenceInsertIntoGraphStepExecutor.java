@@ -8,6 +8,7 @@ import org.dotwebstack.framework.backend.sparql.QueryEvaluator;
 import org.dotwebstack.framework.backend.sparql.SparqlBackend;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.flow.step.AbstractStepExecutor;
+import org.dotwebstack.framework.transaction.flow.step.StepFailureException;
 import org.dotwebstack.framework.transaction.flow.step.persistence.PersistenceStep;
 import org.eclipse.rdf4j.model.Model;
 import org.slf4j.Logger;
@@ -57,6 +58,8 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
       }
     } catch (Exception ex) {
       LOG.debug("Get error {} for persistence step {}", ex, step.getIdentifier());
+      throw new StepFailureException(
+          String.format("Get an error for persistence step {%s}", step.getIdentifier()));
     }
   }
 

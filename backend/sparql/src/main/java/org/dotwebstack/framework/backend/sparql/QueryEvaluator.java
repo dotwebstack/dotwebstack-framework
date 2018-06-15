@@ -77,6 +77,8 @@ public class QueryEvaluator {
           String.format("Data could not be added into graph: %s", e.getMessage()), e);
     } catch (Exception ex) {
       LOG.debug("Data could not be added into graph: {} \n {}", ex.getMessage(), ex);
+      throw new BackendException(
+          String.format("Data could not be added into graph: %s", ex.getMessage()), ex);
     }
   }
 
