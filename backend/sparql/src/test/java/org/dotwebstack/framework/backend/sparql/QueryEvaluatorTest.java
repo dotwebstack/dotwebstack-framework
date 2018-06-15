@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.sparql;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -275,6 +276,8 @@ public class QueryEvaluatorTest {
     insertQueryBuilder.append("}\n};\n");
     final String query = insertQueryBuilder.toString();
 
+    when(repositoryConnection.prepareGraphQuery(any(), any())).thenReturn(mock(GraphQuery.class));
+
     // Act
     queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
 
@@ -299,6 +302,8 @@ public class QueryEvaluatorTest {
     insertQueryBuilder.append(".\n");
     insertQueryBuilder.append("}\n};\n");
     final String query = insertQueryBuilder.toString();
+
+    when(repositoryConnection.prepareGraphQuery(any(), any())).thenReturn(mock(GraphQuery.class));
 
     // Act
     queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
