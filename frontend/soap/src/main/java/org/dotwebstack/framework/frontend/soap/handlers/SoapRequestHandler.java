@@ -36,8 +36,10 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
   private static final String DWS_NAMESPACE = "http://dotwebstack.org/wsdl-extension/";
   private static final String DWS_INFOPROD = "informationProduct";
 
+  private final Definition wsdlDefinition;
+
   private final Port wsdlPort;
-  
+
   private static final String ERROR_RESPONSE = "<?xml version=\"1.0\"?>"
       + "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">"
       + "  <s:Body>"
@@ -53,9 +55,10 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       + "    </s:Fault>"
       + "  </s:Body>"
       + "</s:Envelope>";
-      
-  public SoapRequestHandler(@NonNull Port wsdlPort) {
+
+  public SoapRequestHandler(@NonNull Definition wsdlDefinition, @NonNull Port wsdlPort) {
     this.wsdlPort = wsdlPort;
+    this.wsdlDefinition = wsdlDefinition;
   }
 
   @Override
@@ -65,22 +68,6 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     LOG.debug("Handling SOAP request, SOAPAction: {}",soapAction);
 
     try {
-      // Read the wsdl
-      System.out.println("SOAP generator, starting");
-      URL wsdlUrl = new File("test-wsdl.xml").toURI().toURL();
-      WSDLReader wsdlReader = WSDLFactory.newInstance().newWSDLReader();
-      //uncomment the line below, if you don't want any verbose output
-      //wsdlReader.setFeature("javax.wsdl.verbose", false);
-
-      Definition wsdlDefinition = null;
-      try {
-        wsdlDefinition = wsdlReader.readWSDL(wsdlUrl.toString());
-      } catch (WSDLException exception) {
-        System.out.println("Error loading file");
-        System.out.println("Fault Code: " + exception.getFaultCode());
-        System.out.println("Location: " + exception.getLocation());
-        System.out.println("Message: " + exception.getMessage());
-      }
 
       // Scan the defined service and message-definition in order to
       // find the received action request.
@@ -127,12 +114,11 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
             for (Part wsdlPart : wsdlOutputParts.values()) {
               System.out.println("      - Output: " + wsdlPart.getElementName());
             }
-            
+
             //Build the SOAP response for the specific message
             System.out.println("========");
             msg = SoapUtils.buildSoapMessageFromOutput(new SchemaDefinitionWrapper(
-                wsdlDefinition,
-                wsdlUrl.toString()),
+                wsdlDefinition,"http://incorrect"),
                 wsdlPort.getBinding(),
                 wsdlBindingOperation,
                 SoapContext.DEFAULT);

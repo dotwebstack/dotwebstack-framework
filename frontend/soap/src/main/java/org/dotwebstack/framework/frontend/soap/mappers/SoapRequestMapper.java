@@ -125,7 +125,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
             soapResourceBuilder
                 .addMethod(POST)
                 .produces("application/soap+xml")
-                .handledBy(new SoapRequestHandler(wsdlPort));
+                .handledBy(new SoapRequestHandler(wsdlDefinition, wsdlPort));
             httpConfiguration.registerResources(soapResourceBuilder.build());
           } catch (URISyntaxException exp) {
             LOG.warn("Location URI in WSDL could not be parsed: {}",
