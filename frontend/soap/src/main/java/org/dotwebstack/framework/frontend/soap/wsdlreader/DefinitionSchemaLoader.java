@@ -51,7 +51,7 @@ class DefinitionSchemaLoader implements SchemaLoader, DefinitionLoader {
       }
     }
     //Namespaces overzetten naar schema
-    Element schemaElement = schema.getElement();
+    Element schemaElement = (Element) schema.getElement().getParentNode();
     Map<String, String> namespaces = wsdlDefinition.getNamespaces();
     for (Entry<String, String> entry : namespaces.entrySet()) {
       if (entry.getKey().equals("xmlns") || entry.getKey().trim().isEmpty()) {
