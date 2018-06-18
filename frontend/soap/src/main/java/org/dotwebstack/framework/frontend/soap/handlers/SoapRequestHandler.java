@@ -88,7 +88,8 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
             System.out.println("    - Comparing to: " + soapAction);
 
             // Skip this binding operation if it does not match the required action.
-            if (soapAction.endsWith("/" + wsdlBindingOperation.getName())) {
+            String stringToCompare = "/" + wsdlBindingOperation.getName() + "\"";
+            if (! soapAction.endsWith(stringToCompare)) {
               continue;
             }
 
@@ -117,8 +118,9 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
             //Build the SOAP response for the specific message
             System.out.println("========");
-            msg = SoapUtils.buildSoapMessageFromOutput(new SchemaDefinitionWrapper(
-                wsdlDefinition,"http://incorrect"),
+            msg = SoapUtils.buildSoapMessageFromOutput(
+                // new SchemaDefinitionWrapper(wsdlDefinition, "http://incorrect"),
+                new SchemaDefinitionWrapper(wsdlDefinition),
                 wsdlPort.getBinding(),
                 wsdlBindingOperation,
                 SoapContext.DEFAULT);
