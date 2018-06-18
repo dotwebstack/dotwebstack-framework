@@ -92,7 +92,6 @@ class SchemaUtils {
 
   public static SchemaTypeSystem loadSchemaTypes(String wsdlUrl, SchemaLoader loader) {
     try {
-      System.out.println("Loading schema types from [" + wsdlUrl + "]");
       ArrayList<XmlObject> schemas = new ArrayList<XmlObject>(getSchemas(wsdlUrl, loader).values());
       return buildSchemaTypes(schemas);
     } catch (Exception e) {
@@ -219,8 +218,6 @@ class SchemaUtils {
     if (existing.containsKey(wsdlUrl)) {
       return;
     }
-
-    System.out.println("Getting schema " + wsdlUrl);
 
     ArrayList<?> errorList = new ArrayList<Object>();
 

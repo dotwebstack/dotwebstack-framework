@@ -73,59 +73,32 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       // find the received action request.
       Map<String, Service> wsdlServices = wsdlDefinition.getServices();
       for (Service wsdlService : wsdlServices.values()) {
-        System.out.println("- Service: " + wsdlService.getQName().getLocalPart());
         Map<String, Port> wsdlPorts = wsdlService.getPorts();
         for (Port wsdlPort : wsdlPorts.values()) {
-          System.out.println("  - Port: " + wsdlPort.getName());
           List<ExtensibilityElement> wsdlElements = wsdlPort.getExtensibilityElements();
-          for (ExtensibilityElement wsdlElement : wsdlElements) {
-            System.out.println("    - LocationURI: " + SoapUtils.getLocationUri(wsdlElement));
-          }
           List<BindingOperation> wsdlBindingOperations =
               wsdlPort.getBinding().getBindingOperations();
           for (BindingOperation wsdlBindingOperation : wsdlBindingOperations) {
-            System.out.println("    - BindingOperation: " + wsdlBindingOperation.getName());
-            System.out.println("    - Comparing to: " + soapAction);
-
             // Skip this binding operation if it does not match the required action.
             String stringToCompare = "/" + wsdlBindingOperation.getName() + "\"";
             if (! soapAction.endsWith(stringToCompare)) {
               continue;
             }
 
-            System.out.println("    - found BindingOperation: " + wsdlBindingOperation.getName());
+            LOG.debug("Found BindingOperation: {}", wsdlBindingOperation.getName());
 
             Element docElement = wsdlBindingOperation.getOperation().getDocumentationElement();
-            /*
-            System.out.println("--- Documentation ---");
-            SoapUtils.printElement(docElement);
-            System.out.println("--- Documentation ---");
-            */
             if (docElement.hasAttributeNS(DWS_NAMESPACE,DWS_INFOPROD)) {
-              System.out.println("      - Informationproduct: "
-                  + docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
-            }
-            Map<String, Part> wsdlInputParts =
-                wsdlBindingOperation.getOperation().getInput().getMessage().getParts();
-            for (Part wsdlPart : wsdlInputParts.values()) {
-              System.out.println("      - Input:  " + wsdlPart.getElementName());
-            }
-            Map<String, Part> wsdlOutputParts =
-                wsdlBindingOperation.getOperation().getOutput().getMessage().getParts();
-            for (Part wsdlPart : wsdlOutputParts.values()) {
-              System.out.println("      - Output: " + wsdlPart.getElementName());
+              LOG.debug("- Informationproduct: {}",
+                  docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
             }
 
             //Build the SOAP response for the specific message
-            System.out.println("========");
             msg = SoapUtils.buildSoapMessageFromOutput(
-                // new SchemaDefinitionWrapper(wsdlDefinition, "http://incorrect"),
                 new SchemaDefinitionWrapper(wsdlDefinition),
                 wsdlPort.getBinding(),
                 wsdlBindingOperation,
                 SoapContext.DEFAULT);
-            System.out.println(msg);
-            System.out.println("========");
             return msg;
           }
         }

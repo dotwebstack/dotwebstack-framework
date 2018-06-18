@@ -39,19 +39,13 @@ public class SchemaDefinitionWrapper {
 
   public SchemaDefinitionWrapper(Definition definition) {
     this.definition = definition;
-    schemaTypes = null;
-    schemaTypeLoader = null;
-  }
-
-  public SchemaDefinitionWrapper(Definition definition, String schemaUrl) {
-    this.definition = definition;
-    loadSchemaTypes(new UrlSchemaLoader(schemaUrl));
+    loadSchemaTypes(new DefinitionSchemaLoader(definition));
   }
 
   public Definition getDefinition() {
     return definition;
   }
-  
+
   public SchemaTypeLoader getSchemaTypeLoader() {
     return schemaTypeLoader;
   }
