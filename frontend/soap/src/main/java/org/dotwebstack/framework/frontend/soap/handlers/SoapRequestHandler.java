@@ -88,9 +88,11 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
             LOG.debug("Found BindingOperation: {}", wsdlBindingOperation.getName());
 
             Element docElement = wsdlBindingOperation.getOperation().getDocumentationElement();
-            if (docElement.hasAttributeNS(DWS_NAMESPACE,DWS_INFOPROD)) {
-              LOG.debug("- Informationproduct: {}",
-                  docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
+            if (docElement != null) {
+              if (docElement.hasAttributeNS(DWS_NAMESPACE,DWS_INFOPROD)) {
+                LOG.debug("- Informationproduct: {}",
+                    docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
+              }
             }
 
             //Build the SOAP response for the specific message
