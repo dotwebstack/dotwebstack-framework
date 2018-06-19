@@ -8,10 +8,10 @@ import static org.mockito.Mockito.when;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.Operation;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.BodyParameter;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.ByteArrayInputStream;
 import java.net.URISyntaxException;
 import javax.ws.rs.InternalServerErrorException;
@@ -51,7 +51,7 @@ public class RequestParameterExtractorTest {
   public final ExpectedException exception = ExpectedException.none();
 
   @Mock
-  private Swagger swagger;
+  private OpenAPI swagger;
 
   @Mock
   private ApiOperation apiOperation;
@@ -79,13 +79,12 @@ public class RequestParameterExtractorTest {
     when(uriInfo.getPathParameters()).thenReturn(pathParameters);
     when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
 
-    ModelImpl schema = mock(ModelImpl.class);
+    Schema schema = mock(Schema.class);
     when(schema.getType()).thenReturn("object");
 
-    BodyParameter parameter = mock(BodyParameter.class);
+    RequestBody parameter = mock(RequestBody.class);
 
-    when(parameter.getSchema()).thenReturn(schema);
-    when(parameter.getIn()).thenReturn("body");
+    when(parameter.getContent().get(ContentType.APPLICATION_JSON).getSchema()).thenReturn(schema);
 
     when(operation.getParameters()).thenReturn(ImmutableList.of(parameter));
     when(apiOperation.getOperation()).thenReturn(operation);
