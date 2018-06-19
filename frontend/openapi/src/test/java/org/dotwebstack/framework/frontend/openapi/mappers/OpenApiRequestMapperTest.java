@@ -1,27 +1,23 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
+import static org.mockito.Mockito.*;
 
 import com.google.common.base.Charsets;
-import io.swagger.models.Info;
-import io.swagger.models.Model;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
-import io.swagger.parser.SwaggerParser;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -60,7 +56,7 @@ public class OpenApiRequestMapperTest {
   private HttpConfiguration httpConfigurationMock;
 
   @Mock
-  private SwaggerParser openApiParserMock;
+  private OpenAPIV3Parser openApiParserMock;
 
   @Mock
   private org.springframework.core.io.Resource fileResourceMock;
@@ -158,8 +154,9 @@ public class OpenApiRequestMapperTest {
   @Test
   public void map_DoesNotRegisterAnything_UnmappedGetPaths() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
-        new Path().get(new Operation()));
+    mockDefinition() //
+        .servers(Collections.singletonList(new Server().url("https://" + DBEERPEDIA.OPENAPI_HOST))) //
+        .path("/breweries", new PathItem().get(new Operation()));
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
@@ -172,8 +169,9 @@ public class OpenApiRequestMapperTest {
   @Test
   public void map_DoesNotRegisterAnything_NonGetPaths() throws IOException {
     // Arrange
-    mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("breweries",
-        new Path().put(new Operation()));
+    mockDefinition() //
+        .servers(Collections.singletonList(new Server().url("https://" + DBEERPEDIA.OPENAPI_HOST))) //
+        .path("/breweries", new PathItem().get(new Operation()));
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
@@ -183,21 +181,29 @@ public class OpenApiRequestMapperTest {
     verify(httpConfigurationMock).registerResources(resourceCaptor.capture());
   }
 
-  private Swagger mockDefinition() throws IOException {
-    String specString = "swagger: \"2.0\"\n" + "info:\n" + "  title: API\n" + "  version: 1.0";
+  private OpenAPI mockDefinition() throws IOException {
+    String specString = ""
+        + "openapi: 3.0.0\n"
+        + "servers: []\n"
+        + "info:\n"
+        + "  title: API\n"
+        + "  version: '1'\n"
+        + "paths: {}";
     byte[] bytes = specString.getBytes(Charsets.UTF_8);
     when(fileResourceMock.getInputStream()).thenReturn(new ByteArrayInputStream(bytes));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[] {fileResourceMock});
-    Map<String, Model> definitions = new HashMap<>();
-    Model myref = new ModelImpl();
 
-    definitions.put("myref", myref);
-    Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
-    swagger.setDefinitions(definitions);
-    when(openApiParserMock.parse(specString)).thenReturn(swagger);
 
-    return swagger;
+    OpenAPI openAPI = new OpenAPI();
+    openAPI.setInfo(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
+    openAPI.getComponents().getSchemas().put("myref", new Schema<>());
+
+    SwaggerParseResult parserResult = mock(SwaggerParseResult.class);
+    when(parserResult.getOpenAPI()).thenReturn(openAPI);
+    when(openApiParserMock.readContents(specString)).thenReturn(parserResult);
+
+    return openAPI;
   }
 
 }

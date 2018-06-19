@@ -5,12 +5,10 @@ import static javax.ws.rs.HttpMethod.GET;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.RefModel;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.BodyParameter;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -47,7 +45,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
   private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
 
-  private static final Path specPath;
+  private static final PathItem specPath;
 
   private final OpenAPIV3Parser openApiParser;
 
@@ -60,14 +58,14 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
   private List<RequestMapper> requestMappers;
 
   static {
-    specPath = new Path();
+    specPath = new PathItem();
     specPath.setGet(new Operation());
   }
 
   @Autowired
   public OpenApiRequestMapper(@NonNull OpenAPIV3Parser openApiParser,
-                              @NonNull ApplicationProperties applicationProperties,
-                              @NonNull List<RequestMapper> requestMappers) {
+      @NonNull ApplicationProperties applicationProperties,
+      @NonNull List<RequestMapper> requestMappers) {
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
     this.requestMappers = requestMappers;
@@ -120,13 +118,14 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
       for (ApiOperation apiOperation : apiOperations) {
         Operation operation = apiOperation.getOperation();
 
-        validateOperation(apiOperation, swagger);
+        verifySchemasHaveTypeObject(operation.getRequestBody());
 
-        Optional<RequestMapper> optionalRequestMapper = requestMappers.stream().filter(
-            mapper -> mapper.supportsVendorExtension(operation.getVendorExtensions())).findFirst();
+        Optional<RequestMapper> optionalRequestMapper = requestMappers.stream() //
+            .filter(mapper -> mapper.supportsVendorExtension(operation.getExtensions())) //
+            .findFirst();
 
         optionalRequestMapper.ifPresent(
-            mapper -> mapper.map(resourceBuilder, swagger, apiOperation, operation, absolutePath));
+            mapper -> mapper.map(resourceBuilder, openAPI, apiOperation, operation, absolutePath));
 
         if (!optionalRequestMapper.isPresent()) {
           LOG.warn("Path '{}' is not mapped to an information product or transaction.",
@@ -157,52 +156,36 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     httpConfiguration.registerResources(specResourceBuilder.build());
   }
 
-  private Optional<String> getSpecEndpoint(Swagger swagger) {
-    return Optional.ofNullable(swagger.getVendorExtensions()).map(
+  private Optional<String> getSpecEndpoint(OpenAPI openAPI) {
+    return Optional.ofNullable(openAPI.getExtensions()).map(
         map -> (String) map.get(OpenApiSpecificationExtensions.SPEC_ENDPOINT));
   }
 
   /**
    * @throws ConfigurationException If the supplied operation has a body parameter, and it does not
-   *                                have a schema of type Object (because a schema of type Object is the only type we are
-   *                                currently supporting).
+   *         have a schema of type Object (because a schema of type Object is the only type we are
+   *         currently supporting).
    */
-  private void validateOperation(ApiOperation apiOperation, Swagger swagger) {
-    apiOperation.getOperation().getParameters().stream().filter(
-        parameterBody -> "body".equalsIgnoreCase(parameterBody.getIn())).forEach(parameterBody -> {
-      if ((parameterBody instanceof BodyParameter)) {
-        ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
-        if (!"object".equalsIgnoreCase(parameterModel.getType())) {
-          throw new ConfigurationException("No object property in body parameter.");
-        }
+  private void verifySchemasHaveTypeObject(RequestBody requestBody) {
+    requestBody.getContent().values().forEach(mediaType -> {
+      if (!"object".equalsIgnoreCase(mediaType.getSchema().getType())) {
+        throw new ConfigurationException("No object property in body parameter.");
       }
     });
-  }
-
-  private ModelImpl getBodyParameter(@NonNull Swagger swagger, BodyParameter parameterBody) {
-    ModelImpl parameterModel = null;
-    if (parameterBody.getSchema() instanceof ModelImpl) {
-      parameterModel = ((ModelImpl) (parameterBody.getSchema()));
-    }
-    if (parameterBody.getSchema() instanceof RefModel) {
-      RefModel refModel = ((RefModel) (parameterBody.getSchema()));
-      parameterModel = (ModelImpl) swagger.getDefinitions().get(refModel.getSimpleRef());
-    }
-    return parameterModel;
   }
 
   private String createBasePath(OpenAPI openAPI) {
 
     if (openAPI.getServers() == null || openAPI.getServers().isEmpty()) {
       throw new ConfigurationException(String.format("Expecting at least one server definition on "
-              + "the OpenAPI spec '%s'. See: "
-              + "https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schema",
+          + "the OpenAPI spec '%s'. See: "
+          + "https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schema",
           openAPI.getInfo().getDescription()));
     }
 
     String url = openAPI.getServers().get(0).getUrl();
 
-    return url.substring(url.indexOf("://")+2);
+    return url.substring(url.indexOf("://") + 2);
   }
 
 }
