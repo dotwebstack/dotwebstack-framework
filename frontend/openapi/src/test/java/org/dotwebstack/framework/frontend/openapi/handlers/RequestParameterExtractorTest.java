@@ -82,11 +82,12 @@ public class RequestParameterExtractorTest {
     Schema schema = mock(Schema.class);
     when(schema.getType()).thenReturn("object");
 
-    RequestBody parameter = mock(RequestBody.class);
+    RequestBody requestBody = mock(RequestBody.class);
 
-    when(parameter.getContent().get(ContentType.APPLICATION_JSON).getSchema()).thenReturn(schema);
+    when(requestBody.getContent().get(
+        ContentType.APPLICATION_JSON.getMimeType()).getSchema()).thenReturn(schema);
 
-    when(operation.getParameters()).thenReturn(ImmutableList.of(parameter));
+    when(operation.getRequestBody()).thenReturn(requestBody);
     when(apiOperation.getOperation()).thenReturn(operation);
 
     requestParameterExtractor = new RequestParameterExtractor(new ObjectMapper());
