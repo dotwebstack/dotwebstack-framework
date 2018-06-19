@@ -1,35 +1,39 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import com.google.common.collect.Sets;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Path;
+import io.swagger.v3.oas.models.PathItem;
+
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
+
 import lombok.NonNull;
 import org.glassfish.jersey.process.Inflector;
 
 public class OptionsRequestHandler implements Inflector<ContainerRequestContext, Response> {
 
-  private final Path path;
+  private final PathItem pathItem;
 
-  public OptionsRequestHandler(@NonNull Path path) {
-    this.path = path;
+  public OptionsRequestHandler(@NonNull PathItem pathItem) {
+    this.pathItem = pathItem;
   }
 
   @Override
   public Response apply(@NonNull ContainerRequestContext containerRequestContext) {
-    containerRequestContext.setProperty(RequestHandlerProperties.PATH, path);
+    containerRequestContext.setProperty(RequestHandlerProperties.PATH, pathItem);
 
-    Set<HttpMethod> allowedMethods = Sets.newHashSet(path.getOperationMap().keySet());
+    // Determine methods from pathItem operations
+    Set<String> allowedMethods = pathItem.readOperationsMap() //
+        .keySet() //
+        .stream() //
+        .map(Object::toString) //
+        .collect(Collectors.toSet());
+
     allowedMethods.add(HttpMethod.HEAD);
     allowedMethods.add(HttpMethod.OPTIONS);
 
-    Set<String> allowHeader =
-        allowedMethods.stream().map(Object::toString).collect(Collectors.toSet());
-
-    return Response.ok().allow(allowHeader).build();
+    return Response.ok().allow(allowedMethods).build();
   }
 
 }
