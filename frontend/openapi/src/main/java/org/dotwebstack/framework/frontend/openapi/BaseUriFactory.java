@@ -20,10 +20,6 @@ import org.glassfish.jersey.server.ContainerRequest;
 public class BaseUriFactory {
 
   /**
-   * Determines the base URI for the given operation.
-   *
-   *
-   *
    * Constructs a URI: {@code <scheme>://<host>[:<port>]/<basePath>}<br />
    * <br />
    *
