@@ -4,7 +4,7 @@ import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.transaction.Transaction;
 import org.dotwebstack.framework.transaction.TransactionHandlerFactory;
@@ -42,7 +42,7 @@ public class RequestHandlerFactory {
       @NonNull Swagger swagger) {
     return new InformationProductRequestHandler(apiOperation, informationProduct, response,
         informationProductRequestParameterMapper,
-        new ApiRequestValidator(SwaggerUtils.createValidator(swagger), requestParameterExtractor),
+        new ApiRequestValidator(OpenApiSpecUtils.createValidator(swagger), requestParameterExtractor),
         swagger);
   }
 
@@ -50,7 +50,7 @@ public class RequestHandlerFactory {
       @NonNull Transaction transaction, @NonNull Swagger swagger) {
     return new TransactionRequestHandler(apiOperation, transaction,
         transactionRequestParameterMapper, transactionRequestBodyMapper,
-        new ApiRequestValidator(SwaggerUtils.createValidator(swagger), requestParameterExtractor),
+        new ApiRequestValidator(OpenApiSpecUtils.createValidator(swagger), requestParameterExtractor),
         swagger, transactionHandlerFactory);
   }
 

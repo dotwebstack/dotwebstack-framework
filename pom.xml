@@ -88,6 +88,11 @@
       <name>Nathan van Dalen</name>
       <email>Nathan@headFWD.nl</email>
     </developer>
+    <developer>
+      <id>jonaskoperdraat</id>
+      <name>Jonas Koperdraat</name>
+      <email>jonas@jonaskoperdraat.nl</email>
+    </developer>
   </developers>
 
   <properties>

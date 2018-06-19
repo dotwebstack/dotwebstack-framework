@@ -11,7 +11,8 @@ import io.swagger.models.Path;
 import io.swagger.models.RefModel;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.BodyParameter;
-import io.swagger.parser.SwaggerParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,8 +27,9 @@ import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecUtils;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
+import org.dotwebstack.framework.frontend.openapi.Spec;
 import org.dotwebstack.framework.frontend.openapi.handlers.OpenApiSpecHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.glassfish.jersey.server.model.Resource;
@@ -49,7 +51,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
   private static final Path specPath;
 
-  private final SwaggerParser openApiParser;
+  private final OpenAPIV3Parser openApiParser;
 
   private ApplicationProperties applicationProperties;
 
@@ -65,9 +67,9 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
   }
 
   @Autowired
-  public OpenApiRequestMapper(@NonNull SwaggerParser openApiParser,
-      @NonNull ApplicationProperties applicationProperties,
-      @NonNull List<RequestMapper> requestMappers) {
+  public OpenApiRequestMapper(@NonNull OpenAPIV3Parser openApiParser,
+                              @NonNull ApplicationProperties applicationProperties,
+                              @NonNull List<RequestMapper> requestMappers) {
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
     this.requestMappers = requestMappers;
@@ -100,19 +102,19 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
           new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
       String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
       if (!StringUtils.isBlank(result)) {
-        Swagger swagger = openApiParser.parse(result);
-        mapOpenApiDefinition(swagger, httpConfiguration);
-        addSpecResource(result, swagger, httpConfiguration);
+        OpenAPI openAPI = openApiParser.readContents(result).getOpenAPI();
+        mapOpenApiDefinition(openAPI, httpConfiguration);
+        addSpecResource(result, openAPI, httpConfiguration);
       }
     }
   }
 
-  private void mapOpenApiDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
-    String basePath = createBasePath(swagger);
+  private void mapOpenApiDefinition(OpenAPI openAPI, HttpConfiguration httpConfiguration) {
+    String basePath = createBasePath(openAPI);
 
-    swagger.getPaths().forEach((path, pathItem) -> {
+    openAPI.getPaths().forEach((path, pathItem) -> {
       Collection<ApiOperation> apiOperations =
-          SwaggerUtils.extractApiOperations(swagger, path, pathItem);
+          OpenApiSpecUtils.extractApiOperations(openAPI, path, pathItem);
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
@@ -142,10 +144,10 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     });
   }
 
-  private void addSpecResource(String yaml, Swagger swagger, HttpConfiguration httpConfiguration)
+  private void addSpecResource(String yaml, OpenAPI openAPI, HttpConfiguration httpConfiguration)
       throws IOException {
-    String basePath = createBasePath(swagger);
-    String specEndpoint = getSpecEndpoint(swagger).orElse("/");
+    String basePath = createBasePath(openAPI);
+    String specEndpoint = getSpecEndpoint(openAPI).orElse("/");
     OpenApiSpecHandler handler = new OpenApiSpecHandler(yaml);
     Builder specResourceBuilder = Resource.builder().path(basePath + specEndpoint);
     specResourceBuilder//
@@ -164,19 +166,19 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
   /**
    * @throws ConfigurationException If the supplied operation has a body parameter, and it does not
-   *         have a schema of type Object (because a schema of type Object is the only type we are
-   *         currently supporting).
+   *                                have a schema of type Object (because a schema of type Object is the only type we are
+   *                                currently supporting).
    */
   private void validateOperation(ApiOperation apiOperation, Swagger swagger) {
     apiOperation.getOperation().getParameters().stream().filter(
         parameterBody -> "body".equalsIgnoreCase(parameterBody.getIn())).forEach(parameterBody -> {
-          if ((parameterBody instanceof BodyParameter)) {
-            ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
-            if (!"object".equalsIgnoreCase(parameterModel.getType())) {
-              throw new ConfigurationException("No object property in body parameter.");
-            }
-          }
-        });
+      if ((parameterBody instanceof BodyParameter)) {
+        ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
+        if (!"object".equalsIgnoreCase(parameterModel.getType())) {
+          throw new ConfigurationException("No object property in body parameter.");
+        }
+      }
+    });
   }
 
   private ModelImpl getBodyParameter(@NonNull Swagger swagger, BodyParameter parameterBody) {
@@ -191,22 +193,18 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     return parameterModel;
   }
 
-  private String createBasePath(Swagger swagger) {
-    String basePath = "/";
+  private String createBasePath(OpenAPI openAPI) {
 
-    if (swagger.getHost() == null) {
-      throw new ConfigurationException(
-          String.format("OpenAPI definition document '%s' must contain a 'host' attribute.",
-              swagger.getInfo().getDescription()));
+    if (openAPI.getServers() == null || openAPI.getServers().isEmpty()) {
+      throw new ConfigurationException(String.format("Expecting at least one server definition on "
+              + "the OpenAPI spec '%s'. See: "
+              + "https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schema",
+          openAPI.getInfo().getDescription()));
     }
 
-    basePath = basePath.concat(swagger.getHost());
+    String url = openAPI.getServers().get(0).getUrl();
 
-    if (swagger.getBasePath() != null) {
-      basePath = basePath.concat(swagger.getBasePath());
-    }
-
-    return basePath;
+    return url.substring(url.indexOf("://")+2);
   }
 
 }
