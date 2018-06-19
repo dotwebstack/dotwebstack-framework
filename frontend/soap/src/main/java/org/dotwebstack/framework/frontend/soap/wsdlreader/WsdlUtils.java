@@ -1,23 +1,16 @@
 package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.wsdl.Binding;
-import javax.wsdl.BindingFault;
 import javax.wsdl.BindingInput;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.BindingOutput;
 import javax.wsdl.Definition;
-import javax.wsdl.Fault;
-import javax.wsdl.Input;
 import javax.wsdl.Message;
-import javax.wsdl.Operation;
-import javax.wsdl.OperationType;
 import javax.wsdl.Output;
 import javax.wsdl.Part;
 import javax.wsdl.Port;
@@ -26,16 +19,12 @@ import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.mime.MIMEContent;
 import javax.wsdl.extensions.mime.MIMEMultipartRelated;
 import javax.wsdl.extensions.mime.MIMEPart;
-import javax.wsdl.extensions.soap.SOAPAddress;
 import javax.wsdl.extensions.soap.SOAPBinding;
 import javax.wsdl.extensions.soap.SOAPBody;
-import javax.wsdl.extensions.soap.SOAPFault;
 import javax.wsdl.extensions.soap.SOAPHeader;
 import javax.wsdl.extensions.soap.SOAPOperation;
-import javax.wsdl.extensions.soap12.SOAP12Address;
 import javax.wsdl.extensions.soap12.SOAP12Binding;
 import javax.wsdl.extensions.soap12.SOAP12Body;
-import javax.wsdl.extensions.soap12.SOAP12Fault;
 import javax.wsdl.extensions.soap12.SOAP12Header;
 import javax.wsdl.extensions.soap12.SOAP12Operation;
 import javax.xml.XMLConstants;
@@ -162,40 +151,6 @@ class WsdlUtils {
     return false;
   }
 
-  public static boolean isOutputSoapEncoded(BindingOperation bindingOperation) {
-    if (bindingOperation == null) {
-      return false;
-    }
-
-    BindingOutput bindingOutput = bindingOperation.getBindingOutput();
-    if (bindingOutput == null) {
-      return false;
-    }
-
-    SOAPBody soapBody =
-        WsdlUtils.getExtensiblityElement(bindingOutput.getExtensibilityElements(), SOAPBody.class);
-
-    if (soapBody != null) {
-      return soapBody.getUse() != null
-          && soapBody.getUse().equalsIgnoreCase("encoded")
-          && (soapBody.getEncodingStyles() == null || soapBody.getEncodingStyles().contains(
-          "http://schemas.xmlsoap.org/soap/encoding/"));
-    }
-
-    SOAP12Body soap12Body =
-        WsdlUtils.getExtensiblityElement(bindingOutput.getExtensibilityElements(),
-        SOAP12Body.class);
-
-    if (soap12Body != null) {
-      return soap12Body.getUse() != null
-          && soap12Body.getUse().equalsIgnoreCase("encoded")
-          && (soap12Body.getEncodingStyle() == null || soap12Body.getEncodingStyle().equals(
-          "http://schemas.xmlsoap.org/soap/encoding/"));
-    }
-
-    return false;
-  }
-
   public static boolean isRpc(Definition definition, BindingOperation bindingOperation) {
     SOAPOperation soapOperation =
         WsdlUtils.getExtensiblityElement(bindingOperation.getExtensibilityElements(),
@@ -241,64 +196,6 @@ class WsdlUtils {
     return false;
   }
 
-  public static boolean isOneWay(BindingOperation operation) {
-    return operation.getOperation().getStyle().equals(OperationType.ONE_WAY);
-  }
-
-  /**
-   * Returns a list of parts for the specifed operation, either as specified in
-   * body or all
-   */
-
-  public static Part[] getInputParts(BindingOperation operation) {
-    List<Part> result = new ArrayList<Part>();
-    Input input = operation.getOperation().getInput();
-    if (input == null || operation.getBindingInput() == null) {
-      return new Part[0];
-    }
-
-    Message msg = input.getMessage();
-
-    if (msg != null) {
-      SOAPBody soapBody =
-          WsdlUtils.getExtensiblityElement(operation.getBindingInput().getExtensibilityElements(),
-          SOAPBody.class);
-
-      if (soapBody == null || soapBody.getParts() == null) {
-        SOAP12Body soap12Body = WsdlUtils.getExtensiblityElement(operation.getBindingInput()
-            .getExtensibilityElements(), SOAP12Body.class);
-
-        if (soap12Body == null || soap12Body.getParts() == null) {
-          if (msg != null) {
-            result.addAll(msg.getOrderedParts(null));
-          }
-        } else {
-          Iterator i = soap12Body.getParts().iterator();
-          while (i.hasNext()) {
-            String partName = (String) i.next();
-            Part part = msg.getPart(partName);
-
-            result.add(part);
-          }
-        }
-      } else {
-        Iterator i = soapBody.getParts().iterator();
-        while (i.hasNext()) {
-          String partName = (String) i.next();
-          Part part = msg.getPart(partName);
-
-          result.add(part);
-        }
-      }
-    }
-
-    return result.toArray(new Part[result.size()]);
-  }
-
-  public static boolean isAttachmentInputPart(Part part, BindingOperation operation) {
-    return getInputMultipartContent(part, operation).length > 0;
-  }
-
   public static boolean isAttachmentOutputPart(Part part, BindingOperation operation) {
     return getOutputMultipartContent(part, operation).length > 0;
   }
@@ -314,19 +211,6 @@ class WsdlUtils {
         MIMEMultipartRelated.class);
 
     return getContentParts(part, multipartOutput);
-  }
-
-  public static MIMEContent[] getInputMultipartContent(Part part, BindingOperation operation) {
-    BindingInput bindingInput = operation.getBindingInput();
-    if (bindingInput == null) {
-      return new MIMEContent[0];
-    }
-
-    MIMEMultipartRelated multipartInput =
-        WsdlUtils.getExtensiblityElement(bindingInput.getExtensibilityElements(),
-        MIMEMultipartRelated.class);
-
-    return getContentParts(part, multipartInput);
   }
 
   public static MIMEContent[] getContentParts(Part part, MIMEMultipartRelated multipart) {
@@ -348,45 +232,6 @@ class WsdlUtils {
     }
 
     return result.toArray(new MIMEContent[result.size()]);
-  }
-
-  public static Part[] getFaultParts(
-      BindingOperation bindingOperation,
-      String faultName)
-      throws Exception {
-    List<Part> result = new ArrayList<Part>();
-
-    BindingFault bindingFault = bindingOperation.getBindingFault(faultName);
-    SOAPFault soapFault =
-        WsdlUtils.getExtensiblityElement(bindingFault.getExtensibilityElements(), SOAPFault.class);
-
-    Operation operation = bindingOperation.getOperation();
-    if (soapFault != null && soapFault.getName() != null) {
-      Fault fault = operation.getFault(soapFault.getName());
-      if (fault == null) {
-        throw new Exception("Missing Fault [" + soapFault.getName()
-            + "] in operation [" + operation.getName() + "]");
-      }
-      result.addAll(fault.getMessage().getOrderedParts(null));
-    } else {
-      SOAP12Fault soap12Fault =
-          WsdlUtils.getExtensiblityElement(bindingFault.getExtensibilityElements(),
-          SOAP12Fault.class);
-
-      if (soap12Fault != null && soap12Fault.getName() != null) {
-        Fault fault = operation.getFault(soap12Fault.getName());
-        if (fault != null && fault.getMessage() != null) {
-          result.addAll(fault.getMessage().getOrderedParts(null));
-        }
-      } else {
-        Fault fault = operation.getFault(faultName);
-        if (fault != null && fault.getMessage() != null) {
-          result.addAll(fault.getMessage().getOrderedParts(null));
-        }
-      }
-    }
-
-    return result.toArray(new Part[result.size()]);
   }
 
   public static Part[] getOutputParts(BindingOperation operation) {
@@ -437,50 +282,6 @@ class WsdlUtils {
     }
 
     return result.toArray(new Part[result.size()]);
-  }
-
-  public static String getSoapEndpoint(Port port) {
-    SOAPAddress soapAddress =
-        WsdlUtils.getExtensiblityElement(port.getExtensibilityElements(), SOAPAddress.class);
-    if (soapAddress != null && StringUtils.isNotBlank(soapAddress.getLocationURI())) {
-      try {
-        return URLDecoder.decode(soapAddress.getLocationURI(), "UTF-8");
-      } catch (UnsupportedEncodingException e) {
-        e.printStackTrace();
-        return soapAddress.getLocationURI();
-      }
-    }
-
-    SOAP12Address soap12Address = WsdlUtils.getExtensiblityElement(port.getExtensibilityElements(),
-        SOAP12Address.class);
-    if (soap12Address != null && StringUtils.isNotBlank(soap12Address.getLocationURI())) {
-      try {
-        return URLDecoder.decode(soap12Address.getLocationURI(), "UTF-8");
-      } catch (UnsupportedEncodingException e) {
-        e.printStackTrace();
-        return soap12Address.getLocationURI();
-      }
-    }
-
-    return null;
-  }
-
-  public static boolean replaceSoapEndpoint(Port port, String endpoint) {
-    SOAPAddress soapAddress =
-        WsdlUtils.getExtensiblityElement(port.getExtensibilityElements(), SOAPAddress.class);
-    if (soapAddress != null) {
-      soapAddress.setLocationURI(endpoint);
-      return true;
-    }
-
-    SOAP12Address soap12Address = WsdlUtils.getExtensiblityElement(port.getExtensibilityElements(),
-        SOAP12Address.class);
-    if (soap12Address != null) {
-      soap12Address.setLocationURI(endpoint);
-      return true;
-    }
-
-    return false;
   }
 
   public static String getSoapBodyNamespace(List<?> list) {
@@ -573,37 +374,6 @@ class WsdlUtils {
 
     return result;
   }
-
-
-  public static BindingOperation findBindingOperation(
-      Binding binding,
-      String bindingOperationName,
-      String inputName,
-      String outputName) {
-    if (binding == null) {
-      return null;
-    }
-
-    if (inputName == null) {
-      inputName = ":none";
-    }
-
-    if (outputName == null) {
-      outputName = ":none";
-    }
-
-    BindingOperation result =
-        binding.getBindingOperation(bindingOperationName, inputName, outputName);
-
-    if (result == null && (inputName.equals(":none") || outputName.equals(":none"))) {
-      // fall back to this behaviour for WSDL4j 1.5.0 compatibility
-      result = binding.getBindingOperation(bindingOperationName, inputName.equals(":none")
-          ? null
-          : inputName, outputName.equals(":none") ? null : outputName);
-    }
-    return result;
-  }
-
 
   public static String getTargetNamespace(Definition definition) {
     return definition.getTargetNamespace() == null

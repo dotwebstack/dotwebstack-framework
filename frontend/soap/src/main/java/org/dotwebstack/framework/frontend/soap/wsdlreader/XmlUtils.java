@@ -2,16 +2,11 @@ package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -91,20 +86,6 @@ final class XmlUtils {
     }
   }
 
-  public static NodeList getChildElements(Element elm) {
-    List<Element> list = new ArrayList<Element>();
-
-    NodeList nl = elm.getChildNodes();
-    for (int c = 0; c < nl.getLength(); c++) {
-      Node item = nl.item(c);
-      if (item.getParentNode() == elm && item.getNodeType() == Node.ELEMENT_NODE) {
-        list.add((Element) item);
-      }
-    }
-
-    return new ElementNodeList(list);
-  }
-
   private static final class ElementNodeList implements NodeList {
     private final List<Element> list;
 
@@ -182,52 +163,6 @@ final class XmlUtils {
     } else {
       return node.getNodeValue();
     }
-  }
-
-  public static Element getFirstChildElementIgnoreCase(Element elm, String name) {
-    if (elm == null) {
-      return null;
-    }
-
-    NodeList nl = elm.getChildNodes();
-    for (int c = 0; c < nl.getLength(); c++) {
-      Node node = nl.item(c);
-      if (node.getNodeType() == Node.ELEMENT_NODE
-          && (name == null || node.getNodeName().equalsIgnoreCase(name))) {
-        return (Element) node;
-      }
-    }
-
-    return null;
-  }
-
-  public static Element getFirstChildElementNs(Element elm, String tns, String localName) {
-    if (tns == null && localName == null) {
-      return getFirstChildElement(elm);
-    }
-
-    if (tns == null || tns.length() == 0) {
-      return getFirstChildElement(elm, localName);
-    }
-
-    NodeList nl = elm.getChildNodes();
-    for (int c = 0; c < nl.getLength(); c++) {
-      Node node = nl.item(c);
-      if (node.getNodeType() != Node.ELEMENT_NODE) {
-        continue;
-      }
-
-      if (localName == null && tns.equals(node.getNamespaceURI())) {
-        return (Element) node;
-      }
-
-      if (localName != null && tns.equals(node.getNamespaceURI())
-          && localName.equals(node.getLocalName())) {
-        return (Element) node;
-      }
-    }
-
-    return null;
   }
 
   public static String removeUnneccessaryNamespaces(String xml) {
@@ -358,10 +293,6 @@ final class XmlUtils {
     }
   }
 
-  public static Document parseXml(String xmlString) throws IOException {
-    return parse(new InputSource(new StringReader(xmlString)));
-  }
-
   public static boolean setNodeValue(Node domNode, String string) {
     if (domNode == null) {
       return false;
@@ -393,80 +324,6 @@ final class XmlUtils {
     }
 
     return true;
-  }
-
-  public static String declareXPathNamespaces(XmlObject xmlObject) {
-    Map<QName, String> map = new HashMap<QName, String>();
-    XmlCursor cursor = xmlObject.newCursor();
-
-    while (cursor.hasNextToken()) {
-      if (cursor.toNextToken().isNamespace()) {
-        map.put(cursor.getName(), cursor.getTextValue());
-      }
-    }
-
-    cursor.dispose();
-
-    Iterator<QName> i = map.keySet().iterator();
-    int nsCnt = 0;
-
-    StringBuffer buf = new StringBuffer();
-    Set<String> prefixes = new HashSet<String>();
-    Set<String> usedPrefixes = new HashSet<String>();
-
-    while (i.hasNext()) {
-      QName name = i.next();
-      String prefix = name.getLocalPart();
-      if (prefix.length() == 0) {
-        prefix = "ns" + Integer.toString(++nsCnt);
-      } else if (prefix.equals("xsd") || prefix.equals("xsi")) {
-        continue;
-      }
-
-      if (usedPrefixes.contains(prefix)) {
-        int c = 1;
-        while (usedPrefixes.contains(prefix + c)) {
-          c++;
-        }
-
-        prefix = prefix + Integer.toString(c);
-      } else {
-        prefixes.add(prefix);
-      }
-
-      buf.append("declare namespace ");
-      buf.append(prefix);
-      buf.append("='");
-      buf.append(map.get(name));
-      buf.append("';\n");
-
-      usedPrefixes.add(prefix);
-    }
-
-    return buf.toString();
-  }
-
-  public static String setXPathContent(String xmlText, String xpath, String value) {
-    try {
-      XmlObject xmlObject = XmlObject.Factory.parse(xmlText);
-
-      String namespaces = declareXPathNamespaces(xmlObject);
-      if (namespaces != null && namespaces.trim().length() > 0) {
-        xpath = namespaces + xpath;
-      }
-
-      XmlObject[] path = xmlObject.selectPath(xpath);
-      for (XmlObject xml : path) {
-        setNodeValue(xml.getDomNode(), value);
-      }
-
-      return xmlObject.toString();
-    } catch (Exception e) {
-
-      e.printStackTrace();
-    }
-
-    return xmlText;
   }
 
   public static void serializePretty(XmlObject xmlObject, Writer writer) throws IOException {

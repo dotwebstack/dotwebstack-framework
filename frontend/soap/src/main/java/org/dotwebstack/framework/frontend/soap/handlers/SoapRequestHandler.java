@@ -1,26 +1,15 @@
 package org.dotwebstack.framework.frontend.soap.handlers;
 
-import com.ibm.wsdl.extensions.schema.SchemaImpl;
-import java.io.File;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
-import javax.wsdl.Part;
 import javax.wsdl.Port;
 import javax.wsdl.Service;
-import javax.wsdl.Types;
-import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.ExtensibilityElement;
-import javax.wsdl.extensions.schema.Schema;
-import javax.wsdl.extensions.schema.SchemaImport;
-import javax.wsdl.factory.WSDLFactory;
-import javax.wsdl.xml.WSDLReader;
 
 import lombok.NonNull;
-
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SchemaDefinitionWrapper;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapContext;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;

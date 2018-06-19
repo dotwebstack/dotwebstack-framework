@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -427,14 +426,6 @@ class SampleXmlUtil {
       }
       sb.append(' ');
       sb.append(a[i]);
-    }
-    return sb.toString();
-  }
-
-  private String pickDigits(int digits) {
-    StringBuffer sb = new StringBuffer();
-    while (digits-- > 0) {
-      sb.append(Integer.toString(pick(10)));
     }
     return sb.toString();
   }
@@ -1026,25 +1017,6 @@ class SampleXmlUtil {
   }
 
   /**
-   * Cracks a combined QName of the form URL:localname
-   */
-  public static QName crackQName(String qualifiedName) {
-    String ns;
-    String name;
-
-    int index = qualifiedName.lastIndexOf(':');
-    if (index >= 0) {
-      ns = qualifiedName.substring(0, index);
-      name = qualifiedName.substring(index + 1);
-    } else {
-      ns = "";
-      name = qualifiedName;
-    }
-
-    return new QName(ns, name);
-  }
-
-  /**
    * Cursor position: Before this call: <outer><foo/>^</outer> (cursor at the
    * ^) After this call: <<outer><foo/><bar/>som text<etc/>^</outer>
    */
@@ -1120,20 +1092,6 @@ class SampleXmlUtil {
     return result;
   }
 
-  /*
-    * Return a name for the element or the particle type to use in the comment
-    * for minoccurs, max occurs
-    */
-  private String getItemNameOrType(SchemaParticle sp, XmlCursor xmlc) {
-    String elementOrTypeName = null;
-    if (sp.getParticleType() == SchemaParticle.ELEMENT) {
-      elementOrTypeName = "Element (" + sp.getName().getLocalPart() + ")";
-    } else {
-      elementOrTypeName = printParticleType(sp.getParticleType());
-    }
-    return elementOrTypeName;
-  }
-
   private void processElement(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
     // cast as schema local element
     SchemaLocalElement element = (SchemaLocalElement) sp;
@@ -1169,16 +1127,6 @@ class SampleXmlUtil {
     }
     // -> <elem>stuff</elem>^
     xmlc.toNextToken();
-  }
-
-  private void moveToken(int numToMove, XmlCursor xmlc) {
-    for (int i = 0; i < Math.abs(numToMove); i++) {
-      if (numToMove < 0) {
-        xmlc.toPrevToken();
-      } else {
-        xmlc.toNextToken();
-      }
-    }
   }
 
   private static final String formatQName(XmlCursor xmlc, QName qualifiedName) {
@@ -1304,47 +1252,6 @@ class SampleXmlUtil {
     // xmlc.insertElement("AnyElement");
   }
 
-  /**
-   * This method will get the base type for the schema type
-   */
-
-  private static QName getClosestName(SchemaType schemaType) {
-    while (schemaType.getName() == null) {
-      schemaType = schemaType.getBaseType();
-    }
-
-    return schemaType.getName();
-  }
-
-  private String printParticleType(int particleType) {
-    StringBuffer returnParticleType = new StringBuffer();
-    returnParticleType.append("Schema Particle Type: ");
-
-    switch (particleType) {
-      case SchemaParticle.ALL:
-        returnParticleType.append("ALL\n");
-        break;
-      case SchemaParticle.CHOICE:
-        returnParticleType.append("CHOICE\n");
-        break;
-      case SchemaParticle.ELEMENT:
-        returnParticleType.append("ELEMENT\n");
-        break;
-      case SchemaParticle.SEQUENCE:
-        returnParticleType.append("SEQUENCE\n");
-        break;
-      case SchemaParticle.WILDCARD:
-        returnParticleType.append("WILDCARD\n");
-        break;
-      default:
-        returnParticleType.append("Schema Particle Type Unknown");
-        break;
-    }
-
-    return returnParticleType.toString();
-  }
-
-
   private void addElementTypeAndRestricionsComment(SchemaLocalElement element, XmlCursor xmlc) {
 
     SchemaType type = element.getType();
@@ -1371,13 +1278,5 @@ class SampleXmlUtil {
         xmlc.insertComment("type: " + type.getName().getLocalPart() + info);
       }
     }
-  }
-
-  public void setTypeComment(boolean b) {
-    typeComment = b;
-  }
-
-  public void setIgnoreOptional(boolean b) {
-    ignoreOptional = b;
   }
 }

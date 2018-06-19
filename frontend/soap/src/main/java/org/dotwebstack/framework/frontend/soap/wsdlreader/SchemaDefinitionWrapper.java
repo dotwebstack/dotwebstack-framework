@@ -1,8 +1,5 @@
 package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import javax.wsdl.Definition;
 import javax.xml.namespace.QName;
 
@@ -58,19 +55,6 @@ public class SchemaDefinitionWrapper {
     return schemaTypes != null;
   }
 
-  public Collection<String> getDefinedNamespaces() throws Exception {
-    Set<String> namespaces = new HashSet<String>();
-
-    SchemaTypeSystem schemaTypes = getSchemaTypeSystem();
-    if (schemaTypes != null) {
-      namespaces.addAll(SchemaUtils.extractNamespaces(getSchemaTypeSystem(), true));
-    }
-
-    namespaces.add(getTargetNamespace());
-
-    return namespaces;
-  }
-
   public String getTargetNamespace() {
     return WsdlUtils.getTargetNamespace(definition);
   }
@@ -79,7 +63,7 @@ public class SchemaDefinitionWrapper {
     return getSchemaTypeLoader().findType(typeName);
   }
 
-  public void loadSchemaTypes(DefinitionLoader loader) {
+  public void loadSchemaTypes(SchemaLoader loader) {
     schemaTypes = SchemaUtils.loadSchemaTypes(loader.getBaseUri(), loader);
     schemaTypeLoader = XmlBeans.typeLoaderUnion(new SchemaTypeLoader[]{schemaTypes,
         XmlBeans.getBuiltinTypeSystem()});

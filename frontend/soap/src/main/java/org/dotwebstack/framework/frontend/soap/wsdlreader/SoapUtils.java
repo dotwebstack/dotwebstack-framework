@@ -1,49 +1,27 @@
 package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
 import com.ibm.wsdl.extensions.http.HTTPAddressImpl;
-import com.ibm.wsdl.extensions.schema.SchemaImpl;
 import com.ibm.wsdl.extensions.soap.SOAPAddressImpl;
 import com.ibm.wsdl.extensions.soap12.SOAP12AddressImpl;
 
-import java.io.File;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.wsdl.Binding;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.BindingOutput;
-import javax.wsdl.Definition;
 import javax.wsdl.Message;
 import javax.wsdl.Part;
-import javax.wsdl.Port;
-import javax.wsdl.Service;
-import javax.wsdl.Types;
 import javax.wsdl.extensions.ExtensibilityElement;
-import javax.wsdl.extensions.schema.Schema;
-import javax.wsdl.extensions.schema.SchemaImport;
 import javax.wsdl.extensions.soap.SOAPBinding;
 import javax.wsdl.extensions.soap12.SOAP12Binding;
-import javax.wsdl.factory.WSDLFactory;
-import javax.wsdl.xml.WSDLReader;
 
 import javax.xml.namespace.QName;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
-import org.apache.ws.commons.schema.XmlSchema;
-import org.apache.ws.commons.schema.XmlSchemaCollection;
-import org.apache.ws.commons.schema.XmlSchemaElement;
 import org.apache.xmlbeans.SchemaGlobalElement;
 import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
-import org.w3c.dom.Element;
 
 public class SoapUtils {
 
@@ -66,35 +44,6 @@ public class SoapUtils {
     }
   }
 
-  public static void printSchema(Definition definition, Schema schema) {
-    
-    Element schemaElement = schema.getElement(); 
-    Map<String, String> namespaces = definition.getNamespaces(); 
-    for (Entry<String, String> entry : namespaces.entrySet()) { 
-      if (entry.getKey().equals("xmlns") || entry.getKey().trim().isEmpty()) { 
-        continue; 
-      } 
-      if (schemaElement.getAttribute("xmlns:" + entry.getKey()).isEmpty()) { 
-        schemaElement.setAttribute("xmlns:" + entry.getKey(), entry.getValue()); 
-      } 
-    }
-    printElement(schemaElement);
-  }
-
-  public static void printElement(Element element) {
-    
-    try {
-      TransformerFactory transFactory = TransformerFactory.newInstance();
-      Transformer transformer = transFactory.newTransformer();
-      StringWriter buffer = new StringWriter();
-      transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-      transformer.transform(new DOMSource(element), new StreamResult(buffer));
-      System.out.println(buffer.toString());
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-    }
-  }
-  
   /* *********************
    *
    *

@@ -1,9 +1,7 @@
 package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.xml.namespace.QName;
 
-import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.SchemaTypeSystem;
 import org.apache.xmlbeans.SimpleValue;
 import org.apache.xmlbeans.XmlBeans;
@@ -68,26 +65,6 @@ class SchemaUtils {
     } catch (Exception e) {
       throw new SoapBuilderException(e);
     }
-  }
-
-
-  private static void loadDefaultSchema(URL url) throws Exception {
-    XmlObject xmlObject = XmlUtils.createXmlObject(url);
-    if (!((Document) xmlObject.getDomNode()).getDocumentElement().getNamespaceURI()
-        .equals(Constants.XSD_NS)) {
-      return;
-    }
-
-    String targetNamespace = getTargetNamespace(xmlObject);
-
-    if (defaultSchemas.containsKey(targetNamespace)) {
-      System.out.println("Overriding schema for targetNamespace " + targetNamespace);
-    }
-
-    defaultSchemas.put(targetNamespace, xmlObject);
-
-    System.out.println("Added default schema from " + url.getPath()
-        + " with targetNamespace " + targetNamespace);
   }
 
   public static SchemaTypeSystem loadSchemaTypes(String wsdlUrl, SchemaLoader loader) {
@@ -211,8 +188,7 @@ class SchemaUtils {
    */
   public static void getSchemas(
       String wsdlUrl,
-      Map<String,
-      XmlObject> existing,
+      Map<String, XmlObject> existing,
       SchemaLoader loader,
       String tns) {
     if (existing.containsKey(wsdlUrl)) {
@@ -510,27 +486,6 @@ class SchemaUtils {
         }
       }
     }
-  }
-
-  /**
-   * Extracts namespaces - used in tool integrations for mapping..
-   */
-  public static Collection<String> extractNamespaces(
-      SchemaTypeSystem schemaTypes,
-      boolean removeDefault) {
-    Set<String> namespaces = new HashSet<String>();
-    SchemaType[] globalTypes = schemaTypes.globalTypes();
-    for (int c = 0; c < globalTypes.length; c++) {
-      namespaces.add(globalTypes[c].getName().getNamespaceURI());
-    }
-
-    if (removeDefault) {
-      namespaces.removeAll(defaultSchemas.keySet());
-      namespaces.remove(Constants.SOAP11_ENVELOPE_NS);
-      namespaces.remove(Constants.SOAP_ENCODING_NS);
-    }
-
-    return namespaces;
   }
 
   /**

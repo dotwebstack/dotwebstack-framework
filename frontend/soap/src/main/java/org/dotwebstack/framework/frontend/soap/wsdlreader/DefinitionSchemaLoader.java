@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.wsdl.Definition;
-import javax.wsdl.Types;
 import javax.wsdl.extensions.ExtensibilityElement;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
@@ -32,7 +31,7 @@ import org.w3c.dom.Element;
  * - removal of dependencies and code parts that are out of scope of SOAP message generation
  * - minor fixes to make the class compile out of soapUI's code base
  */
-class DefinitionSchemaLoader implements SchemaLoader, DefinitionLoader {
+class DefinitionSchemaLoader implements SchemaLoader {
   private String baseUri;
   private Definition wsdlDefinition;
 
@@ -67,25 +66,5 @@ class DefinitionSchemaLoader implements SchemaLoader, DefinitionLoader {
 
   public String getBaseUri() {
     return baseUri;
-  }
-
-  public void setProgressInfo(String info) {
-    throw new SoapBuilderException("Not Implemented");
-  }
-
-  public boolean isAborted() {
-    throw new SoapBuilderException("Not Implemented");
-  }
-
-  public boolean abort() {
-    throw new SoapBuilderException("Not Implemented");
-  }
-
-  public void setNewBaseUri(String uri) {
-    throw new SoapBuilderException("Not Implemented");
-  }
-
-  public String getFirstNewUri() {
-    throw new SoapBuilderException("Not Implemented");
   }
 }
