@@ -2,11 +2,9 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.RefModel;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.BodyParameter;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -42,7 +40,7 @@ class RequestParameterExtractor {
     this.objectMapper = objectMapper;
   }
 
-  RequestParameters extract(@NonNull ApiOperation apiOperation, @NonNull Swagger swagger,
+  RequestParameters extract(@NonNull ApiOperation apiOperation, @NonNull OpenAPI openApi,
       @NonNull ContainerRequestContext containerRequestContext) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
@@ -54,10 +52,13 @@ class RequestParameterExtractor {
     parameters.putAll(containerRequestContext.getHeaders());
 
     try {
+      RequestBody requestBody = apiOperation.getOperation().getRequestBody();
+
+
       Optional<Parameter> parameter =
           apiOperation.getOperation().getParameters().stream().filter(parameterBody -> {
-            if ((parameterBody instanceof BodyParameter)) {
-              ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
+            if ((parameterBody instanceof RequestBody)) {
+              ModelImpl parameterModel = getBodyParameter(openApi, (BodyParameter) parameterBody);
               return "object".equalsIgnoreCase(parameterModel.getType())
                   && "body".equalsIgnoreCase(parameterBody.getIn());
             }
