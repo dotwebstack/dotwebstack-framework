@@ -3,9 +3,9 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import static com.google.common.collect.ImmutableMap.copyOf;
 
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Model;
-import io.swagger.models.Response;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Map;
 import java.util.Set;
 import lombok.Getter;
@@ -20,7 +20,7 @@ public final class GraphEntity extends AbstractEntity {
 
   private final ImmutableMap<String, String> ldPathNamespaces;
 
-  private final Map<String, Model> swaggerDefinitions;
+  private final Components openApiComponents;
 
   private final Repository repository;
 
@@ -28,33 +28,29 @@ public final class GraphEntity extends AbstractEntity {
 
   private final LdPathExecutor ldPathExecutor;
 
-  private GraphEntity(@NonNull Response response,
+  private GraphEntity(@NonNull ApiResponse response,
       @NonNull ImmutableMap<String, String> ldPathNamespaces,
-      @NonNull Map<String, Model> swaggerDefinitions, @NonNull Repository repository,
+      @NonNull Components openApiComponents, @NonNull Repository repository,
       @NonNull Set<Resource> subjects, @NonNull RequestContext requestContext) {
     super(response, requestContext);
 
     this.ldPathNamespaces = ldPathNamespaces;
-    this.swaggerDefinitions = swaggerDefinitions;
+    this.openApiComponents = openApiComponents;
     this.repository = repository;
     this.subjects = subjects;
     this.ldPathExecutor = new LdPathExecutor(this);
   }
 
-  public static GraphEntity newGraphEntity(@NonNull Response response,
-      @NonNull Repository repository, @NonNull Set<Resource> subjects, @NonNull Swagger definitions,
+  public static GraphEntity newGraphEntity(@NonNull ApiResponse response,
+      @NonNull Repository repository, @NonNull Set<Resource> subjects, @NonNull OpenAPI openApi,
       @NonNull RequestContext requestContext) {
-    return new GraphEntity(response, extractLdpathNamespaces(definitions),
-        extractSwaggerDefinitions(definitions), repository, subjects, requestContext);
+    return new GraphEntity(response, extractLdpathNamespaces(openApi),
+        openApi.getComponents(), repository, subjects, requestContext);
   }
 
-  private static Map<String, Model> extractSwaggerDefinitions(Swagger swagger) {
-    return swagger.getDefinitions() == null ? ImmutableMap.of() : copyOf(swagger.getDefinitions());
-  }
-
-  private static ImmutableMap<String, String> extractLdpathNamespaces(Swagger swagger) {
+  private static ImmutableMap<String, String> extractLdpathNamespaces(OpenAPI openApi) {
     ImmutableMap<String, Object> vendorExtensions;
-    Map<String, Object> extensions = swagger.getVendorExtensions();
+    Map<String, Object> extensions = openApi.getExtensions();
     vendorExtensions = extensions == null ? ImmutableMap.of() : copyOf(extensions);
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH_NAMESPACES)) {
