@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.ObjectProperty;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Service;
 public class PrevLinkSchemaMapper extends AbstractLinkSchemaMapper {
 
   @Override
-  public Object mapTupleValue(@NonNull ObjectProperty schema, @NonNull TupleEntity entity,
+  public Object mapTupleValue(@NonNull ObjectSchema schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ObjectProperty schema, @NonNull GraphEntity entity,
+  public Object mapGraphValue(@NonNull ObjectSchema schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     RequestContext requestContext = entity.getRequestContext();
 
@@ -38,9 +38,9 @@ public class PrevLinkSchemaMapper extends AbstractLinkSchemaMapper {
   }
 
   @Override
-  public boolean supports(Property schema) {
-    return schema instanceof ObjectProperty && OpenApiSpecificationExtensions.TYPE_PREV_LINK.equals(
-        schema.getVendorExtensions().get(OpenApiSpecificationExtensions.TYPE));
+  public boolean supports(Schema schema) {
+    return schema instanceof ObjectSchema && OpenApiSpecificationExtensions.TYPE_PREV_LINK.equals(
+        schema.getExtensions().get(OpenApiSpecificationExtensions.TYPE));
   }
 
 }

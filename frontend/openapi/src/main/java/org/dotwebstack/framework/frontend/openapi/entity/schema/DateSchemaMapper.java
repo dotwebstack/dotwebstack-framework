@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.properties.DateProperty;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.DateSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import java.time.LocalDate;
 import java.util.Set;
 import lombok.NonNull;
@@ -13,7 +13,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
+class DateSchemaMapper extends AbstractSchemaMapper<DateSchema, LocalDate> {
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.DATE);
 
   private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
@@ -25,8 +25,8 @@ class DateSchemaMapper extends AbstractSchemaMapper<DateProperty, LocalDate> {
   }
 
   @Override
-  public boolean supports(@NonNull Property schema) {
-    return schema instanceof DateProperty;
+  public boolean supports(@NonNull Schema schema) {
+    return schema instanceof DateSchema;
   }
 
   @Override
