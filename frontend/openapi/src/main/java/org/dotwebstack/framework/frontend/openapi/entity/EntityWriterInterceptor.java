@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Response;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.headers.Header;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +35,8 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
   }
 
   private static Map<String, Object> createResponseHeaders(GraphEntity entity) {
-    Response response = entity.getResponse();
-    Map<String, Property> headers = response.getHeaders();
+    ApiResponse response = entity.getResponse();
+    Map<String, Header> headers = response.getHeaders();
 
     if (headers == null) {
       return ImmutableMap.of();
@@ -44,8 +44,8 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
 
     Map<String, Object> result = new HashMap<>();
 
-    for (Entry<String, Property> header : headers.entrySet()) {
-      Map<String, Object> vendorExtensions = header.getValue().getVendorExtensions();
+    for (Entry<String, Header> header : headers.entrySet()) {
+      Map<String, Object> vendorExtensions = header.getValue().getExtensions();
 
       LOG.debug("Vendor extensions for header param '{}': {}", header.getKey(), vendorExtensions);
 

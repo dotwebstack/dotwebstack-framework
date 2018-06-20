@@ -3,9 +3,9 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.ObjectProperty;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
@@ -33,7 +33,7 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
   @Override
   public Object map(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
     // Already prepared for OASv3 multiple media type support
-    Property schema = entity.getResponse().getSchema();
+    Schema schema = entity.getResponse().getContent().get(mediaType).getSchema();
 
     if (schema == null) {
       throw new EntityMapperRuntimeException(
@@ -42,18 +42,18 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
 
     ValueContext valueContext = ValueContext.builder().build();
 
-    if (schema instanceof ObjectProperty) {
-      return mapObject(entity, (ObjectProperty) schema, valueContext);
+    if (schema instanceof ObjectSchema) {
+      return mapObject(entity, (ObjectSchema) schema, valueContext);
     }
 
-    if (schema instanceof ArrayProperty) {
-      return mapCollection(entity, (ArrayProperty) schema, valueContext);
+    if (schema instanceof ArraySchema) {
+      return mapCollection(entity, (ArraySchema) schema, valueContext);
     }
 
     return ImmutableMap.of();
   }
 
-  private Object mapObject(TupleEntity entity, ObjectProperty schema, ValueContext valueContext) {
+  private Object mapObject(TupleEntity entity, ObjectSchema schema, ValueContext valueContext) {
     TupleQueryResult result = entity.getResult();
     if (result.hasNext()) {
       BindingSet bindingSet = result.next();
@@ -67,15 +67,15 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
     }
   }
 
-  private Object mapCollection(TupleEntity entity, ArrayProperty schema,
+  private Object mapCollection(TupleEntity entity, ArraySchema schema,
       ValueContext valueContext) {
-    Property itemSchema = schema.getItems();
+    Schema itemSchema = schema.getItems();
 
     if (itemSchema == null) {
       throw new EntityMapperRuntimeException("Array schemas must have an 'items' property.");
     }
 
-    if (!(itemSchema instanceof ObjectProperty)) {
+    if (!(itemSchema instanceof ObjectSchema)) {
       throw new EntityMapperRuntimeException(
           "Only array items of type 'object' are supported for now.");
     }
@@ -83,7 +83,7 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
     TupleQueryResult result = entity.getResult();
 
     ImmutableList.Builder<Map<String, Object>> collectionBuilder = new ImmutableList.Builder<>();
-    Map<String, Property> itemProperties = ((ObjectProperty) itemSchema).getProperties();
+    Map<String, Schema> itemProperties = ((ObjectSchema) itemSchema).getProperties();
 
     while (result.hasNext()) {
       collectionBuilder.add(mapBindingSet(result.next(), itemProperties, entity, valueContext));
@@ -93,11 +93,11 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
   }
 
   private ImmutableMap<String, Object> mapBindingSet(BindingSet bindingSet,
-      Map<String, Property> itemProperties, TupleEntity entity, ValueContext valueContext) {
+      Map<String, Schema> itemProperties, TupleEntity entity, ValueContext valueContext) {
     ImmutableMap.Builder<String, Object> itemBuilder = new ImmutableMap.Builder<>();
 
     itemProperties.forEach((name, property) -> {
-      if (property.getRequired() && !bindingSet.hasBinding(name)) {
+      if (property.getRequired().contains(name) && !bindingSet.hasBinding(name)) {
         throw new EntityMapperRuntimeException(String.format("Property '%s' is required.", name));
       }
 
