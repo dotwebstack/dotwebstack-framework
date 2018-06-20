@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import io.swagger.models.Response;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -16,7 +16,7 @@ public class RequestHandlerFactory {
   private final InformationProductRequestParameterMapper informationProductRequestParameterMapper;
 
   private final TransactionRequestParameterMapper transactionRequestParameterMapper;
-  
+
   private final TransactionRequestBodyMapper transactionRequestBodyMapper;
 
   private final RequestParameterExtractor requestParameterExtractor;
@@ -38,20 +38,22 @@ public class RequestHandlerFactory {
 
   public InformationProductRequestHandler newInformationProductRequestHandler(
       @NonNull ApiOperation apiOperation,
-      @NonNull InformationProduct informationProduct, @NonNull Response response,
-      @NonNull Swagger swagger) {
+      @NonNull InformationProduct informationProduct, @NonNull ApiResponse response,
+      @NonNull OpenAPI openApi) {
     return new InformationProductRequestHandler(apiOperation, informationProduct, response,
         informationProductRequestParameterMapper,
-        new ApiRequestValidator(OpenApiSpecUtils.createValidator(swagger), requestParameterExtractor),
-        swagger);
+        new ApiRequestValidator(OpenApiSpecUtils.createValidator(openApi),
+            requestParameterExtractor),
+        openApi);
   }
 
   public TransactionRequestHandler newTransactionRequestHandler(@NonNull ApiOperation apiOperation,
-      @NonNull Transaction transaction, @NonNull Swagger swagger) {
+      @NonNull Transaction transaction, @NonNull OpenAPI openApi) {
     return new TransactionRequestHandler(apiOperation, transaction,
         transactionRequestParameterMapper, transactionRequestBodyMapper,
-        new ApiRequestValidator(OpenApiSpecUtils.createValidator(swagger), requestParameterExtractor),
-        swagger, transactionHandlerFactory);
+        new ApiRequestValidator(OpenApiSpecUtils.createValidator(openApi),
+            requestParameterExtractor),
+        openApi, transactionHandlerFactory);
   }
 
 }
