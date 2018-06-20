@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.cors;
 
 import com.google.common.base.Joiner;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.parameters.Parameter;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
+import io.swagger.v3.oas.models.headers.Header;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +37,7 @@ public class CorsResponseFilter implements ContainerResponseFilter {
 
   private void handlePreflightRequest(ContainerRequestContext requestContext,
       ContainerResponseContext responseContext) {
-    Path path = (Path) requestContext.getProperty("path");
+    PathItem path = (PathItem) requestContext.getProperty("path");
 
     if (path == null) {
       return;
@@ -51,7 +51,7 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     String allowHeaderStr = responseContext.getHeaders().getFirst(HttpHeaders.ALLOW).toString();
 
     Set<String> allowedHeaders = Collections.emptySet();
-    Operation operation = path.getOperationMap().get(
+    Operation operation = path.readOperationsMap().get(
         actualRequestMethod == null ? "" : HttpMethod.valueOf(actualRequestMethod));
     if (operation != null) {
       List<Parameter> requestParameters = operation.getParameters();
@@ -87,7 +87,7 @@ public class CorsResponseFilter implements ContainerResponseFilter {
       return;
     }
 
-    Map<String, Property> responseHeaders = operation.getResponses().get(statusCode).getHeaders();
+    Map<String, Header> responseHeaders = operation.getResponses().get(statusCode).getHeaders();
 
     if (responseHeaders != null && responseHeaders.size() > 0) {
       Set<String> exposedHeaders =
