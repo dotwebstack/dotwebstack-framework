@@ -14,11 +14,11 @@ import static org.mockito.Mockito.when;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
-import io.swagger.parser.SwaggerParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,28 +35,28 @@ import org.springframework.util.StreamUtils;
 
 public class OpenApiSpecUtilsTest {
 
-  private Swagger swagger;
+  private OpenAPI openApi;
 
   private String path;
 
-  private Path method;
+  private PathItem method;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setUp() throws IOException {
-    swagger = createSwagger();
+    openApi = createOpenApi();
     path = "/endpoint";
-    method = new Path();
-    method.set("get", new Operation());
+    method = new PathItem();
+    method.setGet(new Operation());
   }
 
   @Test
   public void extractApiOperation_ReturnsValidApiOperation_WithSpecifiedGet() throws IOException {
     path = "/endpoint";
 
-    Collection<ApiOperation> apiOperations = OpenApiSpecUtils.extractApiOperations(swagger, path,
+    Collection<ApiOperation> apiOperations = OpenApiSpecUtils.extractApiOperations(openApi, path,
         method);
 
     ApiOperation apiOperation = apiOperations.stream().findFirst().get();
@@ -72,17 +72,18 @@ public class OpenApiSpecUtilsTest {
   public void extractApiOperation_ReturnsNull_WithUnspecifiedGet() throws IOException {
     path = "/unknown";
 
-    Collection<ApiOperation> apiOperations = OpenApiSpecUtils.extractApiOperations(swagger, path,
+    Collection<ApiOperation> apiOperations = OpenApiSpecUtils.extractApiOperations(openApi, path,
         method);
 
     assertThat(apiOperations.size(), is(0));
   }
 
-  private static Swagger createSwagger() throws IOException {
+  private static OpenAPI createOpenApi() throws IOException {
     String oasSpecContent = StreamUtils.copyToString(
-        OpenApiSpecUtilsTest.class.getResourceAsStream(OpenApiSpecUtilsTest.class.getSimpleName() + ".yml"),
+        OpenApiSpecUtilsTest.class.getResourceAsStream(
+            OpenApiSpecUtilsTest.class.getSimpleName() + ".yml"),
         Charset.forName("UTF-8"));
-    return new SwaggerParser().parse(oasSpecContent);
+    return new OpenAPIV3Parser().readContents(oasSpecContent).getOpenAPI();
   }
 
   @Test
@@ -94,7 +95,8 @@ public class OpenApiSpecUtilsTest {
     YAMLMapper mapper = new YAMLMapper();
 
     InputStream originalInputStream =
-        new EnvironmentAwareResource(OpenApiSpecUtilsTest.class.getResourceAsStream("dbeerpedia.yml"),
+        new EnvironmentAwareResource(
+            OpenApiSpecUtilsTest.class.getResourceAsStream("dbeerpedia.yml"),
             mockEnvironment).getInputStream();
     ObjectNode specNode = mapper.readValue(originalInputStream, ObjectNode.class);
     String original = mapper.writer().writeValueAsString(specNode);
