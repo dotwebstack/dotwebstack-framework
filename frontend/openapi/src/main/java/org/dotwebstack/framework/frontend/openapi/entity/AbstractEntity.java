@@ -1,22 +1,22 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import io.swagger.models.Response;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 
 abstract class AbstractEntity implements Entity {
 
-  private final Response response;
+  private final ApiResponse response;
 
   private final RequestContext requestContext;
 
-  AbstractEntity(@NonNull Response response, @NonNull RequestContext requestContext) {
+  AbstractEntity(@NonNull ApiResponse response, @NonNull RequestContext requestContext) {
     this.response = response;
     this.requestContext = requestContext;
   }
 
   @Override
-  public Response getResponse() {
+  public ApiResponse getResponse() {
     return response;
   }
 
