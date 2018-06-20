@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import io.swagger.models.Operation;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import java.util.Map;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -34,7 +34,7 @@ public final class TransactionRequestHandler
 
   private final TransactionRequestBodyMapper transactionRequestBodyMapper;
 
-  private final Swagger swagger;
+  private final OpenAPI openApi;
 
   private final ApiRequestValidator apiRequestValidator;
 
@@ -43,14 +43,14 @@ public final class TransactionRequestHandler
   TransactionRequestHandler(@NonNull ApiOperation apiOperation, @NonNull Transaction transaction,
       @NonNull TransactionRequestParameterMapper requestParameterMapper,
       @NonNull TransactionRequestBodyMapper transactionRequestBodyMapper,
-      @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger,
+      @NonNull ApiRequestValidator apiRequestValidator, @NonNull OpenAPI openApi,
       @NonNull TransactionHandlerFactory transactionHandlerFactory) {
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;
     this.transaction = transaction;
     this.requestParameterMapper = requestParameterMapper;
     this.transactionRequestBodyMapper = transactionRequestBodyMapper;
-    this.swagger = swagger;
+    this.openApi = openApi;
     this.transactionHandlerFactory = transactionHandlerFactory;
   }
 
@@ -65,7 +65,7 @@ public final class TransactionRequestHandler
     context.setProperty(RequestHandlerProperties.OPERATION, operation);
 
     RequestParameters requestParameters =
-        apiRequestValidator.validate(apiOperation, swagger, context);
+        apiRequestValidator.validate(apiOperation, openApi, context);
 
     Map<String, String> parameterValues =
         requestParameterMapper.map(operation, transaction, requestParameters);

@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import io.swagger.models.parameters.BodyParameter;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +11,7 @@ import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.ParameterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,15 +20,16 @@ abstract class AbstractRequestParameterMapper {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractRequestParameterMapper.class);
 
   protected Map<String, String> getBodyParameters(@NonNull Collection<Parameter> parameters,
-      @NonNull RequestParameters requestParameters, BodyParameter openApiParameter) {
+      @NonNull RequestParameters requestParameters, RequestBody requestBody) {
     Map<String, String> result = new HashMap<>();
 
-    Collection<Property> properties = openApiParameter.getSchema().getProperties().values();
-    for (Property property : properties) {
-      Map<String, Object> vendorExtensions = property.getVendorExtensions();
+    Collection<Schema> properties = requestBody.getContent().get(
+        MediaType.APPLICATION_JSON.toString()).getSchema().getProperties().values();
+    for (Schema property : properties) {
+      Map<String, Object> vendorExtensions = property.getExtensions();
 
       LOG.debug("Vendor extensions for property '{}' in parameter '{}': {}", property.getName(),
-          openApiParameter.getName(), vendorExtensions);
+          requestBody.getDescription(), vendorExtensions);
 
       Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
 
@@ -48,10 +50,10 @@ abstract class AbstractRequestParameterMapper {
 
   protected Map<String, String> getOtherParameters(Collection<Parameter> parameters,
       @NonNull RequestParameters requestParameters,
-      io.swagger.models.parameters.Parameter openApiParameter) {
+      io.swagger.v3.oas.models.parameters.Parameter openApiParameter) {
     Map<String, String> result = new HashMap<>();
 
-    Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
+    Map<String, Object> vendorExtensions = openApiParameter.getExtensions();
 
     LOG.debug("Vendor extensions for parameter '{}': {}", openApiParameter.getName(),
         vendorExtensions);

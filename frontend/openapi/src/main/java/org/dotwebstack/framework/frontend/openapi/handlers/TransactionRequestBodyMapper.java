@@ -4,9 +4,8 @@ import com.taxonic.carml.engine.RmlMapper;
 import com.taxonic.carml.logical_source_resolver.JsonPathResolver;
 import com.taxonic.carml.model.TriplesMap;
 import com.taxonic.carml.vocab.Rdf;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.BodyParameter;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
@@ -38,45 +37,42 @@ class TransactionRequestBodyMapper {
   }
 
   Model map(@NonNull Operation operation, @NonNull RequestParameters requestParameters) {
-    for (Parameter openApiParameter : operation.getParameters()) {
+    RequestBody requestBody = operation.getRequestBody();
+    if (requestBody == null) {
+      throw new RequestHandlerRuntimeException("Body parameter not found");
+    }
+    Map<String, Object> vendorExtensions = requestBody.getExtensions();
 
-      if (openApiParameter instanceof BodyParameter) {
-        Map<String, Object> vendorExtensions = openApiParameter.getVendorExtensions();
+    LOG.debug("Vendor extensions for body parameter '{}': {}", requestBody.getDescription(),
+        vendorExtensions);
 
-        LOG.debug("Vendor extensions for body parameter '{}': {}", openApiParameter.getName(),
-            vendorExtensions);
+    String rmlMappingName =
+        (String) vendorExtensions.get(OpenApiSpecificationExtensions.RML_MAPPING);
 
-        String rmlMappingName =
-            (String) vendorExtensions.get(OpenApiSpecificationExtensions.RML_MAPPING);
-
-        if (rmlMappingName == null) {
-          throw new RequestHandlerRuntimeException(
-              "Vendor extension x-dotwebstack-rml-mapping not found for body parameter");
-        }
-
-        String value = requestParameters.getRawBody();
-
-        if (value == null) {
-          throw new BadRequestException("Body is empty");
-        }
-
-        RmlMapping rmlMapping =
-            rmlMappingResourceProvider.get(valueFactory.createIRI(rmlMappingName));
-        Set<TriplesMap> mapping = RmlCustomMappingLoader.build().load(rmlMapping.getModel());
-
-        RmlMapper mapper = RmlMapper.newBuilder().setLogicalSourceResolver(Rdf.Ql.JsonPath,
-            new JsonPathResolver()).build();
-
-        InputStream inputStream = IOUtils.toInputStream(value);
-        mapper.bindInputStream(rmlMapping.getStreamName(), inputStream);
-
-        LOG.debug("Apply rml mapping: {}", mapping);
-
-        return mapper.map(mapping);
-      }
+    if (rmlMappingName == null) {
+      throw new RequestHandlerRuntimeException(
+          "Vendor extension x-dotwebstack-rml-mapping not found for body parameter");
     }
 
-    throw new RequestHandlerRuntimeException("Body parameter not found");
+    String value = requestParameters.getRawBody();
+
+    if (value == null) {
+      throw new BadRequestException("Body is empty");
+    }
+
+    RmlMapping rmlMapping =
+        rmlMappingResourceProvider.get(valueFactory.createIRI(rmlMappingName));
+    Set<TriplesMap> mapping = RmlCustomMappingLoader.build().load(rmlMapping.getModel());
+
+    RmlMapper mapper = RmlMapper.newBuilder().setLogicalSourceResolver(Rdf.Ql.JsonPath,
+        new JsonPathResolver()).build();
+
+    InputStream inputStream = IOUtils.toInputStream(value);
+    mapper.bindInputStream(rmlMapping.getStreamName(), inputStream);
+
+    LOG.debug("Apply rml mapping: {}", mapping);
+
+    return mapper.map(mapping);
   }
 
 }
