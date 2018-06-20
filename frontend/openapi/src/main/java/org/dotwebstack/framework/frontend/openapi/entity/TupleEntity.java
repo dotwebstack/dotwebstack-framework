@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import io.swagger.models.Response;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -9,7 +9,7 @@ public final class TupleEntity extends AbstractEntity {
 
   private final TupleQueryResult queryResult;
 
-  TupleEntity(@NonNull Response response, @NonNull TupleQueryResult queryResult,
+  TupleEntity(@NonNull ApiResponse response, @NonNull TupleQueryResult queryResult,
       @NonNull RequestContext requestContext) {
     super(response, requestContext);
     this.queryResult = queryResult;
@@ -25,7 +25,7 @@ public final class TupleEntity extends AbstractEntity {
 
   public static class Builder {
 
-    private Response response;
+    private ApiResponse response;
 
     private RequestContext requestContext;
 
@@ -36,7 +36,7 @@ public final class TupleEntity extends AbstractEntity {
       return this;
     }
 
-    public Builder withResponse(@NonNull Response response) {
+    public Builder withResponse(@NonNull ApiResponse response) {
       this.response = response;
       return this;
     }

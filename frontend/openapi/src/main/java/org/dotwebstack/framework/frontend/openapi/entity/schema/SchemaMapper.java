@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.Schema;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 
-public interface SchemaMapper<S extends Property, T> {
+public interface SchemaMapper<S extends Schema, T> {
 
   T mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext);
@@ -13,5 +13,5 @@ public interface SchemaMapper<S extends Property, T> {
   T mapGraphValue(@NonNull S schema, @NonNull GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter);
 
-  boolean supports(Property schema);
+  boolean supports(Schema schema);
 }

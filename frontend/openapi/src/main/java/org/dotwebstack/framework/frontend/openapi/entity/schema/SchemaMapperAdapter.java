@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -12,16 +12,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class SchemaMapperAdapter {
 
-  private final ImmutableList<SchemaMapper<? extends Property, ?>> schemaMappers;
+  private final ImmutableList<SchemaMapper<? extends Schema, ?>> schemaMappers;
 
   @Autowired
-  public SchemaMapperAdapter(@NonNull List<SchemaMapper<? extends Property, ?>> schemaMappers) {
+  public SchemaMapperAdapter(@NonNull List<SchemaMapper<? extends Schema, ?>> schemaMappers) {
     this.schemaMappers = ImmutableList.copyOf(schemaMappers);
   }
 
-  public <S extends Property> Object mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity,
+  public <S extends Schema> Object mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
-    SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
+    SchemaMapper<? extends Schema, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
             () -> new SchemaMapperRuntimeException(String.format(
                 "No schema mapper available for '%s'.", schema.getClass().getName())));
@@ -30,9 +30,9 @@ public class SchemaMapperAdapter {
   }
 
   @SuppressWarnings("unchecked")
-  public <S extends Property> Object mapGraphValue(@NonNull S schema, GraphEntity entity,
+  public <S extends Schema> Object mapGraphValue(@NonNull S schema, GraphEntity entity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
+    SchemaMapper<? extends Schema, ?> schemaMapper = schemaMappers.stream().filter(
         candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
             () -> new SchemaMapperRuntimeException(String.format(
                 "No schema mapper available for '%s'.", schema.getClass().getName())));
