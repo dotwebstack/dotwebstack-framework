@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi;
 
-import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
 import com.atlassian.oai.validator.interaction.ApiOperationResolver;
 import com.atlassian.oai.validator.interaction.request.RequestValidator;
 import com.atlassian.oai.validator.model.ApiOperation;
@@ -14,8 +13,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ContainerNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.IOException;
