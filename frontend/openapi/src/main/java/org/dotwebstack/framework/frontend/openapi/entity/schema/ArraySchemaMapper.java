@@ -3,8 +3,8 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,7 +20,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty, Object> {
+public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArraySchema, Object> {
 
   @Override
   protected Set<String> getSupportedVendorExtensions() {
@@ -28,13 +28,13 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
   }
 
   @Override
-  public Object mapTupleValue(@NonNull ArrayProperty schema, @NonNull TupleEntity entity,
+  public Object mapTupleValue(@NonNull ArraySchema schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).integerValue();
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ArrayProperty property, @NonNull GraphEntity graphEntity,
+  public Object mapGraphValue(@NonNull ArraySchema property, @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
@@ -48,22 +48,22 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
             subjectContext, schemaMapperAdapter));
       });
     } else if (valueContext.getValue() != null) {
-      if (property.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+      if (property.getExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
         queryAndValidate(property, graphEntity, valueContext, schemaMapperAdapter, builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
-            "ArrayProperty must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
+            "ArraySchema must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
       }
     }
     return builder.build();
   }
 
-  private void queryAndValidate(ArrayProperty property, GraphEntity graphEntity,
+  private void queryAndValidate(ArraySchema property, GraphEntity graphEntity,
       ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter,
       ImmutableList.Builder<Object> builder) {
     LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
     Collection<Value> queryResult = ldPathExecutor.ldPathQuery(valueContext.getValue(),
-        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH));
+        (String) property.getExtensions().get(OpenApiSpecificationExtensions.LDPATH));
 
     validateMinItems(property, queryResult);
     validateMaxItems(property, queryResult);
@@ -78,8 +78,8 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
     });
   }
 
-  private static void validateMinItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {
-    Integer minItems = arrayProperty.getMinItems();
+  private static void validateMinItems(ArraySchema ArraySchema, Collection<Value> queryResult) {
+    Integer minItems = ArraySchema.getMinItems();
     if (minItems != null && minItems > queryResult.size()) {
       throw new SchemaMapperRuntimeException(String.format(
           "Mapping for property yielded %d elements, which is less than 'minItems' (%d)"
@@ -88,8 +88,8 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
     }
   }
 
-  private static void validateMaxItems(ArrayProperty arrayProperty, Collection<Value> queryResult) {
-    Integer maxItems = arrayProperty.getMaxItems();
+  private static void validateMaxItems(ArraySchema ArraySchema, Collection<Value> queryResult) {
+    Integer maxItems = ArraySchema.getMaxItems();
     if (maxItems != null && maxItems < queryResult.size()) {
       throw new SchemaMapperRuntimeException(String.format(
           "Mapping for property yielded %d elements, which is more than 'maxItems' (%d)"
@@ -105,8 +105,8 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArrayProperty
   }
 
   @Override
-  public boolean supports(@NonNull Property schema) {
-    return schema instanceof ArrayProperty;
+  public boolean supports(@NonNull Schema schema) {
+    return schema instanceof ArraySchema;
   }
 
   @Override
