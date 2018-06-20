@@ -6,8 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.IntegerProperty;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.IntegerSchema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
@@ -25,7 +25,7 @@ public class SchemaMapperAdapterTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private SchemaMapper<StringProperty, String> stringSchemaMapperMock;
+  private SchemaMapper<StringSchema, String> stringSchemaMapperMock;
   @Mock
   private TupleEntity tupleEntityMock;
 
@@ -39,30 +39,30 @@ public class SchemaMapperAdapterTest {
   @Test
   public void mapTupleValue_ThrowsException_WhenNoSupportingMapperFound() {
     // Arrange
-    IntegerProperty integerProperty = new IntegerProperty();
-    when(stringSchemaMapperMock.supports(integerProperty)).thenReturn(false);
+    IntegerSchema integerSchema = new IntegerSchema();
+    when(stringSchemaMapperMock.supports(integerSchema)).thenReturn(false);
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format("No schema mapper available for '%s'.",
-        integerProperty.getClass().getName()));
+        integerSchema.getClass().getName()));
 
     // Act
-    schemaMapperAdapter.mapTupleValue(integerProperty, tupleEntityMock,
+    schemaMapperAdapter.mapTupleValue(integerSchema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
   }
 
   @Test
   public void mapTupleValue_ReturnsHandledValue_WhenSupportingMapperFound() {
     // Arrange
-    StringProperty stringProperty = new StringProperty();
+    StringSchema stringSchema = new StringSchema();
     String expectedValue = DBEERPEDIA.BROUWTOREN_NAME.stringValue();
-    when(stringSchemaMapperMock.supports(stringProperty)).thenReturn(true);
-    when(stringSchemaMapperMock.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+    when(stringSchemaMapperMock.supports(stringSchema)).thenReturn(true);
+    when(stringSchemaMapperMock.mapTupleValue(any(StringSchema.class), any(TupleEntity.class),
         any(ValueContext.class))).thenReturn(expectedValue);
 
     // Act
-    Object value = schemaMapperAdapter.mapTupleValue(stringProperty, tupleEntityMock,
+    Object value = schemaMapperAdapter.mapTupleValue(stringSchema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert

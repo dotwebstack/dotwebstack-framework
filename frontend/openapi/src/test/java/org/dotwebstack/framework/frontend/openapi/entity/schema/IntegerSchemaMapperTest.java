@@ -8,8 +8,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.IntegerProperty;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.IntegerSchema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -40,21 +40,24 @@ public class IntegerSchemaMapperTest {
 
   @Mock
   private GraphEntity graphEntityMock;
+
   @Mock
   private Value valueMock;
+
   @Mock
   private LdPathExecutor ldPathExecutorMock;
+
   @Mock
   private TupleEntity tupleEntityMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
   private IntegerSchemaMapper integerSchemaMapper;
-  private IntegerProperty integerProperty;
+  private IntegerSchema integerSchema;
 
   @Before
   public void setUp() {
     integerSchemaMapper = new IntegerSchemaMapper();
-    integerProperty = new IntegerProperty();
+    integerSchema = new IntegerSchema();
 
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(integerSchemaMapper));
@@ -67,14 +70,14 @@ public class IntegerSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    integerSchemaMapper.mapTupleValue(integerProperty, tupleEntityMock,
+    integerSchemaMapper.mapTupleValue(integerSchema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Integer result = (Integer) integerSchemaMapper.mapTupleValue(integerProperty, tupleEntityMock,
+    Integer result = (Integer) integerSchemaMapper.mapTupleValue(integerSchema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
 
     // Assert
@@ -82,18 +85,18 @@ public class IntegerSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForIntegerProperty() {
+  public void supports_ReturnsTrue_ForIntegerSchema() {
     // Arrange & Act
-    Boolean supported = integerSchemaMapper.supports(integerProperty);
+    Boolean supported = integerSchemaMapper.supports(integerSchema);
 
     // Assert
     assertThat(supported, equalTo(true));
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonIntegerProperty() {
+  public void supports_ReturnsTrue_ForNonIntegerSchema() {
     // Arrange & Act
-    Boolean supported = integerSchemaMapper.supports(new StringProperty());
+    Boolean supported = integerSchemaMapper.supports(new StringSchema());
 
     // Assert
     assertThat(supported, equalTo(false));
@@ -102,12 +105,12 @@ public class IntegerSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_ForLdPath() {
     // Arrange
-    integerProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    integerSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
     // Act
-    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(integerProperty, graphEntityMock,
+    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(integerSchema, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -123,12 +126,12 @@ public class IntegerSchemaMapperTest {
         DUMMY_EXPR));
 
     // Arrange
-    integerProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    integerSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE_3));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(integerProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(integerSchema, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 }
