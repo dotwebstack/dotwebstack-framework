@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.properties.Property;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +35,10 @@ public class AbstractSchemaMapperTest {
 
   @Mock
   private GraphEntity graphEntityMock;
+
   @Mock
-  private Property propertyMock;
+  private Schema schemaMock;
+
   @Mock
   private LdPathExecutor ldPathExecutorMock;
 
@@ -47,15 +49,15 @@ public class AbstractSchemaMapperTest {
   @Before
   public void setUp() {
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(abstractSchemaMapper));
-    when(propertyMock.getVendorExtensions()).thenReturn(new HashMap<>());
+    when(schemaMock.getExtensions()).thenReturn(new HashMap<>());
   }
 
   @Test
   public void hasVendorExtension_ReturnsTrue_WhenPropertyHasExtension() {
     // Arrange
-    StringProperty schema = new StringProperty();
+    StringSchema schema = new StringSchema();
 
-    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
         true);
 
     // Act
@@ -69,9 +71,9 @@ public class AbstractSchemaMapperTest {
   @Test
   public void hasVendorExtension_ReturnsFalse_WhenPropertyHasExtension() {
     // Arrange
-    StringProperty schema = new StringProperty();
+    StringSchema schema = new StringSchema();
 
-    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
         true);
 
     // Act
@@ -85,9 +87,9 @@ public class AbstractSchemaMapperTest {
   @Test
   public void hasVendorExtensionWithValue_ReturnsTrue_WhenPropertyHasExtensionWithValue() {
     // Arrange
-    StringProperty schema = new StringProperty();
+    StringSchema schema = new StringSchema();
 
-    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
         true);
 
     // Act
@@ -101,9 +103,9 @@ public class AbstractSchemaMapperTest {
   @Test
   public void hasVendorExtensionWithValue_ReturnsFalse_WhenPropertyHasExtensionWithoutValue() {
     // Arrange
-    StringProperty schema = new StringProperty();
+    StringSchema schema = new StringSchema();
 
-    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
         true);
 
     // Act
@@ -117,9 +119,9 @@ public class AbstractSchemaMapperTest {
   @Test
   public void hasVendorExtensionWithValue_ReturnsFalse_WhenPropertyDoesNotHaveExtension() {
     // Arrange
-    StringProperty schema = new StringProperty();
+    StringSchema schema = new StringSchema();
 
-    schema.setVendorExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
         true);
 
     // Act
@@ -138,7 +140,7 @@ public class AbstractSchemaMapperTest {
     thrown.expectMessage("This object cannot have a combination of these.");
 
     // Act
-    abstractSchemaMapper.mapGraphValue(propertyMock, graphEntityMock,
+    abstractSchemaMapper.mapGraphValue(schemaMock, graphEntityMock,
         ValueContext.builder().value(VALUE).build(), schemaMapperAdapter);
 
     // Assert
@@ -148,8 +150,8 @@ public class AbstractSchemaMapperTest {
   @Test
   public void mapGraphValue_ThrowsException_ForNullConstantAndRequiredProperty() {
     // Arrange
-    when(propertyMock.getVendorExtensions()).thenReturn(nullableMapOfConstantValue());
-    when(propertyMock.getRequired()).thenReturn(true);
+    when(schemaMock.getExtensions()).thenReturn(nullableMapOfConstantValue());
+    when(schemaMock.getRequired()).thenReturn(true);
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
@@ -158,17 +160,17 @@ public class AbstractSchemaMapperTest {
     thrown.expectMessage("required");
 
     // Act
-    abstractSchemaMapper.mapGraphValue(propertyMock, graphEntityMock,
+    abstractSchemaMapper.mapGraphValue(schemaMock, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
   }
 
   @Test
   public void mapGraphValue_ReturnsNull_ForNullConstantValue() {
     // Arrange
-    when(propertyMock.getVendorExtensions()).thenReturn(nullableMapOfConstantValue());
+    when(schemaMock.getExtensions()).thenReturn(nullableMapOfConstantValue());
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(propertyMock, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(schemaMock, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
 
     // Assert
@@ -203,7 +205,7 @@ public class AbstractSchemaMapperTest {
     }
 
     @Override
-    public boolean supports(Property schema) {
+    public boolean supports(Schema schema) {
       return true;
     }
   }
