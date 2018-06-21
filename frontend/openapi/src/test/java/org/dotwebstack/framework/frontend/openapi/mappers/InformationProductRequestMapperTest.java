@@ -16,18 +16,15 @@ import static org.mockito.Mockito.withSettings;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Info;
-import io.swagger.models.Model;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.RefModel;
-import io.swagger.models.Response;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.BodyParameter;
-import io.swagger.models.parameters.Parameter;
-import io.swagger.models.properties.Property;
-import io.swagger.parser.SwaggerParser;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +34,7 @@ import java.util.Map;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
+import org.apache.jena.ontology.OntTools.Path;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -79,7 +77,7 @@ public class InformationProductRequestMapperTest {
   private HttpConfiguration httpConfigurationMock;
 
   @Mock
-  private SwaggerParser openApiParserMock;
+  private OpenAPIV3Parser openApiParserMock;
 
   @Mock
   private org.springframework.core.io.Resource fileResourceMock;
@@ -129,16 +127,16 @@ public class InformationProductRequestMapperTest {
   @Test
   public void map_EndpointsCorrectly_WithValidData() throws IOException {
     // Arrange
-    Property schema = mock(Property.class);
-    mockDefinition().vendorExtension(OpenApiSpecificationExtensions.SPEC_ENDPOINT,
+    Schema schema = mock(Schema.class);
+    mockDefinition().addExtension(OpenApiSpecificationExtensions.SPEC_ENDPOINT,
         "/docs/_spec").host(DBEERPEDIA.OPENAPI_HOST).basePath(
             DBEERPEDIA.OPENAPI_BASE_PATH).produces(
                 ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path(
                     "/breweries",
-                    new Path().get(new Operation().vendorExtensions(
+                    new PathItem().get(new Operation().extensions(
                         ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                             DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-                                new Response().schema(schema))));
+                                new ApiResponse().schema(schema))));
     when(informationProductResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProductMock);
 
@@ -174,14 +172,14 @@ public class InformationProductRequestMapperTest {
   @Test
   public void map_SpecEndpointCorrectly_whenNotGiven() throws Exception {
     // Arrange
-    Property schema = mock(Property.class);
+    Schema schema = mock(Schema.class);
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).basePath(DBEERPEDIA.OPENAPI_BASE_PATH).produces(
         ImmutableList.of(MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON)).path(
             "/breweries",
-            new Path().get(new Operation().vendorExtensions(
+            new PathItem().get(new Operation().extensions(
                 ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                     DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-                        new Response().schema(schema))));
+                        new ApiResponse().schema(schema))));
     when(informationProductResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProductMock);
 
@@ -200,10 +198,10 @@ public class InformationProductRequestMapperTest {
   public void mapEndpointWithoutBasePath() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.TEXT_PLAIN).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(
+        new PathItem().get(new Operation().extensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-                    new Response().schema(mock(Property.class)))));
+                    new ApiResponse().schema(mock(Schema.class)))));
     when(informationProductResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProductMock);
 
@@ -220,10 +218,10 @@ public class InformationProductRequestMapperTest {
   public void map_ThrowsException_EndpointWithoutProduces() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(
+        new PathItem().get(new Operation().extensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).response(Status.OK.getStatusCode(),
-                    new Response().schema(mock(Property.class)))));
+                    new ApiResponse().schema(mock(Schema.class)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -238,7 +236,7 @@ public class InformationProductRequestMapperTest {
   public void map_ThrowsException_EndpointWithoutResponses() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(
+        new PathItem().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue()))));
 
@@ -255,10 +253,10 @@ public class InformationProductRequestMapperTest {
   public void map_ThrowsException_EndpointWithoutOkResponse() throws IOException {
     // Arrange
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).path("/breweries",
-        new Path().get(new Operation().vendorExtensions(
+        new PathItem().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).response(201,
-                    new Response().schema(mock(Property.class)))));
+                    new Response().schema(mock(Schema.class)))));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -272,15 +270,15 @@ public class InformationProductRequestMapperTest {
   @Test
   public void map_BodyParameter() throws IOException {
     // Arrange
-    Property property = mock(Property.class);
+    Schema property = mock(Schema.class);
     List<Parameter> parameters = createBodyParameter("object");
     Operation newOp = new Operation();
     newOp.setParameters(parameters);
     newOp.vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES.stringValue()));
-    newOp.response(200, new Response().schema(property));
+    newOp.response(200, new ApiResponse().schema(property));
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.APPLICATION_JSON).path(
-        "/breweries", new Path().get(newOp));
+        "/breweries", new PathItem().get(newOp));
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
@@ -315,15 +313,15 @@ public class InformationProductRequestMapperTest {
   @Test
   public void map_BodyParameterWithRefObject() throws IOException {
     // Arrange
-    Property property = mock(Property.class);
+    Schema property = mock(Schema.class);
     List<Parameter> parameters = createBodyRefParameter();
     Operation newOp = new Operation();
     newOp.setParameters(parameters);
     newOp.vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES.stringValue()));
-    newOp.response(200, new Response().schema(property));
+    newOp.response(200, new ApiResponse().schema(property));
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.APPLICATION_JSON).path(
-        "/breweries", new Path().post(newOp));
+        "/breweries", new PathItem().post(newOp));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -337,15 +335,15 @@ public class InformationProductRequestMapperTest {
   @Test
   public void map_BodyParameterNoObject() throws IOException {
     // Arrange
-    Property property = mock(Property.class);
+    Schema property = mock(Schema.class);
     List<Parameter> parameters = createBodyParameter("object2");
     Operation newOp = new Operation();
     newOp.setParameters(parameters);
     newOp.vendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
         DBEERPEDIA.BREWERIES.stringValue()));
-    newOp.response(200, new Response().schema(property));
+    newOp.response(200, new ApiResponse().schema(property));
     mockDefinition().host(DBEERPEDIA.OPENAPI_HOST).produces(MediaType.APPLICATION_JSON).path(
-        "/breweries", new Path().get(newOp));
+        "/breweries", new PathItem().get(newOp));
 
     // Assert
     thrown.expect(ConfigurationException.class);
@@ -363,7 +361,7 @@ public class InformationProductRequestMapperTest {
         new Path().get(new Operation().vendorExtensions(
             ImmutableMap.of(OpenApiSpecificationExtensions.INFORMATION_PRODUCT,
                 DBEERPEDIA.BREWERIES.stringValue())).produces(MediaType.APPLICATION_JSON).response(
-                    Status.OK.getStatusCode(), new Response().schema(mock(Property.class)))));
+                    Status.OK.getStatusCode(), new ApiResponse().schema(mock(Schema.class)))));
     when(informationProductResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
         informationProductMock);
 
@@ -377,21 +375,21 @@ public class InformationProductRequestMapperTest {
     assertThat(method.getProducedTypes().get(0), equalTo(MediaType.APPLICATION_JSON_TYPE));
   }
 
-  private Swagger mockDefinition() throws IOException {
+  private OpenAPI mockDefinition() throws IOException {
     String specString = "swagger: \"2.0\"\n" + "info:\n" + "  title: API\n" + "  version: 1.0";
     byte[] bytes = specString.getBytes(Charsets.UTF_8);
     when(fileResourceMock.getInputStream()).thenReturn(new ByteArrayInputStream(bytes));
     when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
         new org.springframework.core.io.Resource[] {fileResourceMock});
-    Map<String, Model> definitions = new HashMap<>();
-    Model myref = new ModelImpl();
+    Map<String, Schema> schemas = new HashMap<>();
+    Schema myref = new ObjectSchema();
 
-    definitions.put("myref", myref);
-    Swagger swagger = (new Swagger()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
-    swagger.setDefinitions(definitions);
-    when(openApiParserMock.parse(specString)).thenReturn(swagger);
+    schemas.put("myref", myref);
+    OpenAPI openApi = (new OpenAPI()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
+    openApi.components(new Components().schemas(schemas));
+    when(openApiParserMock.readContents(specString).getOpenAPI()).thenReturn(openApi);
 
-    return swagger;
+    return openApi;
   }
 
 }

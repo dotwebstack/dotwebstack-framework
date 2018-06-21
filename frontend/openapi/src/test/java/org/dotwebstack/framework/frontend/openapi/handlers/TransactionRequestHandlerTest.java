@@ -12,14 +12,13 @@ import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Operation;
-import io.swagger.models.Swagger;
-import java.util.ArrayList;
-import java.util.Collection;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.transaction.Transaction;
 import org.dotwebstack.framework.transaction.TransactionHandler;
 import org.dotwebstack.framework.transaction.TransactionHandlerFactory;
@@ -65,7 +64,7 @@ public class TransactionRequestHandlerTest {
   private TransactionRequestBodyMapper transactionRequestBodyMapper;
 
   @Mock
-  private Swagger swaggerMock;
+  private OpenAPI openApiMock;
 
   private Model model;
 
@@ -81,10 +80,10 @@ public class TransactionRequestHandlerTest {
   public void setUp() {
     transactionRequestHandler = new TransactionRequestHandler(apiOperationMock,
         transactionMock, requestParameterMapperMock, transactionRequestBodyMapper,
-        apiRequestValidatorMock, swaggerMock, transactionHandlerFactory);
+        apiRequestValidatorMock, openApiMock, transactionHandlerFactory);
 
     RequestParameters requestParameters = new RequestParameters();
-    when(apiRequestValidatorMock.validate(apiOperationMock, swaggerMock,
+    when(apiRequestValidatorMock.validate(apiOperationMock, openApiMock,
         containerRequestMock)).thenReturn(requestParameters);
     Operation operation = new Operation();
     when(apiOperationMock.getOperation()).thenReturn(operation);
@@ -93,10 +92,8 @@ public class TransactionRequestHandlerTest {
         same(requestParameters))).thenReturn(ImmutableMap.of());
     model = new LinkedHashModel();
     when(transactionRequestBodyMapper.map(any(), any())).thenReturn(model);
-    Collection<Parameter> parameters = new ArrayList<>();
-
-    when(transactionHandlerFactory.newTransactionHandler(any(), any()))
-        .thenReturn(transactionHandler);
+    when(transactionHandlerFactory.newTransactionHandler(any(), any())).thenReturn(
+        transactionHandler);
   }
 
   @Test
@@ -122,7 +119,8 @@ public class TransactionRequestHandlerTest {
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
     Operation operation =
-        new Operation().response(Status.OK.getStatusCode(), new io.swagger.models.Response());
+        new Operation().responses(
+            new ApiResponses().addApiResponse(Status.OK.toString(), new ApiResponse()));
     when(apiOperationMock.getOperation()).thenReturn(operation);
     Mockito.doThrow(new StepFailureException(null)).when(transactionHandler).execute(any());
 
@@ -130,7 +128,7 @@ public class TransactionRequestHandlerTest {
     thrown.expect(BadRequestException.class);
 
     // Act
-    Response response = transactionRequestHandler.apply(containerRequestMock);
+    transactionRequestHandler.apply(containerRequestMock);
   }
 
 }

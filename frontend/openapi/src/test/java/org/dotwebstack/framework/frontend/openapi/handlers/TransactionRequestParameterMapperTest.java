@@ -6,15 +6,15 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Model;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.BodyParameter;
-import io.swagger.models.parameters.HeaderParameter;
-import io.swagger.models.parameters.PathParameter;
-import io.swagger.models.parameters.QueryParameter;
-import io.swagger.models.properties.ObjectProperty;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.HeaderParameter;
+import io.swagger.v3.oas.models.parameters.PathParameter;
+import io.swagger.v3.oas.models.parameters.QueryParameter;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -62,8 +62,8 @@ public class TransactionRequestParameterMapperTest {
     parameter2 =
         new StringTermParameter(valueFactory.createIRI("http://parameter2-iri"), "param2", true);
 
-    transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION)
-        .parameters(ImmutableList.of(parameter1, parameter2)).build();
+    transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION).parameters(
+        ImmutableList.of(parameter1, parameter2)).build();
 
     transactionRequestParameterMapper = new TransactionRequestParameterMapper();
   }
@@ -94,7 +94,7 @@ public class TransactionRequestParameterMapperTest {
     Operation operation = new Operation();
     PathParameter pathParameter = new PathParameter();
 
-    pathParameter.setVendorExtension("x-dotwebstack-another-vendor-extension",
+    pathParameter.addExtension("x-dotwebstack-another-vendor-extension",
         parameter1.getIdentifier().stringValue());
     operation.setParameters(ImmutableList.of(pathParameter));
 
@@ -123,7 +123,7 @@ public class TransactionRequestParameterMapperTest {
     Operation operation = new Operation();
     PathParameter parameter = new PathParameter();
 
-    parameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER, "http://unknown");
+    parameter.addExtension(OpenApiSpecificationExtensions.PARAMETER, "http://unknown");
     operation.setParameters(ImmutableList.of(parameter));
 
     MultivaluedMap<String, String> mvMap = new MultivaluedHashMap<>();
@@ -145,21 +145,21 @@ public class TransactionRequestParameterMapperTest {
     pathParameter1.setIn("path");
 
     // Note this parameter has multiple vendor extensions
-    pathParameter1.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+    pathParameter1.addExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter1.getIdentifier().stringValue());
-    pathParameter1.setVendorExtension("x-dotwebstack-another-vendor-extension", "foo");
+    pathParameter1.addExtension("x-dotwebstack-another-vendor-extension", "foo");
 
     // Note this operation has multiple parameters
     Operation operation = new Operation();
-    operation.addParameter(pathParameter1);
+    operation.addParametersItem(pathParameter1);
 
     PathParameter pathParameter2 = new PathParameter();
     pathParameter2.setName("param2");
     pathParameter2.setIn("path");
-    pathParameter2.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+    pathParameter2.addExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter2.getIdentifier().stringValue());
 
-    operation.addParameter(pathParameter2);
+    operation.addParametersItem(pathParameter2);
 
     MultivaluedMap<String, String> pathParameters = new MultivaluedHashMap<>();
 
@@ -186,11 +186,11 @@ public class TransactionRequestParameterMapperTest {
     QueryParameter queryParameter = new QueryParameter();
     queryParameter.setName("param1");
     queryParameter.setIn("query");
-    queryParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+    queryParameter.addExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter1.getIdentifier().stringValue());
 
     Operation operation = new Operation();
-    operation.addParameter(queryParameter);
+    operation.addParametersItem(queryParameter);
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
     queryParameters.put(queryParameter.getName(), ImmutableList.of("value1", "valueB"));
@@ -213,11 +213,11 @@ public class TransactionRequestParameterMapperTest {
     HeaderParameter headerParameter = new HeaderParameter();
     headerParameter.setName("param1");
     headerParameter.setIn("header");
-    headerParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+    headerParameter.addExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter1.getIdentifier().stringValue());
 
     Operation operation = new Operation();
-    operation.addParameter(headerParameter);
+    operation.addParametersItem(headerParameter);
 
     MultivaluedMap<String, String> headerParameters = new MultivaluedHashMap<>();
     headerParameters.put(headerParameter.getName(), ImmutableList.of("value1", "valueB"));
@@ -237,20 +237,19 @@ public class TransactionRequestParameterMapperTest {
   @Test
   public void map_ReturnsNothing_ForBodyParameter() {
     // Arrange
-    Property property = new ObjectProperty();
-    property.getVendorExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
+    Schema property = new ObjectSchema();
+    property.getExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
         parameter1.getIdentifier().stringValue());
 
-    Model schema = new ModelImpl();
+    Schema schema = new ObjectSchema();
     schema.setProperties(ImmutableMap.of("param1", property));
 
-    BodyParameter bodyParameter = new BodyParameter();
-    bodyParameter.setName("body");
-    bodyParameter.setIn("body");
-    bodyParameter.setSchema(schema);
+    RequestBody requestBody = new RequestBody();
+    requestBody.setDescription("body");
+    requestBody.setContent(new Content().addMediaType("", new MediaType().schema(schema)));
 
     Operation operation = new Operation();
-    operation.addParameter(bodyParameter);
+    operation.setRequestBody(requestBody);
 
     MultivaluedMap<String, String> bodyParameters = new MultivaluedHashMap<>();
     bodyParameters.put("param1", ImmutableList.of("value1"));
