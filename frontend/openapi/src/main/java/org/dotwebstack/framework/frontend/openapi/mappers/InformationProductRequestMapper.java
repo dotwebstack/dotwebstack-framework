@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import io.swagger.models.Operation;
-import io.swagger.models.Response;
-import io.swagger.models.Swagger;
-import java.util.List;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Map;
+import java.util.Set;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -42,12 +42,14 @@ public class InformationProductRequestMapper implements RequestMapper {
     this.requestHandlerFactory = requestHandlerFactory;
   }
 
+  @Override
   public Boolean supportsVendorExtension(Map<String, Object> vendorExtensions) {
-    return vendorExtensions.keySet().stream().anyMatch(key ->
-        key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
+    return vendorExtensions.keySet().stream().anyMatch(
+        key -> key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
   }
 
-  public void map(Resource.Builder resourceBuilder, Swagger swagger, ApiOperation apiOperation,
+  @Override
+  public void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
       Operation getOperation, String absolutePath) {
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());
 
@@ -57,18 +59,20 @@ public class InformationProductRequestMapper implements RequestMapper {
           "Resource '%s' does not specify a status %s response.", absolutePath, okStatusCode));
     }
 
-    List<String> produces =
-        getOperation.getProduces() != null ? getOperation.getProduces() : swagger.getProduces();
+    Set<String> produces =
+        getOperation.getResponses() != null
+            ? getOperation.getResponses().get(okStatusCode).getContent().keySet()
+            : null;
 
     if (produces == null) {
       throw new ConfigurationException(
           String.format("Path '%s' should produce at least one media type.", absolutePath));
     }
 
-    Response response = getOperation.getResponses().get(okStatusCode);
+    ApiResponse response = getOperation.getResponses().get(okStatusCode);
 
     IRI informationProductIdentifier =
-        valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
+        valueFactory.createIRI((String) getOperation.getExtensions().get(
             OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
 
     InformationProduct informationProduct =
@@ -77,7 +81,7 @@ public class InformationProductRequestMapper implements RequestMapper {
     ResourceMethod.Builder methodBuilder =
         resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
             requestHandlerFactory.newInformationProductRequestHandler(apiOperation,
-                informationProduct, response, swagger));
+                informationProduct, response, openApi));
 
     produces.forEach(methodBuilder::produces);
 

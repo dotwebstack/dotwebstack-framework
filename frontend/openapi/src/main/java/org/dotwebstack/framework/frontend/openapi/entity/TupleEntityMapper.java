@@ -33,7 +33,7 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
   @Override
   public Object map(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
     // Already prepared for OASv3 multiple media type support
-    Schema schema = entity.getResponse().getContent().get(mediaType).getSchema();
+    Schema schema = entity.getResponse().getContent().get(mediaType.toString()).getSchema();
 
     if (schema == null) {
       throw new EntityMapperRuntimeException(
