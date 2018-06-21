@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import io.swagger.models.Operation;
-import io.swagger.models.Swagger;
-import java.util.List;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import java.util.Map;
+import java.util.Set;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -41,12 +41,14 @@ public class TransactionRequestMapper implements RequestMapper {
     this.requestHandlerFactory = requestHandlerFactory;
   }
 
+  @Override
   public Boolean supportsVendorExtension(Map<String, Object> vendorExtensions) {
-    return vendorExtensions.keySet().stream().anyMatch(key ->
-        key.equals(OpenApiSpecificationExtensions.TRANSACTION));
+    return vendorExtensions.keySet().stream().anyMatch(
+        key -> key.equals(OpenApiSpecificationExtensions.TRANSACTION));
   }
 
-  public void map(Resource.Builder resourceBuilder, Swagger swagger, ApiOperation apiOperation,
+  @Override
+  public void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
       Operation operation, String absolutePath) {
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());
 
@@ -56,8 +58,9 @@ public class TransactionRequestMapper implements RequestMapper {
           "Resource '%s' does not specify a status %s response.", absolutePath, okStatusCode));
     }
 
-    List<String> consumes =
-        operation.getConsumes() != null ? operation.getConsumes() : swagger.getConsumes();
+    Set<String> consumes =
+        operation.getRequestBody() != null ? operation.getRequestBody().getContent().keySet()
+            : null;
 
     if (consumes == null) {
       throw new ConfigurationException(
@@ -65,7 +68,7 @@ public class TransactionRequestMapper implements RequestMapper {
     }
 
     IRI transactionIdentifier =
-        valueFactory.createIRI((String) operation.getVendorExtensions().get(
+        valueFactory.createIRI((String) operation.getExtensions().get(
             OpenApiSpecificationExtensions.TRANSACTION));
 
     Transaction transaction =
@@ -73,7 +76,7 @@ public class TransactionRequestMapper implements RequestMapper {
 
     ResourceMethod.Builder methodBuilder =
         resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
-            requestHandlerFactory.newTransactionRequestHandler(apiOperation, transaction, swagger));
+            requestHandlerFactory.newTransactionRequestHandler(apiOperation, transaction, openApi));
 
     consumes.forEach(methodBuilder::consumes);
 

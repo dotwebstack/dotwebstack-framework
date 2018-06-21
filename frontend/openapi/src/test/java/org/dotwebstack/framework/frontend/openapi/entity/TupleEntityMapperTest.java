@@ -116,7 +116,7 @@ public class TupleEntityMapperTest {
     // Assert
     StringSchema nameSchema = new StringSchema().required(true);
     TupleEntity entity = new TupleEntity(
-        new Response().schema(new ArraySchema().items(
+        new ApiResponse().schema(new ArraySchema().items(
             new ObjectSchema().required(true).properties(ImmutableMap.of("name", nameSchema)))),
         resultMock, requestContextMock);
     when(resultMock.hasNext()).thenReturn(true, false);
@@ -139,7 +139,7 @@ public class TupleEntityMapperTest {
   public void map_MapsToAbsentOptionalValue_ForOptionalSchemaWithAbsentBinding() {
     // Arrange
     TupleEntity entity = new TupleEntity(
-        new Response().schema(new ArraySchema().items(new ObjectSchema().properties(
+        new ApiResponse().schema(new ArraySchema().items(new ObjectSchema().properties(
             ImmutableMap.of("name", new StringSchema().required(false))))),
         resultMock, requestContextMock);
     when(resultMock.hasNext()).thenReturn(true, false);

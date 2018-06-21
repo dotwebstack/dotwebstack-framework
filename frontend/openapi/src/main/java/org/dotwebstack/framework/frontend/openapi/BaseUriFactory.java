@@ -3,11 +3,9 @@ package org.dotwebstack.framework.frontend.openapi;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.servers.Server;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.http.client.utils.URIBuilder;
@@ -41,12 +39,12 @@ public class BaseUriFactory {
    * set, it's first value is used as host and port combination. If the header is not set, the host
    * and port number are taken from the request.</li>
    * </ul>
-   * 
+   *
    * @return The base uri for the give request and OpenAPI spec.
    */
   public static String determineBaseUri(@NonNull ContainerRequest containerRequest,
       @NonNull OpenAPI openAPI, @NonNull Operation operation) {
-    String openApiSpecUri = openAPI.getServers().get(0).getUrl();
+    String openApiSpecUri = ""; // openAPI.getServers().get(0).getUrl();
 
     if (operation.getServers() != null) {
       Server operationServer = operation.getServers().get(0);
