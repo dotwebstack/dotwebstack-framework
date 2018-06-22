@@ -271,8 +271,8 @@ public class QueryEvaluatorTest {
     insertQueryBuilder.append(
         "GRAPH <" + applicationProperties.getSystemGraph().stringValue() + "> {\n");
     insertQueryBuilder.append(" " + bNode);
-    insertQueryBuilder.append(" <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ");
-    insertQueryBuilder.append(" <http://dotwebstack.org/def/elmo#Endpoint> ");
+    insertQueryBuilder.append(" <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>");
+    insertQueryBuilder.append(" <http://dotwebstack.org/def/elmo#Endpoint>");
     insertQueryBuilder.append(".\n");
     insertQueryBuilder.append("}\n};\n");
     final String query = insertQueryBuilder.toString();
@@ -298,8 +298,8 @@ public class QueryEvaluatorTest {
     insertQueryBuilder.append(
         "GRAPH <" + applicationProperties.getSystemGraph().stringValue() + "> {\n");
     insertQueryBuilder.append(" " + bNode);
-    insertQueryBuilder.append(" <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ");
-    insertQueryBuilder.append(" <http://dotwebstack.org/def/elmo#Endpoint> ");
+    insertQueryBuilder.append(" <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>");
+    insertQueryBuilder.append(" <http://dotwebstack.org/def/elmo#Endpoint>");
     insertQueryBuilder.append(".\n");
     insertQueryBuilder.append("}\n};\n");
     final String query = insertQueryBuilder.toString();
@@ -327,7 +327,7 @@ public class QueryEvaluatorTest {
         "GRAPH <" + applicationProperties.getSystemGraph().stringValue() + "> {\n");
     insertQueryBuilder.append(" " + bNode);
     insertQueryBuilder.append(" <" + RDFS.LABEL + "> ");
-    insertQueryBuilder.append(" \"Blaat\"");
+    insertQueryBuilder.append("\"Blaat\"");
     insertQueryBuilder.append(".\n");
     insertQueryBuilder.append("}\n};\n");
     final String query = insertQueryBuilder.toString();
