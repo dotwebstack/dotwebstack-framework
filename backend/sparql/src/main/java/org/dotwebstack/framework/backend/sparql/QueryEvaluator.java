@@ -72,13 +72,13 @@ public class QueryEvaluator {
         addMultipleStatements(repositoryConnection, model, targetGraph);
       }
     } catch (RDF4JException e) {
-      LOG.debug("Data could not be added into graph: {}", e.getMessage());
+      LOG.debug("Data could not be added to graph: {}", e.getMessage());
       throw new BackendException(
-          String.format("Data could not be added into graph: %s", e.getMessage()), e);
+          String.format("Data could not be added to graph: %s", e.getMessage()), e);
     } catch (Exception ex) {
       LOG.debug("Data could not be added into graph: {} \n {}", ex.getMessage(), ex);
       throw new BackendException(
-          String.format("Data could not be added into graph: %s", ex.getMessage()), ex);
+          String.format("Data could not be added to graph: %s", ex.getMessage()), ex);
     }
   }
 
