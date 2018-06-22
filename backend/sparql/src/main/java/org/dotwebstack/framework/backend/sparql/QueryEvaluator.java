@@ -18,6 +18,7 @@ import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.Update;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -71,11 +72,13 @@ public class QueryEvaluator {
         addMultipleStatements(repositoryConnection, model, targetGraph);
       }
     } catch (RDF4JException e) {
-      LOG.debug("Data could not be added into graph: {}", e.getMessage());
+      LOG.debug("Data could not be added to graph: {}", e.getMessage());
       throw new BackendException(
-          String.format("Data could not be added into graph: %s", e.getMessage()), e);
+          String.format("Data could not be added to graph: %s", e.getMessage()), e);
     } catch (Exception ex) {
       LOG.debug("Data could not be added into graph: {} \n {}", ex.getMessage(), ex);
+      throw new BackendException(
+          String.format("Data could not be added to graph: %s", ex.getMessage()), ex);
     }
   }
 
@@ -155,24 +158,24 @@ public class QueryEvaluator {
   }
 
   private String getSubjectString(Statement statement) {
-    if (statement.getSubject() instanceof BNode) {
-      return " " + statement.getSubject();
+    if (statement.getSubject() instanceof IRI || statement.getSubject() instanceof MemIRI) {
+      return " <" + statement.getSubject() + ">";
     }
-    return " <" + statement.getSubject() + "> ";
+    return " " + statement.getSubject();
   }
 
   private String getPredicateString(Statement statement) {
-    if (statement.getPredicate() instanceof BNode) {
-      return " " + statement.getPredicate();
+    if (statement.getPredicate() instanceof IRI || statement.getPredicate() instanceof MemIRI) {
+      return " <" + statement.getPredicate() + ">";
     }
-    return " <" + statement.getPredicate() + "> ";
+    return " " + statement.getPredicate();
   }
 
   private String getObjectString(Statement statement) {
-    if (statement.getObject() instanceof BNode) {
-      return " " + statement.getObject();
+    if (statement.getObject() instanceof IRI || statement.getObject() instanceof MemIRI) {
+      return " <" + statement.getObject() + ">";
     }
-    return " <" + statement.getObject() + "> ";
+    return " " + statement.getObject();
   }
 
   private String getGraphString(Resource graphName) {

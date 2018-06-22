@@ -219,7 +219,7 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void post_WhenBackendFails_ThroughLdApi() {
+  public void post_WhenBackendFails_ThroughBadRequest() {
     // Arrange
     String rdf = "<?xml version=\"1.0\"?>\n" + "\n" + "<rdf:RDF\n"
         + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
@@ -234,7 +234,7 @@ public class LdIntegrationTest {
         target.path("/dbp/ld/v1/add-concept").request().post(Entity.entity(rdf, MediaTypes.RDFXML));
 
     // Assert
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    assertThat(response.getStatus(), equalTo(Status.BAD_REQUEST.getStatusCode()));
   }
 
 }
