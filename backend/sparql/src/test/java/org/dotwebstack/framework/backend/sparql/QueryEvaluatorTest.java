@@ -23,6 +23,7 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -299,6 +300,34 @@ public class QueryEvaluatorTest {
     insertQueryBuilder.append(" " + bNode);
     insertQueryBuilder.append(" <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ");
     insertQueryBuilder.append(" <http://dotwebstack.org/def/elmo#Endpoint> ");
+    insertQueryBuilder.append(".\n");
+    insertQueryBuilder.append("}\n};\n");
+    final String query = insertQueryBuilder.toString();
+
+    when(repositoryConnection.prepareGraphQuery(any(), any())).thenReturn(mock(GraphQuery.class));
+
+    // Act
+    queryEvaluator.add(repositoryConnection, model, applicationProperties.getSystemGraph());
+
+    // Assert
+    verify(repositoryConnection, times(1)).prepareGraphQuery(QueryLanguage.SPARQL, query);
+  }
+
+  @Test
+  public void add_InsertQuery_WithString() {
+    // Arrange
+    Model model = new LinkedHashModel();
+    final BNode bNode = valueFactory.createBNode();
+    final IRI context = valueFactory.createIRI("http://dotwebstack.org/configuration/Theatre");
+    model.add(valueFactory.createStatement(bNode, RDFS.LABEL, valueFactory.createLiteral("Blaat"),
+        context));
+    StringBuilder insertQueryBuilder = new StringBuilder();
+    insertQueryBuilder.append("INSERT {\n");
+    insertQueryBuilder.append(
+        "GRAPH <" + applicationProperties.getSystemGraph().stringValue() + "> {\n");
+    insertQueryBuilder.append(" " + bNode);
+    insertQueryBuilder.append(" <" + RDFS.LABEL + "> ");
+    insertQueryBuilder.append(" \"Blaat\"");
     insertQueryBuilder.append(".\n");
     insertQueryBuilder.append("}\n};\n");
     final String query = insertQueryBuilder.toString();
