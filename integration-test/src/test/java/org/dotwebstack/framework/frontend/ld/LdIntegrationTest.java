@@ -219,7 +219,7 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void post_WhenBackendFails_ThroughLdApi() {
+  public void post_WhenBackendFails_ThroughBadRequest() {
     // Arrange
     String rdf = "<?xml version=\"1.0\"?>\n" + "\n" + "<rdf:RDF\n"
         + "xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n"
