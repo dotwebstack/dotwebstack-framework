@@ -159,21 +159,21 @@ public class QueryEvaluator {
 
   private String getSubjectString(Statement statement) {
     if (statement.getSubject() instanceof IRI || statement.getSubject() instanceof MemIRI) {
-      return " <" + statement.getSubject() + "> ";
+      return " <" + statement.getSubject() + ">";
     }
     return " " + statement.getSubject();
   }
 
   private String getPredicateString(Statement statement) {
     if (statement.getPredicate() instanceof IRI || statement.getPredicate() instanceof MemIRI) {
-      return " <" + statement.getPredicate() + "> ";
+      return " <" + statement.getPredicate() + ">";
     }
     return " " + statement.getPredicate();
   }
 
   private String getObjectString(Statement statement) {
     if (statement.getObject() instanceof IRI || statement.getObject() instanceof MemIRI) {
-      return " <" + statement.getObject() + "> ";
+      return " <" + statement.getObject() + ">";
     }
     return " " + statement.getObject();
   }
