@@ -57,9 +57,9 @@ public class PersistenceInsertIntoGraphStepExecutor extends AbstractStepExecutor
             backend.getIdentifier(), applicationProperties.getSystemGraph(), step.getIdentifier());
       }
     } catch (Exception ex) {
-      LOG.debug("Get error {} for persistence step {}", ex, step.getIdentifier());
+      LOG.debug("Got error {} for persistence step {}", ex, step.getIdentifier());
       throw new StepFailureException(
-          String.format("Get an error for persistence step {%s}", step.getIdentifier()));
+          String.format("Got an error for persistence step {%s}", step.getIdentifier()));
     }
   }
 
