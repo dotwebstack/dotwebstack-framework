@@ -13,6 +13,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SchemaDefinitionWrapper;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapContext;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,8 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
   private final Definition wsdlDefinition;
 
   private final Port wsdlPort;
+
+  private final InformationProduct informationProduct;
 
   private static final String ERROR_RESPONSE = "<?xml version=\"1.0\"?>"
       + "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">"
@@ -45,9 +48,11 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       + "  </s:Body>"
       + "</s:Envelope>";
 
-  public SoapRequestHandler(@NonNull Definition wsdlDefinition, @NonNull Port wsdlPort) {
+  public SoapRequestHandler(@NonNull Definition wsdlDefinition, @NonNull Port wsdlPort,
+      @NonNull InformationProduct informationProduct) {
     this.wsdlPort = wsdlPort;
     this.wsdlDefinition = wsdlDefinition;
+    this.informationProduct = informationProduct;
   }
 
   @Override

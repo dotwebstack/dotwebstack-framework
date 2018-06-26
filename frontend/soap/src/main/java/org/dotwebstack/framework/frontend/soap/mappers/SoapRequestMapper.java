@@ -57,6 +57,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   @Autowired
   public SoapRequestMapper(
       @NonNull ApplicationProperties applicationProperties,
+      @NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull List<RequestMapper> requestMappers) {
     this.applicationProperties = applicationProperties;
     this.requestMappers = requestMappers;
