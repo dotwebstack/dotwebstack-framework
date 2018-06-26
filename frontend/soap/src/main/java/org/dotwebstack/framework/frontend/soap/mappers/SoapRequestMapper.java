@@ -4,7 +4,6 @@ import static javax.ws.rs.HttpMethod.POST;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.wsdl.BindingOperation;
@@ -125,6 +125,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   private void mapSoapDefinition(Definition wsdlDefinition,
       HttpConfiguration httpConfiguration) {
     Map<String, javax.wsdl.Service> wsdlServices = wsdlDefinition.getServices();
+    Map<String, InformationProduct> informationProducts = new HashMap();
     for (javax.wsdl.Service wsdlService : wsdlServices.values()) {
       Map<String, Port> wsdlPorts = wsdlService.getPorts();
       for (Port wsdlPort : wsdlPorts.values()) {
@@ -134,39 +135,35 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
             URI locationUri = new URI(SoapUtils.getLocationUri(wsdlElement));
             String servicePath = String.format("/%s%s", locationUri.getHost(),
                 locationUri.getPath());
-            LOG.debug("Register resource path {} for SOAP service {}", servicePath,
+            LOG.info("Register resource path {} for SOAP service {}", servicePath,
                 locationUri.toString());
 
-            // TODO locationUri.getPath() must probably be something else, ending 
-            //       with the service name
-            BindingOperation wsdlBindingOperation =
-                SoapUtils.findWsdlBindingOperation(wsdlDefinition, wsdlPort, locationUri.getPath());
+            List<BindingOperation> wsdlBindingOperations = wsdlPort.getBinding()
+                .getBindingOperations();
+            for (BindingOperation wsdlBindingOperation : wsdlBindingOperations) {
+              LOG.debug("- Binding operation: {}",wsdlBindingOperation.getName());
+              Element docElement = wsdlBindingOperation.getOperation().getDocumentationElement();
+              if (docElement != null) {
+                if (docElement.hasAttributeNS(DWS_NAMESPACE,DWS_INFOPROD)) {
+                  LOG.debug("  - Informationproduct: {}",
+                      docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
+                  ValueFactory valueFactory = SimpleValueFactory.getInstance();
+                  IRI informationProductIdentifier =
+                      valueFactory.createIRI(docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
 
-            if (wsdlBindingOperation == null) {
-              LOG.debug("- wsdlBindingOperation: not found");
-              continue;
-            }
-
-            Element docElement = wsdlBindingOperation.getOperation().getDocumentationElement();
-            if (docElement != null) {
-              if (docElement.hasAttributeNS(DWS_NAMESPACE,DWS_INFOPROD)) {
-                LOG.debug("- Informationproduct: {}",
-                    docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
+                  InformationProduct informationProduct =
+                      informationProductLoader.get(informationProductIdentifier);
+                  informationProducts.put(wsdlBindingOperation.getName(),
+                      informationProduct);
+                }
               }
             }
-
-            ValueFactory valueFactory = SimpleValueFactory.getInstance();
-            IRI informationProductIdentifier =
-                valueFactory.createIRI(docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
-
-            InformationProduct informationProduct =
-                informationProductLoader.get(informationProductIdentifier);
 
             Builder soapResourceBuilder = Resource.builder().path(servicePath);
             soapResourceBuilder
                 .addMethod(POST)
                 .produces("application/soap+xml")
-                .handledBy(new SoapRequestHandler(wsdlDefinition, wsdlPort, informationProduct));
+                .handledBy(new SoapRequestHandler(wsdlDefinition, wsdlPort, informationProducts));
             httpConfiguration.registerResources(soapResourceBuilder.build());
           } catch (URISyntaxException exp) {
             LOG.warn("Location URI in WSDL could not be parsed: {}",

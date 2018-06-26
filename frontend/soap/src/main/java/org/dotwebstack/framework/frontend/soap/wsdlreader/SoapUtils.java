@@ -27,6 +27,8 @@ import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlObject;
 
+import org.eclipse.rdf4j.query.TupleQueryResult;
+
 public class SoapUtils {
 
   /* *********************
@@ -159,10 +161,11 @@ public class SoapUtils {
       SchemaDefinitionWrapper definitionWrapper,
       Binding binding,
       BindingOperation bindingOperation,
-      SoapContext context)
+      SoapContext context,
+      TupleQueryResult queryResult)
       throws Exception {
     boolean inputSoapEncoded = WsdlUtils.isInputSoapEncoded(bindingOperation);
-    SampleXmlUtil xmlGenerator = new SampleXmlUtil(inputSoapEncoded, context);
+    SampleXmlUtil xmlGenerator = new SampleXmlUtil(inputSoapEncoded, context, queryResult);
     SoapVersion soapVersion = getSoapVersion(binding);
 
 
@@ -321,7 +324,7 @@ public class SoapUtils {
           if (! soapAction.endsWith(stringToCompare)) {
             continue;
           }
- 
+
           System.out.println(wsdlBindingOperation.toString() + "returning  stringToCompare  ");
           return wsdlBindingOperation;
         }

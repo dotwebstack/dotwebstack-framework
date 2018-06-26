@@ -40,6 +40,11 @@ import org.apache.xmlbeans.impl.util.HexBin;
 import org.apache.xmlbeans.soap.SOAPArrayType;
 import org.apache.xmlbeans.soap.SchemaWSDLArrayType;
 
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class was extracted from the soapUI code base by centeractive ag in October 2011.
  * The main reason behind the extraction was to separate the code that is responsible
@@ -66,11 +71,13 @@ import org.apache.xmlbeans.soap.SchemaWSDLArrayType;
  * - Added possibility to use annotations to add template instructions instead of sample values
  *
  */
- 
+
 /**
  * XmlBeans class for generating XML from XML Schemas
  */
 class SampleXmlUtil {
+  private static final Logger LOG = LoggerFactory.getLogger(SampleXmlUtil.class);
+
   private Random picker = new Random(1);
 
   private boolean soapEnc;
@@ -91,9 +98,12 @@ class SampleXmlUtil {
 
   private ArrayList<SchemaType> typeStack = new ArrayList<SchemaType>();
 
+  private TupleQueryResult queryResult;
 
-  public SampleXmlUtil(boolean soapEnc, SoapContext context) {
+  public SampleXmlUtil(boolean soapEnc, SoapContext context,
+      TupleQueryResult queryResult) {
     this.soapEnc = soapEnc;
+    this.queryResult = queryResult;
     excludedTypes.addAll(context.getExcludedTypes());
     this.exampleContent = context.isExampleContent();
     this.typeComment = context.isTypeComments();
@@ -180,15 +190,26 @@ class SampleXmlUtil {
     }
 
     String sample = sampleDataForSimpleType(stype);
-    
-    if (sannotation != null) {
+
+    //DOTWEBSTACK - Added
+    if ((queryResult != null) && (sannotation != null)) {
       //TODO: Should check for correct QName of attribute
       SchemaAnnotation.Attribute[] attributes = sannotation.getAttributes();
       for (SchemaAnnotation.Attribute attr : attributes) {
-        sample = "${" + attr.getValue() + "}";
+        //TODO: This is a very-very shortcut: it only gets the next value.
+        //TODO: The SampleXmlUtil should be changed so we iterate over all values!
+        //sample = queryResult.next().getValue(attr.getValue()).stringValue();
+        BindingSet bindingSet = queryResult.next();
+        if (bindingSet != null) {
+          if (bindingSet.hasBinding(attr.getValue())) {
+            sample = bindingSet.getValue(attr.getValue()).stringValue();
+          } else {
+            LOG.warn("Could not find binding variable: {}", attr.getValue());
+          }
+        }
       }
     }
-    
+
     xmlc.insertChars(sample);
   }
 
