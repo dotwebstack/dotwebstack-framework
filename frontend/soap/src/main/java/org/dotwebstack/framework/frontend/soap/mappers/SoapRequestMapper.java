@@ -4,6 +4,7 @@ import static javax.ws.rs.HttpMethod.POST;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,6 +14,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
 import javax.wsdl.WSDLException;
@@ -25,6 +27,11 @@ import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandler;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.Resource.Builder;
 import org.slf4j.Logger;
@@ -36,12 +43,16 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 @Service
 public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestMapper.class);
+
+  private static final String DWS_NAMESPACE = "http://dotwebstack.org/wsdl-extension/";
+  private static final String DWS_INFOPROD = "informationProduct";
 
   // private final SwaggerParser openApiParser; SHOULD BE WsdlParser
   private WSDLReader wsdlReader;
@@ -54,6 +65,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
 
   private List<RequestMapper> requestMappers;
 
+  private InformationProductResourceProvider informationProductLoader;
+
   @Autowired
   public SoapRequestMapper(
       @NonNull ApplicationProperties applicationProperties,
@@ -61,6 +74,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
       @NonNull List<RequestMapper> requestMappers) {
     this.applicationProperties = applicationProperties;
     this.requestMappers = requestMappers;
+    this.informationProductLoader = informationProductLoader;
     try {
       this.wsdlReader = WSDLFactory.newInstance().newWSDLReader();
     } catch (WSDLException exp) {
@@ -122,11 +136,37 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
                 locationUri.getPath());
             LOG.debug("Register resource path {} for SOAP service {}", servicePath,
                 locationUri.toString());
+
+            // TODO locationUri.getPath() must probably be something else, ending 
+            //       with the service name
+            BindingOperation wsdlBindingOperation =
+                SoapUtils.findWsdlBindingOperation(wsdlDefinition, wsdlPort, locationUri.getPath());
+
+            if (wsdlBindingOperation == null) {
+              LOG.debug("- wsdlBindingOperation: not found");
+              continue;
+            }
+
+            Element docElement = wsdlBindingOperation.getOperation().getDocumentationElement();
+            if (docElement != null) {
+              if (docElement.hasAttributeNS(DWS_NAMESPACE,DWS_INFOPROD)) {
+                LOG.debug("- Informationproduct: {}",
+                    docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
+              }
+            }
+
+            ValueFactory valueFactory = SimpleValueFactory.getInstance();
+            IRI informationProductIdentifier =
+                valueFactory.createIRI(docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
+
+            InformationProduct informationProduct =
+                informationProductLoader.get(informationProductIdentifier);
+
             Builder soapResourceBuilder = Resource.builder().path(servicePath);
             soapResourceBuilder
                 .addMethod(POST)
                 .produces("application/soap+xml")
-                .handledBy(new SoapRequestHandler(wsdlDefinition, wsdlPort));
+                .handledBy(new SoapRequestHandler(wsdlDefinition, wsdlPort, informationProduct));
             httpConfiguration.registerResources(soapResourceBuilder.build());
           } catch (URISyntaxException exp) {
             LOG.warn("Location URI in WSDL could not be parsed: {}",

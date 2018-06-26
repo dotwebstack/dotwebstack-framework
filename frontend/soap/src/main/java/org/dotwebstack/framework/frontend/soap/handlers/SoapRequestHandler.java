@@ -23,8 +23,8 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestHandler.class);
 
-  private static final String DWS_NAMESPACE = "http://dotwebstack.org/wsdl-extension/";
-  private static final String DWS_INFOPROD = "informationProduct";
+  // private static final String DWS_NAMESPACE = "http://dotwebstack.org/wsdl-extension/";
+  // private static final String DWS_INFOPROD = "informationProduct";
 
   private final Definition wsdlDefinition;
 
@@ -61,49 +61,24 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     String msg = ERROR_RESPONSE;
     LOG.debug("Handling SOAP request, SOAPAction: {}",soapAction);
 
-    try {
-
-      // Scan the defined service and message-definition in order to
-      // find the received action request.
-      Map<String, Service> wsdlServices = wsdlDefinition.getServices();
-      for (Service wsdlService : wsdlServices.values()) {
-        Map<String, Port> wsdlPorts = wsdlService.getPorts();
-        for (Port wsdlPort : wsdlPorts.values()) {
-          List<ExtensibilityElement> wsdlElements = wsdlPort.getExtensibilityElements();
-          List<BindingOperation> wsdlBindingOperations =
-              wsdlPort.getBinding().getBindingOperations();
-          for (BindingOperation wsdlBindingOperation : wsdlBindingOperations) {
-            // Skip this binding operation if it does not match the required action.
-            String stringToCompare = "/" + wsdlBindingOperation.getName() + "\"";
-            if (! soapAction.endsWith(stringToCompare)) {
-              continue;
-            }
-
-            LOG.debug("Found BindingOperation: {}", wsdlBindingOperation.getName());
-
-            Element docElement = wsdlBindingOperation.getOperation().getDocumentationElement();
-            if (docElement != null) {
-              if (docElement.hasAttributeNS(DWS_NAMESPACE,DWS_INFOPROD)) {
-                LOG.debug("- Informationproduct: {}",
-                    docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
-              }
-            }
-
-            //Build the SOAP response for the specific message
-            msg = SoapUtils.buildSoapMessageFromOutput(
-                new SchemaDefinitionWrapper(wsdlDefinition),
-                wsdlPort.getBinding(),
-                wsdlBindingOperation,
-                SoapContext.DEFAULT);
-            return msg;
-          }
-        }
+    BindingOperation wsdlBindingOperation = 
+        SoapUtils.findWsdlBindingOperation(wsdlDefinition, wsdlPort, soapAction);
+    if (wsdlBindingOperation == null) {
+      // No operation found. Return the error message.
+      LOG.debug("Not found BindingOperation: {}", soapAction);
+    } else {
+      // Build the SOAP response for the specific message
+      try {
+        msg = SoapUtils.buildSoapMessageFromOutput(
+            new SchemaDefinitionWrapper(wsdlDefinition),
+            wsdlPort.getBinding(),
+            wsdlBindingOperation,
+            SoapContext.DEFAULT);
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
       }
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
     }
 
-    // No operation found. Return the error message.
     return msg;
   }
 }

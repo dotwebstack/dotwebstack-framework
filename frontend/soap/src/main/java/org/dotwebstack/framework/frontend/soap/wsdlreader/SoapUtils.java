@@ -6,12 +6,16 @@ import com.ibm.wsdl.extensions.soap12.SOAP12AddressImpl;
 
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
 
 import javax.wsdl.Binding;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.BindingOutput;
+import javax.wsdl.Definition;
 import javax.wsdl.Message;
 import javax.wsdl.Part;
+import javax.wsdl.Port;
+import javax.wsdl.Service;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.soap.SOAPBinding;
 import javax.wsdl.extensions.soap12.SOAP12Binding;
@@ -297,5 +301,35 @@ public class SoapUtils {
         }
       }
     }
+  }
+
+  // Scan the defined service definition in order to
+  // find the given action request.
+  public static BindingOperation findWsdlBindingOperation(
+      Definition wsdlDefinition,
+      Port wsdlPort,
+      String soapAction) {
+    System.out.println(soapAction + "BindingOperation  soapAction ");
+    try {
+      Map<String, Service> wsdlServices = wsdlDefinition.getServices();
+      for (Service wsdlService : wsdlServices.values()) {
+        List<BindingOperation> wsdlBindingOperations = wsdlPort.getBinding().getBindingOperations();
+        for (BindingOperation wsdlBindingOperation : wsdlBindingOperations) {
+          // Skip this binding operation if it does not match the required action.
+          String stringToCompare = "/" + wsdlBindingOperation.getName() + "\"";
+          System.out.println(stringToCompare  + "stringToCompare  ");
+          if (! soapAction.endsWith(stringToCompare)) {
+            continue;
+          }
+ 
+          System.out.println(wsdlBindingOperation.toString() + "returning  stringToCompare  ");
+          return wsdlBindingOperation;
+        }
+      }
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+
+    return null;
   }
 }

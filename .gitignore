@@ -8,3 +8,6 @@
 target
 !/frontend/ld/src/**/target
 *.iml
+*.swp
+*.swo
+*.swn
