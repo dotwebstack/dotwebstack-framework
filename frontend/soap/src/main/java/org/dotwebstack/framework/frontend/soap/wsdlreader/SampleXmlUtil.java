@@ -122,6 +122,7 @@ class SampleXmlUtil {
    */
   public void createSampleForType(SchemaAnnotation sannotation, SchemaType stype, XmlCursor xmlc) {
     QName nm = stype.getName();
+    LOG.debug("Create sample for type: " + nm);
     if (nm == null && stype.getContainerField() != null) {
       nm = stype.getContainerField().getName();
     }
@@ -162,12 +163,14 @@ class SampleXmlUtil {
         case SchemaType.MIXED_CONTENT:
           xmlc.insertChars(pick(WORDS) + " ");
           if (stype.getContentModel() != null) {
+            LOG.debug("Nested (1)");
             processParticle(stype.getContentModel(), xmlc, true);
           }
           xmlc.insertChars(pick(WORDS));
           break;
         case SchemaType.ELEMENT_CONTENT:
           if (stype.getContentModel() != null) {
+            LOG.debug("Nested (2)");
             processParticle(stype.getContentModel(), xmlc, false);
           }
           break;
@@ -1043,6 +1046,7 @@ class SampleXmlUtil {
    */
   private void processParticle(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
     int loop = determineMinMaxForSample(sp, xmlc);
+    LOG.debug("- Loop count: {}", loop);
 
     while (loop-- > 0) {
       switch (sp.getParticleType()) {
@@ -1065,12 +1069,20 @@ class SampleXmlUtil {
           // throw new Exception("No Match on Schema Particle Type: " +
           // String.valueOf(sp.getParticleType()));
       }
+      //Force loop to repeat if we still have results
+      if (queryResult != null) {
+        if (queryResult.hasNext()) {
+          loop = 1;
+        }
+      }
     }
   }
 
   private int determineMinMaxForSample(SchemaParticle sp, XmlCursor xmlc) {
     int minOccurs = sp.getIntMinOccurs();
     int maxOccurs = sp.getIntMaxOccurs();
+    LOG.debug("- min: {}",minOccurs);
+    LOG.debug("- max: {}",maxOccurs);
 
     if (minOccurs == maxOccurs) {
       return minOccurs;
@@ -1114,6 +1126,7 @@ class SampleXmlUtil {
   }
 
   private void processElement(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
+    LOG.debug("found element: {}", sp.getName());
     // cast as schema local element
     SchemaLocalElement element = (SchemaLocalElement) sp;
 
@@ -1228,6 +1241,7 @@ class SampleXmlUtil {
   }
 
   private void processSequence(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
+    LOG.debug("found sequence: {}", sp.getName());
     SchemaParticle[] spc = sp.getParticleChildren();
     for (int i = 0; i < spc.length; i++) {
       // / <parent>maybestuff^</parent>
@@ -1240,6 +1254,7 @@ class SampleXmlUtil {
   }
 
   private void processChoice(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
+    LOG.debug("found choice: {}", sp.getName());
     SchemaParticle[] spc = sp.getParticleChildren();
     if (!skipComments) {
       xmlc.insertComment("You have a CHOICE of the next "
@@ -1252,6 +1267,7 @@ class SampleXmlUtil {
   }
 
   private void processAll(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
+    LOG.debug("found all: {}", sp.getName());
     SchemaParticle[] spc = sp.getParticleChildren();
     if (!skipComments) {
       xmlc.insertComment("You may enter the following "
@@ -1267,6 +1283,7 @@ class SampleXmlUtil {
   }
 
   private void processWildCard(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
+    LOG.debug("found wildcard: {}", sp.getName());
     if (!skipComments) {
       xmlc.insertComment("You may enter ANY elements at this point");
     }
