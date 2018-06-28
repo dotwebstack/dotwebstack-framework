@@ -1,14 +1,11 @@
 package org.dotwebstack.framework.frontend.soap.handlers;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
-import javax.wsdl.Service;
-import javax.wsdl.extensions.ExtensibilityElement;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
@@ -21,14 +18,10 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
 
 public class SoapRequestHandler implements Inflector<ContainerRequestContext, String> {
 
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestHandler.class);
-
-  // private static final String DWS_NAMESPACE = "http://dotwebstack.org/wsdl-extension/";
-  // private static final String DWS_INFOPROD = "informationProduct";
 
   private final Definition wsdlDefinition;
 
@@ -88,7 +81,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
             SoapContext.DEFAULT,
             queryResult);
       } catch (Exception e) {
-        System.out.println(e.getMessage());
+        LOG.warn("Unable to build SOAP message: {}", e.getMessage());
       }
     }
 

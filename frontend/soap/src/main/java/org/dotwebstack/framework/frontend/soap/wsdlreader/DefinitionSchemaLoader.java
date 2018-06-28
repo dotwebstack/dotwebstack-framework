@@ -49,6 +49,7 @@ class DefinitionSchemaLoader implements SchemaLoader {
         schema = (SchemaImpl) element;
       }
     }
+
     //Namespaces overzetten naar schema
     Element schemaElement = (Element) schema.getElement().getParentNode();
     Map<String, String> namespaces = wsdlDefinition.getNamespaces();

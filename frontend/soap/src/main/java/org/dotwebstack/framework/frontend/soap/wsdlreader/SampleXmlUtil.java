@@ -163,20 +163,18 @@ class SampleXmlUtil {
         case SchemaType.MIXED_CONTENT:
           xmlc.insertChars(pick(WORDS) + " ");
           if (stype.getContentModel() != null) {
-            LOG.debug("Nested (1)");
             processParticle(stype.getContentModel(), xmlc, true);
           }
           xmlc.insertChars(pick(WORDS));
           break;
         case SchemaType.ELEMENT_CONTENT:
           if (stype.getContentModel() != null) {
-            LOG.debug("Nested (2)");
             processParticle(stype.getContentModel(), xmlc, false);
           }
           break;
         default:
           // Default added in order to avoid checkstyle violation.
-          System.out.println("Unhandled case encountered in SampleXmlUtil.createSampleForType");
+          LOG.warn("Unhandled case encountered in SampleXmlUtil.createSampleForType");
           break;
       }
     } finally {
@@ -299,7 +297,7 @@ class SampleXmlUtil {
           result = new String(
               Base64.encode(formatToLength(pick(WORDS), schemaType).getBytes("utf-8")));
         } catch (java.io.UnsupportedEncodingException e) {
-          System.out.println(
+          LOG.warn(
               "Caught UnsupportedEncodingException in SampleXmlUtil.sampleDataForSimpleType");
         }
         return result;
@@ -983,7 +981,7 @@ class SampleXmlUtil {
       }
       default:
         // Default added in order to avoid checkstyle violation.
-        System.out.println("Unhandled case encountered in SampleXmlUtil.formatDate");
+        LOG.warn("Unhandled case encountered in SampleXmlUtil.formatDate");
         break;
     }
 
@@ -1046,7 +1044,6 @@ class SampleXmlUtil {
    */
   private void processParticle(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
     int loop = determineMinMaxForSample(sp, xmlc);
-    LOG.debug("- Loop count: {}", loop);
 
     while (loop-- > 0) {
       switch (sp.getParticleType()) {
@@ -1081,8 +1078,6 @@ class SampleXmlUtil {
   private int determineMinMaxForSample(SchemaParticle sp, XmlCursor xmlc) {
     int minOccurs = sp.getIntMinOccurs();
     int maxOccurs = sp.getIntMaxOccurs();
-    LOG.debug("- min: {}",minOccurs);
-    LOG.debug("- max: {}",maxOccurs);
 
     if (minOccurs == maxOccurs) {
       return minOccurs;

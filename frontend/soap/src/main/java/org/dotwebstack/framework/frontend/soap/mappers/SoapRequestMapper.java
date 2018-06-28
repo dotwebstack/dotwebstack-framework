@@ -54,7 +54,6 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   private static final String DWS_NAMESPACE = "http://dotwebstack.org/wsdl-extension/";
   private static final String DWS_INFOPROD = "informationProduct";
 
-  // private final SwaggerParser openApiParser; SHOULD BE WsdlParser
   private WSDLReader wsdlReader;
 
   private ApplicationProperties applicationProperties;
@@ -141,16 +140,12 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
             List<BindingOperation> wsdlBindingOperations = wsdlPort.getBinding()
                 .getBindingOperations();
             for (BindingOperation wsdlBindingOperation : wsdlBindingOperations) {
-              LOG.debug("- Binding operation: {}",wsdlBindingOperation.getName());
               Element docElement = wsdlBindingOperation.getOperation().getDocumentationElement();
               if (docElement != null) {
                 if (docElement.hasAttributeNS(DWS_NAMESPACE,DWS_INFOPROD)) {
-                  LOG.debug("  - Informationproduct: {}",
-                      docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
                   ValueFactory valueFactory = SimpleValueFactory.getInstance();
                   IRI informationProductIdentifier =
                       valueFactory.createIRI(docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
-
                   InformationProduct informationProduct =
                       informationProductLoader.get(informationProductIdentifier);
                   informationProducts.put(wsdlBindingOperation.getName(),

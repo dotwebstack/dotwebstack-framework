@@ -17,6 +17,9 @@ import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -51,6 +54,8 @@ import org.w3c.dom.Node;
  * @author Ole.Matzura
  */
 class SchemaUtils {
+  private static final Logger LOG = LoggerFactory.getLogger(SchemaUtils.class);
+
   private static Map<String, XmlObject> defaultSchemas = new HashMap<String, XmlObject>();
 
   public static final boolean STRICT_SCHEMA_TYPES = false;
@@ -122,7 +127,7 @@ class SchemaUtils {
         if (toNextContainer(cursor)) {
           cursor.getAllNamespaces(map);
         } else {
-          System.out.println("Can not get namespaces for " + s);
+          LOG.warn("Can not get namespaces for " + s);
         }
 
         String tns = getTargetNamespace(s);
@@ -155,7 +160,7 @@ class SchemaUtils {
       throw new SoapBuilderException(e);
     } finally {
       for (int c = 0; c < errorList.size(); c++) {
-        System.out.println("Error: " + errorList.get(c));
+        LOG.warn("Error: " + errorList.get(c));
       }
 
       if (cursor != null) {

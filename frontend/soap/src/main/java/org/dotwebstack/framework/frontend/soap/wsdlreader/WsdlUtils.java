@@ -29,6 +29,8 @@ import javax.wsdl.extensions.soap12.SOAP12Header;
 import javax.wsdl.extensions.soap12.SOAP12Operation;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class was extracted from the soapUI code base by centeractive ag in October 2011.
@@ -57,6 +59,8 @@ import javax.xml.namespace.QName;
  * @author Ole.Matzura
  */
 class WsdlUtils {
+  private static final Logger LOG = LoggerFactory.getLogger(WsdlUtils.class);
+
   public static <T extends ExtensibilityElement> T getExtensiblityElement(
       List<?> list,
       Class<T> clazz) {
@@ -170,7 +174,7 @@ class WsdlUtils {
 
     Binding binding = findBindingForOperation(definition, bindingOperation);
     if (binding == null) {
-      System.out.println("Failed to find binding for operation [" + bindingOperation.getName()
+      LOG.warn("Failed to find binding for operation [" + bindingOperation.getName()
           + "] in definition [" + definition.getDocumentBaseURI() + "]");
       return false;
     }
@@ -277,7 +281,7 @@ class WsdlUtils {
         }
       }
     } else {
-      System.out.println("Missing output message for binding operation ["
+      LOG.warn("Missing output message for binding operation ["
           + operation.getName() + "]");
     }
 

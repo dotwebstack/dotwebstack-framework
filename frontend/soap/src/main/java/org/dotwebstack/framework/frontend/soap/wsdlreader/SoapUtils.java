@@ -29,7 +29,11 @@ import org.apache.xmlbeans.XmlObject;
 
 import org.eclipse.rdf4j.query.TupleQueryResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class SoapUtils {
+  private static final Logger LOG = LoggerFactory.getLogger(SoapUtils.class);
 
   /* *********************
    *
@@ -76,7 +80,7 @@ public class SoapUtils {
 
       Message message = definitionWrapper.getDefinition().getMessage(header.getMessage());
       if (message == null) {
-        System.out.println("Missing message for header: " + header.getMessage());
+        LOG.debug("Missing message for header: " + header.getMessage());
         continue;
       }
 
@@ -85,7 +89,7 @@ public class SoapUtils {
       if (part != null) {
         createElementForPart(definitionWrapper, part, cursor, xmlGenerator);
       } else {
-        System.out.println("Missing part for header; " + header.getPart());
+        LOG.debug("Missing part for header; " + header.getPart());
       }
     }
   }
@@ -108,7 +112,7 @@ public class SoapUtils {
           cursor.toFirstChild();
           xmlGenerator.createSampleForType(elm.getAnnotation(), elm.getType(), cursor);
         } else {
-          System.out.println("Could not find element [" + elementName
+          LOG.debug("Could not find element [" + elementName
               + "] specified in part [" + part.getName() + "]");
         }
       }
@@ -126,7 +130,7 @@ public class SoapUtils {
           cursor.toFirstChild();
           xmlGenerator.createSampleForType(null, type, cursor);
         } else {
-          System.out.println("Could not find type [" + typeName
+          LOG.debug("Could not find type [" + typeName
               + "] specified in part [" + part.getName() + "]");
         }
       }
@@ -207,7 +211,7 @@ public class SoapUtils {
       XmlUtils.serializePretty(object, writer);
       return writer.toString();
     } catch (Exception e) {
-      System.out.println(e.getMessage());
+      LOG.warn(e.getMessage());
       return object.xmlText();
     }
   }
@@ -247,7 +251,7 @@ public class SoapUtils {
 
     if (ns == null) {
       ns = WsdlUtils.getTargetNamespace(definitionWrapper.getDefinition());
-      System.out.println("missing namespace on soapbind:body for RPC response, "
+      LOG.debug("missing namespace on soapbind:body for RPC response, "
           + "using targetNamespace instead (BP violation)");
     }
 
@@ -284,7 +288,7 @@ public class SoapUtils {
               xmlGenerator.createSampleForType(null, type, c);
               c.dispose();
             } else {
-              System.out.println("Failed to find type [" + typeName + "]");
+              LOG.debug("Failed to find type [" + typeName + "]");
             }
           } else {
             SchemaGlobalElement element =
@@ -298,7 +302,7 @@ public class SoapUtils {
               xmlGenerator.createSampleForType(element.getAnnotation(), element.getType(), c);
               c.dispose();
             } else {
-              System.out.println("Failed to find element [" + part.getElementName() + "]");
+              LOG.debug("Failed to find element [" + part.getElementName() + "]");
             }
           }
         }
@@ -312,7 +316,6 @@ public class SoapUtils {
       Definition wsdlDefinition,
       Port wsdlPort,
       String soapAction) {
-    System.out.println(soapAction + "BindingOperation  soapAction ");
     try {
       Map<String, Service> wsdlServices = wsdlDefinition.getServices();
       for (Service wsdlService : wsdlServices.values()) {
@@ -320,17 +323,15 @@ public class SoapUtils {
         for (BindingOperation wsdlBindingOperation : wsdlBindingOperations) {
           // Skip this binding operation if it does not match the required action.
           String stringToCompare = "/" + wsdlBindingOperation.getName() + "\"";
-          System.out.println(stringToCompare  + "stringToCompare  ");
           if (! soapAction.endsWith(stringToCompare)) {
             continue;
           }
 
-          System.out.println(wsdlBindingOperation.toString() + "returning  stringToCompare  ");
           return wsdlBindingOperation;
         }
       }
     } catch (Exception e) {
-      System.out.println(e.getMessage());
+      LOG.warn(e.getMessage());
     }
 
     return null;

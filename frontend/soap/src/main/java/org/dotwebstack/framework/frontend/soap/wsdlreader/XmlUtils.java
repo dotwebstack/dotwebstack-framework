@@ -16,6 +16,8 @@ import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
@@ -55,13 +57,14 @@ import org.xml.sax.SAXException;
  */
 @SuppressWarnings("deprecation")
 final class XmlUtils {
+  private static final Logger LOG = LoggerFactory.getLogger(XmlUtils.class);
   private static DocumentBuilder documentBuilder;
 
   public static synchronized Document parse(InputStream in) {
     try {
       return ensureDocumentBuilder().parse(in);
     } catch (Exception e) {
-      System.out.println("Error parsing InputStream; " + e.getMessage());
+      LOG.error("Error parsing InputStream; " + e.getMessage());
     }
 
     return null;
@@ -71,7 +74,7 @@ final class XmlUtils {
     try {
       return ensureDocumentBuilder().parse(fileName);
     } catch (SAXException e) {
-      System.out.println("Error parsing fileName [" + fileName + "]; " + e.getMessage());
+      LOG.error("Error parsing fileName [" + fileName + "]; " + e.getMessage());
     }
 
     return null;
@@ -208,7 +211,7 @@ final class XmlUtils {
             .setSaveImplicitNamespaces(nsMap));
       }
     } catch (XmlException e) {
-      System.out.println("Caught XmlException in XmlUtils.removeUnneccessaryNamespaces");
+      LOG.error("Caught XmlException in XmlUtils.removeUnneccessaryNamespaces");
     } finally {
       if (cursor != null) {
         cursor.dispose();
@@ -225,7 +228,7 @@ final class XmlUtils {
         dbf.setNamespaceAware(true);
         documentBuilder = dbf.newDocumentBuilder();
       } catch (ParserConfigurationException e) {
-        System.out.println("Error creating DocumentBuilder; " + e.getMessage());
+        LOG.error("Error creating DocumentBuilder; " + e.getMessage());
       }
     }
 
