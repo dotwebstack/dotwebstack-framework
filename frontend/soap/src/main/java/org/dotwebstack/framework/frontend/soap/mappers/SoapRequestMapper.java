@@ -62,17 +62,13 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
 
   private Environment environment;
 
-  private List<RequestMapper> requestMappers;
-
   private InformationProductResourceProvider informationProductLoader;
 
   @Autowired
   public SoapRequestMapper(
       @NonNull ApplicationProperties applicationProperties,
-      @NonNull InformationProductResourceProvider informationProductLoader,
-      @NonNull List<RequestMapper> requestMappers) {
+      @NonNull InformationProductResourceProvider informationProductLoader) {
     this.applicationProperties = applicationProperties;
-    this.requestMappers = requestMappers;
     this.informationProductLoader = informationProductLoader;
     try {
       this.wsdlReader = WSDLFactory.newInstance().newWSDLReader();
