@@ -5,10 +5,8 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.0.41</version>
+  <version>0.0.41-SNAPSHOT</version>
   <packaging>pom</packaging>
-
-  <!--Als je hier op een SNAPSHOT depend, dan werkt de built niet-->
 
   <name>DotWebStack Framework</name>
   <url>http://framework.dotwebstack.org</url>
