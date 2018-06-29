@@ -25,6 +25,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandler;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -120,7 +121,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   private void mapSoapDefinition(Definition wsdlDefinition,
       HttpConfiguration httpConfiguration) {
     Map<String, javax.wsdl.Service> wsdlServices = wsdlDefinition.getServices();
-    Map<String, InformationProduct> informationProducts = new HashMap();
+    Map<String, SoapAction> soapActions = new HashMap();
     for (javax.wsdl.Service wsdlService : wsdlServices.values()) {
       Map<String, Port> wsdlPorts = wsdlService.getPorts();
       for (Port wsdlPort : wsdlPorts.values()) {
@@ -144,8 +145,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
                       valueFactory.createIRI(docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
                   InformationProduct informationProduct =
                       informationProductLoader.get(informationProductIdentifier);
-                  informationProducts.put(wsdlBindingOperation.getName(),
-                      informationProduct);
+                  soapActions.put(wsdlBindingOperation.getName(),
+                      new SoapAction(informationProduct));
                 }
               }
             }
@@ -154,7 +155,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
             soapResourceBuilder
                 .addMethod(POST)
                 .produces("application/soap+xml")
-                .handledBy(new SoapRequestHandler(wsdlDefinition, wsdlPort, informationProducts));
+                .handledBy(new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions));
             httpConfiguration.registerResources(soapResourceBuilder.build());
           } catch (URISyntaxException exp) {
             LOG.warn("Location URI in WSDL could not be parsed: {}",

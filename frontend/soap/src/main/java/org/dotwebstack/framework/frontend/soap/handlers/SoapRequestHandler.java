@@ -10,6 +10,7 @@ import javax.wsdl.Port;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SchemaDefinitionWrapper;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapContext;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
@@ -27,7 +28,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
   private final Port wsdlPort;
 
-  private final Map<String, InformationProduct> informationProducts;
+  private final Map<String, SoapAction> soapActions;
 
   private static final String ERROR_RESPONSE = "<?xml version=\"1.0\"?>"
       + "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">"
@@ -46,10 +47,10 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       + "</s:Envelope>";
 
   public SoapRequestHandler(@NonNull Definition wsdlDefinition, @NonNull Port wsdlPort,
-      @NonNull Map<String, InformationProduct> informationProducts) {
+      @NonNull Map<String, SoapAction> soapActions) {
     this.wsdlPort = wsdlPort;
     this.wsdlDefinition = wsdlDefinition;
-    this.informationProducts = informationProducts;
+    this.soapActions = soapActions;
   }
 
   @Override
@@ -65,8 +66,8 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       LOG.warn("Not found BindingOperation: {}", soapAction);
     } else {
       // Build the SOAP response for the specific message
-      InformationProduct informationProduct = informationProducts.get(
-          wsdlBindingOperation.getName());
+      InformationProduct informationProduct = soapActions.get(
+          wsdlBindingOperation.getName()).getInformationProduct();
       TupleQueryResult queryResult = null;
       if (informationProduct == null) {
         LOG.warn("No information product found - revert to mocking.");
