@@ -4,6 +4,7 @@ import static javax.ws.rs.HttpMethod.POST;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import com.ibm.wsdl.extensions.schema.SchemaImpl;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,8 +18,10 @@ import java.util.Map;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
+import javax.wsdl.Types;
 import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.ExtensibilityElement;
+import javax.wsdl.extensions.schema.Schema;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
 import lombok.NonNull;
@@ -122,6 +125,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
       HttpConfiguration httpConfiguration) {
     Map<String, javax.wsdl.Service> wsdlServices = wsdlDefinition.getServices();
     Map<String, SoapAction> soapActions = new HashMap();
+    Element typesElement = findTypesElement(wsdlDefinition);
     for (javax.wsdl.Service wsdlService : wsdlServices.values()) {
       Map<String, Port> wsdlPorts = wsdlService.getPorts();
       for (Port wsdlPort : wsdlPorts.values()) {
@@ -145,8 +149,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
                       valueFactory.createIRI(docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
                   InformationProduct informationProduct =
                       informationProductLoader.get(informationProductIdentifier);
-                  soapActions.put(wsdlBindingOperation.getName(),
-                      new SoapAction(informationProduct));
+                  soapActions.put(wsdlBindingOperation.getName(), createSoapAction(
+                      wsdlBindingOperation.getName(), informationProduct, typesElement));
                 }
               }
             }
@@ -164,6 +168,26 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
         }
       }
     }
+  }
+
+  private Element findTypesElement(Definition wsdlDefinition) {
+    Types wsdlTypes = wsdlDefinition.getTypes();
+    List<ExtensibilityElement> elements = wsdlTypes.getExtensibilityElements();
+    if (elements.get(0) instanceof SchemaImpl) {
+      Schema schema = (Schema) elements.get(0);
+      Element typesElement = (Element) schema.getElement().getParentNode();
+      return typesElement;
+    } else {
+      LOG.warn("Could not find a XSD schema - no input parameters available for SOAP WSDL");
+      return null;
+    }
+  }
+
+  private SoapAction createSoapAction(String soapActionName, InformationProduct informationProduct,
+      Element typesElement) {
+    SoapAction soapAction = new SoapAction(soapActionName, informationProduct);
+    soapAction.retrieveParameters(typesElement);
+    return soapAction;
   }
 
 }

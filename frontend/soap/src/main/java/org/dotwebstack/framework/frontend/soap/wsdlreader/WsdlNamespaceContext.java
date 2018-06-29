@@ -4,7 +4,7 @@ import java.util.Iterator;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 
-class WsdlNamespaceContext implements NamespaceContext {
+public class WsdlNamespaceContext implements NamespaceContext {
 
   private static final String XS_NS_URI = "http://www.w3.org/2001/XMLSchema";
   private static final String DWS_NS_URI = "http://dotwebstack.org/wsdl-extension/";
