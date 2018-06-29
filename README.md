@@ -30,3 +30,6 @@ mvn release:clean
 ## License
 
 The DotWebStack Framework is published under the [MIT License](LICENSE.md).
+
+##POM
+Do NOT depend on a SNAPSHOT; the built won't work!

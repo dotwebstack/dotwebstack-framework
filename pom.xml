@@ -8,6 +8,8 @@
   <version>0.0.41</version>
   <packaging>pom</packaging>
 
+  <!--Als je hier op een SNAPSHOT depend, dan werkt de built niet-->
+
   <name>DotWebStack Framework</name>
   <url>http://framework.dotwebstack.org</url>
   <description>An extensible full-stack framework which offers the foundation and building blocks
