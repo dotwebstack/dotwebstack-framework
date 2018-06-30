@@ -29,23 +29,10 @@ public class SoapModule implements HttpModule {
 
   @Override
   public void initialize(@NonNull HttpConfiguration httpConfiguration) {
-    
-    //Simple test, should be in a separate Mapper class
-    /*
-    String absolutePath = "/localhost/soaptest";
-    Builder soapResourceBuilder = Resource.builder().path(absolutePath);
-    soapResourceBuilder//
-        .addMethod(GET)//
-        .produces("application/soap+xml")//
-        .handledBy(new SoapRequestHandler());
-    httpConfiguration.registerResources(soapResourceBuilder.build());
-    LOG.debug("Mapped GET operation for request path {}", absolutePath);
-    */
-    
     try {
       requestMapper.map(httpConfiguration);
     } catch (IOException exp) {
-      LOG.error("IOException, message " + exp.getMessage());
+      LOG.error("IOException, message: {}", exp.getMessage());
       throw new ConfigurationException("Failed loading SOAP-WSDL definitions.", exp);
     }
   }

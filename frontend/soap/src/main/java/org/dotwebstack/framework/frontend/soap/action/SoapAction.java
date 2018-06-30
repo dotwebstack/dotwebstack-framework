@@ -29,16 +29,16 @@ public class SoapAction {
 
   private final XPath xpath = xpathFactory.newXPath();
 
-  private String soapAction;
+  private String soapActionName;
 
   private InformationProduct informationProduct;
 
   private List<SoapParameter> soapParameters;
 
-  public SoapAction(String soapAction, @NonNull InformationProduct informationProduct) {
-    this.soapAction = soapAction;
+  public SoapAction(String soapActionName, @NonNull InformationProduct informationProduct) {
+    this.soapActionName = soapActionName;
     this.informationProduct = informationProduct;
-    soapParameters = new ArrayList<SoapParameter>();
+    soapParameters = new ArrayList<>();
     xpath.setNamespaceContext(new WsdlNamespaceContext());
   }
 
@@ -53,7 +53,7 @@ public class SoapAction {
   public void retrieveParameters(Element typesElement) {
     try {
       XPathExpression expr = xpath.compile("xs:schema/xs:element[@name='"
-          + soapAction + "']/xs:complexType/xs:sequence/xs:element");
+          + soapActionName + "']/xs:complexType/xs:sequence/xs:element");
       Element mainElement = (Element) expr.evaluate(typesElement, XPathConstants.NODE);
       if (mainElement == null) {
         LOG.warn("Root element not found: Action not defined in types");
@@ -65,8 +65,6 @@ public class SoapAction {
       if (splitted.length == 2) {
         paramName = splitted[1];
       }
-      XPathExpression exprt = xpath.compile("xs:schema/xs:element[@name='"
-          + soapAction + "']/@name");
       XPathExpression expr2 = xpath.compile("xs:schema/xs:complexType[@name='"
           + paramName + "']/xs:complexContent/xs:extension/xs:sequence/xs:element");
       NodeList nodes = (NodeList) expr2.evaluate(typesElement, XPathConstants.NODESET);
@@ -74,11 +72,11 @@ public class SoapAction {
         XPathExpression expr3 = xpath.compile("xs:annotation/@dws:parameter");
         String param = (String) expr3.evaluate(nodes.item(i), XPathConstants.STRING);
         if (!param.isEmpty()) {
-          LOG.debug("| Input element: " + ((Element) nodes.item(i)).getAttribute("name"));
-          LOG.debug("| - DWS-parameter: " + param);
-          String xpathString = String.format(SoapAction.XPATH_TEMPLATE, soapAction, firstElement,
-              ((Element) nodes.item(i)).getAttribute("name"));
-          LOG.debug("| - xpathString: " + xpathString);
+          LOG.debug("| Input element: {}", ((Element) nodes.item(i)).getAttribute("name"));
+          LOG.debug("| - DWS-parameter: {}", param);
+          String xpathString = String.format(SoapAction.XPATH_TEMPLATE, soapActionName,
+              firstElement, ((Element) nodes.item(i)).getAttribute("name"));
+          LOG.debug("| - xpathString: {}", xpathString);
           addParameter(xpathString, param);
         }
       }

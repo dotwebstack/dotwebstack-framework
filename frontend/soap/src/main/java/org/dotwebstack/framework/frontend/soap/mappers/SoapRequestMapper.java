@@ -175,8 +175,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
     List<ExtensibilityElement> elements = wsdlTypes.getExtensibilityElements();
     if (elements.get(0) instanceof SchemaImpl) {
       Schema schema = (Schema) elements.get(0);
-      Element typesElement = (Element) schema.getElement().getParentNode();
-      return typesElement;
+      return (Element) schema.getElement().getParentNode();
     } else {
       LOG.warn("Could not find a XSD schema - no input parameters available for SOAP WSDL");
       return null;
