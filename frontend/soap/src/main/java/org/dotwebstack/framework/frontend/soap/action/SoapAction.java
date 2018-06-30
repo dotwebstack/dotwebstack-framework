@@ -66,7 +66,7 @@ public class SoapAction {
         paramName = splitted[1];
       }
       XPathExpression expr2 = xpath.compile("xs:schema/xs:complexType[@name='"
-          + paramName + "']/xs:complexContent/xs:extension/xs:sequence/xs:element");
+          + paramName + "']//xs:sequence/xs:element");
       NodeList nodes = (NodeList) expr2.evaluate(typesElement, XPathConstants.NODESET);
       for (int i = 0; i < nodes.getLength(); i++) {
         XPathExpression expr3 = xpath.compile("xs:annotation/@dws:parameter");
