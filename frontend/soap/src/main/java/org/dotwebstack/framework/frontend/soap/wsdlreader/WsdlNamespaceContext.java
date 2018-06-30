@@ -8,6 +8,7 @@ public class WsdlNamespaceContext implements NamespaceContext {
 
   private static final String XS_NS_URI = "http://www.w3.org/2001/XMLSchema";
   private static final String DWS_NS_URI = "http://dotwebstack.org/wsdl-extension/";
+  private static final String SOAPENV_NS_URI = "http://schemas.xmlsoap.org/soap/envelope/";
 
   @SuppressWarnings("AbbreviationAsWordInName")
   public String getNamespaceURI(String prefix) {
@@ -18,6 +19,7 @@ public class WsdlNamespaceContext implements NamespaceContext {
       case "xs": return WsdlNamespaceContext.XS_NS_URI;
       case "dws": return WsdlNamespaceContext.DWS_NS_URI;
       case "xml": return XMLConstants.XML_NS_URI;
+      case "soapenv": return WsdlNamespaceContext.SOAPENV_NS_URI;
       default: return XMLConstants.NULL_NS_URI;
     }
   }

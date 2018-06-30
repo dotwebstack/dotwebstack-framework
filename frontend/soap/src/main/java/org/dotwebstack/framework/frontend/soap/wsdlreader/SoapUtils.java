@@ -22,6 +22,7 @@ import javax.wsdl.extensions.soap12.SOAP12Binding;
 
 import javax.xml.namespace.QName;
 
+import org.apache.xmlbeans.SchemaAnnotation;
 import org.apache.xmlbeans.SchemaGlobalElement;
 import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.XmlCursor;
@@ -52,6 +53,24 @@ public class SoapUtils {
     } else {
       return "UNSUPPORTED";
     }
+  }
+
+  public static boolean hasAttribute(SchemaAnnotation sannotation, QName name) {
+    for (SchemaAnnotation.Attribute attr : sannotation.getAttributes()) {
+      if (name.equals(attr.getName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static String getAttributeValue(SchemaAnnotation sannotation, QName name) {
+    for (SchemaAnnotation.Attribute attr : sannotation.getAttributes()) {
+      if (name.equals(attr.getName())) {
+        return attr.getValue();
+      }
+    }
+    return null;
   }
 
   /* *********************

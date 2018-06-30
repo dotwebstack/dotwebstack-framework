@@ -1,12 +1,13 @@
 package org.dotwebstack.framework.frontend.soap.handlers;
 
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
-
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -14,11 +15,13 @@ import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SchemaDefinitionWrapper;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapContext;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
+import org.dotwebstack.framework.frontend.soap.wsdlreader.WsdlNamespaceContext;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
 
 public class SoapRequestHandler implements Inflector<ContainerRequestContext, String> {
 
@@ -55,24 +58,28 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
   @Override
   public String apply(ContainerRequestContext data) {
-    final String soapAction = data.getHeaderString("SOAPAction");
+    final String soapActionName = data.getHeaderString("SOAPAction");
     String msg = ERROR_RESPONSE;
-    LOG.debug("Handling SOAP request, SOAPAction: {}",soapAction);
+    LOG.debug("Handling SOAP request, SOAPAction: {}",soapActionName);
 
     BindingOperation wsdlBindingOperation =
-        SoapUtils.findWsdlBindingOperation(wsdlDefinition, wsdlPort, soapAction);
+        SoapUtils.findWsdlBindingOperation(wsdlDefinition, wsdlPort, soapActionName);
     if (wsdlBindingOperation == null) {
       // No operation found. Return the error message.
-      LOG.warn("Not found BindingOperation: {}", soapAction);
+      LOG.warn("Not found BindingOperation: {}", soapActionName);
     } else {
+      // Retrieve the input message for parameters
+      Document inputDoc = null;
+      if (data.hasEntity()) {
+        inputDoc = retrieveInputMessage(data.getEntityStream());
+      }
       // Build the SOAP response for the specific message
-      InformationProduct informationProduct = soapActions.get(
-          wsdlBindingOperation.getName()).getInformationProduct();
+      SoapAction soapAction = soapActions.get(wsdlBindingOperation.getName());
       TupleQueryResult queryResult = null;
-      if (informationProduct == null) {
+      if (soapAction == null) {
         LOG.warn("No information product found - revert to mocking.");
       } else {
-        queryResult = getResult(informationProduct);
+        queryResult = getResult(soapAction, inputDoc);
       }
       try {
         msg = SoapUtils.buildSoapMessageFromOutput(
@@ -89,9 +96,10 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     return msg;
   }
 
-  private TupleQueryResult getResult(InformationProduct informationProduct) {
+  private TupleQueryResult getResult(SoapAction soapAction, Document inputDoc) {
+    InformationProduct informationProduct = soapAction.getInformationProduct();
     //TODO: extract parameter values from input message
-    Map<String, String> parameterValues = new HashMap();
+    Map<String, String> parameterValues = soapAction.getParameterValues(inputDoc);
     Object result = informationProduct.getResult(parameterValues);
 
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
@@ -103,4 +111,14 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
             informationProduct.getResultType(), informationProduct.getIdentifier()));
   }
 
+  private Document retrieveInputMessage(InputStream inputStream) {
+    try {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      DocumentBuilder builder = factory.newDocumentBuilder();
+      return builder.parse(inputStream);
+    } catch (Exception e) {
+      LOG.error(e.getMessage());
+    }
+    return null;
+  }
 }

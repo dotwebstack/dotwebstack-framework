@@ -10,4 +10,12 @@ public class SoapParameter {
     this.xpath = xpath;
     this.parameterName = parameterName;
   }
+
+  public String getParameterName() {
+    return parameterName;
+  }
+
+  public String getXpath() {
+    return xpath;
+  }
 }

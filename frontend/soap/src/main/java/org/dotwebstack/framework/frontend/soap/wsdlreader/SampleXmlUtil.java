@@ -78,6 +78,12 @@ import org.slf4j.LoggerFactory;
 class SampleXmlUtil {
   private static final Logger LOG = LoggerFactory.getLogger(SampleXmlUtil.class);
 
+  private static final String DWS_NS = "http://dotwebstack.org/wsdl-extension/";
+  private static final QName DWS_CURSOR_QNAME = new QName(DWS_NS, "cursor");
+  private static final QName DWS_VALUES_FROM_QNAME = new QName(DWS_NS, "valuesFrom");
+  private static final QName DWS_GROUPBY_QNAME = new QName(DWS_NS, "groupBy");
+  private static final QName DWS_GROUP_QNAME = new QName(DWS_NS, "group");
+
   private Random picker = new Random(1);
 
   private boolean soapEnc;
@@ -98,7 +104,11 @@ class SampleXmlUtil {
 
   private ArrayList<SchemaType> typeStack = new ArrayList<SchemaType>();
 
-  private TupleQueryResult queryResult;
+  private TupleQueryResult queryResult = null;
+
+  private BindingSet currentRow = null;
+
+  private String currentGroupingValue = null;
 
   public SampleXmlUtil(boolean soapEnc, SoapContext context,
       TupleQueryResult queryResult) {
@@ -110,6 +120,16 @@ class SampleXmlUtil {
     this.skipComments = !context.isValueComments();
     this.ignoreOptional = !context.isBuildOptional();
     this.multiValuesProvider = context.getMultiValuesProvider();
+    if (queryResult != null) {
+      if (queryResult.hasNext()) {
+        currentRow = queryResult.next();
+        LOG.debug("Queryresult has at least one result");
+      } else {
+        LOG.debug("Queryresult is empty set");
+      }
+    } else {
+      LOG.warn("No queryresult");
+    }
   }
 
   public boolean isSoapEnc() {
@@ -122,7 +142,6 @@ class SampleXmlUtil {
    */
   public void createSampleForType(SchemaAnnotation sannotation, SchemaType stype, XmlCursor xmlc) {
     QName nm = stype.getName();
-    LOG.debug("Create sample for type: " + nm);
     if (nm == null && stype.getContainerField() != null) {
       nm = stype.getContainerField().getName();
     }
@@ -194,18 +213,13 @@ class SampleXmlUtil {
 
     //DOTWEBSTACK - Added
     if ((queryResult != null) && (sannotation != null)) {
-      //TODO: Should check for correct QName of attribute
-      SchemaAnnotation.Attribute[] attributes = sannotation.getAttributes();
-      for (SchemaAnnotation.Attribute attr : attributes) {
-        //TODO: This is a very-very shortcut: it only gets the next value.
-        //TODO: The SampleXmlUtil should be changed so we iterate over all values!
-        //sample = queryResult.next().getValue(attr.getValue()).stringValue();
-        BindingSet bindingSet = queryResult.next();
-        if (bindingSet != null) {
-          if (bindingSet.hasBinding(attr.getValue())) {
-            sample = bindingSet.getValue(attr.getValue()).stringValue();
+      String variableName = SoapUtils.getAttributeValue(sannotation, DWS_VALUES_FROM_QNAME);
+      if (variableName != null) {
+        if (currentRow != null) {
+          if (currentRow.hasBinding(variableName)) {
+            sample = currentRow.getValue(variableName).stringValue();
           } else {
-            LOG.warn("Could not find binding variable: {}", attr.getValue());
+            LOG.warn("Could not find binding variable: {}", variableName);
           }
         }
       }
@@ -1043,7 +1057,7 @@ class SampleXmlUtil {
    * ^) After this call: <<outer><foo/><bar/>som text<etc/>^</outer>
    */
   private void processParticle(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
-    int loop = determineMinMaxForSample(sp, xmlc);
+    int loop = determineLoopForQuery(determineMinMaxForSample(sp, xmlc), sp, false);
 
     while (loop-- > 0) {
       switch (sp.getParticleType()) {
@@ -1066,12 +1080,8 @@ class SampleXmlUtil {
           // throw new Exception("No Match on Schema Particle Type: " +
           // String.valueOf(sp.getParticleType()));
       }
-      //Force loop to repeat if we still have results
-      if (queryResult != null) {
-        if (queryResult.hasNext()) {
-          loop = 1;
-        }
-      }
+      //DOTWEBSTACK added - Check if we want to continue with this element
+      loop = determineLoopForQuery(loop, sp, true);
     }
   }
 
@@ -1121,7 +1131,6 @@ class SampleXmlUtil {
   }
 
   private void processElement(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
-    LOG.debug("found element: {}", sp.getName());
     // cast as schema local element
     SchemaLocalElement element = (SchemaLocalElement) sp;
 
@@ -1156,6 +1165,59 @@ class SampleXmlUtil {
     }
     // -> <elem>stuff</elem>^
     xmlc.toNextToken();
+  }
+
+  //DOTWEBSTACK - Added: check if element is start of iteration, in such a case we need to continue
+  private int determineLoopForQuery(int currentLoop, SchemaParticle sp, boolean next) {
+    if (sp.getParticleType() == SchemaParticle.ELEMENT) {
+      // cast as schema local element
+      SchemaLocalElement element = (SchemaLocalElement) sp;
+      SchemaAnnotation annotation = element.getAnnotation();
+      if (queryResult != null && annotation != null) {
+        if (SoapUtils.hasAttribute(annotation, DWS_GROUP_QNAME)) {
+          if (currentRow == null) {
+            return 0;
+          } else {
+            return 1;
+          }
+        }
+        if (SoapUtils.hasAttribute(annotation, DWS_CURSOR_QNAME)) {
+          if (next) {
+            if (queryResult.hasNext()) {
+              currentRow = queryResult.next();
+              String groupingVariable = SoapUtils.getAttributeValue(annotation, DWS_GROUPBY_QNAME);
+              if (groupingVariable != null) {
+                if (currentRow.hasBinding(groupingVariable)) {
+                  String newGroupingValue = currentRow.getValue(groupingVariable).stringValue();
+                  if (currentGroupingValue == null) {
+                    currentGroupingValue = newGroupingValue;
+                    return 1;
+                  } else {
+                    if (newGroupingValue.equals(currentGroupingValue)) {
+                      return 1;
+                    } else {
+                      currentGroupingValue = newGroupingValue;
+                      return 0;
+                    }
+                  }
+                }
+              }
+              return 1;
+            } else {
+              currentRow = null;
+              return 0;
+            }
+          } else {
+            if (currentRow == null) {
+              return 0;
+            } else {
+              return 1;
+            }
+          }
+        }
+      }
+    }
+    return currentLoop;
   }
 
   private static final String formatQName(XmlCursor xmlc, QName qualifiedName) {
@@ -1236,7 +1298,6 @@ class SampleXmlUtil {
   }
 
   private void processSequence(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
-    LOG.debug("found sequence: {}", sp.getName());
     SchemaParticle[] spc = sp.getParticleChildren();
     for (int i = 0; i < spc.length; i++) {
       // / <parent>maybestuff^</parent>
@@ -1249,7 +1310,6 @@ class SampleXmlUtil {
   }
 
   private void processChoice(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
-    LOG.debug("found choice: {}", sp.getName());
     SchemaParticle[] spc = sp.getParticleChildren();
     if (!skipComments) {
       xmlc.insertComment("You have a CHOICE of the next "
@@ -1262,7 +1322,6 @@ class SampleXmlUtil {
   }
 
   private void processAll(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
-    LOG.debug("found all: {}", sp.getName());
     SchemaParticle[] spc = sp.getParticleChildren();
     if (!skipComments) {
       xmlc.insertComment("You may enter the following "
@@ -1278,7 +1337,6 @@ class SampleXmlUtil {
   }
 
   private void processWildCard(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
-    LOG.debug("found wildcard: {}", sp.getName());
     if (!skipComments) {
       xmlc.insertComment("You may enter ANY elements at this point");
     }
