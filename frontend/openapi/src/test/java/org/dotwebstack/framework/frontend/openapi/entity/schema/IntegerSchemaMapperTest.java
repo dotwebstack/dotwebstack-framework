@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -11,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.IntegerProperty;
 import io.swagger.models.properties.StringProperty;
 import java.util.Collections;
+import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
@@ -20,6 +22,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -130,5 +133,25 @@ public class IntegerSchemaMapperTest {
     // Act
     schemaMapperAdapter.mapGraphValue(integerProperty, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+  }
+
+  @Test
+  public void get_the_7_right_SupportedDataTypes() {
+    //Arrange
+    Set<IRI> supportedTypes;
+
+    //Act
+    supportedTypes = integerSchemaMapper.getSupportedDataTypes();
+
+    //Assert
+    assertThat(supportedTypes.size(), is(7));
+
+    assertTrue(supportedTypes.contains(XMLSchema.INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.INT));
+    assertTrue(supportedTypes.contains(XMLSchema.POSITIVE_INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.NON_NEGATIVE_INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.NON_POSITIVE_INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.NEGATIVE_INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.UNSIGNED_INT));
   }
 }

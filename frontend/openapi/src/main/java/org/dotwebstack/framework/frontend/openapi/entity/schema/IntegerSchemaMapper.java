@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 @Service
 class IntegerSchemaMapper extends AbstractSchemaMapper<BaseIntegerProperty, Object> {
 
-  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT);
+  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.INTEGER, XMLSchema.INT,
+      XMLSchema.POSITIVE_INTEGER, XMLSchema.NON_NEGATIVE_INTEGER, XMLSchema.NON_POSITIVE_INTEGER,
+      XMLSchema.NEGATIVE_INTEGER, XMLSchema.UNSIGNED_INT);
   private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
       OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
