@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.DoubleProperty;
+import io.swagger.models.properties.FloatProperty;
 import io.swagger.models.properties.StringProperty;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -28,13 +28,13 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DoubleSchemaMapperTest {
+public class FloatSchemaMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
   private static final String DUMMY_EXPR = "dummyExpr()";
-  private static final Literal VALUE_1 = SimpleValueFactory.getInstance().createLiteral(12.3);
+  private static final Literal VALUE_1 = SimpleValueFactory.getInstance().createLiteral(12.3f);
   private static final IRI VALUE_3 = SimpleValueFactory.getInstance().createIRI("http://foo");
 
   @Mock
@@ -47,16 +47,16 @@ public class DoubleSchemaMapperTest {
   private TupleEntity tupleEntityMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
-  private DoubleSchemaMapper doubleSchemaMapper;
-  private DoubleProperty doubleProperty;
+  private FloatSchemaMapper floatSchemaMapper;
+  private FloatProperty floatProperty;
 
   @Before
   public void setUp() {
-    doubleSchemaMapper = new DoubleSchemaMapper();
-    doubleProperty = new DoubleProperty();
+    floatSchemaMapper = new FloatSchemaMapper();
+    floatProperty = new FloatProperty();
 
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
-    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(doubleSchemaMapper));
+    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(floatSchemaMapper));
   }
 
   @Test
@@ -66,24 +66,24 @@ public class DoubleSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    doubleSchemaMapper.mapTupleValue(doubleProperty, tupleEntityMock,
+    floatSchemaMapper.mapTupleValue(floatProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Double result = doubleSchemaMapper.mapTupleValue(doubleProperty, tupleEntityMock,
+    Float result = floatSchemaMapper.mapTupleValue(floatProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
 
     // Assert
-    assertThat(result, is(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.doubleValue()));
+    assertThat(result, is(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.floatValue()));
   }
 
   @Test
-  public void supports_ReturnsTrue_ForDoubleProperty() {
+  public void supports_ReturnsTrue_ForFloatProperty() {
     // Arrange & Act
-    Boolean supported = doubleSchemaMapper.supports(doubleProperty);
+    Boolean supported = floatSchemaMapper.supports(floatProperty);
 
     // Assert
     assertThat(supported, is(true));
@@ -92,7 +92,7 @@ public class DoubleSchemaMapperTest {
   @Test
   public void supports_ReturnsFalse_ForNonStringProperty() {
     // Arrange & Act
-    Boolean supported = doubleSchemaMapper.supports(new StringProperty());
+    Boolean supported = floatSchemaMapper.supports(new StringProperty());
 
     // Assert
     assertThat(supported, is(false));
@@ -101,16 +101,16 @@ public class DoubleSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_ForLdPath() {
     // Arrange
-    doubleProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    floatProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(valueMock, DUMMY_EXPR)).thenReturn(
         ImmutableList.of(VALUE_1));
 
     // Act
-    Double result = (Double) schemaMapperAdapter.mapGraphValue(doubleProperty, graphEntityMock,
+    Float result = (Float) schemaMapperAdapter.mapGraphValue(floatProperty, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
-    assertThat(result, is(VALUE_1.doubleValue()));
+    assertThat(result, is(VALUE_1.floatValue()));
   }
 
   @Test
@@ -122,12 +122,12 @@ public class DoubleSchemaMapperTest {
         DUMMY_EXPR));
 
     // Arrange
-    doubleProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    floatProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE_3));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(doubleProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(floatProperty, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 }
