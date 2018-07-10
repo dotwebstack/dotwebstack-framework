@@ -78,9 +78,10 @@ public abstract class AbstractSchemaMapper<S extends Schema, T> implements Schem
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
-    if (!property.getRequired() && queryResult.isEmpty()) {
-      return null;
-    }
+    // TODO: Fix required check
+    // if (!property.getRequired() && queryResult.isEmpty()) {
+    // return null;
+    // }
 
     Value value = getSingleStatement(queryResult, ldPathQuery);
 
@@ -183,12 +184,13 @@ public abstract class AbstractSchemaMapper<S extends Schema, T> implements Schem
   }
 
   private void validateRequired(Schema schema, String vendorExtension, Object value) {
-    if (value == null && schema.getRequired()) {
-      String message =
-          String.format("%s has '%s' vendor extension that is null, but the property is required.",
-              schema.getClass().getSimpleName(), vendorExtension);
-      throw new SchemaMapperRuntimeException(message);
-    }
+    // TODO: Fix required check
+    // if (value == null && schema.getRequired()) {
+    String message =
+        String.format("%s has '%s' vendor extension that is null, but the property is required.",
+            schema.getClass().getSimpleName(), vendorExtension);
+    throw new SchemaMapperRuntimeException(message);
+    // }
   }
 
 }
