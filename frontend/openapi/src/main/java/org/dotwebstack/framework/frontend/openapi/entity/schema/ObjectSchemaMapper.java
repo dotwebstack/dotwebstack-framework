@@ -94,9 +94,10 @@ public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectSchema
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
     if (queryResult.isEmpty()) {
-      if (!property.getRequired()) {
-        return null;
-      }
+      // TODO: Fix required check
+      // if (!property.getRequired()) {
+      // return null;
+      // }
       throw new SchemaMapperRuntimeException(String.format(
           "LDPath expression for a required object property ('%s') yielded no result.",
           ldPathQuery));
