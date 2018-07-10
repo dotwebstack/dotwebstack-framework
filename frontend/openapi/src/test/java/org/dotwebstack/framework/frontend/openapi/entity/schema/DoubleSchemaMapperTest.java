@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -36,7 +35,7 @@ public class DoubleSchemaMapperTest {
 
   private static final String DUMMY_EXPR = "dummyExpr()";
   private static final Literal VALUE_1 = SimpleValueFactory.getInstance().createLiteral(12.3);
-  private static final IRI VALUE_3 = SimpleValueFactory.getInstance().createIRI("http://foo");
+  private static final IRI VALUE_2 = SimpleValueFactory.getInstance().createIRI("http://foo");
 
   @Mock
   private GraphEntity graphEntityMock;
@@ -75,28 +74,28 @@ public class DoubleSchemaMapperTest {
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
     Double result = doubleSchemaMapper.mapTupleValue(doubleProperty, tupleEntityMock,
-        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_FTE).build());
 
     // Assert
-    assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.doubleValue()));
+    assertThat(result, is(DBEERPEDIA.BROUWTOREN_FTE.doubleValue()));
   }
 
   @Test
-  public void supports_ReturnsTrue_ForIntegerProperty() {
+  public void supports_ReturnsTrue_ForDoubleProperty() {
     // Arrange & Act
     Boolean supported = doubleSchemaMapper.supports(doubleProperty);
 
     // Assert
-    assertThat(supported, equalTo(true));
+    assertThat(supported, is(true));
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonIntegerProperty() {
+  public void supports_ReturnsFalse_ForStringProperty() {
     // Arrange & Act
     Boolean supported = doubleSchemaMapper.supports(new StringProperty());
 
     // Assert
-    assertThat(supported, equalTo(false));
+    assertThat(supported, is(false));
   }
 
   @Test
@@ -125,7 +124,7 @@ public class DoubleSchemaMapperTest {
     // Arrange
     doubleProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
-        ImmutableList.of(VALUE_3));
+        ImmutableList.of(VALUE_2));
 
     // Act
     schemaMapperAdapter.mapGraphValue(doubleProperty, graphEntityMock,
