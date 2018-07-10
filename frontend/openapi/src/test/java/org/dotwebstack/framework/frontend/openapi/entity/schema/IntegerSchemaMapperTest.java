@@ -136,12 +136,9 @@ public class IntegerSchemaMapperTest {
   }
 
   @Test
-  public void get_the_7_right_SupportedDataTypes() {
-    //Arrange
-    Set<IRI> supportedTypes;
-
+  public void getSupportedDataTypes_returnsSevenTypes() {
     //Act
-    supportedTypes = integerSchemaMapper.getSupportedDataTypes();
+    Set<IRI> supportedTypes = integerSchemaMapper.getSupportedDataTypes();
 
     //Assert
     assertThat(supportedTypes.size(), is(7));

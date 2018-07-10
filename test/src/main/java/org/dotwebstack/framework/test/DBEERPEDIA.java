@@ -89,6 +89,8 @@ public final class DBEERPEDIA {
 
   public static final Literal BROUWTOREN_LITERS_PER_YEAR;
 
+  public static final Literal BROUWTOREN_HOP_USAGE_PER_YEAR;
+
   public static final IRI MAXIMUS;
 
   public static final Literal MAXIMUS_NAME;
@@ -299,6 +301,7 @@ public final class DBEERPEDIA {
         valueFactory.createLiteral(createDate(2014, 1, 1).toString(), XMLSchema.DATE);
     BROUWTOREN_CRAFT_MEMBER = valueFactory.createLiteral(true);
     BROUWTOREN_FTE = valueFactory.createLiteral(1.8);
+    BROUWTOREN_HOP_USAGE_PER_YEAR = valueFactory.createLiteral(8.8f);
     BROUWTOREN_LITERS_PER_YEAR = valueFactory.createLiteral(Long.MAX_VALUE);
     BROUWTOREN_PLACE = valueFactory.createLiteral("Nijmegen");
 

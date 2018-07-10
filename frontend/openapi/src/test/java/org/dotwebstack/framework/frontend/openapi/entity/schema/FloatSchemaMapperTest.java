@@ -35,7 +35,7 @@ public class FloatSchemaMapperTest {
 
   private static final String DUMMY_EXPR = "dummyExpr()";
   private static final Literal VALUE_1 = SimpleValueFactory.getInstance().createLiteral(12.3f);
-  private static final IRI VALUE_3 = SimpleValueFactory.getInstance().createIRI("http://foo");
+  private static final IRI VALUE_2 = SimpleValueFactory.getInstance().createIRI("http://foo");
 
   @Mock
   private GraphEntity graphEntityMock;
@@ -74,10 +74,10 @@ public class FloatSchemaMapperTest {
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
     Float result = floatSchemaMapper.mapTupleValue(floatProperty, tupleEntityMock,
-        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_HOP_USAGE_PER_YEAR).build());
 
     // Assert
-    assertThat(result, is(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.floatValue()));
+    assertThat(result, is(DBEERPEDIA.BROUWTOREN_HOP_USAGE_PER_YEAR.floatValue()));
   }
 
   @Test
@@ -90,7 +90,7 @@ public class FloatSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsFalse_ForNonStringProperty() {
+  public void supports_ReturnsFalse_ForStringProperty() {
     // Arrange & Act
     Boolean supported = floatSchemaMapper.supports(new StringProperty());
 
@@ -124,7 +124,7 @@ public class FloatSchemaMapperTest {
     // Arrange
     floatProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
-        ImmutableList.of(VALUE_3));
+        ImmutableList.of(VALUE_2));
 
     // Act
     schemaMapperAdapter.mapGraphValue(floatProperty, graphEntityMock,
