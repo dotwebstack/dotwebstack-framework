@@ -53,7 +53,7 @@ public class SoapContext {
     this.valueComments = valueComments;
     this.buildOptional = buildOptional;
     this.alwaysBuildHeaders = alwaysBuildHeaders;
-    this.excludedTypes = new HashSet<QName>(excludedTypes);
+    this.excludedTypes = new HashSet<>(excludedTypes);
     this.multiValuesProvider = multiValuesProvider;
   }
 
@@ -75,7 +75,7 @@ public class SoapContext {
     this.valueComments = valueComments;
     this.buildOptional = buildOptional;
     this.alwaysBuildHeaders = alwaysBuildHeaders;
-    this.excludedTypes = new HashSet<QName>();
+    this.excludedTypes = new HashSet<>();
     this.multiValuesProvider = null;
   }
 
@@ -100,7 +100,7 @@ public class SoapContext {
   }
 
   public Set<QName> getExcludedTypes() {
-    return new HashSet<QName>(excludedTypes);
+    return new HashSet<>(excludedTypes);
   }
 
   public SoapMultiValuesProvider getMultiValuesProvider() {
@@ -117,7 +117,7 @@ public class SoapContext {
     private boolean valueComments = false;
     private boolean buildOptional = true;
     private boolean alwaysBuildHeaders = true;
-    private Set<QName> excludedTypes = new HashSet<QName>();
+    private Set<QName> excludedTypes = new HashSet<>();
     private SoapMultiValuesProvider multiValuesProvider = null;
 
     /**
@@ -185,7 +185,7 @@ public class SoapContext {
      * @return builder
      */
     public ContextBuilder excludedTypes(Set<QName> excludedTypes) {
-      this.excludedTypes = new HashSet<QName>(excludedTypes);
+      this.excludedTypes = new HashSet<>(excludedTypes);
       return this;
     }
 

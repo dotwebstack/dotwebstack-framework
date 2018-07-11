@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
@@ -60,11 +59,15 @@ final class XmlUtils {
   private static final Logger LOG = LoggerFactory.getLogger(XmlUtils.class);
   private static DocumentBuilder documentBuilder;
 
+  private XmlUtils() {
+    throw new IllegalStateException("Constructor of utility class XmlgUtil");
+  }
+
   public static synchronized Document parse(InputStream in) {
     try {
       return ensureDocumentBuilder().parse(in);
     } catch (Exception e) {
-      LOG.error("Error parsing InputStream; " + e.getMessage());
+      LOG.error("Error parsing InputStream; {}", e.getMessage());
     }
 
     return null;
@@ -74,7 +77,7 @@ final class XmlUtils {
     try {
       return ensureDocumentBuilder().parse(fileName);
     } catch (SAXException e) {
-      LOG.error("Error parsing fileName [" + fileName + "]; " + e.getMessage());
+      LOG.error("Error parsing fileName [{}]; {}", fileName, e.getMessage());
     }
 
     return null;
@@ -86,22 +89,6 @@ final class XmlUtils {
       return ensureDocumentBuilder().parse(inputSource);
     } catch (SAXException e) {
       throw new IOException(e.toString());
-    }
-  }
-
-  private static final class ElementNodeList implements NodeList {
-    private final List<Element> list;
-
-    public ElementNodeList(List<Element> list) {
-      this.list = list;
-    }
-
-    public int getLength() {
-      return list.size();
-    }
-
-    public Node item(int index) {
-      return list.get(index);
     }
   }
 
@@ -185,7 +172,7 @@ final class XmlUtils {
       }
 
       if (cursor.currentTokenType() == XmlCursor.TokenType.START) {
-        Map<?, ?> nsMap = new HashMap<Object, Object>();
+        Map<?, ?> nsMap = new HashMap<>();
 
         cursor.getAllNamespaces(nsMap);
         nsMap.remove(cursor.getDomNode().getPrefix());
@@ -228,7 +215,7 @@ final class XmlUtils {
         dbf.setNamespaceAware(true);
         documentBuilder = dbf.newDocumentBuilder();
       } catch (ParserConfigurationException e) {
-        LOG.error("Error creating DocumentBuilder; " + e.getMessage());
+        LOG.error("Error creating DocumentBuilder; {}", e.getMessage());
       }
     }
 
@@ -304,26 +291,25 @@ final class XmlUtils {
     short nodeType = domNode.getNodeType();
 
     switch (nodeType) {
-      case Node.ELEMENT_NODE: {
+      case Node.ELEMENT_NODE:
         setElementText((Element) domNode, string);
         break;
-      }
+
       case Node.ATTRIBUTE_NODE:
-      case Node.TEXT_NODE: {
+      case Node.TEXT_NODE:
         domNode.setNodeValue(string);
         break;
-      }
-      case Node.PROCESSING_INSTRUCTION_NODE: {
+
+      case Node.PROCESSING_INSTRUCTION_NODE:
         ((ProcessingInstruction) domNode).setData(string);
         break;
-      }
-      case Node.CDATA_SECTION_NODE: {
+
+      case Node.CDATA_SECTION_NODE:
         ((CDATASection) domNode).setData(string);
         break;
-      }
-      default: {
+
+      default:
         return false;
-      }
     }
 
     return true;
@@ -335,11 +321,11 @@ final class XmlUtils {
     options.setSavePrettyPrintIndent(3);
     options.setSaveNoXmlDecl();
     options.setSaveAggressiveNamespaces();
-    // StringToStringMap map = new StringToStringMap();
-    // map.put( SoapVersion.Soap11.getEnvelopeNamespace(), "SOAPENV" );
-    // map.put( SoapVersion.Soap12.getEnvelopeNamespace(), "SOAPENV" );
-    //
-    // options.setSaveSuggestedPrefixes( map );
+    // map StringToStringMap map = new StringToStringMap();
+    // map map.put( SoapVersion.Soap11.getEnvelopeNamespace(), "SOAPENV" );
+    // map map.put( SoapVersion.Soap12.getEnvelopeNamespace(), "SOAPENV" );
+    // map
+    // map options.setSaveSuggestedPrefixes( map );
     xmlObject.save(writer, options);
   }
 

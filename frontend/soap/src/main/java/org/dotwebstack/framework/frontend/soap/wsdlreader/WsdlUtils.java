@@ -71,7 +71,7 @@ class WsdlUtils {
   public static <T extends ExtensibilityElement> List<T> getExtensiblityElements(
       List list,
       Class<T> clazz) {
-    List<T> result = new ArrayList<T>();
+    List<T> result = new ArrayList<>();
 
     for (Iterator<T> i = list.iterator(); i.hasNext(); ) {
       T elm = i.next();
@@ -82,7 +82,6 @@ class WsdlUtils {
 
     return result;
   }
-
 
   public static Binding findBindingForOperation(
       Definition definition,
@@ -218,7 +217,7 @@ class WsdlUtils {
   }
 
   public static MIMEContent[] getContentParts(Part part, MIMEMultipartRelated multipart) {
-    List<MIMEContent> result = new ArrayList<MIMEContent>();
+    List<MIMEContent> result = new ArrayList<>();
 
     if (multipart != null) {
       List<MIMEPart> parts = multipart.getMIMEParts();
@@ -244,7 +243,7 @@ class WsdlUtils {
       return new Part[0];
     }
 
-    List<Part> result = new ArrayList<Part>();
+    List<Part> result = new ArrayList<>();
     Output output = operation.getOperation().getOutput();
     if (output == null) {
       return new Part[0];
@@ -263,29 +262,29 @@ class WsdlUtils {
         if (soap12Body == null || soap12Body.getParts() == null) {
           result.addAll(msg.getOrderedParts(null));
         } else {
-          Iterator i = soap12Body.getParts().iterator();
-          while (i.hasNext()) {
-            String partName = (String) i.next();
-            Part part = msg.getPart(partName);
-
-            result.add(part);
-          }
+          result = addParts(soap12Body.getParts(), msg);
         }
       } else {
-        Iterator i = soapBody.getParts().iterator();
-        while (i.hasNext()) {
-          String partName = (String) i.next();
-          Part part = msg.getPart(partName);
-
-          result.add(part);
-        }
+        result = addParts(soapBody.getParts(), msg);
       }
     } else {
-      LOG.warn("Missing output message for binding operation ["
-          + operation.getName() + "]");
+      LOG.warn("Missing output message for binding operation [{}]", operation.getName());
     }
 
     return result.toArray(new Part[result.size()]);
+  }
+
+  // Add the parts in a message to a list of parts.
+  public static List<Part> addParts(List<String> parts, Message msg) {
+    List<Part> result = new ArrayList<>();
+    Iterator i = parts.iterator();
+    while (i.hasNext()) {
+      String partName = (String) i.next();
+      Part part = msg.getPart(partName);
+      result.add(part);
+    }
+
+    return result;
   }
 
   public static String getSoapBodyNamespace(List<?> list) {
@@ -359,7 +358,7 @@ class WsdlUtils {
   }
 
   public static List<SoapHeader> getSoapHeaders(List list) {
-    List<SoapHeader> result = new ArrayList<SoapHeader>();
+    List<SoapHeader> result = new ArrayList<>();
 
     List<SOAPHeader> soapHeaders = WsdlUtils.getExtensiblityElements(list, SOAPHeader.class);
     if (soapHeaders != null && !soapHeaders.isEmpty()) {
@@ -384,7 +383,4 @@ class WsdlUtils {
         ? XMLConstants.NULL_NS_URI
         : definition.getTargetNamespace();
   }
-
-
 }
-

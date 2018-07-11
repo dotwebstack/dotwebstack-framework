@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
+import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 
@@ -24,7 +25,7 @@ import org.apache.xmlbeans.XmlOptions;
  * - minor fixes to make the class compile out of soapUI's code base
  */
 interface SchemaLoader {
-  XmlObject loadXmlObject(String wsdlUrl, XmlOptions options) throws Exception;
+  XmlObject loadXmlObject(String wsdlUrl, XmlOptions options) throws XmlException;
 
   String getBaseUri();
 }

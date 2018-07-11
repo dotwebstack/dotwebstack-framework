@@ -4,13 +4,17 @@ class StringUtils {
 
   public static final String EMPTY = "";
 
+  private StringUtils() {
+    throw new IllegalStateException("Constructor of utility class StringUtils");
+  }
+
   public static boolean isBlank(String str) {
     int strLen;
     if (str == null || (strLen = str.length()) == 0) {
       return true;
     }
     for (int i = 0; i < strLen; i++) {
-      if ((Character.isWhitespace(str.charAt(i)) == false)) {
+      if (! Character.isWhitespace(str.charAt(i))) {
         return false;
       }
     }
@@ -46,7 +50,7 @@ class StringUtils {
     bufSize *= ((array[startIndex] == null ? 16 : array[startIndex].toString().length())
             + separator.length());
 
-    StringBuffer buf = new StringBuffer(bufSize);
+    StringBuilder buf = new StringBuilder(bufSize);
 
     for (int i = startIndex; i < endIndex; i++) {
       if (i > startIndex) {
@@ -59,4 +63,15 @@ class StringUtils {
     return buf.toString();
   }
 
+  // Remove one or more occurrences of the string in the second argument
+  // from the start of the string in the first argument.
+  public static String removeLeadingString(String string, String toRemove) {
+    String newString = string;
+
+    while (newString.startsWith(toRemove)) {
+      newString = newString.substring(toRemove.length());
+    }
+
+    return newString;
+  }
 }

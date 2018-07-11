@@ -1,12 +1,12 @@
 package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
 import com.ibm.wsdl.extensions.schema.SchemaImpl;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.wsdl.Definition;
 import javax.wsdl.extensions.ExtensibilityElement;
+import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 import org.w3c.dom.Element;
@@ -40,7 +40,7 @@ class DefinitionSchemaLoader implements SchemaLoader {
     this.wsdlDefinition = wsdlDefinition;
   }
 
-  public XmlObject loadXmlObject(String wsdlUrl, XmlOptions options) throws Exception {
+  public XmlObject loadXmlObject(String wsdlUrl, XmlOptions options) throws XmlException {
     //First try: only one schema
     SchemaImpl schema = null;
     List<ExtensibilityElement> elements = wsdlDefinition.getTypes().getExtensibilityElements();
@@ -62,7 +62,6 @@ class DefinitionSchemaLoader implements SchemaLoader {
       }
     }
     return XmlObject.Factory.parse(schemaElement, options);
-    //return XmlUtils.createXmlObject(new URL(wsdlUrl), options);
   }
 
   public String getBaseUri() {

@@ -47,7 +47,7 @@ public class SchemaDefinitionWrapper {
     return schemaTypeLoader;
   }
 
-  public SchemaTypeSystem getSchemaTypeSystem() {
+  public SchemaTypeSystem getSchemaTypes() {
     return schemaTypes;
   }
 

@@ -13,7 +13,7 @@ import org.apache.xmlbeans.SchemaTypeSystem;
 import org.apache.xmlbeans.SimpleValue;
 import org.apache.xmlbeans.XmlBeans;
 import org.apache.xmlbeans.XmlCursor;
-import org.apache.xmlbeans.XmlException;
+// import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 
@@ -56,9 +56,16 @@ import org.w3c.dom.Node;
 class SchemaUtils {
   private static final Logger LOG = LoggerFactory.getLogger(SchemaUtils.class);
 
-  private static Map<String, XmlObject> defaultSchemas = new HashMap<String, XmlObject>();
+  private static Map<String, XmlObject> defaultSchemas = new HashMap<>();
+
+  private SchemaUtils() {
+    throw new IllegalStateException("Utility class SchemaUtils");
+  }
 
   public static final boolean STRICT_SCHEMA_TYPES = false;
+  public static final String LINK_GRAMMAR = "' .//s:grammars/s:include/@href";
+  public static final String FILE_PREFIX = "file:";
+  public static final String NAMESPACE_DECLARATION  = "declare namespace s='";
 
   static {
     initDefaultSchemas();
@@ -74,7 +81,7 @@ class SchemaUtils {
 
   public static SchemaTypeSystem loadSchemaTypes(String wsdlUrl, SchemaLoader loader) {
     try {
-      ArrayList<XmlObject> schemas = new ArrayList<XmlObject>(getSchemas(wsdlUrl, loader).values());
+      ArrayList<XmlObject> schemas = new ArrayList<>(getSchemas(wsdlUrl, loader).values());
       return buildSchemaTypes(schemas);
     } catch (Exception e) {
       throw new SoapBuilderException(e);
@@ -89,20 +96,26 @@ class SchemaUtils {
     options.setCompileNoUpaRule();
     options.setValidateTreatLaxAsSkip();
 
-    for (int c = 0; c < schemas.size(); c++) {
+    // increment determines whether or not to go to the next element
+    // in the List schemas. Not (increment 0) if an element was
+    // removed in the previous loop cycle.
+    int increment = 1;
+
+    for (int c = 0; c < schemas.size(); c += increment) {
+      increment = 1;
       XmlObject xmlObject = schemas.get(c);
       if (xmlObject == null
           || !((Document) xmlObject.getDomNode()).getDocumentElement().getNamespaceURI()
           .equals(Constants.XSD_NS)) {
         schemas.remove(c);
-        c--;
+        increment = 0;
       }
     }
 
     // TODO //SoapUI.getSettings().getBoolean( WsdlSettings.STRICT_SCHEMA_TYPES );
     boolean strictSchemaTypes = STRICT_SCHEMA_TYPES;
     if (!strictSchemaTypes) {
-      Set<String> mdefNamespaces = new HashSet<String>();
+      Set<String> mdefNamespaces = new HashSet<>();
 
       for (XmlObject xmlObj : schemas) {
         mdefNamespaces.add(getTargetNamespace(xmlObj));
@@ -111,61 +124,55 @@ class SchemaUtils {
       options.setCompileMdefNamespaces(mdefNamespaces);
     }
 
-    ArrayList<?> errorList = new ArrayList<Object>();
+    ArrayList<?> errorList = new ArrayList<>();
     options.setErrorListener(errorList);
 
-    XmlCursor cursor = null;
-
     try {
-      // remove imports
-      for (int c = 0; c < schemas.size(); c++) {
-        XmlObject s = schemas.get(c);
+      removeAllImports(schemas, strictSchemaTypes);
 
-        Map<?, ?> map = new HashMap<String, String>();
-        cursor = s.newCursor();
-        cursor.toStartDoc();
-        if (toNextContainer(cursor)) {
-          cursor.getAllNamespaces(map);
-        } else {
-          LOG.warn("Can not get namespaces for " + s);
-        }
-
-        String tns = getTargetNamespace(s);
-
-        // log.info( "schema for [" + tns + "] contained [" + map.toString()
-        // + "] namespaces" );
-
-        if (strictSchemaTypes && defaultSchemas.containsKey(tns)) {
-          schemas.remove(c);
-          c--;
-        } else {
-          removeImports(s);
-        }
-
-        cursor.dispose();
-        cursor = null;
-      }
-
-      // schemas.add( soapVersion.getSoapEncodingSchema());
-      // schemas.add( soapVersion.getSoapEnvelopeSchema());
       schemas.addAll(defaultSchemas.values());
 
-      SchemaTypeSystem sts = XmlBeans.compileXsd(schemas.toArray(new XmlObject[schemas.size()]),
+      return XmlBeans.compileXsd(schemas.toArray(new XmlObject[schemas.size()]),
           XmlBeans.getBuiltinTypeSystem(), options);
-
-      return sts;
-      // return XmlBeans.typeLoaderUnion(new SchemaTypeLoader[] { sts,
-      // XmlBeans.getBuiltinTypeSystem() });
     } catch (Exception e) {
       throw new SoapBuilderException(e);
     } finally {
       for (int c = 0; c < errorList.size(); c++) {
-        LOG.warn("Error: " + errorList.get(c));
+        LOG.warn("Error: {}", errorList.get(c));
+      }
+    }
+  }
+
+  // Remove all imports from the Arraylist of schemas.
+  public static void removeAllImports(List<XmlObject> schemas, boolean strictSchemaTypes) {
+    // increment determines whether or not to go to the next element
+    // in the List schemas. Not (increment 0) if an element was
+    // removed in the previous loop cycle..
+    int increment = 1;
+
+    for (int c = 0; c < schemas.size(); c += increment) {
+      XmlObject s = schemas.get(c);
+      Map<?, ?> map = new HashMap<>();
+
+      XmlCursor cursor = s.newCursor();
+      cursor.toStartDoc();
+      if (toNextContainer(cursor)) {
+        cursor.getAllNamespaces(map);
+      } else {
+        LOG.warn("Can not get namespaces for {}", s);
       }
 
-      if (cursor != null) {
-        cursor.dispose();
+      String tns = getTargetNamespace(s);
+      if (strictSchemaTypes && defaultSchemas.containsKey(tns)) {
+        schemas.remove(c);
+        increment = 0;
+      } else {
+        removeImports(s);
+        increment = 1;
       }
+
+      cursor.dispose();
+      cursor = null;
     }
   }
 
@@ -182,7 +189,7 @@ class SchemaUtils {
   }
 
   public static Map<String, XmlObject> getSchemas(String wsdlUrl, SchemaLoader loader) {
-    Map<String, XmlObject> result = new HashMap<String, XmlObject>();
+    Map<String, XmlObject> result = new HashMap<>();
     getSchemas(wsdlUrl, result, loader, null /* , false */);
     return result;
   }
@@ -200,9 +207,9 @@ class SchemaUtils {
       return;
     }
 
-    ArrayList<?> errorList = new ArrayList<Object>();
+    ArrayList<?> errorList = new ArrayList<>();
 
-    Map<String, XmlObject> result = new HashMap<String, XmlObject>();
+    Map<String, XmlObject> result = new HashMap<>();
 
     boolean common = false;
 
@@ -215,7 +222,7 @@ class SchemaUtils {
 
       XmlObject xmlObject = loader.loadXmlObject(wsdlUrl, options);
       if (xmlObject == null) {
-        throw new Exception("Failed to load schema from [" + wsdlUrl + "]");
+        throw new SoapBuilderException("Failed to load schema from [" + wsdlUrl + "]");
       }
 
       Document dom = (Document) xmlObject.getDomNode();
@@ -232,22 +239,8 @@ class SchemaUtils {
             common = true;
             elm.setAttribute("targetNamespace", tns);
           }
-
-          // check for namespace prefix for targetNamespace
-          NamedNodeMap attributes = elm.getAttributes();
-          int c = 0;
-          for (; c < attributes.getLength(); c++) {
-            Node item = attributes.item(c);
-            if (item.getNodeName().equals("xmlns")) {
-              break;
-            }
-
-            if (item.getNodeValue().equals(tns) && item.getNodeName().startsWith("xmlns")) {
-              break;
-            }
-          }
-
-          if (c == attributes.getLength()) {
+  
+          if (findTargetNamespace(elm, tns) == -1) {
             elm.setAttribute("xmlns", tns);
           }
         }
@@ -260,58 +253,22 @@ class SchemaUtils {
       } else {
         existing.put(wsdlUrl, null);
 
-        XmlObject[] schemas = xmlObject.selectPath("declare namespace s='"
+        XmlObject[] schemas = xmlObject.selectPath(NAMESPACE_DECLARATION
             + Constants.XSD_NS + "' .//s:schema");
 
         for (int i = 0; i < schemas.length; i++) {
           XmlCursor xmlCursor = schemas[i].newCursor();
           String xmlText = xmlCursor.getObject().xmlText(options);
-          // schemas[i] = XmlObject.Factory.parse( xmlText, options );
           schemas[i] = XmlUtils.createXmlObject(xmlText, options);
           schemas[i].documentProperties().setSourceName(wsdlUrl);
 
           result.put(wsdlUrl + "@" + (i + 1), schemas[i]);
         }
 
-        XmlObject[] wsdlImports = xmlObject.selectPath("declare namespace s='"
-            + Constants.WSDL11_NS + "' .//s:import/@location");
-        for (int i = 0; i < wsdlImports.length; i++) {
-          String location = ((SimpleValue) wsdlImports[i]).getStringValue();
-          if (location != null) {
-            if (!location.startsWith("file:") && location.indexOf("://") == -1) {
-              location = joinRelativeUrl(wsdlUrl, location);
-            }
-
-            getSchemas(location, existing, loader, null);
-          }
-        }
-
-        XmlObject[] wadl10Imports = xmlObject.selectPath("declare namespace s='"
-            + Constants.WADL10_NS + "' .//s:grammars/s:include/@href");
-        for (int i = 0; i < wadl10Imports.length; i++) {
-          String location = ((SimpleValue) wadl10Imports[i]).getStringValue();
-          if (location != null) {
-            if (!location.startsWith("file:") && location.indexOf("://") == -1) {
-              location = joinRelativeUrl(wsdlUrl, location);
-            }
-
-            getSchemas(location, existing, loader, null);
-          }
-        }
-
-        XmlObject[] wadlImports = xmlObject.selectPath("declare namespace s='"
-            + Constants.WADL11_NS + "' .//s:grammars/s:include/@href");
-        for (int i = 0; i < wadlImports.length; i++) {
-          String location = ((SimpleValue) wadlImports[i]).getStringValue();
-          if (location != null) {
-            if (!location.startsWith("file:") && location.indexOf("://") == -1) {
-              location = joinRelativeUrl(wsdlUrl, location);
-            }
-
-            getSchemas(location, existing, loader, null);
-          }
-        }
-
+        getImports(wsdlUrl, xmlObject, Constants.WSDL11_NS,
+            "' .//s:import/@location", loader, existing);
+        getImports(wsdlUrl, xmlObject, Constants.WADL10_NS, LINK_GRAMMAR, loader, existing);
+        getImports(wsdlUrl, xmlObject, Constants.WADL11_NS, LINK_GRAMMAR, loader, existing);
       }
 
       existing.putAll(result);
@@ -321,14 +278,14 @@ class SchemaUtils {
       for (int c = 0; c < schemas.length; c++) {
         xmlObject = schemas[c];
 
-        XmlObject[] schemaImports = xmlObject.selectPath("declare namespace s='" + Constants.XSD_NS
+        XmlObject[] schemaImports = xmlObject.selectPath(NAMESPACE_DECLARATION + Constants.XSD_NS
             + "' .//s:import/@schemaLocation");
         for (int i = 0; i < schemaImports.length; i++) {
           String location = ((SimpleValue) schemaImports[i]).getStringValue();
           Element elm = ((Attr) schemaImports[i].getDomNode()).getOwnerElement();
 
           if (location != null && !defaultSchemas.containsKey(elm.getAttribute("namespace"))) {
-            if (!location.startsWith("file:") && location.indexOf("://") == -1) {
+            if (!location.startsWith(FILE_PREFIX) && location.indexOf("://") == -1) {
               location = joinRelativeUrl(wsdlUrl, location);
             }
 
@@ -336,14 +293,14 @@ class SchemaUtils {
           }
         }
 
-        XmlObject[] schemaIncludes = xmlObject.selectPath("declare namespace s='"
+        XmlObject[] schemaIncludes = xmlObject.selectPath(NAMESPACE_DECLARATION 
             + Constants.XSD_NS + "' .//s:include/@schemaLocation");
         for (int i = 0; i < schemaIncludes.length; i++) {
           String location = ((SimpleValue) schemaIncludes[i]).getStringValue();
           if (location != null) {
             String targetNameSp = getTargetNamespace(xmlObject);
 
-            if (!location.startsWith("file:") && location.indexOf("://") == -1) {
+            if (!location.startsWith(FILE_PREFIX) && location.indexOf("://") == -1) {
               location = joinRelativeUrl(wsdlUrl, location);
             }
 
@@ -354,6 +311,45 @@ class SchemaUtils {
     } catch (Exception e) {
       throw new SoapBuilderException(e);
     }
+  }
+
+  public static void getImports(String wsdlUrl,
+      XmlObject xmlObject,
+      String namespace,
+      String path,
+      SchemaLoader loader,
+      Map<String, XmlObject> existing) {
+    XmlObject[] wsdlImports = xmlObject.selectPath(NAMESPACE_DECLARATION + namespace + path);
+    for (int i = 0; i < wsdlImports.length; i++) {
+      String location = ((SimpleValue) wsdlImports[i]).getStringValue();
+      if (location != null) {
+        if (!location.startsWith(FILE_PREFIX) && location.indexOf("://") == -1) {
+          location = joinRelativeUrl(wsdlUrl, location);
+        }
+
+        getSchemas(location, existing, loader, null);
+      }
+    }
+  }
+
+  // Check for namespace prefix for targetNamespace
+  // Returns the attribute number containing xmlns, or -1 if not found.
+  public static int findTargetNamespace(Element elm, String tns) {
+    NamedNodeMap attributes = elm.getAttributes();
+    int c;
+
+    for (c = 0; c < attributes.getLength(); c++) {
+      Node item = attributes.item(c);
+      if (item.getNodeName().equals("xmlns")) {
+        return c;
+      }
+
+      if (item.getNodeValue().equals(tns) && item.getNodeName().startsWith("xmlns")) {
+        return c;
+      }
+    }
+
+    return -1;
   }
 
   public static void getDefinitionParts(
@@ -369,18 +365,17 @@ class SchemaUtils {
 
     XmlObject xmlObject = loader.loadXmlObject(wsdlUrl, null);
     existing.put(wsdlUrl, xmlObject);
-    // wsdlUrl = loader.getBaseUri();
 
     selectDefinitionParts(wsdlUrl, existing, loader, xmlObject,
-        "declare namespace s='" + Constants.WSDL11_NS + "' .//s:import/@location");
+        NAMESPACE_DECLARATION + Constants.WSDL11_NS + "' .//s:import/@location");
     selectDefinitionParts(wsdlUrl, existing, loader, xmlObject,
-        "declare namespace s='" + Constants.WADL10_NS + "' .//s:grammars/s:include/@href");
+        NAMESPACE_DECLARATION + Constants.WADL10_NS + LINK_GRAMMAR);
     selectDefinitionParts(wsdlUrl, existing, loader, xmlObject,
-        "declare namespace s='" + Constants.WADL11_NS + "' .//s:grammars/s:include/@href");
+        NAMESPACE_DECLARATION + Constants.WADL11_NS + LINK_GRAMMAR);
     selectDefinitionParts(wsdlUrl, existing, loader, xmlObject,
-        "declare namespace s='" + Constants.XSD_NS + "' .//s:import/@schemaLocation");
+        NAMESPACE_DECLARATION + Constants.XSD_NS + "' .//s:import/@schemaLocation");
     selectDefinitionParts(wsdlUrl, existing, loader, xmlObject,
-        "declare namespace s='" + Constants.XSD_NS + "' .//s:include/@schemaLocation");
+        NAMESPACE_DECLARATION + Constants.XSD_NS + "' .//s:include/@schemaLocation");
   }
 
   public static String joinRelativeUrl(String baseUrl, String url) {
@@ -396,7 +391,7 @@ class SchemaUtils {
       url = url.replace('\\', '/');
     }
 
-    boolean isFile = baseUrl.startsWith("file:");
+    boolean isFile = baseUrl.startsWith(FILE_PREFIX);
 
     int ix = baseUrl.lastIndexOf('\\');
     if (ix == -1) {
@@ -405,14 +400,25 @@ class SchemaUtils {
 
     // absolute?
     if (url.startsWith("/") && !isFile) {
-      ix = baseUrl.indexOf("/", baseUrl.indexOf("//") + 2);
+      ix = baseUrl.indexOf('/', baseUrl.indexOf("//") + 2);
       return baseUrl.substring(0, ix) + url;
     }
 
-    // remove leading "./"
-    while (url.startsWith(".\\") || url.startsWith("./")) {
-      url = url.substring(2);
+    eliminateDotFromPath(baseUrl, url, ix);
+
+    String result = baseUrl.substring(0, ix + 1) + url;
+    if (isFile) {
+      result = result.replace('/', File.separatorChar);
     }
+
+    return result;
+  }
+
+  // Remove . and .. from the path name.
+  public static String eliminateDotFromPath(String baseUrl, String url, int ix) {
+    // remove leading "./"
+    StringUtils.removeLeadingString(url, ".\\");
+    StringUtils.removeLeadingString(url, "./");
 
     // remove leading "../"
     while (url.startsWith("../") || url.startsWith("..\\")) {
@@ -459,12 +465,7 @@ class SchemaUtils {
       url = url.substring(0, ix2) + url.substring(ix3 + 3);
     }
 
-    String result = baseUrl.substring(0, ix + 1) + url;
-    if (isFile) {
-      result = result.replace('/', File.separatorChar);
-    }
-
-    return result;
+    return url;
   }
 
   private static void selectDefinitionParts(
@@ -480,7 +481,7 @@ class SchemaUtils {
       String location = ((SimpleValue) wsdlImports[i]).getStringValue();
       if (location != null) {
         if (StringUtils.isNotBlank(location)) {
-          if (!location.startsWith("file:") && location.indexOf("://") == -1) {
+          if (!location.startsWith(FILE_PREFIX) && location.indexOf("://") == -1) {
             location = joinRelativeUrl(wsdlUrl, location);
           }
 
@@ -497,8 +498,9 @@ class SchemaUtils {
    * Used when creating a TypeSystem from a complete collection of
    * SchemaDocuments so that referenced types are not downloaded (again)
    */
-  public static void removeImports(XmlObject xmlObject) throws XmlException {
-    XmlObject[] imports = xmlObject.selectPath("declare namespace s='"
+  // public static void removeImports(XmlObject xmlObject) throws XmlException {
+  public static void removeImports(XmlObject xmlObject) {
+    XmlObject[] imports = xmlObject.selectPath(NAMESPACE_DECLARATION
         + Constants.XSD_NS + "' .//s:import");
 
     for (int c = 0; c < imports.length; c++) {
@@ -507,7 +509,7 @@ class SchemaUtils {
       cursor.dispose();
     }
 
-    XmlObject[] includes = xmlObject.selectPath("declare namespace s='"
+    XmlObject[] includes = xmlObject.selectPath(NAMESPACE_DECLARATION
         + Constants.XSD_NS + "' .//s:include");
 
     for (int c = 0; c < includes.length; c++) {

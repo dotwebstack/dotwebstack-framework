@@ -24,7 +24,8 @@ public class WsdlNamespaceContext implements NamespaceContext {
     }
   }
 
-  // This method isn't necessary for XPath processing.
+  // This method isn't necessary for XPath processing, but it occurs
+  // in the interface NamespaceContext.
   public String getPrefix(String uri) {
     throw new UnsupportedOperationException();
   }

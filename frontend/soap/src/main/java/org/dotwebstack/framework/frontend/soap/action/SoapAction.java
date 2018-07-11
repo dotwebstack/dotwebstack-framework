@@ -19,26 +19,19 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 public class SoapAction {
-
   private static final Logger LOG = LoggerFactory.getLogger(SoapAction.class);
-
   private static final String XPATH_TEMPLATE = "*[local-name()='Envelope']/*[local-name()='Body']"
       + "/*[local-name()='%s']/*[local-name()='%s']/*[local-name()='%s']";
-
   private final XPathFactory xpathFactory = XPathFactory.newInstance();
-
   private final XPath xpath = xpathFactory.newXPath();
-
   private String soapActionName;
-
   private InformationProduct informationProduct;
-
   private List<SoapParameter> soapParameters;
 
   public SoapAction(String soapActionName, @NonNull InformationProduct informationProduct) {
     this.soapActionName = soapActionName;
     this.informationProduct = informationProduct;
-    soapParameters = new ArrayList<>();
+    soapParameters = new ArrayList<SoapParameter>();
     xpath.setNamespaceContext(new WsdlNamespaceContext());
   }
 
@@ -90,12 +83,12 @@ public class SoapAction {
     if (inputDoc != null) {
       try {
         for (SoapParameter soapParameter : soapParameters) {
-          LOG.debug("checking parameter: " + soapParameter.getParameterName());
-          LOG.debug("xpath: " + soapParameter.getXpath());
+          LOG.debug("checking parameter: {}", soapParameter.getParameterName());
+          LOG.debug("xpath: {}", soapParameter.getXpath());
           XPathExpression expr = xpath.compile(soapParameter.getXpath());
           String paramValue = (String) expr.evaluate(inputDoc, XPathConstants.STRING);
-          LOG.debug("value: " + paramValue);
-          parameterValues.put(soapParameter.getParameterName(),paramValue);
+          LOG.debug("value: {}", paramValue);
+          parameterValues.put(soapParameter.getParameterName(), paramValue);
         }
       } catch (Exception e) {
         LOG.error(e.getMessage());
@@ -103,5 +96,4 @@ public class SoapAction {
     }
     return parameterValues;
   }
-
 }

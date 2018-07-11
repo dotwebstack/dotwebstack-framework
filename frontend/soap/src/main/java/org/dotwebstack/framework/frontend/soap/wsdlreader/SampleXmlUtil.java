@@ -102,12 +102,10 @@ class SampleXmlUtil {
   private Set<QName> excludedTypes = new HashSet<QName>();
   private SoapMultiValuesProvider multiValuesProvider;
 
-  private ArrayList<SchemaType> typeStack = new ArrayList<SchemaType>();
+  private ArrayList<SchemaType> typeStack = new ArrayList<>();
 
   private TupleQueryResult queryResult = null;
-
   private BindingSet currentRow = null;
-
   private String currentGroupingValue = null;
 
   public SampleXmlUtil(boolean soapEnc, SoapContext context,
@@ -120,6 +118,7 @@ class SampleXmlUtil {
     this.skipComments = !context.isValueComments();
     this.ignoreOptional = !context.isBuildOptional();
     this.multiValuesProvider = context.getMultiValuesProvider();
+
     if (queryResult != null) {
       if (queryResult.hasNext()) {
         currentRow = queryResult.next();
@@ -175,10 +174,9 @@ class SampleXmlUtil {
         case SchemaType.EMPTY_CONTENT:
           // noop
           break;
-        case SchemaType.SIMPLE_CONTENT: {
+        case SchemaType.SIMPLE_CONTENT:
           processSimpleType(sannotation, stype, xmlc);
-        }
-        break;
+          break;
         case SchemaType.MIXED_CONTENT:
           xmlc.insertChars(pick(WORDS) + " ");
           if (stype.getContentModel() != null) {
@@ -214,13 +212,11 @@ class SampleXmlUtil {
     //DOTWEBSTACK - Added
     if ((queryResult != null) && (sannotation != null)) {
       String variableName = SoapUtils.getAttributeValue(sannotation, DWS_VALUES_FROM_QNAME);
-      if (variableName != null) {
-        if (currentRow != null) {
-          if (currentRow.hasBinding(variableName)) {
-            sample = currentRow.getValue(variableName).stringValue();
-          } else {
-            LOG.warn("Could not find binding variable: {}", variableName);
-          }
+      if ((variableName != null) && (currentRow != null)) {
+        if (currentRow.hasBinding(variableName)) {
+          sample = currentRow.getValue(variableName).stringValue();
+        } else {
+          LOG.warn("Could not find binding variable: {}", variableName);
         }
       }
     }
@@ -229,6 +225,8 @@ class SampleXmlUtil {
   }
 
   private String sampleDataForSimpleType(SchemaType schemaType) {
+    String result = null;
+
     // swaRef
     if (schemaType.getName() != null) {
       if (schemaType.getName().equals(new QName("http://ws-i.org/profiles/basic/1.1/xsd", "swaRef"))) {
@@ -236,12 +234,12 @@ class SampleXmlUtil {
       }
 
       // xmime base64
-      if (schemaType.getName().equals(new QName("http://www.w3.org/2005/05/xmlmime", "base64Binary"))) {
+      if (schemaType.getName().equals(new QName(Constants.XMLMIME_NS, "base64Binary"))) {
         return "cid:" + (long) (System.currentTimeMillis() * Math.random());
       }
 
       // xmime hexBinary
-      if (schemaType.getName().equals(new QName("http://www.w3.org/2005/05/xmlmime", "hexBinary"))) {
+      if (schemaType.getName().equals(new QName(Constants.XMLMIME_NS, "hexBinary"))) {
         return "cid:" + (long) (System.currentTimeMillis() * Math.random());
       }
     }
@@ -253,7 +251,6 @@ class SampleXmlUtil {
       return "cid:" + (long) (System.currentTimeMillis() * Math.random());
     }
 
-    // if( schemaType != null )
     if (!exampleContent) {
       return "?";
     }
@@ -268,16 +265,18 @@ class SampleXmlUtil {
 
     if (schemaType.getSimpleVariety() == SchemaType.LIST) {
       SchemaType itemType = schemaType.getListItemType();
-      StringBuffer sb = new StringBuffer();
+      StringBuilder stringBuilder = new StringBuilder();
       int length = pickLength(schemaType);
       if (length > 0) {
-        sb.append(sampleDataForSimpleType(itemType));
+        stringBuilder.append(sampleDataForSimpleType(itemType));
       }
+
       for (int i = 1; i < length; i += 1) {
-        sb.append(' ');
-        sb.append(sampleDataForSimpleType(itemType));
+        stringBuilder.append(' ');
+        stringBuilder.append(sampleDataForSimpleType(itemType));
       }
-      return sb.toString();
+
+      return stringBuilder.toString();
     }
 
     if (schemaType.getSimpleVariety() == SchemaType.UNION) {
@@ -305,8 +304,7 @@ class SampleXmlUtil {
       case SchemaType.BTC_BOOLEAN:
         return pick(2) == 0 ? "true" : "false";
 
-      case SchemaType.BTC_BASE_64_BINARY: {
-        String result = null;
+      case SchemaType.BTC_BASE_64_BINARY:
         try {
           result = new String(
               Base64.encode(formatToLength(pick(WORDS), schemaType).getBytes("utf-8")));
@@ -315,7 +313,6 @@ class SampleXmlUtil {
               "Caught UnsupportedEncodingException in SampleXmlUtil.sampleDataForSimpleType");
         }
         return result;
-      }
 
       case SchemaType.BTC_HEX_BINARY:
         return HexBin.encode(formatToLength(pick(WORDS), schemaType));
@@ -332,10 +329,10 @@ class SampleXmlUtil {
 
       case SchemaType.BTC_FLOAT:
         return "1.25";
-        //        return Float.valueOf(new Random().nextFloat()).toString();
+
       case SchemaType.BTC_DOUBLE:
         return "1.30";
-        //        return Double.valueOf(new Random().nextDouble()).toString();
+
       case SchemaType.BTC_DECIMAL:
         switch (closestBuiltin(schemaType).getBuiltinTypeCode()) {
           case SchemaType.BTC_SHORT:
@@ -369,8 +366,8 @@ class SampleXmlUtil {
             return formatDecimal("1000.00", schemaType);
         }
 
-      case SchemaType.BTC_STRING: {
-        String result;
+      case SchemaType.BTC_STRING:
+        // String result;
         switch (closestBuiltin(schemaType).getBuiltinTypeCode()) {
           case SchemaType.BTC_STRING:
           case SchemaType.BTC_NORMALIZED_STRING:
@@ -387,7 +384,6 @@ class SampleXmlUtil {
         }
 
         return formatToLength(result, schemaType);
-      }
 
       case SchemaType.BTC_DURATION:
         return formatDuration(schemaType);
@@ -451,19 +447,19 @@ class SampleXmlUtil {
     if (count <= 0) {
       count = 1;
     }
-    // return "";
 
     int i = pick(a.length);
-    StringBuffer sb = new StringBuffer(a[i]);
+    StringBuilder stringBuilder = new StringBuilder(a[i]);
     while (count-- > 0) {
       i += 1;
       if (i >= a.length) {
         i = 0;
       }
-      sb.append(' ');
-      sb.append(a[i]);
+      stringBuilder.append(' ');
+      stringBuilder.append(a[i]);
     }
-    return sb.toString();
+
+    return stringBuilder.toString();
   }
 
   private int pickLength(SchemaType schemaType) {
@@ -514,16 +510,19 @@ class SampleXmlUtil {
       if (min == null) {
         min = (SimpleValue) schemaType.getFacet(SchemaType.FACET_MIN_LENGTH);
       }
+
       if (min != null) {
         int len = min.getIntValue();
         while (result.length() < len) {
           result = result + result;
         }
       }
+
       SimpleValue max = (SimpleValue) schemaType.getFacet(SchemaType.FACET_LENGTH);
       if (max == null) {
         max = (SimpleValue) schemaType.getFacet(SchemaType.FACET_MAX_LENGTH);
       }
+
       if (max != null) {
         int len = max.getIntValue();
         if (result.length() > len) {
@@ -532,6 +531,7 @@ class SampleXmlUtil {
       }
     } catch (Exception e) { // intValue can be out of range
     }
+
     return result;
   }
 
@@ -566,12 +566,12 @@ class SampleXmlUtil {
     if (xmlD != null) {
       totalDigits = xmlD.getBigDecimalValue().intValue();
 
-      StringBuffer sb = new StringBuffer(totalDigits);
+      StringBuilder stringBuilder = new StringBuilder(totalDigits);
       for (int i = 0; i < totalDigits; i++) {
-        sb.append('9');
+        stringBuilder.append('9');
       }
 
-      BigDecimal digitsLimit = new BigDecimal(sb.toString());
+      BigDecimal digitsLimit = new BigDecimal(stringBuilder.toString());
       if (max != null && max.compareTo(digitsLimit) > 0) {
         max = digitsLimit;
         maxInclusive = true;
@@ -599,13 +599,13 @@ class SampleXmlUtil {
     } else {
       fractionDigits = xmlD.getBigDecimalValue().intValue();
       if (fractionDigits > 0) {
-        StringBuffer sb = new StringBuffer("0.");
+        StringBuilder stringBuilder = new StringBuilder("0.");
         for (int i = 1; i < fractionDigits; i++) {
-          sb.append('0');
+          stringBuilder.append('0');
         }
 
-        sb.append('1');
-        increment = new BigDecimal(sb.toString());
+        stringBuilder.append('1');
+        increment = new BigDecimal(stringBuilder.toString());
       } else {
         increment = new BigDecimal(1);
       }
@@ -635,8 +635,10 @@ class SampleXmlUtil {
     // Adjust the scale according to the totalDigits and fractionDigits
     int digits = 0;
     BigDecimal one = new BigDecimal(BigInteger.ONE);
-    for (BigDecimal n = result; n.abs().compareTo(one) >= 0; digits++) {
+    BigDecimal n = result;
+    while (n.abs().compareTo(one) >= 0) {
       n = n.movePointLeft(1);
+      digits++;
     }
 
     if (fractionDigits > 0) {
@@ -680,9 +682,6 @@ class SampleXmlUtil {
     }
 
     GDurationBuilder gdurb = new GDurationBuilder();
-    BigInteger min;
-    BigInteger max;
-
     gdurb.setSecond(pick(800000));
     gdurb.setMonth(pick(20));
 
@@ -761,7 +760,7 @@ class SampleXmlUtil {
         gdurb.setSecond(minExclusive.getSecond() + 1);
       }
       if (gdurb.getFraction().compareTo(minExclusive.getFraction()) <= 0) {
-        gdurb.setFraction(minExclusive.getFraction().add(new BigDecimal(0.001)));
+        gdurb.setFraction(minExclusive.getFraction().add(BigDecimal.valueOf(0.001)));
       }
     }
 
@@ -801,198 +800,207 @@ class SampleXmlUtil {
 
     // Find the min and the max according to the type
     switch (schemaType.getPrimitiveType().getBuiltinTypeCode()) {
-      case SchemaType.BTC_DATE_TIME: {
-        XmlDateTime x = (XmlDateTime) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
-        if (x != null) {
-          min = x.getGDateValue();
-        }
-        x = (XmlDateTime) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
-        if (x != null) {
-          if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
-            min = x.getGDateValue();
-          }
+      case SchemaType.BTC_DATE_TIME:
+        XmlDateTime xmlDateTime = (XmlDateTime) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        if (xmlDateTime != null) {
+          min = xmlDateTime.getGDateValue();
         }
 
-        x = (XmlDateTime) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
-        if (x != null) {
-          max = x.getGDateValue();
-        }
-        x = (XmlDateTime) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
-        if (x != null) {
-          if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
-            max = x.getGDateValue();
-          }
-        }
-        break;
-      }
-      case SchemaType.BTC_TIME: {
-        XmlTime x = (XmlTime) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
-        if (x != null) {
-          min = x.getGDateValue();
-        }
-        x = (XmlTime) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
-        if (x != null) {
-          if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
-            min = x.getGDateValue();
-          }
+        xmlDateTime = (XmlDateTime) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        if ((xmlDateTime != null)
+            && (min == null || min.compareToGDate(xmlDateTime.getGDateValue()) <= 0)) {
+          min = xmlDateTime.getGDateValue();
         }
 
-        x = (XmlTime) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
-        if (x != null) {
-          max = x.getGDateValue();
-        }
-        x = (XmlTime) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
-        if (x != null) {
-          if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
-            max = x.getGDateValue();
-          }
-        }
-        break;
-      }
-      case SchemaType.BTC_DATE: {
-        XmlDate x = (XmlDate) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
-        if (x != null) {
-          min = x.getGDateValue();
-        }
-        x = (XmlDate) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
-        if (x != null) {
-          if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
-            min = x.getGDateValue();
-          }
+        xmlDateTime = (XmlDateTime) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        if (xmlDateTime != null) {
+          max = xmlDateTime.getGDateValue();
         }
 
-        x = (XmlDate) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
-        if (x != null) {
-          max = x.getGDateValue();
-        }
-        x = (XmlDate) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
-        if (x != null) {
-          if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
-            max = x.getGDateValue();
-          }
-        }
-        break;
-      }
-      case SchemaType.BTC_G_YEAR_MONTH: {
-        XmlGYearMonth x = (XmlGYearMonth) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
-        if (x != null) {
-          min = x.getGDateValue();
-        }
-        x = (XmlGYearMonth) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
-        if (x != null) {
-          if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
-            min = x.getGDateValue();
-          }
+        xmlDateTime = (XmlDateTime) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        if ((xmlDateTime != null)
+            && (max == null || max.compareToGDate(xmlDateTime.getGDateValue()) >= 0)) {
+          max = xmlDateTime.getGDateValue();
         }
 
-        x = (XmlGYearMonth) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
-        if (x != null) {
-          max = x.getGDateValue();
-        }
-        x = (XmlGYearMonth) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
-        if (x != null) {
-          if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
-            max = x.getGDateValue();
-          }
-        }
         break;
-      }
-      case SchemaType.BTC_G_YEAR: {
-        XmlGYear x = (XmlGYear) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
-        if (x != null) {
-          min = x.getGDateValue();
-        }
-        x = (XmlGYear) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
-        if (x != null) {
-          if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
-            min = x.getGDateValue();
-          }
+
+      case SchemaType.BTC_TIME:
+        XmlTime xmlTime = (XmlTime) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        if (xmlTime != null) {
+          min = xmlTime.getGDateValue();
         }
 
-        x = (XmlGYear) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
-        if (x != null) {
-          max = x.getGDateValue();
-        }
-        x = (XmlGYear) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
-        if (x != null) {
-          if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
-            max = x.getGDateValue();
-          }
-        }
-        break;
-      }
-      case SchemaType.BTC_G_MONTH_DAY: {
-        XmlGMonthDay x = (XmlGMonthDay) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
-        if (x != null) {
-          min = x.getGDateValue();
-        }
-        x = (XmlGMonthDay) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
-        if (x != null) {
-          if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
-            min = x.getGDateValue();
-          }
+        xmlTime = (XmlTime) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        if ((xmlTime != null)
+            && (min == null || min.compareToGDate(xmlTime.getGDateValue()) <= 0)) {
+          min = xmlTime.getGDateValue();
         }
 
-        x = (XmlGMonthDay) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
-        if (x != null) {
-          max = x.getGDateValue();
-        }
-        x = (XmlGMonthDay) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
-        if (x != null) {
-          if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
-            max = x.getGDateValue();
-          }
-        }
-        break;
-      }
-      case SchemaType.BTC_G_DAY: {
-        XmlGDay x = (XmlGDay) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
-        if (x != null) {
-          min = x.getGDateValue();
-        }
-        x = (XmlGDay) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
-        if (x != null) {
-          if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
-            min = x.getGDateValue();
-          }
+        xmlTime = (XmlTime) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        if (xmlTime != null) {
+          max = xmlTime.getGDateValue();
         }
 
-        x = (XmlGDay) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
-        if (x != null) {
-          max = x.getGDateValue();
-        }
-        x = (XmlGDay) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
-        if (x != null) {
-          if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
-            max = x.getGDateValue();
-          }
-        }
-        break;
-      }
-      case SchemaType.BTC_G_MONTH: {
-        XmlGMonth x = (XmlGMonth) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
-        if (x != null) {
-          min = x.getGDateValue();
-        }
-        x = (XmlGMonth) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
-        if (x != null) {
-          if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
-            min = x.getGDateValue();
-          }
+        xmlTime = (XmlTime) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        if ((xmlTime != null)
+            && (max == null || max.compareToGDate(xmlTime.getGDateValue()) >= 0)) {
+          max = xmlTime.getGDateValue();
         }
 
-        x = (XmlGMonth) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
-        if (x != null) {
-          max = x.getGDateValue();
+        break;
+
+      case SchemaType.BTC_DATE:
+        XmlDate xmlDate = (XmlDate) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        if (xmlDate != null) {
+          min = xmlDate.getGDateValue();
         }
-        x = (XmlGMonth) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
-        if (x != null) {
-          if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
-            max = x.getGDateValue();
-          }
+
+        xmlDate = (XmlDate) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        if ((xmlDate != null)
+            && (min == null || min.compareToGDate(xmlDate.getGDateValue()) <= 0)) {
+          min = xmlDate.getGDateValue();
+        }
+
+        xmlDate = (XmlDate) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        if (xmlDate != null) {
+          max = xmlDate.getGDateValue();
+        }
+
+        xmlDate = (XmlDate) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        if ((xmlDate != null)
+            && (max == null || max.compareToGDate(xmlDate.getGDateValue()) >= 0)) {
+          max = xmlDate.getGDateValue();
+        }
+
+        break;
+
+      case SchemaType.BTC_G_YEAR_MONTH:
+        XmlGYearMonth xmlGYearMonth =
+            (XmlGYearMonth) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        if (xmlGYearMonth != null) {
+          min = xmlGYearMonth.getGDateValue();
+        }
+
+        xmlGYearMonth = (XmlGYearMonth) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        if ((xmlGYearMonth != null)
+            && (min == null || min.compareToGDate(xmlGYearMonth.getGDateValue()) <= 0)) {
+          min = xmlGYearMonth.getGDateValue();
+        }
+
+        xmlGYearMonth = (XmlGYearMonth) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        if (xmlGYearMonth != null) {
+          max = xmlGYearMonth.getGDateValue();
+        }
+
+        xmlGYearMonth = (XmlGYearMonth) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        if ((xmlGYearMonth != null)
+            && (max == null || max.compareToGDate(xmlGYearMonth.getGDateValue()) >= 0)) {
+          max = xmlGYearMonth.getGDateValue();
+        }
+
+        break;
+
+      case SchemaType.BTC_G_YEAR:
+        XmlGYear xmlGYear = (XmlGYear) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        if (xmlGYear != null) {
+          min = xmlGYear.getGDateValue();
+        }
+
+        xmlGYear = (XmlGYear) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        if ((xmlGYear != null)
+            && (min == null || min.compareToGDate(xmlGYear.getGDateValue()) <= 0)) {
+          min = xmlGYear.getGDateValue();
+        }
+
+        xmlGYear = (XmlGYear) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        if (xmlGYear != null) {
+          max = xmlGYear.getGDateValue();
+        }
+
+        xmlGYear = (XmlGYear) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        if ((xmlGYear != null) 
+            && (max == null || max.compareToGDate(xmlGYear.getGDateValue()) >= 0)) {
+          max = xmlGYear.getGDateValue();
+        }
+
+        break;
+
+      case SchemaType.BTC_G_MONTH_DAY:
+        XmlGMonthDay xmlGMonthDay =
+            (XmlGMonthDay) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        if (xmlGMonthDay != null) {
+          min = xmlGMonthDay.getGDateValue();
+        }
+
+        xmlGMonthDay = (XmlGMonthDay) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        if ((xmlGMonthDay != null)
+            && (min == null || min.compareToGDate(xmlGMonthDay.getGDateValue()) <= 0)) {
+          min = xmlGMonthDay.getGDateValue();
+        }
+
+        xmlGMonthDay = (XmlGMonthDay) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        if (xmlGMonthDay != null) {
+          max = xmlGMonthDay.getGDateValue();
+        }
+
+        xmlGMonthDay = (XmlGMonthDay) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        if ((xmlGMonthDay != null)
+            && (max == null || max.compareToGDate(xmlGMonthDay.getGDateValue()) >= 0)) {
+          max = xmlGMonthDay.getGDateValue();
         }
         break;
-      }
+
+      case SchemaType.BTC_G_DAY:
+        XmlGDay xmlGDay = (XmlGDay) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        if (xmlGDay != null) {
+          min = xmlGDay.getGDateValue();
+        }
+
+        xmlGDay = (XmlGDay) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        if ((xmlGDay != null)
+            && (min == null || min.compareToGDate(xmlGDay.getGDateValue()) <= 0)) {
+          min = xmlGDay.getGDateValue();
+        }
+
+        xmlGDay = (XmlGDay) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        if (xmlGDay != null) {
+          max = xmlGDay.getGDateValue();
+        }
+
+        xmlGDay = (XmlGDay) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        if ((xmlGDay != null)
+            && (max == null || max.compareToGDate(xmlGDay.getGDateValue()) >= 0)) {
+          max = xmlGDay.getGDateValue();
+        }
+
+        break;
+
+      case SchemaType.BTC_G_MONTH:
+        XmlGMonth xmlGMonth = (XmlGMonth) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        if (xmlGMonth != null) {
+          min = xmlGMonth.getGDateValue();
+        }
+
+        xmlGMonth = (XmlGMonth) schemaType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        if ((xmlGMonth != null)
+            && (min == null || min.compareToGDate(xmlGMonth.getGDateValue()) <= 0)) {
+          min = xmlGMonth.getGDateValue();
+        }
+
+        xmlGMonth = (XmlGMonth) schemaType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        if (xmlGMonth != null) {
+          max = xmlGMonth.getGDateValue();
+        }
+
+        xmlGMonth = (XmlGMonth) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        if ((xmlGMonth != null)
+            && (max == null || max.compareToGDate(xmlGMonth.getGDateValue()) >= 0)) {
+          max = xmlGMonth.getGDateValue();
+        }
+
+        break;
+
       default:
         // Default added in order to avoid checkstyle violation.
         LOG.warn("Unhandled case encountered in SampleXmlUtil.formatDate");
@@ -1013,29 +1021,29 @@ class SampleXmlUtil {
         c.add(Calendar.HOUR_OF_DAY, 0 - pick(8));
         gdateb = new GDateBuilder(c);
       }
-    } else if (min != null && max != null) {
-      if (min.compareToGDate(gdateb) >= 0 || max.compareToGDate(gdateb) <= 0) {
-        // Find a date between the two
-        Calendar c = min.getCalendar();
-        Calendar cmax = max.getCalendar();
-        c.add(Calendar.HOUR_OF_DAY, 1);
+    } else if (((min != null) && (max != null))
+        && ((min.compareToGDate(gdateb) >= 0) || (max.compareToGDate(gdateb) <= 0))) {
+      // Find a date between the two
+      Calendar c = min.getCalendar();
+      Calendar cmax = max.getCalendar();
+      c.add(Calendar.HOUR_OF_DAY, 1);
+      if (c.after(cmax)) {
+        c.add(Calendar.HOUR_OF_DAY, -1);
+        c.add(Calendar.MINUTE, 1);
         if (c.after(cmax)) {
-          c.add(Calendar.HOUR_OF_DAY, -1);
-          c.add(Calendar.MINUTE, 1);
+          c.add(Calendar.MINUTE, -1);
+          c.add(Calendar.SECOND, 1);
           if (c.after(cmax)) {
-            c.add(Calendar.MINUTE, -1);
-            c.add(Calendar.SECOND, 1);
+            c.add(Calendar.SECOND, -1);
+            c.add(Calendar.MILLISECOND, 1);
             if (c.after(cmax)) {
-              c.add(Calendar.SECOND, -1);
-              c.add(Calendar.MILLISECOND, 1);
-              if (c.after(cmax)) {
-                c.add(Calendar.MILLISECOND, -1);
-              }
+              c.add(Calendar.MILLISECOND, -1);
             }
           }
         }
-        gdateb = new GDateBuilder(c);
       }
+
+      gdateb = new GDateBuilder(c);
     }
 
     gdateb.setBuiltinTypeCode(schemaType.getPrimitiveType().getBuiltinTypeCode());
@@ -1062,7 +1070,7 @@ class SampleXmlUtil {
     while (loop-- > 0) {
       switch (sp.getParticleType()) {
         case (SchemaParticle.ELEMENT):
-          processElement(sp, xmlc, mixed);
+          processElement(sp, xmlc);
           break;
         case (SchemaParticle.SEQUENCE):
           processSequence(sp, xmlc, mixed);
@@ -1074,12 +1082,13 @@ class SampleXmlUtil {
           processAll(sp, xmlc, mixed);
           break;
         case (SchemaParticle.WILDCARD):
-          processWildCard(sp, xmlc, mixed);
+          processWildCard(xmlc);
           break;
         default:
-          // throw new Exception("No Match on Schema Particle Type: " +
-          // String.valueOf(sp.getParticleType()));
+          // remove ? throw new Exception("No Match on Schema Particle Type: " +
+          // can we remove these 2 commented out statements ? String.valueOf(sp.getParticleType()));
       }
+
       //DOTWEBSTACK added - Check if we want to continue with this element
       loop = determineLoopForQuery(loop, sp, true);
     }
@@ -1111,17 +1120,15 @@ class SampleXmlUtil {
 
     if (!skipComments) {
       if (sp.getMaxOccurs() == null) {
-        // xmlc.insertComment("The next " + getItemNameOrType(sp, xmlc) + "
-        // may
-        // be repeated " + minOccurs + " or more times");
+        // can this commented out code be removed ?  xmlc.insertComment("The next "
+        // + getItemNameOrType(sp, xmlc) +" may be repeated " + minOccurs + " or more times");
         if (minOccurs == 0) {
           xmlc.insertComment("Zero or more repetitions:");
         } else {
           xmlc.insertComment(minOccurs + " or more repetitions:");
         }
       } else if (sp.getIntMaxOccurs() > 1) {
-        xmlc.insertComment(minOccurs + " to "
-            + String.valueOf(sp.getMaxOccurs()) + " repetitions:");
+        xmlc.insertComment(minOccurs + " to " + sp.getMaxOccurs() + " repetitions:");
       } else {
         xmlc.insertComment("Optional:");
       }
@@ -1130,7 +1137,7 @@ class SampleXmlUtil {
     return result;
   }
 
-  private void processElement(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
+  private void processElement(SchemaParticle sp, XmlCursor xmlc) {
     // cast as schema local element
     SchemaLocalElement element = (SchemaLocalElement) sp;
 
@@ -1146,7 +1153,7 @@ class SampleXmlUtil {
     } else {
       xmlc.insertElement(element.getName().getLocalPart(), element.getName().getNamespaceURI());
       // / -> <elem>^</elem>
-      // processAttributes( sp.getType(), xmlc );
+      // needed ?  processAttributes( sp.getType(), xmlc );
     }
 
     xmlc.toPrevToken();
@@ -1169,54 +1176,62 @@ class SampleXmlUtil {
 
   //DOTWEBSTACK - Added: check if element is start of iteration, in such a case we need to continue
   private int determineLoopForQuery(int currentLoop, SchemaParticle sp, boolean next) {
-    if (sp.getParticleType() == SchemaParticle.ELEMENT) {
-      // cast as schema local element
-      SchemaLocalElement element = (SchemaLocalElement) sp;
-      SchemaAnnotation annotation = element.getAnnotation();
-      if (queryResult != null && annotation != null) {
-        if (SoapUtils.hasAttribute(annotation, DWS_GROUP_QNAME)) {
-          if (currentRow == null) {
-            return 0;
-          } else {
-            return 1;
-          }
-        }
-        if (SoapUtils.hasAttribute(annotation, DWS_CURSOR_QNAME)) {
-          if (next) {
-            if (queryResult.hasNext()) {
-              currentRow = queryResult.next();
-              String groupingVariable = SoapUtils.getAttributeValue(annotation, DWS_GROUPBY_QNAME);
-              if (groupingVariable != null) {
-                if (currentRow.hasBinding(groupingVariable)) {
-                  String newGroupingValue = currentRow.getValue(groupingVariable).stringValue();
-                  if (currentGroupingValue == null) {
-                    currentGroupingValue = newGroupingValue;
-                    return 1;
-                  } else {
-                    if (newGroupingValue.equals(currentGroupingValue)) {
-                      return 1;
-                    } else {
-                      currentGroupingValue = newGroupingValue;
-                      return 0;
-                    }
-                  }
-                }
+    // Stop if the schema particle is not an element.
+    if (sp.getParticleType() != SchemaParticle.ELEMENT) {
+      return currentLoop;
+    }
+
+    // cast as schema local element
+    SchemaLocalElement element = (SchemaLocalElement) sp;
+
+    SchemaAnnotation annotation = element.getAnnotation();
+
+    // Stop if there is no annotation or query result.
+    if (queryResult == null || annotation == null) {
+      return currentLoop;
+    }
+
+    if (SoapUtils.hasAttribute(annotation, DWS_GROUP_QNAME)) {
+      if (currentRow == null) {
+        return 0;
+      } else {
+        return 1;
+      }
+    }
+
+    if (SoapUtils.hasAttribute(annotation, DWS_CURSOR_QNAME)) {
+      if (next) {
+        if (queryResult.hasNext()) {
+          currentRow = queryResult.next();
+          String groupingVariable = SoapUtils.getAttributeValue(annotation, DWS_GROUPBY_QNAME);
+          if ((groupingVariable != null) && currentRow.hasBinding(groupingVariable)) {
+            String newGroupingValue = currentRow.getValue(groupingVariable).stringValue();
+            if (currentGroupingValue == null) {
+              currentGroupingValue = newGroupingValue;
+              return 1;
+            } else {
+              if (newGroupingValue.equals(currentGroupingValue)) {
+                return 1;
+              } else {
+                currentGroupingValue = newGroupingValue;
+                return 0;
               }
-              return 1;
-            } else {
-              currentRow = null;
-              return 0;
-            }
-          } else {
-            if (currentRow == null) {
-              return 0;
-            } else {
-              return 1;
             }
           }
+          return 1;
+        } else {
+          currentRow = null;
+          return 0;
+        }
+      } else {
+        if (currentRow == null) {
+          return 0;
+        } else {
+          return 1;
         }
       }
     }
+
     return currentLoop;
   }
 
@@ -1241,7 +1256,7 @@ class SampleXmlUtil {
   private static final QName ENC_OFFSET = new QName("http://schemas.xmlsoap.org/s/encoding/", "offset");
 
   public static final Set<QName> SKIPPED_SOAP_ATTRS =
-      new HashSet<QName>(Arrays.asList(new QName[]{HREF, ID, ENC_OFFSET}));
+      new HashSet<>(Arrays.asList(new QName[]{HREF, ID, ENC_OFFSET}));
 
   private void processAttributes(SchemaType stype, XmlCursor xmlc) {
     if (soapEnc) {
@@ -1253,48 +1268,50 @@ class SampleXmlUtil {
 
     SchemaProperty[] attrProps = stype.getAttributeProperties();
     for (int i = 0; i < attrProps.length; i++) {
-      SchemaProperty attr = attrProps[i];
-      if (attr.getMinOccurs().intValue() == 0 && ignoreOptional) {
-        continue;
-      }
-
-      if (attr.getName().equals(new QName("http://www.w3.org/2005/05/xmlmime", "contentType"))) {
-        xmlc.insertAttributeWithValue(attr.getName(), "application/?");
-        continue;
-      }
-
-      if (soapEnc) {
-        if (SKIPPED_SOAP_ATTRS.contains(attr.getName())) {
-          continue;
-        }
-        if (ENC_ARRAYTYPE.equals(attr.getName())) {
-          SOAPArrayType arrayType = ((SchemaWSDLArrayType) stype.getAttributeModel().getAttribute(
-              attr.getName())).getWSDLArrayType();
-          if (arrayType != null) {
-            xmlc.insertAttributeWithValue(attr.getName(),
-                formatQName(xmlc, arrayType.getQName()) + arrayType.soap11DimensionString());
-          }
-          continue;
-        }
-      }
-
-      String value = null;
-      if (multiValuesProvider != null) {
-        String[] values =
-            multiValuesProvider.getMultiValues(attr.getName()).toArray(new String[]{});
-        if (values != null) {
-          value = StringUtils.join(values, ",");
-        }
-      }
-      if (value == null) {
-        value = attr.getDefaultText();
-      }
-      if (value == null) {
-        value = sampleDataForSimpleType(attr.getType());
-      }
-
-      xmlc.insertAttributeWithValue(attr.getName(), value);
+      processAttribute(stype, xmlc, attrProps[i]);
     }
+  }
+
+  private void processAttribute(SchemaType stype, XmlCursor xmlc, SchemaProperty attr) {
+    if (attr.getMinOccurs().intValue() == 0 && ignoreOptional) {
+      return;
+    }
+
+    if (attr.getName().equals(new QName(Constants.XMLMIME_NS, "contentType"))) {
+      xmlc.insertAttributeWithValue(attr.getName(), "application/?");
+      return;
+    }
+
+    if (soapEnc) {
+      if (SKIPPED_SOAP_ATTRS.contains(attr.getName())) {
+        return;
+      }
+      if (ENC_ARRAYTYPE.equals(attr.getName())) {
+        SOAPArrayType arrayType = ((SchemaWSDLArrayType) stype.getAttributeModel().getAttribute(
+            attr.getName())).getWSDLArrayType();
+        if (arrayType != null) {
+          xmlc.insertAttributeWithValue(attr.getName(),
+              formatQName(xmlc, arrayType.getQName()) + arrayType.soap11DimensionString());
+        }
+        return;
+      }
+    }
+
+    String value = null;
+    if (multiValuesProvider != null) {
+      String[] values = multiValuesProvider.getMultiValues(attr.getName()).toArray(new String[]{});
+      if (values != null) {
+        value = StringUtils.join(values, ",");
+      }
+    }
+    if (value == null) {
+      value = attr.getDefaultText();
+    }
+    if (value == null) {
+      value = sampleDataForSimpleType(attr.getType());
+    }
+
+    xmlc.insertAttributeWithValue(attr.getName(), value);
   }
 
   private void processSequence(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
@@ -1312,8 +1329,7 @@ class SampleXmlUtil {
   private void processChoice(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
     SchemaParticle[] spc = sp.getParticleChildren();
     if (!skipComments) {
-      xmlc.insertComment("You have a CHOICE of the next "
-          + String.valueOf(spc.length) + " items at this level");
+      xmlc.insertComment("You have a CHOICE of the next " + spc.length + " items at this level");
     }
 
     for (int i = 0; i < spc.length; i++) {
@@ -1324,8 +1340,7 @@ class SampleXmlUtil {
   private void processAll(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
     SchemaParticle[] spc = sp.getParticleChildren();
     if (!skipComments) {
-      xmlc.insertComment("You may enter the following "
-          + String.valueOf(spc.length) + " items in any order");
+      xmlc.insertComment("You may enter the following " + spc.length + " items in any order");
     }
 
     for (int i = 0; i < spc.length; i++) {
@@ -1336,33 +1351,33 @@ class SampleXmlUtil {
     }
   }
 
-  private void processWildCard(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
+  private void processWildCard(XmlCursor xmlc) {
     if (!skipComments) {
       xmlc.insertComment("You may enter ANY elements at this point");
     }
-    // xmlc.insertElement("AnyElement");
   }
 
   private void addElementTypeAndRestricionsComment(SchemaLocalElement element, XmlCursor xmlc) {
 
     SchemaType type = element.getType();
     if (typeComment && (type != null && type.isSimpleType())) {
-      String info = "";
+      StringBuilder stringBuilder = new StringBuilder();
 
       XmlAnySimpleType[] values = type.getEnumerationValues();
       if (values != null && values.length > 0) {
-        info = " - enumeration: [";
+        stringBuilder.append(" - enumeration: [");
         for (int c = 0; c < values.length; c++) {
           if (c > 0) {
-            info += ",";
+            stringBuilder.append(",");
           }
 
-          info += values[c].getStringValue();
+          stringBuilder.append(values[c].getStringValue());
         }
 
-        info += "]";
+        stringBuilder.append("]");
       }
 
+      String info = stringBuilder.toString();
       if (type.isAnonymousType()) {
         xmlc.insertComment("anonymous type" + info);
       } else {

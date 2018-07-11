@@ -8,6 +8,7 @@ import javax.wsdl.Definition;
 import javax.wsdl.Port;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -15,7 +16,6 @@ import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SchemaDefinitionWrapper;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapContext;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
-import org.dotwebstack.framework.frontend.soap.wsdlreader.WsdlNamespaceContext;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
@@ -73,6 +73,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       if (data.hasEntity()) {
         inputDoc = retrieveInputMessage(data.getEntityStream());
       }
+
       // Build the SOAP response for the specific message
       SoapAction soapAction = soapActions.get(wsdlBindingOperation.getName());
       TupleQueryResult queryResult = null;
@@ -98,7 +99,6 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
   private TupleQueryResult getResult(SoapAction soapAction, Document inputDoc) {
     InformationProduct informationProduct = soapAction.getInformationProduct();
-    //TODO: extract parameter values from input message
     Map<String, String> parameterValues = soapAction.getParameterValues(inputDoc);
     Object result = informationProduct.getResult(parameterValues);
 
