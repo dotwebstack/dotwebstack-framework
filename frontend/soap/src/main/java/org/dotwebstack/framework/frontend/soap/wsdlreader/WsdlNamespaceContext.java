@@ -5,21 +5,16 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 
 public class WsdlNamespaceContext implements NamespaceContext {
-
-  private static final String XS_NS_URI = "http://www.w3.org/2001/XMLSchema";
-  private static final String DWS_NS_URI = "http://dotwebstack.org/wsdl-extension/";
-  private static final String SOAPENV_NS_URI = "http://schemas.xmlsoap.org/soap/envelope/";
-
   @SuppressWarnings("AbbreviationAsWordInName")
   public String getNamespaceURI(String prefix) {
     if (prefix == null) {
       throw new NullPointerException("Null prefix");
     }
     switch (prefix) {
-      case "xs": return WsdlNamespaceContext.XS_NS_URI;
-      case "dws": return WsdlNamespaceContext.DWS_NS_URI;
+      case "xs": return Constants.XSD_NS;
+      case "dws": return Constants.DWS_NS;
       case "xml": return XMLConstants.XML_NS_URI;
-      case "soapenv": return WsdlNamespaceContext.SOAPENV_NS_URI;
+      case "soapenv": return Constants.SOAP11_ENVELOPE_NS;
       default: return XMLConstants.NULL_NS_URI;
     }
   }

@@ -60,7 +60,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
   public String apply(ContainerRequestContext data) {
     final String soapActionName = data.getHeaderString("SOAPAction");
     String msg = ERROR_RESPONSE;
-    LOG.debug("Handling SOAP request, SOAPAction: {}",soapActionName);
+    LOG.debug("Handling SOAP request, SOAPAction: {}", soapActionName);
 
     BindingOperation wsdlBindingOperation =
         SoapUtils.findWsdlBindingOperation(wsdlDefinition, wsdlPort, soapActionName);

@@ -30,6 +30,7 @@ import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandler;
+import org.dotwebstack.framework.frontend.soap.wsdlreader.Constants;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
@@ -54,8 +55,6 @@ import org.xml.sax.InputSource;
 public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestMapper.class);
-
-  private static final String DWS_NAMESPACE = "http://dotwebstack.org/wsdl-extension/";
   private static final String DWS_INFOPROD = "informationProduct";
 
   private WSDLReader wsdlReader;
@@ -94,7 +93,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   public void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
     org.springframework.core.io.Resource[] resources;
 
-    LOG.debug("Loading files from {}",applicationProperties.getResourcePath());
+    LOG.debug("Loading files from {}", applicationProperties.getResourcePath());
     try {
       resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
           applicationProperties.getResourcePath() + "/soap/**.xml");
@@ -157,10 +156,10 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
 
     for (BindingOperation wsdlBindingOperation : wsdlBindingOperations) {
       Element docElement = wsdlBindingOperation.getOperation().getDocumentationElement();
-      if ((docElement != null) && docElement.hasAttributeNS(DWS_NAMESPACE, DWS_INFOPROD)) {
+      if ((docElement != null) && docElement.hasAttributeNS(Constants.DWS_NS, DWS_INFOPROD)) {
         ValueFactory valueFactory = SimpleValueFactory.getInstance();
         IRI informationProductIdentifier =
-            valueFactory.createIRI(docElement.getAttributeNS(DWS_NAMESPACE,DWS_INFOPROD));
+            valueFactory.createIRI(docElement.getAttributeNS(Constants.DWS_NS, DWS_INFOPROD));
         InformationProduct informationProduct =
             informationProductLoader.get(informationProductIdentifier);
         soapActions.put(wsdlBindingOperation.getName(), createSoapAction(

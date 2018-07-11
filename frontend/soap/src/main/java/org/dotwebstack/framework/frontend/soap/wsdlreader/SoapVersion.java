@@ -17,7 +17,7 @@ interface SoapVersion {
   public String getFaultDetailNamespace();
 
   public String getEncodingNamespace();
-  
+
   public String getName();
 
 }

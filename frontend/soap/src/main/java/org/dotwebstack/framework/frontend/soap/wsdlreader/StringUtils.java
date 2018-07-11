@@ -20,18 +20,18 @@ class StringUtils {
     }
     return true;
   }
-  
+
   public static boolean isNotBlank(String str) {
     return !StringUtils.isBlank(str);
   }
-  
+
   public static String join(Object[] array, String separator) {
     if (array == null) {
       return null;
     }
     return join(array, separator, 0, array.length);
   }
-  
+
   public static String join(Object[] array, String separator, int startIndex, int endIndex) {
     if (array == null) {
       return null;

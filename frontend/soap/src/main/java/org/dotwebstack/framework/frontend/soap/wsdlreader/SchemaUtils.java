@@ -239,7 +239,7 @@ class SchemaUtils {
             common = true;
             elm.setAttribute("targetNamespace", tns);
           }
-  
+
           if (findTargetNamespace(elm, tns) == -1) {
             elm.setAttribute("xmlns", tns);
           }
@@ -293,7 +293,7 @@ class SchemaUtils {
           }
         }
 
-        XmlObject[] schemaIncludes = xmlObject.selectPath(NAMESPACE_DECLARATION 
+        XmlObject[] schemaIncludes = xmlObject.selectPath(NAMESPACE_DECLARATION
             + Constants.XSD_NS + "' .//s:include/@schemaLocation");
         for (int i = 0; i < schemaIncludes.length; i++) {
           String location = ((SimpleValue) schemaIncludes[i]).getStringValue();

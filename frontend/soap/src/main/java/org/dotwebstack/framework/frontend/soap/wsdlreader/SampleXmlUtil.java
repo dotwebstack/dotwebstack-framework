@@ -78,11 +78,10 @@ import org.slf4j.LoggerFactory;
 class SampleXmlUtil {
   private static final Logger LOG = LoggerFactory.getLogger(SampleXmlUtil.class);
 
-  private static final String DWS_NS = "http://dotwebstack.org/wsdl-extension/";
-  private static final QName DWS_CURSOR_QNAME = new QName(DWS_NS, "cursor");
-  private static final QName DWS_VALUES_FROM_QNAME = new QName(DWS_NS, "valuesFrom");
-  private static final QName DWS_GROUPBY_QNAME = new QName(DWS_NS, "groupBy");
-  private static final QName DWS_GROUP_QNAME = new QName(DWS_NS, "group");
+  private static final QName DWS_CURSOR_QNAME = new QName(Constants.DWS_NS, "cursor");
+  private static final QName DWS_VALUES_FROM_QNAME = new QName(Constants.DWS_NS, "valuesFrom");
+  private static final QName DWS_GROUPBY_QNAME = new QName(Constants.DWS_NS, "groupBy");
+  private static final QName DWS_GROUP_QNAME = new QName(Constants.DWS_NS, "group");
 
   private Random picker = new Random(1);
 
@@ -919,7 +918,7 @@ class SampleXmlUtil {
         }
 
         xmlGYear = (XmlGYear) schemaType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
-        if ((xmlGYear != null) 
+        if ((xmlGYear != null)
             && (max == null || max.compareToGDate(xmlGYear.getGDateValue()) >= 0)) {
           max = xmlGYear.getGDateValue();
         }
@@ -1251,7 +1250,7 @@ class SampleXmlUtil {
 
   private static final QName HREF = new QName("href");
   private static final QName ID = new QName("id");
-  public static final QName XSI_TYPE = new QName("http://www.w3.org/2001/XMLSchema-instance", "type");
+  public static final QName XSI_TYPE = new QName(Constants.XSI_NS, "type");
   public static final QName ENC_ARRAYTYPE = new QName("http://schemas.xmlsoap.org/soap/encoding/", "arrayType");
   private static final QName ENC_OFFSET = new QName("http://schemas.xmlsoap.org/s/encoding/", "offset");
 
