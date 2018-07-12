@@ -99,11 +99,12 @@ class ApiRequestValidator {
         param -> FORBIDDEN_CHARS.stream().anyMatch(param::contains));
   }
 
-  private static Function<? super Entry<String, List<String>>, ? extends InvalidParameter> createInvalidParameter() {
-    return badEntry -> new InvalidParameter(
-        "validation.request.parameter.contains.forbidden.char",
-        String.format("Value '%s' for parameter '%s' is not allowed. "
-            + "Parameters cannot contain any of: %s.",
+  private static Function<? super Entry<String, List<String>>,
+      ? extends InvalidParameter> createInvalidParameter() {
+    return badEntry -> new InvalidParameter("validation.request.parameter.contains.forbidden.char",
+        String.format(
+            "Value '%s' for parameter '%s' is not allowed. "
+                + "Parameters cannot contain any of: %s.",
             badEntry.getValue().get(0), badEntry.getKey(), FORBIDDEN_CHARS));
   }
 
