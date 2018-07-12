@@ -30,6 +30,11 @@ paths:
         enum:
         - "epsg:4258"
         - "epsg:28992"
+      - name: "Dummy"
+        in: "query"
+        required: false
+        type: "string"
+        description: "Dummy query parameter"
       responses:
         200:
           description: OK
