@@ -100,9 +100,9 @@ class RequestParameterExtractor {
       return;
     }
 
-    if (ctx.getHeaders().get(HttpHeaders.CONTENT_TYPE).stream().filter(
-        header -> ContentType.APPLICATION_JSON.toString().startsWith(header)).findAny().orElse(
-            null) == null) {
+    if (ctx.getHeaders().get(HttpHeaders.CONTENT_TYPE).stream() //
+        .map(String::toLowerCase) //
+        .noneMatch(header -> header.startsWith(ContentType.APPLICATION_JSON.getMimeType()))) {
       return;
     }
 
