@@ -23,6 +23,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import org.apache.http.entity.ContentType;
+import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException;
 import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -105,8 +106,8 @@ public class ApiRequestValidatorTest {
     Swagger swagger = createSwagger("simple-getHeader.yml");
 
     ContainerRequestContext mockGet = mockGet();
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
-        getPath).iterator().next();
+    ApiOperation apiOperation =
+        SwaggerUtils.extractApiOperations(swagger, "/endpoint", getPath).iterator().next();
 
     when(requestParameterExtractorMock.extract(apiOperation, swagger, mockGet)).thenReturn(
         new RequestParameters());
@@ -128,12 +129,44 @@ public class ApiRequestValidatorTest {
     // Arrange
     Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
 
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
-        getPath).iterator().next();
+    ApiOperation apiOperation =
+        SwaggerUtils.extractApiOperations(swagger, "/endpoint", getPath).iterator().next();
     ContainerRequestContext mockGet = mockGet();
 
     when(requestParameterExtractorMock.extract(apiOperation, swagger, mockGet)).thenReturn(
         new RequestParameters());
+
+    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    ApiRequestValidator requestValidator =
+        new ApiRequestValidator(validator, requestParameterExtractorMock);
+
+    // Act
+    requestValidator.validate(apiOperation, swagger, mockGet);
+  }
+
+  @Test
+  public void validate_ThrowsException_WhenRequestContainsInvalidParams()
+      throws URISyntaxException, IOException {
+    // Assert
+    exception.expect(InvalidParamsBadRequestException.class);
+
+    // Arrange
+    ContainerRequestContext mockGet = mock(ContainerRequestContext.class);
+
+    UriInfo uriInfo = mock(UriInfo.class);
+
+    when(mockGet.getUriInfo()).thenReturn(uriInfo);
+
+    MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
+    queryParameters.put("random-query-parameter", ImmutableList.of("something?wrong"));
+    when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
+
+    when(uriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>());
+
+    Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
+
+    ApiOperation apiOperation =
+        SwaggerUtils.extractApiOperations(swagger, "/endpoint", getPath).iterator().next();
 
     RequestValidator validator = SwaggerUtils.createValidator(swagger);
     ApiRequestValidator requestValidator =
@@ -150,8 +183,8 @@ public class ApiRequestValidatorTest {
 
     String body = "{ \"someproperty\": \"one\" }";
     ContainerRequestContext mockPost = mockPost(body);
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
-        postPath).iterator().next();
+    ApiOperation apiOperation =
+        SwaggerUtils.extractApiOperations(swagger, "/endpoint", postPath).iterator().next();
 
     RequestParameters requestParameters = new RequestParameters();
     when(requestParameterExtractorMock.extract(apiOperation, swagger, mockPost)).thenReturn(
@@ -177,8 +210,8 @@ public class ApiRequestValidatorTest {
     Swagger swagger = createSwagger("post-request.yml");
 
     ContainerRequestContext mockPost = mockPost("{ \"prop\": \"one\" }");
-    ApiOperation apiOperation = SwaggerUtils.extractApiOperations(swagger, "/endpoint",
-        postPath).iterator().next();
+    ApiOperation apiOperation =
+        SwaggerUtils.extractApiOperations(swagger, "/endpoint", postPath).iterator().next();
 
     RequestParameters requestParameters = new RequestParameters();
 
