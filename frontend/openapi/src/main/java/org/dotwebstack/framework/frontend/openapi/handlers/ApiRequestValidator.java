@@ -8,6 +8,7 @@ import com.atlassian.oai.validator.model.SimpleRequest.Builder;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.google.common.collect.ImmutableList;
 import io.swagger.models.Swagger;
+import io.swagger.models.parameters.Parameter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException.InvalidParameter;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 
 class ApiRequestValidator {
   private static final List<String> FILTERED_HEADERS = ImmutableList.of("accept", "content-type");
@@ -66,6 +68,16 @@ class ApiRequestValidator {
 
     String body = requestParameters.getRawBody();
     builder.withBody(body);
+
+    /*
+     * The OAS can contain parameters that are there just for documentation purposes. Therefore
+     * parameters that are not used in DWS (don't have the x-dotwebstack-parameter extension) but
+     * are in the OAS, do not need to be validated.
+     */
+    List<Parameter> params = apiOperation.getOperation().getParameters().stream().filter(
+        param -> param.getVendorExtensions().containsKey(
+            OpenApiSpecificationExtensions.PARAMETER)).collect(Collectors.toList());
+    apiOperation.getOperation().setParameters(params);
 
     /*
      * NB: Swagger API 2 does not have an option for case insensitivity for enums; for example, you
