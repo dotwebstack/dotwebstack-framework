@@ -78,8 +78,8 @@ class ApiRequestValidator {
         apiOperation.getRequestPath(), apiOperation.getMethod(), apiOperation.getOperation());
 
     List<Parameter> params = apiOperationCopy.getOperation().getParameters().stream().filter(
-        param -> param.getVendorExtensions().containsKey(
-            OpenApiSpecificationExtensions.PARAMETER)).collect(Collectors.toList());
+        param -> param.getVendorExtensions().containsKey(OpenApiSpecificationExtensions.PARAMETER)
+            || param.getIn().equals("body")).collect(Collectors.toList());
     apiOperationCopy.getOperation().setParameters(params);
 
     /*
