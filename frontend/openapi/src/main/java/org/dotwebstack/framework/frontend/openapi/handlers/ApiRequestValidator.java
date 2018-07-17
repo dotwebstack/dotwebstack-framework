@@ -55,7 +55,7 @@ class ApiRequestValidator {
 
     String strMethod = requestContext.getMethod();
     Method method = Method.valueOf(strMethod.toUpperCase());
-    Builder builder = new SimpleRequest.Builder(method, requestContext.getUriInfo().getPath());
+    Builder builder = new SimpleRequest.Builder(method, uriInfo.getPath());
 
     requestContext.getHeaders().entrySet().stream().filter(
         entry -> !FILTERED_HEADERS.contains(entry.getKey().toLowerCase())).forEach(
@@ -74,16 +74,19 @@ class ApiRequestValidator {
      * parameters that are not used in DWS (don't have the x-dotwebstack-parameter extension) but
      * are in the OAS, do not need to be validated.
      */
-    List<Parameter> params = apiOperation.getOperation().getParameters().stream().filter(
+    ApiOperation apiOperationCopy = new ApiOperation(apiOperation.getApiPath(),
+        apiOperation.getRequestPath(), apiOperation.getMethod(), apiOperation.getOperation());
+
+    List<Parameter> params = apiOperationCopy.getOperation().getParameters().stream().filter(
         param -> param.getVendorExtensions().containsKey(
             OpenApiSpecificationExtensions.PARAMETER)).collect(Collectors.toList());
-    apiOperation.getOperation().setParameters(params);
+    apiOperationCopy.getOperation().setParameters(params);
 
     /*
      * NB: Swagger API 2 does not have an option for case insensitivity for enums; for example, you
      * may expect validation to fail for 'POint' (if the enum is defined as 'Point')
      */
-    ValidationReport report = requestValidator.validateRequest(builder.build(), apiOperation);
+    ValidationReport report = requestValidator.validateRequest(builder.build(), apiOperationCopy);
 
     if (report.hasErrors()) {
       throw createException(report);
