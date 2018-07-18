@@ -39,6 +39,9 @@ public class FormatPreMatchingRequestFilter implements ContainerRequestFilter {
       case ("ttl"):
         mediaTypes.add(MediaTypes.TURTLE);
         break;
+      case ("csv"):
+        mediaTypes.add(MediaTypes.CSV);
+        break;
       default:
         LOG.error("Format parameter {} not supported -> ignored", format);
         break;

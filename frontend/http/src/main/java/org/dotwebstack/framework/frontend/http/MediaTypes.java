@@ -32,6 +32,10 @@ public class MediaTypes {
 
   public static final MediaType SPARQL_RESULTS_XML_TYPE = MediaType.valueOf(SPARQL_RESULTS_XML);
 
+  public static final String CSV = "text/csv";
+
+  public static final MediaType CSV_TYPE = MediaType.valueOf(CSV);
+
   private MediaTypes() {
     throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", MediaTypes.class));
