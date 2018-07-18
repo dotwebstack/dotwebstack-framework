@@ -13,7 +13,6 @@ import org.apache.xmlbeans.SchemaTypeSystem;
 import org.apache.xmlbeans.SimpleValue;
 import org.apache.xmlbeans.XmlBeans;
 import org.apache.xmlbeans.XmlCursor;
-// import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 
@@ -65,7 +64,8 @@ class SchemaUtils {
   public static final boolean STRICT_SCHEMA_TYPES = false;
   public static final String LINK_GRAMMAR = "' .//s:grammars/s:include/@href";
   public static final String FILE_PREFIX = "file:";
-  public static final String NAMESPACE_DECLARATION  = "declare namespace s='";
+  public static final String NAMESPACE_DECLARATION = "declare namespace s='";
+  public static final String NAMESPACE_ATTRIBUTE = "targetNamespace";
 
   static {
     initDefaultSchemas();
@@ -112,7 +112,6 @@ class SchemaUtils {
       }
     }
 
-    // TODO //SoapUI.getSettings().getBoolean( WsdlSettings.STRICT_SCHEMA_TYPES );
     boolean strictSchemaTypes = STRICT_SCHEMA_TYPES;
     if (!strictSchemaTypes) {
       Set<String> mdefNamespaces = new HashSet<>();
@@ -172,7 +171,6 @@ class SchemaUtils {
       }
 
       cursor.dispose();
-      cursor = null;
     }
   }
 
@@ -185,7 +183,7 @@ class SchemaUtils {
   }
 
   public static String getTargetNamespace(XmlObject s) {
-    return ((Document) s.getDomNode()).getDocumentElement().getAttribute("targetNamespace");
+    return ((Document) s.getDomNode()).getDocumentElement().getAttribute(NAMESPACE_ATTRIBUTE);
   }
 
   public static Map<String, XmlObject> getSchemas(String wsdlUrl, SchemaLoader loader) {
@@ -198,6 +196,7 @@ class SchemaUtils {
    * Returns a map mapping urls to corresponding XmlSchema XmlObjects for the
    * specified wsdlUrl
    */
+  @SuppressWarnings("squid:S3776")
   public static void getSchemas(
       String wsdlUrl,
       Map<String, XmlObject> existing,
@@ -235,13 +234,13 @@ class SchemaUtils {
         // statement)
         if (tns != null) {
           Element elm = ((Element) domNode);
-          if (!elm.hasAttribute("targetNamespace")) {
+          if (!elm.hasAttribute(NAMESPACE_ATTRIBUTE)) {
             common = true;
-            elm.setAttribute("targetNamespace", tns);
+            elm.setAttribute(NAMESPACE_ATTRIBUTE, tns);
           }
 
           if (findTargetNamespace(elm, tns) == -1) {
-            elm.setAttribute("xmlns", tns);
+            elm.setAttribute(Constants.XML_NS_PREFIX, tns);
           }
         }
 
@@ -340,11 +339,12 @@ class SchemaUtils {
 
     for (c = 0; c < attributes.getLength(); c++) {
       Node item = attributes.item(c);
-      if (item.getNodeName().equals("xmlns")) {
+      if (item.getNodeName().equals(Constants.XML_NS_PREFIX)) {
         return c;
       }
 
-      if (item.getNodeValue().equals(tns) && item.getNodeName().startsWith("xmlns")) {
+      if (item.getNodeValue().equals(tns)
+          && item.getNodeName().startsWith(Constants.XML_NS_PREFIX)) {
         return c;
       }
     }
@@ -379,8 +379,10 @@ class SchemaUtils {
   }
 
   public static String joinRelativeUrl(String baseUrl, String url) {
-    if (baseUrl.indexOf('?') > 0) {
-      baseUrl = baseUrl.substring(0, baseUrl.indexOf('?'));
+    int ix = baseUrl.indexOf('?');
+
+    if (ix > 0) {
+      baseUrl = baseUrl.substring(0, ix);
     }
 
     boolean isWindowsUrl = baseUrl.indexOf('\\') >= 0;
@@ -393,7 +395,7 @@ class SchemaUtils {
 
     boolean isFile = baseUrl.startsWith(FILE_PREFIX);
 
-    int ix = baseUrl.lastIndexOf('\\');
+    ix = baseUrl.lastIndexOf('\\');
     if (ix == -1) {
       ix = baseUrl.lastIndexOf('/');
     }
@@ -415,6 +417,7 @@ class SchemaUtils {
   }
 
   // Remove . and .. from the path name.
+  @SuppressWarnings("squid:S3776")
   public static String eliminateDotFromPath(String baseUrl, String url, int ix) {
     // remove leading "./"
     StringUtils.removeLeadingString(url, ".\\");
@@ -498,7 +501,6 @@ class SchemaUtils {
    * Used when creating a TypeSystem from a complete collection of
    * SchemaDocuments so that referenced types are not downloaded (again)
    */
-  // public static void removeImports(XmlObject xmlObject) throws XmlException {
   public static void removeImports(XmlObject xmlObject) {
     XmlObject[] imports = xmlObject.selectPath(NAMESPACE_DECLARATION
         + Constants.XSD_NS + "' .//s:import");

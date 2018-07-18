@@ -31,7 +31,7 @@ public class SoapAction {
   public SoapAction(String soapActionName, @NonNull InformationProduct informationProduct) {
     this.soapActionName = soapActionName;
     this.informationProduct = informationProduct;
-    soapParameters = new ArrayList<SoapParameter>();
+    soapParameters = new ArrayList<>();
     xpath.setNamespaceContext(new WsdlNamespaceContext());
   }
 

@@ -63,7 +63,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     LOG.debug("Handling SOAP request, SOAPAction: {}", soapActionName);
 
     BindingOperation wsdlBindingOperation =
-        SoapUtils.findWsdlBindingOperation(wsdlDefinition, wsdlPort, soapActionName);
+        SoapUtils.findWsdlBindingOperation(wsdlPort, soapActionName);
     if (wsdlBindingOperation == null) {
       // No operation found. Return the error message.
       LOG.warn("Not found BindingOperation: {}", soapActionName);

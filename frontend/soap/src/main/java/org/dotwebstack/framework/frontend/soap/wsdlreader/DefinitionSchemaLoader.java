@@ -50,11 +50,16 @@ class DefinitionSchemaLoader implements SchemaLoader {
       }
     }
 
+    // Stop if nothing was found.
+    if (schema == null) {
+      return null;
+    }
+
     //Namespaces overzetten naar schema
     Element schemaElement = (Element) schema.getElement().getParentNode();
     Map<String, String> namespaces = wsdlDefinition.getNamespaces();
     for (Entry<String, String> entry : namespaces.entrySet()) {
-      if (entry.getKey().equals("xmlns") || entry.getKey().trim().isEmpty()) {
+      if (entry.getKey().equals(Constants.XML_NS_PREFIX) || entry.getKey().trim().isEmpty()) {
         continue;
       }
       if (schemaElement.getAttribute("xmlns:" + entry.getKey()).isEmpty()) {

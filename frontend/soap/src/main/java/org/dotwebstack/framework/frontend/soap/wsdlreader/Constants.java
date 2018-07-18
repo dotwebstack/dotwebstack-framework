@@ -27,8 +27,13 @@ package org.dotwebstack.framework.frontend.soap.wsdlreader;
  * @author ole.matzura
  */
 
-public class  Constants {
+public class Constants {
+  private Constants() {
+    throw new IllegalStateException("Utility class Constants");
+  }
+
   public static final String XSD_NS = "http://www.w3.org/2001/XMLSchema";
+  public static final String XML_NS_PREFIX = "xmlns";
   public static final String XML_NS = "http://www.w3.org/2000/xmlns/";
   public static final String SOAP12_HTTP_BINDING_NS = "http://www.w3.org/2003/05/soap/bindings/HTTP/";
   public static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";

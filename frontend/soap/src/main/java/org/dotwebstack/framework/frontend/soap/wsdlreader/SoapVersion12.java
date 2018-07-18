@@ -8,7 +8,7 @@ class SoapVersion12 implements SoapVersion {
   private static final QName bodyQName = new QName(Constants.SOAP12_ENVELOPE_NS, "Body");
   private static final QName faultQName = new QName(Constants.SOAP11_ENVELOPE_NS, "Fault");
   private static final QName headerQName = new QName(Constants.SOAP12_ENVELOPE_NS, "Header");
-  public static final SoapVersion12 instance = new SoapVersion12();
+  public static final SoapVersion12 INSTANCE = new SoapVersion12();
 
   private SoapVersion12() {
   }

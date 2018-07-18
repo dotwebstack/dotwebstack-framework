@@ -83,6 +83,7 @@ class WsdlUtils {
     return result;
   }
 
+  @SuppressWarnings("squid:S3776")
   public static Binding findBindingForOperation(
       Definition definition,
       BindingOperation bindingOperation) {
@@ -361,14 +362,14 @@ class WsdlUtils {
     List<SoapHeader> result = new ArrayList<>();
 
     List<SOAPHeader> soapHeaders = WsdlUtils.getExtensiblityElements(list, SOAPHeader.class);
-    if (soapHeaders != null && !soapHeaders.isEmpty()) {
+    if (!soapHeaders.isEmpty()) {
       for (SOAPHeader header : soapHeaders) {
         result.add(new Soap11Header(header));
       }
     } else {
       List<SOAP12Header> soap12Headers =
           WsdlUtils.getExtensiblityElements(list, SOAP12Header.class);
-      if (soap12Headers != null && !soap12Headers.isEmpty()) {
+      if (!soap12Headers.isEmpty()) {
         for (SOAP12Header header : soap12Headers) {
           result.add(new Soap12Header(header));
         }

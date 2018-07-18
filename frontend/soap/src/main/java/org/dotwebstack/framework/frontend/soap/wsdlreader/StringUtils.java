@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
-class StringUtils {
+public class StringUtils {
 
   public static final String EMPTY = "";
 
@@ -73,5 +73,34 @@ class StringUtils {
     }
 
     return newString;
+  }
+
+  // Pad a string with the filler string repeated as many times as
+  // needed to reach the minimmum length. If the result is longer
+  // than the maximum, it is truncated.
+  public static String fill(String string, String filler, int min, int max) {
+    StringBuilder stringBuilder = new StringBuilder(string);
+
+    while (stringBuilder.length() < min) {
+      stringBuilder.append(filler);
+    }
+
+    if (stringBuilder.length() > max) {
+      return stringBuilder.toString().substring(0, max);
+    }
+
+    return stringBuilder.toString();
+  }
+
+  // Pad a string with the filler string repeated as many times as
+  // needed to reach the required length. The last filler may be
+  // truncated.
+  public static String fill(String string, String filler, int length) {
+    // Return the string unchanged if it already has the required length.
+    if (string.length() >= length) {
+      return string;
+    }
+
+    return fill(string, filler, length, length);
   }
 }

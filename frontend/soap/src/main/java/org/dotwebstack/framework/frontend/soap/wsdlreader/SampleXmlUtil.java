@@ -98,7 +98,7 @@ class SampleXmlUtil {
    * By default the XML-Schema root element is added since it is quite common in .NET
    * services and generates a sample xml fragment of about 300 kb!.
    */
-  private Set<QName> excludedTypes = new HashSet<QName>();
+  private Set<QName> excludedTypes = new HashSet<>();
   private SoapMultiValuesProvider multiValuesProvider;
 
   private ArrayList<SchemaType> typeStack = new ArrayList<>();
@@ -291,6 +291,11 @@ class SampleXmlUtil {
       return enumValues[pick(enumValues.length)].getStringValue();
     }
 
+    // Return an empty string if there is no primitive type.
+    if (primitiveType == null) {
+      return "";
+    }
+
     switch (primitiveType.getBuiltinTypeCode()) {
       default:
       case SchemaType.BTC_NOT_BUILTIN:
@@ -366,22 +371,7 @@ class SampleXmlUtil {
         }
 
       case SchemaType.BTC_STRING:
-        // String result;
-        switch (closestBuiltin(schemaType).getBuiltinTypeCode()) {
-          case SchemaType.BTC_STRING:
-          case SchemaType.BTC_NORMALIZED_STRING:
-            result = pick(WORDS, picker.nextInt(3));
-            break;
-
-          case SchemaType.BTC_TOKEN:
-            result = pick(WORDS, picker.nextInt(3));
-            break;
-
-          default:
-            result = pick(WORDS, picker.nextInt(3));
-            break;
-        }
-
+        result = pick(WORDS, picker.nextInt(3));
         return formatToLength(result, schemaType);
 
       case SchemaType.BTC_DURATION:
@@ -401,7 +391,7 @@ class SampleXmlUtil {
   }
 
   // a bit from the Aenid
-  public static final String[] WORDS = new String[]{"ipsa", "iovis",
+  protected static final String[] WORDS = new String[]{"ipsa", "iovis",
       "rapidum", "iaculata", "e", "nubibus", "ignem",
       "disiecitque", "rates", "evertitque", "aequora",
       "ventis", "illum", "exspirantem", "transfixo", "pectore",
@@ -497,43 +487,38 @@ class SampleXmlUtil {
   }
 
   /**
-   * Formats a given string to the required length, using the following
-   * operations: - append the source string to itself as necessary to pass the
-   * minLength; - truncate the result of previous step, if necessary, to keep
-   * it within minLength.
+   * Formats a given string to the required length by appending the source string to itself.
+   * Then truncate the result, if necessary, to keep it within maxLength.
    */
-  private String formatToLength(String s, SchemaType schemaType) {
-    String result = s;
+  private String formatToLength(String string, SchemaType schemaType) {
+    int minLength = string.length();
+    int maxLength = minLength;
+
     try {
       SimpleValue min = (SimpleValue) schemaType.getFacet(SchemaType.FACET_LENGTH);
       if (min == null) {
         min = (SimpleValue) schemaType.getFacet(SchemaType.FACET_MIN_LENGTH);
       }
-
       if (min != null) {
-        int len = min.getIntValue();
-        while (result.length() < len) {
-          result = result + result;
-        }
+        minLength = min.getIntValue();
       }
 
+      // Determine the maximum length of the result. If there is no maximum,
+      // assume that it is the same as the minumum.
       SimpleValue max = (SimpleValue) schemaType.getFacet(SchemaType.FACET_LENGTH);
-      if (max == null) {
+      if (max != null) {
         max = (SimpleValue) schemaType.getFacet(SchemaType.FACET_MAX_LENGTH);
       }
-
       if (max != null) {
-        int len = max.getIntValue();
-        if (result.length() > len) {
-          result = result.substring(0, len);
-        }
+        maxLength = max.getIntValue();
       }
     } catch (Exception e) { // intValue can be out of range
     }
 
-    return result;
+    return StringUtils.fill(string, string, minLength, maxLength);
   }
 
+  @SuppressWarnings("squid:S3776")
   private String formatDecimal(String start, SchemaType schemaType) {
     XmlDecimal xmlD;
     xmlD = (XmlDecimal) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
@@ -633,28 +618,33 @@ class SampleXmlUtil {
     // We have the number
     // Adjust the scale according to the totalDigits and fractionDigits
     int digits = 0;
-    BigDecimal one = new BigDecimal(BigInteger.ONE);
-    BigDecimal n = result;
-    while (n.abs().compareTo(one) >= 0) {
-      n = n.movePointLeft(1);
-      digits++;
+
+    // According to Sonarqube, result can be null here.
+    if (result != null) {
+      BigDecimal one = new BigDecimal(BigInteger.ONE);
+      BigDecimal n = result;
+      while (n.abs().compareTo(one) >= 0) {
+        n = n.movePointLeft(1);
+        digits++;
+      }
     }
 
     if (fractionDigits > 0) {
       if (totalDigits >= 0) {
-        result.setScale(Math.max(fractionDigits, totalDigits - digits));
+        result = result.setScale(Math.max(fractionDigits, totalDigits - digits));
       } else {
-        result.setScale(fractionDigits);
+        result = result.setScale(fractionDigits);
       }
     } else {
       if (fractionDigits == 0) {
-        result.setScale(0);
+        result = result.setScale(0);
       }
     }
 
     return result.toString();
   }
 
+  @SuppressWarnings("squid:S3776")
   private String formatDuration(SchemaType schemaType) {
     XmlDuration d = (XmlDuration) schemaType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
     GDuration minInclusive = null;
@@ -791,6 +781,7 @@ class SampleXmlUtil {
     return gdurb.toString();
   }
 
+  @SuppressWarnings("squid:S3776")
   private String formatDate(SchemaType schemaType) {
     GDateBuilder gdateb = new GDateBuilder(new Date(1000L * pick(365 * 24 * 60 * 60)
         + (30L + pick(20)) * 365 * 24 * 60 * 60 * 1000));
@@ -1084,8 +1075,8 @@ class SampleXmlUtil {
           processWildCard(xmlc);
           break;
         default:
-          // remove ? throw new Exception("No Match on Schema Particle Type: " +
-          // can we remove these 2 commented out statements ? String.valueOf(sp.getParticleType()));
+          LOG.warn("Unhandled case encountered in SampleXmlUtil.processParticle");
+          break;
       }
 
       //DOTWEBSTACK added - Check if we want to continue with this element
@@ -1119,8 +1110,6 @@ class SampleXmlUtil {
 
     if (!skipComments) {
       if (sp.getMaxOccurs() == null) {
-        // can this commented out code be removed ?  xmlc.insertComment("The next "
-        // + getItemNameOrType(sp, xmlc) +" may be repeated " + minOccurs + " or more times");
         if (minOccurs == 0) {
           xmlc.insertComment("Zero or more repetitions:");
         } else {
@@ -1152,7 +1141,6 @@ class SampleXmlUtil {
     } else {
       xmlc.insertElement(element.getName().getLocalPart(), element.getName().getNamespaceURI());
       // / -> <elem>^</elem>
-      // needed ?  processAttributes( sp.getType(), xmlc );
     }
 
     xmlc.toPrevToken();
@@ -1174,6 +1162,7 @@ class SampleXmlUtil {
   }
 
   //DOTWEBSTACK - Added: check if element is start of iteration, in such a case we need to continue
+  @SuppressWarnings("squid:S3776")
   private int determineLoopForQuery(int currentLoop, SchemaParticle sp, boolean next) {
     // Stop if the schema particle is not an element.
     if (sp.getParticleType() != SchemaParticle.ELEMENT) {
@@ -1254,7 +1243,8 @@ class SampleXmlUtil {
   public static final QName ENC_ARRAYTYPE = new QName("http://schemas.xmlsoap.org/soap/encoding/", "arrayType");
   private static final QName ENC_OFFSET = new QName("http://schemas.xmlsoap.org/s/encoding/", "offset");
 
-  public static final Set<QName> SKIPPED_SOAP_ATTRS =
+  @SuppressWarnings("squid:S3878")
+  protected static final Set<QName> SKIPPED_SOAP_ATTRS =
       new HashSet<>(Arrays.asList(new QName[]{HREF, ID, ENC_OFFSET}));
 
   private void processAttributes(SchemaType stype, XmlCursor xmlc) {
@@ -1271,6 +1261,7 @@ class SampleXmlUtil {
     }
   }
 
+  @SuppressWarnings("squid:S3776")
   private void processAttribute(SchemaType stype, XmlCursor xmlc, SchemaProperty attr) {
     if (attr.getMinOccurs().intValue() == 0 && ignoreOptional) {
       return;

@@ -63,6 +63,7 @@ final class XmlUtils {
     throw new IllegalStateException("Constructor of utility class XmlgUtil");
   }
 
+  @SuppressWarnings("squid:S2259")
   public static synchronized Document parse(InputStream in) {
     try {
       return ensureDocumentBuilder().parse(in);
@@ -73,6 +74,7 @@ final class XmlUtils {
     return null;
   }
 
+  @SuppressWarnings("squid:S2259")
   public static synchronized Document parse(String fileName) throws IOException {
     try {
       return ensureDocumentBuilder().parse(fileName);
@@ -83,7 +85,7 @@ final class XmlUtils {
     return null;
   }
 
-
+  @SuppressWarnings("squid:S2259")
   public static synchronized Document parse(InputSource inputSource) throws IOException {
     try {
       return ensureDocumentBuilder().parse(inputSource);
@@ -155,6 +157,7 @@ final class XmlUtils {
     }
   }
 
+  @SuppressWarnings("squid:S3776")
   public static String removeUnneccessaryNamespaces(String xml) {
     if (StringUtils.isBlank(xml)) {
       return xml;
@@ -216,12 +219,14 @@ final class XmlUtils {
         documentBuilder = dbf.newDocumentBuilder();
       } catch (ParserConfigurationException e) {
         LOG.error("Error creating DocumentBuilder; {}", e.getMessage());
+        // After the catch, the method can return null, which might not be the intention.
+        // Maybe we should throw an error here.
+        // For the time being, the calling methods were annotated with SuppressWarnings.
       }
     }
 
     return documentBuilder;
   }
-
 
   public static XmlObject createXmlObject(String input, XmlOptions xmlOptions)
       throws XmlException {
@@ -321,11 +326,6 @@ final class XmlUtils {
     options.setSavePrettyPrintIndent(3);
     options.setSaveNoXmlDecl();
     options.setSaveAggressiveNamespaces();
-    // map StringToStringMap map = new StringToStringMap();
-    // map map.put( SoapVersion.Soap11.getEnvelopeNamespace(), "SOAPENV" );
-    // map map.put( SoapVersion.Soap12.getEnvelopeNamespace(), "SOAPENV" );
-    // map
-    // map options.setSaveSuggestedPrefixes( map );
     xmlObject.save(writer, options);
   }
 
