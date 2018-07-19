@@ -30,6 +30,7 @@ paths:
         enum:
         - "epsg:4258"
         - "epsg:28992"
+        x-dotwebstack-parameter: dummy
       responses:
         200:
           description: OK

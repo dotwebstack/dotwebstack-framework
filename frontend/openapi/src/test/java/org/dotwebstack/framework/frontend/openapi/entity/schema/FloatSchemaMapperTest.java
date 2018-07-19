@@ -1,18 +1,15 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.IntegerProperty;
+import io.swagger.models.properties.FloatProperty;
 import io.swagger.models.properties.StringProperty;
 import java.util.Collections;
-import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
@@ -22,7 +19,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,14 +28,14 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class IntegerSchemaMapperTest {
+public class FloatSchemaMapperTest {
 
   @Rule
   public final ExpectedException thrown = ExpectedException.none();
 
   private static final String DUMMY_EXPR = "dummyExpr()";
-  private static final Literal VALUE_1 = SimpleValueFactory.getInstance().createLiteral(123);
-  private static final IRI VALUE_3 = SimpleValueFactory.getInstance().createIRI("http://foo");
+  private static final Literal VALUE_1 = SimpleValueFactory.getInstance().createLiteral(12.3f);
+  private static final IRI VALUE_2 = SimpleValueFactory.getInstance().createIRI("http://foo");
 
   @Mock
   private GraphEntity graphEntityMock;
@@ -51,16 +47,16 @@ public class IntegerSchemaMapperTest {
   private TupleEntity tupleEntityMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
-  private IntegerSchemaMapper integerSchemaMapper;
-  private IntegerProperty integerProperty;
+  private FloatSchemaMapper floatSchemaMapper;
+  private FloatProperty floatProperty;
 
   @Before
   public void setUp() {
-    integerSchemaMapper = new IntegerSchemaMapper();
-    integerProperty = new IntegerProperty();
+    floatSchemaMapper = new FloatSchemaMapper();
+    floatProperty = new FloatProperty();
 
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
-    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(integerSchemaMapper));
+    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(floatSchemaMapper));
   }
 
   @Test
@@ -70,51 +66,51 @@ public class IntegerSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    integerSchemaMapper.mapTupleValue(integerProperty, tupleEntityMock,
+    floatSchemaMapper.mapTupleValue(floatProperty, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Integer result = (Integer) integerSchemaMapper.mapTupleValue(integerProperty, tupleEntityMock,
-        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
+    Float result = floatSchemaMapper.mapTupleValue(floatProperty, tupleEntityMock,
+        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_HOP_USAGE_PER_YEAR).build());
 
     // Assert
-    assertThat(result, equalTo(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.intValue()));
+    assertThat(result, is(DBEERPEDIA.BROUWTOREN_HOP_USAGE_PER_YEAR.floatValue()));
   }
 
   @Test
-  public void supports_ReturnsTrue_ForIntegerProperty() {
+  public void supports_ReturnsTrue_ForFloatProperty() {
     // Arrange & Act
-    Boolean supported = integerSchemaMapper.supports(integerProperty);
+    Boolean supported = floatSchemaMapper.supports(floatProperty);
 
     // Assert
-    assertThat(supported, equalTo(true));
+    assertThat(supported, is(true));
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonIntegerProperty() {
+  public void supports_ReturnsFalse_ForStringProperty() {
     // Arrange & Act
-    Boolean supported = integerSchemaMapper.supports(new StringProperty());
+    Boolean supported = floatSchemaMapper.supports(new StringProperty());
 
     // Assert
-    assertThat(supported, equalTo(false));
+    assertThat(supported, is(false));
   }
 
   @Test
   public void mapGraphValue_ReturnsValue_ForLdPath() {
     // Arrange
-    integerProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
-    when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
+    floatProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    when(ldPathExecutorMock.ldPathQuery(valueMock, DUMMY_EXPR)).thenReturn(
         ImmutableList.of(VALUE_1));
 
     // Act
-    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(integerProperty, graphEntityMock,
+    Float result = (Float) schemaMapperAdapter.mapGraphValue(floatProperty, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
-    assertThat(result, is(VALUE_1.integerValue().intValue()));
+    assertThat(result, is(VALUE_1.floatValue()));
   }
 
   @Test
@@ -126,29 +122,12 @@ public class IntegerSchemaMapperTest {
         DUMMY_EXPR));
 
     // Arrange
-    integerProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    floatProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
-        ImmutableList.of(VALUE_3));
+        ImmutableList.of(VALUE_2));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(integerProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(floatProperty, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
-  }
-
-  @Test
-  public void getSupportedDataTypes_returnsSevenTypes() {
-    //Act
-    Set<IRI> supportedTypes = integerSchemaMapper.getSupportedDataTypes();
-
-    //Assert
-    assertThat(supportedTypes.size(), is(7));
-
-    assertTrue(supportedTypes.contains(XMLSchema.INTEGER));
-    assertTrue(supportedTypes.contains(XMLSchema.INT));
-    assertTrue(supportedTypes.contains(XMLSchema.POSITIVE_INTEGER));
-    assertTrue(supportedTypes.contains(XMLSchema.NON_NEGATIVE_INTEGER));
-    assertTrue(supportedTypes.contains(XMLSchema.NON_POSITIVE_INTEGER));
-    assertTrue(supportedTypes.contains(XMLSchema.NEGATIVE_INTEGER));
-    assertTrue(supportedTypes.contains(XMLSchema.UNSIGNED_INT));
   }
 }
