@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.atlassian.oai.validator.interaction.RequestValidator;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableList;
 import io.swagger.models.Operation;
