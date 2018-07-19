@@ -615,18 +615,19 @@ class SampleXmlUtil {
       // MIN > MAX!!
     }
 
-    // We have the number
+    // We have the number in the BigDecimal variable result.
+    // According to Sonarqube, result can be null here.
+    if (result == null) {
+      return "";
+    }
+
     // Adjust the scale according to the totalDigits and fractionDigits
     int digits = 0;
-
-    // According to Sonarqube, result can be null here.
-    if (result != null) {
-      BigDecimal one = new BigDecimal(BigInteger.ONE);
-      BigDecimal n = result;
-      while (n.abs().compareTo(one) >= 0) {
-        n = n.movePointLeft(1);
-        digits++;
-      }
+    BigDecimal one = new BigDecimal(BigInteger.ONE);
+    BigDecimal n = result;
+    while (n.abs().compareTo(one) >= 0) {
+      n = n.movePointLeft(1);
+      digits++;
     }
 
     if (fractionDigits > 0) {

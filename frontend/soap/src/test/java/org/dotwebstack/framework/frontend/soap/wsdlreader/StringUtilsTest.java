@@ -58,7 +58,7 @@ public class StringUtilsTest {
     String result = join(words, nullString);
 
     // Assert
-    assertEquals(result, "alphabetagamma");
+    assertEquals("alphabetagamma", result);
   }
 
   @Test
@@ -67,7 +67,7 @@ public class StringUtilsTest {
     String result = join(words, ", ", 1, 3);
 
     // Assert
-    assertEquals(result, "beta, gamma");
+    assertEquals("beta, gamma", result);
   }
 
   @Test
@@ -85,7 +85,7 @@ public class StringUtilsTest {
     String result = removeLeadingString(repeatedString, string);
 
     // Assert
-    assertEquals(result, StringUtils.EMPTY);
+    assertEquals(StringUtils.EMPTY, result);
   }
 
   @Test
@@ -94,7 +94,7 @@ public class StringUtilsTest {
     String result = fill(words[0], words[1], 18, 19);
 
     // Assert
-    assertEquals(result, "alphabetabetabetabe");
+    assertEquals("alphabetabetabetabe", result);
   }
 
   @Test
@@ -103,7 +103,7 @@ public class StringUtilsTest {
     String result = fill(words[0], words[1], 3, 4);
 
     // Assert
-    assertEquals(result, "alph");
+    assertEquals("alph", result);
   }
 
   @Test
@@ -112,6 +112,6 @@ public class StringUtilsTest {
     String result = fill(words[0], words[1], 18);
 
     // Assert
-    assertEquals(result, "alphabetabetabetab");
+    assertEquals("alphabetabetabetab", result);
   }
 }
