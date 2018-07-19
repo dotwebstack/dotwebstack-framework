@@ -223,6 +223,7 @@ class SampleXmlUtil {
     xmlc.insertChars(sample);
   }
 
+  @SuppressWarnings("squid:S3776")
   private String sampleDataForSimpleType(SchemaType schemaType) {
     String result = null;
 
