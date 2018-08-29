@@ -5,6 +5,6 @@ The configuration nesting is needed
     * Elmo:sequentialFlow
       * Elmo:ValidationStep
         * Elmo:conformsTo
-           * Named graph with SHACl constraints
+           * Named graph with SHACL constraints
 
-The SHACL constraints should be available to DWS' in-memory RDF repository so the files should be in the config/model directory.
+The files containing SHACL constraints should be in the config/model directory as they must be available in DWS' in-memory RDF repository 
