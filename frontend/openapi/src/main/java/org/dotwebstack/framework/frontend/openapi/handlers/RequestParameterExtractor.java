@@ -11,13 +11,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URLEncoder;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.apache.commons.io.IOUtils;
@@ -30,9 +35,8 @@ import org.springframework.stereotype.Service;
 class RequestParameterExtractor {
 
   private static final Logger LOG = LoggerFactory.getLogger(RequestParameterExtractor.class);
+  private static final String ENCODING = "UTF-8";
 
-  static final String PARAM_GEOMETRY_QUERYTYPE = "geometry_querytype";
-  static final String PARAM_GEOMETRY = "geometry";
   static final String PARAM_PAGE_NUM = "page";
   static final String PARAM_PAGE_SIZE = "size";
 
@@ -42,74 +46,87 @@ class RequestParameterExtractor {
     this.objectMapper = objectMapper;
   }
 
+  void uriEncodeToList(Map.Entry<String, List<String>> entry) {
+    entry.setValue( //
+        entry.getValue() //
+            .stream() //
+            .map(s -> { //
+              String encode = s;
+              try {
+                encode = URLEncoder.encode(s, ENCODING);
+              } catch (UnsupportedEncodingException uee) {
+                LOG.error("encoding failed {}", uee.getMessage());
+              }
+              return encode;
+            }).collect(Collectors.toList()));
+  }
+
   RequestParameters extract(@NonNull ApiOperation apiOperation, @NonNull Swagger swagger,
       @NonNull ContainerRequestContext containerRequestContext) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
 
+    MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
+    MultivaluedMap<String, String> pathParameters = uriInfo.getPathParameters();
+    MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
+
+    pathParameters.entrySet().forEach(this::uriEncodeToList);
+    queryParameters.entrySet().forEach(this::uriEncodeToList);
+
     RequestParameters parameters = new RequestParameters();
+    parameters.putAll(pathParameters);
+    parameters.putAll(queryParameters);
+    parameters.putAll(headers);
 
-    parameters.putAll(uriInfo.getPathParameters());
-    parameters.putAll(uriInfo.getQueryParameters());
-    parameters.putAll(containerRequestContext.getHeaders());
+    boolean bodyParamDefined = apiOperation.getOperation().getParameters().stream() //
+        .anyMatch(parameterBody -> isBodyParameter(swagger, parameterBody));
+    boolean applicationHeaderSupplied = headers //
+        .get(HttpHeaders.CONTENT_TYPE) //
+        .stream() //
+        .anyMatch(header -> ContentType.APPLICATION_JSON.toString().startsWith(header)); //
 
-    try {
-      Optional<Parameter> parameter =
-          apiOperation.getOperation().getParameters().stream().filter(parameterBody -> {
-            if ((parameterBody instanceof BodyParameter)) {
-              ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
-              return "object".equalsIgnoreCase(parameterModel.getType())
-                  && "body".equalsIgnoreCase(parameterBody.getIn());
-            }
-            return false;
-          }).findFirst();
-      extractBodyParameter(parameters, containerRequestContext, parameter);
-    } catch (IOException ioe) {
-      throw new InternalServerErrorException("Error processing request body.", ioe);
-    }
+    appendBody(parameters, containerRequestContext, bodyParamDefined, applicationHeaderSupplied);
 
     LOG.info("Extracted parameters: {}", parameters);
 
     return parameters;
   }
 
-  private static ModelImpl getBodyParameter(@NonNull Swagger swagger, BodyParameter parameterBody) {
-    ModelImpl parameterModel = null;
-    if (parameterBody.getSchema() instanceof ModelImpl) {
-      parameterModel = ((ModelImpl) (parameterBody.getSchema()));
-    }
-    if (parameterBody.getSchema() instanceof RefModel) {
-      RefModel refModel = ((RefModel) (parameterBody.getSchema()));
-      parameterModel = (ModelImpl) swagger.getDefinitions().get(refModel.getSimpleRef());
-    }
-    return parameterModel;
+  private boolean isBodyParameter(@NonNull Swagger swagger, Parameter parameter) {
+    Optional<ModelImpl> parameterModel = getBodyParameterModel(swagger, parameter);
+    return parameterModel.isPresent() //
+        && "body".equalsIgnoreCase(parameter.getIn()) //
+        && "object".equalsIgnoreCase(parameterModel.get().getType()); //
   }
 
-  /**
-   * Extracts the body from the supplied request.
-   */
-  private void extractBodyParameter(final RequestParameters requestParameters,
-      final ContainerRequestContext ctx, final Optional<Parameter> parameter) throws IOException {
-
-    String body = extractBody(ctx);
-    if (body == null) {
-      return;
+  private static Optional<ModelImpl> getBodyParameterModel(@NonNull Swagger swagger,
+      Parameter parameter) {
+    if ((parameter instanceof BodyParameter)) {
+      BodyParameter bodyParameter = (BodyParameter) parameter;
+      if (bodyParameter.getSchema() instanceof ModelImpl) {
+        return Optional.of((ModelImpl) bodyParameter.getSchema());
+      }
+      if (bodyParameter.getSchema() instanceof RefModel) {
+        return Optional.of((ModelImpl) swagger.getDefinitions().get(
+            ((RefModel) bodyParameter.getSchema()).getSimpleRef()));
+      }
     }
-    requestParameters.setRawBody(body);
-    if (!parameter.isPresent()) {
-      return;
-    }
+    return Optional.empty();
+  }
 
-    if (ctx.getHeaders().get(HttpHeaders.CONTENT_TYPE).stream().filter(
-        header -> ContentType.APPLICATION_JSON.toString().startsWith(header)).findAny().orElse(
-            null) == null) {
-      return;
-    }
-
-    Map<String, Object> json = objectMapper.readValue(body, Map.class);
-
-    for (Map.Entry<String, Object> entry : json.entrySet()) {
-      requestParameters.put(entry.getKey(), objectMapper.writeValueAsString(entry.getValue()));
+  private void appendBody(RequestParameters parameters,
+      ContainerRequestContext containerRequestContext, boolean bodyParamDefined,
+      boolean applicationHeaderSupplied) {
+    try {
+      parameters.setRawBody(extractBody(containerRequestContext));
+      if (bodyParamDefined && applicationHeaderSupplied && parameters.getRawBody() != null) {
+        Map<String, Object> json = objectMapper.readValue(parameters.getRawBody(), Map.class);
+        for (Map.Entry<String, Object> entry : json.entrySet()) {
+          parameters.put(entry.getKey(), objectMapper.writeValueAsString(entry.getValue()));
+        }
+      }
+    } catch (IOException ioe) {
+      throw new InternalServerErrorException("Error processing request body.", ioe);
     }
   }
 

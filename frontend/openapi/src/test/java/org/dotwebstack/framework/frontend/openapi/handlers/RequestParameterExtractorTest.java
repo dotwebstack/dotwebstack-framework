@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,7 +14,7 @@ import io.swagger.models.Operation;
 import io.swagger.models.Swagger;
 import io.swagger.models.parameters.BodyParameter;
 import java.io.ByteArrayInputStream;
-import java.net.URISyntaxException;
+import java.util.Collections;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -21,7 +22,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import org.apache.http.HttpHeaders;
 import org.apache.http.entity.ContentType;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,12 +34,17 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class RequestParameterExtractorTest {
 
   private static final String PATH_PARAMETER = "pathParameter";
-  private static final String PATH_PARAMETER_VALUE = "pathParameterValue";
-  private static final String QUERY_PARAMETER = "queryParameter";
-  private static final String QUERY_PARAMETER_VALUE = "queryParameterValue";
+  private static final String PATH_PARAMETER_VALUE = "http://google.nl";
+  private static final String ENCODED_PATH_PARAMETER_VALUE = "http%3A%2F%2Fgoogle.nl";
 
-  private static final String BPG = "bestemmingsplangebied.1";
+  private static final String QUERY_PARAMETER = "queryParameter";
+  private static final String QUERY_PARAMETER_VALUE = "NL.IMRO.plantype.2/3";
+  private static final String ENCODED_QUERY_PARAMETER_VALUE = "NL.IMRO.plantype.2%2F3";
+
+  private static final String CONTENT_VALUE = "application/json; charset=UTF-8";
+
   private static final String ID = "id";
+  private static final String ID_VALUE1 = "bestemmingsplangebied.1";
 
   private final ContainerRequestContext context = mock(ContainerRequestContext.class);
 
@@ -62,9 +67,9 @@ public class RequestParameterExtractorTest {
   private RequestParameterExtractor requestParameterExtractor;
 
   @Before
-  public void setUp() throws URISyntaxException {
+  public void setUp() {
 
-    pathParameters.put(ID, ImmutableList.of(BPG, "someOtherId"));
+    pathParameters.put(ID, ImmutableList.of(ID_VALUE1));
     pathParameters.put(PATH_PARAMETER, ImmutableList.of(PATH_PARAMETER_VALUE));
     queryParameters.put(QUERY_PARAMETER, ImmutableList.of(QUERY_PARAMETER_VALUE));
     headers.put(HttpHeaders.ACCEPT, ImmutableList.of(ContentType.APPLICATION_JSON.toString()));
@@ -102,11 +107,11 @@ public class RequestParameterExtractorTest {
     RequestParameters result = requestParameterExtractor.extract(apiOperation, swagger, context);
 
     // Assert
-    assertThat(result.get(ID), is(BPG));
-    assertThat(result.get(PATH_PARAMETER), is(PATH_PARAMETER_VALUE));
-    Assert.assertNull(result.get(RequestParameterExtractor.PARAM_PAGE_NUM));
-    Assert.assertNull(result.get(RequestParameterExtractor.PARAM_PAGE_SIZE));
-    assertThat(result.get(HttpHeaders.ACCEPT), is(ContentType.APPLICATION_JSON.toString()));
+    assertThat(result.get(ID), is(ID_VALUE1));
+    assertThat(result.get(PATH_PARAMETER), is(ENCODED_PATH_PARAMETER_VALUE));
+    assertThat(result.get(HttpHeaders.ACCEPT), is(CONTENT_VALUE));
+    assertThat(result.get(RequestParameterExtractor.PARAM_PAGE_NUM), nullValue());
+    assertThat(result.get(RequestParameterExtractor.PARAM_PAGE_SIZE), nullValue());
   }
 
   @Test
@@ -136,6 +141,18 @@ public class RequestParameterExtractorTest {
     assertThat(result.getRawBody(), is(body));
     assertThat(result.get("intersects"), is("{\"type\":\"Point\",\"coordinates\":[5.7,52.8]}"));
     assertThat(result.get("foo"), is("\"bar\""));
+  }
+
+  @Test
+  public void uriEncode() {
+    MultivaluedHashMap<String, String> mapje = new MultivaluedHashMap<>();
+    mapje.put(PATH_PARAMETER, Collections.singletonList(PATH_PARAMETER_VALUE));
+    mapje.put(QUERY_PARAMETER, Collections.singletonList(QUERY_PARAMETER_VALUE));
+
+    mapje.entrySet().forEach(requestParameterExtractor::uriEncodeToList);
+
+    assertThat(mapje.get(PATH_PARAMETER).get(0), is(ENCODED_PATH_PARAMETER_VALUE));
+    assertThat(mapje.get(QUERY_PARAMETER).get(0), is(ENCODED_QUERY_PARAMETER_VALUE));
   }
 
 }
