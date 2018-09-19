@@ -120,10 +120,10 @@ public class RequestParameterExtractorTest {
     when(context.hasEntity()).thenReturn(false);
 
     // Act
-    RequestParameters parameters = requestParameterExtractor.extract(apiOperation, swagger, context);
+    RequestParameters extract = requestParameterExtractor.extract(apiOperation, swagger, context);
 
     // Assert
-    assertThat(parameters.getRawBody(), nullValue());
+    assertThat(extract.getRawBody(), nullValue());
   }
 
   @Test

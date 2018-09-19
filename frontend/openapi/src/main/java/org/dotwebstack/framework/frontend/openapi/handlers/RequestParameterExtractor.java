@@ -131,7 +131,7 @@ class RequestParameterExtractor {
   }
 
   void uriEncodeToList(Map.Entry<String, List<String>> entry) {
-    entry.setValue( //
+    entry.setValue(//
         entry.getValue() //
             .stream() //
             .map(this::urlEncode) //
