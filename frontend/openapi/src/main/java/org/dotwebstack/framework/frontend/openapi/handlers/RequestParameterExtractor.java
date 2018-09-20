@@ -47,7 +47,7 @@ class RequestParameterExtractor {
   }
 
   void uriEncodeToList(Map.Entry<String, List<String>> entry) {
-    entry.setValue( //
+    entry.setValue(//
         entry.getValue() //
             .stream() //
             .map(s -> { //
@@ -74,9 +74,9 @@ class RequestParameterExtractor {
     queryParameters.entrySet().forEach(this::uriEncodeToList);
 
     RequestParameters parameters = new RequestParameters();
+    parameters.putAll(headers);
     parameters.putAll(pathParameters);
     parameters.putAll(queryParameters);
-    parameters.putAll(headers);
 
     boolean bodyParamDefined = apiOperation.getOperation().getParameters().stream() //
         .anyMatch(parameterBody -> isBodyParameter(swagger, parameterBody));
@@ -173,7 +173,6 @@ class RequestParameterExtractor {
         unread(buf[0]);
         return false;
       }
-
       return true;
     }
 
