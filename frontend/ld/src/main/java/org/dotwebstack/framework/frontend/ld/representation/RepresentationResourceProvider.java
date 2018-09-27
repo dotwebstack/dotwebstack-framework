@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.AbstractResourceProvider;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
@@ -14,15 +15,12 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class RepresentationResourceProvider extends AbstractResourceProvider<Representation> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(RepresentationResourceProvider.class);
 
   private final InformationProductResourceProvider informationProductResourceProvider;
 
@@ -85,7 +83,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     getObjectResources(model, resource.getIdentifier(), ELMO.CONTAINS_PROP).stream().forEach(
         iri -> resource.addSubRepresentation(this.get(iri)));
 
-    LOG.info("Updated resource: <{}>", resource.getIdentifier());
+    log.info("Updated resource: <{}>", resource.getIdentifier());
   }
 
 }
