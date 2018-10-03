@@ -82,10 +82,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
-            PathItem.HttpMethod.HEAD.toString(),
-            PathItem.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -119,10 +117,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
-            PathItem.HttpMethod.HEAD.toString(),
-            PathItem.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -147,10 +143,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
-            PathItem.HttpMethod.HEAD.toString(),
-            PathItem.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -175,10 +169,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
-            PathItem.HttpMethod.HEAD.toString(),
-            PathItem.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -204,10 +196,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
-            PathItem.HttpMethod.HEAD.toString(),
-            PathItem.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -219,12 +209,10 @@ public class CorsResponseFilterTest {
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "trusted-header");
 
     PathItem path = mock(PathItem.class);
-    Operation operation =
-        new Operation().addParametersItem(
-            new HeaderParameter().name("Trusted-Header")).addParametersItem(
-                new HeaderParameter().name("Other-Header"));
-    when(path.readOperationsMap()).thenReturn(
-        ImmutableMap.of(PathItem.HttpMethod.GET, operation));
+    Operation operation = new Operation().addParametersItem(
+        new HeaderParameter().name("Trusted-Header")).addParametersItem(
+            new HeaderParameter().name("Other-Header"));
+    when(path.readOperationsMap()).thenReturn(ImmutableMap.of(PathItem.HttpMethod.GET, operation));
     when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
@@ -239,10 +227,8 @@ public class CorsResponseFilterTest {
     assertThat(allowHeaders, containsInAnyOrder("trusted-header", "other-header"));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
-            PathItem.HttpMethod.HEAD.toString(),
-            PathItem.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -284,8 +270,10 @@ public class CorsResponseFilterTest {
   public void filter_AddsCorsHeaders_ForUnknownResponseStatusOnActualRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.GET, ORIGIN);
-    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(
-        mock(Operation.class));
+    Operation operation = new Operation();
+    ApiResponses apiResponses = new ApiResponses();
+    operation.setResponses(apiResponses);
+    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(operation);
     when(responseContextMock.getStatus()).thenReturn(HttpStatus.I_AM_A_TEAPOT.value());
 
     // Act
@@ -323,9 +311,8 @@ public class CorsResponseFilterTest {
     // Arrange
     prepareRequest(HttpMethod.GET, ORIGIN);
     ApiResponses apiResponses = new ApiResponses();
-    ApiResponse apiResponse =
-        new ApiResponse().headers(ImmutableMap.of("Some-Header", new Header(), "Other-Header",
-            new Header()));
+    ApiResponse apiResponse = new ApiResponse().headers(
+        ImmutableMap.of("Some-Header", new Header(), "Other-Header", new Header()));
     apiResponses.addApiResponse(HttpStatus.OK.toString(), apiResponse);
 
     Operation operation = new Operation().responses(apiResponses);
