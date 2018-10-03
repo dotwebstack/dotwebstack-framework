@@ -26,14 +26,14 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.swagger.parser.v3</groupId>
-      <artifactId>swagger-parser-v3</artifactId>
-      <version>2.0.0</version>
+      <groupId>io.swagger.core.v3</groupId>
+      <artifactId>swagger-core</artifactId>
+      <version>2.0.5</version>
     </dependency>
     <dependency>
       <groupId>com.atlassian.oai</groupId>
       <artifactId>swagger-request-validator-core</artifactId>
-      <version>2.0.0-rc1</version>
+      <version>2.0.0</version>
       <exclusions>
         <exclusion>
           <groupId>io.swagger</groupId>
