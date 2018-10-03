@@ -103,11 +103,11 @@ public class AbstractLinkSchemaMapperTest {
   public void buildUri_ReturnsLinkWithQueryParameters_WhenParametersAreSent() {
     // Arrange
     when(requestPathMock.normalised()).thenReturn("/breweries");
-    Parameter param = new QueryParameter().name("a");
-    // TODO: Fix.
-    // param.setDefault("789");
+    Schema schema = new Schema();
+    schema.setDefault("789");
+    Parameter param = new QueryParameter().name("a").schema(schema);
     when(operationMock.getParameters()).thenReturn(
-        ImmutableList.of(param, new QueryParameter().name("b")));
+        ImmutableList.of(param, new QueryParameter().name("b").schema(new Schema())));
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "b", "456"));
 
     // Act
@@ -121,11 +121,11 @@ public class AbstractLinkSchemaMapperTest {
   public void buildUri_ReturnsLinkWithExcludedParameter_WhenParameterEqualDefault() {
     // Arrange
     when(requestPathMock.normalised()).thenReturn("/breweries");
-    Parameter param = new QueryParameter().name("a");
-    // TODO: Fix.
-    // param.setDefault("123");
+    Schema schema = new Schema();
+    schema.setDefault("123");
+    Parameter param = new QueryParameter().name("a").schema(schema);
     when(operationMock.getParameters()).thenReturn(
-        ImmutableList.of(param, new QueryParameter().name("b")));
+        ImmutableList.of(param, new QueryParameter().name("b").schema(new Schema())));
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "b", "456"));
 
     // Act
@@ -140,7 +140,8 @@ public class AbstractLinkSchemaMapperTest {
     // Arrange
     when(requestPathMock.normalised()).thenReturn("/breweries");
     when(operationMock.getParameters()).thenReturn(
-        ImmutableList.of(new QueryParameter().name("a"), new QueryParameter().name("b")));
+        ImmutableList.of(new QueryParameter().name("a").schema(new Schema()),
+            new QueryParameter().name("b").schema(new Schema())));
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123", "c", "456"));
 
     // Act
@@ -155,7 +156,8 @@ public class AbstractLinkSchemaMapperTest {
     // Arrange
     when(requestPathMock.normalised()).thenReturn("/breweries");
     when(operationMock.getParameters()).thenReturn(
-        ImmutableList.of(new QueryParameter().name("a"), new QueryParameter().name("b")));
+        ImmutableList.of(new QueryParameter().name("a").schema(new Schema()),
+            new QueryParameter().name("b").schema(new Schema())));
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123"));
 
     // Act
@@ -170,7 +172,8 @@ public class AbstractLinkSchemaMapperTest {
     // Arrange
     when(requestPathMock.normalised()).thenReturn("/breweries");
     when(operationMock.getParameters()).thenReturn(
-        ImmutableList.of(new QueryParameter().name("a"), new QueryParameter().name("b")));
+        ImmutableList.of(new QueryParameter().name("a").schema(new Schema()),
+            new QueryParameter().name("b").schema(new Schema())));
     when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("a", "123"));
 
     // Act
@@ -268,8 +271,8 @@ public class AbstractLinkSchemaMapperTest {
     }
 
     @Override
-    public Object mapGraphValue(ObjectSchema schema, GraphEntity entity,
-        ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
+    public Object mapGraphValue(ObjectSchema schema, GraphEntity entity, ValueContext valueContext,
+        SchemaMapperAdapter schemaMapperAdapter) {
       throw new UnsupportedOperationException();
     }
 
