@@ -57,8 +57,7 @@ public class AbstractSchemaMapperTest {
     // Arrange
     StringSchema schema = new StringSchema();
 
-    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
-        true);
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
 
     // Act
     boolean result = AbstractSchemaMapper.hasVendorExtension(schema,
@@ -73,8 +72,7 @@ public class AbstractSchemaMapperTest {
     // Arrange
     StringSchema schema = new StringSchema();
 
-    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
-        true);
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
 
     // Act
     boolean result =
@@ -89,8 +87,7 @@ public class AbstractSchemaMapperTest {
     // Arrange
     StringSchema schema = new StringSchema();
 
-    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
-        true);
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
 
     // Act
     boolean result = AbstractSchemaMapper.hasVendorExtensionWithValue(schema,
@@ -105,8 +102,7 @@ public class AbstractSchemaMapperTest {
     // Arrange
     StringSchema schema = new StringSchema();
 
-    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
-        true);
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
 
     // Act
     boolean result = AbstractSchemaMapper.hasVendorExtensionWithValue(schema,
@@ -121,8 +117,7 @@ public class AbstractSchemaMapperTest {
     // Arrange
     StringSchema schema = new StringSchema();
 
-    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
-        true);
+    schema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
 
     // Act
     boolean result = AbstractSchemaMapper.hasVendorExtensionWithValue(schema,
@@ -160,8 +155,8 @@ public class AbstractSchemaMapperTest {
     thrown.expectMessage("required");
 
     // Act
-    abstractSchemaMapper.mapGraphValue(schemaMock, graphEntityMock,
-        ValueContext.builder().build(), schemaMapperAdapter);
+    abstractSchemaMapper.mapGraphValue(schemaMock, graphEntityMock, ValueContext.builder().build(),
+        schemaMapperAdapter);
   }
 
   @Test
