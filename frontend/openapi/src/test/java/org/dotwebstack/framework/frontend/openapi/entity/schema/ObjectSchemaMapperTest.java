@@ -80,8 +80,8 @@ public class ObjectSchemaMapperTest {
     objectSchemaMapper = new ObjectSchemaMapper();
 
     objectSchema = new ObjectSchema();
-    objectSchema.setProperties(ImmutableMap.of(KEY_1, STR_PROPERTY_1, KEY_2, STR_PROPERTY_2,
-        KEY_3, ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
+    objectSchema.setProperties(ImmutableMap.of(KEY_1, STR_PROPERTY_1, KEY_2, STR_PROPERTY_2, KEY_3,
+        ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
 
     SchemaMapper stringSchemaMapper = new StringSchemaMapper();
     SchemaMapper arraySchemaMapper = new ArraySchemaMapper();
@@ -110,9 +110,10 @@ public class ObjectSchemaMapperTest {
     objectSchema.setProperties(ImmutableMap.of());
 
     // Act
-    Map<String, Object> result =
-        (Map<String, Object>) schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
-            ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
+    Map<String,
+        Object> result = (Map<String, Object>) schemaMapperAdapter.mapGraphValue(objectSchema,
+            false, graphEntityMock, ValueContext.builder().value(value1Mock).build(),
+            schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(0));
@@ -121,13 +122,14 @@ public class ObjectSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsPropertyMap_WhenObjectHasProperties() {
     // Arrange
-    objectSchema.setProperties(ImmutableMap.of(KEY_1, STR_PROPERTY_1, KEY_2, STR_PROPERTY_2,
-        KEY_3, ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
+    objectSchema.setProperties(ImmutableMap.of(KEY_1, STR_PROPERTY_1, KEY_2, STR_PROPERTY_2, KEY_3,
+        ARRAY_PROPERTY, KEY_4, STR_PROPERTY_3));
     when(ldPathExecutorMock.ldPathQuery(any(), eq(STR3_LD_EXP))).thenReturn(ImmutableList.of());
 
-    Map<String, Object> result =
-        (Map<String, Object>) schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
-            ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
+    Map<String,
+        Object> result = (Map<String, Object>) schemaMapperAdapter.mapGraphValue(objectSchema,
+            false, graphEntityMock, ValueContext.builder().value(value1Mock).build(),
+            schemaMapperAdapter);
 
     // Assert
     assertThat(result.keySet(), hasSize(4));
@@ -144,7 +146,7 @@ public class ObjectSchemaMapperTest {
     when(ldPathExecutorMock.ldPathQuery(value1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(objectSchema, false, graphEntityMock,
         ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
 
     // Assert
@@ -161,12 +163,11 @@ public class ObjectSchemaMapperTest {
 
     // Arrange
     objectSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR_1);
-    objectSchema.setRequired(true);
 
     when(ldPathExecutorMock.ldPathQuery(value1Mock, DUMMY_EXPR_1)).thenReturn(ImmutableSet.of());
 
     // Act
-    schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(objectSchema, true, graphEntityMock,
         ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
   }
 
@@ -183,7 +184,7 @@ public class ObjectSchemaMapperTest {
         ImmutableSet.of(value1Mock, value2Mock));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(objectSchema, false, graphEntityMock,
         ValueContext.builder().value(value1Mock).build(), schemaMapperAdapter);
   }
 
@@ -191,9 +192,8 @@ public class ObjectSchemaMapperTest {
   public void mapGraphValue_SwitchesContext_WhenSubjectExtEnabled() {
     // Arrange
     objectSchema.addExtension(OpenApiSpecificationExtensions.SUBJECT, true);
-    objectSchema.setProperties(
-        ImmutableMap.of("name", new StringSchema().extensions(ImmutableMap.of(
-            OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()))));
+    objectSchema.setProperties(ImmutableMap.of("name", new StringSchema().extensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()))));
 
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
 
@@ -201,7 +201,7 @@ public class ObjectSchemaMapperTest {
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(objectSchema, false, graphEntityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
@@ -217,14 +217,13 @@ public class ObjectSchemaMapperTest {
   public void mapGraphValue_ReturnsNull_WhenSubjectQueryYieldsNoResultAndPropertyIsOptional() {
     // Arrange
     objectSchema.addExtension(OpenApiSpecificationExtensions.SUBJECT, true);
-    objectSchema.setProperties(
-        ImmutableMap.of("name", new StringSchema().extensions(ImmutableMap.of(
-            OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()))));
+    objectSchema.setProperties(ImmutableMap.of("name", new StringSchema().extensions(
+        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, DBEERPEDIA.NAME.stringValue()))));
 
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(objectSchema, false, graphEntityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
@@ -279,15 +278,16 @@ public class ObjectSchemaMapperTest {
         DBEERPEDIA.NAME.stringValue());
 
     objectSchema.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), childProperty));
-    objectSchema.addExtension(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+    objectSchema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+        true);
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of());
 
     // Act
-    Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
-        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
+    Map result =
+        (ImmutableMap) schemaMapperAdapter.mapGraphValue(objectSchema, false, graphEntityMock,
+            ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -302,15 +302,16 @@ public class ObjectSchemaMapperTest {
         DBEERPEDIA.NAME.stringValue());
 
     objectSchema.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), childProperty));
-    objectSchema.addExtension(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+    objectSchema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+        true);
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
-    Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
-        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
+    Map result =
+        (ImmutableMap) schemaMapperAdapter.mapGraphValue(objectSchema, false, graphEntityMock,
+            ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, is(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(),
@@ -327,15 +328,16 @@ public class ObjectSchemaMapperTest {
         DBEERPEDIA.NAME.stringValue());
 
     objectSchema.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), childProperty));
-    objectSchema.addExtension(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+    objectSchema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+        true);
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of());
 
     // Act
-    Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
-        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
+    Map result =
+        (ImmutableMap) schemaMapperAdapter.mapGraphValue(objectSchema, false, graphEntityMock,
+            ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.isEmpty(), is(true));
@@ -351,15 +353,16 @@ public class ObjectSchemaMapperTest {
         DBEERPEDIA.NAME.stringValue());
 
     objectSchema.setProperties(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(), childProperty));
-    objectSchema.addExtension(
-        OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL, true);
+    objectSchema.addExtension(OpenApiSpecificationExtensions.EXCLUDE_PROPERTIES_WHEN_EMPTY_OR_NULL,
+        true);
 
     when(ldPathExecutorMock.ldPathQuery(DBEERPEDIA.BROUWTOREN,
         DBEERPEDIA.NAME.stringValue())).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN_NAME));
 
     // Act
-    Map result = (ImmutableMap) schemaMapperAdapter.mapGraphValue(objectSchema, graphEntityMock,
-        ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
+    Map result =
+        (ImmutableMap) schemaMapperAdapter.mapGraphValue(objectSchema, false, graphEntityMock,
+            ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, is(ImmutableMap.of(DBEERPEDIA.NAME.stringValue(),

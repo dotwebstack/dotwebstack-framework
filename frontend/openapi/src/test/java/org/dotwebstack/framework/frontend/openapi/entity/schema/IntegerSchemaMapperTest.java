@@ -113,8 +113,8 @@ public class IntegerSchemaMapperTest {
         ImmutableList.of(VALUE_1));
 
     // Act
-    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(integerSchema, graphEntityMock,
-        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(integerSchema, false,
+        graphEntityMock, ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, is(VALUE_1.integerValue().intValue()));
@@ -125,8 +125,7 @@ public class IntegerSchemaMapperTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format(
-        "LDPathQuery '%s' yielded a value which is not a literal of supported type",
-        DUMMY_EXPR));
+        "LDPathQuery '%s' yielded a value which is not a literal of supported type", DUMMY_EXPR));
 
     // Arrange
     integerSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
@@ -134,7 +133,7 @@ public class IntegerSchemaMapperTest {
         ImmutableList.of(VALUE_3));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(integerSchema, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(integerSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 

@@ -18,13 +18,17 @@ public class SelfLinkSchemaMapper extends AbstractLinkSchemaMapper {
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ObjectSchema schema, @NonNull GraphEntity entity,
-      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull ObjectSchema schema, boolean required,
+      @NonNull GraphEntity entity, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     return SchemaMapperUtils.createLink(buildUri(entity.getRequestContext(), null));
   }
 
   @Override
   public boolean supports(Schema schema) {
+    if (schema.getExtensions() == null) {
+      return false;
+    }
     return schema instanceof ObjectSchema && OpenApiSpecificationExtensions.TYPE_SELF_LINK.equals(
         schema.getExtensions().get(OpenApiSpecificationExtensions.TYPE));
   }

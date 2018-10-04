@@ -52,8 +52,8 @@ public class DateSchemaMapperConstantValueTest {
     dateSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, EXPECTED_LOCAL_DATE));
 
     // Act
-    LocalDate result = (LocalDate) schemaMapperAdapter.mapGraphValue(dateSchema, graphEntityMock,
-        valueContext, schemaMapperAdapter);
+    LocalDate result = (LocalDate) schemaMapperAdapter.mapGraphValue(dateSchema, false,
+        graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(EXPECTED_LOCAL_DATE));
@@ -66,8 +66,8 @@ public class DateSchemaMapperConstantValueTest {
     dateSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    LocalDate result = (LocalDate) schemaMapperAdapter.mapGraphValue(dateSchema, graphEntityMock,
-        valueContext, schemaMapperAdapter);
+    LocalDate result = (LocalDate) schemaMapperAdapter.mapGraphValue(dateSchema, false,
+        graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(EXPECTED_LOCAL_DATE));

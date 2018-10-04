@@ -25,11 +25,10 @@ abstract class AbstractSubjectSchemaMapper<S extends Schema, T> extends Abstract
     Set<Resource> subjects = graphEntity.getSubjects();
 
     if (subjects.isEmpty()) {
-      // TODO: Fix required check
-      // if (schema.getRequired()) {
-      // throw new SchemaMapperRuntimeException(
-      // "Expected a single subject, but subject query yielded no results.");
-      // }
+      if (required) {
+        throw new SchemaMapperRuntimeException(
+            "Expected a single subject, but subject query yielded no results.");
+      }
 
       return null;
     }

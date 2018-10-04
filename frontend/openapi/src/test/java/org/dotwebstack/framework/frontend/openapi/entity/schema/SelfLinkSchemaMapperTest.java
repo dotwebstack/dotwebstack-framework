@@ -90,7 +90,7 @@ public class SelfLinkSchemaMapperTest {
     when(requestPathMock.normalised()).thenReturn("/breweries");
 
     // Act
-    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock,
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContextMock,
         schemaMapperAdapterMock);
 
     // Assert

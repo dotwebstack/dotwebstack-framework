@@ -70,7 +70,7 @@ public class StringSchemaMapperContextLinksTest {
     schema.addExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, null);
 
     // Act
-    schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext, schemaMapperAdapter);
   }
 
   @Test
@@ -85,7 +85,7 @@ public class StringSchemaMapperContextLinksTest {
     schema.addExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, contextLinksExtension);
 
     // Act
-    schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext, schemaMapperAdapter);
   }
 
   @Test
@@ -100,7 +100,7 @@ public class StringSchemaMapperContextLinksTest {
         ImmutableMap.of(StringSchemaMapper.LINK_CHOICES, Lists.newArrayList()));
 
     // Act
-    schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext, schemaMapperAdapter);
   }
 
   @SuppressWarnings("unchecked")
@@ -140,8 +140,8 @@ public class StringSchemaMapperContextLinksTest {
     when(requestContextMock.getBaseUri()).thenReturn("/base");
 
     // Act
-    Object result =
-        schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext,
+        schemaMapperAdapter);
 
     // Assert
     /*
@@ -161,7 +161,8 @@ public class StringSchemaMapperContextLinksTest {
         choice2PatternResult);
 
     // Act (2)
-    result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext,
+        schemaMapperAdapter);
 
     // Assert (2)
     Assert.assertEquals("/base/abc/object_type_2", result);
@@ -173,7 +174,8 @@ public class StringSchemaMapperContextLinksTest {
     when(ldPathExecutorMock.ldPathQuery(VALUE, "key / path")).thenReturn(realKeyResult);
 
     // Act (3)
-    result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext,
+        schemaMapperAdapter);
 
     // Assert (3)
     Assert.assertNull(result);

@@ -119,11 +119,10 @@ public class PrevLinkSchemaMapperTest {
   public void mapGraphValue_ReturnsPrevLink_WhenPageGreaterThanOne() {
     // Arrange
     when(requestPathMock.normalised()).thenReturn("/breweries");
-    when(requestContextMock.getParameters()).thenReturn(
-        ImmutableMap.of("page", "5"));
+    when(requestContextMock.getParameters()).thenReturn(ImmutableMap.of("page", "5"));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock,
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContextMock,
         schemaMapperAdapterMock);
 
     // Assert
@@ -138,7 +137,7 @@ public class PrevLinkSchemaMapperTest {
         ImmutableMap.of(pageParameter.getName(), "1"));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock,
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContextMock,
         schemaMapperAdapterMock);
 
     // Assert

@@ -123,7 +123,7 @@ public class NextLinkSchemaMapperTest {
         ImmutableSet.of(DBEERPEDIA.BROUWTOREN, DBEERPEDIA.MAXIMUS));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock,
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContextMock,
         schemaMapperAdapterMock);
 
     // Assert
@@ -137,7 +137,7 @@ public class NextLinkSchemaMapperTest {
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock,
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContextMock,
         schemaMapperAdapterMock);
 
     // Assert

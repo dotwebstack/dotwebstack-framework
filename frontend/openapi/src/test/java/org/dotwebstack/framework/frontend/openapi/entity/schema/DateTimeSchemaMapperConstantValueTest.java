@@ -52,7 +52,7 @@ public class DateTimeSchemaMapperConstantValueTest {
     dateTimeSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, EXPECTED_LOCAL_DATE_TIME));
 
     // Act
-    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeSchema,
+    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeSchema, false,
         graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert
@@ -67,7 +67,7 @@ public class DateTimeSchemaMapperConstantValueTest {
     dateTimeSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeSchema,
+    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeSchema, false,
         graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert
