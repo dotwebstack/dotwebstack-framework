@@ -8,8 +8,7 @@ import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 
-abstract class AbstractSubjectSchemaMapper<S extends Schema, T>
-    extends AbstractSchemaMapper<S, T> {
+abstract class AbstractSubjectSchemaMapper<S extends Schema, T> extends AbstractSchemaMapper<S, T> {
 
   protected static boolean hasSubjectVendorExtension(@NonNull Schema schema) {
     return hasVendorExtension(schema, OpenApiSpecificationExtensions.SUBJECT)
@@ -21,7 +20,8 @@ abstract class AbstractSubjectSchemaMapper<S extends Schema, T>
    * @throws SchemaMapperRuntimeException If the property is required, and no subject can be found.
    * @throws SchemaMapperRuntimeException If more than one subject has been found.
    */
-  protected static Value getSubject(@NonNull Schema schema, @NonNull GraphEntity graphEntity) {
+  protected static Value getSubject(@NonNull Schema schema, boolean required,
+      @NonNull GraphEntity graphEntity) {
     Set<Resource> subjects = graphEntity.getSubjects();
 
     if (subjects.isEmpty()) {

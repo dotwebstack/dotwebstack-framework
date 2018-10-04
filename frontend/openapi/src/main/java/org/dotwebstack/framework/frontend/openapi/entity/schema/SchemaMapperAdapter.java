@@ -21,23 +21,26 @@ public class SchemaMapperAdapter {
 
   public <S extends Schema> Object mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
-    SchemaMapper<? extends Schema, ?> schemaMapper = schemaMappers.stream().filter(
-        candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
-            () -> new SchemaMapperRuntimeException(String.format(
-                "No schema mapper available for '%s'.", schema.getClass().getName())));
+    SchemaMapper<? extends Schema,
+        ?> schemaMapper = schemaMappers.stream().filter(
+            candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
+                () -> new SchemaMapperRuntimeException(String.format(
+                    "No schema mapper available for '%s'.", schema.getClass().getName())));
 
     return ((SchemaMapper<S, ?>) schemaMapper).mapTupleValue(schema, entity, valueContext);
   }
 
   @SuppressWarnings("unchecked")
-  public <S extends Schema> Object mapGraphValue(@NonNull S schema, GraphEntity entity,
-      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    SchemaMapper<? extends Schema, ?> schemaMapper = schemaMappers.stream().filter(
-        candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
-            () -> new SchemaMapperRuntimeException(String.format(
-                "No schema mapper available for '%s'.", schema.getClass().getName())));
+  public <S extends Schema> Object mapGraphValue(@NonNull S schema, boolean required,
+      GraphEntity entity, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+    SchemaMapper<? extends Schema,
+        ?> schemaMapper = schemaMappers.stream().filter(
+            candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
+                () -> new SchemaMapperRuntimeException(String.format(
+                    "No schema mapper available for '%s'.", schema.getClass().getName())));
 
-    return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, entity, valueContext,
+    return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, required, entity, valueContext,
         schemaMapperAdapter);
   }
 }
