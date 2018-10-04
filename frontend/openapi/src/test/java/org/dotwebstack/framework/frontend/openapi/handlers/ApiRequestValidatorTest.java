@@ -141,7 +141,7 @@ public class ApiRequestValidatorTest {
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    requestValidator.validate(apiOperation, swagger, mockGet);
+    requestValidator.validate(apiOperation, openApi, mockGet);
   }
 
   @Test
