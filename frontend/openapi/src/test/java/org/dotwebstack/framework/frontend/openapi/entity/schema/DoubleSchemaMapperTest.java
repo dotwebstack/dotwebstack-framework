@@ -6,6 +6,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.NumberSchema;
+
 import com.google.common.collect.ImmutableList;
 import io.swagger.models.properties.DoubleProperty;
 import io.swagger.models.properties.StringProperty;
@@ -48,7 +51,7 @@ public class DoubleSchemaMapperTest {
 
   private SchemaMapperAdapter schemaMapperAdapter;
   private DoubleSchemaMapper doubleSchemaMapper;
-  private DoubleProperty doubleProperty;
+  private NumberSchema doubleProperty;
 
   @Before
   public void setUp() {
