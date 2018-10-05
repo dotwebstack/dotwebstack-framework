@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import com.atlassian.oai.validator.interaction.request.RequestValidator;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.atlassian.oai.validator.model.Request.Method;
 import com.atlassian.oai.validator.model.SimpleRequest;
@@ -21,6 +20,8 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException.InvalidParameter;
+import org.dotwebstack.framework.frontend.openapi.handlers.validation.RequestValidationException;
+import org.dotwebstack.framework.frontend.openapi.handlers.validation.RequestValidator;
 
 class ApiRequestValidator {
   private static final List<String> FORBIDDEN_CHARS = ImmutableList.of("?", "$");

@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.handlers.RequestValidator;
+import org.dotwebstack.framework.frontend.openapi.handlers.validation.RequestValidator;
 
 public final class OpenApiSpecUtils {
 
@@ -34,7 +34,7 @@ public final class OpenApiSpecUtils {
     LevelResolver levelResolver = LevelResolver.defaultResolver();
     MessageResolver messageResolver = new MessageResolver(levelResolver);
     SchemaValidator schemaValidator = new SchemaValidator(openAPI, messageResolver);
-    return new RequestValidator(schemaValidator, messageResolver, openAPI);
+    return new RequestValidator(schemaValidator, messageResolver);
   }
 
   /**
