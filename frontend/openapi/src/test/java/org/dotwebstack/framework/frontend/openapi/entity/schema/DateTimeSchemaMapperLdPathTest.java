@@ -63,16 +63,15 @@ public class DateTimeSchemaMapperLdPathTest {
   @Test
   public void mapGraphValue_returnsZonedlDateTime__WhenSupportedLiteralLdPathIsDefined() {
     // Arrange
-    dateTimeSchema.setExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    dateTimeSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
     Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE_TIME, XMLSchema.DATETIME);
 
     when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(
         ImmutableList.of(literal));
 
     // Act
-    ZonedDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeSchema, graphEntityMock,
-        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+    ZonedDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeSchema, false,
+        graphEntityMock, ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(EXPECTED_LOCAL_DATE_TIME));
@@ -85,8 +84,8 @@ public class DateTimeSchemaMapperLdPathTest {
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE));
 
-    ZonedDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeSchema, graphEntityMock,
-        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+    ZonedDateTime result = dateTimeSchemaMapper.mapGraphValue(dateTimeSchema, false,
+        graphEntityMock, ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(EXPECTED_LOCAL_DATE_TIME));

@@ -70,7 +70,7 @@ public class StringSchemaMapperRelativeLinkTest {
     stringSchema.addExtension(RELATIVE_LINK, ImmutableMap.of(PATTERN, pattern));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(stringSchema, graphEntityMock, valueContext,
+    Object result = schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
 
     // Assert
@@ -87,7 +87,7 @@ public class StringSchemaMapperRelativeLinkTest {
         ImmutableList.of(VALUE_1));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(stringSchema, graphEntityMock, valueContext,
+    Object result = schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
 
     // Assert
@@ -101,7 +101,7 @@ public class StringSchemaMapperRelativeLinkTest {
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(stringSchema, graphEntityMock, valueContext,
+    Object result = schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
 
     // Assert
@@ -121,11 +121,11 @@ public class StringSchemaMapperRelativeLinkTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(
-        String.format("LDPath query '%s' yielded multiple results (%d) for a property, which "
+        String.format("LDPath query '%s' yielded multiple results (%d) for a schema, which "
             + "requires a single result.", DUMMY_EXPR, 2));
 
     // Act
-    schemaMapper.mapGraphValue(stringSchema, graphEntityMock, valueContext,
+    schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
 
   }
@@ -141,7 +141,7 @@ public class StringSchemaMapperRelativeLinkTest {
         String.format("'%s' should have a '%s' property.", RELATIVE_LINK, PATTERN));
 
     // Act
-    schemaMapper.mapGraphValue(stringSchema, graphEntityMock, valueContext,
+    schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
   }
 
@@ -155,7 +155,7 @@ public class StringSchemaMapperRelativeLinkTest {
     thrown.expectMessage(String.format("'%s' can not be null.", RELATIVE_LINK));
 
     // Act
-    schemaMapper.mapGraphValue(stringSchema, graphEntityMock, valueContext,
+    schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
   }
 

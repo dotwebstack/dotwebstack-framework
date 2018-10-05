@@ -17,8 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class LongSchemaMapper extends AbstractSchemaMapper<NumberSchema, Long> {
 
-  private static final Set<IRI> SUPPORTED_TYPES =
-      ImmutableSet.of(XMLSchema.LONG);
+  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.LONG);
   private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
       OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
@@ -29,13 +28,14 @@ public class LongSchemaMapper extends AbstractSchemaMapper<NumberSchema, Long> {
 
   @Override
   public Long mapTupleValue(@NonNull NumberSchema schema, @NonNull TupleEntity entity,
-                            @NonNull ValueContext valueContext) {
+      @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
   }
 
   @Override
-  public Long mapGraphValue(@NonNull NumberSchema schema, @NonNull GraphEntity graphEntity,
-      @NotNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Long mapGraphValue(@NonNull NumberSchema schema, boolean required,
+      @NonNull GraphEntity graphEntity, @NotNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
   }
 

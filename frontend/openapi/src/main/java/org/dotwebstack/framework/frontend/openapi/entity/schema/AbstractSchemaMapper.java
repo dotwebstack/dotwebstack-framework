@@ -121,7 +121,7 @@ public abstract class AbstractSchemaMapper<S extends Schema, T> implements Schem
 
     if (queryResult.isEmpty()) {
       throw new SchemaMapperRuntimeException(
-          String.format("No results for LDPath query '%s' for required property.", ldPathQuery));
+          String.format("No results for LDPath query '%s' for required schema.", ldPathQuery));
     }
 
     if (queryResult.size() > 1) {

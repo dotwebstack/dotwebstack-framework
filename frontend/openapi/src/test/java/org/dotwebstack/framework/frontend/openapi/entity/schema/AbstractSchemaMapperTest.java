@@ -135,7 +135,7 @@ public class AbstractSchemaMapperTest {
     thrown.expectMessage("This object cannot have a combination of these.");
 
     // Act
-    abstractSchemaMapper.mapGraphValue(schemaMock, graphEntityMock,
+    abstractSchemaMapper.mapGraphValue(schemaMock, false, graphEntityMock,
         ValueContext.builder().value(VALUE).build(), schemaMapperAdapter);
 
     // Assert
@@ -146,7 +146,6 @@ public class AbstractSchemaMapperTest {
   public void mapGraphValue_ThrowsException_ForNullConstantAndRequiredProperty() {
     // Arrange
     when(schemaMock.getExtensions()).thenReturn(nullableMapOfConstantValue());
-    when(schemaMock.getRequired()).thenReturn(true);
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
@@ -155,8 +154,8 @@ public class AbstractSchemaMapperTest {
     thrown.expectMessage("required");
 
     // Act
-    abstractSchemaMapper.mapGraphValue(schemaMock, graphEntityMock, ValueContext.builder().build(),
-        schemaMapperAdapter);
+    abstractSchemaMapper.mapGraphValue(schemaMock, true, graphEntityMock,
+        ValueContext.builder().build(), schemaMapperAdapter);
   }
 
   @Test
@@ -165,7 +164,7 @@ public class AbstractSchemaMapperTest {
     when(schemaMock.getExtensions()).thenReturn(nullableMapOfConstantValue());
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(schemaMock, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(schemaMock, false, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
 
     // Assert

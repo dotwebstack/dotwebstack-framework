@@ -21,8 +21,9 @@ public class PrevLinkSchemaMapper extends AbstractLinkSchemaMapper {
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ObjectSchema schema, @NonNull GraphEntity entity,
-      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull ObjectSchema schema, boolean required,
+      @NonNull GraphEntity entity, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     RequestContext requestContext = entity.getRequestContext();
 
     int page = getPageTermParameter(requestContext).handle(requestContext.getParameters());

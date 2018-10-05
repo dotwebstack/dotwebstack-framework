@@ -55,15 +55,14 @@ public class BooleanSchemaMapperLdPathTest {
   @Test
   public void mapGraphValueTest() {
     // Arrange
-    booleanSchema.setExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    booleanSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
     Literal literal = VALUE_FACTORY.createLiteral("true", XMLSchema.BOOLEAN);
 
     when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(
         ImmutableList.of(literal));
 
     // Act
-    Boolean result = booleanSchemaMapper.mapGraphValue(booleanSchema, graphEntityMock,
+    Boolean result = booleanSchemaMapper.mapGraphValue(booleanSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert

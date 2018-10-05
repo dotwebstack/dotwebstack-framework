@@ -51,7 +51,7 @@ public class BooleanSchemaMapperConstantValueTest {
     booleanSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, "true"));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(booleanSchema, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(booleanSchema, false, graphEntityMock,
         valueContext, schemaMapperAdapter);
 
     // Assert
@@ -64,7 +64,7 @@ public class BooleanSchemaMapperConstantValueTest {
     booleanSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, true));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(booleanSchema, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(booleanSchema, false, graphEntityMock,
         valueContext, schemaMapperAdapter);
 
     // Assert
@@ -79,7 +79,7 @@ public class BooleanSchemaMapperConstantValueTest {
     booleanSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(booleanSchema, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(booleanSchema, false, graphEntityMock,
         valueContext, schemaMapperAdapter);
 
     // Assert

@@ -63,15 +63,14 @@ public class DateSchemaMapperLdPathTest {
   @Test
   public void mapGraphValue_ReturnsLocalDate_ForLdPath() {
     // Arrange
-    dateSchema.setExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    dateSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
     Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE, XMLSchema.DATE);
 
     when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(
         ImmutableList.of(literal));
 
     // Act
-    LocalDate result = dateSchemaMapper.mapGraphValue(dateSchema, graphEntityMock,
+    LocalDate result = dateSchemaMapper.mapGraphValue(dateSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -85,7 +84,7 @@ public class DateSchemaMapperLdPathTest {
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE));
 
-    LocalDate result = dateSchemaMapper.mapGraphValue(dateSchema, graphEntityMock,
+    LocalDate result = dateSchemaMapper.mapGraphValue(dateSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert

@@ -34,22 +34,23 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArraySchema, 
   }
 
   @Override
-  public Object mapGraphValue(@NonNull ArraySchema property, @NonNull GraphEntity graphEntity,
-      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Object mapGraphValue(@NonNull ArraySchema schema, boolean required,
+      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
-    if (hasSubjectVendorExtension(property)) {
+    if (hasSubjectVendorExtension(schema)) {
       Set<Resource> subjects = graphEntity.getSubjects();
 
       subjects.forEach(subject -> {
         ValueContext subjectContext = valueContext.toBuilder().value(subject).build();
 
-        builder.add(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntity,
+        builder.add(schemaMapperAdapter.mapGraphValue(schema.getItems(), false, graphEntity,
             subjectContext, schemaMapperAdapter));
       });
     } else if (valueContext.getValue() != null) {
-      if (property.getExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-        queryAndValidate(property, graphEntity, valueContext, schemaMapperAdapter, builder);
+      if (schema.getExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+        queryAndValidate(schema, required, graphEntity, valueContext, schemaMapperAdapter, builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(
             "ArraySchema must have a '%s' attribute", OpenApiSpecificationExtensions.LDPATH));
@@ -58,21 +59,21 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArraySchema, 
     return builder.build();
   }
 
-  private void queryAndValidate(ArraySchema property, GraphEntity graphEntity,
+  private void queryAndValidate(ArraySchema schema, boolean required, GraphEntity graphEntity,
       ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter,
       ImmutableList.Builder<Object> builder) {
     LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
     Collection<Value> queryResult = ldPathExecutor.ldPathQuery(valueContext.getValue(),
-        (String) property.getExtensions().get(OpenApiSpecificationExtensions.LDPATH));
+        (String) schema.getExtensions().get(OpenApiSpecificationExtensions.LDPATH));
 
-    validateMinItems(property, queryResult);
-    validateMaxItems(property, queryResult);
+    validateMinItems(schema, queryResult);
+    validateMaxItems(schema, queryResult);
 
     queryResult.forEach(valueNext -> {
       ValueContext newValueContext = valueContext.toBuilder().value(valueNext).build();
       Optional innerPropertySolved =
-          Optional.fromNullable(schemaMapperAdapter.mapGraphValue(property.getItems(), graphEntity,
-              newValueContext, schemaMapperAdapter));
+          Optional.fromNullable(schemaMapperAdapter.mapGraphValue(schema.getItems(), false,
+              graphEntity, newValueContext, schemaMapperAdapter));
       builder.add(innerPropertySolved);
 
     });

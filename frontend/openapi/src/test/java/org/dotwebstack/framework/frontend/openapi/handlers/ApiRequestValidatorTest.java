@@ -23,6 +23,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import org.apache.http.entity.ContentType;
+import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecUtils;
 import org.junit.Before;
 import org.junit.Rule;
@@ -136,6 +137,38 @@ public class ApiRequestValidatorTest {
         new RequestParameters());
 
     RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
+    ApiRequestValidator requestValidator =
+        new ApiRequestValidator(validator, requestParameterExtractorMock);
+
+    // Act
+    requestValidator.validate(apiOperation, openApi, mockGet);
+  }
+
+  @Test
+  public void validate_ThrowsException_WhenRequestContainsInvalidParams()
+      throws URISyntaxException, IOException {
+    // Assert
+    exception.expect(InvalidParamsBadRequestException.class);
+
+    // Arrange
+    ContainerRequestContext mockGet = mock(ContainerRequestContext.class);
+
+    UriInfo uriInfo = mock(UriInfo.class);
+
+    when(mockGet.getUriInfo()).thenReturn(uriInfo);
+
+    MultivaluedMap<String, String> queryParameters = new MultivaluedHashMap<>();
+    queryParameters.put("random-query-parameter", ImmutableList.of("something?wrong"));
+    when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
+
+    when(uriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>());
+
+    Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
+
+    ApiOperation apiOperation =
+        SwaggerUtils.extractApiOperations(swagger, "/endpoint", getPath).iterator().next();
+
+    RequestValidator validator = SwaggerUtils.createValidator(swagger);
     ApiRequestValidator requestValidator =
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 

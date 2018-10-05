@@ -68,11 +68,10 @@ public class AbstractSubjectSchemaMapperTest {
   @Test
   public void getSubject_ReturnsNull_ForOptionalPropertyWithZeroSubjects() {
     // Arrange
-    when(schemaMock.getRequired()).thenReturn(false);
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
-    Value subject = abstractSubjectSchemaMapper.getSubject(schemaMock, graphEntityMock);
+    Value subject = abstractSubjectSchemaMapper.getSubject(schemaMock, false, graphEntityMock);
 
     // Assert
     assertThat(subject, is(nullValue()));
@@ -84,7 +83,7 @@ public class AbstractSubjectSchemaMapperTest {
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
 
     // Act
-    Value subject = abstractSubjectSchemaMapper.getSubject(schemaMock, graphEntityMock);
+    Value subject = abstractSubjectSchemaMapper.getSubject(schemaMock, false, graphEntityMock);
 
     // Assert
     assertThat(subject, equalTo(DBEERPEDIA.BROUWTOREN));
@@ -97,11 +96,10 @@ public class AbstractSubjectSchemaMapperTest {
     thrown.expectMessage("Expected a single subject, but subject query yielded no results.");
 
     // Arrange
-    when(schemaMock.getRequired()).thenReturn(true);
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
-    abstractSubjectSchemaMapper.getSubject(schemaMock, graphEntityMock);
+    abstractSubjectSchemaMapper.getSubject(schemaMock, true, graphEntityMock);
   }
 
   @Test
@@ -115,7 +113,7 @@ public class AbstractSubjectSchemaMapperTest {
         ImmutableSet.of(DBEERPEDIA.BROUWTOREN, DBEERPEDIA.MAXIMUS));
 
     // Act
-    abstractSubjectSchemaMapper.getSubject(schemaMock, graphEntityMock);
+    abstractSubjectSchemaMapper.getSubject(schemaMock, false, graphEntityMock);
   }
 
   private static class TestSubjectSchemaMapper extends AbstractSubjectSchemaMapper {
@@ -131,8 +129,8 @@ public class AbstractSubjectSchemaMapperTest {
     }
 
     @Override
-    public Object mapGraphValue(Schema schema, GraphEntity entity, ValueContext valueContext,
-        SchemaMapperAdapter schemaMapperAdapter) {
+    public Object mapGraphValue(Schema schema, boolean required, GraphEntity entity,
+        ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
       throw new UnsupportedOperationException();
     }
 

@@ -95,7 +95,7 @@ public class BooleanSchemaMapperTest {
     ValueContext valueContext = ValueContext.builder().build();
 
     // Act
-    booleanSchemaMapper.mapGraphValue(booleanSchema, graphEntityMock, valueContext,
+    booleanSchemaMapper.mapGraphValue(booleanSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
   }
 

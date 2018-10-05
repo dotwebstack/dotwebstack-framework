@@ -271,8 +271,8 @@ public class AbstractLinkSchemaMapperTest {
     }
 
     @Override
-    public Object mapGraphValue(ObjectSchema schema, GraphEntity entity, ValueContext valueContext,
-        SchemaMapperAdapter schemaMapperAdapter) {
+    public Object mapGraphValue(ObjectSchema schema, boolean required, GraphEntity entity,
+        ValueContext valueContext, SchemaMapperAdapter schemaMapperAdapter) {
       throw new UnsupportedOperationException();
     }
 

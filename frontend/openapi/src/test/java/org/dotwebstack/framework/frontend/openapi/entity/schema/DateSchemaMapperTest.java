@@ -67,8 +67,7 @@ public class DateSchemaMapperTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format(
-        "LDPathQuery '%s' yielded a value which is not a literal of supported type",
-        DUMMY_EXPR));
+        "LDPathQuery '%s' yielded a value which is not a literal of supported type", DUMMY_EXPR));
 
     // Arrange
     dateSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
@@ -76,7 +75,7 @@ public class DateSchemaMapperTest {
         ImmutableList.of(VALUE_3));
 
     // Act
-    dateSchemaMapper.mapGraphValue(dateSchema, graphEntityMock,
+    dateSchemaMapper.mapGraphValue(dateSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 }

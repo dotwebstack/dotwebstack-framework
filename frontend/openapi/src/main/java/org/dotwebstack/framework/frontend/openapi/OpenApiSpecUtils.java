@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import com.atlassian.oai.validator.interaction.ApiOperationResolver;
-import com.atlassian.oai.validator.interaction.request.RequestValidator;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.atlassian.oai.validator.model.ApiOperationMatch;
 import com.atlassian.oai.validator.model.Request.Method;
@@ -23,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.NonNull;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestValidator;
 
 public final class OpenApiSpecUtils {
 

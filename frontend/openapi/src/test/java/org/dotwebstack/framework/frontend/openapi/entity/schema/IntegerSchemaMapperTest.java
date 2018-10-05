@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -11,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
+import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
@@ -20,6 +22,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -110,8 +113,8 @@ public class IntegerSchemaMapperTest {
         ImmutableList.of(VALUE_1));
 
     // Act
-    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(integerSchema, graphEntityMock,
-        ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+    Integer result = (Integer) schemaMapperAdapter.mapGraphValue(integerSchema, false,
+        graphEntityMock, ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
     assertThat(result, is(VALUE_1.integerValue().intValue()));
@@ -122,8 +125,7 @@ public class IntegerSchemaMapperTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format(
-        "LDPathQuery '%s' yielded a value which is not a literal of supported type",
-        DUMMY_EXPR));
+        "LDPathQuery '%s' yielded a value which is not a literal of supported type", DUMMY_EXPR));
 
     // Arrange
     integerSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
@@ -131,7 +133,24 @@ public class IntegerSchemaMapperTest {
         ImmutableList.of(VALUE_3));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(integerSchema, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(integerSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
+  }
+
+  @Test
+  public void getSupportedDataTypes_returnsSevenTypes() {
+    //Act
+    Set<IRI> supportedTypes = integerSchemaMapper.getSupportedDataTypes();
+
+    //Assert
+    assertThat(supportedTypes.size(), is(7));
+
+    assertTrue(supportedTypes.contains(XMLSchema.INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.INT));
+    assertTrue(supportedTypes.contains(XMLSchema.POSITIVE_INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.NON_NEGATIVE_INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.NON_POSITIVE_INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.NEGATIVE_INTEGER));
+    assertTrue(supportedTypes.contains(XMLSchema.UNSIGNED_INT));
   }
 }

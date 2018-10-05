@@ -52,7 +52,7 @@ public class ValidationReport {
   }
 
   public boolean isValid() {
-    return errors.size() > 0 ? false : true;
+    return errors.isEmpty();
   }
 
   private Violation createErrorObject(Model model, Resource subject) {
