@@ -346,8 +346,7 @@ public class ObjectSchemaMapperTest {
   @Test
   public void mapGraphValue_IncludesArraySchema_WhenVendorExtIsSetAndArrayIsNotEmpty() {
     // Arrange
-    ArraySchema childProperty =
-        (ArraySchema) new ArraySchema().addProperties("", new StringSchema());
+    ArraySchema childProperty = new ArraySchema().items(new StringSchema());
 
     childProperty.addExtension(OpenApiSpecificationExtensions.LDPATH,
         DBEERPEDIA.NAME.stringValue());

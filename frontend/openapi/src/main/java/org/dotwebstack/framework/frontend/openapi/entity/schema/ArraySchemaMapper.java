@@ -49,7 +49,8 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArraySchema, 
             subjectContext, schemaMapperAdapter));
       });
     } else if (valueContext.getValue() != null) {
-      if (schema.getExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
+      if (schema.getExtensions() == null ? false
+          : schema.getExtensions().containsKey(OpenApiSpecificationExtensions.LDPATH)) {
         queryAndValidate(schema, required, graphEntity, valueContext, schemaMapperAdapter, builder);
       } else {
         throw new SchemaMapperRuntimeException(String.format(

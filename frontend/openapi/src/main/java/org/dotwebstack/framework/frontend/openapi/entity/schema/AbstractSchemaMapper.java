@@ -165,7 +165,7 @@ public abstract class AbstractSchemaMapper<S extends Schema, T> implements Schem
   }
 
   protected static boolean hasVendorExtension(@NonNull Schema schema, @NonNull String extension) {
-    return schema.getExtensions().containsKey(extension);
+    return schema.getExtensions() == null ? false : schema.getExtensions().containsKey(extension);
   }
 
   /**
