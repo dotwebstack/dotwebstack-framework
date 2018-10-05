@@ -7,12 +7,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.NumberSchema;
-
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.DoubleProperty;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.NumberSchema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -52,12 +49,12 @@ public class DoubleSchemaMapperTest {
 
   private SchemaMapperAdapter schemaMapperAdapter;
   private DoubleSchemaMapper doubleSchemaMapper;
-  private NumberSchema doubleProperty;
+  private NumberSchema doubleSchema;
 
   @Before
   public void setUp() {
     doubleSchemaMapper = new DoubleSchemaMapper();
-    doubleProperty = new DoubleProperty();
+    doubleSchema = new NumberSchema();
 
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(doubleSchemaMapper));
@@ -70,14 +67,14 @@ public class DoubleSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    doubleSchemaMapper.mapTupleValue(doubleProperty, tupleEntityMock,
+    doubleSchemaMapper.mapTupleValue(doubleSchema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    Double result = doubleSchemaMapper.mapTupleValue(doubleProperty, tupleEntityMock,
+    Double result = doubleSchemaMapper.mapTupleValue(doubleSchema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION).build());
 
     // Assert
@@ -87,7 +84,7 @@ public class DoubleSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForIntegerProperty() {
     // Arrange & Act
-    Boolean supported = doubleSchemaMapper.supports(doubleProperty);
+    Boolean supported = doubleSchemaMapper.supports(doubleSchema);
 
     // Assert
     assertThat(supported, equalTo(true));
@@ -96,7 +93,7 @@ public class DoubleSchemaMapperTest {
   @Test
   public void supports_ReturnsTrue_ForNonIntegerProperty() {
     // Arrange & Act
-    Boolean supported = doubleSchemaMapper.supports(new StringProperty());
+    Boolean supported = doubleSchemaMapper.supports(new StringSchema());
 
     // Assert
     assertThat(supported, equalTo(false));
@@ -105,12 +102,12 @@ public class DoubleSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_ForLdPath() {
     // Arrange
-    doubleProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    doubleSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(valueMock, DUMMY_EXPR)).thenReturn(
         ImmutableList.of(VALUE_1));
 
     // Act
-    Double result = (Double) schemaMapperAdapter.mapGraphValue(doubleProperty, graphEntityMock,
+    Double result = (Double) schemaMapperAdapter.mapGraphValue(doubleSchema, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -126,12 +123,12 @@ public class DoubleSchemaMapperTest {
         DUMMY_EXPR));
 
     // Arrange
-    doubleProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    doubleSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE_3));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(doubleProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(doubleSchema, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 }
