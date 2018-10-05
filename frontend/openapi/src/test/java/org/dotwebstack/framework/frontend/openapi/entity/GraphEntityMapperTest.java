@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.frontend.openapi.entity.GraphEntity.newG
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableSet;
@@ -50,15 +51,14 @@ public class GraphEntityMapperTest {
     // Arrange
     IntegerSchema schema = new IntegerSchema();
     GraphEntity entity = newGraphEntity(
-        new ApiResponse().content(new Content().addMediaType(
-            MediaType.TEXT_PLAIN_TYPE.toString(),
+        new ApiResponse().content(new Content().addMediaType(MediaType.TEXT_PLAIN_TYPE.toString(),
             new io.swagger.v3.oas.models.media.MediaType().schema(schema))),
-        repositoryMock,
-        ImmutableSet.of(), openApiMock, requestContextMock);
+        repositoryMock, ImmutableSet.of(), openApiMock, requestContextMock);
 
     Object object = new Object();
-    when(schemaMapperAdapterMock.mapGraphValue(any(Schema.class), any(GraphEntity.class),
-        any(ValueContext.class), any(SchemaMapperAdapter.class))).thenReturn(object);
+    when(schemaMapperAdapterMock.mapGraphValue(any(Schema.class), anyBoolean(),
+        any(GraphEntity.class), any(ValueContext.class),
+        any(SchemaMapperAdapter.class))).thenReturn(object);
 
     // Act
     Object result = entityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);
