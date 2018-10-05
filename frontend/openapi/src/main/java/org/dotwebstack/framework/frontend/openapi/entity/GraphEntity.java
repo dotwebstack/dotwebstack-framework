@@ -29,9 +29,9 @@ public final class GraphEntity extends AbstractEntity {
   private final LdPathExecutor ldPathExecutor;
 
   private GraphEntity(@NonNull ApiResponse response,
-      @NonNull ImmutableMap<String, String> ldPathNamespaces,
-      @NonNull Components openApiComponents, @NonNull Repository repository,
-      @NonNull Set<Resource> subjects, @NonNull RequestContext requestContext) {
+      @NonNull ImmutableMap<String, String> ldPathNamespaces, @NonNull Components openApiComponents,
+      @NonNull Repository repository, @NonNull Set<Resource> subjects,
+      @NonNull RequestContext requestContext) {
     super(response, requestContext);
 
     this.ldPathNamespaces = ldPathNamespaces;
@@ -45,7 +45,8 @@ public final class GraphEntity extends AbstractEntity {
       @NonNull Repository repository, @NonNull Set<Resource> subjects, @NonNull OpenAPI openApi,
       @NonNull RequestContext requestContext) {
     return new GraphEntity(response, extractLdpathNamespaces(openApi),
-        openApi.getComponents(), repository, subjects, requestContext);
+        openApi.getComponents() == null ? new Components() : openApi.getComponents(), repository,
+        subjects, requestContext);
   }
 
   private static ImmutableMap<String, String> extractLdpathNamespaces(OpenAPI openApi) {

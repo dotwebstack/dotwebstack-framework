@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
@@ -32,13 +34,15 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
 
   @Override
   public Object map(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
-    // Already prepared for OASv3 multiple media type support
-    Schema schema = entity.getResponse().getContent().get(mediaType.toString()).getSchema();
+    io.swagger.v3.oas.models.media.MediaType mt =
+        entity.getResponse().getContent().get(mediaType.toString());
 
-    if (schema == null) {
+    if (mt == null || mt.getSchema() == null) {
       throw new EntityMapperRuntimeException(
           String.format("No schema found for media type '%s'.", mediaType.toString()));
     }
+
+    Schema schema = mt.getSchema();
 
     ValueContext valueContext = ValueContext.builder().build();
 
@@ -61,14 +65,15 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
         LOG.warn("TupleQueryResult yielded several bindingsets. Only parsing the first.");
       }
 
-      return mapBindingSet(bindingSet, schema.getProperties(), entity, valueContext);
+      return mapBindingSet(bindingSet,
+          schema.getRequired() == null ? Collections.emptyList() : schema.getRequired(),
+          schema.getProperties(), entity, valueContext);
     } else {
       throw new EntityMapperRuntimeException("TupleQueryResult did not yield any values.");
     }
   }
 
-  private Object mapCollection(TupleEntity entity, ArraySchema schema,
-      ValueContext valueContext) {
+  private Object mapCollection(TupleEntity entity, ArraySchema schema, ValueContext valueContext) {
     Schema itemSchema = schema.getItems();
 
     if (itemSchema == null) {
@@ -86,19 +91,21 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
     Map<String, Schema> itemProperties = ((ObjectSchema) itemSchema).getProperties();
 
     while (result.hasNext()) {
-      collectionBuilder.add(mapBindingSet(result.next(), itemProperties, entity, valueContext));
+      collectionBuilder.add(mapBindingSet(result.next(),
+          itemSchema.getRequired() == null ? Collections.emptyList() : itemSchema.getRequired(),
+          itemProperties, entity, valueContext));
     }
 
     return collectionBuilder.build();
   }
 
-  private ImmutableMap<String, Object> mapBindingSet(BindingSet bindingSet,
+  private ImmutableMap<String, Object> mapBindingSet(BindingSet bindingSet, List<String> required,
       Map<String, Schema> itemProperties, TupleEntity entity, ValueContext valueContext) {
     ImmutableMap.Builder<String, Object> itemBuilder = new ImmutableMap.Builder<>();
 
     itemProperties.forEach((name, property) -> {
-      if (property.getRequired().contains(name) && !bindingSet.hasBinding(name)) {
-        throw new EntityMapperRuntimeException(String.format("Property '%s' is required.", name));
+      if (required.contains(name) && !bindingSet.hasBinding(name)) {
+        throw new EntityMapperRuntimeException(String.format("Schema '%s' is required.", name));
       }
 
       if (!bindingSet.hasBinding(name)) {
