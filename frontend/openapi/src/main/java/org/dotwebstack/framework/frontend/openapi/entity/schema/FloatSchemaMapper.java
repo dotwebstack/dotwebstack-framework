@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.properties.FloatProperty;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.NumberSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -12,7 +12,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-class FloatSchemaMapper extends AbstractSchemaMapper<FloatProperty, Float> {
+class FloatSchemaMapper extends AbstractSchemaMapper<NumberSchema, Float> {
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.FLOAT);
   private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
@@ -24,8 +24,8 @@ class FloatSchemaMapper extends AbstractSchemaMapper<FloatProperty, Float> {
   }
 
   @Override
-  public boolean supports(@NonNull Property schema) {
-    return schema instanceof FloatProperty;
+  public boolean supports(@NonNull Schema schema) {
+    return schema instanceof NumberSchema;
   }
 
   @Override
