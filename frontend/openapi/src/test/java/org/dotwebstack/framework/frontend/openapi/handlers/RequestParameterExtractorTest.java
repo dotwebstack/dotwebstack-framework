@@ -2,6 +2,7 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -10,10 +11,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.ByteArrayInputStream;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -83,12 +87,17 @@ public class RequestParameterExtractorTest {
     when(schema.getType()).thenReturn("object");
 
     RequestBody requestBody = mock(RequestBody.class);
-
+    when(requestBody.getContent()).thenReturn(mock(Content.class));
+    MediaType mediaTypeMock = mock(MediaType.class);
+    when(requestBody.getContent().get(anyString())).thenReturn(mediaTypeMock);
     when(requestBody.getContent().get(
         ContentType.APPLICATION_JSON.getMimeType()).getSchema()).thenReturn(schema);
 
     when(operation.getRequestBody()).thenReturn(requestBody);
     when(apiOperation.getOperation()).thenReturn(operation);
+    when(requestBody.getContent()).thenReturn(mock(Content.class));
+    when(requestBody.getContent().values()).thenReturn(Collections.singletonList(mediaTypeMock));
+    when(mediaTypeMock.getSchema().getType()).thenReturn("object");
 
     requestParameterExtractor = new RequestParameterExtractor(new ObjectMapper());
   }

@@ -60,10 +60,10 @@ class RequestParameterExtractor {
           String definitionName = RefUtils.computeDefinitionName($ref);
           requestBody = openApi.getComponents().getRequestBodies().get(definitionName);
         }
-        schema = requestBody.getContent().values().stream().filter(
-            mediaType -> "object".equalsIgnoreCase(
-                mediaType.getSchema().getType())).findFirst().map(
-                    MediaType::getSchema);
+        schema = requestBody.getContent().values().stream()
+            .filter(mediaType -> "object".equalsIgnoreCase(mediaType.getSchema().getType()))
+            .findFirst()
+            .map(MediaType::getSchema);
       }
       extractBodyParameter(parameters, containerRequestContext, schema);
     } catch (IOException ioe) {

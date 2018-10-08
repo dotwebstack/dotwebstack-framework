@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +20,11 @@ class InformationProductRequestParameterMapper extends AbstractRequestParameterM
       result.putAll(getBodyParameters(product.getParameters(), requestParameters, requestBody));
     }
 
-    for (Parameter openApiParameter : operation.getParameters()) {
-      result.putAll(
-          getOtherParameters(product.getParameters(), requestParameters, openApiParameter));
+    if (operation.getParameters() != null) {
+      operation.getParameters().stream() //
+          .map(openApiParameter ->  //
+              getOtherParameters(product.getParameters(), requestParameters, openApiParameter)) //
+          .forEach(result::putAll); //
     }
     return result;
   }

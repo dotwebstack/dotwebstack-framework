@@ -238,7 +238,7 @@ public class TransactionRequestParameterMapperTest {
   public void map_ReturnsNothing_ForBodyParameter() {
     // Arrange
     Schema property = new ObjectSchema();
-    property.getExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
+    property.addExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter1.getIdentifier().stringValue());
 
     Schema schema = new ObjectSchema();
