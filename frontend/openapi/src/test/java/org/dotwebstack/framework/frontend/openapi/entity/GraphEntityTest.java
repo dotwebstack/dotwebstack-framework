@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -75,12 +76,20 @@ public class GraphEntityTest {
 
     // Assert
     assertThat(graphEntity.getOpenApiComponents(), is(not(nullValue())));
-    // assertThat(graphEntity.getOpenApiComponents().keySet(), is(empty()));
+    assertThat(graphEntity.getOpenApiComponents().getCallbacks(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getExamples(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getExtensions(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getHeaders(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getLinks(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getParameters(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getRequestBodies(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getResponses(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getSchemas(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getSecuritySchemes(), is(nullValue()));
 
-    // TODO: Fix this test
 
     assertThat(graphEntity.getLdPathNamespaces(), is(not(nullValue())));
-    // assertThat(graphEntity.getLdPathNamespaces().keySet(), is(empty()));
+    assertThat(graphEntity.getLdPathNamespaces().keySet(), is(empty()));
   }
 
   @Test

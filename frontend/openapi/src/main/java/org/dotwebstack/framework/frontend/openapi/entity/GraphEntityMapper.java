@@ -20,11 +20,7 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
 
   @Override
   public Object map(@NonNull GraphEntity entity, @NonNull MediaType mediaType) {
-    // TODO: Check if we still need the ResponseProperty wrapper (which was necessary because the
-    // OASv2 parser did not support vendorextensions at response level
-    // Schema schema = new ResponseProperty(entity.getResponse());
-    // Schema schema = null; // Temporary "fix" to clean up compiler error
-    Schema schema = entity.getResponse().getContent().get(mediaType.getType()).getSchema();
+    Schema schema = entity.getResponse().getContent().get(mediaType.toString()).getSchema();
     ValueContext valueContext = ValueContext.builder().build();
 
     return schemaMapperAdapter.mapGraphValue(schema, true, entity, valueContext,

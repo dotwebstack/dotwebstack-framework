@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.atlassian.oai.validator.interaction.request.RequestValidator;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -25,6 +24,7 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.http.entity.ContentType;
 import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecUtils;
+import org.dotwebstack.framework.frontend.openapi.handlers.validation.RequestValidator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -163,12 +163,12 @@ public class ApiRequestValidatorTest {
 
     when(uriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>());
 
-    Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
+    OpenAPI openApi = createOpenApi("simple-getHeaderRequired.yml");
 
     ApiOperation apiOperation =
-        SwaggerUtils.extractApiOperations(swagger, "/endpoint", getPath).iterator().next();
+        OpenApiSpecUtils.extractApiOperations(openApi, "/endpoint", getPath).iterator().next();
 
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
     ApiRequestValidator requestValidator =
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 

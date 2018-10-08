@@ -120,9 +120,9 @@ public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectSchema
     ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 
     schema.getProperties().forEach((propKey, propValue) -> {
-      Object propertyResult =
-          schemaMapperAdapter.mapGraphValue(propValue, schema.getRequired().contains(propKey),
-              entityBuilderContext, valueContext, schemaMapperAdapter);
+      Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue,
+          schema.getRequired() == null ? false : schema.getRequired().contains(propKey),
+          entityBuilderContext, valueContext, schemaMapperAdapter);
 
       if (!isExcludedWhenEmptyOrNull(valueContext, propValue, propertyResult)) {
         builder.put(propKey, Optional.fromNullable(propertyResult));
@@ -140,8 +140,8 @@ public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectSchema
 
   @Override
   public boolean supports(@NonNull Schema schema) {
-    return schema instanceof ObjectSchema
-        && !schema.getExtensions().containsKey(OpenApiSpecificationExtensions.TYPE);
+    return schema instanceof ObjectSchema && !(schema.getExtensions() == null ? false
+        : schema.getExtensions().containsKey(OpenApiSpecificationExtensions.TYPE));
   }
 
   @Override
