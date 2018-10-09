@@ -1,0 +1,116 @@
+swagger: "2.0"
+info:
+  title: "OAS 3 Mock 01"
+  description: "OAS3 for test purposes"
+  version: 1.0.0
+host: dbeerpedia.org
+basePath: /api/v1
+consumes:
+- application/json
+- text/plain
+produces:
+- application/json
+- text/plain
+schemes:
+- https
+x-dotwebstack-spec-endpoint: "/docs/_spec"
+paths:
+  /map-endpoints-correctly:
+    get:
+      description: "Test"
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        200:
+          description: OK
+          x-dotwebstack-parameter: 'x-dotwebstack-information-product'
+  /map-spec-endpoint-correctly-whennotgiven:
+    get:
+      description: "Test"
+      produces:
+      - application/json
+      - text/plain
+      responses:
+        200:
+          description: OK
+          x-dotwebstack-parameter: 'x-dotwebstack-information-product'
+  /exc-endpoint-without-produces:
+    get:
+      description: "Test"
+      responses:
+        200:
+          description: OK
+          x-dotwebstack-parameter: 'x-dotwebstack-information-product'
+  /exc-endpoint-without-responses:
+    get:
+      description: "Test"
+      x-dotwebstack-parameter: 'x-dotwebstack-information-product'
+  /exc-endpoint-without-ok-repsonse:
+    get:
+      description: "Test"
+      produces:
+      - application/json
+      responses:
+        201:
+          description: NOT OK
+  /map-body-parameter:
+    post:
+      description: "Test"
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: object
+        description: The request payload
+        schema:
+          type: string
+      responses:
+        200:
+          description: OK
+          x-dotwebstack-parameter: 'x-dotwebstack-information-product'
+  /map-body-parameter-with-refobject:
+    post:
+      description: "Test"
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - $ref: 'oas3-ref.yml#/body'
+      responses:
+        200:
+          description: OK
+          x-dotwebstack-parameter: 'x-dotwebstack-information-product'
+  /map-body-parameter-no-object:
+    post:
+      description: "Test"
+      consumes:
+      - application/json
+      produces:
+      - text/plain
+      - application/json
+      parameters:
+      - in: body
+        name: object
+        description: The request payload
+      responses:
+        200:
+          description: OK
+          x-dotwebstack-parameter: 'x-dotwebstack-information-product'
+  /produces-precedence-with-valid-data:
+    post:
+      description: "Test"
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - $ref: 'oas3-ref.yml#/body'
+      responses:
+        200:
+          description: OK
+          x-dotwebstack-parameter: 'x-dotwebstack-information-product'
+

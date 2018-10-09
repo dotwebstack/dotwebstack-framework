@@ -1,0 +1,19 @@
+swagger: "2.0"
+info:
+  title: "OAS 3 Mock 02"
+  description: "OAS3 for test purposes"
+  version: 1.0.0
+host: dbeerpedia.org
+schemes:
+- https
+x-dotwebstack-spec-endpoint: "/docs/_spec"
+paths:
+  /map-endpoint-without-basepath:
+    get:
+      description: "Test"
+      produces:
+      - text/plain
+      responses:
+        200:
+          description: OK
+          x-dotwebstack-parameter: 'x-dotwebstack-information-product'
