@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.testutils;
 
-
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -20,7 +19,7 @@ import org.junit.jupiter.params.converter.ArgumentConverter;
 import org.junit.jupiter.params.converter.ConvertWith;
 
 @Slf4j
-public class OpenApiConverter implements ArgumentConverter {
+public class ToOpenApi implements ArgumentConverter {
   @Override
   public OpenAPI convert(Object o, ParameterContext parameterContext)
       throws ArgumentConversionException {
@@ -41,9 +40,10 @@ public class OpenApiConverter implements ArgumentConverter {
     return new OpenAPI();
   }
 
+
   @Target({ElementType.ANNOTATION_TYPE, ElementType.PARAMETER})
   @Retention(RetentionPolicy.RUNTIME)
-  @ConvertWith(OpenApiConverter.class)
+  @ConvertWith(ToOpenApi.class)
   public @interface ToOpenApi3 {
   }
 }

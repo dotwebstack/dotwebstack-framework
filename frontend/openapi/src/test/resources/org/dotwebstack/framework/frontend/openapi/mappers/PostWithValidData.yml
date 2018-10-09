@@ -13,7 +13,7 @@ paths:
         '200':
           description: OK
           content:
-            application/hal+json:
+            application/json:
               schema:
                 type: object
                 properties:
@@ -32,3 +32,11 @@ paths:
                   dec2:
                     type: number
                     example: 5.67
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                int:
+                  type: integer
