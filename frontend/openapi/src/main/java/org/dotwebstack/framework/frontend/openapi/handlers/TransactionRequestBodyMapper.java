@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import com.google.common.collect.ImmutableMap;
 import com.taxonic.carml.engine.RmlMapper;
 import com.taxonic.carml.logical_source_resolver.JsonPathResolver;
 import com.taxonic.carml.model.TriplesMap;
@@ -46,6 +47,9 @@ class TransactionRequestBodyMapper {
     LOG.debug("Vendor extensions for body parameter '{}': {}", requestBody.getDescription(),
         vendorExtensions);
 
+    if (vendorExtensions == null) {
+      vendorExtensions = ImmutableMap.of();
+    }
     String rmlMappingName =
         (String) vendorExtensions.get(OpenApiSpecificationExtensions.RML_MAPPING);
 

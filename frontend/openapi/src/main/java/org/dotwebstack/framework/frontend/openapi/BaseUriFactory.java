@@ -44,7 +44,7 @@ public class BaseUriFactory {
    */
   public static String determineBaseUri(@NonNull ContainerRequest containerRequest,
       @NonNull OpenAPI openAPI, @NonNull Operation operation) {
-    String openApiSpecUri = ""; // openAPI.getServers().get(0).getUrl();
+    String openApiSpecUri = openAPI.getServers().get(0).getUrl();
 
     if (operation.getServers() != null) {
       Server operationServer = operation.getServers().get(0);

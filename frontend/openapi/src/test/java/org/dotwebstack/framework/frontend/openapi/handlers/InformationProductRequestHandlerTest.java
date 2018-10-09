@@ -8,8 +8,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,8 +19,10 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.servers.Server;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Map;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -97,8 +97,9 @@ public class InformationProductRequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
     when(containerRequestMock.getRequestHeaders()).thenReturn(mock(MultivaluedStringMap.class));
 
-    when(requestParameterMapperMock.map(same(operation), eq(informationProductMock),
-        same(requestParameters))).thenReturn(ImmutableMap.of());
+//    when(requestParameterMapperMock.map(same(operation), eq(informationProductMock),
+//        same(requestParameters))).thenReturn(ImmutableMap.of());
+    when(openApiMock.getServers()).thenReturn(Collections.singletonList(new Server().url("")));
   }
 
   @Test
@@ -125,8 +126,6 @@ public class InformationProductRequestHandlerTest {
   @Test
   public void apply_ReturnsOkResponseWithEmptySubjects_ForEmptySubjectQueryResult() {
     // Arrange
-    // TODO: Check what this needs to be replaced with
-    // when(openApiMock.getBasePath()).thenReturn("");
 
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
@@ -162,8 +161,6 @@ public class InformationProductRequestHandlerTest {
   @Test
   public void apply_ReturnsOkResponseWithSubjects_ForNonEmptySubjectQueryResult() {
     // Arrange
-    // TODO: Check what this needs to be replaced with
-    // when(openApiMock.getBasePath()).thenReturn("");
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
@@ -209,8 +206,6 @@ public class InformationProductRequestHandlerTest {
     exception.expect(ConfigurationException.class);
 
     // Arrange
-    // TODO: Check what this needs to be replaced with
-    // when(openApiMock.getBasePath()).thenReturn("");
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
@@ -236,8 +231,6 @@ public class InformationProductRequestHandlerTest {
     exception.expect(NotFoundException.class);
 
     // Arrange
-    // TODO: Check what this needs to be replaced with
-    // when(openApiMock.getBasePath()).thenReturn("");
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
@@ -247,11 +240,12 @@ public class InformationProductRequestHandlerTest {
     when(informationProductMock.getResult(parameters)).thenReturn(result);
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
-    Operation operation = new Operation().extensions(ImmutableMap.of(
-        OpenApiSpecificationExtensions.SUBJECT_QUERY, "SELECT ?s WHERE { ?s ?p ?o }")).responses(
-            new ApiResponses().addApiResponse(
-                Status.OK.toString(), new ApiResponse()).addApiResponse(
-                    Status.NOT_FOUND.toString(), new ApiResponse()));
+    Operation operation = new Operation() //
+        .extensions(ImmutableMap.of( //
+            OpenApiSpecificationExtensions.SUBJECT_QUERY, "SELECT ?s WHERE { ?s ?p ?o }")) //
+        .responses(new ApiResponses() //
+            .addApiResponse("200", new ApiResponse()) //
+            .addApiResponse("404", new ApiResponse())); //
 
     when(apiOperationMock.getOperation()).thenReturn(operation);
 

@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
+import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -124,8 +125,10 @@ public final class InformationProductRequestHandler
   }
 
   private Set<Resource> getSubjects(Repository repository) {
-    String subjectQuery = (String) apiOperation.getOperation().getExtensions().get(
-        OpenApiSpecificationExtensions.SUBJECT_QUERY);
+    Operation operation = apiOperation.getOperation();
+    Map<String, Object> extensions = operation.getExtensions() != null
+        ? operation.getExtensions() : ImmutableMap.of();
+    String subjectQuery = (String) extensions.get(OpenApiSpecificationExtensions.SUBJECT_QUERY);
 
     if (subjectQuery == null) {
       throw new ConfigurationException(String.format(

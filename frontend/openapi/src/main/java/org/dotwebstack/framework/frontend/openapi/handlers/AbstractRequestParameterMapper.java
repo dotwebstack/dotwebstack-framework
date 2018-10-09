@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+
+import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Collection;
@@ -23,8 +27,13 @@ abstract class AbstractRequestParameterMapper {
       @NonNull RequestParameters requestParameters, RequestBody requestBody) {
     Map<String, String> result = new HashMap<>();
 
-    Collection<Schema> properties = requestBody.getContent().get(
-        MediaType.APPLICATION_JSON.toString()).getSchema().getProperties().values();
+    Content content = defaultIfNull(requestBody.getContent(), new Content());
+    Map<String, Schema> map = defaultIfNull(content.get(
+        MediaType.APPLICATION_JSON.toString()).getSchema().getProperties(), ImmutableMap.of());
+
+    Collection<Schema> properties = map.values();
+
+
     for (Schema property : properties) {
       Map<String, Object> vendorExtensions = property.getExtensions();
 
@@ -38,13 +47,14 @@ abstract class AbstractRequestParameterMapper {
         continue;
       }
 
-      Parameter<?> parameter = ParameterUtils.getParameter(parameters, (String) parameterIdString);
+      Parameter<?> parameter =
+          ParameterUtils.getParameter(parameters, (String) parameterIdString);
 
       String value = requestParameters.get(parameter.getName());
 
       result.put(parameter.getName(), value);
-    }
 
+    }
     return result;
   }
 

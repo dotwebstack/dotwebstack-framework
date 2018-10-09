@@ -119,8 +119,8 @@ public class RequestValidator {
   private ValidationReport validateHeaders(Request request, ApiOperation apiOperation) {
     return defaultIfNull(apiOperation.getOperation().getParameters(), ImmutableList.<Parameter>of())
         .stream()
-        .filter(RequestValidator::isHeaderParam).filter(
-            param -> param.getExtensions().containsKey(
+        .filter(RequestValidator::isHeaderParam)
+        .filter(param -> param.getExtensions() != null && param.getExtensions().containsKey(
                 OpenApiSpecificationExtensions.PARAMETER))
         .map(p -> validateParameter(
             apiOperation, p,

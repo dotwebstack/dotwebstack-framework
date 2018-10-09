@@ -239,10 +239,10 @@ public class InformationProductRequestParameterMapperTest {
   public void map_ReturnsCorrectParameterName_ForBodyParameter() {
     // Arrange
     Schema property = new ObjectSchema();
-    property.getExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
+    property.addExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter.getIdentifier().stringValue());
     Schema property2 = new ObjectSchema();
-    property2.getExtensions().put(OpenApiSpecificationExtensions.PARAMETER,
+    property2.addExtension(OpenApiSpecificationExtensions.PARAMETER,
         parameter2.getIdentifier().stringValue());
 
     Schema schema = new ObjectSchema();
@@ -250,7 +250,7 @@ public class InformationProductRequestParameterMapperTest {
 
     RequestBody requestBody = new RequestBody();
     requestBody.setDescription("body");
-    requestBody.setContent(new Content().addMediaType("", new MediaType().schema(schema)));
+    requestBody.setContent(new Content().addMediaType("application/json", new MediaType().schema(schema)));
 
     Operation operation = new Operation();
     operation.setRequestBody(requestBody);
@@ -275,14 +275,14 @@ public class InformationProductRequestParameterMapperTest {
   public void map_ReturnsEmptyMap_WhenRequestBodyHasNoSchemaWithParamVendorExtension() {
     // Arrange
     Schema property = new ObjectSchema();
-    property.getExtensions().put("x-dotwebstack-another-vendor-extension", "foo");
+    property.addExtension("x-dotwebstack-another-vendor-extension", "foo");
 
     Schema schema = new ObjectSchema();
     schema.setProperties(ImmutableMap.of("param1", property));
 
     RequestBody requestBody = new RequestBody();
     requestBody.setDescription("body");
-    requestBody.setContent(new Content().addMediaType("", new MediaType().schema(schema)));
+    requestBody.setContent(new Content().addMediaType("application/json", new MediaType().schema(schema)));
 
     Operation operation = new Operation();
     operation.setRequestBody(requestBody);
