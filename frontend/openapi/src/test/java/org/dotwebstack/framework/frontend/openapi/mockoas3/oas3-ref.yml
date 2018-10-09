@@ -1,13 +1,7 @@
-swagger: "2.0"
-info:
-  title: "OAS3 reference file"
-  description: "OAS3 for test purposes"
-  version: 1.0.0
-components:
-  parameters:
-    body:
-      in: body
-      name: object
-      description: The request payload
-      schema:
-        type: string
+requestBodies:
+  body:
+    in: body
+    name: object
+    description: The request payload
+    schema:
+      type: string
