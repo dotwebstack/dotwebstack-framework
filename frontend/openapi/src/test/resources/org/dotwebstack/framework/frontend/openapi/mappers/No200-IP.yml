@@ -8,7 +8,7 @@ x-dotwebstack-spec-endpoint: /docs/_spec
 paths:
   /breweries:
     get:
-      x-dotwebstack-transaction: 'http://dbeerpedia.org#Breweries'
+      x-dotwebstack-information-product: 'http://dbeerpedia.org#Breweries'
       responses:
         '201':
           description: OK

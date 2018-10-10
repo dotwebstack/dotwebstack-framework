@@ -1,7 +1,0 @@
-requestBodies:
-  body:
-    in: body
-    name: object
-    description: The request payload
-    schema:
-      type: string

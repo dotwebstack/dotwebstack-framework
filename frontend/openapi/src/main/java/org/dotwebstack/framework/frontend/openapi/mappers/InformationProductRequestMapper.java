@@ -44,8 +44,9 @@ public class InformationProductRequestMapper implements RequestMapper {
 
   @Override
   public Boolean supportsVendorExtension(Map<String, Object> vendorExtensions) {
-    return vendorExtensions.keySet().stream().anyMatch(
-        key -> key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
+    return vendorExtensions != null
+        && vendorExtensions.keySet().stream()
+        .anyMatch(key -> key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
   }
 
   @Override

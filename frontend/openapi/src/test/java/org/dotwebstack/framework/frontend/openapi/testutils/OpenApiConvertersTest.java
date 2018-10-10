@@ -13,14 +13,14 @@ import org.junit.jupiter.params.provider.CsvSource;
 class OpenApiConvertersTest {
 
   @ParameterizedTest
-  @CsvSource({"testutils/PostWithValidData.yml"})
+  @CsvSource({"testutils/Post.yml"})
   void convertToOpenApiModel(@ToOpenApi3 OpenAPI model) {
     assertThat(model, is(notNullValue()));
     assertThat(model.getInfo().getTitle(), is("API"));
   }
 
   @ParameterizedTest
-  @CsvSource({"testutils/PostWithValidData.yml"})
+  @CsvSource({"testutils/Post.yml"})
   void ConvertToString(@ToOpenApi3String String model) {
     assertThat(model, is(notNullValue()));
     assertThat(model.contains("API"), is(true));

@@ -118,7 +118,9 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
       for (ApiOperation apiOperation : apiOperations) {
         Operation operation = apiOperation.getOperation();
 
-        verifySchemasHaveTypeObject(operation.getRequestBody());
+        if (operation.getRequestBody() != null){
+          verifySchemasHaveTypeObject(operation.getRequestBody());
+        }
 
         Optional<RequestMapper> optionalRequestMapper = requestMappers.stream() //
             .filter(mapper -> mapper.supportsVendorExtension(operation.getExtensions())) //
