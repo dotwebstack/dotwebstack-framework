@@ -1,10 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import java.util.Map;
-
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import java.util.Map;
 import org.glassfish.jersey.server.model.Resource;
 
 public interface RequestMapper {
@@ -13,5 +12,4 @@ public interface RequestMapper {
 
   void map(Resource.Builder resourceBuilder, OpenAPI openAPI, ApiOperation apiOperation,
            Operation getOperation, String absolutePath);
-
 }

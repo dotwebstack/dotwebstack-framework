@@ -4,38 +4,39 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.param.Parameter;
 import org.dotwebstack.framework.param.ParameterUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 abstract class AbstractRequestParameterMapper {
-
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractRequestParameterMapper.class);
 
   protected Map<String, String> getBodyParameters(@NonNull Collection<Parameter> parameters,
       @NonNull RequestParameters requestParameters, RequestBody requestBody) {
     Map<String, String> result = new HashMap<>();
 
     Content content = defaultIfNull(requestBody.getContent(), new Content());
-    Map<String, Schema> map = defaultIfNull(content.get(
-        MediaType.APPLICATION_JSON.toString()).getSchema().getProperties(), ImmutableMap.of());
 
-    Collection<Schema> properties = map.values();
-
+    Schema schema = defaultIfNull(content.get(
+        MediaType.APPLICATION_JSON.toString()).getSchema(),
+        new ObjectSchema().properties(ImmutableMap.of()));
+    Map<String, Schema> requestBodyPropertyMap = schema.getProperties();
+    Collection<Schema> properties = requestBodyPropertyMap.values();
 
     for (Schema property : properties) {
-      Map<String, Object> vendorExtensions = property.getExtensions();
+      Map<String, Object> vendorExtensions =
+          defaultIfNull(property.getExtensions(), ImmutableMap.of());
 
       LOG.debug("Vendor extensions for property '{}' in parameter '{}': {}", property.getName(),
           requestBody.getDescription(), vendorExtensions);

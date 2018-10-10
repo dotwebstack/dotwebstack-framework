@@ -17,7 +17,3 @@ paths:
               schema:
                 type: string
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: integer

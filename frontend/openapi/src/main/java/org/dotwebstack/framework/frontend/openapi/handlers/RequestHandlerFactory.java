@@ -36,19 +36,23 @@ public class RequestHandlerFactory {
     this.transactionHandlerFactory = transactionHandlerFactory;
   }
 
-  public InformationProductRequestHandler newInformationProductRequestHandler(
+  public InformationProductRequestHandler newRequestHandler(
       @NonNull ApiOperation apiOperation,
-      @NonNull InformationProduct informationProduct, @NonNull ApiResponse response,
-      @NonNull OpenAPI openApi) {
-    return new InformationProductRequestHandler(apiOperation, informationProduct, response,
+      @NonNull InformationProduct informationProduct,
+      @NonNull OpenAPI openApi,
+      @NonNull ApiResponse response) {
+    return new InformationProductRequestHandler(apiOperation,
+        informationProduct,
+        response,
         informationProductRequestParameterMapper,
         new ApiRequestValidator(OpenApiSpecUtils.createValidator(openApi),
             requestParameterExtractor),
         openApi);
   }
 
-  public TransactionRequestHandler newTransactionRequestHandler(@NonNull ApiOperation apiOperation,
-      @NonNull Transaction transaction, @NonNull OpenAPI openApi) {
+  public TransactionRequestHandler newRequestHandler(@NonNull ApiOperation apiOperation,
+      @NonNull Transaction transaction,
+      @NonNull OpenAPI openApi) {
     return new TransactionRequestHandler(apiOperation, transaction,
         transactionRequestParameterMapper, transactionRequestBodyMapper,
         new ApiRequestValidator(OpenApiSpecUtils.createValidator(openApi),

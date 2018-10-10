@@ -91,10 +91,10 @@ class RequestMapperTest {
     when(openApiParserMock.readContents(anyString())).thenReturn(mock(SwaggerParseResult.class));
 
     RequestHandlerFactory requestHandlerFactoryMock = mock(RequestHandlerFactory.class);
-    when(requestHandlerFactoryMock.newTransactionRequestHandler(any(), any(), any())) //
+    when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any())) //
         .thenReturn(transactionRequestHandlerMock);
 
-    when(requestHandlerFactoryMock.newInformationProductRequestHandler(any(), any(), any(), any()))
+    when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any(), any()))
         .thenReturn(informationProductRequestHandlerMock);
 
     TransactionResourceProvider transactionResourceProviderMock =
@@ -173,13 +173,12 @@ class RequestMapperTest {
       @ToOpenApi3 OpenAPI openAPI, String message) throws Throwable {
     // Arrange
     arrange(openAPIString, openAPI);
-    Class<ConfigurationException> type = ConfigurationException.class;
 
     // Act
     Executable action = () -> openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
-    assertThrows(type, action, message);
+    assertThrows(ConfigurationException.class, action, message);
   }
 
   private List<Resource> verifyAndGetRegisteredResources() {

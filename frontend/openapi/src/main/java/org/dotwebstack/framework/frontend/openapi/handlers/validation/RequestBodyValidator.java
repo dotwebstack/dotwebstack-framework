@@ -7,7 +7,6 @@ import static com.atlassian.oai.validator.util.ContentTypeUtils.isJsonContentTyp
 import static com.atlassian.oai.validator.util.HttpParsingUtils.parseUrlEncodedFormDataBodyAsJson;
 import static java.lang.Boolean.TRUE;
 import static java.util.Objects.requireNonNull;
-import static org.slf4j.LoggerFactory.getLogger;
 
 import com.atlassian.oai.validator.model.Request;
 import com.atlassian.oai.validator.report.MessageResolver;
@@ -19,17 +18,16 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
 
 /**
  * Validation for a request body.
  * <p>
  * The schema to validate is selected based on the content-type header of the incoming request.
  */
+@Slf4j
 class RequestBodyValidator {
-
-  private static final Logger log = getLogger(RequestBodyValidator.class);
 
   private final MessageResolver messages;
 
@@ -112,7 +110,8 @@ class RequestBodyValidator {
 
     // TODO: Validate multi-part form data
 
-    log.info("Validation of '{}' not supported. Request body not validated.", maybeApiMediaTypeForRequest.get().getLeft());
+    LOG.info("Validation of '{}' not supported. Request body not validated.",
+        maybeApiMediaTypeForRequest.get().getLeft());
     return empty();
   }
 

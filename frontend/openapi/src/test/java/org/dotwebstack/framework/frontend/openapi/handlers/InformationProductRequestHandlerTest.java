@@ -97,8 +97,6 @@ public class InformationProductRequestHandlerTest {
     when(apiOperationMock.getOperation()).thenReturn(operation);
     when(containerRequestMock.getRequestHeaders()).thenReturn(mock(MultivaluedStringMap.class));
 
-//    when(requestParameterMapperMock.map(same(operation), eq(informationProductMock),
-//        same(requestParameters))).thenReturn(ImmutableMap.of());
     when(openApiMock.getServers()).thenReturn(Collections.singletonList(new Server().url("")));
   }
 

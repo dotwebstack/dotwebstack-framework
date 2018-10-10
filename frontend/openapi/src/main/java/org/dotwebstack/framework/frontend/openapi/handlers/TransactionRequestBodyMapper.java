@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.BadRequestException;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.rml.RmlMapping;
@@ -19,15 +20,13 @@ import org.dotwebstack.framework.rml.RmlMappingResourceProvider;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 class TransactionRequestBodyMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TransactionRequestBodyMapper.class);
   private static final ValueFactory valueFactory = SimpleValueFactory.getInstance();
   private RmlMappingResourceProvider rmlMappingResourceProvider;
 

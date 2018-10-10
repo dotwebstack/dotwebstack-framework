@@ -16,7 +16,6 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.container.ContainerRequestContext;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationBackend;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -40,11 +39,6 @@ public class TransactionRequestBodyMapperTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  @Mock
-  private ContainerRequestContext contextMock;
-
-  private RmlMappingResourceProvider rmlMappingResourceProvider;
-
   private TransactionRequestBodyMapper transactionRequestBodyMapper;
 
   private RequestParameters requestParameters;
@@ -55,14 +49,12 @@ public class TransactionRequestBodyMapperTest {
   @Mock
   private ApplicationProperties applicationProperties;
 
-  private SailRepository sailRepository;
-
   @Before
   public void setUp() throws IOException {
-    rmlMappingResourceProvider = new RmlMappingResourceProvider(configurationBackend,
-        applicationProperties);
+    RmlMappingResourceProvider rmlMappingResourceProvider =
+        new RmlMappingResourceProvider(configurationBackend, applicationProperties);
     InputStream inputStream = new ClassPathResource("/rmlmapping/mapping.trig").getInputStream();
-    sailRepository = new SailRepository(new MemoryStore());
+    SailRepository sailRepository = new SailRepository(new MemoryStore());
     sailRepository.initialize();
     sailRepository.getConnection().add(inputStream, "", RDFFormat.TRIG);
     when(configurationBackend.getRepository()).thenReturn(sailRepository);
@@ -142,7 +134,7 @@ public class TransactionRequestBodyMapperTest {
     requestBody.setDescription("body");
     requestBody.addExtension(OpenApiSpecificationExtensions.RML_MAPPING,
         DBEERPEDIA.RML_MAPPING_NAME);
-    requestBody.setContent(new Content().addMediaType("", new MediaType().schema(schema)));
+    requestBody.setContent(new Content().addMediaType("text", new MediaType().schema(schema)));
 
     Operation operation = new Operation();
     operation.setRequestBody(requestBody);

@@ -8,6 +8,8 @@ import com.google.common.io.CharStreams;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.FileNotFoundException;
@@ -15,7 +17,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
@@ -118,7 +122,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
       for (ApiOperation apiOperation : apiOperations) {
         Operation operation = apiOperation.getOperation();
 
-        if (operation.getRequestBody() != null){
+        if (operation.getRequestBody() != null) {
           verifySchemasHaveTypeObject(operation.getRequestBody());
         }
 
@@ -169,11 +173,19 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
    *         currently supporting).
    */
   private void verifySchemasHaveTypeObject(RequestBody requestBody) {
-    requestBody.getContent().values().forEach(mediaType -> {
-      if (!"object".equalsIgnoreCase(mediaType.getSchema().getType())) {
-        throw new ConfigurationException("No object property in body parameter.");
-      }
-    });
+    LinkedHashMap<String,MediaType> content = requestBody.getContent();
+    if (content == null) {
+      throw new ConfigurationException("No object property in body parameter.");
+    }
+
+    String mediaType1 = content.values().stream()
+        .map(MediaType::getSchema)
+        .filter(Objects::nonNull)
+        .map(Schema::getType)
+        .filter("object"::equalsIgnoreCase)
+        .findAny()
+        .orElseThrow(() -> new ConfigurationException("No object property in body parameter."));
+    LOG.debug("Object property: {}", mediaType1);
   }
 
   private String createBasePath(OpenAPI openAPI) {

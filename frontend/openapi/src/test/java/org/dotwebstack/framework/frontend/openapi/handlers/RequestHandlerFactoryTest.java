@@ -71,8 +71,8 @@ public class RequestHandlerFactoryTest {
 
     // Act
     InformationProductRequestHandler result =
-        requestHandlerFactory.newInformationProductRequestHandler(apiOperation, product, response,
-            openApiMock);
+        requestHandlerFactory.newRequestHandler(apiOperation, product, openApiMock, response
+        );
 
     // Assert
     assertThat(result.getInformationProduct(), sameInstance(product));
@@ -90,7 +90,7 @@ public class RequestHandlerFactoryTest {
 
     // Act
     TransactionRequestHandler result =
-        requestHandlerFactory.newTransactionRequestHandler(apiOperation, transaction, openApiMock);
+        requestHandlerFactory.newRequestHandler(apiOperation, transaction, openApiMock);
 
     // Assert
     assertThat(result.getTransaction(), sameInstance(transaction));

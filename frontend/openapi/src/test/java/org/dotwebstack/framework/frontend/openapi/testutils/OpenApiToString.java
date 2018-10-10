@@ -29,7 +29,8 @@ public class OpenApiToString implements ArgumentConverter {
       try {
         result = CharStreams.toString(new InputStreamReader(resource, Charsets.UTF_8));
       } catch (IOException ioe) {
-        log.error("Error Parsing OASpec. Are you sure the name is correct? error: {}", ioe);
+        LOG.error("Exception occurred while Parsing OASpec." +
+            " Are you sure the name is correct? exception: {}", ioe);
       }
       return result;
     }

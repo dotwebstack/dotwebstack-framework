@@ -4,65 +4,44 @@ import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
-import java.util.Map;
 import java.util.Set;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
-public class InformationProductRequestMapper implements RequestMapper {
-
-  private static final Logger LOG = LoggerFactory.getLogger(InformationProductRequestMapper.class);
-
-  private final InformationProductResourceProvider informationProductResourceProvider;
-
-  private final RequestHandlerFactory requestHandlerFactory;
-
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+public class InformationProductRequestMapper extends AbstractRequestMapper<InformationProduct> {
 
   @Autowired
   public InformationProductRequestMapper(
       @NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull RequestHandlerFactory requestHandlerFactory) {
-    this.informationProductResourceProvider = informationProductLoader;
-    this.requestHandlerFactory = requestHandlerFactory;
-  }
-
-  @Override
-  public Boolean supportsVendorExtension(Map<String, Object> vendorExtensions) {
-    return vendorExtensions != null
-        && vendorExtensions.keySet().stream()
-        .anyMatch(key -> key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
+    super(requestHandlerFactory, informationProductLoader);
+    supported = OpenApiSpecificationExtensions.INFORMATION_PRODUCT;
   }
 
   @Override
   public void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
-      Operation getOperation, String absolutePath) {
+      Operation operation, String absolutePath) {
+    validate200Response(operation, absolutePath);
+
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());
-
-    if (getOperation.getResponses() == null
-        || !getOperation.getResponses().containsKey(okStatusCode)) {
-      throw new ConfigurationException(String.format(
-          "Resource '%s' does not specify a status %s response.", absolutePath, okStatusCode));
-    }
-
     Set<String> produces =
-        getOperation.getResponses() != null
-            ? getOperation.getResponses().get(okStatusCode).getContent().keySet()
+        operation.getResponses() != null
+            ? operation.getResponses().get(okStatusCode).getContent().keySet()
             : null;
 
     if (produces == null) {
@@ -70,19 +49,14 @@ public class InformationProductRequestMapper implements RequestMapper {
           String.format("Path '%s' should produce at least one media type.", absolutePath));
     }
 
-    ApiResponse response = getOperation.getResponses().get(okStatusCode);
+    ApiResponse response = operation.getResponses().get(okStatusCode);
 
-    IRI informationProductIdentifier =
-        valueFactory.createIRI((String) getOperation.getExtensions().get(
-            OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
-
-    InformationProduct informationProduct =
-        informationProductResourceProvider.get(informationProductIdentifier);
+    Inflector<ContainerRequestContext, Response> requestHandler =
+        requestHandlerFactory.newRequestHandler(apiOperation, getResourceFor(operation), openApi,
+            response);
 
     ResourceMethod.Builder methodBuilder =
-        resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
-            requestHandlerFactory.newInformationProductRequestHandler(apiOperation,
-                informationProduct, response, openApi));
+        getMethodBuilder(resourceBuilder, apiOperation, requestHandler);
 
     produces.forEach(methodBuilder::produces);
 

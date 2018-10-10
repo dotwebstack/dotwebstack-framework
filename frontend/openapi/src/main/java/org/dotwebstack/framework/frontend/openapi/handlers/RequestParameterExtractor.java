@@ -1,8 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
@@ -60,9 +63,10 @@ class RequestParameterExtractor {
           String definitionName = RefUtils.computeDefinitionName($ref);
           requestBody = openApi.getComponents().getRequestBodies().get(definitionName);
         }
-        schema = requestBody.getContent().values().stream()
-            .filter(mediaType -> "object".equalsIgnoreCase(mediaType.getSchema().getType()))
-            .findFirst()
+        Content content = defaultIfNull(requestBody.getContent(), new Content());
+        schema = content.values().stream() //
+            .filter(mediaType -> "object".equalsIgnoreCase(mediaType.getSchema().getType())) //
+            .findFirst() //
             .map(MediaType::getSchema);
       }
       extractBodyParameter(parameters, containerRequestContext, schema);
@@ -70,7 +74,7 @@ class RequestParameterExtractor {
       throw new InternalServerErrorException("Error processing request body.", ioe);
     }
 
-    log.info("Extracted parameters: {}", parameters);
+    LOG.info("Extracted parameters: {}", parameters);
 
     return parameters;
   }

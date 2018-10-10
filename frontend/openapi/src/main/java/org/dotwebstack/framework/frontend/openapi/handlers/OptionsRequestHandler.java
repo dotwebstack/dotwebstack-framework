@@ -1,13 +1,11 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import io.swagger.v3.oas.models.PathItem;
-
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
-
 import lombok.NonNull;
 import org.glassfish.jersey.process.Inflector;
 
