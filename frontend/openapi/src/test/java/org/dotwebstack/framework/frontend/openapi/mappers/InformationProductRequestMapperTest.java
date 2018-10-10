@@ -1,132 +1,120 @@
-//package org.dotwebstack.framework.frontend.openapi.mappers;
-//
-//import static org.hamcrest.CoreMatchers.equalTo;
-//import static org.hamcrest.Matchers.hasSize;
-//import static org.hamcrest.Matchers.sameInstance;
-//import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-//import static org.junit.Assert.assertThat;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.ArgumentMatchers.anyString;
-//import static org.mockito.Mockito.mock;
-//import static org.mockito.Mockito.times;
-//import static org.mockito.Mockito.verify;
-//import static org.mockito.Mockito.when;
-//import static org.mockito.Mockito.withSettings;
-//
-//import com.google.common.base.Charsets;
-//import com.google.common.collect.ImmutableList;
-//import com.google.common.collect.ImmutableMap;
-//import io.swagger.models.ModelImpl;
-//import io.swagger.models.RefModel;
-//import io.swagger.models.parameters.BodyParameter;
-//import io.swagger.v3.oas.models.Components;
-//import io.swagger.v3.oas.models.OpenAPI;
-//import io.swagger.v3.oas.models.Operation;
-//import io.swagger.v3.oas.models.PathItem;
-//import io.swagger.v3.oas.models.info.Info;
-//import io.swagger.v3.oas.models.media.ObjectSchema;
-//import io.swagger.v3.oas.models.media.Schema;
-//import io.swagger.v3.oas.models.responses.ApiResponse;
-//import io.swagger.v3.parser.OpenAPIV3Parser;
-//import java.io.ByteArrayInputStream;
-//import java.io.IOException;
-//import java.util.ArrayList;
-//import java.util.HashMap;
-//import java.util.List;
-//import java.util.Map;
-//import javax.ws.rs.HttpMethod;
-//import javax.ws.rs.core.MediaType;
-//import javax.ws.rs.core.Response.Status;
-//import org.apache.jena.ontology.OntTools.Path;
-//import org.dotwebstack.framework.ApplicationProperties;
-//import org.dotwebstack.framework.config.ConfigurationException;
-//import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-//import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-//import org.dotwebstack.framework.frontend.openapi.handlers.InformationProductRequestHandler;
-//import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
-//import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
-//import org.dotwebstack.framework.informationproduct.InformationProduct;
-//import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
-//import org.dotwebstack.framework.test.DBEERPEDIA;
-//import org.dotwebstack.framework.transaction.TransactionResourceProvider;
-//import org.glassfish.jersey.server.model.Resource;
-//import org.glassfish.jersey.server.model.ResourceMethod;
-//import org.junit.Before;
-//import org.junit.Rule;
-//import org.junit.Test;
-//import org.junit.rules.ExpectedException;
-//import org.junit.runner.RunWith;
-//import org.mockito.ArgumentCaptor;
-//import org.mockito.Captor;
-//import org.mockito.Mock;
-//import org.mockito.junit.MockitoJUnitRunner;
-//import org.springframework.core.env.Environment;
-//import org.springframework.core.io.ResourceLoader;
-//import org.springframework.core.io.support.ResourcePatternResolver;
-//
-//@RunWith(MockitoJUnitRunner.class)
-//public class InformationProductRequestMapperTest {
-//
-//  @Rule
-//  public final ExpectedException thrown = ExpectedException.none();
-//
-//  @Captor
-//  private ArgumentCaptor<Resource> resourceCaptor;
-//
-//  @Mock
-//  private InformationProductResourceProvider informationProductResourceProviderMock;
-//
-//  @Mock
-//  private HttpConfiguration httpConfigurationMock;
-//
-//  @Mock
-//  private OpenAPIV3Parser openApiParserMock;
-//
-//  @Mock
-//  private org.springframework.core.io.Resource fileResourceMock;
-//
-//  @Mock
-//  private InformationProduct informationProductMock;
-//
-//  @Mock
-//  private Environment environmentMock;
-//
-//  @Mock
-//  private ApplicationProperties applicationPropertiesMock;
-//
-//  @Mock
-//  private RequestHandlerFactory requestHandlerFactoryMock;
-//
-//  private List<RequestMapper> requestMappers = new ArrayList<>();
-//
-//  @Mock
-//  private InformationProductRequestHandler informationProductRequestHandlerMock;
-//
-//  @Mock
-//  private TransactionResourceProvider transactionResourceProvider;
-//
-//  private ResourceLoader resourceLoader;
-//
-//  private OpenApiRequestMapper openApiRequestMapper;
-//
-//  @Before
-//  public void setUp() {
-//    resourceLoader =
-//        mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-//    when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
-//    requestMappers.add(new InformationProductRequestMapper(informationProductResourceProviderMock,
-//        requestHandlerFactoryMock));
-//    requestMappers.add(new TransactionRequestMapper(transactionResourceProvider,
-//        requestHandlerFactoryMock));
-//    openApiRequestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
-//        requestMappers);
-//    openApiRequestMapper.setResourceLoader(resourceLoader);
-//    openApiRequestMapper.setEnvironment(environmentMock);
-//
-//    when(requestHandlerFactoryMock.newInformationProductRequestHandler(any(), any(),
-//        any(), any())).thenReturn(informationProductRequestHandlerMock);
-//  }
-//
+package org.dotwebstack.framework.frontend.openapi.mappers;
+
+import static org.dotwebstack.framework.frontend.openapi.testutils.OpenApiToString.ToOpenApi3String;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+
+import com.google.common.base.Charsets;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
+import org.dotwebstack.framework.ApplicationProperties;
+import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.MockitoExtension;
+import org.dotwebstack.framework.frontend.openapi.handlers.InformationProductRequestHandler;
+import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
+import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
+import org.dotwebstack.framework.frontend.openapi.handlers.TransactionRequestHandler;
+import org.dotwebstack.framework.frontend.openapi.testutils.ToOpenApi.ToOpenApi3;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
+import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
+import org.dotwebstack.framework.test.DBEERPEDIA;
+import org.dotwebstack.framework.transaction.Transaction;
+import org.dotwebstack.framework.transaction.TransactionResourceProvider;
+import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.ResourcePatternResolver;
+
+@ExtendWith(MockitoExtension.class)
+public class InformationProductRequestMapperTest {
+
+  @Captor
+  private ArgumentCaptor<Resource> resourceCaptor;
+
+  @Mock
+  private HttpConfiguration httpConfigurationMock;
+
+  @Mock
+  private OpenAPIV3Parser openApiParserMock;
+
+  @Mock
+  private org.springframework.core.io.Resource fileResourceMock;
+
+  @Mock
+  private TransactionRequestHandler transactionRequestHandlerMock;
+
+  @Mock
+  private InformationProductRequestHandler informationProductRequestHandlerMock;
+
+  private OpenApiRequestMapper openApiRequestMapper;
+
+  @BeforeEach
+  void setUp() throws IOException {
+    ResourceLoader resourceLoader =
+        mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
+    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
+        new org.springframework.core.io.Resource[] {fileResourceMock});
+
+    ApplicationProperties applicationPropertiesMock = mock(ApplicationProperties.class);
+    when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
+
+    when(openApiParserMock.readContents(anyString())).thenReturn(mock(SwaggerParseResult.class));
+
+    RequestHandlerFactory requestHandlerFactoryMock = mock(RequestHandlerFactory.class);
+    when(requestHandlerFactoryMock.newTransactionRequestHandler(any(), any(), any())) //
+        .thenReturn(transactionRequestHandlerMock);
+
+    when(requestHandlerFactoryMock.newInformationProductRequestHandler(any(), any(), any(), any())) //
+        .thenReturn(informationProductRequestHandlerMock);
+
+    TransactionResourceProvider transactionResourceProviderMock =
+        mock(TransactionResourceProvider.class);
+    when(transactionResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(
+        mock(Transaction.class));
+
+    InformationProductResourceProvider informationProductResourceProviderMock =
+        mock(InformationProductResourceProvider.class);
+    when(informationProductResourceProviderMock.get(any()))
+        .thenReturn(mock(InformationProduct.class));
+
+    openApiRequestMapper =
+        new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock, Arrays.asList(
+            new InformationProductRequestMapper(informationProductResourceProviderMock,
+                requestHandlerFactoryMock),
+            new TransactionRequestMapper(transactionResourceProviderMock,
+                requestHandlerFactoryMock)));
+
+    openApiRequestMapper.setResourceLoader(resourceLoader);
+    openApiRequestMapper.setEnvironment(mock(Environment.class));
+
+  }
+
 //  @Test
 //  public void map_EndpointsCorrectly_WithValidData() throws IOException {
 //    // Arrange
@@ -171,7 +159,57 @@
 //    assertThat(specResource.getPath(),
 //        equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/docs/_spec"));
 //  }
-//
+
+  private void arrange(String openAPIString, OpenAPI openAPI) throws IOException {
+    ByteArrayInputStream stream = new ByteArrayInputStream(openAPIString.getBytes(Charsets.UTF_8));
+
+    when(fileResourceMock.getInputStream()).thenReturn(stream);
+    when(openApiParserMock.readContents(anyString()).getOpenAPI()).thenReturn(openAPI);
+
+  }
+
+  @ParameterizedTest(name = "spec: [{0}] expected methods: [{2}]")
+  @DisplayName("Map endpoints correctly with valid data")
+  @CsvSource({"mappers/GetWithValidData.yml, mappers/GetWithValidData.yml, GET OPTIONS, /map-endpoints-correctly",
+  })
+  void map_EndpointsCorrectly_WithValidData(@ToOpenApi3String String openAPIString,
+      @ToOpenApi3 OpenAPI openAPI, String methods, String endpoint) throws IOException {
+    // Arrange
+    arrange(openAPIString, openAPI);
+
+    // Act
+    openApiRequestMapper.map(httpConfigurationMock);
+
+    // Assert
+    int registeredPaths = 1 + 1;
+    verify(httpConfigurationMock, times(registeredPaths)).registerResources(resourceCaptor.capture());
+
+    List<Resource> apiResources = resourceCaptor.getAllValues();
+    System.out.println(apiResources);
+    assertThat(apiResources, hasSize(registeredPaths));
+
+    Resource apiResource = apiResources.get(0);
+    assertThat(apiResource.getPath(),
+        equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + endpoint));
+    assertThat(apiResource.getResourceMethods(), hasSize(2));
+
+    ResourceMethod getMethod = apiResource.getResourceMethods().get(0);
+    assertThat(getMethod.getHttpMethod(), equalTo(HttpMethod.GET));
+    assertThat(getMethod.getProducedTypes(), contains(MediaType.APPLICATION_JSON_TYPE));
+    assertThat(getMethod.getInvocable().getHandler().getInstance(null),
+        sameInstance(informationProductRequestHandlerMock));
+
+    ResourceMethod optionsMethod = apiResource.getResourceMethods().get(1);
+    assertThat(optionsMethod.getHttpMethod(), equalTo(HttpMethod.OPTIONS));
+    assertThat(optionsMethod.getInvocable().getHandler().getHandlerClass(),
+        equalTo(OptionsRequestHandler.class));
+
+    Resource specResource = apiResources.get(1); // should be last one
+    assertThat(specResource.getPath(),
+        equalTo("/" + DBEERPEDIA.OPENAPI_HOST + DBEERPEDIA.OPENAPI_BASE_PATH + "/docs/_spec"));
+
+  }
+
 //  @Test
 //  public void map_SpecEndpointCorrectly_whenNotGiven() throws Exception {
 //    // Arrange
@@ -377,22 +415,5 @@
 //    assertThat(method.getProducedTypes(), hasSize(1));
 //    assertThat(method.getProducedTypes().get(0), equalTo(MediaType.APPLICATION_JSON_TYPE));
 //  }
-//
-//  private OpenAPI mockDefinition() throws IOException {
-//    String specString = "swagger: \"2.0\"\n" + "info:\n" + "  title: API\n" + "  version: 1.0";
-//    byte[] bytes = specString.getBytes(Charsets.UTF_8);
-//    when(fileResourceMock.getInputStream()).thenReturn(new ByteArrayInputStream(bytes));
-//    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-//        new org.springframework.core.io.Resource[] {fileResourceMock});
-//    Map<String, Schema> schemas = new HashMap<>();
-//    Schema myref = new ObjectSchema();
-//
-//    schemas.put("myref", myref);
-//    OpenAPI openApi = (new OpenAPI()).info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
-//    openApi.components(new Components().schemas(schemas));
-//    when(openApiParserMock.readContents(specString).getOpenAPI()).thenReturn(openApi);
-//
-//    return openApi;
-//  }
-//
-//}
+
+}
