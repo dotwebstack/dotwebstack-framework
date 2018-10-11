@@ -12,10 +12,12 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.ParseOptions;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -102,7 +104,9 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
           new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
       String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
       if (!StringUtils.isBlank(result)) {
-        OpenAPI openAPI = openApiParser.readContents(result).getOpenAPI();
+        ParseOptions options = new ParseOptions();
+        options.setResolveFully(true);
+        OpenAPI openAPI = openApiParser.readContents(result, new ArrayList<>(), options).getOpenAPI();
         mapOpenApiDefinition(openAPI, httpConfiguration);
         addSpecResource(result, openAPI, httpConfiguration);
       }
@@ -177,7 +181,6 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     if (content == null) {
       throw new ConfigurationException("No object property in body parameter.");
     }
-
     String mediaType1 = content.values().stream()
         .map(MediaType::getSchema)
         .filter(Objects::nonNull)
@@ -189,8 +192,9 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
   }
 
   private String createBasePath(OpenAPI openAPI) {
-
-    if (openAPI.getServers() == null || openAPI.getServers().isEmpty()) {
+    if (openAPI.getServers() == null
+        || openAPI.getServers().isEmpty()
+        || openAPI.getServers().get(0).getUrl().equalsIgnoreCase("/")) {
       throw new ConfigurationException(String.format("Expecting at least one server definition on "
           + "the OpenAPI spec '%s'. See: "
           + "https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schema",

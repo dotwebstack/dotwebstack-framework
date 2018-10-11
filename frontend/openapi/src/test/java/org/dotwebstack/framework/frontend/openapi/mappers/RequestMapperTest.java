@@ -8,6 +8,7 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -88,7 +89,8 @@ class RequestMapperTest {
     ApplicationProperties applicationPropertiesMock = mock(ApplicationProperties.class);
     when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
 
-    when(openApiParserMock.readContents(anyString())).thenReturn(mock(SwaggerParseResult.class));
+    when(openApiParserMock.readContents(anyString(), anyList(), any()))
+        .thenReturn(mock(SwaggerParseResult.class));
 
     RequestHandlerFactory requestHandlerFactoryMock = mock(RequestHandlerFactory.class);
     when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any())) //
@@ -123,7 +125,8 @@ class RequestMapperTest {
     ByteArrayInputStream stream = new ByteArrayInputStream(openAPIString.getBytes(Charsets.UTF_8));
 
     when(fileResourceMock.getInputStream()).thenReturn(stream);
-    when(openApiParserMock.readContents(anyString()).getOpenAPI()).thenReturn(openAPI);
+    when(openApiParserMock.readContents(anyString(), anyList(), any()).getOpenAPI())
+        .thenReturn(openAPI);
   }
 
   @ParameterizedTest(name = "spec: [{0}] expected methods: [{2}]")

@@ -1,15 +1,12 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
-
-import com.google.common.collect.ImmutableMap;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -24,66 +21,42 @@ abstract class AbstractRequestParameterMapper {
 
   protected Map<String, String> getBodyParameters(@NonNull Collection<Parameter> parameters,
       @NonNull RequestParameters requestParameters, RequestBody requestBody) {
-    Map<String, String> result = new HashMap<>();
 
-    Content content = defaultIfNull(requestBody.getContent(), new Content());
+    Stream<Map<String, Object>> stream = Stream.of(requestBody) //
+        .map(RequestBody::getContent) //
+        .filter(Objects::nonNull) //
+        .map(content2 -> content2.get(MediaType.APPLICATION_JSON.toString())) //
+        .filter(Objects::nonNull) //
+        .map(io.swagger.v3.oas.models.media.MediaType::getSchema) //
+        .filter(Objects::nonNull) //
+        .map(Schema::getProperties) //
+        .filter(Objects::nonNull) //
+        .map(Map::values) //
+        .flatMap(Collection::stream) //
+        .map(obj -> (Schema) obj) //
+        .map(Schema::getExtensions);
 
-    Schema schema = defaultIfNull(content.get(
-        MediaType.APPLICATION_JSON.toString()).getSchema(),
-        new ObjectSchema().properties(ImmutableMap.of()));
-    Map<String, Schema> requestBodyPropertyMap = schema.getProperties();
-    Collection<Schema> properties = requestBodyPropertyMap.values();
+    return getSupportedParameters(parameters, requestParameters, stream);
 
-    for (Schema property : properties) {
-      Map<String, Object> vendorExtensions =
-          defaultIfNull(property.getExtensions(), ImmutableMap.of());
-
-      LOG.debug("Vendor extensions for property '{}' in parameter '{}': {}", property.getName(),
-          requestBody.getDescription(), vendorExtensions);
-
-      Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
-
-      if (parameterIdString == null) {
-        // Vendor extension x-dotwebstack-parameter not found for property
-        continue;
-      }
-
-      Parameter<?> parameter =
-          ParameterUtils.getParameter(parameters, (String) parameterIdString);
-
-      String value = requestParameters.get(parameter.getName());
-
-      result.put(parameter.getName(), value);
-
-    }
-    return result;
   }
 
   protected Map<String, String> getOtherParameters(Collection<Parameter> parameters,
       @NonNull RequestParameters requestParameters,
       io.swagger.v3.oas.models.parameters.Parameter openApiParameter) {
-    Map<String, String> result = new HashMap<>();
 
-    Map<String, Object> vendorExtensions =
-        defaultIfNull(openApiParameter.getExtensions(), ImmutableMap.of());
+    Stream<Map<String, Object>> stream = Stream.of(openApiParameter)
+        .map(io.swagger.v3.oas.models.parameters.Parameter::getExtensions);
+    return getSupportedParameters(parameters, requestParameters, stream);
+  }
 
-    LOG.debug("Vendor extensions for parameter '{}': {}", openApiParameter.getName(),
-        vendorExtensions);
-
-    Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
-
-    if (parameterIdString == null) {
-      // Vendor extension x-dotwebstack-parameter not found for property
-      return result;
-    }
-
-    Parameter<?> parameter = ParameterUtils.getParameter(parameters, (String) parameterIdString);
-
-    String value = requestParameters.get(parameter.getName());
-
-    result.put(parameter.getName(), value);
-
-    return result;
+  private Map<String, String> getSupportedParameters(Collection<Parameter> parameters, @NonNull RequestParameters requestParameters, Stream<Map<String, Object>> stream) {
+    return stream //
+        .filter(Objects::nonNull) //
+        .map(extensions -> (String) extensions.get(OpenApiSpecificationExtensions.PARAMETER)) //
+        .filter(Objects::nonNull) //
+        .map(id -> ParameterUtils.getParameter(parameters, id)) //
+        .map(Parameter::getName) //
+        .collect(Collectors.toMap(name -> name, requestParameters::get));
   }
 
 }
