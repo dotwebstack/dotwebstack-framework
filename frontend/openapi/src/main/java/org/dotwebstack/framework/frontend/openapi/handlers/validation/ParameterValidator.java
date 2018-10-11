@@ -1,19 +1,20 @@
 package org.dotwebstack.framework.frontend.openapi.handlers.validation;
+// All classes in this package are copied from
+// atlassian's swagger-request-validator
+
+import static java.lang.Boolean.TRUE;
+import static java.util.Objects.requireNonNull;
 
 import com.atlassian.oai.validator.report.MessageResolver;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.atlassian.oai.validator.schema.SchemaValidator;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
-
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import static java.lang.Boolean.TRUE;
-import static java.util.Objects.requireNonNull;
+import javax.annotation.Nullable;
 
 class ParameterValidator {
 

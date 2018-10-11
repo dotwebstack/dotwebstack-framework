@@ -1,4 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers.validation;
+// All classes in this package are copied from
+// atlassian's swagger-request-validator
 
 import static com.atlassian.oai.validator.report.ValidationReport.MessageContext.Location.REQUEST;
 import static java.lang.Boolean.TRUE;

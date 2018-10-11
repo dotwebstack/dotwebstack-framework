@@ -1,4 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers.validation;
+// All classes in this package are copied from
+// atlassian's swagger-request-validator
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
