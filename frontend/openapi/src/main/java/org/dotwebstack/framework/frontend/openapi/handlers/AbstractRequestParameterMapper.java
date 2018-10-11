@@ -64,7 +64,8 @@ abstract class AbstractRequestParameterMapper {
       io.swagger.v3.oas.models.parameters.Parameter openApiParameter) {
     Map<String, String> result = new HashMap<>();
 
-    Map<String, Object> vendorExtensions = openApiParameter.getExtensions();
+    Map<String, Object> vendorExtensions =
+        defaultIfNull(openApiParameter.getExtensions(), ImmutableMap.of());
 
     LOG.debug("Vendor extensions for parameter '{}': {}", openApiParameter.getName(),
         vendorExtensions);
