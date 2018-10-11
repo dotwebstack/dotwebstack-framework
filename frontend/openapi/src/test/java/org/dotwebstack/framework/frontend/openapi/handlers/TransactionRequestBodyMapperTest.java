@@ -51,14 +51,14 @@ public class TransactionRequestBodyMapperTest {
 
   @Before
   public void setUp() throws IOException {
-    RmlMappingResourceProvider rmlMappingResourceProvider =
-        new RmlMappingResourceProvider(configurationBackend, applicationProperties);
     InputStream inputStream = new ClassPathResource("/rmlmapping/mapping.trig").getInputStream();
     SailRepository sailRepository = new SailRepository(new MemoryStore());
     sailRepository.initialize();
     sailRepository.getConnection().add(inputStream, "", RDFFormat.TRIG);
     when(configurationBackend.getRepository()).thenReturn(sailRepository);
 
+    RmlMappingResourceProvider rmlMappingResourceProvider =
+        new RmlMappingResourceProvider(configurationBackend, applicationProperties);
     rmlMappingResourceProvider.loadResources();
     transactionRequestBodyMapper = new TransactionRequestBodyMapper(rmlMappingResourceProvider);
   }

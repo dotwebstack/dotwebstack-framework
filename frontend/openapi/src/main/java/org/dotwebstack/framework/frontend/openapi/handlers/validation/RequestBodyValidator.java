@@ -1,6 +1,4 @@
 package org.dotwebstack.framework.frontend.openapi.handlers.validation;
-// All classes in this package are copied from
-// atlassian's swagger-request-validator
 
 import static com.atlassian.oai.validator.report.ValidationReport.empty;
 import static com.atlassian.oai.validator.util.ContentTypeUtils.findMostSpecificMatch;
@@ -25,9 +23,10 @@ import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * Validation for a request body.
- * <p>
  * The schema to validate is selected based on the content-type header of the incoming request.
  */
+// All classes in this package are copied from
+// atlassian's swagger-request-validator
 @Slf4j
 class RequestBodyValidator {
 
@@ -40,14 +39,15 @@ class RequestBodyValidator {
     this(new MessageResolver(), schemaValidator);
   }
 
-  RequestBodyValidator(@Nullable final MessageResolver messages, final SchemaValidator schemaValidator) {
+  RequestBodyValidator(@Nullable final MessageResolver messages,
+      final SchemaValidator schemaValidator) {
     this.schemaValidator = requireNonNull(schemaValidator, "A schema validator is required");
     this.messages = messages == null ? new MessageResolver() : messages;
   }
 
   @Nonnull
   ValidationReport validateRequestBody(final Request request,
-                                       @Nullable final RequestBody apiRequestBodyDefinition) {
+      @Nullable final RequestBody apiRequestBodyDefinition) {
 
     final Optional<String> requestBody = request.getBody();
 
@@ -55,24 +55,22 @@ class RequestBodyValidator {
       // A request body exists, but no request body is defined in the spec
       if (requestBody.isPresent() && !requestBody.get().isEmpty()) {
         return ValidationReport.singleton(
-            messages.get("validation.request.body.unexpected")
-        );
+            messages.get("validation.request.body.unexpected"));
       }
 
       // No request body exists, and no request body is defined in the spec. Nothing to do.
       return empty();
     }
 
-    ValidationReport.MessageContext context = ValidationReport.MessageContext.create()
-        .withApiRequestBodyDefinition(apiRequestBodyDefinition)
-        .build();
+    ValidationReport.MessageContext context =
+        ValidationReport.MessageContext.create().withApiRequestBodyDefinition(
+            apiRequestBodyDefinition).build();
 
     if (!requestBody.isPresent() || requestBody.get().isEmpty()) {
       // No request body, but is required in the spec
       if (TRUE.equals(apiRequestBodyDefinition.getRequired())) {
         return ValidationReport.singleton(
-            messages.get("validation.request.body.missing")
-        ).withAdditionalContext(context);
+            messages.get("validation.request.body.missing")).withAdditionalContext(context);
       }
 
       // No request body, and isn't required. Nothing to do.
@@ -82,32 +80,28 @@ class RequestBodyValidator {
     final Optional<Pair<String, MediaType>> maybeApiMediaTypeForRequest =
         findApiMediaTypeForRequest(request, apiRequestBodyDefinition);
 
-    // No matching media type found. Validation of mismatched content-type is handled elsewhere. Nothing to do.
+    // No matching media type found. Validation of mismatched content-type is handled elsewhere.
+    // Nothing to do.
     if (!maybeApiMediaTypeForRequest.isPresent()) {
       return empty();
     }
 
-    context = ValidationReport.MessageContext.from(context)
-        .withMatchedApiContentType(maybeApiMediaTypeForRequest.get().getLeft())
-        .build();
+    context = ValidationReport.MessageContext.from(context).withMatchedApiContentType(
+        maybeApiMediaTypeForRequest.get().getLeft()).build();
 
     if (isJsonContentType(request)) {
-      return schemaValidator
-          .validate(
-              requestBody.get(),
-              maybeApiMediaTypeForRequest.get().getRight().getSchema(),
-              "request.body")
-          .withAdditionalContext(context);
+      return schemaValidator.validate(
+          requestBody.get(),
+          maybeApiMediaTypeForRequest.get().getRight().getSchema(),
+          "request.body").withAdditionalContext(context);
     }
 
     if (isFormDataContentType(request)) {
       final String bodyAsJson = parseUrlEncodedFormDataBodyAsJson(requestBody.get());
-      return schemaValidator
-          .validate(
-              bodyAsJson,
-              maybeApiMediaTypeForRequest.get().getRight().getSchema(),
-              "request.body")
-          .withAdditionalContext(context);
+      return schemaValidator.validate(
+          bodyAsJson,
+          maybeApiMediaTypeForRequest.get().getRight().getSchema(),
+          "request.body").withAdditionalContext(context);
     }
 
     // TODO: Validate multi-part form data
@@ -118,12 +112,13 @@ class RequestBodyValidator {
   }
 
   private Optional<Pair<String, MediaType>> findApiMediaTypeForRequest(final Request request,
-                                                                       @Nullable final RequestBody apiRequestBodyDefinition) {
+      @Nullable final RequestBody apiRequestBodyDefinition) {
     if (apiRequestBodyDefinition == null || apiRequestBodyDefinition.getContent() == null) {
       return Optional.empty();
     }
 
-    final Optional<String> mostSpecificMatch = findMostSpecificMatch(request, apiRequestBodyDefinition.getContent().keySet());
+    final Optional<String> mostSpecificMatch =
+        findMostSpecificMatch(request, apiRequestBodyDefinition.getContent().keySet());
     if (!mostSpecificMatch.isPresent()) {
       return Optional.empty();
     }

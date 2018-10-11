@@ -22,10 +22,11 @@ abstract class AbstractRequestParameterMapper {
   protected Map<String, String> getBodyParameters(@NonNull Collection<Parameter> parameters,
       @NonNull RequestParameters requestParameters, RequestBody requestBody) {
 
-    Stream<Map<String, Object>> stream = Stream.of(requestBody) //
+    return Stream.of(requestBody) //
+        .filter(Objects::nonNull) //
         .map(RequestBody::getContent) //
         .filter(Objects::nonNull) //
-        .map(content2 -> content2.get(MediaType.APPLICATION_JSON.toString())) //
+        .map(content -> content.get(MediaType.APPLICATION_JSON.toString())) //
         .filter(Objects::nonNull) //
         .map(io.swagger.v3.oas.models.media.MediaType::getSchema) //
         .filter(Objects::nonNull) //
@@ -34,9 +35,13 @@ abstract class AbstractRequestParameterMapper {
         .map(Map::values) //
         .flatMap(Collection::stream) //
         .map(obj -> (Schema) obj) //
-        .map(Schema::getExtensions);
-
-    return getSupportedParameters(parameters, requestParameters, stream);
+        .map(Schema::getExtensions) //
+        .filter(Objects::nonNull) //
+        .map(extensions -> (String) extensions.get(OpenApiSpecificationExtensions.PARAMETER)) //
+        .filter(Objects::nonNull) //
+        .map(id -> ParameterUtils.getParameter(parameters, id)) //
+        .map(Parameter::getName) //
+        .collect(Collectors.toMap(name -> name, requestParameters::get));
 
   }
 
@@ -44,13 +49,8 @@ abstract class AbstractRequestParameterMapper {
       @NonNull RequestParameters requestParameters,
       io.swagger.v3.oas.models.parameters.Parameter openApiParameter) {
 
-    Stream<Map<String, Object>> stream = Stream.of(openApiParameter)
-        .map(io.swagger.v3.oas.models.parameters.Parameter::getExtensions);
-    return getSupportedParameters(parameters, requestParameters, stream);
-  }
-
-  private Map<String, String> getSupportedParameters(Collection<Parameter> parameters, @NonNull RequestParameters requestParameters, Stream<Map<String, Object>> stream) {
-    return stream //
+    return Stream.of(openApiParameter) //
+        .map(io.swagger.v3.oas.models.parameters.Parameter::getExtensions) //
         .filter(Objects::nonNull) //
         .map(extensions -> (String) extensions.get(OpenApiSpecificationExtensions.PARAMETER)) //
         .filter(Objects::nonNull) //

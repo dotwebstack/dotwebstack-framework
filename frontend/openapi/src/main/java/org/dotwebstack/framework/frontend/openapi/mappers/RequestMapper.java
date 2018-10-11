@@ -10,6 +10,6 @@ public interface RequestMapper {
 
   Boolean supportsVendorExtension(Map<String, Object> vendorExtensions);
 
-  void map(Resource.Builder resourceBuilder, OpenAPI openAPI, ApiOperation apiOperation,
+  void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
            Operation getOperation, String absolutePath);
 }

@@ -80,8 +80,8 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArraySchema, 
     });
   }
 
-  private static void validateMinItems(ArraySchema ArraySchema, Collection<Value> queryResult) {
-    Integer minItems = ArraySchema.getMinItems();
+  private static void validateMinItems(ArraySchema arraySchema, Collection<Value> queryResult) {
+    Integer minItems = arraySchema.getMinItems();
     if (minItems != null && minItems > queryResult.size()) {
       throw new SchemaMapperRuntimeException(String.format(
           "Mapping for property yielded %d elements, which is less than 'minItems' (%d)"
@@ -90,8 +90,8 @@ public class ArraySchemaMapper extends AbstractSubjectSchemaMapper<ArraySchema, 
     }
   }
 
-  private static void validateMaxItems(ArraySchema ArraySchema, Collection<Value> queryResult) {
-    Integer maxItems = ArraySchema.getMaxItems();
+  private static void validateMaxItems(ArraySchema arraySchema, Collection<Value> queryResult) {
+    Integer maxItems = arraySchema.getMaxItems();
     if (maxItems != null && maxItems < queryResult.size()) {
       throw new SchemaMapperRuntimeException(String.format(
           "Mapping for property yielded %d elements, which is more than 'maxItems' (%d)"

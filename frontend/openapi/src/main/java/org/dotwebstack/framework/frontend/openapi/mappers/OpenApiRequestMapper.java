@@ -106,19 +106,20 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
       if (!StringUtils.isBlank(result)) {
         ParseOptions options = new ParseOptions();
         options.setResolveFully(true);
-        OpenAPI openAPI = openApiParser.readContents(result, new ArrayList<>(), options).getOpenAPI();
-        mapOpenApiDefinition(openAPI, httpConfiguration);
-        addSpecResource(result, openAPI, httpConfiguration);
+        OpenAPI openApi =
+            openApiParser.readContents(result, new ArrayList<>(), options).getOpenAPI();
+        mapOpenApiDefinition(openApi, httpConfiguration);
+        addSpecResource(result, openApi, httpConfiguration);
       }
     }
   }
 
-  private void mapOpenApiDefinition(OpenAPI openAPI, HttpConfiguration httpConfiguration) {
-    String basePath = createBasePath(openAPI);
+  private void mapOpenApiDefinition(OpenAPI openApi, HttpConfiguration httpConfiguration) {
+    String basePath = createBasePath(openApi);
 
-    openAPI.getPaths().forEach((path, pathItem) -> {
+    openApi.getPaths().forEach((path, pathItem) -> {
       Collection<ApiOperation> apiOperations =
-          OpenApiSpecUtils.extractApiOperations(openAPI, path, pathItem);
+          OpenApiSpecUtils.extractApiOperations(openApi, path, pathItem);
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
@@ -135,7 +136,7 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
             .findFirst();
 
         optionalRequestMapper.ifPresent(
-            mapper -> mapper.map(resourceBuilder, openAPI, apiOperation, operation, absolutePath));
+            mapper -> mapper.map(resourceBuilder, openApi, apiOperation, operation, absolutePath));
 
         if (!optionalRequestMapper.isPresent()) {
           LOG.warn("Path '{}' is not mapped to an information product or transaction.",
@@ -151,10 +152,10 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     });
   }
 
-  private void addSpecResource(String yaml, OpenAPI openAPI, HttpConfiguration httpConfiguration)
+  private void addSpecResource(String yaml, OpenAPI openApi, HttpConfiguration httpConfiguration)
       throws IOException {
-    String basePath = createBasePath(openAPI);
-    String specEndpoint = getSpecEndpoint(openAPI).orElse("/");
+    String basePath = createBasePath(openApi);
+    String specEndpoint = getSpecEndpoint(openApi).orElse("/");
     OpenApiSpecHandler handler = new OpenApiSpecHandler(yaml);
     Builder specResourceBuilder = Resource.builder().path(basePath + specEndpoint);
     specResourceBuilder//
@@ -166,8 +167,8 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     httpConfiguration.registerResources(specResourceBuilder.build());
   }
 
-  private Optional<String> getSpecEndpoint(OpenAPI openAPI) {
-    return Optional.ofNullable(openAPI.getExtensions()).map(
+  private Optional<String> getSpecEndpoint(OpenAPI openApi) {
+    return Optional.ofNullable(openApi.getExtensions()).map(
         map -> (String) map.get(OpenApiSpecificationExtensions.SPEC_ENDPOINT));
   }
 
@@ -191,17 +192,17 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
     LOG.debug("Object property: {}", mediaType1);
   }
 
-  private String createBasePath(OpenAPI openAPI) {
-    if (openAPI.getServers() == null
-        || openAPI.getServers().isEmpty()
-        || openAPI.getServers().get(0).getUrl().equalsIgnoreCase("/")) {
+  private String createBasePath(OpenAPI openApi) {
+    if (openApi.getServers() == null
+        || openApi.getServers().isEmpty()
+        || openApi.getServers().get(0).getUrl().equalsIgnoreCase("/")) {
       throw new ConfigurationException(String.format("Expecting at least one server definition on "
           + "the OpenAPI spec '%s'. See: "
           + "https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schema",
-          openAPI.getInfo().getDescription()));
+          openApi.getInfo().getDescription()));
     }
 
-    String url = openAPI.getServers().get(0).getUrl();
+    String url = openApi.getServers().get(0).getUrl();
 
     return url.substring(url.indexOf("://") + 2);
   }

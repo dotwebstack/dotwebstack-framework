@@ -20,16 +20,11 @@ public class BaseUriFactory {
   /**
    * Constructs a URI: {@code <scheme>://<host>[:<port>]/<basePath>}<br />
    * <br />
-   *
    * If the given operation has 'servers' defined, the base URI is the 'url' of the first server
    * entry for the operation.
-   *
    * Otherwise, the base URI is the 'url' of the first server entry for the Open API Specification.
-   *
    * If {@code X-Forwarded-Host}
-   *
    * Where:
-   *
    * <ul>
    * <li>{@code <scheme>} and {@code <basePath} are taken from the Open API Spec. If the given
    * operation has 'servers' defined, these are taken from the 'url' of the first server, otherwise
@@ -39,12 +34,11 @@ public class BaseUriFactory {
    * set, it's first value is used as host and port combination. If the header is not set, the host
    * and port number are taken from the request.</li>
    * </ul>
-   *
    * @return The base uri for the give request and OpenAPI spec.
    */
   public static String determineBaseUri(@NonNull ContainerRequest containerRequest,
-      @NonNull OpenAPI openAPI, @NonNull Operation operation) {
-    String openApiSpecUri = openAPI.getServers().get(0).getUrl();
+      @NonNull OpenAPI openApi, @NonNull Operation operation) {
+    String openApiSpecUri = openApi.getServers().get(0).getUrl();
 
     if (operation.getServers() != null) {
       Server operationServer = operation.getServers().get(0);
