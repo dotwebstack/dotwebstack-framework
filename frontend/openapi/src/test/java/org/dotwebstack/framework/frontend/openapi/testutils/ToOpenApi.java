@@ -31,7 +31,7 @@ public class ToOpenApi implements ArgumentConverter {
       try {
         result = CharStreams.toString(new InputStreamReader(resource, Charsets.UTF_8));
       } catch (IOException ioe) {
-        log.error("Error Parsing OASpec. Are you sure the name is correct? error: {}", ioe);
+        LOG.error("Error Parsing OASpec. Are you sure the name is correct? error: {}", ioe);
       }
       if (!StringUtils.isBlank(result)) {
         return new OpenAPIV3Parser().readContents(result).getOpenAPI();
