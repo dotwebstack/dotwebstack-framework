@@ -1,6 +1,4 @@
 package org.dotwebstack.framework.frontend.openapi.handlers.validation;
-// All classes in this package are copied from
-// atlassian's swagger-request-validator
 
 import static com.atlassian.oai.validator.report.ValidationReport.MessageContext.Location.REQUEST;
 import static java.lang.Boolean.TRUE;
@@ -25,6 +23,8 @@ import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions
 /**
  * Validate a request against a given API operation.
  */
+// All classes in this package are copied from
+// atlassian's swagger-request-validator
 public class RequestValidator {
 
   private final MessageResolver messages;
@@ -37,7 +37,8 @@ public class RequestValidator {
    * @param schemaValidator The schema validator to use when validating request bodies
    * @param messages The message resolver to use
    */
-  public RequestValidator(@NonNull SchemaValidator schemaValidator, @NonNull MessageResolver messages) {
+  public RequestValidator(@NonNull SchemaValidator schemaValidator,
+      @NonNull MessageResolver messages) {
     this.messages = messages;
     this.parameterValidator = new ParameterValidator(schemaValidator, messages);
     this.requestBodyValidator = new RequestBodyValidator(messages, schemaValidator);
@@ -52,20 +53,16 @@ public class RequestValidator {
    * @return A validation report containing validation errors
    */
   public ValidationReport validateRequest(@NonNull Request request,
-                                          @NonNull ApiOperation apiOperation) {
+      @NonNull ApiOperation apiOperation) {
 
-    MessageContext context = MessageContext.create()
-        .in(REQUEST)
-        .withApiOperation(apiOperation)
-        .withRequestPath(apiOperation.getRequestPath().original())
-        .withRequestMethod(request.getMethod())
-        .build();
+    MessageContext context =
+        MessageContext.create().in(REQUEST).withApiOperation(apiOperation).withRequestPath(
+            apiOperation.getRequestPath().original()).withRequestMethod(
+                request.getMethod()).build();
 
-    return validateHeaders(request, apiOperation)
-        .merge(validatePathParameters(apiOperation))
-        .merge(validateBodyParameters(request, apiOperation))
-        .merge(validateQueryParameters(request, apiOperation))
-        .withAdditionalContext(context);
+    return validateHeaders(request, apiOperation).merge(validatePathParameters(apiOperation)).merge(
+        validateBodyParameters(request, apiOperation)).merge(
+            validateQueryParameters(request, apiOperation)).withAdditionalContext(context);
   }
 
   private ValidationReport validateBodyParameters(Request request, ApiOperation apiOperation) {
@@ -81,13 +78,10 @@ public class RequestValidator {
         continue;
       }
 
-      final ValidationReport pathPartValidation = apiOperation
-          .getApiPath()
-          .paramValues(i, requestPath.part(i))
-          .entrySet()
-          .stream()
-          .map(param -> validatePathParameter(apiOperation, param))
-          .reduce(ValidationReport.empty(), ValidationReport::merge);
+      final ValidationReport pathPartValidation =
+          apiOperation.getApiPath().paramValues(i, requestPath.part(i)).entrySet().stream().map(
+              param -> validatePathParameter(apiOperation, param)).reduce(ValidationReport.empty(),
+                  ValidationReport::merge);
 
       validationReport = validationReport.merge(pathPartValidation);
     }
@@ -95,62 +89,53 @@ public class RequestValidator {
   }
 
   private ValidationReport validatePathParameter(ApiOperation apiOperation,
-                                                 Map.Entry<String, Optional<String>> param) {
-    return defaultIfNull(apiOperation.getOperation().getParameters(), ImmutableList.<Parameter>of())
-        .stream()
-        .filter(RequestValidator::isPathParam)
-        .filter(p -> p.getName().equalsIgnoreCase(param.getKey()))
-        .findFirst()
-        .map(p -> parameterValidator.validate(param.getValue().orElse(null), p))
-        .orElse(ValidationReport.empty());
+      Map.Entry<String, Optional<String>> param) {
+    return defaultIfNull(apiOperation.getOperation().getParameters(),
+        ImmutableList.<Parameter>of()).stream().filter(RequestValidator::isPathParam).filter(
+            p -> p.getName().equalsIgnoreCase(param.getKey())).findFirst().map(
+                p -> parameterValidator.validate(param.getValue().orElse(null), p)).orElse(
+                    ValidationReport.empty());
   }
 
   private ValidationReport validateQueryParameters(Request request, ApiOperation apiOperation) {
-    return defaultIfNull(apiOperation.getOperation().getParameters(), ImmutableList.<Parameter>of())
-        .stream()
-        .filter(RequestValidator::isQueryParam)
-        .map(p -> validateParameter(
-            apiOperation, p,
-            request.getQueryParameterValues(p.getName()),
-            "validation.request.parameter.query.missing")
-        )
-        .reduce(ValidationReport.empty(), ValidationReport::merge);
+    return defaultIfNull(apiOperation.getOperation().getParameters(),
+        ImmutableList.<Parameter>of()).stream().filter(RequestValidator::isQueryParam).map(
+            p -> validateParameter(
+                apiOperation, p,
+                request.getQueryParameterValues(p.getName()),
+                "validation.request.parameter.query.missing")).reduce(ValidationReport.empty(),
+                    ValidationReport::merge);
   }
 
   @Nonnull
   private ValidationReport validateHeaders(Request request, ApiOperation apiOperation) {
-    return defaultIfNull(apiOperation.getOperation().getParameters(), ImmutableList.<Parameter>of())
-        .stream()
-        .filter(RequestValidator::isHeaderParam)
-        .filter(param -> param.getExtensions() != null && param.getExtensions().containsKey(
-                OpenApiSpecificationExtensions.PARAMETER))
-        .map(p -> validateParameter(
-            apiOperation, p,
-            request.getHeaderValues(p.getName()),
-            "validation.request.parameter.header.missing")
-        )
-        .reduce(ValidationReport.empty(), ValidationReport::merge);
+    return defaultIfNull(apiOperation.getOperation().getParameters(),
+        ImmutableList.<Parameter>of()).stream().filter(RequestValidator::isHeaderParam).filter(
+            param -> param.getExtensions() != null && param.getExtensions().containsKey(
+                OpenApiSpecificationExtensions.PARAMETER)).map(p -> validateParameter(
+                    apiOperation, p,
+                    request.getHeaderValues(p.getName()),
+                    "validation.request.parameter.header.missing")).reduce(ValidationReport.empty(),
+                        ValidationReport::merge);
   }
 
   @Nonnull
   private ValidationReport validateParameter(ApiOperation apiOperation,
-                                             Parameter parameter,
-                                             Collection<String> parameterValues,
-                                             String missingKey) {
+      Parameter parameter,
+      Collection<String> parameterValues,
+      String missingKey) {
 
     final ValidationReport.MessageContext context =
         ValidationReport.MessageContext.create().withParameter(parameter).build();
 
     if (parameterValues.isEmpty() && TRUE.equals(parameter.getRequired())) {
       return ValidationReport.singleton(
-          messages.get(missingKey, parameter.getName(), apiOperation.getApiPath().original())
-      ).withAdditionalContext(context);
+          messages.get(missingKey, parameter.getName(),
+              apiOperation.getApiPath().original())).withAdditionalContext(context);
     }
 
-    return parameterValues
-        .stream()
-        .map(v -> parameterValidator.validate(v, parameter))
-        .reduce(ValidationReport.empty(), ValidationReport::merge);
+    return parameterValues.stream().map(v -> parameterValidator.validate(v, parameter)).reduce(
+        ValidationReport.empty(), ValidationReport::merge);
   }
 
   private static boolean isPathParam(final Parameter p) {

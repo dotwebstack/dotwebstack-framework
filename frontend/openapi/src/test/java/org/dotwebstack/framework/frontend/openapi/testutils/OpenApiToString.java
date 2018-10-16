@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.testutils;
 
-
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import java.io.IOException;
@@ -29,8 +28,8 @@ public class OpenApiToString implements ArgumentConverter {
       try {
         result = CharStreams.toString(new InputStreamReader(resource, Charsets.UTF_8));
       } catch (IOException ioe) {
-        LOG.error("Exception occurred while Parsing OASpec." +
-            " Are you sure the name is correct? exception: {}", ioe);
+        LOG.error("Exception occurred while Parsing OASpec."
+            + " Are you sure the name is correct? exception: {}", ioe);
       }
       return result;
     }

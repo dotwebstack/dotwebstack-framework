@@ -16,7 +16,6 @@ import io.swagger.v3.oas.models.parameters.PathParameter;
 import io.swagger.v3.oas.models.parameters.QueryParameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Map;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import org.dotwebstack.framework.backend.ResultType;
@@ -41,9 +40,6 @@ public class InformationProductRequestParameterMapperTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
-
-  @Mock
-  private ContainerRequestContext contextMock;
 
   @Mock
   private TemplateProcessor templateProcessorMock;
@@ -250,7 +246,8 @@ public class InformationProductRequestParameterMapperTest {
 
     RequestBody requestBody = new RequestBody();
     requestBody.setDescription("body");
-    requestBody.setContent(new Content().addMediaType("application/json", new MediaType().schema(schema)));
+    requestBody.setContent(new Content()
+        .addMediaType("application/json", new MediaType().schema(schema)));
 
     Operation operation = new Operation();
     operation.setRequestBody(requestBody);
@@ -282,7 +279,8 @@ public class InformationProductRequestParameterMapperTest {
 
     RequestBody requestBody = new RequestBody();
     requestBody.setDescription("body");
-    requestBody.setContent(new Content().addMediaType("application/json", new MediaType().schema(schema)));
+    requestBody.setContent(new Content()
+        .addMediaType("application/json", new MediaType().schema(schema)));
 
     Operation operation = new Operation();
     operation.setRequestBody(requestBody);

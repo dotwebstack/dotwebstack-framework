@@ -52,13 +52,13 @@ public class BaseUriFactoryTest {
   public void newBaseUri_returnsBaseUriString_ifXForwardedHostPresent() {
     // Arrange
     String forwardedHost = "forwardedHost";
-    OpenAPI openAPI = new OpenAPI() //
+    OpenAPI openApi = new OpenAPI() //
         .addServersItem(new Server().url("http://example.com/" + basePath));
     when(containerRequestMock.getRequestHeaders().getFirst(any())).thenReturn(forwardedHost);
 
     // Act
     String baseUri =
-        BaseUriFactory.determineBaseUri(containerRequestMock, openAPI, new Operation());
+        BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
 
     // Assert
     assertThat(baseUri, is(getUriString("http", forwardedHost, basePath)));
@@ -70,7 +70,7 @@ public class BaseUriFactoryTest {
     String forwardedHost1 = "forwardedHost1";
     String forwardedHost2 = "forwardedHost2";
     // @formatter:off
-    OpenAPI openAPI = new OpenAPI() //
+    OpenAPI openApi = new OpenAPI() //
         .addServersItem(new Server().url("http://example.com/" + basePath));
     
     // @formatter:on
@@ -79,7 +79,7 @@ public class BaseUriFactoryTest {
 
     // Act
     String baseUri =
-        BaseUriFactory.determineBaseUri(containerRequestMock, openAPI, new Operation());
+        BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
 
     // Assert
     assertThat(baseUri, is(getUriString("http", forwardedHost1, basePath)));
@@ -88,11 +88,12 @@ public class BaseUriFactoryTest {
   @Test
   public void newBaseUri_returnsBaseUriString_ifXForwardedHostNotPresent() {
     // Arrange
-    OpenAPI openAPI = new OpenAPI() //
+    OpenAPI openApi = new OpenAPI() //
         .addServersItem(new Server().url("http://example.com/" + basePath));
 
     // Act
-    String baseUri = BaseUriFactory.determineBaseUri(containerRequestMock, openAPI, new Operation());
+    String baseUri =
+        BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
 
     // Assert
     assertThat(baseUri, is(getUriString("http", requestHost, basePath)));
@@ -101,13 +102,14 @@ public class BaseUriFactoryTest {
   @Test
   public void newBaseUri_returnsBaseUriString_withPortNumber() {
     // Arrange
-    OpenAPI openAPI = new OpenAPI() //
+    OpenAPI openApi = new OpenAPI() //
         .addServersItem(new Server().url("http://example.com/" + basePath));
 
     when(baseUriMock.getPort()).thenReturn(123);
 
     // Act
-    String baseUri = BaseUriFactory.determineBaseUri(containerRequestMock, openAPI, new Operation());
+    String baseUri =
+        BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
 
     // Assert
     assertThat(baseUri, is(getUriString("http", requestHost + ":123", basePath)));
@@ -119,7 +121,7 @@ public class BaseUriFactoryTest {
     // Arrange
     when(containerRequestMock.getRequestHeaders().getFirst(any())).thenReturn("!@#$%^&*()_+");
 
-    OpenAPI openAPI = new OpenAPI() //
+    OpenAPI openApi = new OpenAPI() //
         .addServersItem(new Server().url("http://example.com/" + basePath));
 
     // Assert
@@ -127,7 +129,7 @@ public class BaseUriFactoryTest {
     exception.expectMessage("BaseUri could not be constructed");
 
     // Act
-    BaseUriFactory.determineBaseUri(containerRequestMock, openAPI, new Operation());
+    BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
   }
 
   // TODO: Add test cases for url in operation specification

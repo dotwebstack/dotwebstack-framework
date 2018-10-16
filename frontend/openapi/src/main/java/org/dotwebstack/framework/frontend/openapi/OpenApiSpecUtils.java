@@ -30,10 +30,10 @@ public final class OpenApiSpecUtils {
 
   private OpenApiSpecUtils() {}
 
-  public static RequestValidator createValidator(@NonNull OpenAPI openAPI) {
+  public static RequestValidator createValidator(@NonNull OpenAPI openApi) {
     LevelResolver levelResolver = LevelResolver.defaultResolver();
     MessageResolver messageResolver = new MessageResolver(levelResolver);
-    SchemaValidator schemaValidator = new SchemaValidator(openAPI, messageResolver);
+    SchemaValidator schemaValidator = new SchemaValidator(openApi, messageResolver);
     return new RequestValidator(schemaValidator, messageResolver);
   }
 

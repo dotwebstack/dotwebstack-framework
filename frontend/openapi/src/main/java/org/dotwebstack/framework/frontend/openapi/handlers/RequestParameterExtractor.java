@@ -59,8 +59,8 @@ class RequestParameterExtractor {
       Optional<Schema> schema = Optional.empty();
       if (requestBody != null) {
         if (requestBody.get$ref() != null) {
-          String $ref = requestBody.get$ref();
-          String definitionName = RefUtils.computeDefinitionName($ref);
+          String ref = requestBody.get$ref();
+          String definitionName = RefUtils.computeDefinitionName(ref);
           requestBody = openApi.getComponents().getRequestBodies().get(definitionName);
         }
         Content content = defaultIfNull(requestBody.getContent(), new Content());

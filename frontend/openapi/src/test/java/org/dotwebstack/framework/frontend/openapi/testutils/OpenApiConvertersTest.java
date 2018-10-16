@@ -21,7 +21,7 @@ class OpenApiConvertersTest {
 
   @ParameterizedTest
   @CsvSource({"testutils/Post.yml"})
-  void ConvertToString(@ToOpenApi3String String model) {
+  void convertToString(@ToOpenApi3String String model) {
     assertThat(model, is(notNullValue()));
     assertThat(model.contains("API"), is(true));
   }

@@ -43,7 +43,7 @@ public class AbstractRequestMapper<R> implements RequestMapper {
   }
 
   @Override
-  public void map(Resource.Builder resourceBuilder, OpenAPI openAPI, ApiOperation apiOperation,
+  public void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
       Operation getOperation, String absolutePath) {
 
   }

@@ -1,15 +1,13 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import com.google.common.base.Charsets;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.*;
-
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -18,6 +16,12 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -195,15 +199,15 @@ public class OpenApiRequestMapperTest {
         new org.springframework.core.io.Resource[] {fileResourceMock});
 
 
-    OpenAPI openAPI = new OpenAPI();
-    openAPI.setInfo(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
-    openAPI.getComponents().getSchemas().put("myref", new Schema<>());
+    OpenAPI openApi = new OpenAPI();
+    openApi.setInfo(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
+    openApi.getComponents().getSchemas().put("myref", new Schema<>());
 
     SwaggerParseResult parserResult = mock(SwaggerParseResult.class);
-    when(parserResult.getOpenAPI()).thenReturn(openAPI);
+    when(parserResult.getOpenAPI()).thenReturn(openApi);
     when(openApiParserMock.readContents(specString)).thenReturn(parserResult);
 
-    return openAPI;
+    return openApi;
   }
 
 }

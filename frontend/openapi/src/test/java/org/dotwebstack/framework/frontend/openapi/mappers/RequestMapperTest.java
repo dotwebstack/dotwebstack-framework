@@ -89,15 +89,15 @@ class RequestMapperTest {
     ApplicationProperties applicationPropertiesMock = mock(ApplicationProperties.class);
     when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
 
-    when(openApiParserMock.readContents(anyString(), anyList(), any()))
-        .thenReturn(mock(SwaggerParseResult.class));
+    when(openApiParserMock.readContents(anyString(), anyList(), any())).thenReturn(
+        mock(SwaggerParseResult.class));
 
     RequestHandlerFactory requestHandlerFactoryMock = mock(RequestHandlerFactory.class);
     when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any())) //
         .thenReturn(transactionRequestHandlerMock);
 
-    when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any(), any()))
-        .thenReturn(informationProductRequestHandlerMock);
+    when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any(), any())).thenReturn(
+        informationProductRequestHandlerMock);
 
     TransactionResourceProvider transactionResourceProviderMock =
         mock(TransactionResourceProvider.class);
@@ -121,12 +121,12 @@ class RequestMapperTest {
 
   }
 
-  private void arrange(String openAPIString, OpenAPI openAPI) throws IOException {
-    ByteArrayInputStream stream = new ByteArrayInputStream(openAPIString.getBytes(Charsets.UTF_8));
+  private void arrange(String openApiString, OpenAPI openApi) throws IOException {
+    ByteArrayInputStream stream = new ByteArrayInputStream(openApiString.getBytes(Charsets.UTF_8));
 
     when(fileResourceMock.getInputStream()).thenReturn(stream);
-    when(openApiParserMock.readContents(anyString(), anyList(), any()).getOpenAPI())
-        .thenReturn(openAPI);
+    when(openApiParserMock.readContents(anyString(), anyList(), any()).getOpenAPI()).thenReturn(
+        openApi);
   }
 
   @ParameterizedTest(name = "spec: [{0}] expected methods: [{2}]")
@@ -138,10 +138,10 @@ class RequestMapperTest {
       "mappers/Get&Put&Post.yml, mappers/Get&Put&Post.yml,GET PUT POST OPTIONS",
       "mappers/BodyParameter.yml, mappers/BodyParameter.yml, GET OPTIONS",
   })
-  void map_EndpointsCorrectly_WithValidData(@ToOpenApi3String String openAPIString,
-      @ToOpenApi3 OpenAPI openAPI, String methods) throws IOException {
+  void map_EndpointsCorrectly_WithValidData(@ToOpenApi3String String openApiString,
+      @ToOpenApi3 OpenAPI openApi, String methods) throws IOException {
     // Arrange
-    arrange(openAPIString, openAPI);
+    arrange(openApiString, openApi);
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
@@ -161,21 +161,21 @@ class RequestMapperTest {
   @ParameterizedTest(name = "{2}")
   @DisplayName("Throw exception for invalid spec")
   @CsvSource({
-      "mappers/No200-TRANS.yml, mappers/No200-TRANS.yml, " +
-          "does not specify a 200 response",
-      "mappers/No200-IP.yml, mappers/No200-IP.yml, " +
-          "does not specify a 200 response",
-      "mappers/NoResponses.yml, mappers/NoResponses.yml, " +
-          "does not specify a 200 response",
-      "mappers/NoObjectInRequestBody.yml, mappers/NoObjectInRequestBody.yml, " +
-          "No object property in body parameter.",
-      "mappers/NoServer.yml, mappers/NoServer.yml, " +
-          "Expecting at least one server definition."
+      "mappers/No200-TRANS.yml, mappers/No200-TRANS.yml, "
+          + "does not specify a 200 response",
+      "mappers/No200-IP.yml, mappers/No200-IP.yml, "
+          + "does not specify a 200 response",
+      "mappers/NoResponses.yml, mappers/NoResponses.yml, "
+          + "does not specify a 200 response",
+      "mappers/NoObjectInRequestBody.yml, mappers/NoObjectInRequestBody.yml, "
+          + "No object property in body parameter.",
+      "mappers/NoServer.yml, mappers/NoServer.yml, "
+          + "Expecting at least one server definition."
   })
-  void map_ThrowsException_EndpointMissing(@ToOpenApi3String String openAPIString,
-      @ToOpenApi3 OpenAPI openAPI, String message) throws Throwable {
+  void map_ThrowsException_EndpointMissing(@ToOpenApi3String String openApiString,
+      @ToOpenApi3 OpenAPI openApi, String message) throws Throwable {
     // Arrange
-    arrange(openAPIString, openAPI);
+    arrange(openApiString, openApi);
 
     // Act
     Executable action = () -> openApiRequestMapper.map(httpConfigurationMock);
@@ -211,6 +211,8 @@ class RequestMapperTest {
           break;
         case HttpMethod.OPTIONS:
           assertOptions(apiResources);
+          break;
+        default:
           break;
       }
     }
