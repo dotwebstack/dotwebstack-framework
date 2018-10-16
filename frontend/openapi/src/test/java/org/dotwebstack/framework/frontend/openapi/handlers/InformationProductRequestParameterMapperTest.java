@@ -71,7 +71,7 @@ public class InformationProductRequestParameterMapperTest {
         DBEERPEDIA.BREWERIES_LABEL.stringValue(), ResultType.GRAPH,
         ImmutableList.of(parameter, parameter2), templateProcessorMock);
 
-    mapper = new InformationProductRequestParameterMapper();
+    mapper = new InformationProductRequestParameterMapper(new RequestParameterMapperHelper());
   }
 
   @Test

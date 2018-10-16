@@ -65,7 +65,8 @@ public class TransactionRequestParameterMapperTest {
     transaction = new Transaction.Builder(DBEERPEDIA.TRANSACTION).parameters(
         ImmutableList.of(parameter1, parameter2)).build();
 
-    transactionRequestParameterMapper = new TransactionRequestParameterMapper();
+    transactionRequestParameterMapper =
+        new TransactionRequestParameterMapper(new RequestParameterMapperHelper());
   }
 
   @Test
