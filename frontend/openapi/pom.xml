@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -57,17 +58,34 @@
       <artifactId>commons-lang3</artifactId>
       <version>3.7</version>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.marmotta</groupId>
+      <artifactId>ldpath-api</artifactId>
+      <version>3.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.marmotta</groupId>
+      <artifactId>ldpath-core</artifactId>
+      <version>3.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.taxonic.carml</groupId>
+      <artifactId>carml-engine</artifactId>
+      <version>0.2.0</version>
+    </dependency>
+    <!-- test dependencies -->
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
       <artifactId>dotwebstack-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!--
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+      -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
@@ -75,7 +93,19 @@
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.3.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.3.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -94,25 +124,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.marmotta</groupId>
-      <artifactId>ldpath-api</artifactId>
-      <version>3.3.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.marmotta</groupId>
-      <artifactId>ldpath-core</artifactId>
-      <version>3.3.0</version>
-    </dependency>
-    <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.taxonic.carml</groupId>
-      <artifactId>carml-engine</artifactId>
-      <version>0.2.0</version>
-    </dependency>
+
   </dependencies>
 
 </project>
