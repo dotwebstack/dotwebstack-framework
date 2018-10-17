@@ -204,7 +204,8 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
 
     String url = openApi.getServers().get(0).getUrl();
 
-    return url.substring(url.indexOf("://") + 2);
+    String uriWithoutScheme = url.substring(url.indexOf("://") + "://".length());
+    return "/" + uriWithoutScheme;
   }
 
 }

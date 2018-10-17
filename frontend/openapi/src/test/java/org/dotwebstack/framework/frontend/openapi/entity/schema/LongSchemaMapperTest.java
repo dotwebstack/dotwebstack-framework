@@ -64,11 +64,13 @@ public class LongSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonLongProperty() {
+  public void supports_ReturnsFalse_ForNonLongProperty() {
     // Arrange & Act
     Boolean supported = longSchemaMapper.supports(new StringSchema());
 
     // Assert
     assertThat(supported, equalTo(false));
   }
+
+  // TODO: add test for returnsFalse for other NumberSchemaMappers, like double and float.
 }
