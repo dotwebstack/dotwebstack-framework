@@ -67,9 +67,17 @@ public class RequestParameterMapperHelper {
       Collection<Schema> values) {
     return values.stream()//
         .map(schema -> schema.getExtensions())//
+        .map(this::explicitlyToMap) //
         .map(extension -> getParameterOfExtensions(extension, parameters))//
         .filter(Objects::nonNull)//
         .collect(Collectors.toList());
+  }
+
+  private Map<String, Object> explicitlyToMap(Object o) {
+    // since we're using a raw-typed schema as an input, we need to explicitly cast it else the
+    // stream
+    // loses its type
+    return (Map<String, Object>) o;
   }
 
   private Collection<Schema> getRequestBodyPropertySchemas(RequestBody requestBody) {
