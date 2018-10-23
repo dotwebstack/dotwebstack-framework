@@ -81,21 +81,23 @@
       <groupId>org.topbraid</groupId>
       <artifactId>shacl</artifactId>
       <version>1.0.1</version>
+      <!--higher version will fail the test for this release-->
     </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-arq</artifactId>
       <version>3.4.0</version>
+      <!--higher version will fail the test for this release-->
     </dependency>
     <dependency>
       <groupId>com.taxonic.carml</groupId>
       <artifactId>carml-model</artifactId>
-      <version>RELEASE</version>
+      <version>${com.taxonic.carml.version}</version>
     </dependency>
     <dependency>
       <groupId>com.taxonic.carml</groupId>
       <artifactId>carml-logical-source-resolver-jsonpath</artifactId>
-      <version>RELEASE</version>
+      <version>${com.taxonic.carml.version}</version>
     </dependency>
   </dependencies>
 
