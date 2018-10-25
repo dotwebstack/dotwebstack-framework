@@ -28,8 +28,8 @@
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-parser</artifactId>
-      <version>1.0.39</version>
-      <!--higher version will fail the test for this release-->
+      <version>1.0.34</version>
+      <!--higher version will fail the integrationtest for this release-->
     </dependency>
     <dependency>
       <groupId>com.atlassian.oai</groupId>
