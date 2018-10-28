@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-frontend</artifactId>
-    <version>0.0.46-SNAPSHOT</version>
+    <version>0.0.48-SNAPSHOT</version>
   </parent>
 
   <artifactId>dotwebstack-frontend-openapi</artifactId>
@@ -29,6 +29,7 @@
       <groupId>io.swagger</groupId>
       <artifactId>swagger-parser</artifactId>
       <version>1.0.34</version>
+      <!--higher version will fail the integrationtest for this release-->
     </dependency>
     <dependency>
       <groupId>com.atlassian.oai</groupId>
@@ -64,12 +65,10 @@
     <dependency>
       <groupId>org.apache.marmotta</groupId>
       <artifactId>ldpath-api</artifactId>
-      <version>3.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.marmotta</groupId>
       <artifactId>ldpath-core</artifactId>
-      <version>3.3.0</version>
     </dependency>
     <dependency>
       <groupId>org.skyscreamer</groupId>
@@ -79,7 +78,6 @@
     <dependency>
       <groupId>com.taxonic.carml</groupId>
       <artifactId>carml-engine</artifactId>
-      <version>0.2.0</version>
     </dependency>
   </dependencies>
 
