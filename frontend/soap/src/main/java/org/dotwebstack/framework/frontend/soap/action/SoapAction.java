@@ -79,7 +79,7 @@ public class SoapAction {
   }
 
   public Map<String, String> getParameterValues(Document inputDoc) {
-    Map<String, String> parameterValues = new HashMap();
+    Map<String, String> parameterValues = new HashMap<>();
     if (inputDoc != null) {
       try {
         for (SoapParameter soapParameter : soapParameters) {

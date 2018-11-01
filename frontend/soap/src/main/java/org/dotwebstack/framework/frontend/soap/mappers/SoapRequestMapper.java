@@ -15,6 +15,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
@@ -149,7 +150,30 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
       Port wsdlPort,
       String servicePath
   ) {
-    Map<String, SoapAction> soapActions = new HashMap();
+    Map<String, SoapAction> soapActions = new HashMap<>();
+    createSoapActions(wsdlDefinition, wsdlPort, soapActions);
+
+    SoapRequestHandler soapRequestHandler =
+            new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions);
+
+    Builder soapResourceBuilder = Resource.builder().path(servicePath);
+    soapResourceBuilder.addMethod(POST)
+            .consumes("text/xml")
+            .produces("application/soap+xml")
+            .handledBy(soapRequestHandler);
+
+    Builder soapResourceBuilderXop = Resource.builder().path(servicePath);
+    soapResourceBuilder.addMethod(POST)
+            .consumes("multipart/related")
+            .produces("application/xop+xml")
+        .handledBy(soapRequestHandler);
+
+    httpConfiguration
+            .registerResources(soapResourceBuilder.build(), soapResourceBuilderXop.build());
+  }
+
+  private void createSoapActions(final Definition wsdlDefinition, final Port wsdlPort,
+      final Map<String, SoapAction> soapActions) {
     List<BindingOperation> wsdlBindingOperations = wsdlPort.getBinding()
         .getBindingOperations();
     Element typesElement = findTypesElement(wsdlDefinition);
@@ -169,13 +193,6 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
         );
       }
     }
-
-    Builder soapResourceBuilder = Resource.builder().path(servicePath);
-    soapResourceBuilder
-        .addMethod(POST)
-        .produces("application/soap+xml")
-        .handledBy(new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions));
-    httpConfiguration.registerResources(soapResourceBuilder.build());
   }
 
   private Element findTypesElement(Definition wsdlDefinition) {

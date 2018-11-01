@@ -1,12 +1,10 @@
 package org.dotwebstack.framework.frontend.soap.wsdlreader;
 
-import static org.dotwebstack.framework.frontend.soap.wsdlreader.StringUtils.EMPTY;
 import static org.dotwebstack.framework.frontend.soap.wsdlreader.StringUtils.fill;
 import static org.dotwebstack.framework.frontend.soap.wsdlreader.StringUtils.join;
 import static org.dotwebstack.framework.frontend.soap.wsdlreader.StringUtils.removeLeadingString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
@@ -107,7 +105,7 @@ public class StringUtilsTest {
   }
 
   @Test
-  public void fill_langth() {
+  public void fill_length() {
     // Act
     String result = fill(words[0], words[1], 18);
 
