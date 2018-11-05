@@ -34,7 +34,7 @@ import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandler;
-import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandlerXop;
+import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandlerMtom;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.Constants;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -168,14 +168,14 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
     Resource soapResourceXml = soapResourceBuilderXml.build();
 
 
-    SoapRequestHandlerXop soapRequestHandlerXop =
-        new SoapRequestHandlerXop(wsdlDefinition, wsdlPort, soapActions);
+    SoapRequestHandlerMtom soapRequestHandlerMtom =
+        new SoapRequestHandlerMtom(wsdlDefinition, wsdlPort, soapActions);
 
     Builder soapResourceBuilderXop = Resource.builder().path(servicePath);
     soapResourceBuilderXop.addMethod(POST)
         .consumes(MULTIPART_RELATED)
         .produces(APPLICATION_XOP_XML)
-        .handledBy(soapRequestHandlerXop);
+        .handledBy(soapRequestHandlerMtom);
 
     Resource soapResourceXop = soapResourceBuilderXop.build();
 
