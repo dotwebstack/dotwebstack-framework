@@ -24,19 +24,27 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 
-public class SoapRequestHandlerXop extends SoapRequestHandler
+public class SoapRequestHandlerMtom extends SoapRequestHandler
     implements Inflector<ContainerRequestContext, String> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SoapRequestHandlerXop.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SoapRequestHandlerMtom.class);
+  private static final String MULTIPART_RELATED = "multipart/related";
+  private static final String UTF_8 = "utf-8";
+  private static final String CONTENT_TYPE = "Content-Type";
+  private static final String APPLICATION_XOP_XML_CHARSET_UTF_8_TYPE_TEXT_XML =
+      "application/xop+xml;charset=utf-8;type=\"text/xml\"";
+  private static final String CONTENT_TRANSFER_ENCODING = "Content-Transfer-Encoding";
+  private static final String EIGHT_BIT = "8bit";
+  private static final String SOAP_ACTION = "SOAPAction";
 
-  public SoapRequestHandlerXop(@NonNull Definition wsdlDefinition, @NonNull Port wsdlPort,
+  public SoapRequestHandlerMtom(@NonNull Definition wsdlDefinition, @NonNull Port wsdlPort,
       @NonNull Map<String, SoapAction> soapActions) {
     super(wsdlDefinition, wsdlPort, soapActions);
   }
 
   @Override
   public String apply(ContainerRequestContext data) {
-    final String soapActionName = data.getHeaderString("SOAPAction");
+    final String soapActionName = data.getHeaderString(SOAP_ACTION);
     String msg = ERROR_RESPONSE;
     LOG.debug("Handling SOAP Multipart XOP request, SOAPAction: {}", soapActionName);
 
@@ -58,9 +66,9 @@ public class SoapRequestHandlerXop extends SoapRequestHandler
     MimeMultipart mimeMultipart = new MimeMultipart();
     MimeBodyPart textPart = new MimeBodyPart();
     try {
-      textPart.setText(msg, "utf-8");
-      textPart.addHeader("Content-Type", "application/xop+xml;charset=utf-8;type=\"text/xml\"");
-      textPart.addHeader("Content-Transfer-Encoding", "8bit");
+      textPart.setText(msg, UTF_8);
+      textPart.addHeader(CONTENT_TYPE, APPLICATION_XOP_XML_CHARSET_UTF_8_TYPE_TEXT_XML);
+      textPart.addHeader(CONTENT_TRANSFER_ENCODING, EIGHT_BIT);
       mimeMultipart.addBodyPart(textPart);
     } catch (MessagingException e) {
       LOG.error("Error creating Mime Response: {}", e.getMessage());
@@ -79,7 +87,7 @@ public class SoapRequestHandlerXop extends SoapRequestHandler
 
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
       MimeMultipart mp =
-          new MimeMultipart(new DataSourceProvider.ByteArrayDataSource(isMtm, "multipart/related"));
+          new MimeMultipart(new DataSourceProvider.ByteArrayDataSource(isMtm, MULTIPART_RELATED));
       BodyPart bodyPart = mp.getBodyPart(0);
 
       bodyPart.writeTo(baos);

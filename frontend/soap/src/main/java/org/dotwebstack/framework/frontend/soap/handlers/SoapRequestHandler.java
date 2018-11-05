@@ -45,6 +45,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       + "  </s:Body>" + "</s:Envelope>";
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestHandler.class);
   private static final String REGEX_TO_REMOVE_MULTIPART = "^C.+?(?=(<soapenv))";
+  private static final String SOAP_ACTION = "SOAPAction";
   private final Definition wsdlDefinition;
   final Port wsdlPort;
   private final Map<String, SoapAction> soapActions;
@@ -58,7 +59,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
   @Override
   public String apply(ContainerRequestContext data) {
-    final String soapActionName = data.getHeaderString("SOAPAction");
+    final String soapActionName = data.getHeaderString(SOAP_ACTION);
     String message = ERROR_RESPONSE;
     LOG.debug("Handling SOAP XML request, SOAPAction: {}", soapActionName);
 
