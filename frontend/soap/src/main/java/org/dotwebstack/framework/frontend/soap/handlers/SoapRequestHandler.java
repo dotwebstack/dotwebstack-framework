@@ -126,8 +126,8 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     }
     return null;
   }
-  
-  private static String getStringFromInputStream(InputStream is) {
+
+  String getStringFromInputStream(InputStream is) {
     StringBuilder sb = new StringBuilder();
 
     String line;
@@ -137,12 +137,12 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       }
 
     } catch (IOException e) {
-      LOG.debug("Error converting message to string for logging {}", e.getMessage());
+      LOG.error("Error converting message to string {}", e.getMessage());
     }
     return sb.toString();
   }
 
-  private static String removeXmlHeader(String xml) {
+  private String removeXmlHeader(String xml) {
     if (xml != null) {
       xml = xml.replaceAll(REGEX_TO_REMOVE_MULTIPART, "").trim();
     }

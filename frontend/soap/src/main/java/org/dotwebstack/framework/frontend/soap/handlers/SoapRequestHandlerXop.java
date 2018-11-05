@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.util.Map;
 
 import javax.mail.BodyPart;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.wsdl.BindingOperation;
@@ -20,7 +22,6 @@ import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
-
 
 
 public class SoapRequestHandlerXop extends SoapRequestHandler
@@ -50,7 +51,28 @@ public class SoapRequestHandlerXop extends SoapRequestHandler
       msg = buildSoapResponse(msg, wsdlBindingOperation, inputDocument);
     }
 
-    return msg;
+    return createResponse(msg);
+  }
+
+  private String createResponse(String msg) {
+    MimeMultipart mimeMultipart = new MimeMultipart();
+    MimeBodyPart textPart = new MimeBodyPart();
+    try {
+      textPart.setText(msg, "utf-8");
+      textPart.addHeader("Content-Type", "application/xop+xml;charset=utf-8;type=\"text/xml\"");
+      textPart.addHeader("Content-Transfer-Encoding", "8bit");
+      mimeMultipart.addBodyPart(textPart);
+    } catch (MessagingException e) {
+      LOG.error("Error creating Mime Response: {}", e.getMessage());
+    }
+    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+      mimeMultipart.writeTo(baos);
+      return getStringFromInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    } catch (Exception ex) {
+      LOG.warn("Error convertin MimeMultipart to String: {}", ex.getMessage());
+    }
+    return ERROR_RESPONSE;
+
   }
 
   private ByteArrayInputStream mimeParser(InputStream isMtm) {
@@ -64,7 +86,7 @@ public class SoapRequestHandlerXop extends SoapRequestHandler
 
       return new ByteArrayInputStream(baos.toByteArray());
     } catch (Exception ex) {
-      LOG.debug("Error extracting soapbody: {}",ex.getMessage());
+      LOG.warn("Error extracting soapbody: {}", ex.getMessage());
     }
     return null;
   }
