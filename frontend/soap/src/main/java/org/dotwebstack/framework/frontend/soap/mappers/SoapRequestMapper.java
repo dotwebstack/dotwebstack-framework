@@ -5,6 +5,7 @@ import static javax.ws.rs.HttpMethod.POST;
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import com.ibm.wsdl.extensions.schema.SchemaImpl;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,12 +26,15 @@ import javax.wsdl.extensions.ExtensibilityElement;
 import javax.wsdl.extensions.schema.Schema;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLReader;
+
 import lombok.NonNull;
+
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandler;
+import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandlerXop;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.Constants;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -52,11 +56,17 @@ import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
+
+
 @Service
 public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware {
 
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestMapper.class);
   private static final String DWS_INFOPROD = "informationProduct";
+  private static final String APPLICATION_SOAP_XML = "application/soap+xml";
+  private static final String TEXT_XML = "text/xml";
+  private static final String MULTIPART_RELATED = "multipart/related";
+  private static final String APPLICATION_XOP_XML = "application/xop+xml";
 
   private WSDLReader wsdlReader;
 
@@ -69,8 +79,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   private InformationProductResourceProvider informationProductLoader;
 
   @Autowired
-  public SoapRequestMapper(
-      @NonNull ApplicationProperties applicationProperties,
+  public SoapRequestMapper(@NonNull ApplicationProperties applicationProperties,
       @NonNull InformationProductResourceProvider informationProductLoader) {
     this.applicationProperties = applicationProperties;
     this.informationProductLoader = informationProductLoader;
@@ -96,8 +105,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
 
     LOG.debug("Loading files from {}", applicationProperties.getResourcePath());
     try {
-      resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-          applicationProperties.getResourcePath() + "/soap/**.xml");
+      resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+          .getResources(applicationProperties.getResourcePath() + "/soap/**.xml");
     } catch (FileNotFoundException exp) {
       LOG.warn("No Open SOAP-WSDL resources found in path:{}/soap",
           applicationProperties.getResourcePath());
@@ -110,8 +119,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
             new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
         try {
           String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
-          Definition wsdlDefinition = wsdlReader.readWSDL("http://example.org/",
-              new InputSource(new StringReader(result)));
+          Definition wsdlDefinition =
+              wsdlReader.readWSDL("http://example.org/", new InputSource(new StringReader(result)));
           mapSoapDefinition(wsdlDefinition, httpConfiguration);
         } catch (WSDLException exp) {
           LOG.error("Error reading WSDL file: {}", resource.getDescription());
@@ -121,8 +130,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
     }
   }
 
-  private void mapSoapDefinition(Definition wsdlDefinition,
-      HttpConfiguration httpConfiguration) {
+  private void mapSoapDefinition(Definition wsdlDefinition, HttpConfiguration httpConfiguration) {
     Map<String, javax.wsdl.Service> wsdlServices = wsdlDefinition.getServices();
     for (javax.wsdl.Service wsdlService : wsdlServices.values()) {
       Map<String, Port> wsdlPorts = wsdlService.getPorts();
@@ -131,8 +139,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
         for (ExtensibilityElement wsdlElement : wsdlElements) {
           try {
             URI locationUri = new URI(SoapUtils.getLocationUri(wsdlElement));
-            String servicePath = String.format("/%s%s", locationUri.getHost(),
-                locationUri.getPath());
+            String servicePath =
+                String.format("/%s%s", locationUri.getHost(), locationUri.getPath());
             LOG.info("Register resource path {} for SOAP service {}", servicePath, locationUri);
             registerResource(wsdlDefinition, httpConfiguration, wsdlPort, servicePath);
           } catch (URISyntaxException exp) {
@@ -144,38 +152,39 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
     }
   }
 
-  private void registerResource(
-      Definition wsdlDefinition,
-      HttpConfiguration httpConfiguration,
-      Port wsdlPort,
-      String servicePath
-  ) {
+  private void registerResource(Definition wsdlDefinition, HttpConfiguration httpConfiguration,
+      Port wsdlPort, String servicePath) {
     Map<String, SoapAction> soapActions = new HashMap<>();
     createSoapActions(wsdlDefinition, wsdlPort, soapActions);
 
     SoapRequestHandler soapRequestHandler =
-            new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions);
+        new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions);
 
-    Builder soapResourceBuilder = Resource.builder().path(servicePath);
-    soapResourceBuilder.addMethod(POST)
-            .consumes("text/xml")
-            .produces("application/soap+xml")
-            .handledBy(soapRequestHandler);
+    Builder soapResourceBuilderXml = Resource.builder().path(servicePath);
+    soapResourceBuilderXml.addMethod(POST)
+        .consumes(TEXT_XML)
+        .produces(APPLICATION_SOAP_XML)
+        .handledBy(soapRequestHandler);
+    Resource soapResourceXml = soapResourceBuilderXml.build();
+
+
+    SoapRequestHandlerXop soapRequestHandlerXop =
+        new SoapRequestHandlerXop(wsdlDefinition, wsdlPort, soapActions);
 
     Builder soapResourceBuilderXop = Resource.builder().path(servicePath);
-    soapResourceBuilder.addMethod(POST)
-            .consumes("multipart/related")
-            .produces("application/xop+xml")
-        .handledBy(soapRequestHandler);
+    soapResourceBuilderXml.addMethod(POST)
+        .consumes(MULTIPART_RELATED)
+        .produces(APPLICATION_XOP_XML)
+        .handledBy(soapRequestHandlerXop);
+    Resource soapResourceXop = soapResourceBuilderXop.build();
 
     httpConfiguration
-            .registerResources(soapResourceBuilder.build(), soapResourceBuilderXop.build());
+        .registerResources(soapResourceXml, soapResourceXop);
   }
 
   private void createSoapActions(final Definition wsdlDefinition, final Port wsdlPort,
       final Map<String, SoapAction> soapActions) {
-    List<BindingOperation> wsdlBindingOperations = wsdlPort.getBinding()
-        .getBindingOperations();
+    List<BindingOperation> wsdlBindingOperations = wsdlPort.getBinding().getBindingOperations();
     Element typesElement = findTypesElement(wsdlDefinition);
 
     for (BindingOperation wsdlBindingOperation : wsdlBindingOperations) {
@@ -186,11 +195,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
             valueFactory.createIRI(docElement.getAttributeNS(Constants.DWS_NS, DWS_INFOPROD));
         InformationProduct informationProduct =
             informationProductLoader.get(informationProductIdentifier);
-        soapActions.put(wsdlBindingOperation.getName(), createSoapAction(
-            wsdlBindingOperation.getName(),
-            informationProduct,
-            typesElement)
-        );
+        soapActions.put(wsdlBindingOperation.getName(),
+            createSoapAction(wsdlBindingOperation.getName(), informationProduct, typesElement));
       }
     }
   }
