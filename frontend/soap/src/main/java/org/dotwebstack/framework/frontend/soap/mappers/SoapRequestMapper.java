@@ -63,9 +63,9 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
 
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestMapper.class);
   private static final String DWS_INFOPROD = "informationProduct";
-  private static final String APPLICATION_SOAP_XML = "application/soap+xml";
   private static final String TEXT_XML = "text/xml";
   private static final String MULTIPART_RELATED = "multipart/related";
+  private static final String APPLICATION_SOAP_XML = "application/soap+xml";
   private static final String APPLICATION_XOP_XML = "application/xop+xml";
 
   private WSDLReader wsdlReader;
@@ -172,10 +172,11 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
         new SoapRequestHandlerXop(wsdlDefinition, wsdlPort, soapActions);
 
     Builder soapResourceBuilderXop = Resource.builder().path(servicePath);
-    soapResourceBuilderXml.addMethod(POST)
+    soapResourceBuilderXop.addMethod(POST)
         .consumes(MULTIPART_RELATED)
         .produces(APPLICATION_XOP_XML)
         .handledBy(soapRequestHandlerXop);
+
     Resource soapResourceXop = soapResourceBuilderXop.build();
 
     httpConfiguration
