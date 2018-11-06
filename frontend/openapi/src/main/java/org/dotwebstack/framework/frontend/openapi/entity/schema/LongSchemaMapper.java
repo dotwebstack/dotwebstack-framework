@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.v3.oas.models.media.NumberSchema;
+import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Set;
 import javax.validation.constraints.NotNull;
@@ -15,7 +15,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LongSchemaMapper extends AbstractSchemaMapper<NumberSchema, Long> {
+public class LongSchemaMapper extends AbstractSchemaMapper<IntegerSchema, Long> {
 
   private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.LONG);
   private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
@@ -27,13 +27,13 @@ public class LongSchemaMapper extends AbstractSchemaMapper<NumberSchema, Long> {
   }
 
   @Override
-  public Long mapTupleValue(@NonNull NumberSchema schema, @NonNull TupleEntity entity,
+  public Long mapTupleValue(@NonNull IntegerSchema schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
   }
 
   @Override
-  public Long mapGraphValue(@NonNull NumberSchema schema, boolean required,
+  public Long mapGraphValue(@NonNull IntegerSchema schema, boolean required,
       @NonNull GraphEntity graphEntity, @NotNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
@@ -41,7 +41,7 @@ public class LongSchemaMapper extends AbstractSchemaMapper<NumberSchema, Long> {
 
   @Override
   public boolean supports(Schema schema) {
-    return schema instanceof NumberSchema;
+    return schema instanceof IntegerSchema && schema.getFormat().equals("int64");
   }
 
   @Override

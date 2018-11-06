@@ -3,7 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import io.swagger.v3.oas.models.media.NumberSchema;
+import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -25,12 +25,12 @@ public class LongSchemaMapperTest {
   private TupleEntity tupleEntityMock;
 
   private LongSchemaMapper longSchemaMapper;
-  private NumberSchema longProperty;
+  private IntegerSchema longProperty;
 
   @Before
   public void setUp() {
     longSchemaMapper = new LongSchemaMapper();
-    longProperty = new NumberSchema();
+    longProperty = new IntegerSchema().format("int64");
   }
 
   @Test
@@ -64,7 +64,7 @@ public class LongSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsFalse_ForNonLongProperty() {
+  public void supports_ReturnsFalse_ForNonIntegerProperty() {
     // Arrange & Act
     Boolean supported = longSchemaMapper.supports(new StringSchema());
 
@@ -72,5 +72,15 @@ public class LongSchemaMapperTest {
     assertThat(supported, equalTo(false));
   }
 
-  // TODO: add test for returnsFalse for other NumberSchemaMappers, like double and float.
+  @Test
+  public void supports_ReturnsFalse_ForIntegerProperty() {
+    // Arrange
+    IntegerSchema integerSchema = new IntegerSchema();
+
+    // Act
+    Boolean supported = longSchemaMapper.supports(integerSchema);
+
+    // Assert
+    assertThat(supported, equalTo(false));
+  }
 }

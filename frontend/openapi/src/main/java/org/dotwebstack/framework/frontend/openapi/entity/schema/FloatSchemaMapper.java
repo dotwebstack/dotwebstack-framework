@@ -25,7 +25,7 @@ class FloatSchemaMapper extends AbstractSchemaMapper<NumberSchema, Float> {
 
   @Override
   public boolean supports(@NonNull Schema schema) {
-    return schema instanceof NumberSchema;
+    return schema instanceof NumberSchema && schema.getFormat().equals("float");
   }
 
   @Override

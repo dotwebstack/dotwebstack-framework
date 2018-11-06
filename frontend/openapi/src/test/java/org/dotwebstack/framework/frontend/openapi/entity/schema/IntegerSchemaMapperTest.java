@@ -97,9 +97,21 @@ public class IntegerSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonIntegerSchema() {
+  public void supports_ReturnsFalse_ForStringSchema() {
     // Arrange & Act
     Boolean supported = integerSchemaMapper.supports(new StringSchema());
+
+    // Assert
+    assertThat(supported, equalTo(false));
+  }
+
+  @Test
+  public void supports_ReturnsFalse_ForLongProperty() {
+    // Arrange
+    IntegerSchema integerSchema = new IntegerSchema().format("int64");
+
+    // Act
+    Boolean supported = integerSchemaMapper.supports(integerSchema);
 
     // Assert
     assertThat(supported, equalTo(false));
@@ -139,10 +151,10 @@ public class IntegerSchemaMapperTest {
 
   @Test
   public void getSupportedDataTypes_returnsSevenTypes() {
-    //Act
+    // Act
     Set<IRI> supportedTypes = integerSchemaMapper.getSupportedDataTypes();
 
-    //Assert
+    // Assert
     assertThat(supportedTypes.size(), is(7));
 
     assertTrue(supportedTypes.contains(XMLSchema.INTEGER));

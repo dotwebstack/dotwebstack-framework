@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.NumberSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -54,6 +55,7 @@ public class DoubleSchemaMapperTest {
   public void setUp() {
     doubleSchemaMapper = new DoubleSchemaMapper();
     doubleProperty = new NumberSchema();
+    doubleProperty.setFormat("double");
 
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(doubleSchemaMapper));
@@ -93,6 +95,18 @@ public class DoubleSchemaMapperTest {
   public void supports_ReturnsFalse_ForStringProperty() {
     // Arrange & Act
     Boolean supported = doubleSchemaMapper.supports(new StringSchema());
+
+    // Assert
+    assertThat(supported, is(false));
+  }
+
+  @Test
+  public void supports_ReturnsFalse_ForFloatProperty() {
+    // Arrange
+    Schema floatProperty = new NumberSchema().format("float");
+
+    // Act
+    Boolean supported = doubleSchemaMapper.supports(floatProperty);
 
     // Assert
     assertThat(supported, is(false));

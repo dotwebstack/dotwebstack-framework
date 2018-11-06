@@ -35,6 +35,6 @@ class DoubleSchemaMapper extends AbstractSchemaMapper<NumberSchema, Double> {
 
   @Override
   public boolean supports(Schema schema) {
-    return schema instanceof NumberSchema;
+    return schema instanceof NumberSchema && schema.getFormat().equals("double");
   }
 }

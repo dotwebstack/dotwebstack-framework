@@ -37,7 +37,7 @@ class IntegerSchemaMapper extends AbstractSchemaMapper<IntegerSchema, Object> {
 
   @Override
   public boolean supports(@NonNull Schema schema) {
-    return schema instanceof IntegerSchema;
+    return schema instanceof IntegerSchema && schema.getFormat().equals("int32");
   }
 
 }
