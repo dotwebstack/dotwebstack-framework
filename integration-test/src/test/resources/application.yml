@@ -11,5 +11,6 @@ logging:
 dotwebstack:
   config:
     resourcePath: file:src/test/resources
+    openApiResourcePath: src/test/resources/openapi
     host: localhost
     systemGraph: http://dbeerpedia.org#Theatre
