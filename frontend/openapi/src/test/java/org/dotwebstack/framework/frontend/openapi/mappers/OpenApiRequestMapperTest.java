@@ -1,13 +1,15 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
 import com.google.common.base.Charsets;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -17,7 +19,6 @@ import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,7 +41,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
@@ -85,24 +85,25 @@ public class OpenApiRequestMapperTest {
 
   @Before
   public void setUp() {
-    resourceLoader =
-        mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
+    // resourceLoader =
+    // mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
+    when(applicationPropertiesMock.getResourcePath())
+        .thenReturn("src/test/resources/org/dotwebstack/framework/frontend/openapi/mappers");
     requestMappers.add(new InformationProductRequestMapper(informationProductResourceProviderMock,
         requestHandlerFactoryMock));
     requestMappers.add(new TransactionRequestMapper(transactionResourceProvider,
         requestHandlerFactoryMock));
     openApiRequestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
         requestMappers);
-    openApiRequestMapper.setResourceLoader(resourceLoader);
+    // openApiRequestMapper.setResourceLoader(resourceLoader);
     openApiRequestMapper.setEnvironment(environmentMock);
   }
 
   @Test
   public void map_DoesNotRegisterAnything_NoDefinitionFilesFound() throws IOException {
     // Arrange
-    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new org.springframework.core.io.Resource[0]);
+    // when(((ResourcePatternResolver) resourceLoader).getResources(anyString())) //
+    // .thenReturn(new org.springframework.core.io.Resource[0]);
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
@@ -115,8 +116,8 @@ public class OpenApiRequestMapperTest {
   @Test
   public void map_DoesNotRegisterAnything_EmptyFile() throws IOException {
     // Arrange
-    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new org.springframework.core.io.Resource[] {new ByteArrayResource(new byte[0])});
+    // when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
+    // new org.springframework.core.io.Resource[] {new ByteArrayResource(new byte[0])});
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
@@ -129,8 +130,8 @@ public class OpenApiRequestMapperTest {
   @Test
   public void map_DoesNotRegisterAnything_NonExistingFolder() throws IOException {
     // Arrange
-    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenThrow(
-        FileNotFoundException.class);
+    // when(((ResourcePatternResolver) resourceLoader).getResources(anyString())) //
+    // .thenThrow(FileNotFoundException.class);
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
@@ -147,9 +148,7 @@ public class OpenApiRequestMapperTest {
 
     // Assert
     thrown.expect(ConfigurationException.class);
-    thrown.expectMessage(
-        String.format("OpenAPI definition document '%s' must contain a 'host' attribute.",
-            DBEERPEDIA.OPENAPI_DESCRIPTION));
+    thrown.expectMessage("Expecting at least one server definition");
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
@@ -199,13 +198,13 @@ public class OpenApiRequestMapperTest {
         new org.springframework.core.io.Resource[] {fileResourceMock});
 
 
-    OpenAPI openApi = new OpenAPI();
-    openApi.setInfo(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION));
-    openApi.getComponents().getSchemas().put("myref", new Schema<>());
+    OpenAPI openApi = new OpenAPI() //
+        .info(new Info().description(DBEERPEDIA.OPENAPI_DESCRIPTION)) //
+        .components(new Components().addSchemas("myref", new Schema<>()));
 
     SwaggerParseResult parserResult = mock(SwaggerParseResult.class);
     when(parserResult.getOpenAPI()).thenReturn(openApi);
-    when(openApiParserMock.readContents(specString)).thenReturn(parserResult);
+    when(openApiParserMock.readContents(anyString(), anyList(), any())).thenReturn(parserResult);
 
     return openApi;
   }

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -20,7 +19,7 @@ import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
 @Slf4j
-public class AbstractRequestMapper<R> implements RequestMapper {
+public abstract class AbstractRequestMapper<R> implements RequestMapper {
 
   private final ResourceProvider<R> resourceProvider;
 
@@ -40,12 +39,6 @@ public class AbstractRequestMapper<R> implements RequestMapper {
     return vendorExtensions != null
         && vendorExtensions.keySet().stream().anyMatch(
             key -> key.equals(supported));
-  }
-
-  @Override
-  public void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
-      Operation getOperation, String absolutePath) {
-
   }
 
   void validate200Response(Operation operation, String absolutePath) {

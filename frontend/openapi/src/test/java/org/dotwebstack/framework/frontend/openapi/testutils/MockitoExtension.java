@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi;
+package org.dotwebstack.framework.frontend.openapi.testutils;
 
 import static org.mockito.Mockito.mock;
 

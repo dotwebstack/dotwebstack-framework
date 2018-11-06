@@ -19,7 +19,7 @@ paths:
                   string:
                     type: string
 servers:
-- url: 'https://dbeerpedia.org/api/v1'
+  - url: 'https://dbeerpedia.org/api/v1'
 components:
   requestBody:
     content:

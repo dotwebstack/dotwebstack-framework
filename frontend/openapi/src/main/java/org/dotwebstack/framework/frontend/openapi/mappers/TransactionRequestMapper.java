@@ -52,11 +52,6 @@ public class TransactionRequestMapper extends AbstractRequestMapper<Transaction>
         getMethodBuilder(resourceBuilder, apiOperation, requestHandler);
 
     consumes.forEach(methodBuilder::consumes);
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
-          absolutePath);
-    }
   }
 
 }

@@ -12,6 +12,8 @@ public class ApplicationProperties {
 
   private String resourcePath = "file:src/main/resources";
 
+  private String openApiResourcePath = "config/openapi";
+
   private String systemGraph;
 
   public String getResourcePath() {
@@ -20,6 +22,14 @@ public class ApplicationProperties {
 
   public void setResourcePath(String resourcePath) {
     this.resourcePath = resourcePath;
+  }
+
+  public String getOpenApiResourcePath() {
+    return this.openApiResourcePath;
+  }
+
+  public void setOpenApiResourcePath(String openApiResourcePath) {
+    this.openApiResourcePath = openApiResourcePath;
   }
 
   public IRI getSystemGraph() {

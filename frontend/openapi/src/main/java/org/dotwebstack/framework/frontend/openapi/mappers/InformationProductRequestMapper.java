@@ -59,11 +59,6 @@ public class InformationProductRequestMapper extends AbstractRequestMapper<Infor
         getMethodBuilder(resourceBuilder, apiOperation, requestHandler);
 
     produces.forEach(methodBuilder::produces);
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
-          absolutePath);
-    }
   }
 
 }

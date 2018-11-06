@@ -14,13 +14,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
-import com.google.common.base.Charsets;
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -29,13 +25,11 @@ import javax.ws.rs.HttpMethod;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
-import org.dotwebstack.framework.frontend.openapi.MockitoExtension;
 import org.dotwebstack.framework.frontend.openapi.handlers.InformationProductRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.frontend.openapi.handlers.TransactionRequestHandler;
-import org.dotwebstack.framework.frontend.openapi.testutils.OpenApiToString.ToOpenApi3String;
-import org.dotwebstack.framework.frontend.openapi.testutils.ToOpenApi.ToOpenApi3;
+import org.dotwebstack.framework.frontend.openapi.testutils.MockitoExtension;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
 import org.dotwebstack.framework.test.DBEERPEDIA;
@@ -53,8 +47,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.ResourcePatternResolver;
 
 @ExtendWith(MockitoExtension.class)
 class RequestMapperTest {
@@ -66,12 +58,6 @@ class RequestMapperTest {
   private HttpConfiguration httpConfigurationMock;
 
   @Mock
-  private OpenAPIV3Parser openApiParserMock;
-
-  @Mock
-  private org.springframework.core.io.Resource fileResourceMock;
-
-  @Mock
   private TransactionRequestHandler transactionRequestHandlerMock;
 
   @Mock
@@ -79,25 +65,23 @@ class RequestMapperTest {
 
   private OpenApiRequestMapper openApiRequestMapper;
 
+  private ApplicationProperties applicationProperties;
+
+  private SwaggerParseResult result = new SwaggerParseResult();
+
   @BeforeEach
-  void setUp() throws IOException {
-    ResourceLoader resourceLoader =
-        mock(ResourceLoader.class, withSettings().extraInterfaces(ResourcePatternResolver.class));
-    when(((ResourcePatternResolver) resourceLoader).getResources(anyString())).thenReturn(
-        new org.springframework.core.io.Resource[] {fileResourceMock});
-
-    ApplicationProperties applicationPropertiesMock = mock(ApplicationProperties.class);
-    when(applicationPropertiesMock.getResourcePath()).thenReturn("file:config");
-
-    when(openApiParserMock.readContents(anyString(), anyList(), any())).thenReturn(
-        mock(SwaggerParseResult.class));
+  void setUp() {
+    applicationProperties = new ApplicationProperties();
+    applicationProperties
+        .setOpenApiResourcePath(
+            "src/test/resources/org/dotwebstack/framework/frontend/openapi/mappers/");
 
     RequestHandlerFactory requestHandlerFactoryMock = mock(RequestHandlerFactory.class);
     when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any())) //
         .thenReturn(transactionRequestHandlerMock);
 
-    when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any(), any())).thenReturn(
-        informationProductRequestHandlerMock);
+    when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any(), any())) //
+        .thenReturn(informationProductRequestHandlerMock);
 
     TransactionResourceProvider transactionResourceProviderMock =
         mock(TransactionResourceProvider.class);
@@ -109,39 +93,37 @@ class RequestMapperTest {
     when(informationProductResourceProviderMock.get(any())) //
         .thenReturn(mock(InformationProduct.class));
 
+    OpenAPIV3Parser openApiParserMock = mock(OpenAPIV3Parser.class);
+    when(openApiParserMock.readLocation(anyString(), anyList(), any())).thenReturn(result);
     openApiRequestMapper =
-        new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock, Arrays.asList(
+        new OpenApiRequestMapper(new OpenAPIV3Parser(), applicationProperties, Arrays.asList(
             new InformationProductRequestMapper(informationProductResourceProviderMock,
                 requestHandlerFactoryMock),
             new TransactionRequestMapper(transactionResourceProviderMock,
                 requestHandlerFactoryMock)));
 
-    openApiRequestMapper.setResourceLoader(resourceLoader);
+    // openApiRequestMapper.setResourceLoader(resourceLoader);
     openApiRequestMapper.setEnvironment(mock(Environment.class));
 
   }
 
-  private void arrange(String openApiString, OpenAPI openApi) throws IOException {
-    ByteArrayInputStream stream = new ByteArrayInputStream(openApiString.getBytes(Charsets.UTF_8));
-
-    when(fileResourceMock.getInputStream()).thenReturn(stream);
-    when(openApiParserMock.readContents(anyString(), anyList(), any()).getOpenAPI()).thenReturn(
-        openApi);
-  }
-
-  @ParameterizedTest(name = "spec: [{0}] expected methods: [{2}]")
+  @ParameterizedTest(name = "spec: [{0}] expected methods: [{1}]")
   @DisplayName("Map endpoints correctly with valid data")
-  @CsvSource({"mappers/Post.yml, mappers/Post.yml, POST OPTIONS",
-      "mappers/Put.yml, mappers/Put.yml, PUT OPTIONS",
-      "mappers/Get.yml, mappers/Get.yml, GET OPTIONS",
-      "mappers/Put&Post.yml, mappers/Put&Post.yml, PUT POST OPTIONS",
-      "mappers/Get&Put&Post.yml, mappers/Get&Put&Post.yml,GET PUT POST OPTIONS",
-      "mappers/BodyParameter.yml, mappers/BodyParameter.yml, GET OPTIONS",
+  @CsvSource({
+      "Post.yml, POST OPTIONS",
+      "Put.yml, PUT OPTIONS",
+      "Get.yml, GET OPTIONS",
+      "Put&Post.yml, PUT POST OPTIONS",
+      "Get&Put&Post.yml,GET PUT POST OPTIONS",
+      "BodyParameter.yml, GET OPTIONS",
+      "BodyParameterRef.yml, POST OPTIONS",
+      "BodyParameterExternalRef.yml, POST OPTIONS",
   })
-  void map_EndpointsCorrectly_WithValidData(@ToOpenApi3String String openApiString,
-      @ToOpenApi3 OpenAPI openApi, String methods) throws IOException {
+  void map_EndpointsCorrectly_WithValidData(String openApi, String methods)
+      throws IOException {
     // Arrange
-    arrange(openApiString, openApi);
+    applicationProperties
+        .setOpenApiResourcePath(applicationProperties.getOpenApiResourcePath() + openApi);
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
@@ -158,24 +140,19 @@ class RequestMapperTest {
 
   }
 
-  @ParameterizedTest(name = "{2}")
+  @ParameterizedTest(name = "{1}")
   @DisplayName("Throw exception for invalid spec")
   @CsvSource({
-      "mappers/No200-TRANS.yml, mappers/No200-TRANS.yml, "
-          + "does not specify a 200 response",
-      "mappers/No200-IP.yml, mappers/No200-IP.yml, "
-          + "does not specify a 200 response",
-      "mappers/NoResponses.yml, mappers/NoResponses.yml, "
-          + "does not specify a 200 response",
-      "mappers/NoObjectInRequestBody.yml, mappers/NoObjectInRequestBody.yml, "
-          + "No object property in body parameter.",
-      "mappers/NoServer.yml, mappers/NoServer.yml, "
-          + "Expecting at least one server definition."
+      "No200-TRANS.yml, does not specify a 200 response",
+      "No200-IP.yml, does not specify a 200 response",
+      "NoResponses.yml, does not specify a 200 response",
+      "NoObjectInRequestBody.yml, No object property in body parameter.",
+      "NoServer.yml, Expecting at least one server definition."
   })
-  void map_ThrowsException_EndpointMissing(@ToOpenApi3String String openApiString,
-      @ToOpenApi3 OpenAPI openApi, String message) throws Throwable {
+  void map_ThrowsException_EndpointMissing(String openApi, String message) {
     // Arrange
-    arrange(openApiString, openApi);
+    applicationProperties
+        .setOpenApiResourcePath(applicationProperties.getOpenApiResourcePath() + openApi);
 
     // Act
     Executable action = () -> openApiRequestMapper.map(httpConfigurationMock);
