@@ -3,7 +3,7 @@ info:
   title: DBeerPedia API
   version: '1.0'
 servers:
-  - url: http://something/dbp/api/v1
+  - url: http://%{dotwebstack.config.host}/dbp/api/v1
 x-dotwebstack-ldpath-namespaces:
   dbeerpedia: 'http://dbeerpedia.org#'
   elmo: 'http://dotwebstack.org/def/elmo#'
@@ -128,7 +128,8 @@ paths:
               - 100
             default: 10
       responses:
-        '200':
+        200:
+          x-dotwebstack-subject: true
           description: OK
           content:
             application/json:
@@ -145,7 +146,6 @@ paths:
                     properties:
                       breweries:
                         type: array
-                        x-dotwebstack-subject: true
                         items:
                           type: object
                           required:
@@ -213,7 +213,7 @@ paths:
   /graph-breweries/{id}:
     get:
       x-dotwebstack-information-product: 'http://dbeerpedia.org#GraphBreweries'
-      x-dotwebstack-subject-query: >
+      x-dotwebstack-subject-query: >-
         SELECT ?s
         WHERE {
           ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbeerpedia.org#Brewery>
@@ -226,8 +226,8 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          x-dotwebstack-subject: true
+        200:
+
           description: OK
           content:
             application/json:
@@ -245,6 +245,7 @@ components:
         - plaats
         - _links
       properties:
+        x-dotwebstack-subject: true
         naam:
           type: string
           format: string

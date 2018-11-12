@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -58,18 +57,21 @@ public class OpenApiRequestMapper {
   @NonNull
   private final List<RequestMapper> requestMappers;
 
-  @Setter
   @NonNull
-  private Environment environment = null;
+  private final Environment environment;
 
   private static final ParseOptions OPTIONS = new ParseOptions();
 
   public void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
     SpecEnvironmentResolver resolver = new SpecEnvironmentResolver(environment);
     OPTIONS.setResolveFully(true);
-    System.out.println("Looking for files in " + applicationProperties.getOpenApiResourcePath());
-    List<Path> openApiFiles = Files.find(Paths.get(applicationProperties.getOpenApiResourcePath()),
-        2, (path, bfa) -> path.getFileName().toString().endsWith(".oas3.yml")) //
+    String openApiPath = applicationProperties.getOpenApiResourcePath();
+    if (openApiPath == null) {
+      return;
+    }
+    System.out.println("Looking for files in " + openApiPath);
+    List<Path> openApiFiles = Files.find(Paths.get(openApiPath),
+        2, (path, bfa) -> path.getFileName().toString().endsWith(".yml")) //
         .collect(Collectors.toList());
 
     for (Path path : openApiFiles) {

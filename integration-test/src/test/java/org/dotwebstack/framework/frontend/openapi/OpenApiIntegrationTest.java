@@ -56,8 +56,8 @@ public class OpenApiIntegrationTest {
 
   @Before
   public void setUp() throws IOException {
-    target = ClientBuilder.newClient(httpConfiguration).target(
-        String.format("http://localhost:%d", this.port));
+    target = ClientBuilder.newClient(httpConfiguration) //
+        .target(String.format("http://localhost:%d", this.port));
 
     System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
     SparqlHttpStub.start();
@@ -80,7 +80,7 @@ public class OpenApiIntegrationTest {
     // the x-dotwebstack should have been removed
     assertFalse("x- header found in: " + responseYaml, responseYaml.contains("x-"));
     assertTrue("Swagger spec definition not found in: " + responseYaml,
-        responseYaml.contains("swagger: 2.0"));
+        responseYaml.contains("openapi: \"3.0.0\""));
     assertTrue("DBeerPedia not found in: " + responseYaml, responseYaml.contains("DBeerPedia API"));
   }
 
@@ -88,74 +88,86 @@ public class OpenApiIntegrationTest {
   @Test
   public void get_GetBreweryCollection_ThroughOpenApi() throws JSONException {
     // Arrange
-    TupleQueryResultBuilder builder =
-        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
-            DBEERPEDIA.BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION,
-            DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION,
-            DBEERPEDIA.BROUWTOREN_PLACE).resultSet(DBEERPEDIA.MAXIMUS_NAME,
-                DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
-                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
-    SparqlHttpStub.returnTuple(builder);
+    SparqlHttpStub.returnTuple(
+        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats")//
+            .resultSet(//
+                DBEERPEDIA.BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION,
+                DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION,
+                DBEERPEDIA.BROUWTOREN_PLACE)//
+            .resultSet(//
+                DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION,
+                DBEERPEDIA.MAXIMUS_FTE, DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION,
+                DBEERPEDIA.MAXIMUS_PLACE));
 
     // Act
-    Response response = target.path("/dbp/api/v1/breweries").request().accept(
-        MediaType.APPLICATION_JSON_TYPE).header(HttpHeaders.CONTENT_TYPE,
-            ContentType.APPLICATION_JSON.toString()).get();
+    Response response = target.path("/dbp/api/v1/breweries").request()//
+        .accept(MediaType.APPLICATION_JSON_TYPE)//
+        .header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString())//
+        .get();//
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
-    JSONArray expected = new JSONArray();
-    expected.put(new JSONObject().put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue()).put("sinds",
-        DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue()).put("fte",
-            DBEERPEDIA.BROUWTOREN_FTE.doubleValue()).put("oprichting",
-                DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue()).put("plaats",
-                    DBEERPEDIA.BROUWTOREN_PLACE.stringValue()));
-    expected.put(new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
-        DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue()).put("fte",
-            DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
-                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
-                    DBEERPEDIA.MAXIMUS_PLACE.stringValue()));
+    String expected = new JSONArray()//
+        .put(new JSONObject()//
+            .put("naam", DBEERPEDIA.BROUWTOREN_NAME.stringValue())//
+            .put("sinds", DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION.integerValue())//
+            .put("fte", DBEERPEDIA.BROUWTOREN_FTE.doubleValue())//
+            .put("oprichting", DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION.stringValue())//
+            .put("plaats", DBEERPEDIA.BROUWTOREN_PLACE.stringValue()))//
+        .put(new JSONObject()//
+            .put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue())//
+            .put("sinds", DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue())//
+            .put("fte", DBEERPEDIA.MAXIMUS_FTE.doubleValue())//
+            .put("oprichting", DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue())//
+            .put("plaats", DBEERPEDIA.MAXIMUS_PLACE.stringValue()))//
+        .toString();//
 
     String result = response.readEntity(String.class);
-    JSONAssert.assertEquals(expected.toString(), result, true);
+    JSONAssert.assertEquals(expected, result, true);
   }
 
   @Test
   public void get_GetSingleBreweryWithId_ThroughOpenApi() throws JSONException {
     // Arrange
-    TupleQueryResultBuilder builder =
-        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
-            DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
-            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
-    SparqlHttpStub.returnTuple(builder);
+    SparqlHttpStub.returnTuple(
+        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats")//
+            .resultSet(
+                DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION,
+                DBEERPEDIA.MAXIMUS_FTE, DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION,
+                DBEERPEDIA.MAXIMUS_PLACE));
 
     // Act
-    Response response = target.path(String.format("/dbp/api/v1/breweries/%s",
-        DBEERPEDIA.MAXIMUS.getLocalName())).request().accept(MediaType.APPLICATION_JSON_TYPE).get();
+    Response response = target.path("/dbp/api/v1/breweries/" + DBEERPEDIA.MAXIMUS.getLocalName())//
+        .request()//
+        .accept(MediaType.APPLICATION_JSON_TYPE)//
+        .get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.APPLICATION_JSON_TYPE));
 
-    JSONObject expected =
-        new JSONObject().put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue()).put("sinds",
-            DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue()).put("fte",
-                DBEERPEDIA.MAXIMUS_FTE.doubleValue()).put("oprichting",
-                    DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue()).put("plaats",
-                        DBEERPEDIA.MAXIMUS_PLACE.stringValue());
+    String expected = new JSONObject()//
+        .put("naam", DBEERPEDIA.MAXIMUS_NAME.stringValue())//
+        .put("sinds", DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION.integerValue())//
+        .put("fte", DBEERPEDIA.MAXIMUS_FTE.doubleValue())//
+        .put("oprichting", DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION.stringValue())//
+        .put("plaats", DBEERPEDIA.MAXIMUS_PLACE.stringValue())//
+        .toString();
 
     String result = response.readEntity(String.class);
-    JSONAssert.assertEquals(expected.toString(), result, true);
+    JSONAssert.assertEquals(expected, result, true);
   }
 
   @Test
-  public void get_ValidationFails_WhenWrongParameterType() throws JSONException {
+  public void get_ValidationFails_WhenWrongParameterType() {
     // Act
-    Response response =
-        target.path("/dbp/api/v1/breweries").queryParam("fte", "foo").request().accept(
-            MediaType.APPLICATION_JSON_TYPE).get();
+    Response response = target.path("/dbp/api/v1/breweries")//
+        .queryParam("fte", "foo")//
+        .request()//
+        .accept(MediaType.APPLICATION_JSON_TYPE)//
+        .get();//
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.BAD_REQUEST.getStatusCode()));
@@ -179,9 +191,10 @@ public class OpenApiIntegrationTest {
   @Test
   public void get_GetCorsPolicy_ForOptionsRequestWithOriginAndRequestMethod() {
     // Act
-    Response response = target.path("/dbp/api/v1/breweries").request().header(
-        org.springframework.http.HttpHeaders.ORIGIN, "http://foo").header(
-            org.springframework.http.HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET").options();
+    Response response = target.path("/dbp/api/v1/breweries").request()//
+        .header(org.springframework.http.HttpHeaders.ORIGIN, "http://foo")//
+        .header(org.springframework.http.HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")//
+        .options();//
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));

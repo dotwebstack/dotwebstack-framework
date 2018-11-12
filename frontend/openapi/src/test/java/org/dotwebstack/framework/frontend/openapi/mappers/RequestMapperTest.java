@@ -11,9 +11,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
@@ -100,11 +100,10 @@ class RequestMapperTest {
             new InformationProductRequestMapper(informationProductResourceProviderMock,
                 requestHandlerFactoryMock),
             new TransactionRequestMapper(transactionResourceProviderMock,
-                requestHandlerFactoryMock)));
+                requestHandlerFactoryMock)),
+            mock(Environment.class));
 
     // openApiRequestMapper.setResourceLoader(resourceLoader);
-    openApiRequestMapper.setEnvironment(mock(Environment.class));
-
   }
 
   @ParameterizedTest(name = "spec: [{0}] expected methods: [{1}]")

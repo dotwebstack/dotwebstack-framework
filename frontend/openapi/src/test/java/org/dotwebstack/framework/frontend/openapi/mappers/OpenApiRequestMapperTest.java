@@ -94,9 +94,8 @@ public class OpenApiRequestMapperTest {
     requestMappers.add(new TransactionRequestMapper(transactionResourceProvider,
         requestHandlerFactoryMock));
     openApiRequestMapper = new OpenApiRequestMapper(openApiParserMock, applicationPropertiesMock,
-        requestMappers);
+        requestMappers, environmentMock);
     // openApiRequestMapper.setResourceLoader(resourceLoader);
-    openApiRequestMapper.setEnvironment(environmentMock);
   }
 
   @Test

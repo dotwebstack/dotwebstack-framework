@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
@@ -53,11 +54,11 @@ public class OpenApiSpecUtilsTest {
   }
 
   @Test
-  public void extractApiOperation_ReturnsValidApiOperation_WithSpecifiedGet() throws IOException {
+  public void extractApiOperation_ReturnsValidApiOperation_WithSpecifiedGet() {
     path = "/endpoint";
 
-    Collection<ApiOperation> apiOperations = OpenApiSpecUtils.extractApiOperations(openApi, path,
-        method);
+    Collection<ApiOperation> apiOperations =
+        OpenApiSpecUtils.extractApiOperations(openApi, path, method);
 
     ApiOperation apiOperation = apiOperations.stream().findFirst().get();
     Operation operation = apiOperation.getOperation();
@@ -69,13 +70,13 @@ public class OpenApiSpecUtilsTest {
   }
 
   @Test
-  public void extractApiOperation_ReturnsNull_WithUnspecifiedGet() throws IOException {
+  public void extractApiOperation_ReturnsNull_WithUnspecifiedGet() {
     path = "/unknown";
 
-    Collection<ApiOperation> apiOperations = OpenApiSpecUtils.extractApiOperations(openApi, path,
-        method);
+    Collection<ApiOperation> apiOperations =
+        OpenApiSpecUtils.extractApiOperations(openApi, path, method);
 
-    assertThat(apiOperations.size(), is(0));
+    assertThat(apiOperations, empty());
   }
 
   private static OpenAPI createOpenApi() throws IOException {

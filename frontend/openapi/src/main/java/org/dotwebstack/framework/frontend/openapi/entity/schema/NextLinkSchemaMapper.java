@@ -42,8 +42,10 @@ public class NextLinkSchemaMapper extends AbstractLinkSchemaMapper {
 
   @Override
   public boolean supports(Schema schema) {
-    return schema instanceof ObjectSchema && OpenApiSpecificationExtensions.TYPE_NEXT_LINK.equals(
-        schema.getExtensions().get(OpenApiSpecificationExtensions.TYPE));
+    Map extensions = schema.getExtensions();
+    return schema instanceof ObjectSchema && extensions != null && OpenApiSpecificationExtensions.TYPE_NEXT_LINK.equals(
+        extensions
+            .get(OpenApiSpecificationExtensions.TYPE));
   }
 
 }
