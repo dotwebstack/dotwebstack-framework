@@ -2,12 +2,17 @@ package org.dotwebstack.framework.frontend.soap.handlers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.ArgumentMatchers.isNotNull;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.wsdl.Binding;
+import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
 
@@ -44,6 +49,12 @@ public class SoapRequestHandlerTest {
   @Mock
   private Port wsdlPort;
 
+  @Mock
+  private BindingOperation bindingOperation;
+
+  @Mock
+  private Binding binding;
+
   private Map<String, SoapAction> soapActions;
 
   private SoapRequestHandler soapRequestHandler;
@@ -60,6 +71,33 @@ public class SoapRequestHandlerTest {
 
     String response = soapRequestHandler.apply(context);
     assertThat(response, is(ERROR_RESPONSE));
+  }
+
+  @Test
+  public void shouldReturnErrorMessageWhenDataHasNoEntity(){
+
+      //wsdlPort vullen met String name en Binding binding
+      List<BindingOperation> wsdlBindingOperations = new ArrayList<>();
+
+      when(bindingOperation.getName()).thenReturn("bindingOperation");
+
+      wsdlBindingOperations.add(bindingOperation);
+
+      when(binding.getBindingOperations()).thenReturn(wsdlBindingOperations);
+
+      when(wsdlPort.getBinding()).thenReturn(binding);
+
+
+      //check value van soapaction
+      when(context.getHeaderString(SOAP_ACTION)).thenReturn("/bindingOperation\"");
+
+
+      //test of de value van wsdlBindingOperation niet Null is
+      String response = soapRequestHandler.apply(context);
+      assertThat(response, is(ERROR_RESPONSE));
+      // assertThat(wsdlBindingOperation(wsdlPort, SOAP_ACTION), isNotNull());
+
+      //andere tests?
   }
 
 }
