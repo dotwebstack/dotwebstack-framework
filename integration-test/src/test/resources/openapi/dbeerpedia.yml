@@ -129,7 +129,6 @@ paths:
             default: 10
       responses:
         200:
-          x-dotwebstack-subject: true
           description: OK
           content:
             application/json:
@@ -145,6 +144,7 @@ paths:
                       - breweries
                     properties:
                       breweries:
+                        x-dotwebstack-subject: true
                         type: array
                         items:
                           type: object
@@ -227,7 +227,7 @@ paths:
             type: string
       responses:
         200:
-
+          type: object
           description: OK
           content:
             application/json:
@@ -236,6 +236,7 @@ paths:
 components:
   schemas:
     Brewery:
+      x-dotwebstack-subject: true
       type: object
       required:
         - naam
@@ -245,7 +246,6 @@ components:
         - plaats
         - _links
       properties:
-        x-dotwebstack-subject: true
         naam:
           type: string
           format: string

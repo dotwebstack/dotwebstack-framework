@@ -50,6 +50,9 @@ public class RequestParameterMapperHelper {
     if (param == null) {
       return Collections.emptyMap();
     }
+    if (requestParameters.get(param) == null){
+      return Collections.emptyMap();
+    }
     return ImmutableMap.of(param, requestParameters.get(param));
   }
 
@@ -66,7 +69,7 @@ public class RequestParameterMapperHelper {
   private List<String> getParameterNamesFromSchemas(Collection<Parameter> parameters,
       Collection<Schema> values) {
     return values.stream()//
-        .map(schema -> schema.getExtensions())//
+        .map(Schema::getExtensions)//
         .map(this::explicitlyToMap) //
         .map(extension -> getParameterOfExtensions(extension, parameters))//
         .filter(Objects::nonNull)//
