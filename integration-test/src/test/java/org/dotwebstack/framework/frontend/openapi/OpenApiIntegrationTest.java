@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
+import static org.dotwebstack.framework.test.DBEERPEDIA.NUMBER_OF_FTE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -100,7 +101,9 @@ public class OpenApiIntegrationTest {
                 DBEERPEDIA.MAXIMUS_PLACE));
 
     // Act
-    Response response = target.path("/dbp/api/v1/breweries").request()//
+    Response response = target.path("/dbp/api/v1/breweries")
+        .queryParam("fte", NUMBER_OF_FTE)//
+        .request()//
         .accept(MediaType.APPLICATION_JSON_TYPE)//
         .header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString())//
         .get();//
@@ -214,13 +217,19 @@ public class OpenApiIntegrationTest {
     // Arrange
     TupleQueryResultBuilder builder =
         new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
-            DBEERPEDIA.MAXIMUS_NAME, DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
-            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+            DBEERPEDIA.MAXIMUS_NAME,
+            DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION,
+            DBEERPEDIA.MAXIMUS_FTE,
+            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION,
+            DBEERPEDIA.MAXIMUS_PLACE);
     SparqlHttpStub.returnTuple(builder);
 
     // Act
-    Response response = target.path("/dbp/api/v1/breweries").request().accept(
-        MediaType.APPLICATION_JSON_TYPE).head();
+    Response response = target.path("/dbp/api/v1/breweries")
+        .queryParam("fte", NUMBER_OF_FTE)//
+        .request()//
+        .accept(MediaType.APPLICATION_JSON_TYPE)//
+        .head();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
