@@ -80,6 +80,7 @@ class SampleXmlUtil {
 
   private static final QName DWS_CURSOR_QNAME = new QName(Constants.DWS_NS, "cursor");
   private static final QName DWS_VALUES_FROM_QNAME = new QName(Constants.DWS_NS, "valuesFrom");
+  private static final QName DWS_TYPE_FROM_QNAME = new QName(Constants.DWS_NS, "typeFrom");
   private static final QName DWS_GROUPBY_QNAME = new QName(Constants.DWS_NS, "groupBy");
   private static final QName DWS_GROUP_QNAME = new QName(Constants.DWS_NS, "group");
 
@@ -165,7 +166,7 @@ class SampleXmlUtil {
 
       // complex Type
       // <theElement>^</theElement>
-      processAttributes(stype, xmlc);
+      processAttributes(sannotation, stype, xmlc);
 
       // <theElement attri1="string">^</theElement>
       switch (stype.getContentType()) {
@@ -200,11 +201,12 @@ class SampleXmlUtil {
 
   private void processSimpleType(SchemaAnnotation sannotation, SchemaType stype, XmlCursor xmlc) {
 
-    QName typeName = stype.getName();
-    if (typeName != null) {
-      xmlc.insertAttributeWithValue(XSI_TYPE, formatQName(xmlc, typeName));
+    if (soapEnc) {
+      QName typeName = stype.getName();
+      if (typeName != null) {
+        xmlc.insertAttributeWithValue(XSI_TYPE, formatQName(xmlc, typeName));
+      }
     }
-
 
     String sample = sampleDataForSimpleType(stype);
 
@@ -215,7 +217,13 @@ class SampleXmlUtil {
         if (currentRow.hasBinding(variableName)) {
           sample = currentRow.getValue(variableName).stringValue();
         } else {
-          LOG.warn("Could not find binding variable: {}", variableName);
+          if (queryResult.getBindingNames().contains(variableName)) {
+            //No value, but variable does exists, so probably nil
+            xmlc.insertAttributeWithValue(XSI_NIL, "true");
+            sample = "";
+          } else {
+            LOG.warn("Could not find binding variable: {}", variableName);
+          }
         }
       }
     }
@@ -1242,6 +1250,7 @@ class SampleXmlUtil {
   private static final QName HREF = new QName("href");
   private static final QName ID = new QName("id");
   public static final QName XSI_TYPE = new QName(Constants.XSI_NS, "type");
+  public static final QName XSI_NIL = new QName(Constants.XSI_NS, "nil");
   public static final QName ENC_ARRAYTYPE = new QName("http://schemas.xmlsoap.org/soap/encoding/", "arrayType");
   private static final QName ENC_OFFSET = new QName("http://schemas.xmlsoap.org/s/encoding/", "offset");
 
@@ -1249,11 +1258,24 @@ class SampleXmlUtil {
   protected static final Set<QName> SKIPPED_SOAP_ATTRS =
       new HashSet<>(Arrays.asList(new QName[]{HREF, ID, ENC_OFFSET}));
 
-  private void processAttributes(SchemaType stype, XmlCursor xmlc) {
+  private void processAttributes(SchemaAnnotation sannotation, SchemaType stype, XmlCursor xmlc) {
     if (soapEnc) {
       QName typeName = stype.getName();
       if (typeName != null) {
         xmlc.insertAttributeWithValue(XSI_TYPE, formatQName(xmlc, typeName));
+      }
+    }
+
+    //DOTWEBSTACK - Added
+    if ((queryResult != null) && (sannotation != null)) {
+      String variableName = SoapUtils.getAttributeValue(sannotation, DWS_TYPE_FROM_QNAME);
+      if ((variableName != null) && (currentRow != null)) {
+        if (currentRow.hasBinding(variableName)) {
+          String xsitype = currentRow.getValue(variableName).stringValue();
+          xmlc.insertAttributeWithValue(XSI_TYPE, xsitype);
+        } else {
+          LOG.warn("Could not find binding variable: {}", variableName);
+        }
       }
     }
 
