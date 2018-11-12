@@ -199,12 +199,12 @@ class SampleXmlUtil {
   }
 
   private void processSimpleType(SchemaAnnotation sannotation, SchemaType stype, XmlCursor xmlc) {
-    if (soapEnc) {
-      QName typeName = stype.getName();
-      if (typeName != null) {
-        xmlc.insertAttributeWithValue(XSI_TYPE, formatQName(xmlc, typeName));
-      }
+
+    QName typeName = stype.getName();
+    if (typeName != null) {
+      xmlc.insertAttributeWithValue(XSI_TYPE, formatQName(xmlc, typeName));
     }
+
 
     String sample = sampleDataForSimpleType(stype);
 

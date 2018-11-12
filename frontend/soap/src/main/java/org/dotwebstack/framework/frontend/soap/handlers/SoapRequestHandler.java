@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.wsdl.BindingOperation;
@@ -15,6 +17,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import lombok.NonNull;
+
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.soap.action.SoapAction;
@@ -44,17 +47,25 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       + "security requirements, e.g. Message, Transport, None).</faultstring>" + "    </s:Fault>"
       + "  </s:Body>" + "</s:Envelope>";
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestHandler.class);
-  private static final String REGEX_TO_REMOVE_MULTIPART = "^C.+?(?=(<soapenv))";
+  private static final String REGEX_TO_EXTRACT_SOAP_MESSAGE = "(<s.+?(?=(-{2})))";
+  private static final String REGEX_TO_GET_HEADER = "-{2}.+?(?=(Content))";
   private static final String SOAP_ACTION = "SOAPAction";
+  private static final String CONTENT_ID = "Content-ID: <http://tempuri.org/0>";
+  private static final String CONTENT_TRANSFER_ENCODING_8BIT = "Content-Transfer-Encoding: 8bit";
+  private static final String CONTENT_TYPE =
+      "Content-Type: application/xop+xml;charset=utf-8;type=\"text/xml\"";
+  private final Port wsdlPort;
   private final Definition wsdlDefinition;
-  final Port wsdlPort;
   private final Map<String, SoapAction> soapActions;
+  private boolean isMtom;
+  private String uuid = "";
 
   public SoapRequestHandler(@NonNull Definition wsdlDefinition, @NonNull Port wsdlPort,
-      @NonNull Map<String, SoapAction> soapActions) {
+      @NonNull Map<String, SoapAction> soapActions, boolean isMtom) {
     this.wsdlPort = wsdlPort;
     this.wsdlDefinition = wsdlDefinition;
     this.soapActions = soapActions;
+    this.isMtom = isMtom;
   }
 
   @Override
@@ -80,7 +91,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     return message == null ? ERROR_RESPONSE : message;
   }
 
-  String buildSoapResponse(String message, final BindingOperation wsdlBindingOperation,
+  private String buildSoapResponse(String message, final BindingOperation wsdlBindingOperation,
       final Document inputDoc) {
     SoapAction soapAction = soapActions.get(wsdlBindingOperation.getName());
     TupleQueryResult queryResult = null;
@@ -92,10 +103,34 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     try {
       message = SoapUtils.buildSoapMessageFromOutput(new SchemaDefinitionWrapper(wsdlDefinition),
           wsdlPort.getBinding(), wsdlBindingOperation, SoapContext.DEFAULT, queryResult);
+      if (isMtom) {
+        message = addHeadersMtom(message);
+      }
     } catch (Exception e) {
       LOG.warn("Unable to build SOAP message: {}", e.getMessage());
     }
     return message;
+  }
+
+  private String addHeadersMtom(final String message) {
+    StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append(uuid);
+    stringBuilder.append('\n');
+    stringBuilder.append(CONTENT_ID);
+    stringBuilder.append('\n');
+    stringBuilder.append(CONTENT_TRANSFER_ENCODING_8BIT);
+    stringBuilder.append('\n');
+    stringBuilder.append(CONTENT_TYPE);
+    stringBuilder.append('\n');
+    stringBuilder.append('\n');
+
+    stringBuilder.append(message);
+
+    stringBuilder.append('\n');
+    stringBuilder.append(uuid);
+    stringBuilder.append("--");
+
+    return stringBuilder.toString();
   }
 
   private TupleQueryResult getResult(SoapAction soapAction, Document inputDoc) {
@@ -112,23 +147,29 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
             informationProduct.getResultType(), informationProduct.getIdentifier()));
   }
 
-  Document retrieveInputMessage(InputStream inputStream) {
+  private Document retrieveInputMessage(InputStream inputStream) {
     try {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      DocumentBuilder builder = factory.newDocumentBuilder();
-      String stringFromInputStream = getStringFromInputStream(inputStream);
-      String stringWithoutHeader = removeXmlHeader(stringFromInputStream);
-      byte[] message = stringWithoutHeader.getBytes();
+      String message = getStringFromInputStream(inputStream);
 
-      LOG.debug("Recieved the following request:\n\n {} \n \n: ", stringWithoutHeader);
-      return builder.parse(new ByteArrayInputStream(message));
+      LOG.debug("Recieved the following SOAP request:\n\n {} \n \n: ", message);
+      if (isMtom) {
+        uuid = getHeaders(message);
+        LOG.debug("Extracted the following MTOM headers from MTOM SOAP request:\n\n {} \n \n: ",
+            uuid);
+        message = getSoapPart(message);
+        LOG.debug("Extracted the following SOAP part from MTOM request:\n\n {} \n \n: ", message);
+      }
+
+      LOG.debug("Recieved the following SOAP request:\n\n {} \n \n: ", message);
+      DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+      return documentBuilder.parse(new ByteArrayInputStream(message.getBytes()));
     } catch (Exception e) {
       LOG.error("Exception during parsing of the request: {}", e.getMessage());
     }
     return null;
   }
 
-  String getStringFromInputStream(InputStream is) {
+  private String getStringFromInputStream(InputStream is) {
     StringBuilder sb = new StringBuilder();
 
     String line;
@@ -143,10 +184,21 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     return sb.toString();
   }
 
-  private String removeXmlHeader(String xml) {
-    if (xml != null) {
-      xml = xml.replaceAll(REGEX_TO_REMOVE_MULTIPART, "").trim();
+  private String getSoapPart(final String message) {
+    Pattern pattern = Pattern.compile(REGEX_TO_EXTRACT_SOAP_MESSAGE);
+    Matcher matcher = pattern.matcher(message);
+    if (matcher.find()) {
+      return matcher.group(1);
     }
-    return xml;
+    return message;
+  }
+
+  private String getHeaders(final String message) {
+    Pattern pattern = Pattern.compile(REGEX_TO_GET_HEADER);
+    Matcher matcher = pattern.matcher(message);
+    if (matcher.find()) {
+      return matcher.group(0);
+    }
+    return message;
   }
 }

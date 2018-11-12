@@ -34,7 +34,6 @@ import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandler;
-import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandlerMtom;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.Constants;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -66,7 +65,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   private static final String TEXT_XML = "text/xml";
   private static final String MULTIPART_RELATED = "multipart/related";
   private static final String APPLICATION_SOAP_XML = "application/soap+xml";
-  private static final String APPLICATION_XOP_XML = "application/xop+xml";
+  private static final String APPLICATION_XOP_XML =
+      "multipart/related; type=\"application/xop+xml\"";
 
   private WSDLReader wsdlReader;
 
@@ -157,25 +157,26 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
     Map<String, SoapAction> soapActions = new HashMap<>();
     createSoapActions(wsdlDefinition, wsdlPort, soapActions);
 
-    SoapRequestHandler soapRequestHandler =
-        new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions);
+    SoapRequestHandler soapRequestHandlerXml =
+        new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions, false);
+
 
     Builder soapResourceBuilderXml = Resource.builder().path(servicePath);
     soapResourceBuilderXml.addMethod(POST)
         .consumes(TEXT_XML)
         .produces(APPLICATION_SOAP_XML)
-        .handledBy(soapRequestHandler);
+        .handledBy(soapRequestHandlerXml);
     Resource soapResourceXml = soapResourceBuilderXml.build();
 
-
-    SoapRequestHandlerMtom soapRequestHandlerMtom =
-        new SoapRequestHandlerMtom(wsdlDefinition, wsdlPort, soapActions);
+    SoapRequestHandler soapRequestHandlerMtom =
+        new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions, true);
 
     Builder soapResourceBuilderXop = Resource.builder().path(servicePath);
     soapResourceBuilderXop.addMethod(POST)
         .consumes(MULTIPART_RELATED)
         .produces(APPLICATION_XOP_XML)
         .handledBy(soapRequestHandlerMtom);
+
 
     Resource soapResourceXop = soapResourceBuilderXop.build();
 

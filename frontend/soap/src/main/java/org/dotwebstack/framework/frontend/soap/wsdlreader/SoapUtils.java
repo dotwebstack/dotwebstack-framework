@@ -191,10 +191,10 @@ public class SoapUtils {
     cursor.toNextToken();
     cursor.beginElement(soapVersion.getEnvelopeQName());
 
-    if (inputSoapEncoded) {
-      cursor.insertNamespace("xsi", Constants.XSI_NS);
-      cursor.insertNamespace("xsd", Constants.XSD_NS);
-    }
+
+    cursor.insertNamespace("xsi", Constants.XSI_NS);
+    cursor.insertNamespace("xsd", Constants.XSD_NS);
+
 
     cursor.toFirstChild();
 
