@@ -121,7 +121,7 @@ public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectSchema
 
     schema.getProperties().forEach((propKey, propValue) -> {
       Object propertyResult = schemaMapperAdapter.mapGraphValue(propValue,
-          schema.getRequired() == null ? false : schema.getRequired().contains(propKey),
+          schema.getRequired() != null && schema.getRequired().contains(propKey),
           entityBuilderContext, valueContext, schemaMapperAdapter);
 
       if (!isExcludedWhenEmptyOrNull(valueContext, propValue, propertyResult)) {
@@ -140,8 +140,8 @@ public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectSchema
 
   @Override
   public boolean supports(@NonNull Schema schema) {
-    return schema instanceof ObjectSchema && !(schema.getExtensions() == null ? false
-        : schema.getExtensions().containsKey(OpenApiSpecificationExtensions.TYPE));
+    return schema instanceof ObjectSchema && !(schema.getExtensions() != null
+        && schema.getExtensions().containsKey(OpenApiSpecificationExtensions.TYPE));
   }
 
   @Override
