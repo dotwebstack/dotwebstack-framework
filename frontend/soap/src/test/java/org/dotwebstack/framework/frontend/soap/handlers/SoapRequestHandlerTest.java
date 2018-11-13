@@ -62,7 +62,7 @@ public class SoapRequestHandlerTest {
   @Before
   public void before() {
     soapActions = new HashMap<>();
-    soapRequestHandler = new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions);
+    soapRequestHandler = new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions, false);
   }
 
   @Test
