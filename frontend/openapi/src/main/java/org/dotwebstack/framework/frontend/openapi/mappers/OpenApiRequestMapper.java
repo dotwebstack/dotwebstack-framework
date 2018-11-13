@@ -10,7 +10,6 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
-import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -71,7 +70,7 @@ public class OpenApiRequestMapper {
     }
     System.out.println("Looking for files in " + openApiPath);
     List<Path> openApiFiles = Files.find(Paths.get(openApiPath),
-        2, (path, bfa) -> path.getFileName().toString().endsWith(".yml")) //
+        2, (path, bfa) -> path.getFileName().toString().endsWith("oas3.yml")) //
         .collect(Collectors.toList());
 
     for (Path path : openApiFiles) {
@@ -81,20 +80,18 @@ public class OpenApiRequestMapper {
                 .filter(Objects::nonNull)
                 .map(resolver::replaceWithEnvVar)
                 .collect(Collectors.joining("\n"));
-        OpenAPI openApi = getOpenApi(result);
+        OpenAPI openApi = resolver.resolve(getOpenApi(path));
         mapOpenApiDefinition(openApi, httpConfiguration);
         addSpecResource(result, openApi, httpConfiguration);
       }
     }
   }
 
-  private OpenAPI getOpenApi(String yamlContent) {
-    SwaggerParseResult result = openApiParser.readContents(yamlContent, new ArrayList<>(), OPTIONS);
-    result.getMessages().forEach(LOG::debug);
-    return result.getOpenAPI();
+  private OpenAPI getOpenApi(Path location) {
+    return openApiParser.read(location.toString(), new ArrayList<>(), OPTIONS);
   }
 
-  private void mapOpenApiDefinition(OpenAPI openApi, HttpConfiguration httpConfiguration) {
+  private void mapOpenApiDefinition(@NonNull OpenAPI openApi, HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(openApi);
 
     openApi.getPaths().forEach(
