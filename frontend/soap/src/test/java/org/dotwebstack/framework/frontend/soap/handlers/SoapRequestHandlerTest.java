@@ -74,30 +74,30 @@ public class SoapRequestHandlerTest {
   }
 
   @Test
-  public void shouldReturnErrorMessageWhenDataHasNoEntity(){
+  public void shouldReturnErrorMessageWhenDataHasNoEntity() {
 
-      //wsdlPort vullen met String name en Binding binding
-      List<BindingOperation> wsdlBindingOperations = new ArrayList<>();
+    //wsdlPort vullen met String name en Binding binding
+    List<BindingOperation> wsdlBindingOperations = new ArrayList<>();
 
-      when(bindingOperation.getName()).thenReturn("bindingOperation");
+    when(bindingOperation.getName()).thenReturn("bindingOperation");
 
-      wsdlBindingOperations.add(bindingOperation);
+    wsdlBindingOperations.add(bindingOperation);
 
-      when(binding.getBindingOperations()).thenReturn(wsdlBindingOperations);
+    when(binding.getBindingOperations()).thenReturn(wsdlBindingOperations);
 
-      when(wsdlPort.getBinding()).thenReturn(binding);
-
-
-      //check value van soapaction
-      when(context.getHeaderString(SOAP_ACTION)).thenReturn("/bindingOperation\"");
+    when(wsdlPort.getBinding()).thenReturn(binding);
 
 
-      //test of de value van wsdlBindingOperation niet Null is
-      String response = soapRequestHandler.apply(context);
-      assertThat(response, is(ERROR_RESPONSE));
-      // assertThat(wsdlBindingOperation(wsdlPort, SOAP_ACTION), isNotNull());
+    //check value van soapaction
+    when(context.getHeaderString(SOAP_ACTION)).thenReturn("/bindingOperation\"");
 
-      //andere tests?
+
+    //test of de value van wsdlBindingOperation niet Null is
+    String response = soapRequestHandler.apply(context);
+    assertThat(response, is(ERROR_RESPONSE));
+    // assertThat(wsdlBindingOperation(wsdlPort, SOAP_ACTION), isNotNull());
+
+    //andere tests?
   }
 
 }
