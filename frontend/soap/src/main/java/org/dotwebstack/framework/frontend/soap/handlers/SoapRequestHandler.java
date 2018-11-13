@@ -58,7 +58,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
   private final Definition wsdlDefinition;
   private final Map<String, SoapAction> soapActions;
   private boolean isMtom;
-  private String uuid = "";
+  private static final String UUID_CONSTANT = "--uuid:e2347d89-ea40-45fd-802f-5fcc266a3858+id=1";
 
   public SoapRequestHandler(@NonNull Definition wsdlDefinition, @NonNull Port wsdlPort,
       @NonNull Map<String, SoapAction> soapActions, boolean isMtom) {
@@ -88,7 +88,9 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       message = buildSoapResponse(message, wsdlBindingOperation, inputDoc);
     }
 
-    return message == null ? ERROR_RESPONSE : message;
+    String response = message == null ? ERROR_RESPONSE : message;
+    LOG.debug("Replying with the following SOAP Response: \n\n {} \n\n", response);
+    return response;
   }
 
   private String buildSoapResponse(String message, final BindingOperation wsdlBindingOperation,
@@ -114,7 +116,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
   private String addHeadersMtom(final String message) {
     StringBuilder stringBuilder = new StringBuilder();
-    stringBuilder.append(uuid);
+    stringBuilder.append(UUID_CONSTANT);
     stringBuilder.append('\n');
     stringBuilder.append(CONTENT_ID);
     stringBuilder.append('\n');
@@ -127,7 +129,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     stringBuilder.append(message);
 
     stringBuilder.append('\n');
-    stringBuilder.append(uuid);
+    stringBuilder.append(UUID_CONSTANT);
     stringBuilder.append("--");
 
     return stringBuilder.toString();
@@ -153,9 +155,6 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
       LOG.debug("Recieved the following SOAP request:\n\n {} \n \n: ", message);
       if (isMtom) {
-        uuid = getHeaders(message);
-        LOG.debug("Extracted the following MTOM headers from MTOM SOAP request:\n\n {} \n \n: ",
-            uuid);
         message = getSoapPart(message);
         LOG.debug("Extracted the following SOAP part from MTOM request:\n\n {} \n \n: ", message);
       }

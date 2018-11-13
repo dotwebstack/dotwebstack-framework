@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+
 import javax.xml.namespace.QName;
 
 import org.apache.xmlbeans.GDate;
@@ -35,11 +36,11 @@ import org.apache.xmlbeans.XmlGYearMonth;
 import org.apache.xmlbeans.XmlInteger;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlTime;
+import org.apache.xmlbeans.impl.schema.SchemaTypeImpl;
 import org.apache.xmlbeans.impl.util.Base64;
 import org.apache.xmlbeans.impl.util.HexBin;
 import org.apache.xmlbeans.soap.SOAPArrayType;
 import org.apache.xmlbeans.soap.SchemaWSDLArrayType;
-
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.slf4j.Logger;
@@ -1272,7 +1273,7 @@ class SampleXmlUtil {
       if ((variableName != null) && (currentRow != null)) {
         if (currentRow.hasBinding(variableName)) {
           String xsitype = currentRow.getValue(variableName).stringValue();
-          xmlc.insertAttributeWithValue(XSI_TYPE, xsitype);
+          xmlc.insertAttributeWithValue(XSI_TYPE, formatXsiType(xsitype, stype, xmlc));
         } else {
           LOG.warn("Could not find binding variable: {}", variableName);
         }
@@ -1283,6 +1284,13 @@ class SampleXmlUtil {
     for (int i = 0; i < attrProps.length; i++) {
       processAttribute(stype, xmlc, attrProps[i]);
     }
+  }
+
+  private String formatXsiType(final String xsitype, SchemaType stype, final XmlCursor xmlc) {
+    String namespace = ((SchemaTypeImpl) stype).getTargetNamespace();
+    String prefix = xmlc.prefixForNamespace(((SchemaTypeImpl) stype).getTargetNamespace());
+    String type = xsitype.replace(namespace, "");
+    return prefix + ":" + type;
   }
 
   @SuppressWarnings("squid:S3776")
