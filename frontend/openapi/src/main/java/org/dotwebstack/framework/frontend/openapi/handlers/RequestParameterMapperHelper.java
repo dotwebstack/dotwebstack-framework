@@ -50,7 +50,7 @@ public class RequestParameterMapperHelper {
     if (param == null) {
       return Collections.emptyMap();
     }
-    if (requestParameters.get(param) == null){
+    if (requestParameters.get(param) == null) {
       return Collections.emptyMap();
     }
     return ImmutableMap.of(param, requestParameters.get(param));
