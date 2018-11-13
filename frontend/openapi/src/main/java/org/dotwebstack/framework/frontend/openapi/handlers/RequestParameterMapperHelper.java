@@ -62,8 +62,9 @@ public class RequestParameterMapperHelper {
     Collection<Schema> values = getRequestBodyPropertySchemas(requestBody);
     List<String> schemaParameters = getParameterNamesFromSchemas(parameters, values);
 
-    return schemaParameters.stream().collect(
-        Collectors.toMap(param -> param, requestParameters::get));
+    return schemaParameters.stream()
+        .filter(param -> requestParameters.get(param) != null)
+        .collect(Collectors.toMap(param -> param, requestParameters::get));
   }
 
   private List<String> getParameterNamesFromSchemas(Collection<Parameter> parameters,
