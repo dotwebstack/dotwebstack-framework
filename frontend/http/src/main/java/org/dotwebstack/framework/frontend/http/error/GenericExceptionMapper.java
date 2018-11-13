@@ -18,6 +18,7 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
     String identifier = generateIdentifier();
     if (LOG.isErrorEnabled()) {
       LOG.error(String.format("[%s] %s", identifier, cause.getMessage()), cause);
+      cause.printStackTrace();
     }
 
     Status status = Status.INTERNAL_SERVER_ERROR;
