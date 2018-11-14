@@ -21,6 +21,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.soap.action.SoapAction;
+import org.dotwebstack.framework.frontend.soap.wsdlreader.Constants;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SchemaDefinitionWrapper;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapContext;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
@@ -34,21 +35,9 @@ import org.w3c.dom.Document;
 
 public class SoapRequestHandler implements Inflector<ContainerRequestContext, String> {
 
-  static final String ERROR_RESPONSE = "<?xml version=\"1.0\"?>"
-      + "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">" + "  <s:Body>"
-      + "    <s:Fault>"
-      + "      <faultcode xmlns:a=\"http://schemas.microsoft.com/ws/2005/05/addressing/none\">"
-      + "a:ActionNotSupported</faultcode>"
-      + "      <faultstring xml:lang=\"en-US\">The message with Action '%s' cannot be processed "
-      + "at the receiver, due to a ContractFilter mismatch at the EndpointDispatcher. This may "
-      + "be because of either a contract mismatch (mismatched Actions between sender and "
-      + "receiver) or a binding/security mismatch between the sender and the receiver.  Check "
-      + "that sender and receiver have the same contract and the same binding (including "
-      + "security requirements, e.g. Message, Transport, None).</faultstring>" + "    </s:Fault>"
-      + "  </s:Body>" + "</s:Envelope>";
+
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestHandler.class);
   private static final String REGEX_TO_EXTRACT_SOAP_MESSAGE = "(<s.+?(?=(-{2})))";
-  private static final String REGEX_TO_GET_HEADER = "-{2}.+?(?=(Content))";
   private static final String SOAP_ACTION = "SOAPAction";
   private static final String CONTENT_ID = "Content-ID: <http://tempuri.org/0>";
   private static final String CONTENT_TRANSFER_ENCODING_8BIT = "Content-Transfer-Encoding: 8bit";
@@ -58,7 +47,6 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
   private final Definition wsdlDefinition;
   private final Map<String, SoapAction> soapActions;
   private boolean isMtom;
-  private static final String UUID_CONSTANT = "--uuid:e2347d89-ea40-45fd-802f-5fcc266a3858+id=1";
 
   public SoapRequestHandler(@NonNull Definition wsdlDefinition, @NonNull Port wsdlPort,
       @NonNull Map<String, SoapAction> soapActions, boolean isMtom) {
@@ -71,7 +59,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
   @Override
   public String apply(ContainerRequestContext data) {
     final String soapActionName = data.getHeaderString(SOAP_ACTION);
-    String message = ERROR_RESPONSE;
+    String message = null;
     LOG.debug("Handling SOAP XML request, SOAPAction: {}", soapActionName);
 
     BindingOperation wsdlBindingOperation =
@@ -88,8 +76,8 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
       message = buildSoapResponse(message, wsdlBindingOperation, inputDoc);
     }
 
-    String response = message == null ? ERROR_RESPONSE : message;
-    LOG.debug("Replying with the following SOAP Response: \n\n {} \n\n", response);
+    String response = message == null ? Constants.ERROR_RESPONSE : message;
+    LOG.debug("Replying with the following SOAP Response: \n\n{}\n\n", response);
     return response;
   }
 
@@ -116,7 +104,8 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
   private String addHeadersMtom(final String message) {
     StringBuilder stringBuilder = new StringBuilder();
-    stringBuilder.append(UUID_CONSTANT);
+    stringBuilder.append("--");
+    stringBuilder.append(Constants.DEFAULT_UUID);
     stringBuilder.append('\n');
     stringBuilder.append(CONTENT_ID);
     stringBuilder.append('\n');
@@ -129,7 +118,8 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     stringBuilder.append(message);
 
     stringBuilder.append('\n');
-    stringBuilder.append(UUID_CONSTANT);
+    stringBuilder.append("--");
+    stringBuilder.append(Constants.DEFAULT_UUID);
     stringBuilder.append("--");
 
     return stringBuilder.toString();
@@ -188,15 +178,6 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
     Matcher matcher = pattern.matcher(message);
     if (matcher.find()) {
       return matcher.group(1);
-    }
-    return message;
-  }
-
-  private String getHeaders(final String message) {
-    Pattern pattern = Pattern.compile(REGEX_TO_GET_HEADER);
-    Matcher matcher = pattern.matcher(message);
-    if (matcher.find()) {
-      return matcher.group(0);
     }
     return message;
   }

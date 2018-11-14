@@ -65,9 +65,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   private static final String TEXT_XML = "text/xml";
   private static final String MULTIPART_RELATED = "multipart/related";
   private static final String APPLICATION_SOAP_XML = "application/soap+xml";
-  private static final String UUID_CONSTANT = "uuid:e2347d89-ea40-45fd-802f-5fcc266a3858+id=1";
   private static final String APPLICATION_XOP_XML =
-      "multipart/related; type=\"application/xop+xml\";start=\"<http://tempuri.org/0>\";boundary=\"" + UUID_CONSTANT + "\";start-info=\"text/xml\"";
+      MULTIPART_RELATED + ";type=\"application/xop+xml\";start=\"<http://tempuri.org/0>\";boundary=\"" + Constants.DEFAULT_UUID + "\";start-info=\"text/xml\"";
 
   private WSDLReader wsdlReader;
 
@@ -177,7 +176,6 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
         .consumes(MULTIPART_RELATED)
         .produces(APPLICATION_XOP_XML)
         .handledBy(soapRequestHandlerMtom);
-
 
     Resource soapResourceXop = soapResourceBuilderXop.build();
 
