@@ -1,0 +1,9 @@
+<SOAP-ENV:Envelope
+        xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <SOAP-ENV:Body>
+        <m:GetEndorsingBoarderResponse xmlns:m="http://namespaces.snowboard-info.com">
+            <endorsingBoarder>Chris Englesmann</endorsingBoarder>
+        </m:GetEndorsingBoarderResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

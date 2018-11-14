@@ -6,8 +6,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,14 +23,20 @@ import javax.wsdl.Binding;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
+import javax.wsdl.Service;
+import javax.wsdl.WSDLException;
+import javax.wsdl.factory.WSDLFactory;
+import javax.wsdl.xml.WSDLReader;
 
 import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.xml.sax.InputSource;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SoapRequestHandlerTest {
@@ -42,14 +53,14 @@ public class SoapRequestHandlerTest {
       + "that sender and receiver have the same contract and the same binding (including "
       + "security requirements, e.g. Message, Transport, None).</faultstring>" + "    </s:Fault>"
       + "  </s:Body>" + "</s:Envelope>";
-
-  private static final String REQUEST = "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body><GetDomainTable xmlns=\"http://rws.services.nl/DomainTableWS/2010/10\"><request xmlns:a=\"http://rws.services.nl/DomainTableWS/Contracts/2010/10\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"><a:PageSize>2500</a:PageSize><a:StartPage>0</a:StartPage><a:CheckDate>2018-11-02T10:21:20.3569725+01:00</a:CheckDate><a:DomaintableName>Compartiment</a:DomaintableName></request></GetDomainTable></s:Body></s:Envelope>";
+  private static final String HTTP_NAMESPACES_SNOWBOARD_INFO_COM_ENDORSEMENT_SEARCH_SERVICE =
+      "{http://namespaces.snowboard-info.com}EndorsementSearchService";
   private static final String SOAP_ACTION = "SOAPAction";
-
+  private String request;
+  private String response;
   @Mock
   private ContainerRequestContext context;
 
-  @Mock
   private Definition wsdlDefinition;
 
   @Mock
@@ -66,9 +77,15 @@ public class SoapRequestHandlerTest {
   private SoapRequestHandler soapRequestHandler;
 
   @Before
-  public void before() {
+  public void before() throws WSDLException, IOException, URISyntaxException {
+    wsdlDefinition = createWsdlDefinition();
+    Service service = (Service) new ArrayList<>(wsdlDefinition.getServices().values()).get(0);
+    this.wsdlPort = service.getPort("GetEndorsingBoarderPort");
+    request = readResource("request.xml");
+    response = readResource("response.xml");
+
     soapActions = new HashMap<>();
-    soapRequestHandler = new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions, false);
+    soapRequestHandler = new SoapRequestHandler(wsdlDefinition, this.wsdlPort, soapActions, false);
   }
 
   @Test
@@ -81,15 +98,7 @@ public class SoapRequestHandlerTest {
 
   @Test
   public void shouldReturnErrorMessageWhenDataHasNoEntity() {
-    //wsdlPort vullen met String name en Binding binding
-    List<BindingOperation> wsdlBindingOperations = new ArrayList<>();
 
-    when(bindingOperation.getName()).thenReturn("GetDomainTableNames");
-
-    wsdlBindingOperations.add(bindingOperation);
-
-    when(binding.getBindingOperations()).thenReturn(wsdlBindingOperations);
-    when(wsdlPort.getBinding()).thenReturn(binding);
     when(context.getHeaderString(SOAP_ACTION)).thenReturn("/GetDomainTableNames\"");
 
     String response = soapRequestHandler.apply(context);
@@ -97,21 +106,15 @@ public class SoapRequestHandlerTest {
     assertThat(response, is(ERROR_RESPONSE));
   }
 
-  //@Test
-  public void shouldReturnValidMessageWhenInputDocIsAvailable() {
-    List<BindingOperation> wsdlBindingOperations = new ArrayList<>();
+  @Ignore
+  public void shouldReturnValidMessageWhenInputDocIsAvailable()
+      throws WSDLException, URISyntaxException, IOException {
 
-    when(bindingOperation.getName()).thenReturn("GetDomainTableNames");
-
-    wsdlBindingOperations.add(bindingOperation);
-
-    when(binding.getBindingOperations()).thenReturn(wsdlBindingOperations);
-    when(wsdlPort.getBinding()).thenReturn(binding);
     when(context.getHeaderString(SOAP_ACTION)).thenReturn("/GetDomainTableNames\"");
 
     when(context.hasEntity()).thenReturn(true);
 
-    InputStream inputstream = new ByteArrayInputStream(REQUEST.getBytes(StandardCharsets.UTF_8));
+    InputStream inputstream = new ByteArrayInputStream(request.getBytes(StandardCharsets.UTF_8));
 
     when(context.getEntityStream()).thenReturn(inputstream);
 
@@ -122,4 +125,17 @@ public class SoapRequestHandlerTest {
 
     assertThat(response, is(""));
   }
+
+  private Definition createWsdlDefinition() throws WSDLException, IOException, URISyntaxException {
+    WSDLReader wsdlReader = WSDLFactory.newInstance().newWSDLReader();
+    String wsdl = readResource("wsdl.xsd");
+
+    return wsdlReader.readWSDL("http://example.org/", new InputSource(new StringReader(wsdl)));
+  }
+
+  private String readResource(String name) throws IOException, URISyntaxException {
+    return new String(
+        Files.readAllBytes(Paths.get(getClass().getClassLoader().getResource(name).toURI())));
+  }
+
 }

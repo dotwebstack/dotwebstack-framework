@@ -1,0 +1,10 @@
+<SOAP-ENV:Envelope
+        xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <SOAP-ENV:Body>
+        <m:GetEndorsingBoarder xmlns:m="http://namespaces.snowboard-info.com">
+            <manufacturer>K2</manufacturer>
+            <model>Fatbob</model>
+        </m:GetEndorsingBoarder>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
