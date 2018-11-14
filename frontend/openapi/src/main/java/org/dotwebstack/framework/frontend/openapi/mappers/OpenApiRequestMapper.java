@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
-import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -25,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.ws.rs.HttpMethod;
+import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,65 +61,63 @@ public class OpenApiRequestMapper {
 
   private static final ParseOptions OPTIONS = new ParseOptions();
 
+  static {
+    OPTIONS.setResolveFully(true);
+  }
+
   public void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
     SpecEnvironmentResolver resolver = new SpecEnvironmentResolver(environment);
-    OPTIONS.setResolveFully(true);
     String openApiPath = applicationProperties.getOpenApiResourcePath();
+    LOG.info("Looking for OA3 specs in: {}", openApiPath);
     if (openApiPath == null) {
+      LOG.warn("Undefined OpenAPI directory");
       return;
     }
-    System.out.println("Looking for files in " + openApiPath);
-    List<Path> openApiFiles = Files.find(Paths.get(openApiPath),
-        2, (path, bfa) -> path.getFileName().toString().endsWith("oas3.yml")) //
+
+    List<Path> openApiFiles = Files.find(Paths.get(openApiPath), 2,
+        (path, bfa) -> path.getFileName().toString().endsWith(".oas3.yml")) //
         .collect(Collectors.toList());
 
     for (Path path : openApiFiles) {
-      try (BufferedReader reader = Files.newBufferedReader(path)) {
-        String result =
-            reader.lines()
-                .filter(Objects::nonNull)
-                .map(resolver::replaceWithEnvVar)
-                .collect(Collectors.joining("\n"));
-        OpenAPI openApi = resolver.resolve(getOpenApi(path));
-        mapOpenApiDefinition(openApi, httpConfiguration);
-        addSpecResource(result, openApi, httpConfiguration);
-      }
+      @Cleanup
+      BufferedReader reader = Files.newBufferedReader(path);
+
+      String yamlContent = reader.lines() //
+          .filter(Objects::nonNull) //
+          .map(resolver::replaceWithEnvVar) //
+          .collect(Collectors.joining("\n"));
+
+      OpenAPI openApi = resolver.resolve(getOpenApi(path));
+      mapOpenApiDefinition(openApi, httpConfiguration);
+      addSpecResource(yamlContent, openApi, httpConfiguration);
     }
   }
 
   private OpenAPI getOpenApi(Path location) {
+    LOG.debug("OpenAPI file: {}/{}", location.getParent().getFileName(), location.getFileName());
     return openApiParser.read(location.toString(), new ArrayList<>(), OPTIONS);
   }
 
   private void mapOpenApiDefinition(@NonNull OpenAPI openApi, HttpConfiguration httpConfiguration) {
     String basePath = createBasePath(openApi);
 
-    openApi.getPaths().forEach(
-        (path, pathItem) -> OpenApiSpecUtils.extractApiOperations(openApi, path, pathItem));
-
     openApi.getPaths().forEach((path, pathItem) -> {
-      Collection<ApiOperation> apiOperations =
-          OpenApiSpecUtils.extractApiOperations(openApi, path, pathItem);
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
-      apiOperations.forEach(apiOperation -> {
-        LOG.debug("Mapping {} operation for request path {}", apiOperation.getMethod().name(),
-            absolutePath);
+      OpenApiSpecUtils.extractApiOperations(openApi, path, pathItem).forEach(apiOperation -> {
+        LOG.debug("Mapping {} for {}", apiOperation.getMethod().name(), absolutePath);
         Operation operation = apiOperation.getOperation();
-        Optional.ofNullable(operation.getRequestBody()).ifPresent(
-            this::verifySchemasHaveTypeObject);
+        Optional.ofNullable(operation.getRequestBody()).ifPresent(this::verifyRequestbody);
 
         requestMappers.stream() //
-            .filter(mapper1 -> mapper1.supportsVendorExtension(operation.getExtensions())) //
+            .filter(mapper -> mapper.supportsVendorExtension(operation.getExtensions())) //
             .findFirst() //
-            .ifPresent(
-                mapper -> mapper.map(resourceBuilder, openApi, apiOperation, operation,
-                    absolutePath));
+            .ifPresent(mapper -> mapper.map(resourceBuilder, openApi, apiOperation, absolutePath));
 
         if (requestMappers.stream() //
-            .noneMatch(mapper1 -> mapper1.supportsVendorExtension(operation.getExtensions()))) {
+            .noneMatch(mapper -> mapper.supportsVendorExtension(operation.getExtensions()))) {
           LOG.warn("Path '{}' is not mapped to an information product or transaction.",
               absolutePath);
         }
@@ -137,11 +135,10 @@ public class OpenApiRequestMapper {
       throws IOException {
     Builder specResourceBuilder =
         Resource.builder().path(createBasePath(openApi) + getSpecEndpoint(openApi));
-    specResourceBuilder.addMethod(HttpMethod.GET)//
-        .produces("text/yaml")//
+    specResourceBuilder.addMethod(HttpMethod.GET) //
+        .produces("text/yaml") //
         .handledBy(new OpenApiSpecHandler(yaml));
-    specResourceBuilder //
-        .addMethod(HttpMethod.OPTIONS) //
+    specResourceBuilder.addMethod(HttpMethod.OPTIONS) //
         .handledBy(new OptionsRequestHandler(new PathItem().get(new Operation())));
     httpConfiguration.registerResources(specResourceBuilder.build());
   }
@@ -157,7 +154,7 @@ public class OpenApiRequestMapper {
    *         have a schema of type Object (because a schema of type Object is the only type we are
    *         currently supporting).
    */
-  private void verifySchemasHaveTypeObject(@Nullable RequestBody requestBody) {
+  private void verifyRequestbody(@Nullable RequestBody requestBody) {
     String mediaType = Stream.of(requestBody) //
         .filter(Objects::nonNull) //
         .map(RequestBody::getContent) //
@@ -177,14 +174,13 @@ public class OpenApiRequestMapper {
     String oas =
         "https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schema";
 
-    Optional<String> optionalBasePath = Stream.of(openApi) //
+    String url = Stream.of(openApi) //
         .map(OpenAPI::getServers) //
         .filter(Objects::nonNull) //
         .flatMap(Collection::stream) //
         .map(Server::getUrl) //
         .filter(anotherString -> !"/".equalsIgnoreCase(anotherString)) //
-        .findAny();
-    String url = optionalBasePath //
+        .findAny() //
         .orElseThrow(() -> new ConfigurationException(String.format(
             "Expecting at least one server definition on the OpenAPI spec '%s'. See: %s",
             openApi.getInfo().getDescription(), oas)));

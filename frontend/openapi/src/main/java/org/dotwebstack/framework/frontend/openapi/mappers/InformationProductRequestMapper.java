@@ -35,7 +35,8 @@ public class InformationProductRequestMapper extends AbstractRequestMapper<Infor
 
   @Override
   public void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
-      Operation operation, String absolutePath) {
+                  String absolutePath) {
+    Operation operation = apiOperation.getOperation();
     validate200Response(operation, absolutePath);
 
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());

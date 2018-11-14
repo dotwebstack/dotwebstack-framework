@@ -33,7 +33,8 @@ public class TransactionRequestMapper extends AbstractRequestMapper<Transaction>
 
   @Override
   public void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
-      Operation operation, String absolutePath) {
+                  String absolutePath) {
+    Operation operation = apiOperation.getOperation();
     validate200Response(operation, absolutePath);
 
     Set<String> consumes =
