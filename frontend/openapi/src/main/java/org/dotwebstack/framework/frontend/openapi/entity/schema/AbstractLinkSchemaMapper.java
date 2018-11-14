@@ -37,7 +37,8 @@ abstract class AbstractLinkSchemaMapper implements SchemaMapper<ObjectSchema, Ob
         .filter(isQueryParameter())
         .map(toQueryParameter())
         .filter(p -> requestParams.get(p.getName()) != null)
-        .filter(p -> p.getSchema().getDefault() == null
+        .filter(p -> p.getSchema() == null
+            || p.getSchema().getDefault() == null
             || !requestParams.get(p.getName()).equals(p.getSchema().getDefault().toString()))
         .forEach(p -> builder.queryParam(p.getName(), requestParams.get(p.getName())));
     // @formatter:on
