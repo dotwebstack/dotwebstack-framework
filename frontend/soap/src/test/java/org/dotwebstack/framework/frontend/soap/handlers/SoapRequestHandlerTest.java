@@ -2,8 +2,12 @@ package org.dotwebstack.framework.frontend.soap.handlers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +20,7 @@ import javax.wsdl.Definition;
 import javax.wsdl.Port;
 
 import org.dotwebstack.framework.frontend.soap.action.SoapAction;
+import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +42,8 @@ public class SoapRequestHandlerTest {
       + "that sender and receiver have the same contract and the same binding (including "
       + "security requirements, e.g. Message, Transport, None).</faultstring>" + "    </s:Fault>"
       + "  </s:Body>" + "</s:Envelope>";
+
+  private static final String REQUEST = "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body><GetDomainTable xmlns=\"http://rws.services.nl/DomainTableWS/2010/10\"><request xmlns:a=\"http://rws.services.nl/DomainTableWS/Contracts/2010/10\" xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"><a:PageSize>2500</a:PageSize><a:StartPage>0</a:StartPage><a:CheckDate>2018-11-02T10:21:20.3569725+01:00</a:CheckDate><a:DomaintableName>Compartiment</a:DomaintableName></request></GetDomainTable></s:Body></s:Envelope>";
   private static final String SOAP_ACTION = "SOAPAction";
 
   @Mock
@@ -74,29 +81,45 @@ public class SoapRequestHandlerTest {
 
   @Test
   public void shouldReturnErrorMessageWhenDataHasNoEntity() {
-
     //wsdlPort vullen met String name en Binding binding
     List<BindingOperation> wsdlBindingOperations = new ArrayList<>();
 
-    when(bindingOperation.getName()).thenReturn("bindingOperation");
+    when(bindingOperation.getName()).thenReturn("GetDomainTableNames");
 
     wsdlBindingOperations.add(bindingOperation);
 
     when(binding.getBindingOperations()).thenReturn(wsdlBindingOperations);
-
     when(wsdlPort.getBinding()).thenReturn(binding);
+    when(context.getHeaderString(SOAP_ACTION)).thenReturn("/GetDomainTableNames\"");
 
-
-    //check value van soapaction
-    when(context.getHeaderString(SOAP_ACTION)).thenReturn("/bindingOperation\"");
-
-
-    //test of de value van wsdlBindingOperation niet Null is
     String response = soapRequestHandler.apply(context);
-    assertThat(response, is(ERROR_RESPONSE));
-    // assertThat(wsdlBindingOperation(wsdlPort, SOAP_ACTION), isNotNull());
 
-    //andere tests?
+    assertThat(response, is(ERROR_RESPONSE));
   }
 
+  //@Test
+  public void shouldReturnValidMessageWhenInputDocIsAvailable() {
+    List<BindingOperation> wsdlBindingOperations = new ArrayList<>();
+
+    when(bindingOperation.getName()).thenReturn("GetDomainTableNames");
+
+    wsdlBindingOperations.add(bindingOperation);
+
+    when(binding.getBindingOperations()).thenReturn(wsdlBindingOperations);
+    when(wsdlPort.getBinding()).thenReturn(binding);
+    when(context.getHeaderString(SOAP_ACTION)).thenReturn("/GetDomainTableNames\"");
+
+    when(context.hasEntity()).thenReturn(true);
+
+    InputStream inputstream = new ByteArrayInputStream(REQUEST.getBytes(StandardCharsets.UTF_8));
+
+    when(context.getEntityStream()).thenReturn(inputstream);
+
+    InformationProduct informationProduct = mock(InformationProduct.class);
+    SoapAction soapAction = new SoapAction("GetDomainTableNames", informationProduct);
+    soapActions.put("GetDomainTableNames", soapAction);
+    String response = soapRequestHandler.apply(context);
+
+    assertThat(response, is(""));
+  }
 }
