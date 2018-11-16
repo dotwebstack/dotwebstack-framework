@@ -182,7 +182,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
 
     Resource soapResourceMtom = soapResourceBuilderMtom.build();
 
-    Builder wsdlResourceBuilder = Resource.builder().path(createWsdlServicePath(servicePath));
+    Builder wsdlResourceBuilder = Resource.builder()
+        .path(getStringUpUntilLastBackSlash(servicePath));
     wsdlResourceBuilder.addMethod(HttpMethod.GET)
         .produces(MediaType.APPLICATION_XML)
         .handledBy(new WsdlRequestHandler(wsdl));
@@ -190,10 +191,6 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
     Resource wsdlResource = wsdlResourceBuilder.build();
 
     httpConfiguration.registerResources(soapResourceXml, soapResourceMtom, wsdlResource);
-  }
-
-  private String createWsdlServicePath(final String servicePath) {
-    return getStringUpUntilLastBackSlash(servicePath) + "/wsdl";
   }
 
   private String getStringUpUntilLastBackSlash(final String servicePath) {
