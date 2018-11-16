@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
@@ -34,6 +36,7 @@ import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
 import org.dotwebstack.framework.frontend.soap.action.SoapAction;
 import org.dotwebstack.framework.frontend.soap.handlers.SoapRequestHandler;
+import org.dotwebstack.framework.frontend.soap.handlers.WsdlRequestHandler;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.Constants;
 import org.dotwebstack.framework.frontend.soap.wsdlreader.SoapUtils;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -53,9 +56,8 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Element;
+
 import org.xml.sax.InputSource;
-
-
 
 @Service
 public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware {
@@ -65,8 +67,9 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   private static final String TEXT_XML = "text/xml";
   private static final String MULTIPART_RELATED = "multipart/related";
   private static final String APPLICATION_SOAP_XML = "application/soap+xml";
-  private static final String APPLICATION_XOP_XML =
-      MULTIPART_RELATED + ";type=\"application/xop+xml\";start=\"<http://tempuri.org/0>\";boundary=\"" + Constants.DEFAULT_UUID + "\";start-info=\"text/xml\"";
+  private static final String APPLICATION_XOP_XML = MULTIPART_RELATED
+      + ";type=\"application/xop+xml\";start=\"<http://tempuri.org/0>\";boundary=\""
+      + Constants.DEFAULT_UUID + "\";start-info=\"text/xml\"";
 
   private WSDLReader wsdlReader;
 
@@ -121,7 +124,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
           String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
           Definition wsdlDefinition =
               wsdlReader.readWSDL("http://example.org/", new InputSource(new StringReader(result)));
-          mapSoapDefinition(wsdlDefinition, httpConfiguration);
+          mapSoapDefinition(wsdlDefinition, httpConfiguration, result);
         } catch (WSDLException exp) {
           LOG.error("Error reading WSDL file: {}", resource.getDescription());
           throw new IOException(exp);
@@ -130,7 +133,8 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
     }
   }
 
-  private void mapSoapDefinition(Definition wsdlDefinition, HttpConfiguration httpConfiguration) {
+  private void mapSoapDefinition(Definition wsdlDefinition, HttpConfiguration httpConfiguration,
+      final String result) {
     Map<String, javax.wsdl.Service> wsdlServices = wsdlDefinition.getServices();
     for (javax.wsdl.Service wsdlService : wsdlServices.values()) {
       Map<String, Port> wsdlPorts = wsdlService.getPorts();
@@ -142,7 +146,7 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
             String servicePath =
                 String.format("/%s%s", locationUri.getHost(), locationUri.getPath());
             LOG.info("Register resource path {} for SOAP service {}", servicePath, locationUri);
-            registerResource(wsdlDefinition, httpConfiguration, wsdlPort, servicePath);
+            registerResource(wsdlDefinition, httpConfiguration, wsdlPort, servicePath, result);
           } catch (URISyntaxException exp) {
             LOG.warn("Location URI in WSDL could not be parsed: {}",
                 SoapUtils.getLocationUri(wsdlElement));
@@ -153,13 +157,12 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
   }
 
   private void registerResource(Definition wsdlDefinition, HttpConfiguration httpConfiguration,
-      Port wsdlPort, String servicePath) {
+      Port wsdlPort, String servicePath, final String wsdl) {
     Map<String, SoapAction> soapActions = new HashMap<>();
     createSoapActions(wsdlDefinition, wsdlPort, soapActions);
 
     SoapRequestHandler soapRequestHandlerXml =
         new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions, false);
-
 
     Builder soapResourceBuilderXml = Resource.builder().path(servicePath);
     soapResourceBuilderXml.addMethod(POST)
@@ -171,16 +174,30 @@ public class SoapRequestMapper implements ResourceLoaderAware, EnvironmentAware 
     SoapRequestHandler soapRequestHandlerMtom =
         new SoapRequestHandler(wsdlDefinition, wsdlPort, soapActions, true);
 
-    Builder soapResourceBuilderXop = Resource.builder().path(servicePath);
-    soapResourceBuilderXop.addMethod(POST)
+    Builder soapResourceBuilderMtom = Resource.builder().path(servicePath);
+    soapResourceBuilderMtom.addMethod(POST)
         .consumes(MULTIPART_RELATED)
         .produces(APPLICATION_XOP_XML)
         .handledBy(soapRequestHandlerMtom);
 
-    Resource soapResourceXop = soapResourceBuilderXop.build();
+    Resource soapResourceMtom = soapResourceBuilderMtom.build();
 
-    httpConfiguration
-        .registerResources(soapResourceXml, soapResourceXop);
+    Builder wsdlResourceBuilder = Resource.builder().path(createWsdlServicePath(servicePath));
+    wsdlResourceBuilder.addMethod(HttpMethod.GET)
+        .produces(MediaType.APPLICATION_XML)
+        .handledBy(new WsdlRequestHandler(wsdl));
+
+    Resource wsdlResource = wsdlResourceBuilder.build();
+
+    httpConfiguration.registerResources(soapResourceXml, soapResourceMtom, wsdlResource);
+  }
+
+  private String createWsdlServicePath(final String servicePath) {
+    return getStringUpUntilLastBackSlash(servicePath) + "/wsdl";
+  }
+
+  private String getStringUpUntilLastBackSlash(final String servicePath) {
+    return servicePath.substring(0, servicePath.lastIndexOf('/'));
   }
 
   private void createSoapActions(final Definition wsdlDefinition, final Port wsdlPort,

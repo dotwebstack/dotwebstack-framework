@@ -34,8 +34,6 @@ import org.w3c.dom.Document;
 
 
 public class SoapRequestHandler implements Inflector<ContainerRequestContext, String> {
-
-
   private static final Logger LOG = LoggerFactory.getLogger(SoapRequestHandler.class);
   private static final String REGEX_TO_EXTRACT_SOAP_MESSAGE = "(<s.+?(?=(-{2})))";
   private static final String SOAP_ACTION = "SOAPAction";
