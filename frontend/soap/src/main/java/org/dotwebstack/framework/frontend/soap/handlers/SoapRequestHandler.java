@@ -102,6 +102,7 @@ public class SoapRequestHandler implements Inflector<ContainerRequestContext, St
 
   private String addHeadersMtom(final String message) {
     StringBuilder stringBuilder = new StringBuilder();
+    stringBuilder.append('\n');
     stringBuilder.append("--");
     stringBuilder.append(Constants.DEFAULT_UUID);
     stringBuilder.append('\n');
