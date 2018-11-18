@@ -40,7 +40,8 @@ public class HtmlProblemDetailsWriter implements MessageBodyWriter<ProblemDetail
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
       MediaType mediaType) {
-    return MediaType.TEXT_HTML_TYPE.equals(mediaType);
+    return ProblemDetails.class.isAssignableFrom(type)
+        && MediaType.TEXT_HTML_TYPE.equals(mediaType);
   }
 
   @Override
