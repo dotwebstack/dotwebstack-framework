@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.junit.Before;
@@ -44,7 +45,8 @@ public class ErrorIntegrationTest {
   @Test
   public void get_ReturnsNotFoundResponse_ForNonExistingPath() throws Exception {
     // Act
-    Response response = target.path("/some/non-existing-path").request().get();
+    Response response = target.path("/some/non-existing-path").request(
+        MediaType.APPLICATION_JSON_TYPE).get();
 
     // Assert
     assertThat(response.getStatusInfo(), equalTo(Status.NOT_FOUND));
@@ -59,7 +61,8 @@ public class ErrorIntegrationTest {
   @Test
   public void get_ReturnsNotFoundResponse_ForNonExistingAsset() throws Exception {
     // Act
-    Response response = target.path("/assets/non-existing-asset").request().get();
+    Response response = target.path("/assets/non-existing-asset").request(
+        MediaType.APPLICATION_JSON_TYPE).get();
     // Assert
     assertThat(response.getStatusInfo(), equalTo(Status.NOT_FOUND));
     assertThat(response.getMediaType().toString(), equalTo("application/problem+json"));
@@ -70,10 +73,21 @@ public class ErrorIntegrationTest {
   }
 
   @Test
+  public void get_ReturnsNotFoundResponse_ForNonExistingAsset_HtmlRequest() throws Exception {
+    // Act
+    Response response = target.path("/assets/non-existing-asset").request(
+        MediaType.TEXT_HTML_TYPE).get();
+    // Assert
+    assertThat(response.getStatusInfo(), equalTo(Status.NOT_FOUND));
+    assertThat(response.getMediaType().toString(), equalTo("text/html"));
+  }
+
+  @Test
   public void get_ReturnsErrorResponseWithoutInvalidParams_ForUnexpectedRuntimeException()
       throws Exception {
     // Act
-    Response response = target.path("/runtime-exception").request().get();
+    Response response = target.path("/runtime-exception").request(
+        MediaType.APPLICATION_JSON_TYPE).get();
 
     // Assert
     assertThat(response.getStatusInfo(), equalTo(Status.INTERNAL_SERVER_ERROR));
@@ -94,7 +108,8 @@ public class ErrorIntegrationTest {
   @Test
   public void get_ReturnsNotAllowedJsonProblem_ForDeleteOnRobots() throws Exception {
     // Act
-    Response response = target.path("/robots.txt").request().delete();
+    Response response = target.path("/robots.txt").request(
+        MediaType.APPLICATION_JSON_TYPE).delete();
 
     // Assert
     assertThat(response.getStatusInfo(), equalTo(Status.METHOD_NOT_ALLOWED));
@@ -108,7 +123,8 @@ public class ErrorIntegrationTest {
   @Test
   public void get_ReturnsJsonProblemWithDebugInfo_ForExtendedException() throws Exception {
     // Act
-    Response response = target.path("/extended-exception").request().get();
+    Response response = target.path("/extended-exception").request(
+        MediaType.APPLICATION_JSON_TYPE).get();
 
     // Assert
     assertThat(response.getStatusInfo(), equalTo(Status.BAD_REQUEST));
