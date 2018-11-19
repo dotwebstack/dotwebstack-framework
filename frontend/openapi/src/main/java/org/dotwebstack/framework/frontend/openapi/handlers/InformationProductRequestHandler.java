@@ -84,7 +84,7 @@ public final class InformationProductRequestHandler
     context.setProperty(RequestHandlerProperties.OPERATION, operation);
 
     RequestParameters requestParameters =
-        apiRequestValidator.validate(apiOperation, openApi, context);
+        apiRequestValidator.validate(apiOperation, context);
 
     Map<String, String> parameterValues =
         requestParameterMapper.map(operation, informationProduct, requestParameters);

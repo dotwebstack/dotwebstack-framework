@@ -57,7 +57,7 @@ public class RequestHandlerFactory {
         transactionRequestParameterMapper, transactionRequestBodyMapper,
         new ApiRequestValidator(OpenApiSpecUtils.createValidator(openApi),
             requestParameterExtractor),
-        openApi, transactionHandlerFactory);
+        transactionHandlerFactory);
   }
 
 }

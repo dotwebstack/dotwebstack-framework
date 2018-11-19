@@ -90,11 +90,9 @@ public class InformationProductRequestHandlerTest {
 
     when(containerRequestMock.getBaseUri()).thenReturn(new URI("http://host:123/path"));
 
-    RequestParameters requestParameters = new RequestParameters();
-    when(apiRequestValidatorMock.validate(apiOperationMock, openApiMock,
-        containerRequestMock)).thenReturn(requestParameters);
-    Operation operation = new Operation();
-    when(apiOperationMock.getOperation()).thenReturn(operation);
+    when(apiRequestValidatorMock.validate(apiOperationMock, containerRequestMock)) //
+        .thenReturn(new RequestParameters());
+    when(apiOperationMock.getOperation()).thenReturn(new Operation());
     when(containerRequestMock.getRequestHeaders()).thenReturn(mock(MultivaluedStringMap.class));
 
     when(openApiMock.getServers()).thenReturn(Collections.singletonList(new Server().url("")));
@@ -134,10 +132,12 @@ public class InformationProductRequestHandlerTest {
     when(informationProductMock.getResult(parameters)).thenReturn(result);
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
-    Operation operation = new Operation().extensions(ImmutableMap.of(
-        OpenApiSpecificationExtensions.SUBJECT_QUERY, "SELECT ?s WHERE { ?s ?p ?o }")).responses(
-            new ApiResponses().addApiResponse(
-                Status.OK.toString(), new ApiResponse()));
+    Operation operation = new Operation() //
+        .extensions(ImmutableMap.of( //
+            OpenApiSpecificationExtensions.SUBJECT_QUERY, //
+            "SELECT ?s WHERE { ?s ?p ?o }")) //
+        .responses(new ApiResponses() //
+            .addApiResponse(Status.OK.toString(), new ApiResponse()));
 
     when(apiOperationMock.getOperation()).thenReturn(operation);
 

@@ -6,7 +6,6 @@ import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.model.SimpleRequest.Builder;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.google.common.collect.ImmutableList;
-import io.swagger.v3.oas.models.OpenAPI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +43,8 @@ class ApiRequestValidator {
    * @return a map of (validated) parameters
    * @throws WebApplicationException in case validation fails
    */
-  RequestParameters validate(@NonNull ApiOperation apiOperation, @NonNull OpenAPI openApi,
-      @NonNull ContainerRequestContext requestContext) {
+  RequestParameters validate(@NonNull ApiOperation apiOperation,
+                             @NonNull ContainerRequestContext requestContext) {
     UriInfo uriInfo = requestContext.getUriInfo();
 
     checkForForbiddenChars(uriInfo);
@@ -59,7 +58,7 @@ class ApiRequestValidator {
     uriInfo.getQueryParameters().forEach(builder::withQueryParam);
 
     RequestParameters requestParameters =
-        requestParameterExtractor.extract(apiOperation, openApi, requestContext);
+        requestParameterExtractor.extract(apiOperation, requestContext);
 
     String body = requestParameters.getRawBody();
     builder.withBody(body);

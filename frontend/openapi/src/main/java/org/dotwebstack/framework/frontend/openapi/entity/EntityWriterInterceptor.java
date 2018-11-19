@@ -6,7 +6,6 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
@@ -44,24 +43,32 @@ public final class EntityWriterInterceptor implements WriterInterceptor {
 
     Map<String, Object> result = new HashMap<>();
 
-    for (Entry<String, Header> header : headers.entrySet()) {
-      Map<String, Object> vendorExtensions = header.getValue().getExtensions();
+    headers.forEach((name, header) -> {
+      Map<String, Object> vendorExtensions = header.getExtensions();
 
-      LOG.debug("Vendor extensions for header param '{}': {}", header.getKey(), vendorExtensions);
+      // TODO Workaround for issue in swagger-parser where headers are not properly resolved
+      if (vendorExtensions == null) {
+        Header resolvedHeader = entity.getOpenApiComponents().getHeaders().get(name);
+        vendorExtensions = resolvedHeader.getExtensions();
+      }
+
+      LOG.debug("Header '{}' has vendorextensions: {}", name, vendorExtensions);
+
+      if (vendorExtensions == null) {
+        return;
+      }
 
       Object parameterIdString = vendorExtensions.get(OpenApiSpecificationExtensions.PARAMETER);
 
       if (parameterIdString == null) {
-        continue;
+        return;
       }
 
       InformationProduct product = entity.getRequestContext().getInformationProduct();
       Parameter<?> parameter =
           ParameterUtils.getParameter(product.getParameters(), (String) parameterIdString);
-      Object value = parameter.handle(entity.getRequestContext().getParameters());
-
-      result.put(header.getKey(), value);
-    }
+      result.put(name, parameter.handle(entity.getRequestContext().getParameters()));
+    });
 
     return result;
   }

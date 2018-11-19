@@ -4,12 +4,10 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
-import io.swagger.v3.parser.util.RefUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -43,7 +41,7 @@ class RequestParameterExtractor {
     this.objectMapper = objectMapper;
   }
 
-  RequestParameters extract(@NonNull ApiOperation apiOperation, @NonNull OpenAPI openApi,
+  RequestParameters extract(@NonNull ApiOperation apiOperation,
       @NonNull ContainerRequestContext containerRequestContext) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
@@ -58,11 +56,6 @@ class RequestParameterExtractor {
       RequestBody requestBody = apiOperation.getOperation().getRequestBody();
       Optional<Schema> schema = Optional.empty();
       if (requestBody != null) {
-        if (requestBody.get$ref() != null) {
-          String ref = requestBody.get$ref();
-          String definitionName = RefUtils.computeDefinitionName(ref);
-          requestBody = openApi.getComponents().getRequestBodies().get(definitionName);
-        }
         Content content = defaultIfNull(requestBody.getContent(), new Content());
         schema = content.values().stream() //
             .filter(mediaType -> "object".equalsIgnoreCase(mediaType.getSchema().getType())) //

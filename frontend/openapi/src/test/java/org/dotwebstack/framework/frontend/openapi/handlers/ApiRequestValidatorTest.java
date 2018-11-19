@@ -109,7 +109,7 @@ public class ApiRequestValidatorTest {
     ApiOperation apiOperation = OpenApiSpecUtils.extractApiOperations(openApi, "/endpoint",
         getPath).iterator().next();
 
-    when(requestParameterExtractorMock.extract(apiOperation, openApi, mockGet)).thenReturn(
+    when(requestParameterExtractorMock.extract(apiOperation, mockGet)).thenReturn(
         new RequestParameters());
 
     RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
@@ -117,7 +117,7 @@ public class ApiRequestValidatorTest {
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    requestValidator.validate(apiOperation, openApi, mockGet);
+    requestValidator.validate(apiOperation, mockGet);
   }
 
   @Test
@@ -133,7 +133,7 @@ public class ApiRequestValidatorTest {
         getPath).iterator().next();
     ContainerRequestContext mockGet = mockGet();
 
-    when(requestParameterExtractorMock.extract(apiOperation, openApi, mockGet)).thenReturn(
+    when(requestParameterExtractorMock.extract(apiOperation, mockGet)).thenReturn(
         new RequestParameters());
 
     RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
@@ -141,7 +141,7 @@ public class ApiRequestValidatorTest {
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    requestValidator.validate(apiOperation, openApi, mockGet);
+    requestValidator.validate(apiOperation, mockGet);
   }
 
   @Test
@@ -173,7 +173,7 @@ public class ApiRequestValidatorTest {
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    requestValidator.validate(apiOperation, openApi, mockGet);
+    requestValidator.validate(apiOperation, mockGet);
   }
 
   @Test
@@ -187,7 +187,7 @@ public class ApiRequestValidatorTest {
         postPath).iterator().next();
 
     RequestParameters requestParameters = new RequestParameters();
-    when(requestParameterExtractorMock.extract(apiOperation, openApi, mockPost)).thenReturn(
+    when(requestParameterExtractorMock.extract(apiOperation, mockPost)).thenReturn(
         requestParameters);
 
     RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
@@ -195,7 +195,7 @@ public class ApiRequestValidatorTest {
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    RequestParameters result = requestValidator.validate(apiOperation, openApi, mockPost);
+    RequestParameters result = requestValidator.validate(apiOperation, mockPost);
 
     // Assert
     assertThat(result, sameInstance(requestParameters));
@@ -218,7 +218,7 @@ public class ApiRequestValidatorTest {
     requestParameters.setRawBody("{ \"prop\": \"one\" }");
     requestParameters.put("prop", "\"one\"");
 
-    when(requestParameterExtractorMock.extract(apiOperation, openApi, mockPost)).thenReturn(
+    when(requestParameterExtractorMock.extract(apiOperation, mockPost)).thenReturn(
         requestParameters);
 
     RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
@@ -226,7 +226,7 @@ public class ApiRequestValidatorTest {
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    requestValidator.validate(apiOperation, openApi, mockPost);
+    requestValidator.validate(apiOperation, mockPost);
   }
 
   private OpenAPI createOpenApi(String spec) throws IOException {

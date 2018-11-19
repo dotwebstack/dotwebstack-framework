@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import java.util.Map;
 import javax.ws.rs.BadRequestException;
@@ -34,8 +33,6 @@ public final class TransactionRequestHandler
 
   private final TransactionRequestBodyMapper transactionRequestBodyMapper;
 
-  private final OpenAPI openApi;
-
   private final ApiRequestValidator apiRequestValidator;
 
   private final TransactionHandlerFactory transactionHandlerFactory;
@@ -43,14 +40,13 @@ public final class TransactionRequestHandler
   TransactionRequestHandler(@NonNull ApiOperation apiOperation, @NonNull Transaction transaction,
       @NonNull TransactionRequestParameterMapper requestParameterMapper,
       @NonNull TransactionRequestBodyMapper transactionRequestBodyMapper,
-      @NonNull ApiRequestValidator apiRequestValidator, @NonNull OpenAPI openApi,
+      @NonNull ApiRequestValidator apiRequestValidator,
       @NonNull TransactionHandlerFactory transactionHandlerFactory) {
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;
     this.transaction = transaction;
     this.requestParameterMapper = requestParameterMapper;
     this.transactionRequestBodyMapper = transactionRequestBodyMapper;
-    this.openApi = openApi;
     this.transactionHandlerFactory = transactionHandlerFactory;
   }
 
@@ -65,7 +61,7 @@ public final class TransactionRequestHandler
     context.setProperty(RequestHandlerProperties.OPERATION, operation);
 
     RequestParameters requestParameters =
-        apiRequestValidator.validate(apiOperation, openApi, context);
+        apiRequestValidator.validate(apiOperation, context);
 
     Map<String, String> parameterValues =
         requestParameterMapper.map(operation, transaction, requestParameters);

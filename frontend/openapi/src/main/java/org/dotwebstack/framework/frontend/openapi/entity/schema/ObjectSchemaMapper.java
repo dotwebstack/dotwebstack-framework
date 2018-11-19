@@ -65,7 +65,7 @@ public class ObjectSchemaMapper extends AbstractSubjectSchemaMapper<ObjectSchema
     ValueContext.ValueContextBuilder builder = valueContext.toBuilder();
 
     if (hasSubjectVendorExtension(property)) {
-      Value value = getSubject(property, required, graphEntity);
+      Value value = getSubject(graphEntity, required);
 
       if (value == null) {
         return null;

@@ -20,25 +20,27 @@ abstract class AbstractSubjectSchemaMapper<S extends Schema, T> extends Abstract
    * @throws SchemaMapperRuntimeException If the property is required, and no subject can be found.
    * @throws SchemaMapperRuntimeException If more than one subject has been found.
    */
-  protected static Value getSubject(@NonNull Schema schema, boolean required,
-      @NonNull GraphEntity graphEntity) {
+  protected static Value getSubject(@NonNull GraphEntity graphEntity, boolean required) {
     Set<Resource> subjects = graphEntity.getSubjects();
 
     if (subjects.isEmpty()) {
       if (required) {
-        throw new SchemaMapperRuntimeException(
-            "Expected a single subject, but subject query yielded no results.");
+        throwException(subjects.size());
       }
 
       return null;
     }
 
     if (subjects.size() > 1) {
-      throw new SchemaMapperRuntimeException(
-          "Expected a single subject, but subject query yielded multiple results.");
+      throwException(subjects.size());
     }
 
     return subjects.iterator().next();
+  }
+
+  private static void throwException(int size) {
+    String message = "Expected a single subject, but subject query yielded " + size + " results.";
+    throw new SchemaMapperRuntimeException(message);
   }
 
 }

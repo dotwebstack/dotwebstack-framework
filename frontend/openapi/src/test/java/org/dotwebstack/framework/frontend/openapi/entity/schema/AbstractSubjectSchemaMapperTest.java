@@ -71,7 +71,7 @@ public class AbstractSubjectSchemaMapperTest {
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
-    Value subject = abstractSubjectSchemaMapper.getSubject(schemaMock, false, graphEntityMock);
+    Value subject = abstractSubjectSchemaMapper.getSubject(graphEntityMock, false);
 
     // Assert
     assertThat(subject, is(nullValue()));
@@ -83,7 +83,7 @@ public class AbstractSubjectSchemaMapperTest {
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
 
     // Act
-    Value subject = abstractSubjectSchemaMapper.getSubject(schemaMock, false, graphEntityMock);
+    Value subject = abstractSubjectSchemaMapper.getSubject(graphEntityMock, false);
 
     // Assert
     assertThat(subject, equalTo(DBEERPEDIA.BROUWTOREN));
@@ -93,27 +93,27 @@ public class AbstractSubjectSchemaMapperTest {
   public void getSubject_ThrowsException_ForRequiredPropertyWithZeroSubjects() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage("Expected a single subject, but subject query yielded no results.");
+    thrown.expectMessage("Expected a single subject, but subject query yielded 0 results.");
 
     // Arrange
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of());
 
     // Act
-    abstractSubjectSchemaMapper.getSubject(schemaMock, true, graphEntityMock);
+    abstractSubjectSchemaMapper.getSubject(graphEntityMock, true);
   }
 
   @Test
   public void getSubject_ThrowsException_ForPropertyWithMultipleSubjects() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage("Expected a single subject, but subject query yielded multiple results.");
+    thrown.expectMessage("Expected a single subject, but subject query yielded 2 results.");
 
     // Arrange
     when(graphEntityMock.getSubjects()).thenReturn(
         ImmutableSet.of(DBEERPEDIA.BROUWTOREN, DBEERPEDIA.MAXIMUS));
 
     // Act
-    abstractSubjectSchemaMapper.getSubject(schemaMock, false, graphEntityMock);
+    abstractSubjectSchemaMapper.getSubject(graphEntityMock, false);
   }
 
   private static class TestSubjectSchemaMapper extends AbstractSubjectSchemaMapper {
