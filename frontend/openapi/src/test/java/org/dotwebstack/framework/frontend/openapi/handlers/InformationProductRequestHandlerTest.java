@@ -133,7 +133,7 @@ public class InformationProductRequestHandlerTest {
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
     Operation operation = new Operation() //
-        .extensions(ImmutableMap.of( //
+        .extensions(ImmutableMap.of(//
             OpenApiSpecificationExtensions.SUBJECT_QUERY, //
             "SELECT ?s WHERE { ?s ?p ?o }")) //
         .responses(new ApiResponses() //
