@@ -3,6 +3,8 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
+
+import freemarker.template.Template;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -14,6 +16,8 @@ import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
+
+import static javax.ws.rs.core.MediaType.TEXT_HTML_TYPE;
 
 public abstract class RequestHandler<T> implements Inflector<ContainerRequestContext, Response> {
 
@@ -39,6 +43,10 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
       @NonNull ContainerRequestContext containerRequestContext,
       @NonNull Map<String, String> parameterValues) {
 
+    boolean html = containerRequestContext.getAcceptableMediaTypes().contains(TEXT_HTML_TYPE);
+    if (html) {
+      return fillTemplate(representation);
+    }
     InformationProduct informationProduct = representation.getInformationProduct();
 
     endpointRequestParameterMapper.map(informationProduct, containerRequestContext).forEach(
@@ -58,6 +66,10 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
     throw new ConfigurationException(
         String.format("Result type %s not supported for information product %s",
             informationProduct.getResultType(), informationProduct.getIdentifier()));
+  }
+
+  private Response fillTemplate(Representation representation) {
+    Template htmlTemplate = representation.getHtmlTemplate();
   }
 
 }
