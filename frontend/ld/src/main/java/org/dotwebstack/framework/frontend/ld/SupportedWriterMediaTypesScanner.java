@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import com.google.common.collect.ImmutableList;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,6 +29,8 @@ public class SupportedWriterMediaTypesScanner {
   private List<MediaType> graphMediaTypes = new ArrayList<>();
 
   private List<MediaType> tupleMediaTypes = new ArrayList<>();
+
+  private List<MediaType> htmlMediaTypes = Collections.singletonList(new MediaType("text", "html"));
 
   private List<MessageBodyWriter<GraphEntity>> graphEntityWriters = new ArrayList<>();
 
@@ -85,6 +89,8 @@ public class SupportedWriterMediaTypesScanner {
         return graphMediaTypes.toArray(new MediaType[0]);
       case TUPLE:
         return tupleMediaTypes.toArray(new MediaType[0]);
+      case HTML:
+        return  htmlMediaTypes.toArray(new MediaType[0]);
       default:
         throw new IllegalArgumentException(
             String.format("ResultType %s has no supported media types", type));
