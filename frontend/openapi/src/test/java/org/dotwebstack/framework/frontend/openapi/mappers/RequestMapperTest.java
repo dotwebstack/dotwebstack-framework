@@ -1,27 +1,24 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
+import com.google.common.base.Splitter;
 import io.swagger.v3.parser.OpenAPIV3Parser;
-import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -37,6 +34,7 @@ import org.dotwebstack.framework.transaction.Transaction;
 import org.dotwebstack.framework.transaction.TransactionResourceProvider;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,107 +49,85 @@ import org.springframework.core.env.Environment;
 @ExtendWith(MockitoExtension.class)
 class RequestMapperTest {
 
+  private static final String API_RESOURCE_PATH =
+      "src/test/resources/org/dotwebstack/framework/frontend/openapi/mappers/";
+
   @Captor
   private ArgumentCaptor<Resource> resourceCaptor;
 
   @Mock
   private HttpConfiguration httpConfigurationMock;
 
-  @Mock
-  private TransactionRequestHandler transactionRequestHandlerMock;
-
-  @Mock
-  private InformationProductRequestHandler informationProductRequestHandlerMock;
-
   private OpenApiRequestMapper openApiRequestMapper;
 
-  private ApplicationProperties applicationProperties;
-
-  private SwaggerParseResult result = new SwaggerParseResult();
+  private final ApplicationProperties applicationProperties = new ApplicationProperties();
 
   @BeforeEach
-  void setUp() {
-    applicationProperties = new ApplicationProperties();
-    applicationProperties
-        .setOpenApiResourcePath(
-            "src/test/resources/org/dotwebstack/framework/frontend/openapi/mappers/");
-
+  void beforeEach() {
     RequestHandlerFactory requestHandlerFactoryMock = mock(RequestHandlerFactory.class);
     when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any())) //
-        .thenReturn(transactionRequestHandlerMock);
+        .thenReturn(mock(TransactionRequestHandler.class));
 
     when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any(), any())) //
-        .thenReturn(informationProductRequestHandlerMock);
+        .thenReturn(mock(InformationProductRequestHandler.class));
 
-    TransactionResourceProvider transactionResourceProviderMock =
-        mock(TransactionResourceProvider.class);
-    when(transactionResourceProviderMock.get(DBEERPEDIA.BREWERIES)) //
-        .thenReturn(mock(Transaction.class));
+    TransactionResourceProvider tResourceProviderMock = mock(TransactionResourceProvider.class);
+    when(tResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(mock(Transaction.class));
 
-    InformationProductResourceProvider informationProductResourceProviderMock =
+    InformationProductResourceProvider ipResourceProviderMock =
         mock(InformationProductResourceProvider.class);
-    when(informationProductResourceProviderMock.get(any())) //
-        .thenReturn(mock(InformationProduct.class));
+    when(ipResourceProviderMock.get(any())).thenReturn(mock(InformationProduct.class));
 
-    OpenAPIV3Parser openApiParserMock = mock(OpenAPIV3Parser.class);
-    when(openApiParserMock.readLocation(anyString(), anyList(), any())).thenReturn(result);
     openApiRequestMapper =
         new OpenApiRequestMapper(new OpenAPIV3Parser(), applicationProperties, Arrays.asList(
-            new InformationProductRequestMapper(informationProductResourceProviderMock,
-                requestHandlerFactoryMock),
-            new TransactionRequestMapper(transactionResourceProviderMock,
-                requestHandlerFactoryMock)),
+            new InformationProductRequestMapper(ipResourceProviderMock, requestHandlerFactoryMock),
+            new TransactionRequestMapper(tResourceProviderMock, requestHandlerFactoryMock)),
             mock(Environment.class));
-
-    // openApiRequestMapper.setResourceLoader(resourceLoader);
   }
 
   @ParameterizedTest(name = "spec: [{0}] expected methods: [{1}]")
   @DisplayName("Map endpoints correctly with valid data")
   @CsvSource({
-      "Post.yml, POST OPTIONS",
-      "Put.yml, PUT OPTIONS",
-      "Get.yml, GET OPTIONS",
-      "Put&Post.yml, PUT POST OPTIONS",
-      "Get&Put&Post.yml,GET PUT POST OPTIONS",
-      "BodyParameter.yml, GET OPTIONS",
-      "BodyParameterRef.yml, POST OPTIONS",
-      "BodyParameterExternalRef.yml, POST OPTIONS",
+      "Post.oas3.yml, POST OPTIONS",
+      "Put.oas3.yml, PUT OPTIONS",
+      "Get.oas3.yml, GET OPTIONS",
+      "Put&Post.oas3.yml, PUT POST OPTIONS",
+      "Get&Put&Post.oas3.yml,GET PUT POST OPTIONS",
+      "BodyParameter.oas3.yml, GET OPTIONS",
+      "BodyParameterRef.oas3.yml, POST OPTIONS",
+      "BodyParameterExternalRef.oas3.yml, POST OPTIONS",
   })
-  void map_EndpointsCorrectly_WithValidData(String openApi, String methods)
+  void map_EndpointsCorrectly_WithValidData(String openApi, String methodsString)
       throws IOException {
     // Arrange
-    applicationProperties
-        .setOpenApiResourcePath(applicationProperties.getOpenApiResourcePath() + openApi);
+    applicationProperties.setOpenApiResourcePath(API_RESOURCE_PATH + openApi);
 
     // Act
     openApiRequestMapper.map(httpConfigurationMock);
 
     // Assert
     List<Resource> apiResources = verifyAndGetRegisteredResources();
-    List<String> methodes = Arrays.asList(methods.split(" "));
+    List<String> methods = Splitter.on(" ").splitToList(methodsString);
 
-    verifyResourcesForEndpointBreweries(apiResources, methodes.size());
+    verifyResourcesForEndpointBreweries(apiResources, methods.size());
 
-    verifyMethods(apiResources, methodes);
+    verifyMethods(apiResources, methods);
 
     verifySpec(apiResources);
-
   }
 
   @ParameterizedTest(name = "{1}")
   @DisplayName("Throw exception for invalid spec")
   @CsvSource({
-      "No200-TRANS.yml, does not specify a 200 response",
-      "No200-IP.yml, does not specify a 200 response",
-      "NoResponses.yml, does not specify a 200 response",
-      "NoObjectInRequestBody.yml, No object property in body parameter.",
-      "NoServer.yml, Expecting at least one server definition."
+      "No200-TRANS.oas3.yml, does not specify a 200 response",
+      "No200-IP.oas3.yml, does not specify a 200 response",
+      "NoResponses.oas3.yml, does not specify a 200 response",
+      "NoObjectInRequestBody.oas3.yml, No object property in body parameter.",
+      "NoServer.oas3.yml, Expecting at least one server definition."
   })
   void map_ThrowsException_EndpointMissing(String openApi, String message) {
     // Arrange
-    applicationProperties
-        .setOpenApiResourcePath(applicationProperties.getOpenApiResourcePath() + openApi);
+    applicationProperties.setOpenApiResourcePath(API_RESOURCE_PATH + openApi);
 
     // Act
     Executable action = () -> openApiRequestMapper.map(httpConfigurationMock);
@@ -195,8 +171,8 @@ class RequestMapperTest {
   }
 
   private void assertOptions(List<Resource> apiResources) {
-    ResourceMethod resourceMethod = getResourceMethod(apiResources, HttpMethod.OPTIONS);
-    Class<?> resourceMethodHandler = resourceMethod.getInvocable().getHandler().getHandlerClass();
+    ResourceMethod optionsMethod = getResourceMethod(apiResources, HttpMethod.OPTIONS);
+    Class<?> resourceMethodHandler = optionsMethod.getInvocable().getHandler().getHandlerClass();
     assertThat(resourceMethodHandler, equalTo(OptionsRequestHandler.class));
   }
 
@@ -211,10 +187,9 @@ class RequestMapperTest {
   private void assertMethod(List<Resource> apiResources, String method) {
     ResourceMethod resourceMethod = getResourceMethod(apiResources, method);
     assertThat(resourceMethod.getConsumedTypes(), hasSize(1));
-    assertThat(resourceMethod.getConsumedTypes(),
-        contains(new javax.ws.rs.core.MediaType("application", "json")));
-    assertThat(resourceMethod.getInvocable().getHandler().getInstance(null),
-        sameInstance(transactionRequestHandlerMock));
+    assertThat(resourceMethod.getConsumedTypes(), hasItem(new MediaType("application", "json")));
+    assertThat(resourceMethod.getInvocable().getHandler().getHandlerClass(),
+        equalTo(TransactionRequestHandler.class));
   }
 
   private void verifySpec(List<Resource> apiResources) {
@@ -225,11 +200,10 @@ class RequestMapperTest {
 
   private ResourceMethod getResourceMethod(List<Resource> apiResources, String httpMethod) {
     Optional<ResourceMethod> optionalMethod =
-        apiResources.get(0).getResourceMethods().stream().filter(
-            resourceMethod -> resourceMethod.getHttpMethod().equals(httpMethod)).findFirst();
-    assertThat(optionalMethod.isPresent(), is(true));
-    assert optionalMethod.isPresent();
-    return optionalMethod.get();
+        apiResources.get(0).getResourceMethods().stream() //
+            .filter(resourceMethod -> resourceMethod.getHttpMethod().equals(httpMethod)) //
+            .findFirst();
+    return optionalMethod.orElseGet(Assertions::fail);
   }
 
 
