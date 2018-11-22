@@ -1,19 +1,17 @@
 package org.dotwebstack.framework.frontend.ld.handlers;
 
-import com.github.jsonldjava.utils.Obj;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
-//import java.io.*;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
@@ -23,11 +21,8 @@ import org.dotwebstack.framework.frontend.ld.representation.RepresentationResour
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.query.impl.BackgroundGraphResult;
-import org.eclipse.rdf4j.query.resultio.helpers.BackgroundTupleResult;
 import org.glassfish.jersey.process.Inflector;
 
-@Slf4j
 public abstract class RequestHandler<T> implements Inflector<ContainerRequestContext, Response> {
 
   protected final T endpoint;
@@ -60,14 +55,16 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
 
     Object result = informationProduct.getResult(parameterValues);
 
+    List<String> acceptHeaders = containerRequestContext.getHeaders().get("accept");
+
+    if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
+      return fillTemplate(representation);
+    }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
       return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
     }
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
       return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
-    }
-    if (ResultType.HTML.equals(informationProduct.getResultType())) {
-      return fillTemplate(result, representation);
     }
 
     throw new ConfigurationException(
@@ -75,16 +72,13 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
             informationProduct.getResultType(), informationProduct.getIdentifier()));
   }
 
-  private Response fillTemplate(Object result, Representation representation) {
+  private Response fillTemplate(Representation representation) {
     Template htmlTemplate = representation.getHtmlTemplate();
 
     if (htmlTemplate != null) {
       Map<String, Object> freeMarkerDataModel = new HashMap<>();
       freeMarkerDataModel.put("result", representation.getIdentifier());
       try {
-        // File file = new File("test.html");
-        //        file.createNewFile();
-        //        Writer out = new OutputStreamWriter(new FileOutputStream(file, false));
         StringWriter stringWriter = new StringWriter();
         htmlTemplate.process(freeMarkerDataModel, stringWriter);
         String testString = stringWriter.getBuffer().toString();
@@ -96,7 +90,6 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
       } catch (TemplateException e) {
         System.out.print("faal2");
       }
-      return Response.ok(htmlTemplate).build();
     }
     return Response.status(406).build();
   }

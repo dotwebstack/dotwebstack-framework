@@ -157,7 +157,6 @@ public final class ELMO {
 
   private static final String NAMESPACE_EXTENSION_RESULTTYPE = NAMESPACE_BASE + "/resulttype/";
 
-
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 

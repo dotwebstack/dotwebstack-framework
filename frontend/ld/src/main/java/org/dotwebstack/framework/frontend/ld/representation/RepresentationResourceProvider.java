@@ -90,6 +90,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
       try {
         return new Template(identifier.stringValue(), new StringReader(objectString.get()));
       } catch (IOException e) {
+        log.warn("HTML template not defined.");
         e.printStackTrace();
       }
     }

@@ -30,8 +30,6 @@ public class SupportedWriterMediaTypesScanner {
 
   private List<MediaType> tupleMediaTypes = new ArrayList<>();
 
-  private List<MediaType> htmlMediaTypes = Collections.singletonList(new MediaType("text", "html"));
-
   private List<MessageBodyWriter<GraphEntity>> graphEntityWriters = new ArrayList<>();
 
   private List<MessageBodyWriter<TupleEntity>> tupleEntityWriters = new ArrayList<>();
@@ -89,8 +87,6 @@ public class SupportedWriterMediaTypesScanner {
         return graphMediaTypes.toArray(new MediaType[0]);
       case TUPLE:
         return tupleMediaTypes.toArray(new MediaType[0]);
-      case HTML:
-        return  htmlMediaTypes.toArray(new MediaType[0]);
       default:
         throw new IllegalArgumentException(
             String.format("ResultType %s has no supported media types", type));
