@@ -1,5 +1,10 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
+import freemarker.template.Template;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Optional;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.AbstractResourceProvider;
@@ -75,7 +80,20 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     getObjectResource(model, identifier, ELMO.STAGE_PROP).ifPresent(
         iri -> builder.stage(stageResourceProvider.get(iri)));
 
+    builder.htmlTemplate(getHtmlTemplate(model, identifier));
     return builder.build();
+  }
+
+  private Template getHtmlTemplate(Model model, Resource identifier) {
+    Optional<String> objectString = getObjectString(model, identifier, ELMO.HTML_TEMPLATE);
+    if (objectString.isPresent()) {
+      try {
+        return new Template(identifier.stringValue(), new StringReader(objectString.get()));
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    return null;
   }
 
   @Override

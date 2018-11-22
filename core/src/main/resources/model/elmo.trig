@@ -463,12 +463,12 @@ elmo:name a owl:DatatypeProperty;
   rdfs:range xsd:string;
 .
 # Temporary disabled, not needed yet (part of the React UI prototype)
-#elmo:pageTemplate a owl:DatatypeProperty;
-#  rdfs:label "page template"@en;
-#  rdfs:comment "Specifies an optional template for the main page. This template replaces a default generated template from the configuration";
-#  rdfs:domain elmo:Representation;
-#  rdfs:range xsd:string;
-#.
+elmo:htmlTemplate a owl:DatatypeProperty;
+  rdfs:label "page template"@en;
+  rdfs:comment "Specifies an optional template for the main page. This template replaces a default generated template from the configuration";
+  rdfs:domain elmo:Representation;
+  rdfs:range xsd:string;
+.
 elmo:pathPattern a owl:DatatypeProperty;
   rdfs:label "URL pattern"@en;
   rdfs:comment "Specifies the URL pattern for which this endpoint should be used. The path pattern is matched to the part of the http request after removing the domain name of the site and the base path of the stage."@en;

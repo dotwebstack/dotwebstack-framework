@@ -75,6 +75,8 @@ public final class ELMO {
 
   public static final IRI REDIRECT_TEMPLATE;
 
+  public static final IRI HTML_TEMPLATE;
+
   public static final IRI APPEARANCE;
 
   public static final IRI RESOURCE_APPEARANCE;
@@ -155,6 +157,7 @@ public final class ELMO {
 
   private static final String NAMESPACE_EXTENSION_RESULTTYPE = NAMESPACE_BASE + "/resulttype/";
 
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
 
@@ -231,6 +234,7 @@ public final class ELMO {
         valueFactory.createIRI(ELMO.NAMESPACE_BASE, "/persistence-strategy/Unknown");
 
     REDIRECT_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "redirectTemplate");
+    HTML_TEMPLATE = valueFactory.createIRI(ELMO.NAMESPACE, "htmlTemplate");
 
     SERVICE = valueFactory.createIRI(ELMO.NAMESPACE, "Service");
 

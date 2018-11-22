@@ -3,7 +3,6 @@ package org.dotwebstack.framework.frontend.ld.representation;
 import freemarker.template.Template;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import lombok.Getter;
