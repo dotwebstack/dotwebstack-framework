@@ -3,6 +3,7 @@ package org.dotwebstack.framework.frontend.openapi.mappers;
 import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import java.util.HashSet;
 import java.util.Set;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
@@ -37,11 +38,13 @@ public class TransactionRequestMapper extends AbstractRequestMapper<Transaction>
     Operation operation = apiOperation.getOperation();
     validate200Response(operation, absolutePath);
 
-    Set<String> consumes =
-        operation.getRequestBody() != null ? operation.getRequestBody().getContent().keySet()
-            : null;
+    Set<String> consumes = new HashSet<>();
+    if (operation.getRequestBody() != null //
+        && operation.getRequestBody().getContent() != null) {
+      consumes = operation.getRequestBody().getContent().keySet();
+    }
 
-    if (consumes == null) {
+    if (consumes.isEmpty()) {
       throw new ConfigurationException(
           String.format("Path '%s' should consume at least one media type.", absolutePath));
     }

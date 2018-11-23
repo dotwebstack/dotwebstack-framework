@@ -69,14 +69,16 @@ public class OpenApiRequestMapper {
     SpecEnvironmentResolver resolver = new SpecEnvironmentResolver(environment);
     String openApiPath = applicationProperties.getOpenApiResourcePath();
     LOG.info("Looking for OA3 specs in: {}", openApiPath);
-    if (openApiPath == null) {
-      LOG.warn("Undefined OpenAPI directory");
-      return;
-    }
 
-    List<Path> openApiFiles = Files.find(Paths.get(openApiPath), 2,
-        (path, bfa) -> path.getFileName().toString().endsWith(".oas3.yml")) //
-        .collect(Collectors.toList());
+    List<Path> openApiFiles;
+
+    try {
+      openApiFiles = Files.find(Paths.get(openApiPath), 2,
+          (path, bfa) -> path.getFileName().toString().endsWith(".oas3.yml")) //
+          .collect(Collectors.toList());
+    } catch (IOException ioe) {
+      throw new ConfigurationException("No compatible OAS3 files found", ioe);
+    }
 
     for (Path path : openApiFiles) {
       @Cleanup

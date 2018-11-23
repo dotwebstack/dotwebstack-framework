@@ -4,6 +4,7 @@ import com.atlassian.oai.validator.model.ApiOperation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import java.util.HashSet;
 import java.util.Set;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
@@ -35,17 +36,19 @@ public class InformationProductRequestMapper extends AbstractRequestMapper<Infor
 
   @Override
   public void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
-                  String absolutePath) {
+      String absolutePath) {
     Operation operation = apiOperation.getOperation();
     validate200Response(operation, absolutePath);
 
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());
-    Set<String> produces =
-        operation.getResponses() != null
-            ? operation.getResponses().get(okStatusCode).getContent().keySet()
-            : null;
+    Set<String> produces = new HashSet<>();
+    if (operation.getResponses() != null //
+        && operation.getResponses().get(okStatusCode) != null //
+        && operation.getResponses().get(okStatusCode).getContent() != null) {
+      produces = operation.getResponses().get(okStatusCode).getContent().keySet();
+    }
 
-    if (produces == null) {
+    if (produces.isEmpty()) {
       throw new ConfigurationException(
           String.format("Path '%s' should produce at least one media type.", absolutePath));
     }

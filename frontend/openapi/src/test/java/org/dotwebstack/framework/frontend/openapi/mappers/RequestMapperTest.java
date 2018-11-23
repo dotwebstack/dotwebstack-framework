@@ -71,17 +71,18 @@ class RequestMapperTest {
     when(requestHandlerFactoryMock.newRequestHandler(any(), any(), any(), any())) //
         .thenReturn(mock(InformationProductRequestHandler.class));
 
-    TransactionResourceProvider tResourceProviderMock = mock(TransactionResourceProvider.class);
-    when(tResourceProviderMock.get(DBEERPEDIA.BREWERIES)).thenReturn(mock(Transaction.class));
+    TransactionResourceProvider transactionRpMock = mock(TransactionResourceProvider.class);
+    when(transactionRpMock.get(DBEERPEDIA.BREWERIES)).thenReturn(mock(Transaction.class));
 
-    InformationProductResourceProvider ipResourceProviderMock =
+    InformationProductResourceProvider informationProductRpMock =
         mock(InformationProductResourceProvider.class);
-    when(ipResourceProviderMock.get(any())).thenReturn(mock(InformationProduct.class));
+    when(informationProductRpMock.get(any())).thenReturn(mock(InformationProduct.class));
 
     openApiRequestMapper =
         new OpenApiRequestMapper(new OpenAPIV3Parser(), applicationProperties, Arrays.asList(
-            new InformationProductRequestMapper(ipResourceProviderMock, requestHandlerFactoryMock),
-            new TransactionRequestMapper(tResourceProviderMock, requestHandlerFactoryMock)),
+            new InformationProductRequestMapper(informationProductRpMock,
+                requestHandlerFactoryMock),
+            new TransactionRequestMapper(transactionRpMock, requestHandlerFactoryMock)),
             mock(Environment.class));
   }
 
@@ -123,7 +124,9 @@ class RequestMapperTest {
       "No200-IP.oas3.yml, does not specify a 200 response",
       "NoResponses.oas3.yml, does not specify a 200 response",
       "NoObjectInRequestBody.oas3.yml, No object property in body parameter.",
-      "NoServer.oas3.yml, Expecting at least one server definition."
+      "NoServer.oas3.yml, Expecting at least one server definition.",
+      "NonExistingFile.oas3.yml, No compatible OAS3 files found",
+      "NoMediatype.oas3.yml, should produce at least one media type"
   })
   void map_ThrowsException_EndpointMissing(String openApi, String message) {
     // Arrange
