@@ -1263,6 +1263,11 @@ elmo-shape:Fragment a sh:NodeShape;
     sh:datatype xsd:string;
   ];
   sh:property [
+    sh:name "xhtml:meta";
+    sh:path xhtml:meta;
+    sh:maxCount 1;
+  ];
+  sh:property [
     sh:name "elmo:valueDatatype";
     sh:path elmo:valueDatatype;
     sh:maxCount 1;
