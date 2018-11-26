@@ -4,7 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.endpoint.DirectEndpoint;
@@ -25,13 +28,20 @@ public class DirectEndpointRequestHandler extends RequestHandler<DirectEndpoint>
 
   @Override
   public Response apply(ContainerRequestContext containerRequestContext) {
-    String path = containerRequestContext.getUriInfo().getPath();
-
+    UriInfo uriInfo = containerRequestContext.getUriInfo();
+    String path = "";
     Map<String, String> parameterValues = new HashMap<>();
-    containerRequestContext.getUriInfo().getPathParameters().forEach(
-        (key, value) -> parameterValues.put(key, value.get(0)));
+    if (uriInfo != null) {
+      path = uriInfo.getPath();
 
-    final String request = containerRequestContext.getRequest().getMethod();
+      final MultivaluedMap<String, String> pathParameters = uriInfo.getPathParameters();
+      pathParameters.forEach(
+          (key, value) -> parameterValues.put(key, value.get(0)));
+    }
+
+    Request contextRequest = containerRequestContext.getRequest();
+    final String request = contextRequest != null
+        ? contextRequest.getMethod() : "No request method";
 
     final Representation representation;
     switch (request) {

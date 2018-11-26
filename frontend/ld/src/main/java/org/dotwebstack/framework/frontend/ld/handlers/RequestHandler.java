@@ -5,19 +5,23 @@ import freemarker.template.TemplateException;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.ld.entity.HtmlEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
+import org.dotwebstack.framework.frontend.ld.result.HtmlResult;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -55,10 +59,12 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
 
     Object result = informationProduct.getResult(parameterValues);
 
-    List<String> acceptHeaders = containerRequestContext.getHeaders().get("accept");
+    MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
+    List<String> acceptHeaders = headers.get("accept") != null
+        ? headers.get("accept") : Collections.emptyList();
 
     if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
-      return fillTemplate(representation);
+      return Response.ok(new HtmlEntity((HtmlResult) result, representation)).build();
     }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
       return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
@@ -70,28 +76,6 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
     throw new ConfigurationException(
         String.format("Result type %s not supported for information product %s",
             informationProduct.getResultType(), informationProduct.getIdentifier()));
-  }
-
-  private Response fillTemplate(Representation representation) {
-    Template htmlTemplate = representation.getHtmlTemplate();
-
-    if (htmlTemplate != null) {
-      Map<String, Object> freeMarkerDataModel = new HashMap<>();
-      freeMarkerDataModel.put("result", representation.getIdentifier());
-      try {
-        StringWriter stringWriter = new StringWriter();
-        htmlTemplate.process(freeMarkerDataModel, stringWriter);
-        String testString = stringWriter.getBuffer().toString();
-        System.out.print(testString);
-        //        out.close();
-        return Response.ok(testString).build();
-      } catch (IOException e) {
-        System.out.print("faal");
-      } catch (TemplateException e) {
-        System.out.print("faal2");
-      }
-    }
-    return Response.status(406).build();
   }
 
 }
