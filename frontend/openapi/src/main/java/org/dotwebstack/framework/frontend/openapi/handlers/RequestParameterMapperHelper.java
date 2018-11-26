@@ -27,16 +27,12 @@ public class RequestParameterMapperHelper {
       Collection<org.dotwebstack.framework.param.Parameter> parameters) {
     Map<String, String> result = new HashMap<>();
     if (requestBody != null) {
-      result.putAll(
-          this.getBodyParameters(parameters, requestParameters, requestBody));
+      result.putAll(getBodyParameters(parameters, requestParameters, requestBody));
     }
 
-    List<io.swagger.v3.oas.models.parameters.Parameter> operationParameters =
-        operation.getParameters();
-    if (operationParameters != null) {
-      operationParameters.stream() //
-          .map(openApiParameter -> //
-          this.getOtherParameters(parameters, requestParameters, openApiParameter)) //
+    if (operation.getParameters() != null) {
+      operation.getParameters().stream() //
+          .map(parameter -> getOtherParameters(parameters, requestParameters, parameter)) //
           .forEach(result::putAll); //
     }
     return result;

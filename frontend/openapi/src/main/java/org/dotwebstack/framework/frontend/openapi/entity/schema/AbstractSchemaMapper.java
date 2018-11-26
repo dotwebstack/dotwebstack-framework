@@ -140,8 +140,8 @@ public abstract class AbstractSchemaMapper<S extends Schema, T> implements Schem
    *         are encountered.
    */
   private void validateVendorExtensions(Schema schema, Set<String> supportedExtensions) {
-    if (schema.getExtensions().keySet().stream().filter(
-        supportedExtensions::contains).count() != 1) {
+    if (schema.getExtensions().keySet().stream().filter(supportedExtensions::contains)//
+        .count() != 1) {
 
       String message = schema.getClass().getSimpleName() + " object must have one of: "
           + supportedExtensions.toString().replaceAll("[\\[\\]]", "'").replaceAll(", ", "', '")

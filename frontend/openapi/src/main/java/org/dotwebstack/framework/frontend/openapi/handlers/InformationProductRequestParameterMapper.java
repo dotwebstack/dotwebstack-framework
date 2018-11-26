@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
@@ -18,12 +17,8 @@ class InformationProductRequestParameterMapper {
 
   Map<String, String> map(@NonNull Operation operation, @NonNull InformationProduct product,
       @NonNull RequestParameters requestParameters) {
-
-    RequestBody requestBody = operation.getRequestBody();
-    Map<String, String> result =
-        helper.mapParametersToRequest(operation, requestParameters, requestBody,
-            product.getParameters());
-    return result;
+    return helper.mapParametersToRequest(operation, requestParameters, operation.getRequestBody(),
+        product.getParameters());
   }
 
 

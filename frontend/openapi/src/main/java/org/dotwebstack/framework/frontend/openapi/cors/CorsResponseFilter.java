@@ -1,12 +1,10 @@
 package org.dotwebstack.framework.frontend.openapi.cors;
 
-import com.google.common.base.Joiner;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +20,7 @@ public class CorsResponseFilter implements ContainerResponseFilter {
 
   @Override
   public void filter(@NonNull ContainerRequestContext requestContext,
-      @NonNull ContainerResponseContext responseContext) throws IOException {
+      @NonNull ContainerResponseContext responseContext) {
 
     if (javax.ws.rs.HttpMethod.OPTIONS.equals(requestContext.getMethod())) {
       handlePreflightRequest(requestContext, responseContext);
@@ -56,8 +54,11 @@ public class CorsResponseFilter implements ContainerResponseFilter {
     if (operation != null) {
       List<Parameter> requestParameters = operation.getParameters();
 
-      allowedHeaders = requestParameters.stream().filter(p -> "header".equals(p.getIn())).map(
-          Parameter::getName).map(String::toLowerCase).collect(Collectors.toSet());
+      allowedHeaders = requestParameters.stream() //
+          .filter(p -> "header".equals(p.getIn())) //
+          .map(Parameter::getName) //
+          .map(String::toLowerCase) //
+          .collect(Collectors.toSet());
     }
 
     // Add CORS headers
@@ -69,7 +70,7 @@ public class CorsResponseFilter implements ContainerResponseFilter {
 
     if (!allowedHeaders.isEmpty()) {
       responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS,
-          Joiner.on(", ").join(allowedHeaders));
+          String.join(", ", allowedHeaders));
     }
   }
 
@@ -91,9 +92,11 @@ public class CorsResponseFilter implements ContainerResponseFilter {
 
     if (responseHeaders != null && responseHeaders.size() > 0) {
       Set<String> exposedHeaders =
-          responseHeaders.keySet().stream().map(String::toLowerCase).collect(Collectors.toSet());
+          responseHeaders.keySet().stream() //
+              .map(String::toLowerCase) //
+              .collect(Collectors.toSet());
       responseContext.getHeaders().add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,
-          Joiner.on(", ").join(exposedHeaders));
+          String.join(", ", exposedHeaders));
     }
   }
 
