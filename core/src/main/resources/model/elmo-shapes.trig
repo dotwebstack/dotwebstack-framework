@@ -1257,6 +1257,12 @@ elmo-shape:Fragment a sh:NodeShape;
     sh:nodeKind sh:IRI;
   ];
   sh:property [
+    sh:name "xhtml:icon";
+    sh:path xhtml:icon;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ];
+  sh:property [
     sh:name "elmo:valueDatatype";
     sh:path elmo:valueDatatype;
     sh:maxCount 1;

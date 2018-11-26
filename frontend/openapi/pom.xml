@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-frontend</artifactId>
-    <version>0.0.46-SNAPSHOT</version>
+    <version>0.0.48-SNAPSHOT</version>
   </parent>
 
   <artifactId>dotwebstack-frontend-openapi</artifactId>
@@ -124,11 +124,22 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.marmotta</groupId>
+      <artifactId>ldpath-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.marmotta</groupId>
+      <artifactId>ldpath-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>com.taxonic.carml</groupId>
+      <artifactId>carml-engine</artifactId>
+    </dependency>
   </dependencies>
 
 </project>
