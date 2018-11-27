@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 @EntityWriter(resultType = ResultType.TUPLE)
 @Produces(MediaTypes.SPARQL_RESULTS_JSON)
-public final class SparqlResultsJsonTupleEntityWriter
+public class SparqlResultsJsonTupleEntityWriter
     extends AbstractSparqlResultsTupleEntityWriter {
 
   SparqlResultsJsonTupleEntityWriter() {

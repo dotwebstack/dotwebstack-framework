@@ -2,7 +2,6 @@ package org.dotwebstack.framework.frontend.ld.handlers;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
@@ -13,15 +12,15 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import javax.xml.ws.http.HTTPException;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
-import org.dotwebstack.framework.frontend.ld.entity.HtmlEntity;
+import org.dotwebstack.framework.frontend.ld.entity.HtmlGraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
-import org.dotwebstack.framework.frontend.ld.result.HtmlResult;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -63,19 +62,45 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
     List<String> acceptHeaders = headers.get("accept") != null
         ? headers.get("accept") : Collections.emptyList();
 
-    if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
-      return Response.ok(new HtmlEntity((HtmlResult) result, representation)).build();
-    }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
+      if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
+        return fillTemplate(representation);
+      }
       return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
     }
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
+      if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
+        return fillTemplate(representation);
+        // return Response.ok(new HtmlGraphEntity((TupleQueryResult)
+        // result, representation)).build();
+      }
       return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
     }
 
     throw new ConfigurationException(
         String.format("Result type %s not supported for information product %s",
             informationProduct.getResultType(), informationProduct.getIdentifier()));
+  }
+
+  private Response fillTemplate(Representation representation) {
+    Template htmlTemplate = representation.getHtmlTemplate();
+
+    if (htmlTemplate != null) {
+      Map<String, Object> freeMarkerDataModel = new HashMap<>();
+      freeMarkerDataModel.put("result", representation.getIdentifier());
+      try {
+        StringWriter stringWriter = new StringWriter();
+        htmlTemplate.process(freeMarkerDataModel, stringWriter);
+        StringBuffer buffer = stringWriter.getBuffer();
+        String htmlString = buffer != null ? buffer.toString() : "UNKNOWN";
+        return Response.ok(htmlString).build();
+      } catch (IOException e) {
+        System.out.print("faal");
+      } catch (TemplateException e) {
+        System.out.print("faal2");
+      }
+    }
+    throw new HTTPException(406);
   }
 
 }

@@ -9,7 +9,10 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -40,6 +43,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -70,14 +74,18 @@ public class RepresentationRequestHandlerTest {
 
   private RequestHandler<DirectEndpoint> getRequestHandler;
 
+  @Mock
+  private MultivaluedMap<String, String> headerMap;
+
   @Before
   public void setUp() {
     endpointRequestParameterMapper = new EndpointRequestParameterMapper();
     getRequestHandler = new DirectEndpointRequestHandler(endPoint, endpointRequestParameterMapper,
-        representationResourceProvider);
+            representationResourceProvider);
     when(endPoint.getGetRepresentation()).thenReturn(representation);
     when(endPoint.getPostRepresentation()).thenReturn(representation);
     when(representation.getInformationProduct()).thenReturn(informationProduct);
+    when(containerRequestContext.getHeaders()).thenReturn(headerMap);
   }
 
   @Test
@@ -87,13 +95,7 @@ public class RepresentationRequestHandlerTest {
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
     when(informationProduct.getResultType()).thenReturn(ResultType.GRAPH);
 
-    UriInfo uriInfo = mock(UriInfo.class);
-    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
-    when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
-    when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
+    init(HttpMethod.GET);
 
     // Act
     Response response = getRequestHandler.apply(containerRequestContext);
@@ -113,13 +115,7 @@ public class RepresentationRequestHandlerTest {
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
-    UriInfo uriInfo = mock(UriInfo.class);
-    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
-    when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
-    when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
+    init(HttpMethod.GET);
 
     // Act
     Response response = getRequestHandler.apply(containerRequestContext);
@@ -179,13 +175,7 @@ public class RepresentationRequestHandlerTest {
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
     when(informationProduct.getResultType()).thenReturn(ResultType.TUPLE);
 
-    UriInfo uriInfo = mock(UriInfo.class);
-    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
-    when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
-    when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.POST);
+    init(HttpMethod.POST);
 
     // Act
     Response response = getRequestHandler.apply(containerRequestContext);
@@ -205,13 +195,7 @@ public class RepresentationRequestHandlerTest {
     thrown.expectMessage(String.format("Result type %s not supported for endpoint %s",
         HttpMethod.PUT, DBEERPEDIA.DOC_ENDPOINT));
 
-    UriInfo uriInfo = mock(UriInfo.class);
-    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
-    when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
-    when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.PUT);
+    init(HttpMethod.PUT);
     when(endPoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
 
     // Act
@@ -220,15 +204,12 @@ public class RepresentationRequestHandlerTest {
 
   @Test
   public void apply_ConfigurationException_WhenUnsupportedRequestDynamicEndpoint() {
-    // Arrange
+    // Assert
     thrown.expect(ConfigurationException.class);
     thrown.expectMessage(String.format("Result type %s not supported for endpoint %s",
         HttpMethod.PUT, DBEERPEDIA.DOC_ENDPOINT));
 
-    UriInfo uriInfo = mock(UriInfo.class);
-    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
-    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
-    when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.PUT);
+    init(HttpMethod.PUT);
     DynamicEndpoint dynamicEndpoint = mock(DynamicEndpoint.class);
     when(dynamicEndpoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
     RequestHandler<DynamicEndpoint> requestHandler = new DynamicEndpointRequestHandler(
@@ -244,19 +225,23 @@ public class RepresentationRequestHandlerTest {
     Object queryResult = new Object();
     when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
 
-    UriInfo uriInfo = mock(UriInfo.class);
-    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
-    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
-    when(uriInfo.getPath()).thenReturn("/");
-    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
-    when(containerRequestContext.getRequest().getMethod()).thenReturn(HttpMethod.GET);
+    init(HttpMethod.GET);
 
     // Assert
     thrown.expect(ConfigurationException.class);
 
     // Act
     getRequestHandler.apply(containerRequestContext);
+  }
+
+  private void init(String get) {
+    UriInfo uriInfo = mock(UriInfo.class);
+    MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
+    when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
+    when(uriInfo.getPath()).thenReturn("/");
+    when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
+    when(containerRequestContext.getRequest().getMethod()).thenReturn(get);
   }
 
 }

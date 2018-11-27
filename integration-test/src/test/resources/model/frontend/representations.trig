@@ -60,6 +60,7 @@ GRAPH dbeerpedia:Theatre {
       elmo:stage dbeerpedia:Stage;
       elmo:parameterMapper dbeerpedia:SubjectFromUrl;
       elmo:informationProduct dbeerpedia:ResourceInformationProduct;
+      #elmo:appliesTo "http://{domain}/dbp/ld/v1/id/{reference}";
   .
 
   dbeerpedia:HomepageEndpoint a elmo:Endpoint;

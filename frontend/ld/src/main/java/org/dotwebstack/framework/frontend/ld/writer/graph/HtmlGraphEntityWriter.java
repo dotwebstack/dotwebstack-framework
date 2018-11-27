@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.ld.writer;
+package org.dotwebstack.framework.frontend.ld.writer.graph;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -19,14 +19,15 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.xml.ws.http.HTTPException;
 
 import org.dotwebstack.framework.backend.ResultType;
-import org.dotwebstack.framework.frontend.ld.entity.HtmlEntity;
+import org.dotwebstack.framework.frontend.ld.entity.HtmlGraphEntity;
 
+import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
 import org.springframework.stereotype.Service;
 
 @Service
 @EntityWriter(resultType = ResultType.GRAPH)
-@Produces({MediaType.TEXT_HTML})
-public class HtmlWriter implements MessageBodyWriter<HtmlEntity> {
+@Produces({"text/html"})
+public class HtmlGraphEntityWriter implements MessageBodyWriter<HtmlGraphEntity> {
 
   private final List<MediaType> mediaTypes = Collections.singletonList(MediaType.TEXT_HTML_TYPE);
 
@@ -35,19 +36,20 @@ public class HtmlWriter implements MessageBodyWriter<HtmlEntity> {
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
                              MediaType mediaType) {
-    return HtmlWriter.class.isAssignableFrom(type) && mediaTypes.contains(mediaType);
+    return HtmlGraphEntityWriter.class.isAssignableFrom(type) && mediaTypes.contains(mediaType);
   }
 
   @Override
-  public long getSize(HtmlEntity htmlEntity, Class<?> type, Type genericType,
+  public long getSize(HtmlGraphEntity htmlGraphEntity, Class<?> type, Type genericType,
                       Annotation[] annotations, MediaType mediaType) {
     return 0;
   }
 
   @Override
-  public void writeTo(HtmlEntity s, Class<?> representation, Type type, Annotation[] annotations,
-                      MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap,
-                      OutputStream outputStream) throws IOException, WebApplicationException {
+  public void writeTo(HtmlGraphEntity s, Class<?> representation, Type type,
+                      Annotation[] annotations, MediaType mediaType,
+                      MultivaluedMap<String, Object> multivaluedMap, OutputStream outputStream)
+      throws IOException, WebApplicationException {
     Template htmlTemplate = s.getRepresentation().getHtmlTemplate();
 
     if (htmlTemplate != null) {

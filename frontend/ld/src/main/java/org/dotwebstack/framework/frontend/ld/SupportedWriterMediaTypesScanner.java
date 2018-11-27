@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,6 +13,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
+import org.dotwebstack.framework.frontend.ld.entity.HtmlGraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
 import org.slf4j.Logger;
@@ -30,20 +30,28 @@ public class SupportedWriterMediaTypesScanner {
 
   private List<MediaType> tupleMediaTypes = new ArrayList<>();
 
+  private List<MediaType> htmlMediaTypes = new ArrayList<>();
+
   private List<MessageBodyWriter<GraphEntity>> graphEntityWriters = new ArrayList<>();
 
   private List<MessageBodyWriter<TupleEntity>> tupleEntityWriters = new ArrayList<>();
 
+  private List<MessageBodyWriter<HtmlGraphEntity>> htmlEntityWriters = new ArrayList<>();
+
   @Autowired
   public SupportedWriterMediaTypesScanner(
       @NonNull List<MessageBodyWriter<GraphEntity>> graphEntityWriters,
-      @NonNull List<MessageBodyWriter<TupleEntity>> tupleEntityWriters) {
+      @NonNull List<MessageBodyWriter<TupleEntity>> tupleEntityWriters,
+      @NonNull List<MessageBodyWriter<HtmlGraphEntity>> htmlEntityWriters) {
     loadSupportedMediaTypes(graphEntityWriters, graphMediaTypes, this.graphEntityWriters);
     loadSupportedMediaTypes(tupleEntityWriters, tupleMediaTypes, this.tupleEntityWriters);
+    loadSupportedMediaTypes(htmlEntityWriters, htmlMediaTypes, this.htmlEntityWriters);
   }
 
   public Collection<MediaType> getAllSupportedMediaTypes() {
-    return Stream.concat(graphMediaTypes.stream(), tupleMediaTypes.stream()).collect(
+    Collection<MediaType> intermediateMediaTypeList = Stream.concat(graphMediaTypes.stream(),
+        tupleMediaTypes.stream()).collect(Collectors.toList());
+    return Stream.concat(intermediateMediaTypeList.stream(), htmlMediaTypes.stream()).collect(
         Collectors.toList());
   }
 
@@ -84,9 +92,17 @@ public class SupportedWriterMediaTypesScanner {
   public MediaType[] getMediaTypes(ResultType type) {
     switch (type) {
       case GRAPH:
-        return graphMediaTypes.toArray(new MediaType[0]);
+        return new ArrayList<MediaType>() {{
+            addAll(graphMediaTypes);
+            addAll(htmlMediaTypes);
+          }
+        }.toArray(new MediaType[0]);
       case TUPLE:
-        return tupleMediaTypes.toArray(new MediaType[0]);
+        return new ArrayList<MediaType>() {{
+            addAll(tupleMediaTypes);
+            addAll(htmlMediaTypes);
+          }
+        }.toArray(new MediaType[0]);
       default:
         throw new IllegalArgumentException(
             String.format("ResultType %s has no supported media types", type));
@@ -101,4 +117,7 @@ public class SupportedWriterMediaTypesScanner {
     return ImmutableList.copyOf(tupleEntityWriters);
   }
 
+  List<MessageBodyWriter<HtmlGraphEntity>> getHtmlEntityWriters() {
+    return ImmutableList.copyOf(htmlEntityWriters);
+  }
 }
