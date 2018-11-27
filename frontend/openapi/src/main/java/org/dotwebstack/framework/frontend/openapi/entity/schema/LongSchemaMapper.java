@@ -36,6 +36,14 @@ public class LongSchemaMapper extends AbstractSchemaMapper<IntegerSchema, Long> 
   public Long mapGraphValue(@NonNull IntegerSchema schema, boolean required,
       @NonNull GraphEntity graphEntity, @NotNull ValueContext valueContext,
       @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+    validateVendorExtensions(schema, SUPPORTED_VENDOR_EXTENSIONS);
+
+    if (SUPPORTED_VENDOR_EXTENSIONS.contains(OpenApiSpecificationExtensions.LDPATH)) {
+      return handleLdPathVendorExtension(schema, required, valueContext, graphEntity);
+    }
+    if (SUPPORTED_VENDOR_EXTENSIONS.contains(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
+      return handleConstantValueVendorExtension(schema, required);
+    }
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
   }
 
