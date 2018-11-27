@@ -2,9 +2,10 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import io.swagger.models.properties.Property;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +22,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, String> {
+public class StringSchemaMapper extends AbstractSchemaMapper<StringSchema, String> {
 
   static final String PATTERN = "pattern";
   static final String LINK_CHOICES = "link-choices";
@@ -39,16 +40,18 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   }
 
   @Override
-  public String mapTupleValue(@NonNull StringProperty schema, @NonNull TupleEntity entity,
+  public String mapTupleValue(@NonNull StringSchema schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
     return valueContext.getValue().stringValue();
   }
 
   @Override
-  public String mapGraphValue(@NonNull StringProperty property, @NonNull GraphEntity graphEntity,
-      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    validateVendorExtensions(property);
-    Map<String, Object> vendorExtensions = property.getVendorExtensions();
+  public String mapGraphValue(@NonNull StringSchema schema, boolean required,
+      @NonNull GraphEntity graphEntity, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+    validateVendorExtensions(schema);
+    Map<String, Object> vendorExtensions =
+        schema.getExtensions() == null ? Collections.emptyMap() : schema.getExtensions();
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.RELATIVE_LINK)) {
       return handleRelativeLinkVendorExtension(
@@ -56,29 +59,29 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
           graphEntity, valueContext);
     }
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONTEXT_LINKS)) {
-      return handleContextLinkVendorExtension(property, graphEntity, valueContext);
+      return handleContextLinkVendorExtension(schema, graphEntity, valueContext);
     }
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-      return handleLdPathVendorExtension(property, valueContext, graphEntity);
+      return handleLdPathVendorExtension(schema, required, valueContext, graphEntity);
     }
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
-      return handleConstantValueVendorExtension(property);
+      return handleConstantValueVendorExtension(schema, required);
     }
 
     if (valueContext.getValue() != null) {
       return valueContext.getValue().stringValue();
-    } else if (property.getRequired()) {
-      throw new SchemaMapperRuntimeException("No result for required property.");
+    } else if (required) {
+      throw new SchemaMapperRuntimeException("No result for required schema.");
     }
     return null;
   }
 
   @SuppressWarnings("unchecked")
-  private String handleContextLinkVendorExtension(StringProperty property, GraphEntity graphEntity,
+  private String handleContextLinkVendorExtension(StringSchema property, GraphEntity graphEntity,
       ValueContext valueContext) {
 
-    Map<String, Object> contextLink = expectValue(property.getVendorExtensions(),
+    Map<String, Object> contextLink = expectValue(property.getExtensions(),
         OpenApiSpecificationExtensions.CONTEXT_LINKS, Map.class);
 
     List<Map<String, Object>> choices = expectValue(contextLink, LINK_CHOICES, List.class);
@@ -113,7 +116,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
 
     if (!clazz.isInstance(value)) {
       throw new SchemaMapperRuntimeException(
-          String.format("Property '%s' should be defined as %s.", key, clazz.getSimpleName()));
+          String.format("Schema '%s' should be defined as %s.", key, clazz.getSimpleName()));
     }
     return clazz.cast(value);
   }
@@ -122,13 +125,13 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
       GraphEntity graphEntity, ValueContext valueContext) {
 
     if (relativeLinkPropertiesMap == null) {
-      throw new SchemaMapperRuntimeException(String.format("Property '%s' can not be null.",
+      throw new SchemaMapperRuntimeException(String.format("Schema '%s' can not be null.",
           OpenApiSpecificationExtensions.RELATIVE_LINK));
     }
 
     if (!relativeLinkPropertiesMap.containsKey(PATTERN)) {
       throw new SchemaMapperRuntimeException(
-          String.format("Property '%s' should have a '%s' property.",
+          String.format("Schema '%s' should have a '%s' property.",
               OpenApiSpecificationExtensions.RELATIVE_LINK, PATTERN));
     }
     String baseUri = graphEntity.getRequestContext().getBaseUri();
@@ -140,7 +143,7 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
 
       if (queryResult.size() > 1) {
         throw new SchemaMapperRuntimeException(String.format(
-            "LDPath query '%s' yielded multiple results (%d) for a property, which "
+            "LDPath query '%s' yielded multiple results (%d) for a schema, which "
                 + "requires a single result.",
             relativeLinkPropertiesMap.get(OpenApiSpecificationExtensions.LDPATH),
             queryResult.size()));
@@ -167,10 +170,10 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
    * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extentions
    *         are encountered.
    */
-  private void validateVendorExtensions(StringProperty property) {
+  private void validateVendorExtensions(StringSchema schema) {
 
-    long nrOfSupportedVendorExtensionsPresent =
-        property.getVendorExtensions().keySet().stream().filter(
+    long nrOfSupportedVendorExtensionsPresent = schema.getExtensions() == null ? 0
+        : schema.getExtensions().keySet().stream().filter(
             SUPPORTED_VENDOR_EXTENSIONS::contains).count();
     if (nrOfSupportedVendorExtensionsPresent > 1) {
       throw new SchemaMapperRuntimeException(String.format(
@@ -182,8 +185,8 @@ public class StringSchemaMapper extends AbstractSchemaMapper<StringProperty, Str
   }
 
   @Override
-  public boolean supports(@NonNull Property schema) {
-    return schema instanceof StringProperty;
+  public boolean supports(@NonNull Schema schema) {
+    return schema instanceof StringSchema;
   }
 
   @Override

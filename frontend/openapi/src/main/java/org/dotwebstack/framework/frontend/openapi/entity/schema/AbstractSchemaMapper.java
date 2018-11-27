@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +15,7 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-public abstract class AbstractSchemaMapper<S extends Property, T> implements SchemaMapper<S, T> {
+public abstract class AbstractSchemaMapper<S extends Schema, T> implements SchemaMapper<S, T> {
 
   private static final ValueFactory VALUE_FACTORY = SimpleValueFactory.getInstance();
 
@@ -28,27 +28,26 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
   }
 
   @Override
-  public T mapGraphValue(@NonNull S property, @NonNull GraphEntity graphEntity,
+  public T mapGraphValue(@NonNull S schema, boolean required, @NonNull GraphEntity graphEntity,
       @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
 
-    Map<String, Object> vendorExtensions = property.getVendorExtensions();
-    validateVendorExtensions(property, getSupportedVendorExtensions());
+    Map<String, Object> vendorExtensions = schema.getExtensions();
+    validateVendorExtensions(schema, getSupportedVendorExtensions());
 
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.LDPATH)) {
-      return handleLdPathVendorExtension(property, valueContext, graphEntity);
+      return handleLdPathVendorExtension(schema, required, valueContext, graphEntity);
     }
     if (vendorExtensions.containsKey(OpenApiSpecificationExtensions.CONSTANT_VALUE)) {
-      return handleConstantValueVendorExtension(property);
+      return handleConstantValueVendorExtension(schema, required);
     }
     throw new IllegalStateException(String.format(
-        "Property %s cannot be mapped, no LDpath or ConstantValue defined.", property.toString()));
+        "Property %s cannot be mapped, no LDpath or ConstantValue defined.", schema.toString()));
   }
 
-  T handleConstantValueVendorExtension(S property) {
-    Object value =
-        property.getVendorExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
+  T handleConstantValueVendorExtension(S schema, boolean required) {
+    Object value = schema.getExtensions().get(OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
-    validateRequired(property, OpenApiSpecificationExtensions.CONSTANT_VALUE, value);
+    validateRequired(schema, required, OpenApiSpecificationExtensions.CONSTANT_VALUE, value);
 
     if (value == null) {
       return null;
@@ -65,20 +64,19 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     return convertToType(literal);
   }
 
-  T handleLdPathVendorExtension(@NonNull S property, @NonNull ValueContext valueContext,
-      @NonNull GraphEntity graphEntity) {
-    String ldPathQuery =
-        (String) property.getVendorExtensions().get(OpenApiSpecificationExtensions.LDPATH);
+  T handleLdPathVendorExtension(@NonNull S schema, boolean required,
+      @NonNull ValueContext valueContext, @NonNull GraphEntity graphEntity) {
+    String ldPathQuery = (String) schema.getExtensions().get(OpenApiSpecificationExtensions.LDPATH);
 
     if (ldPathQuery == null) {
-      return handleLdPathVendorExtensionWithoutLdPath(property, valueContext);
+      return handleLdPathVendorExtensionWithoutLdPath(schema, required, valueContext);
     }
 
     LdPathExecutor ldPathExecutor = graphEntity.getLdPathExecutor();
     Collection<Value> queryResult =
         ldPathExecutor.ldPathQuery(valueContext.getValue(), ldPathQuery);
 
-    if (!property.getRequired() && queryResult.isEmpty()) {
+    if (!required && queryResult.isEmpty()) {
       return null;
     }
 
@@ -93,9 +91,10 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     }
   }
 
-  private T handleLdPathVendorExtensionWithoutLdPath(@NonNull S property,
+  private T handleLdPathVendorExtensionWithoutLdPath(@NonNull S schema, boolean required,
       @NonNull ValueContext valueContext) {
-    validateRequired(property, OpenApiSpecificationExtensions.LDPATH, valueContext.getValue());
+    validateRequired(schema, required, OpenApiSpecificationExtensions.LDPATH,
+        valueContext.getValue());
 
     if (isSupportedLiteral(valueContext.getValue())) {
       return convertToType((valueContext.getValue()));
@@ -122,7 +121,7 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
 
     if (queryResult.isEmpty()) {
       throw new SchemaMapperRuntimeException(
-          String.format("No results for LDPath query '%s' for required property.", ldPathQuery));
+          String.format("No results for LDPath query '%s' for required schema.", ldPathQuery));
     }
 
     if (queryResult.size() > 1) {
@@ -140,11 +139,11 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
    * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
    *         are encountered.
    */
-  private void validateVendorExtensions(Property property, Set<String> supportedExtensions) {
-    if (property.getVendorExtensions().keySet().stream().filter(
-        supportedExtensions::contains).count() != 1) {
+  private void validateVendorExtensions(Schema schema, Set<String> supportedExtensions) {
+    if (schema.getExtensions().keySet().stream().filter(supportedExtensions::contains)//
+        .count() != 1) {
 
-      String message = property.getClass().getSimpleName() + " object must have one of: "
+      String message = schema.getClass().getSimpleName() + " object must have one of: "
           + supportedExtensions.toString().replaceAll("[\\[\\]]", "'").replaceAll(", ", "', '")
           + ". This object cannot have a combination of these.";
 
@@ -159,15 +158,14 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
         && getSupportedDataTypes().stream().anyMatch(x -> x.equals(value.getDatatype()));
   }
 
-  protected static boolean hasVendorExtensionWithValue(@NonNull Property property,
+  protected static boolean hasVendorExtensionWithValue(@NonNull Schema schema,
       @NonNull String extension, Object value) {
-    return hasVendorExtension(property, extension)
-        && property.getVendorExtensions().get(extension).equals(value);
+    return hasVendorExtension(schema, extension)
+        && schema.getExtensions().get(extension).equals(value);
   }
 
-  protected static boolean hasVendorExtension(@NonNull Property property,
-      @NonNull String extension) {
-    return property.getVendorExtensions().containsKey(extension);
+  protected static boolean hasVendorExtension(@NonNull Schema schema, @NonNull String extension) {
+    return schema.getExtensions() != null && schema.getExtensions().containsKey(extension);
   }
 
   /**
@@ -182,11 +180,12 @@ public abstract class AbstractSchemaMapper<S extends Property, T> implements Sch
     return value instanceof Literal && isDataTypeSupported((Literal) value);
   }
 
-  private void validateRequired(Property property, String vendorExtension, Object value) {
-    if (value == null && property.getRequired()) {
+  private void validateRequired(Schema schema, boolean required, String vendorExtension,
+      Object value) {
+    if (value == null && required) {
       String message =
           String.format("%s has '%s' vendor extension that is null, but the property is required.",
-              property.getClass().getSimpleName(), vendorExtension);
+              schema.getClass().getSimpleName(), vendorExtension);
       throw new SchemaMapperRuntimeException(message);
     }
   }

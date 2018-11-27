@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.frontend.openapi.handlers;
+package org.dotwebstack.framework.frontend.openapi.handlers.validation;
 
 import java.util.List;
 import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException;

@@ -3,9 +3,11 @@ package org.dotwebstack.framework.frontend.openapi.entity;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.ObjectProperty;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
@@ -32,28 +34,30 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
 
   @Override
   public Object map(@NonNull TupleEntity entity, @NonNull MediaType mediaType) {
-    // Already prepared for OASv3 multiple media type support
-    Property schema = entity.getResponse().getSchema();
+    io.swagger.v3.oas.models.media.MediaType mt =
+        entity.getResponse().getContent().get(mediaType.toString());
 
-    if (schema == null) {
+    if (mt == null || mt.getSchema() == null) {
       throw new EntityMapperRuntimeException(
           String.format("No schema found for media type '%s'.", mediaType.toString()));
     }
 
+    Schema schema = mt.getSchema();
+
     ValueContext valueContext = ValueContext.builder().build();
 
-    if (schema instanceof ObjectProperty) {
-      return mapObject(entity, (ObjectProperty) schema, valueContext);
+    if (schema instanceof ObjectSchema) {
+      return mapObject(entity, (ObjectSchema) schema, valueContext);
     }
 
-    if (schema instanceof ArrayProperty) {
-      return mapCollection(entity, (ArrayProperty) schema, valueContext);
+    if (schema instanceof ArraySchema) {
+      return mapCollection(entity, (ArraySchema) schema, valueContext);
     }
 
     return ImmutableMap.of();
   }
 
-  private Object mapObject(TupleEntity entity, ObjectProperty schema, ValueContext valueContext) {
+  private Object mapObject(TupleEntity entity, ObjectSchema schema, ValueContext valueContext) {
     TupleQueryResult result = entity.getResult();
     if (result.hasNext()) {
       BindingSet bindingSet = result.next();
@@ -61,21 +65,22 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
         LOG.warn("TupleQueryResult yielded several bindingsets. Only parsing the first.");
       }
 
-      return mapBindingSet(bindingSet, schema.getProperties(), entity, valueContext);
+      return mapBindingSet(bindingSet,
+          schema.getRequired() == null ? Collections.emptyList() : schema.getRequired(),
+          schema.getProperties(), entity, valueContext);
     } else {
       throw new EntityMapperRuntimeException("TupleQueryResult did not yield any values.");
     }
   }
 
-  private Object mapCollection(TupleEntity entity, ArrayProperty schema,
-      ValueContext valueContext) {
-    Property itemSchema = schema.getItems();
+  private Object mapCollection(TupleEntity entity, ArraySchema schema, ValueContext valueContext) {
+    Schema itemSchema = schema.getItems();
 
     if (itemSchema == null) {
       throw new EntityMapperRuntimeException("Array schemas must have an 'items' property.");
     }
 
-    if (!(itemSchema instanceof ObjectProperty)) {
+    if (!(itemSchema instanceof ObjectSchema)) {
       throw new EntityMapperRuntimeException(
           "Only array items of type 'object' are supported for now.");
     }
@@ -83,22 +88,24 @@ public final class TupleEntityMapper implements EntityMapper<TupleEntity> {
     TupleQueryResult result = entity.getResult();
 
     ImmutableList.Builder<Map<String, Object>> collectionBuilder = new ImmutableList.Builder<>();
-    Map<String, Property> itemProperties = ((ObjectProperty) itemSchema).getProperties();
+    Map<String, Schema> itemProperties = ((ObjectSchema) itemSchema).getProperties();
 
     while (result.hasNext()) {
-      collectionBuilder.add(mapBindingSet(result.next(), itemProperties, entity, valueContext));
+      collectionBuilder.add(mapBindingSet(result.next(),
+          itemSchema.getRequired() == null ? Collections.emptyList() : itemSchema.getRequired(),
+          itemProperties, entity, valueContext));
     }
 
     return collectionBuilder.build();
   }
 
-  private ImmutableMap<String, Object> mapBindingSet(BindingSet bindingSet,
-      Map<String, Property> itemProperties, TupleEntity entity, ValueContext valueContext) {
+  private ImmutableMap<String, Object> mapBindingSet(BindingSet bindingSet, List<String> required,
+      Map<String, Schema> itemProperties, TupleEntity entity, ValueContext valueContext) {
     ImmutableMap.Builder<String, Object> itemBuilder = new ImmutableMap.Builder<>();
 
     itemProperties.forEach((name, property) -> {
-      if (property.getRequired() && !bindingSet.hasBinding(name)) {
-        throw new EntityMapperRuntimeException(String.format("Property '%s' is required.", name));
+      if (required.contains(name) && !bindingSet.hasBinding(name)) {
+        throw new EntityMapperRuntimeException(String.format("Schema '%s' is required.", name));
       }
 
       if (!bindingSet.hasBinding(name)) {

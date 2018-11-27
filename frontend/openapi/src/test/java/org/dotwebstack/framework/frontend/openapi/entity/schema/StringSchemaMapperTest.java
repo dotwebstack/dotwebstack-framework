@@ -10,8 +10,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.IntegerProperty;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.IntegerSchema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,21 +43,24 @@ public class StringSchemaMapperTest {
 
   @Mock
   private TupleEntity tupleEntityMock;
+
   @Mock
   private GraphEntity graphEntityMock;
+
   @Mock
   private LdPathExecutor ldPathExecutorMock;
+
   @Mock
   private Value valueMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
-  private StringProperty stringProperty;
+  private StringSchema stringSchema;
   private StringSchemaMapper stringSchemaMapper;
 
   @Before
   public void setUp() {
     stringSchemaMapper = new StringSchemaMapper();
-    stringProperty = new StringProperty();
+    stringSchema = new StringSchema();
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(stringSchemaMapper));
 
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
@@ -66,7 +69,7 @@ public class StringSchemaMapperTest {
   @Test
   public void mapTupleValue_ReturnValue_ForLiterals() {
     // Arrange & Act
-    String result = stringSchemaMapper.mapTupleValue(stringProperty, tupleEntityMock,
+    String result = stringSchemaMapper.mapTupleValue(stringSchema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_NAME).build());
 
     // Assert
@@ -74,18 +77,18 @@ public class StringSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForStringProperty() {
+  public void supports_ReturnsTrue_ForStringSchema() {
     // Arrange & Act
-    Boolean supported = stringSchemaMapper.supports(stringProperty);
+    Boolean supported = stringSchemaMapper.supports(stringSchema);
 
     // Assert
     assertThat(supported, equalTo(true));
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonStringProperty() {
+  public void supports_ReturnsTrue_ForNonStringSchema() {
     // Arrange & Act
-    Boolean supported = stringSchemaMapper.supports(new IntegerProperty());
+    Boolean supported = stringSchemaMapper.supports(new IntegerSchema());
 
     // Assert
     assertThat(supported, equalTo(false));
@@ -97,11 +100,11 @@ public class StringSchemaMapperTest {
     expectExceptionAboutMultipleVendorExtensions();
 
     // Arrange
-    stringProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "",
+    stringSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "",
         OpenApiSpecificationExtensions.RELATIVE_LINK, ImmutableMap.of()));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
   }
 
@@ -111,11 +114,11 @@ public class StringSchemaMapperTest {
     expectExceptionAboutMultipleVendorExtensions();
 
     // Arrange
-    stringProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH,
+    stringSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH,
         ImmutableMap.of(), OpenApiSpecificationExtensions.CONSTANT_VALUE, ImmutableMap.of()));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
   }
 
@@ -125,11 +128,11 @@ public class StringSchemaMapperTest {
     expectExceptionAboutMultipleVendorExtensions();
 
     // Arrange
-    stringProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.RELATIVE_LINK,
+    stringSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.RELATIVE_LINK,
         ImmutableMap.of(), OpenApiSpecificationExtensions.CONSTANT_VALUE, ImmutableMap.of()));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
   }
 
@@ -139,23 +142,23 @@ public class StringSchemaMapperTest {
     expectExceptionAboutMultipleVendorExtensions();
 
     // Arrange
-    stringProperty.setVendorExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.RELATIVE_LINK,
+    stringSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.RELATIVE_LINK,
         ImmutableMap.of(), OpenApiSpecificationExtensions.CONSTANT_VALUE, ImmutableMap.of(),
         OpenApiSpecificationExtensions.LDPATH, ImmutableMap.of()));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
   }
 
   @Test
   public void mapGraphValue_ReturnsStringValue_WhenStringConstantValueIsDefined() {
     // Arrange
-    stringProperty.setVendorExtensions(
+    stringSchema.setExtensions(
         ImmutableMap.of(OpenApiSpecificationExtensions.CONSTANT_VALUE, "constant"));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
 
     // Assert
@@ -167,11 +170,11 @@ public class StringSchemaMapperTest {
     // Arrange
     Literal literal = VALUE_FACTORY.createLiteral("constant", XMLSchema.STRING);
 
-    stringProperty.setVendorExtensions(
+    stringSchema.setExtensions(
         ImmutableMap.of(OpenApiSpecificationExtensions.CONSTANT_VALUE, literal));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
 
     // Assert
@@ -181,11 +184,10 @@ public class StringSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsNull_ForNullConstantValue() {
     // Arrange
-    stringProperty.setVendorExtensions(
-        nullableMapOf(OpenApiSpecificationExtensions.CONSTANT_VALUE, null));
+    stringSchema.setExtensions(nullableMapOf(OpenApiSpecificationExtensions.CONSTANT_VALUE, null));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
 
     // Assert
@@ -193,19 +195,17 @@ public class StringSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ThrowsException_ForNullConstantAndRequiredProperty() {
+  public void mapGraphValue_ThrowsException_ForNullConstantAndRequiredSchema() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage("StringProperty has 'x-dotwebstack-constant-value' "
+    thrown.expectMessage("StringSchema has 'x-dotwebstack-constant-value' "
         + "vendor extension that is null, but the property is required.");
 
     // Arrange
-    stringProperty.setVendorExtensions(
-        nullableMapOf(OpenApiSpecificationExtensions.CONSTANT_VALUE, null));
-    stringProperty.setRequired(true);
+    stringSchema.setExtensions(nullableMapOf(OpenApiSpecificationExtensions.CONSTANT_VALUE, null));
 
     // Act
-    stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    stringSchemaMapper.mapGraphValue(stringSchema, true, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
   }
 
@@ -213,7 +213,7 @@ public class StringSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsNull_ForNullValue() {
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
 
     // Assert
@@ -223,7 +223,7 @@ public class StringSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsStringValue_ForNonLiteral() {
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().value(VALUE_FACTORY.createIRI("http://foo")).build(),
         schemaMapperAdapter);
 
@@ -232,16 +232,15 @@ public class StringSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ThrowsException_ForNullValueAndRequiredProperty() {
+  public void mapGraphValue_ThrowsException_ForNullValueAndRequiredSchema() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage("No result for required property");
+    thrown.expectMessage("No result for required schema");
 
     // Arrange
-    stringProperty.setRequired(true);
 
     // Act
-    schemaMapperAdapter.mapGraphValue(stringProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(stringSchema, true, graphEntityMock,
         ValueContext.builder().value(null).build(), schemaMapperAdapter);
   }
 
@@ -251,7 +250,7 @@ public class StringSchemaMapperTest {
     Literal xmlSchemaStringLiteral = VALUE_FACTORY.createLiteral("foo", XMLSchema.STRING);
 
     // Act
-    String result = stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    String result = stringSchemaMapper.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().value(xmlSchemaStringLiteral).build(), schemaMapperAdapter);
 
     // Assert
@@ -264,7 +263,7 @@ public class StringSchemaMapperTest {
     Literal rdfLangStringLiteral = VALUE_FACTORY.createLiteral("foo", "nl");
 
     // Act
-    String result = stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    String result = stringSchemaMapper.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().value(rdfLangStringLiteral).build(), schemaMapperAdapter);
 
     // Assert
@@ -274,8 +273,7 @@ public class StringSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsStringValue_ForLdPath() {
     // Arrange
-    stringProperty.setVendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    stringSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
 
     Literal literal = VALUE_FACTORY.createLiteral("foo", XMLSchema.STRING);
 
@@ -283,7 +281,7 @@ public class StringSchemaMapperTest {
         ImmutableList.of(literal));
 
     // Act
-    String result = stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    String result = stringSchemaMapper.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -293,10 +291,10 @@ public class StringSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsNull_ForNullLdPath() {
     // Arrange
-    stringProperty.setVendorExtensions(nullableMapOf(OpenApiSpecificationExtensions.LDPATH, null));
+    stringSchema.setExtensions(nullableMapOf(OpenApiSpecificationExtensions.LDPATH, null));
 
     // Act
-    String result = stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    String result = stringSchemaMapper.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -304,33 +302,30 @@ public class StringSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ThrowsException_ForNullLdPathAndRequiredProperty() {
+  public void mapGraphValue_ThrowsException_ForNullLdPathAndRequiredSchema() {
 
     // TODO: moet er een value mee worden gegeven? Klopt deze test wel?
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage("No result for required property.");
+    thrown.expectMessage("No result for required schema.");
 
     // Arrange
-    // stringProperty.setVendorExtensions(ImmutableMap.of());
-    stringProperty.setRequired(true);
 
     // Act
-    stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    stringSchemaMapper.mapGraphValue(stringSchema, true, graphEntityMock,
         ValueContext.builder().build(), schemaMapperAdapter);
   }
 
   @Test
   public void mapGraphValue_ReturnsNull_ForLdPathAndEmptyResult() {
     // Arrange
-    stringProperty.setVendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    stringSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
 
     when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(ImmutableList.of());
 
     // Act
-    String result = stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    String result = stringSchemaMapper.mapGraphValue(stringSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -338,34 +333,30 @@ public class StringSchemaMapperTest {
   }
 
   @Test
-  public void mapGraphValue_ReturnsNull_ForLdPathEmptyResultAndRequiredProperty() {
+  public void mapGraphValue_ReturnsNull_ForLdPathEmptyResultAndRequiredSchema() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage("No results for LDPath query 'ld-path' for required property");
+    thrown.expectMessage("No results for LDPath query 'ld-path' for required schema");
 
     // Arrange
-    stringProperty.setVendorExtensions(
-        nullableMapOf(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
-    stringProperty.setRequired(true);
+    stringSchema.setExtensions(nullableMapOf(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
 
     when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(ImmutableList.of());
 
     // Act
-    stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    stringSchemaMapper.mapGraphValue(stringSchema, true, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
   @Test
-  public void mapGraphValue_ReturnsNull_ForLdPathMultipleResultsAndRequiredProperty() {
+  public void mapGraphValue_ReturnsNull_ForLdPathMultipleResultsAndRequiredSchema() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage("LDPath query 'ld-path' yielded multiple results (2) for a property, "
         + "which requires a single result.");
 
     // Arrange
-    stringProperty.setVendorExtensions(
-        nullableMapOf(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
-    stringProperty.setRequired(true);
+    stringSchema.setExtensions(nullableMapOf(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
 
     Literal foo = VALUE_FACTORY.createLiteral("foo", XMLSchema.STRING);
     Literal bar = VALUE_FACTORY.createLiteral("bar", XMLSchema.STRING);
@@ -374,7 +365,7 @@ public class StringSchemaMapperTest {
         ImmutableList.of(foo, bar));
 
     // Act
-    stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    stringSchemaMapper.mapGraphValue(stringSchema, true, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 
@@ -382,9 +373,7 @@ public class StringSchemaMapperTest {
   public void mapGraphValue_ReturnsStringValue_LdPathWithIri() {
 
     // Arrange
-    stringProperty.setVendorExtensions(
-        nullableMapOf(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
-    stringProperty.setRequired(true);
+    stringSchema.setExtensions(nullableMapOf(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
 
     Value stringValue = VALUE_FACTORY.createIRI(
         "http://www.ruimtelijkeplannen.nl/documents/NL.IMRO.0345.Lunenburg1-vg01/",
@@ -394,7 +383,7 @@ public class StringSchemaMapperTest {
         ImmutableList.of(stringValue));
 
     // Act
-    String response = stringSchemaMapper.mapGraphValue(stringProperty, graphEntityMock,
+    String response = stringSchemaMapper.mapGraphValue(stringSchema, true, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert

@@ -5,7 +5,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -44,14 +44,14 @@ public class StringSchemaMapperContextLinksTest {
 
   private ValueContext valueContext;
   private SchemaMapperAdapter schemaMapperAdapter;
-  private SchemaMapper<StringProperty, ?> schemaMapper;
-  private StringProperty schema;
+  private SchemaMapper<StringSchema, ?> schemaMapper;
+  private StringSchema schema;
 
   @Before
   public void setUp() {
     schemaMapper = new StringSchemaMapper();
     schemaMapperAdapter = new SchemaMapperAdapter(ImmutableList.of(schemaMapper));
-    schema = new StringProperty();
+    schema = new StringSchema();
 
     valueContext = ValueContext.builder().value(VALUE).build();
 
@@ -64,13 +64,13 @@ public class StringSchemaMapperContextLinksTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(
-        "Property '" + OpenApiSpecificationExtensions.CONTEXT_LINKS + "' should be defined as Map");
+        "Schema '" + OpenApiSpecificationExtensions.CONTEXT_LINKS + "' should be defined as Map");
 
     // Arrange
-    schema.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, null);
+    schema.addExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, null);
 
     // Act
-    schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext, schemaMapperAdapter);
   }
 
   @Test
@@ -78,14 +78,14 @@ public class StringSchemaMapperContextLinksTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(
-        "Property '" + StringSchemaMapper.LINK_CHOICES + "' should be defined as List");
+        "Schema '" + StringSchemaMapper.LINK_CHOICES + "' should be defined as List");
 
     // Arrange
     Map<String, Object> contextLinksExtension = new HashMap<>();
-    schema.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, contextLinksExtension);
+    schema.addExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, contextLinksExtension);
 
     // Act
-    schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext, schemaMapperAdapter);
   }
 
   @Test
@@ -93,14 +93,14 @@ public class StringSchemaMapperContextLinksTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(
-        "Property '" + OpenApiSpecificationExtensions.KEY_LDPATH + "' should be defined as String");
+        "Schema '" + OpenApiSpecificationExtensions.KEY_LDPATH + "' should be defined as String");
 
     // Arrange
-    schema.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS,
+    schema.addExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS,
         ImmutableMap.of(StringSchemaMapper.LINK_CHOICES, Lists.newArrayList()));
 
     // Act
-    schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext, schemaMapperAdapter);
   }
 
   @SuppressWarnings("unchecked")
@@ -110,7 +110,7 @@ public class StringSchemaMapperContextLinksTest {
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
 
     Map<String, Object> contextLinksExtension = new HashMap<>();
-    schema.setVendorExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, contextLinksExtension);
+    schema.addExtension(OpenApiSpecificationExtensions.CONTEXT_LINKS, contextLinksExtension);
 
     List<Object> choices = new ArrayList<>();
     contextLinksExtension.put(StringSchemaMapper.LINK_CHOICES, choices);
@@ -140,8 +140,8 @@ public class StringSchemaMapperContextLinksTest {
     when(requestContextMock.getBaseUri()).thenReturn("/base");
 
     // Act
-    Object result =
-        schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext,
+        schemaMapperAdapter);
 
     // Assert
     /*
@@ -161,7 +161,8 @@ public class StringSchemaMapperContextLinksTest {
         choice2PatternResult);
 
     // Act (2)
-    result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext,
+        schemaMapperAdapter);
 
     // Assert (2)
     Assert.assertEquals("/base/abc/object_type_2", result);
@@ -173,7 +174,8 @@ public class StringSchemaMapperContextLinksTest {
     when(ldPathExecutorMock.ldPathQuery(VALUE, "key / path")).thenReturn(realKeyResult);
 
     // Act (3)
-    result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContext, schemaMapperAdapter);
+    result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContext,
+        schemaMapperAdapter);
 
     // Assert (3)
     Assert.assertNull(result);

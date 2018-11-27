@@ -2,18 +2,20 @@ package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.Operation;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.BodyParameter;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.ByteArrayInputStream;
-import java.net.URISyntaxException;
+import java.util.Collections;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -51,9 +53,6 @@ public class RequestParameterExtractorTest {
   public final ExpectedException exception = ExpectedException.none();
 
   @Mock
-  private Swagger swagger;
-
-  @Mock
   private ApiOperation apiOperation;
 
   @Mock
@@ -62,8 +61,7 @@ public class RequestParameterExtractorTest {
   private RequestParameterExtractor requestParameterExtractor;
 
   @Before
-  public void setUp() throws URISyntaxException {
-
+  public void setUp() {
     pathParameters.put(ID, ImmutableList.of(BPG, "someOtherId"));
     pathParameters.put(PATH_PARAMETER, ImmutableList.of(PATH_PARAMETER_VALUE));
     queryParameters.put(QUERY_PARAMETER, ImmutableList.of(QUERY_PARAMETER_VALUE));
@@ -79,16 +77,21 @@ public class RequestParameterExtractorTest {
     when(uriInfo.getPathParameters()).thenReturn(pathParameters);
     when(uriInfo.getQueryParameters()).thenReturn(queryParameters);
 
-    ModelImpl schema = mock(ModelImpl.class);
+    Schema schema = mock(Schema.class);
     when(schema.getType()).thenReturn("object");
 
-    BodyParameter parameter = mock(BodyParameter.class);
+    RequestBody requestBody = mock(RequestBody.class);
+    when(requestBody.getContent()).thenReturn(mock(Content.class));
+    MediaType mediaTypeMock = mock(MediaType.class);
+    when(requestBody.getContent().get(anyString())).thenReturn(mediaTypeMock);
+    when(requestBody.getContent().get(ContentType.APPLICATION_JSON.getMimeType()).getSchema()) //
+        .thenReturn(schema);
 
-    when(parameter.getSchema()).thenReturn(schema);
-    when(parameter.getIn()).thenReturn("body");
-
-    when(operation.getParameters()).thenReturn(ImmutableList.of(parameter));
+    when(operation.getRequestBody()).thenReturn(requestBody);
     when(apiOperation.getOperation()).thenReturn(operation);
+    when(requestBody.getContent()).thenReturn(mock(Content.class));
+    when(requestBody.getContent().values()).thenReturn(Collections.singletonList(mediaTypeMock));
+    when(mediaTypeMock.getSchema().getType()).thenReturn("object");
 
     requestParameterExtractor = new RequestParameterExtractor(new ObjectMapper());
   }
@@ -99,7 +102,7 @@ public class RequestParameterExtractorTest {
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
 
     // Act
-    RequestParameters result = requestParameterExtractor.extract(apiOperation, swagger, context);
+    RequestParameters result = requestParameterExtractor.extract(apiOperation, context);
 
     // Assert
     assertThat(result.get(ID), is(BPG));
@@ -118,7 +121,7 @@ public class RequestParameterExtractorTest {
     when(context.getEntityStream()).thenReturn(null);
 
     // Act
-    requestParameterExtractor.extract(apiOperation, swagger, context);
+    requestParameterExtractor.extract(apiOperation, context);
   }
 
   @Test
@@ -130,7 +133,7 @@ public class RequestParameterExtractorTest {
     when(context.getEntityStream()).thenReturn(new ByteArrayInputStream(body.getBytes()));
 
     // Act
-    RequestParameters result = requestParameterExtractor.extract(apiOperation, swagger, context);
+    RequestParameters result = requestParameterExtractor.extract(apiOperation, context);
 
     // Assert
     assertThat(result.getRawBody(), is(body));

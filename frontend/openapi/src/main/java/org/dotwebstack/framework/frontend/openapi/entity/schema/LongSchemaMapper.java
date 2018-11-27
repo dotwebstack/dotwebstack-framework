@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.properties.LongProperty;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.IntegerSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Set;
 import javax.validation.constraints.NotNull;
 import lombok.NonNull;
@@ -15,10 +15,9 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.springframework.stereotype.Service;
 
 @Service
-public class LongSchemaMapper extends AbstractSchemaMapper<LongProperty, Long> {
+public class LongSchemaMapper extends AbstractSchemaMapper<IntegerSchema, Long> {
 
-  private static final Set<IRI> SUPPORTED_TYPES =
-      ImmutableSet.of(XMLSchema.DOUBLE, XMLSchema.DOUBLE);
+  private static final Set<IRI> SUPPORTED_TYPES = ImmutableSet.of(XMLSchema.LONG);
   private static final Set<String> SUPPORTED_VENDOR_EXTENSIONS = ImmutableSet.of(
       OpenApiSpecificationExtensions.LDPATH, OpenApiSpecificationExtensions.CONSTANT_VALUE);
 
@@ -28,16 +27,21 @@ public class LongSchemaMapper extends AbstractSchemaMapper<LongProperty, Long> {
   }
 
   @Override
-
-  public Long mapTupleValue(@NonNull LongProperty schema, @NonNull TupleEntity entity,
+  public Long mapTupleValue(@NonNull IntegerSchema schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
   }
 
   @Override
-  public Long mapGraphValue(@NonNull LongProperty schema, @NonNull GraphEntity graphEntity,
-      @NotNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+  public Long mapGraphValue(@NonNull IntegerSchema schema, boolean required,
+      @NonNull GraphEntity graphEntity, @NotNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
     return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
+  }
+
+  @Override
+  public boolean supports(Schema schema) {
+    return schema instanceof IntegerSchema && schema.getFormat().equals("int64");
   }
 
   @Override
@@ -48,11 +52,6 @@ public class LongSchemaMapper extends AbstractSchemaMapper<LongProperty, Long> {
   @Override
   protected Set<IRI> getSupportedDataTypes() {
     return SUPPORTED_TYPES;
-  }
-
-  @Override
-  public boolean supports(@NonNull Property schema) {
-    return schema instanceof LongProperty;
   }
 
 }

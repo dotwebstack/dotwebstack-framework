@@ -1,9 +1,8 @@
 package org.dotwebstack.framework.frontend.openapi.entity;
 
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.Schema;
 import javax.ws.rs.core.MediaType;
 import lombok.NonNull;
-import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +20,11 @@ public final class GraphEntityMapper implements EntityMapper<GraphEntity> {
 
   @Override
   public Object map(@NonNull GraphEntity entity, @NonNull MediaType mediaType) {
-    Property schema = new ResponseProperty(entity.getResponse());
+    Schema schema = entity.getResponse().getContent().get(mediaType.toString()).getSchema();
     ValueContext valueContext = ValueContext.builder().build();
 
-    return schemaMapperAdapter.mapGraphValue(schema, entity, valueContext, schemaMapperAdapter);
+    return schemaMapperAdapter.mapGraphValue(schema, true, entity, valueContext,
+        schemaMapperAdapter);
   }
 
 }

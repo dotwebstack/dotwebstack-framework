@@ -83,7 +83,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     getObjectResources(model, resource.getIdentifier(), ELMO.CONTAINS_PROP).stream().forEach(
         iri -> resource.addSubRepresentation(this.get(iri)));
 
-    log.info("Updated resource: <{}>", resource.getIdentifier());
+    LOG.info("Updated resource: <{}>", resource.getIdentifier());
   }
 
 }

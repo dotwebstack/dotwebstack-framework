@@ -9,9 +9,9 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import java.util.List;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
@@ -29,7 +29,7 @@ public class OptionsInformationProductRequestHandlerTest {
   private ContainerRequestContext requestContext;
 
   @Mock
-  private Path path;
+  private PathItem path;
 
   private OptionsRequestHandler optionsRequestHandler;
 
@@ -41,7 +41,8 @@ public class OptionsInformationProductRequestHandlerTest {
   @Test
   public void apply_SetsPathProperty_WhenCalled() {
     // Arrange
-    when(path.getOperationMap()).thenReturn(ImmutableMap.of(HttpMethod.GET, mock(Operation.class)));
+    when(path.readOperationsMap()).thenReturn(
+        ImmutableMap.of(HttpMethod.GET, mock(Operation.class)));
 
     // Act
     optionsRequestHandler.apply(requestContext);
@@ -53,7 +54,7 @@ public class OptionsInformationProductRequestHandlerTest {
   @Test
   public void apply_IncludesHeadAndOptionsMethods_WhenNotSpecified() {
     // Arrange
-    when(path.getOperationMap()).thenReturn(ImmutableMap.of(HttpMethod.GET, mock(Operation.class),
+    when(path.readOperationsMap()).thenReturn(ImmutableMap.of(HttpMethod.GET, mock(Operation.class),
         HttpMethod.POST, mock(Operation.class)));
 
     // Act
@@ -70,7 +71,7 @@ public class OptionsInformationProductRequestHandlerTest {
   @Test
   public void apply_DoesNotIncludeHeadMethod_WhenAlreadySpecified() {
     // Arrange
-    when(path.getOperationMap()).thenReturn(ImmutableMap.of(HttpMethod.GET, mock(Operation.class),
+    when(path.readOperationsMap()).thenReturn(ImmutableMap.of(HttpMethod.GET, mock(Operation.class),
         HttpMethod.HEAD, mock(Operation.class)));
 
     // Act
@@ -87,7 +88,7 @@ public class OptionsInformationProductRequestHandlerTest {
   @Test
   public void apply_DoesNotIncludeOptionsMethod_WhenAlreadySpecified() {
     // Arrange
-    when(path.getOperationMap()).thenReturn(ImmutableMap.of(HttpMethod.GET, mock(Operation.class),
+    when(path.readOperationsMap()).thenReturn(ImmutableMap.of(HttpMethod.GET, mock(Operation.class),
         HttpMethod.OPTIONS, mock(Operation.class)));
 
     // Act

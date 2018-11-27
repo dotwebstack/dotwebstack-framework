@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import io.swagger.models.Operation;
-import io.swagger.models.Swagger;
+import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.NotFoundException;
@@ -43,24 +45,24 @@ public final class InformationProductRequestHandler
   private final InformationProduct informationProduct;
 
   @Getter(AccessLevel.PACKAGE)
-  private final io.swagger.models.Response response;
+  private final ApiResponse response;
 
   private final InformationProductRequestParameterMapper requestParameterMapper;
 
-  private final Swagger swagger;
+  private final OpenAPI openApi;
 
   private final ApiRequestValidator apiRequestValidator;
 
   InformationProductRequestHandler(@NonNull ApiOperation apiOperation,
-      @NonNull InformationProduct informationProduct, @NonNull io.swagger.models.Response response,
+      @NonNull InformationProduct informationProduct, @NonNull ApiResponse response,
       @NonNull InformationProductRequestParameterMapper requestParameterMapper,
-      @NonNull ApiRequestValidator apiRequestValidator, @NonNull Swagger swagger) {
+      @NonNull ApiRequestValidator apiRequestValidator, @NonNull OpenAPI openApi) {
     this.apiRequestValidator = apiRequestValidator;
     this.apiOperation = apiOperation;
     this.informationProduct = informationProduct;
     this.response = response;
     this.requestParameterMapper = requestParameterMapper;
-    this.swagger = swagger;
+    this.openApi = openApi;
   }
 
   /**
@@ -82,12 +84,13 @@ public final class InformationProductRequestHandler
     context.setProperty(RequestHandlerProperties.OPERATION, operation);
 
     RequestParameters requestParameters =
-        apiRequestValidator.validate(apiOperation, swagger, context);
+        apiRequestValidator.validate(apiOperation, context);
 
     Map<String, String> parameterValues =
         requestParameterMapper.map(operation, informationProduct, requestParameters);
 
-    String baseUri = BaseUriFactory.newBaseUri((ContainerRequest) context, swagger);
+    String baseUri =
+        BaseUriFactory.determineBaseUri((ContainerRequest) context, openApi, operation);
     RequestContext requestContext =
         new RequestContext(apiOperation, informationProduct, parameterValues, baseUri);
 
@@ -110,7 +113,7 @@ public final class InformationProductRequestHandler
       }
 
       GraphEntity entity =
-          GraphEntity.newGraphEntity(response, resultRepository, subjects, swagger, requestContext);
+          GraphEntity.newGraphEntity(response, resultRepository, subjects, openApi, requestContext);
 
       return responseOk(entity);
     }
@@ -122,8 +125,10 @@ public final class InformationProductRequestHandler
   }
 
   private Set<Resource> getSubjects(Repository repository) {
-    String subjectQuery = (String) apiOperation.getOperation().getVendorExtensions().get(
-        OpenApiSpecificationExtensions.SUBJECT_QUERY);
+    Operation operation = apiOperation.getOperation();
+    Map<String, Object> extensions = operation.getExtensions() != null
+        ? operation.getExtensions() : ImmutableMap.of();
+    String subjectQuery = (String) extensions.get(OpenApiSpecificationExtensions.SUBJECT_QUERY);
 
     if (subjectQuery == null) {
       throw new ConfigurationException(String.format(

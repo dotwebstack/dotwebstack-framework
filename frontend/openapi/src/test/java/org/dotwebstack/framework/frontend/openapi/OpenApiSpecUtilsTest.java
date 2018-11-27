@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
@@ -14,11 +15,11 @@ import static org.mockito.Mockito.when;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
-import io.swagger.parser.SwaggerParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,31 +34,31 @@ import org.junit.rules.ExpectedException;
 import org.springframework.core.env.Environment;
 import org.springframework.util.StreamUtils;
 
-public class SwaggerUtilsTest {
+public class OpenApiSpecUtilsTest {
 
-  private Swagger swagger;
+  private OpenAPI openApi;
 
   private String path;
 
-  private Path method;
+  private PathItem method;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setUp() throws IOException {
-    swagger = createSwagger();
+    openApi = createOpenApi();
     path = "/endpoint";
-    method = new Path();
-    method.set("get", new Operation());
+    method = new PathItem();
+    method.setGet(new Operation());
   }
 
   @Test
-  public void extractApiOperation_ReturnsValidApiOperation_WithSpecifiedGet() throws IOException {
+  public void extractApiOperation_ReturnsValidApiOperation_WithSpecifiedGet() {
     path = "/endpoint";
 
-    Collection<ApiOperation> apiOperations = SwaggerUtils.extractApiOperations(swagger, path,
-        method);
+    Collection<ApiOperation> apiOperations =
+        OpenApiSpecUtils.extractApiOperations(openApi, path, method);
 
     ApiOperation apiOperation = apiOperations.stream().findFirst().get();
     Operation operation = apiOperation.getOperation();
@@ -69,20 +70,21 @@ public class SwaggerUtilsTest {
   }
 
   @Test
-  public void extractApiOperation_ReturnsNull_WithUnspecifiedGet() throws IOException {
+  public void extractApiOperation_ReturnsNull_WithUnspecifiedGet() {
     path = "/unknown";
 
-    Collection<ApiOperation> apiOperations = SwaggerUtils.extractApiOperations(swagger, path,
-        method);
+    Collection<ApiOperation> apiOperations =
+        OpenApiSpecUtils.extractApiOperations(openApi, path, method);
 
-    assertThat(apiOperations.size(), is(0));
+    assertThat(apiOperations, empty());
   }
 
-  private static Swagger createSwagger() throws IOException {
+  private static OpenAPI createOpenApi() throws IOException {
     String oasSpecContent = StreamUtils.copyToString(
-        SwaggerUtilsTest.class.getResourceAsStream(SwaggerUtilsTest.class.getSimpleName() + ".yml"),
+        OpenApiSpecUtilsTest.class.getResourceAsStream(
+            OpenApiSpecUtilsTest.class.getSimpleName() + ".yml"),
         Charset.forName("UTF-8"));
-    return new SwaggerParser().parse(oasSpecContent);
+    return new OpenAPIV3Parser().readContents(oasSpecContent).getOpenAPI();
   }
 
   @Test
@@ -94,7 +96,8 @@ public class SwaggerUtilsTest {
     YAMLMapper mapper = new YAMLMapper();
 
     InputStream originalInputStream =
-        new EnvironmentAwareResource(SwaggerUtilsTest.class.getResourceAsStream("dbeerpedia.yml"),
+        new EnvironmentAwareResource(
+            OpenApiSpecUtilsTest.class.getResourceAsStream("dbeerpedia.yml"),
             mockEnvironment).getInputStream();
     ObjectNode specNode = mapper.readValue(originalInputStream, ObjectNode.class);
     String original = mapper.writer().writeValueAsString(specNode);
@@ -104,7 +107,7 @@ public class SwaggerUtilsTest {
         new ByteArrayInputStream(original.getBytes(Charset.forName("UTF-8")));
 
     // Act
-    ObjectNode removedNode = SwaggerUtils.removeVendorExtensions(testInputStream, mapper);
+    ObjectNode removedNode = OpenApiSpecUtils.removeVendorExtensions(testInputStream, mapper);
 
     // Assert
     String stripped = mapper.writer().writeValueAsString(removedNode);

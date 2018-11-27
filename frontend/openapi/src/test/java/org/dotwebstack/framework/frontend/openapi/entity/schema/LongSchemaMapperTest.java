@@ -3,9 +3,8 @@ package org.dotwebstack.framework.frontend.openapi.entity.schema;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import io.swagger.models.properties.LongProperty;
-import io.swagger.models.properties.StringProperty;
-import java.math.BigInteger;
+import io.swagger.v3.oas.models.media.IntegerSchema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.junit.Before;
@@ -26,12 +25,12 @@ public class LongSchemaMapperTest {
   private TupleEntity tupleEntityMock;
 
   private LongSchemaMapper longSchemaMapper;
-  private LongProperty longProperty;
+  private IntegerSchema longProperty;
 
   @Before
   public void setUp() {
     longSchemaMapper = new LongSchemaMapper();
-    longProperty = new LongProperty();
+    longProperty = new IntegerSchema().format("int64");
   }
 
   @Test
@@ -65,9 +64,21 @@ public class LongSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForNonLongProperty() {
+  public void supports_ReturnsFalse_ForNonIntegerProperty() {
     // Arrange & Act
-    Boolean supported = longSchemaMapper.supports(new StringProperty());
+    Boolean supported = longSchemaMapper.supports(new StringSchema());
+
+    // Assert
+    assertThat(supported, equalTo(false));
+  }
+
+  @Test
+  public void supports_ReturnsFalse_ForIntegerProperty() {
+    // Arrange
+    IntegerSchema integerSchema = new IntegerSchema();
+
+    // Act
+    Boolean supported = longSchemaMapper.supports(integerSchema);
 
     // Assert
     assertThat(supported, equalTo(false));

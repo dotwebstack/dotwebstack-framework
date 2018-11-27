@@ -6,7 +6,6 @@ import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.model.SimpleRequest.Builder;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.Swagger;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +19,8 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException.InvalidParameter;
+import org.dotwebstack.framework.frontend.openapi.handlers.validation.RequestValidationException;
+import org.dotwebstack.framework.frontend.openapi.handlers.validation.RequestValidator;
 
 class ApiRequestValidator {
   private static final List<String> FORBIDDEN_CHARS = ImmutableList.of("?", "$");
@@ -42,8 +43,8 @@ class ApiRequestValidator {
    * @return a map of (validated) parameters
    * @throws WebApplicationException in case validation fails
    */
-  RequestParameters validate(@NonNull ApiOperation apiOperation, @NonNull Swagger swagger,
-      @NonNull ContainerRequestContext requestContext) {
+  RequestParameters validate(@NonNull ApiOperation apiOperation,
+                             @NonNull ContainerRequestContext requestContext) {
     UriInfo uriInfo = requestContext.getUriInfo();
 
     checkForForbiddenChars(uriInfo);
@@ -57,7 +58,7 @@ class ApiRequestValidator {
     uriInfo.getQueryParameters().forEach(builder::withQueryParam);
 
     RequestParameters requestParameters =
-        requestParameterExtractor.extract(apiOperation, swagger, requestContext);
+        requestParameterExtractor.extract(apiOperation, requestContext);
 
     String body = requestParameters.getRawBody();
     builder.withBody(body);

@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.BooleanProperty;
+import io.swagger.v3.oas.models.media.BooleanSchema;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -34,12 +34,12 @@ public class BooleanSchemaMapperConstantValueTest {
   private GraphEntity graphEntityMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
-  private BooleanProperty booleanProperty;
+  private BooleanSchema booleanSchema;
   private ValueContext valueContext;
 
   @Before
   public void setUp() {
-    booleanProperty = new BooleanProperty();
+    booleanSchema = new BooleanSchema();
     schemaMapperAdapter =
         new SchemaMapperAdapter(Collections.singletonList(new BooleanSchemaMapper()));
     valueContext = ValueContext.builder().build();
@@ -48,10 +48,10 @@ public class BooleanSchemaMapperConstantValueTest {
   @Test
   public void mapGraphValue_ReturnsBooleanValue_WhenStringConstantValueIsDefined() {
     // Arrange
-    booleanProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, "true"));
+    booleanSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, "true"));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(booleanProperty, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(booleanSchema, false, graphEntityMock,
         valueContext, schemaMapperAdapter);
 
     // Assert
@@ -61,10 +61,10 @@ public class BooleanSchemaMapperConstantValueTest {
   @Test
   public void mapGraphValue_ReturnsBooleanValue_WhenBooleanConstantValueIsDefined() {
     // Arrange
-    booleanProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, true));
+    booleanSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, true));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(booleanProperty, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(booleanSchema, false, graphEntityMock,
         valueContext, schemaMapperAdapter);
 
     // Assert
@@ -76,10 +76,10 @@ public class BooleanSchemaMapperConstantValueTest {
     // Arrange
     Literal literal = VALUE_FACTORY.createLiteral("true", XMLSchema.BOOLEAN);
 
-    booleanProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
+    booleanSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    Object result = schemaMapperAdapter.mapGraphValue(booleanProperty, graphEntityMock,
+    Object result = schemaMapperAdapter.mapGraphValue(booleanSchema, false, graphEntityMock,
         valueContext, schemaMapperAdapter);
 
     // Assert

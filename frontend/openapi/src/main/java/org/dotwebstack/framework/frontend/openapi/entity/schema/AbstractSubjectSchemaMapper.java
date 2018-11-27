@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Set;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -8,12 +8,11 @@ import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 
-abstract class AbstractSubjectSchemaMapper<S extends Property, T>
-    extends AbstractSchemaMapper<S, T> {
+abstract class AbstractSubjectSchemaMapper<S extends Schema, T> extends AbstractSchemaMapper<S, T> {
 
-  protected static boolean hasSubjectVendorExtension(@NonNull Property schema) {
+  protected static boolean hasSubjectVendorExtension(@NonNull Schema schema) {
     return hasVendorExtension(schema, OpenApiSpecificationExtensions.SUBJECT)
-        && (boolean) schema.getVendorExtensions().get(OpenApiSpecificationExtensions.SUBJECT);
+        && (boolean) schema.getExtensions().get(OpenApiSpecificationExtensions.SUBJECT);
   }
 
   /**
@@ -21,24 +20,27 @@ abstract class AbstractSubjectSchemaMapper<S extends Property, T>
    * @throws SchemaMapperRuntimeException If the property is required, and no subject can be found.
    * @throws SchemaMapperRuntimeException If more than one subject has been found.
    */
-  protected static Value getSubject(@NonNull Property schema, @NonNull GraphEntity graphEntity) {
+  protected static Value getSubject(@NonNull GraphEntity graphEntity, boolean required) {
     Set<Resource> subjects = graphEntity.getSubjects();
 
     if (subjects.isEmpty()) {
-      if (schema.getRequired()) {
-        throw new SchemaMapperRuntimeException(
-            "Expected a single subject, but subject query yielded no results.");
+      if (required) {
+        throwException(subjects.size());
       }
 
       return null;
     }
 
     if (subjects.size() > 1) {
-      throw new SchemaMapperRuntimeException(
-          "Expected a single subject, but subject query yielded multiple results.");
+      throwException(subjects.size());
     }
 
     return subjects.iterator().next();
+  }
+
+  private static void throwException(int size) {
+    String message = "Expected a single subject, but subject query yielded " + size + " results.";
+    throw new SchemaMapperRuntimeException(message);
   }
 
 }

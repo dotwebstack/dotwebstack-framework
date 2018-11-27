@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.DateProperty;
+import io.swagger.v3.oas.models.media.DateSchema;
 import java.time.LocalDate;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -35,12 +35,12 @@ public class DateSchemaMapperConstantValueTest {
   private GraphEntity graphEntityMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
-  private DateProperty dateProperty;
+  private DateSchema dateSchema;
   private ValueContext valueContext;
 
   @Before
   public void setUp() {
-    dateProperty = new DateProperty();
+    dateSchema = new DateSchema();
     schemaMapperAdapter =
         new SchemaMapperAdapter(Collections.singletonList(new DateSchemaMapper()));
     valueContext = ValueContext.builder().build();
@@ -49,11 +49,11 @@ public class DateSchemaMapperConstantValueTest {
   @Test
   public void mapGraphValue_ReturnsLocalDate_WhenStringConstantValueIsDefined() {
     // Arrange
-    dateProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, EXPECTED_LOCAL_DATE));
+    dateSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, EXPECTED_LOCAL_DATE));
 
     // Act
-    LocalDate result = (LocalDate) schemaMapperAdapter.mapGraphValue(dateProperty, graphEntityMock,
-        valueContext, schemaMapperAdapter);
+    LocalDate result = (LocalDate) schemaMapperAdapter.mapGraphValue(dateSchema, false,
+        graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(EXPECTED_LOCAL_DATE));
@@ -63,11 +63,11 @@ public class DateSchemaMapperConstantValueTest {
   public void mapGraphValue_ReturnsLocalDate_WhenSupportedLiteralConstantValueIsDefined() {
     // Arrange
     Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE, XMLSchema.DATE);
-    dateProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
+    dateSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    LocalDate result = (LocalDate) schemaMapperAdapter.mapGraphValue(dateProperty, graphEntityMock,
-        valueContext, schemaMapperAdapter);
+    LocalDate result = (LocalDate) schemaMapperAdapter.mapGraphValue(dateSchema, false,
+        graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert
     assertThat(result.toString(), is(EXPECTED_LOCAL_DATE));

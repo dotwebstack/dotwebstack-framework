@@ -9,9 +9,9 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Model;
-import io.swagger.models.Response;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -34,7 +34,7 @@ public class GraphEntityTest {
   public final ExpectedException thrown = ExpectedException.none();
 
   @Mock
-  private Response responseMock;
+  private ApiResponse responseMock;
 
   @Mock
   private Repository repositoryMock;
@@ -43,10 +43,10 @@ public class GraphEntityTest {
   private Set<Resource> subjectsMock;
 
   @Mock
-  private Swagger swaggerMock;
+  private OpenAPI openApiMock;
 
   @Mock
-  private Map<String, Model> swaggerDefinitionsMock;
+  private Components openApiComponentsMock;
 
   @Mock
   private RequestContext requestContextMock;
@@ -54,17 +54,17 @@ public class GraphEntityTest {
   @Test
   public void newGraphEntity_CreatesGraphEntity_WhenDefinitionsArePresent() {
     // Arrange
-    when(swaggerMock.getDefinitions()).thenReturn(swaggerDefinitionsMock);
+    when(openApiMock.getComponents()).thenReturn(openApiComponentsMock);
 
     // Act
     GraphEntity graphEntity = GraphEntity.newGraphEntity(responseMock, repositoryMock, subjectsMock,
-        swaggerMock, requestContextMock);
+        openApiMock, requestContextMock);
 
     // Assert
     assertThat(graphEntity.getResponse(), equalTo(responseMock));
     assertThat(graphEntity.getRepository(), equalTo(repositoryMock));
     assertThat(graphEntity.getSubjects(), equalTo(subjectsMock));
-    assertThat(graphEntity.getSwaggerDefinitions(), equalTo(swaggerDefinitionsMock));
+    assertThat(graphEntity.getOpenApiComponents(), equalTo(openApiComponentsMock));
     assertThat(graphEntity.getRequestContext(), equalTo(requestContextMock));
   }
 
@@ -72,11 +72,21 @@ public class GraphEntityTest {
   public void newGraphEntity_CreatesEmptyMaps_ForAbsentValues() {
     // Act
     GraphEntity graphEntity = GraphEntity.newGraphEntity(responseMock, repositoryMock, subjectsMock,
-        swaggerMock, requestContextMock);
+        openApiMock, requestContextMock);
 
     // Assert
-    assertThat(graphEntity.getSwaggerDefinitions(), is(not(nullValue())));
-    assertThat(graphEntity.getSwaggerDefinitions().keySet(), is(empty()));
+    assertThat(graphEntity.getOpenApiComponents(), is(not(nullValue())));
+    assertThat(graphEntity.getOpenApiComponents().getCallbacks(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getExamples(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getExtensions(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getHeaders(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getLinks(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getParameters(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getRequestBodies(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getResponses(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getSchemas(), is(nullValue()));
+    assertThat(graphEntity.getOpenApiComponents().getSecuritySchemes(), is(nullValue()));
+
 
     assertThat(graphEntity.getLdPathNamespaces(), is(not(nullValue())));
     assertThat(graphEntity.getLdPathNamespaces().keySet(), is(empty()));
@@ -88,11 +98,11 @@ public class GraphEntityTest {
     Map<String, String> namespaces = ImmutableMap.of("rdf", RDF.NAMESPACE, "rdfs", RDFS.NAMESPACE);
     Map<String, Object> vendorExtensions =
         ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH_NAMESPACES, namespaces);
-    when(swaggerMock.getVendorExtensions()).thenReturn(vendorExtensions);
+    when(openApiMock.getExtensions()).thenReturn(vendorExtensions);
 
     // Act
     GraphEntity graphEntity = GraphEntity.newGraphEntity(responseMock, repositoryMock, subjectsMock,
-        swaggerMock, requestContextMock);
+        openApiMock, requestContextMock);
 
     // Assert
     assertThat(graphEntity.getLdPathNamespaces(), equalTo(namespaces));
@@ -104,11 +114,11 @@ public class GraphEntityTest {
     thrown.expect(LdPathExecutorRuntimeException.class);
 
     // Arrange
-    when(swaggerMock.getVendorExtensions()).thenReturn(
+    when(openApiMock.getExtensions()).thenReturn(
         ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH_NAMESPACES, true));
 
     // Act
-    GraphEntity.newGraphEntity(responseMock, repositoryMock, subjectsMock, swaggerMock,
+    GraphEntity.newGraphEntity(responseMock, repositoryMock, subjectsMock, openApiMock,
         requestContextMock);
   }
 
