@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 import javax.ws.rs.HttpMethod;
 import lombok.Cleanup;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.ApplicationProperties;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -44,25 +43,31 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class OpenApiRequestMapper {
 
-  @NonNull
   private final OpenAPIV3Parser openApiParser;
 
-  @NonNull
   private final ApplicationProperties applicationProperties;
 
-  @NonNull
   private final List<RequestMapper> requestMappers;
 
-  @NonNull
   private final Environment environment;
 
   private static final ParseOptions OPTIONS = new ParseOptions();
 
   static {
     OPTIONS.setResolveFully(true);
+  }
+
+  @Autowired
+  public OpenApiRequestMapper(@NonNull OpenAPIV3Parser openApiParser,
+                              @NonNull ApplicationProperties applicationProperties,
+                              @NonNull List<RequestMapper> requestMappers,
+                              @NonNull Environment environment) {
+    this.openApiParser = openApiParser;
+    this.applicationProperties = applicationProperties;
+    this.requestMappers = requestMappers;
+    this.environment = environment;
   }
 
   public void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
