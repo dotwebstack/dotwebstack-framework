@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-frontend</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.1.3-SNAPSHOT</version>
   </parent>
 
   <artifactId>dotwebstack-frontend-openapi</artifactId>
@@ -56,21 +56,6 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.7</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.marmotta</groupId>
-      <artifactId>ldpath-api</artifactId>
-      <version>3.3.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.marmotta</groupId>
-      <artifactId>ldpath-core</artifactId>
-      <version>3.3.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.taxonic.carml</groupId>
-      <artifactId>carml-engine</artifactId>
-      <version>0.2.0</version>
     </dependency>
     <!-- test dependencies -->
     <dependency>
