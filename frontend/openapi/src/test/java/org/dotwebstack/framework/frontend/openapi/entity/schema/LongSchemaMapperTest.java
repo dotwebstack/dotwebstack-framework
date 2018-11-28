@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
@@ -54,6 +55,9 @@ public class LongSchemaMapperTest {
   public void setUp() {
     longSchemaMapper = new LongSchemaMapper();
     longProperty = new IntegerSchema().format("int64");
+
+    when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
+    schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(longSchemaMapper));
   }
 
   @Test
@@ -119,7 +123,7 @@ public class LongSchemaMapperTest {
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
-    assertThat(result, is(VALUE_1.floatValue()));
+    assertThat(result, is(VALUE_1.longValue()));
   }
 
   @Test
