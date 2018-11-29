@@ -4,20 +4,18 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URI;
+import java.util.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import javax.ws.rs.core.UriInfo;
 import javax.xml.ws.http.HTTPException;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
-import org.dotwebstack.framework.frontend.ld.entity.HtmlGraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.representation.RepresentationResourceProvider;
@@ -62,18 +60,13 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
     List<String> acceptHeaders = headers.get("accept") != null
         ? headers.get("accept") : Collections.emptyList();
 
+    if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
+      return fillTemplate(representation, containerRequestContext.getUriInfo());
+    }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-      if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
-        return fillTemplate(representation);
-      }
       return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
     }
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-      if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
-        return fillTemplate(representation);
-        // return Response.ok(new HtmlGraphEntity((TupleQueryResult)
-        // result, representation)).build();
-      }
       return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
     }
 
@@ -82,12 +75,12 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
             informationProduct.getResultType(), informationProduct.getIdentifier()));
   }
 
-  private Response fillTemplate(Representation representation) {
+  private Response fillTemplate(Representation representation, UriInfo requeestURI) {
     Template htmlTemplate = representation.getHtmlTemplate();
 
     if (htmlTemplate != null) {
       Map<String, Object> freeMarkerDataModel = new HashMap<>();
-      freeMarkerDataModel.put("result", representation.getIdentifier());
+      freeMarkerDataModel.put("result", requeestURI.getAbsolutePath().toString());
       try {
         StringWriter stringWriter = new StringWriter();
         htmlTemplate.process(freeMarkerDataModel, stringWriter);
@@ -100,7 +93,7 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
         System.out.print("faal2");
       }
     }
-    throw new HTTPException(406);
+    throw new ConfigurationException(String.format("No HTML template defined for %s", representation.getIdentifier()));
   }
 
 }

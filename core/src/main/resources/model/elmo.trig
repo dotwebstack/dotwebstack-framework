@@ -559,11 +559,6 @@ GRAPH elmo:Config {
     rdfs:label "Graph";
     rdfs:comment "The result is a graph (a set of triples), for example the result of a CONSTRUCT query."
   .
-  elmo-rt:Html a elmo:ResultType;
-    skos:inScheme elmo-schemes:result-types;
-    rdfs:label "Html";
-    rdfs:comment "The result is a html representation of a set of triples."
-  .
 }
 
 GRAPH elmo:Config {

@@ -7,10 +7,7 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -18,10 +15,16 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.xml.ws.http.HTTPException;
 
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.HtmlGraphEntity;
 
 import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,20 +32,20 @@ import org.springframework.stereotype.Service;
 @Produces({"text/html"})
 public class HtmlGraphEntityWriter implements MessageBodyWriter<HtmlGraphEntity> {
 
-  private final List<MediaType> mediaTypes = Collections.singletonList(MediaType.TEXT_HTML_TYPE);
+  private final List<MediaType> mediaTypes = Collections.singletonList(MediaTypes.TEXT_HTML_TYPE);
 
   private String htmlString;
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations,
                              MediaType mediaType) {
-    return HtmlGraphEntityWriter.class.isAssignableFrom(type) && mediaTypes.contains(mediaType);
+    return HtmlGraphEntity.class.isAssignableFrom(type) && mediaTypes.contains(mediaType);
   }
 
   @Override
   public long getSize(HtmlGraphEntity htmlGraphEntity, Class<?> type, Type genericType,
                       Annotation[] annotations, MediaType mediaType) {
-    return 0;
+    return -1;
   }
 
   @Override
@@ -50,23 +53,8 @@ public class HtmlGraphEntityWriter implements MessageBodyWriter<HtmlGraphEntity>
                       Annotation[] annotations, MediaType mediaType,
                       MultivaluedMap<String, Object> multivaluedMap, OutputStream outputStream)
       throws IOException, WebApplicationException {
-    Template htmlTemplate = s.getRepresentation().getHtmlTemplate();
-
-    if (htmlTemplate != null) {
-      Map<String, Object> freeMarkerDataModel = new HashMap<>();
-      freeMarkerDataModel.put("result", s.getRepresentation().getIdentifier());
-      try {
-        StringWriter stringWriter = new StringWriter();
-        htmlTemplate.process(freeMarkerDataModel, stringWriter);
-        StringBuffer buffer = stringWriter.getBuffer();
-        this.htmlString = buffer != null ? buffer.toString() : "UNKNOWN";
-      } catch (IOException e) {
-        System.out.print("faal");
-      } catch (TemplateException e) {
-        System.out.print("faal2");
-      }
-    }
-    throw new HTTPException(406);
+    Model model = QueryResults.asModel(s.getQueryResult());
+    Rio.write(model, outputStream, RDFFormat.JSONLD);
   }
 }
 

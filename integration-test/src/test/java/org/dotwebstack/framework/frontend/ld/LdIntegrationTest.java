@@ -25,6 +25,7 @@ import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,12 +140,50 @@ public class LdIntegrationTest {
   @Test
   public void get_GetRedirection_ThroughLdApi() throws URISyntaxException {
     // Act
-    Response response = target.path("/dbp/ld/v1/id/breweries").request().get();
+    Response response = target.path("/dbp/ld/v1/id/breweries").request()
+            .accept("image/gif", "image/jpeg").get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
     assertThat(response.getLocation().getPath(), equalTo("/dbp/ld/v1/doc/breweries"));
     assertThat(response.readEntity(String.class), isEmptyString());
+  }
+
+  @Test
+  public void get_HtmlResponse_WhenAcceptHeaderIsTextHtml() {
+    // Arrange
+    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
+            DBEERPEDIA.BREWERIES_LABEL).build();
+    SparqlHttpStub.returnGraph(model);
+    String path = "/dbp/ld/v1/graph-breweries";
+    String host = "/localhost";
+
+    // Act
+    Response response = target.path(path).request("text/html").get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
+    assertThat(response.readEntity(String.class), equalTo("hey " + target.getUri()+host+path));
+  }
+
+  @Ignore
+  @Test
+  public void get_NoHtmlResponse_WhenNoHtmlTemplate() {
+    // Arrange
+    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
+            DBEERPEDIA.BREWERIES_LABEL).build();
+    SparqlHttpStub.returnGraph(model);
+    String path = "/dbp/ld/v1/tuple-breweries";
+    String host = "/localhost";
+
+    // Act
+    Response response = target.path(path).request("text/html").get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
+    assertThat(response.readEntity(String.class), equalTo("hey " + target.getUri()+host+path));
   }
 
   @Test

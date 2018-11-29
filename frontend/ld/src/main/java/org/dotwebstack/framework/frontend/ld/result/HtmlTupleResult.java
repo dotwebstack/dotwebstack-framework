@@ -3,12 +3,15 @@ package org.dotwebstack.framework.frontend.ld.result;
 import freemarker.template.Template;
 import lombok.NonNull;
 import org.apache.jena.rdf.model.Statement;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
 import org.eclipse.rdf4j.query.QueryResult;
 
-public class HtmlTupleResult implements QueryResult<Statement> {
+import java.util.*;
 
-  QueryResult queryResult;
+public class HtmlTupleResult implements QueryResult<BindingSet> {
+
+  QueryResult<BindingSet> queryResult;
   Template template;
 
   public HtmlTupleResult(@NonNull QueryResult queryResult, @NonNull Template template) {
@@ -35,8 +38,8 @@ public class HtmlTupleResult implements QueryResult<Statement> {
   }
 
   @Override
-  public Statement next() throws QueryEvaluationException {
-    return null;
+  public BindingSet next() throws QueryEvaluationException {
+    return queryResult.next();
   }
 
   @Override
@@ -46,5 +49,9 @@ public class HtmlTupleResult implements QueryResult<Statement> {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public List<String> getBindingNames() {
+    return new ArrayList<>(queryResult.next().getBindingNames());
   }
 }
