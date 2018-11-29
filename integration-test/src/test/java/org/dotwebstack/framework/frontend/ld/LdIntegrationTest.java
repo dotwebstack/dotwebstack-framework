@@ -58,9 +58,7 @@ public class LdIntegrationTest {
   @Test
   public void get_GetBreweryCollection_ThroughLdApi() {
     // Arrange
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
-        DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnGraph(model);
+    arrangeGraphModel();
     MediaType mediaType = MediaType.valueOf("text/turtle");
 
     // Act
@@ -86,14 +84,7 @@ public class LdIntegrationTest {
   @Test
   public void get_GetOneBreweryWithParameter_ThroughLdApi() {
     // Arrange
-    TupleQueryResultBuilder builder =
-        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
-            DBEERPEDIA.BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION,
-            DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION,
-            DBEERPEDIA.BROUWTOREN_PLACE).resultSet(DBEERPEDIA.MAXIMUS_NAME,
-                DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
-                DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
-    SparqlHttpStub.returnTuple(builder);
+    arrangeTupleModel();
     MediaType mediaType = MediaType.APPLICATION_JSON_TYPE;
 
     // Act
@@ -122,9 +113,7 @@ public class LdIntegrationTest {
   @Test
   public void get_GetCorrectHead_ThroughLdApi() {
     // Arrange
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
-        DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnGraph(model);
+    arrangeGraphModel();
 
     // Act
     Response response =
@@ -150,30 +139,9 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void get_HtmlResponse_WhenAcceptHeaderIsTextHtml() {
+  public void get_HtmlResponseForTuple_WhenAcceptHeaderIsTextHtml() {
     // Arrange
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
-            DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnGraph(model);
-    String path = "/dbp/ld/v1/graph-breweries";
-    String host = "/localhost";
-
-    // Act
-    Response response = target.path(path).request("text/html").get();
-
-    // Assert
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("hey " + target.getUri()+host+path));
-  }
-
-  @Ignore
-  @Test
-  public void get_NoHtmlResponse_WhenNoHtmlTemplate() {
-    // Arrange
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
-            DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnGraph(model);
+    arrangeTupleModel();
     String path = "/dbp/ld/v1/tuple-breweries";
     String host = "/localhost";
 
@@ -183,7 +151,63 @@ public class LdIntegrationTest {
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("hey " + target.getUri()+host+path));
+    assertThat(response.readEntity(String.class), equalTo("hey " + target.getUri()
+        + host + path));
+  }
+
+  @Test
+  public void get_HtmlResponseForGraph_WhenAcceptHeaderIsTextHtml() {
+    // Arrange
+    arrangeGraphModel();
+    String path = "/dbp/ld/v1/graph-breweries";
+    String host = "/localhost";
+
+    // Act
+    Response response = target.path(path).request("text/html").get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
+    assertThat(response.readEntity(String.class), equalTo("hey " + target.getUri()
+        + host + path));
+  }
+
+  @Test
+  public void get_NotAcceptable_WhenNoHtmlTemplateDefinedForTuple() {
+    // Arrange
+    arrangeTupleModel();
+    String path = "/dbp/ld/v1/no-html-tuple-breweries";
+
+    // Act
+    Response response = target.path(path).request("text/html").get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
+  }
+
+  public void get_NotAcceptable_WhenNoHtmlTemplateDefinedForGraphRepresentation() {
+    // Arrange
+    arrangeGraphModel();
+    String path = "/dbp/ld/v1/no-html-graph-breweries";
+
+    // Act
+    Response response = target.path(path).request("text/html").get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
+  }
+
+  @Test
+  public void get_NoContent_WhenWrongHtmlTemplateDefined() {
+    // Arrange
+    arrangeGraphModel();
+    String path = "/dbp/ld/v1/wrong-template-graph-breweries";
+
+    // Act
+    Response response = target.path(path).request("text/html").get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.NO_CONTENT.getStatusCode()));
   }
 
   @Test
@@ -207,9 +231,7 @@ public class LdIntegrationTest {
   @Test
   public void get_NotAcceptable_WhenRequestingWrongMediaType() {
     // Arrange
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
-        DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnGraph(model);
+    arrangeGraphModel();
 
     // Act
     Response response =
@@ -222,9 +244,7 @@ public class LdIntegrationTest {
   @Test
   public void get_GetDocResource_ThroughLdApi() {
     // Arrange
-    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
-        DBEERPEDIA.BREWERIES_LABEL).build();
-    SparqlHttpStub.returnGraph(model);
+    arrangeGraphModel();
     MediaType mediaType = MediaType.valueOf("text/turtle");
 
     // Act
@@ -274,6 +294,23 @@ public class LdIntegrationTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.BAD_REQUEST.getStatusCode()));
+  }
+
+  private void arrangeGraphModel() {
+    Model model = new ModelBuilder().subject(DBEERPEDIA.BREWERIES).add(RDFS.LABEL,
+        DBEERPEDIA.BREWERIES_LABEL).build();
+    SparqlHttpStub.returnGraph(model);
+  }
+
+  private void arrangeTupleModel() {
+    TupleQueryResultBuilder builder =
+        new TupleQueryResultBuilder("naam", "sinds", "fte", "oprichting", "plaats").resultSet(
+            DBEERPEDIA.BROUWTOREN_NAME, DBEERPEDIA.BROUWTOREN_YEAR_OF_FOUNDATION,
+            DBEERPEDIA.BROUWTOREN_FTE, DBEERPEDIA.BROUWTOREN_DATE_OF_FOUNDATION,
+            DBEERPEDIA.BROUWTOREN_PLACE).resultSet(DBEERPEDIA.MAXIMUS_NAME,
+            DBEERPEDIA.MAXIMUS_YEAR_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_FTE,
+            DBEERPEDIA.MAXIMUS_DATE_OF_FOUNDATION, DBEERPEDIA.MAXIMUS_PLACE);
+    SparqlHttpStub.returnTuple(builder);
   }
 
 }

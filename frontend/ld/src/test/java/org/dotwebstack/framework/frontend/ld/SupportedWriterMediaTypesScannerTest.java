@@ -44,7 +44,7 @@ public class SupportedWriterMediaTypesScannerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SupportedWriterMediaTypesScanner(null, Collections.emptyList(), Collections.emptyList());
+    new SupportedWriterMediaTypesScanner(null, Collections.emptyList());
   }
 
   @Test
@@ -53,19 +53,17 @@ public class SupportedWriterMediaTypesScannerTest {
     thrown.expect(NullPointerException.class);
 
     // Act
-    new SupportedWriterMediaTypesScanner(Collections.emptyList(), null,
-        Collections.emptyList());
+    new SupportedWriterMediaTypesScanner(Collections.emptyList(), null);
   }
 
   @Test
   public void constructor_FindsSupportedGraphProviders_WhenProvided() {
     // Arrange & Act
     SupportedWriterMediaTypesScanner scanner = new SupportedWriterMediaTypesScanner(
-        Collections.singletonList(new StubGraphEntityWriter()), Collections.emptyList(),
-        Collections.emptyList());
+        Collections.singletonList(new StubGraphEntityWriter()), Collections.emptyList());
 
     // Assert
-    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
+    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(2));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.GRAPH)),
         IsCollectionContaining.hasItems(MediaTypes.LDJSON_TYPE));
     assertThat(scanner.getGraphEntityWriters().size(), equalTo(1));
@@ -75,11 +73,10 @@ public class SupportedWriterMediaTypesScannerTest {
   public void constructor_FindsSupportedTupleProviders_WhenProvided() {
     // Arrange & Act
     SupportedWriterMediaTypesScanner scanner = new SupportedWriterMediaTypesScanner(
-        Collections.emptyList(), Collections.singletonList(new StubTupleMessageBodyWriter()),
-        Collections.emptyList());
+        Collections.emptyList(), Collections.singletonList(new StubTupleMessageBodyWriter()));
 
     // Assert
-    assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));
+    assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(2));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.TUPLE)),
         IsCollectionContaining.hasItems(MediaTypes.SPARQL_RESULTS_JSON_TYPE));
     assertThat(scanner.getTupleEntityWriters().size(), equalTo(1));
@@ -90,11 +87,11 @@ public class SupportedWriterMediaTypesScannerTest {
     // Arrange & Act
     SupportedWriterMediaTypesScanner scanner =
         new SupportedWriterMediaTypesScanner(Collections.singletonList(unsupportedGraphWriter),
-            Collections.singletonList(unsupportedTupleWriter), Collections.emptyList());
+            Collections.singletonList(unsupportedTupleWriter));
 
     // Assert
-    assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(0));
-    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
+    assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));
+    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
     assertThat(scanner.getGraphEntityWriters().size(), equalTo(0));
     assertThat(scanner.getTupleEntityWriters().size(), equalTo(0));
   }
@@ -103,11 +100,10 @@ public class SupportedWriterMediaTypesScannerTest {
   public void constructor_IgnoresProviderWithoutProduce_WhenProvided() {
     // Arrange & Act
     SupportedWriterMediaTypesScanner scanner = new SupportedWriterMediaTypesScanner(
-        Collections.singletonList(new InvalidGraphEntityWriter()), Collections.emptyList(),
-        Collections.emptyList());
+        Collections.singletonList(new InvalidGraphEntityWriter()), Collections.emptyList());
 
     // Assert
-    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(0));
+    assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
     assertThat(scanner.getGraphEntityWriters().size(), equalTo(0));
   }
 

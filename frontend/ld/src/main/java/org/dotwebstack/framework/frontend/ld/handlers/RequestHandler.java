@@ -5,13 +5,16 @@ import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import javax.ws.rs.core.UriInfo;
-import javax.xml.ws.http.HTTPException;
+import javax.ws.rs.core.Variant;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
@@ -61,7 +64,10 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
         ? headers.get("accept") : Collections.emptyList();
 
     if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
-      return fillTemplate(representation, containerRequestContext.getUriInfo());
+      Template htmlTemplate = representation.getHtmlTemplate();
+      URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
+      String uriString = uri.toString();
+      return generateHtmlResponse(htmlTemplate, uriString);
     }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
       return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
@@ -75,25 +81,24 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
             informationProduct.getResultType(), informationProduct.getIdentifier()));
   }
 
-  private Response fillTemplate(Representation representation, UriInfo requeestURI) {
-    Template htmlTemplate = representation.getHtmlTemplate();
-
+  private Response generateHtmlResponse(Template htmlTemplate, String uri)  {
     if (htmlTemplate != null) {
       Map<String, Object> freeMarkerDataModel = new HashMap<>();
-      freeMarkerDataModel.put("result", requeestURI.getAbsolutePath().toString());
+      freeMarkerDataModel.put("result", uri);
+      StringWriter stringWriter = new StringWriter();
       try {
-        StringWriter stringWriter = new StringWriter();
         htmlTemplate.process(freeMarkerDataModel, stringWriter);
         StringBuffer buffer = stringWriter.getBuffer();
         String htmlString = buffer != null ? buffer.toString() : "UNKNOWN";
         return Response.ok(htmlString).build();
-      } catch (IOException e) {
-        System.out.print("faal");
       } catch (TemplateException e) {
-        System.out.print("faal2");
+        e.printStackTrace();
+        return Response.noContent().build();
+      } catch (IOException e) {
+        return Response.serverError().build();
       }
     }
-    throw new ConfigurationException(String.format("No HTML template defined for %s", representation.getIdentifier()));
+    return Response.notAcceptable(Collections.singletonList(
+        new Variant(MediaType.TEXT_HTML_TYPE, "en", "UTF-8"))).build();
   }
-
 }

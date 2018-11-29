@@ -10,12 +10,15 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import freemarker.template.Template;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
@@ -36,14 +39,15 @@ import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.GraphQueryResult;
+import org.eclipse.rdf4j.query.QueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -77,6 +81,9 @@ public class RepresentationRequestHandlerTest {
   @Mock
   private MultivaluedMap<String, String> headerMap;
 
+  @Mock
+  private Template template;
+
   @Before
   public void setUp() {
     endpointRequestParameterMapper = new EndpointRequestParameterMapper();
@@ -107,6 +114,69 @@ public class RepresentationRequestHandlerTest {
     assertThat(entity.getQueryResult(), equalTo(queryResult));
     assertThat(entity.getRepresentation(), equalTo(endPoint.getGetRepresentation()));
   }
+
+  @Test
+  public void apply_ReturnStringForGraph_WhenContainerContextContainsAcceptHtml() {
+    // Arrange
+    GraphQueryResult queryResult = mock(GraphQueryResult.class);
+    arrangeMocksHtml(template, queryResult);
+
+    init(HttpMethod.GET);
+
+    // Act
+    Response response = getRequestHandler.apply(containerRequestContext);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(200));
+    assertThat(response.getEntity(), instanceOf(String.class));
+  }
+
+  @Test
+  public void apply_Return406ForGraph_WhenNoTemplateFoundForAcceptHtml() {
+    // Arrange
+    GraphQueryResult queryResult = mock(GraphQueryResult.class);
+    arrangeMocksHtml(null, queryResult);
+
+    init(HttpMethod.GET);
+
+    // Act
+    Response response = getRequestHandler.apply(containerRequestContext);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(406));
+  }
+
+  @Test
+  public void apply_ReturnStringForTuple_WhenContainerContextContainsAcceptHtml() {
+    // Arrange
+    TupleQueryResult queryResult = mock(TupleQueryResult.class);
+    arrangeMocksHtml(template, queryResult);
+
+    init(HttpMethod.GET);
+
+    // Act
+    Response response = getRequestHandler.apply(containerRequestContext);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(200));
+    assertThat(response.getEntity(), instanceOf(String.class));
+  }
+
+  @Test
+  public void apply_Return406ForTuple_WhenNoTemplateFoundForAcceptHtml() {
+    // Arrange
+    TupleQueryResult queryResult = mock(TupleQueryResult.class);
+    arrangeMocksHtml(null, queryResult);
+
+    init(HttpMethod.GET);
+
+    // Act
+    Response response = getRequestHandler.apply(containerRequestContext);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(406));
+  }
+
 
   @Test
   public void apply_ReturnQueryRepresentation_WhenTupleQueryResultGetRequest() {
@@ -234,10 +304,17 @@ public class RepresentationRequestHandlerTest {
     getRequestHandler.apply(containerRequestContext);
   }
 
+  private void arrangeMocksHtml(Template template, QueryResult queryResult) {
+    when(headerMap.get("accept")).thenReturn(Collections.singletonList("text/html"));
+    when(representation.getHtmlTemplate()).thenReturn(template);
+    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
+  }
+
   private void init(String get) {
     UriInfo uriInfo = mock(UriInfo.class);
     MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
+    when(uriInfo.getAbsolutePath()).thenReturn(URI.create("http://localhost"));
     when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
     when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));

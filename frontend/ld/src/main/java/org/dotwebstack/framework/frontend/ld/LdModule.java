@@ -45,7 +45,6 @@ public class LdModule implements HttpModule {
 
     supportedWriterMediaTypesScanner.getGraphEntityWriters().forEach(httpConfiguration::register);
     supportedWriterMediaTypesScanner.getTupleEntityWriters().forEach(httpConfiguration::register);
-    supportedWriterMediaTypesScanner.getHtmlEntityWriters().forEach(httpConfiguration::register);
 
     supportedReaderMediaTypesScanner.getModelReaders().forEach(httpConfiguration::register);
   }

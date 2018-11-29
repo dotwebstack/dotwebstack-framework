@@ -16,7 +16,6 @@ public class GenericExceptionMapper implements ExceptionMapper<Exception> {
   public Response toResponse(Exception cause) {
 
     String identifier = generateIdentifier();
-    cause.printStackTrace();
     if (LOG.isErrorEnabled()) {
       LOG.error(String.format("[%s] %s", identifier, cause.getMessage()), cause);
     }
