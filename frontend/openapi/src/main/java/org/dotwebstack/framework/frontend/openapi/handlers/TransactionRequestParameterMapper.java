@@ -1,27 +1,29 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.BodyParameter;
-import java.util.HashMap;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Map;
 import lombok.NonNull;
 import org.dotwebstack.framework.transaction.Transaction;
 import org.springframework.stereotype.Service;
 
 @Service
-class TransactionRequestParameterMapper extends AbstractRequestParameterMapper {
+class TransactionRequestParameterMapper {
+
+  private RequestParameterMapperHelper helper;
+
+  public TransactionRequestParameterMapper(RequestParameterMapperHelper helper) {
+    this.helper = helper;
+  }
 
   Map<String, String> map(@NonNull Operation operation, @NonNull Transaction transaction,
       @NonNull RequestParameters requestParameters) {
-    Map<String, String> result = new HashMap<>();
-
-    for (io.swagger.models.parameters.Parameter openApiParameter : operation.getParameters()) {
-      if (!(openApiParameter instanceof BodyParameter)) {
-        result.putAll(getOtherParameters(transaction.getParameters(), requestParameters,
-            openApiParameter));
-      }
-    }
+    RequestBody requestBody = null;
+    Map<String, String> result =
+        helper.mapParametersToRequest(operation, requestParameters, requestBody,
+            transaction.getParameters());
     return result;
+
   }
 
 }

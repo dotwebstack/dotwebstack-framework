@@ -7,10 +7,10 @@ import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Swagger;
-import io.swagger.parser.SwaggerParser;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -23,7 +23,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 import org.apache.http.entity.ContentType;
 import org.dotwebstack.framework.frontend.http.error.InvalidParamsBadRequestException;
-import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecUtils;
+import org.dotwebstack.framework.frontend.openapi.handlers.validation.RequestValidator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,15 +44,15 @@ public class ApiRequestValidatorTest {
   @Mock
   private RequestParameterExtractor requestParameterExtractorMock;
 
-  private Path getPath = new Path();
-  private Path postPath = new Path();
-  private Path putPath = new Path();
+  private PathItem getPath = new PathItem();
+  private PathItem postPath = new PathItem();
+  private PathItem putPath = new PathItem();
 
   @Before
   public void before() {
-    getPath.set("get", new Operation());
-    postPath.set("post", new Operation());
-    putPath.set("put", new Operation());
+    getPath.setGet(new Operation());
+    postPath.setPost(new Operation());
+    putPath.setPut(new Operation());
   }
 
   @Rule
@@ -102,21 +103,21 @@ public class ApiRequestValidatorTest {
   @Test
   public void validate_DoesNotFail_ForValidGetRequest() throws URISyntaxException, IOException {
     // Arrange
-    Swagger swagger = createSwagger("simple-getHeader.yml");
+    OpenAPI openApi = createOpenApi("simple-getHeader.yml");
 
     ContainerRequestContext mockGet = mockGet();
-    ApiOperation apiOperation =
-        SwaggerUtils.extractApiOperations(swagger, "/endpoint", getPath).iterator().next();
+    ApiOperation apiOperation = OpenApiSpecUtils.extractApiOperations(openApi, "/endpoint",
+        getPath).iterator().next();
 
-    when(requestParameterExtractorMock.extract(apiOperation, swagger, mockGet)).thenReturn(
+    when(requestParameterExtractorMock.extract(apiOperation, mockGet)).thenReturn(
         new RequestParameters());
 
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
     ApiRequestValidator requestValidator =
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    requestValidator.validate(apiOperation, swagger, mockGet);
+    requestValidator.validate(apiOperation, mockGet);
   }
 
   @Test
@@ -126,21 +127,21 @@ public class ApiRequestValidatorTest {
     exception.expect(WebApplicationException.class);
 
     // Arrange
-    Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
+    OpenAPI openApi = createOpenApi("simple-getHeaderRequired.yml");
 
-    ApiOperation apiOperation =
-        SwaggerUtils.extractApiOperations(swagger, "/endpoint", getPath).iterator().next();
+    ApiOperation apiOperation = OpenApiSpecUtils.extractApiOperations(openApi, "/endpoint",
+        getPath).iterator().next();
     ContainerRequestContext mockGet = mockGet();
 
-    when(requestParameterExtractorMock.extract(apiOperation, swagger, mockGet)).thenReturn(
+    when(requestParameterExtractorMock.extract(apiOperation, mockGet)).thenReturn(
         new RequestParameters());
 
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
     ApiRequestValidator requestValidator =
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    requestValidator.validate(apiOperation, swagger, mockGet);
+    requestValidator.validate(apiOperation, mockGet);
   }
 
   @Test
@@ -162,39 +163,39 @@ public class ApiRequestValidatorTest {
 
     when(uriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>());
 
-    Swagger swagger = createSwagger("simple-getHeaderRequired.yml");
+    OpenAPI openApi = createOpenApi("simple-getHeaderRequired.yml");
 
     ApiOperation apiOperation =
-        SwaggerUtils.extractApiOperations(swagger, "/endpoint", getPath).iterator().next();
+        OpenApiSpecUtils.extractApiOperations(openApi, "/endpoint", getPath).iterator().next();
 
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
     ApiRequestValidator requestValidator =
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    requestValidator.validate(apiOperation, swagger, mockGet);
+    requestValidator.validate(apiOperation, mockGet);
   }
 
   @Test
   public void validate_DoesNotFail_ForValidPostRequest() throws URISyntaxException, IOException {
     // Arrange
-    Swagger swagger = createSwagger("post-request.yml");
+    OpenAPI openApi = createOpenApi("post-request.yml");
 
     String body = "{ \"someproperty\": \"one\" }";
     ContainerRequestContext mockPost = mockPost(body);
-    ApiOperation apiOperation =
-        SwaggerUtils.extractApiOperations(swagger, "/endpoint", postPath).iterator().next();
+    ApiOperation apiOperation = OpenApiSpecUtils.extractApiOperations(openApi, "/endpoint",
+        postPath).iterator().next();
 
     RequestParameters requestParameters = new RequestParameters();
-    when(requestParameterExtractorMock.extract(apiOperation, swagger, mockPost)).thenReturn(
+    when(requestParameterExtractorMock.extract(apiOperation, mockPost)).thenReturn(
         requestParameters);
 
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
     ApiRequestValidator requestValidator =
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    RequestParameters result = requestValidator.validate(apiOperation, swagger, mockPost);
+    RequestParameters result = requestValidator.validate(apiOperation, mockPost);
 
     // Assert
     assertThat(result, sameInstance(requestParameters));
@@ -206,32 +207,32 @@ public class ApiRequestValidatorTest {
     exception.expect(WebApplicationException.class);
 
     // Arrange
-    Swagger swagger = createSwagger("post-request.yml");
+    OpenAPI openApi = createOpenApi("post-request.yml");
 
     ContainerRequestContext mockPost = mockPost("{ \"prop\": \"one\" }");
-    ApiOperation apiOperation =
-        SwaggerUtils.extractApiOperations(swagger, "/endpoint", postPath).iterator().next();
+    ApiOperation apiOperation = OpenApiSpecUtils.extractApiOperations(openApi, "/endpoint",
+        postPath).iterator().next();
 
     RequestParameters requestParameters = new RequestParameters();
 
     requestParameters.setRawBody("{ \"prop\": \"one\" }");
     requestParameters.put("prop", "\"one\"");
 
-    when(requestParameterExtractorMock.extract(apiOperation, swagger, mockPost)).thenReturn(
+    when(requestParameterExtractorMock.extract(apiOperation, mockPost)).thenReturn(
         requestParameters);
 
-    RequestValidator validator = SwaggerUtils.createValidator(swagger);
+    RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
     ApiRequestValidator requestValidator =
         new ApiRequestValidator(validator, requestParameterExtractorMock);
 
     // Act
-    requestValidator.validate(apiOperation, swagger, mockPost);
+    requestValidator.validate(apiOperation, mockPost);
   }
 
-  private Swagger createSwagger(String spec) throws IOException {
+  private OpenAPI createOpenApi(String spec) throws IOException {
     String oasSpecContent = StreamUtils.copyToString(
         getClass().getResourceAsStream(getClass().getSimpleName() + "-" + spec),
         Charset.forName("UTF-8"));
-    return new SwaggerParser().parse(oasSpecContent);
+    return new OpenAPIV3Parser().readContents(oasSpecContent).getOpenAPI();
   }
 }

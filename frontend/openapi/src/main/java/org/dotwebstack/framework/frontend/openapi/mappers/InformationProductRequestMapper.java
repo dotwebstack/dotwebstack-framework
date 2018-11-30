@@ -1,90 +1,68 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import io.swagger.models.Operation;
-import io.swagger.models.Response;
-import io.swagger.models.Swagger;
-import java.util.List;
-import java.util.Map;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import java.util.HashSet;
+import java.util.Set;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestHandlerFactory;
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.informationproduct.InformationProductResourceProvider;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
-public class InformationProductRequestMapper implements RequestMapper {
-
-  private static final Logger LOG = LoggerFactory.getLogger(InformationProductRequestMapper.class);
-
-  private final InformationProductResourceProvider informationProductResourceProvider;
-
-  private final RequestHandlerFactory requestHandlerFactory;
-
-  private ValueFactory valueFactory = SimpleValueFactory.getInstance();
+public class InformationProductRequestMapper extends AbstractRequestMapper<InformationProduct> {
 
   @Autowired
   public InformationProductRequestMapper(
       @NonNull InformationProductResourceProvider informationProductLoader,
       @NonNull RequestHandlerFactory requestHandlerFactory) {
-    this.informationProductResourceProvider = informationProductLoader;
-    this.requestHandlerFactory = requestHandlerFactory;
+    super(requestHandlerFactory, informationProductLoader);
+    supported = OpenApiSpecificationExtensions.INFORMATION_PRODUCT;
   }
 
-  public Boolean supportsVendorExtension(Map<String, Object> vendorExtensions) {
-    return vendorExtensions.keySet().stream().anyMatch(key ->
-        key.equals(OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
-  }
+  @Override
+  public void map(Resource.Builder resourceBuilder, OpenAPI openApi, ApiOperation apiOperation,
+      String absolutePath) {
+    Operation operation = apiOperation.getOperation();
+    validate200Response(operation, absolutePath);
 
-  public void map(Resource.Builder resourceBuilder, Swagger swagger, ApiOperation apiOperation,
-      Operation getOperation, String absolutePath) {
     String okStatusCode = Integer.toString(Status.OK.getStatusCode());
-
-    if (getOperation.getResponses() == null
-        || !getOperation.getResponses().containsKey(okStatusCode)) {
-      throw new ConfigurationException(String.format(
-          "Resource '%s' does not specify a status %s response.", absolutePath, okStatusCode));
+    Set<String> produces = new HashSet<>();
+    if (operation.getResponses() != null //
+        && operation.getResponses().get(okStatusCode) != null //
+        && operation.getResponses().get(okStatusCode).getContent() != null) {
+      produces = operation.getResponses().get(okStatusCode).getContent().keySet();
     }
 
-    List<String> produces =
-        getOperation.getProduces() != null ? getOperation.getProduces() : swagger.getProduces();
-
-    if (produces == null) {
+    if (produces.isEmpty()) {
       throw new ConfigurationException(
           String.format("Path '%s' should produce at least one media type.", absolutePath));
     }
 
-    Response response = getOperation.getResponses().get(okStatusCode);
+    ApiResponse response = operation.getResponses().get(okStatusCode);
 
-    IRI informationProductIdentifier =
-        valueFactory.createIRI((String) getOperation.getVendorExtensions().get(
-            OpenApiSpecificationExtensions.INFORMATION_PRODUCT));
-
-    InformationProduct informationProduct =
-        informationProductResourceProvider.get(informationProductIdentifier);
+    Inflector<ContainerRequestContext, Response> requestHandler =
+        requestHandlerFactory.newRequestHandler(apiOperation, getResourceFor(operation), openApi,
+            response);
 
     ResourceMethod.Builder methodBuilder =
-        resourceBuilder.addMethod(apiOperation.getMethod().name()).handledBy(
-            requestHandlerFactory.newInformationProductRequestHandler(apiOperation,
-                informationProduct, response, swagger));
+        getMethodBuilder(resourceBuilder, apiOperation, requestHandler);
 
     produces.forEach(methodBuilder::produces);
-
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Mapped {} operation for request path {}", apiOperation.getMethod().name(),
-          absolutePath);
-    }
   }
 
 }

@@ -1,24 +1,25 @@
-swagger: "2.0"
+openapi: 3.0.0
 info:
   title: API
-  version: 1.0
+  version: '1'
 paths:
   /endpoint:
     post:
-      summary: "Test POST endpoint"
-      parameters:
-      - name: "body"
-        in: "body"
-        schema:
-          $ref: "#/definitions/SampleObject"
+      summary: Test POST endpoint
       responses:
-        200:
+        '200':
           description: OK
-definitions:
-  SampleObject:
-    type: "object"
-    required:
-    - "someproperty"
-    properties:
-      someproperty:
-        type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SampleObject'
+components:
+  schemas:
+    SampleObject:
+      type: object
+      required:
+        - someproperty
+      properties:
+        someproperty:
+          type: string

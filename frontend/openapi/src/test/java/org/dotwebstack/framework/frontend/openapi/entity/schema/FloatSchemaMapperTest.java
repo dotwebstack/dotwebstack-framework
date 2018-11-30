@@ -7,8 +7,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.FloatProperty;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.NumberSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -48,12 +49,13 @@ public class FloatSchemaMapperTest {
 
   private SchemaMapperAdapter schemaMapperAdapter;
   private FloatSchemaMapper floatSchemaMapper;
-  private FloatProperty floatProperty;
+  private NumberSchema floatProperty;
 
   @Before
   public void setUp() {
     floatSchemaMapper = new FloatSchemaMapper();
-    floatProperty = new FloatProperty();
+    floatProperty = new NumberSchema();
+    floatProperty.setFormat("float");
 
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(floatSchemaMapper));
@@ -92,7 +94,19 @@ public class FloatSchemaMapperTest {
   @Test
   public void supports_ReturnsFalse_ForStringProperty() {
     // Arrange & Act
-    Boolean supported = floatSchemaMapper.supports(new StringProperty());
+    Boolean supported = floatSchemaMapper.supports(new StringSchema());
+
+    // Assert
+    assertThat(supported, is(false));
+  }
+
+  @Test
+  public void supports_ReturnsFalse_ForDoubleProperty() {
+    // Arrange
+    Schema doubleProperty = new NumberSchema().format("double");
+
+    // Act
+    Boolean supported = floatSchemaMapper.supports(doubleProperty);
 
     // Assert
     assertThat(supported, is(false));
@@ -101,12 +115,12 @@ public class FloatSchemaMapperTest {
   @Test
   public void mapGraphValue_ReturnsValue_ForLdPath() {
     // Arrange
-    floatProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    floatProperty.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(valueMock, DUMMY_EXPR)).thenReturn(
         ImmutableList.of(VALUE_1));
 
     // Act
-    Float result = (Float) schemaMapperAdapter.mapGraphValue(floatProperty, graphEntityMock,
+    Float result = (Float) schemaMapperAdapter.mapGraphValue(floatProperty, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -118,16 +132,15 @@ public class FloatSchemaMapperTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format(
-        "LDPathQuery '%s' yielded a value which is not a literal of supported type",
-        DUMMY_EXPR));
+        "LDPathQuery '%s' yielded a value which is not a literal of supported type", DUMMY_EXPR));
 
     // Arrange
-    floatProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    floatProperty.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE_2));
 
     // Act
-    schemaMapperAdapter.mapGraphValue(floatProperty, graphEntityMock,
+    schemaMapperAdapter.mapGraphValue(floatProperty, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 }

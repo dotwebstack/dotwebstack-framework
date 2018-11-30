@@ -5,8 +5,8 @@ import static org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExt
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import io.swagger.models.properties.BooleanProperty;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.BooleanSchema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -32,13 +32,13 @@ public class BooleanSchemaMapperTest {
   private TupleEntity tupleEntityMock;
 
   private BooleanSchemaMapper booleanSchemaMapper;
-  private BooleanProperty booleanProperty;
+  private BooleanSchema booleanSchema;
   private SchemaMapperAdapter schemaMapperAdapter;
 
   @Before
   public void setUp() {
     booleanSchemaMapper = new BooleanSchemaMapper();
-    booleanProperty = new BooleanProperty();
+    booleanSchema = new BooleanSchema();
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(booleanSchemaMapper));
   }
 
@@ -49,14 +49,14 @@ public class BooleanSchemaMapperTest {
     thrown.expectMessage("Value is not a literal value.");
 
     // Arrange & Act
-    booleanSchemaMapper.mapTupleValue(booleanProperty, tupleEntityMock,
+    booleanSchemaMapper.mapTupleValue(booleanSchema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN).build());
   }
 
   @Test
   public void mapTupleValue_ReturnsValue_ForLiterals() {
     // Arrange & Act
-    Boolean result = booleanSchemaMapper.mapTupleValue(booleanProperty, tupleEntityMock,
+    Boolean result = booleanSchemaMapper.mapTupleValue(booleanSchema, tupleEntityMock,
         ValueContext.builder().value(DBEERPEDIA.BROUWTOREN_CRAFT_MEMBER).build());
 
     // Assert
@@ -64,18 +64,18 @@ public class BooleanSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForBooleanProperty() {
+  public void supports_ReturnsTrue_ForBooleanSchema() {
     // Arrange & Act
-    Boolean supported = booleanSchemaMapper.supports(booleanProperty);
+    Boolean supported = booleanSchemaMapper.supports(booleanSchema);
 
     // Assert
     assertThat(supported, equalTo(true));
   }
 
   @Test
-  public void supports_ReturnsFalse_ForNonBooleanProperty() {
+  public void supports_ReturnsFalse_ForNonBooleanSchema() {
     // Arrange & Act
-    Boolean supported = booleanSchemaMapper.supports(new StringProperty());
+    Boolean supported = booleanSchemaMapper.supports(new StringSchema());
 
     // Assert
     assertThat(supported, equalTo(false));
@@ -85,17 +85,17 @@ public class BooleanSchemaMapperTest {
   public void mapGraphValue_ThrowsEx_MultipleVendorExtensions() {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
-    thrown.expectMessage("BooleanProperty ");
+    thrown.expectMessage("BooleanSchema ");
     thrown.expectMessage(CONSTANT_VALUE);
     thrown.expectMessage(LDPATH);
 
     // Arrange
-    booleanProperty.vendorExtension(OpenApiSpecificationExtensions.LDPATH, "ld-Path");
-    booleanProperty.vendorExtension(CONSTANT_VALUE, "true");
+    booleanSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, "ld-Path");
+    booleanSchema.addExtension(CONSTANT_VALUE, "true");
     ValueContext valueContext = ValueContext.builder().build();
 
     // Act
-    booleanSchemaMapper.mapGraphValue(booleanProperty, graphEntityMock, valueContext,
+    booleanSchemaMapper.mapGraphValue(booleanSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
   }
 

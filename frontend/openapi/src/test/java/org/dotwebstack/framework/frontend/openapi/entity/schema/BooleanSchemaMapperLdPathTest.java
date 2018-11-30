@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.BooleanProperty;
+import io.swagger.v3.oas.models.media.BooleanSchema;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -40,13 +40,13 @@ public class BooleanSchemaMapperLdPathTest {
   private LdPathExecutor ldPathExecutorMock;
 
   private BooleanSchemaMapper booleanSchemaMapper;
-  private BooleanProperty booleanProperty;
+  private BooleanSchema booleanSchema;
   private SchemaMapperAdapter schemaMapperAdapter;
 
   @Before
   public void setUp() {
     booleanSchemaMapper = new BooleanSchemaMapper();
-    booleanProperty = new BooleanProperty();
+    booleanSchema = new BooleanSchema();
 
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(booleanSchemaMapper));
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
@@ -55,15 +55,14 @@ public class BooleanSchemaMapperLdPathTest {
   @Test
   public void mapGraphValueTest() {
     // Arrange
-    booleanProperty.setVendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    booleanSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
     Literal literal = VALUE_FACTORY.createLiteral("true", XMLSchema.BOOLEAN);
 
     when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(
         ImmutableList.of(literal));
 
     // Act
-    Boolean result = booleanSchemaMapper.mapGraphValue(booleanProperty, graphEntityMock,
+    Boolean result = booleanSchemaMapper.mapGraphValue(booleanSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert

@@ -9,11 +9,12 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.Response;
-import io.swagger.models.parameters.HeaderParameter;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.headers.Header;
+import io.swagger.v3.oas.models.parameters.HeaderParameter;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
 import java.io.IOException;
 import java.util.List;
 import javax.ws.rs.HttpMethod;
@@ -66,9 +67,9 @@ public class CorsResponseFilterTest {
     prepareRequest(HttpMethod.OPTIONS, null);
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET);
 
-    Path path = mock(Path.class);
-    when(path.getOperationMap()).thenReturn(
-        ImmutableMap.of(io.swagger.models.HttpMethod.GET, mock(Operation.class)));
+    PathItem path = mock(PathItem.class);
+    when(path.readOperationsMap()).thenReturn(
+        ImmutableMap.of(PathItem.HttpMethod.GET, mock(Operation.class)));
     when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
@@ -81,10 +82,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
-            io.swagger.models.HttpMethod.HEAD.toString(),
-            io.swagger.models.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -106,7 +105,7 @@ public class CorsResponseFilterTest {
     // Arrange
     prepareRequest(HttpMethod.OPTIONS, ORIGIN);
     when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(
-        mock(Path.class));
+        mock(PathItem.class));
 
     // Act
     corsResponseFilter.filter(requestContextMock, responseContextMock);
@@ -118,10 +117,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
-            io.swagger.models.HttpMethod.HEAD.toString(),
-            io.swagger.models.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -131,9 +128,9 @@ public class CorsResponseFilterTest {
     prepareRequest(HttpMethod.OPTIONS, ORIGIN);
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.POST);
 
-    Path path = mock(Path.class);
-    when(path.getOperationMap()).thenReturn(
-        ImmutableMap.of(io.swagger.models.HttpMethod.GET, mock(Operation.class)));
+    PathItem path = mock(PathItem.class);
+    when(path.readOperationsMap()).thenReturn(
+        ImmutableMap.of(PathItem.HttpMethod.GET, mock(Operation.class)));
     when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
@@ -146,10 +143,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
-            io.swagger.models.HttpMethod.HEAD.toString(),
-            io.swagger.models.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -159,9 +154,9 @@ public class CorsResponseFilterTest {
     prepareRequest(HttpMethod.OPTIONS, ORIGIN);
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET);
 
-    Path path = mock(Path.class);
-    when(path.getOperationMap()).thenReturn(
-        ImmutableMap.of(io.swagger.models.HttpMethod.GET, mock(Operation.class)));
+    PathItem path = mock(PathItem.class);
+    when(path.readOperationsMap()).thenReturn(
+        ImmutableMap.of(PathItem.HttpMethod.GET, mock(Operation.class)));
     when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
@@ -174,10 +169,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
-            io.swagger.models.HttpMethod.HEAD.toString(),
-            io.swagger.models.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -188,9 +181,9 @@ public class CorsResponseFilterTest {
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET);
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Unknown-Header");
 
-    Path path = mock(Path.class);
-    when(path.getOperationMap()).thenReturn(
-        ImmutableMap.of(io.swagger.models.HttpMethod.GET, mock(Operation.class)));
+    PathItem path = mock(PathItem.class);
+    when(path.readOperationsMap()).thenReturn(
+        ImmutableMap.of(PathItem.HttpMethod.GET, mock(Operation.class)));
     when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
@@ -203,10 +196,8 @@ public class CorsResponseFilterTest {
     assertThat(responseHeaders.containsKey(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS), is(false));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
-            io.swagger.models.HttpMethod.HEAD.toString(),
-            io.swagger.models.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
@@ -217,12 +208,11 @@ public class CorsResponseFilterTest {
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET);
     requestHeaders.add(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "trusted-header");
 
-    Path path = mock(Path.class);
-    Operation operation =
-        new Operation().parameter(new HeaderParameter().name("Trusted-Header")).parameter(
+    PathItem path = mock(PathItem.class);
+    Operation operation = new Operation().addParametersItem(
+        new HeaderParameter().name("Trusted-Header")).addParametersItem(
             new HeaderParameter().name("Other-Header"));
-    when(path.getOperationMap()).thenReturn(
-        ImmutableMap.of(io.swagger.models.HttpMethod.GET, operation));
+    when(path.readOperationsMap()).thenReturn(ImmutableMap.of(PathItem.HttpMethod.GET, operation));
     when(requestContextMock.getProperty(RequestHandlerProperties.PATH)).thenReturn(path);
 
     // Act
@@ -237,17 +227,17 @@ public class CorsResponseFilterTest {
     assertThat(allowHeaders, containsInAnyOrder("trusted-header", "other-header"));
     List<String> allowMethods = Splitter.on(",").trimResults().omitEmptyStrings().splitToList(
         responseHeaders.getFirst(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS).toString());
-    assertThat(allowMethods,
-        containsInAnyOrder(io.swagger.models.HttpMethod.GET.toString(),
-            io.swagger.models.HttpMethod.HEAD.toString(),
-            io.swagger.models.HttpMethod.OPTIONS.toString()));
+    assertThat(allowMethods, containsInAnyOrder(PathItem.HttpMethod.GET.toString(),
+        PathItem.HttpMethod.HEAD.toString(), PathItem.HttpMethod.OPTIONS.toString()));
   }
 
   @Test
   public void filter_AddsCorsHeaders_ForAbsentOriginOnActualRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.GET, null);
-    Operation operation = new Operation().response(HttpStatus.OK.value(), new Response());
+    ApiResponses apiResponses = new ApiResponses();
+    apiResponses.addApiResponse(HttpStatus.OK.toString(), new ApiResponse());
+    Operation operation = new Operation().responses(apiResponses);
     when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(operation);
     when(responseContextMock.getStatus()).thenReturn(HttpStatus.OK.value());
 
@@ -280,8 +270,10 @@ public class CorsResponseFilterTest {
   public void filter_AddsCorsHeaders_ForUnknownResponseStatusOnActualRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.GET, ORIGIN);
-    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(
-        mock(Operation.class));
+    Operation operation = new Operation();
+    ApiResponses apiResponses = new ApiResponses();
+    operation.setResponses(apiResponses);
+    when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(operation);
     when(responseContextMock.getStatus()).thenReturn(HttpStatus.I_AM_A_TEAPOT.value());
 
     // Act
@@ -298,7 +290,9 @@ public class CorsResponseFilterTest {
   public void filter_AddsCorsHeaders_ForPresentOriginOnActualRequest() throws IOException {
     // Arrange
     prepareRequest(HttpMethod.GET, ORIGIN);
-    Operation operation = new Operation().response(HttpStatus.OK.value(), new Response());
+    ApiResponses apiResponses = new ApiResponses();
+    apiResponses.addApiResponse(HttpStatus.OK.toString(), new ApiResponse());
+    Operation operation = new Operation().responses(apiResponses);
     when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(operation);
     when(responseContextMock.getStatus()).thenReturn(HttpStatus.OK.value());
 
@@ -316,9 +310,12 @@ public class CorsResponseFilterTest {
       throws IOException {
     // Arrange
     prepareRequest(HttpMethod.GET, ORIGIN);
-    Operation operation = new Operation().response(HttpStatus.OK.value(),
-        new Response().headers(ImmutableMap.of("Some-Header", new StringProperty(), "Other-Header",
-            new StringProperty())));
+    ApiResponses apiResponses = new ApiResponses();
+    ApiResponse apiResponse = new ApiResponse().headers(
+        ImmutableMap.of("Some-Header", new Header(), "Other-Header", new Header()));
+    apiResponses.addApiResponse(HttpStatus.OK.toString(), apiResponse);
+
+    Operation operation = new Operation().responses(apiResponses);
     when(requestContextMock.getProperty(RequestHandlerProperties.OPERATION)).thenReturn(operation);
     when(responseContextMock.getStatus()).thenReturn(HttpStatus.OK.value());
 

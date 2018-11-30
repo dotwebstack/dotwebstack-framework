@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.DateProperty;
+import io.swagger.v3.oas.models.media.DateSchema;
 import java.time.LocalDate;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -47,13 +47,13 @@ public class DateSchemaMapperLdPathTest {
   private LdPathExecutor ldPathExecutorMock;
 
   private DateSchemaMapper dateSchemaMapper;
-  private DateProperty dateProperty;
+  private DateSchema dateSchema;
   private SchemaMapperAdapter schemaMapperAdapter;
 
   @Before
   public void setUp() {
     dateSchemaMapper = new DateSchemaMapper();
-    dateProperty = new DateProperty();
+    dateSchema = new DateSchema();
 
     schemaMapperAdapter = new SchemaMapperAdapter(Collections.singletonList(dateSchemaMapper));
 
@@ -63,15 +63,14 @@ public class DateSchemaMapperLdPathTest {
   @Test
   public void mapGraphValue_ReturnsLocalDate_ForLdPath() {
     // Arrange
-    dateProperty.setVendorExtensions(
-        ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
+    dateSchema.setExtensions(ImmutableMap.of(OpenApiSpecificationExtensions.LDPATH, "ld-path"));
     Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE, XMLSchema.DATE);
 
     when(ldPathExecutorMock.ldPathQuery(valueMock, "ld-path")).thenReturn(
         ImmutableList.of(literal));
 
     // Act
-    LocalDate result = dateSchemaMapper.mapGraphValue(dateProperty, graphEntityMock,
+    LocalDate result = dateSchemaMapper.mapGraphValue(dateSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert
@@ -81,11 +80,11 @@ public class DateSchemaMapperLdPathTest {
   @Test
   public void mapGraphValue_ReturnsLocalDate_WhenSupportedLiteralLdPathIsDefined() {
     // Arrange
-    dateProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    dateSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE));
 
-    LocalDate result = dateSchemaMapper.mapGraphValue(dateProperty, graphEntityMock,
+    LocalDate result = dateSchemaMapper.mapGraphValue(dateSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
 
     // Assert

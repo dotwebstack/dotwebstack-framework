@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.DateTimeProperty;
+import io.swagger.v3.oas.models.media.DateTimeSchema;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
@@ -35,12 +35,12 @@ public class DateTimeSchemaMapperConstantValueTest {
   private GraphEntity graphEntityMock;
 
   private SchemaMapperAdapter schemaMapperAdapter;
-  private DateTimeProperty dateTimeProperty;
+  private DateTimeSchema dateTimeSchema;
   private ValueContext valueContext;
 
   @Before
   public void setUp() {
-    dateTimeProperty = new DateTimeProperty();
+    dateTimeSchema = new DateTimeSchema();
     schemaMapperAdapter =
         new SchemaMapperAdapter(Collections.singletonList(new DateTimeSchemaMapper()));
     valueContext = ValueContext.builder().build();
@@ -49,10 +49,10 @@ public class DateTimeSchemaMapperConstantValueTest {
   @Test
   public void mapGraphValue_ReturnsLocalDateTime_WhenStringConstantValueIsDefined() {
     // Arrange
-    dateTimeProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, EXPECTED_LOCAL_DATE_TIME));
+    dateTimeSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, EXPECTED_LOCAL_DATE_TIME));
 
     // Act
-    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeProperty,
+    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeSchema, false,
         graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert
@@ -64,10 +64,10 @@ public class DateTimeSchemaMapperConstantValueTest {
     // Arrange
     Literal literal = VALUE_FACTORY.createLiteral(EXPECTED_LOCAL_DATE_TIME, XMLSchema.DATETIME);
 
-    dateTimeProperty.setVendorExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
+    dateTimeSchema.setExtensions(ImmutableMap.of(CONSTANT_VALUE, literal));
 
     // Act
-    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeProperty,
+    ZonedDateTime result = (ZonedDateTime) schemaMapperAdapter.mapGraphValue(dateTimeSchema, false,
         graphEntityMock, valueContext, schemaMapperAdapter);
 
     // Assert

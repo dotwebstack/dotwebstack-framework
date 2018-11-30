@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.frontend.openapi;
 
-import io.swagger.parser.SwaggerParser;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfiguration {
 
   @Bean
-  public SwaggerParser openApiParser() {
-    return new SwaggerParser();
+  public OpenAPIV3Parser openApiParser() {
+    return new OpenAPIV3Parser();
   }
 
 }

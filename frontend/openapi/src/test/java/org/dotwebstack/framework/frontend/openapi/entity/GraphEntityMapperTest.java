@@ -4,14 +4,16 @@ import static org.dotwebstack.framework.frontend.openapi.entity.GraphEntity.newG
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.Response;
-import io.swagger.models.Swagger;
-import io.swagger.models.properties.IntegerProperty;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.IntegerSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import javax.ws.rs.core.MediaType;
-import org.dotwebstack.framework.frontend.openapi.entity.schema.ResponseProperty;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.ValueContext;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
@@ -26,7 +28,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class GraphEntityMapperTest {
 
   @Mock
-  private Swagger definitionsMock;
+  private OpenAPI openApiMock;
 
   @Mock
   private Repository repositoryMock;
@@ -47,13 +49,16 @@ public class GraphEntityMapperTest {
   @Test
   public void map_Returns_SchemaMapperAdapterResult() {
     // Arrange
-    IntegerProperty schema = new IntegerProperty();
-    GraphEntity entity = newGraphEntity(new Response().schema(schema), repositoryMock,
-        ImmutableSet.of(), definitionsMock, requestContextMock);
+    IntegerSchema schema = new IntegerSchema();
+    GraphEntity entity = newGraphEntity(
+        new ApiResponse().content(new Content().addMediaType(MediaType.TEXT_PLAIN_TYPE.toString(),
+            new io.swagger.v3.oas.models.media.MediaType().schema(schema))),
+        repositoryMock, ImmutableSet.of(), openApiMock, requestContextMock);
 
     Object object = new Object();
-    when(schemaMapperAdapterMock.mapGraphValue(any(ResponseProperty.class), any(GraphEntity.class),
-        any(ValueContext.class), any(SchemaMapperAdapter.class))).thenReturn(object);
+    when(schemaMapperAdapterMock.mapGraphValue(any(Schema.class), anyBoolean(),
+        any(GraphEntity.class), any(ValueContext.class),
+        any(SchemaMapperAdapter.class))).thenReturn(object);
 
     // Act
     Object result = entityMapper.map(entity, MediaType.TEXT_PLAIN_TYPE);

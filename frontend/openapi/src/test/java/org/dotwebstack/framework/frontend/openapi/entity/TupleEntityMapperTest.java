@@ -11,11 +11,12 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Response;
-import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.DoubleProperty;
-import io.swagger.models.properties.ObjectProperty;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.NumberSchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.openapi.entity.schema.SchemaMapperAdapter;
@@ -58,7 +59,8 @@ public class TupleEntityMapperTest {
   @Test
   public void map_ThrowsException_ForUnknownMediaType() {
     // Arrange
-    TupleEntity entity = new TupleEntity(new Response(), resultMock, requestContextMock);
+    TupleEntity entity =
+        new TupleEntity(new ApiResponse().content(new Content()), resultMock, requestContextMock);
 
     // Assert
     thrown.expect(EntityMapperRuntimeException.class);
@@ -72,8 +74,11 @@ public class TupleEntityMapperTest {
   @Test
   public void map_ReturnsEmptyMap_ForNonArraySchema() {
     // Assert
-    TupleEntity entity = new TupleEntity(new Response().schema(new DoubleProperty()), resultMock,
-        requestContextMock);
+    TupleEntity entity = new TupleEntity(
+        new ApiResponse().content(
+            new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+                new io.swagger.v3.oas.models.media.MediaType().schema(new NumberSchema()))),
+        resultMock, requestContextMock);
 
     // Act
     Object mappedEntity = tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);
@@ -83,10 +88,13 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  public void map_ThrowsError_ForArraySchemaWithMissingItemsProperty() {
+  public void map_ThrowsError_ForArraySchemaWithMissingItemsSchema() {
     // Assert
-    TupleEntity entity =
-        new TupleEntity(new Response().schema(new ArrayProperty()), resultMock, requestContextMock);
+    TupleEntity entity = new TupleEntity(
+        new ApiResponse().content(
+            new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+                new io.swagger.v3.oas.models.media.MediaType().schema(new ArraySchema()))),
+        resultMock, requestContextMock);
 
     // Assert
     thrown.expect(EntityMapperRuntimeException.class);
@@ -100,7 +108,11 @@ public class TupleEntityMapperTest {
   public void map_ThrowsError_ForArraySchemaWithNonObjectItemSchema() {
     // Assert
     TupleEntity entity =
-        new TupleEntity(new Response().schema(new ArrayProperty().items(new StringProperty())),
+        new TupleEntity(
+            new ApiResponse().content(
+                new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+                    new io.swagger.v3.oas.models.media.MediaType().schema(
+                        new ArraySchema().items(new StringSchema())))),
             resultMock, requestContextMock);
 
     // Assert
@@ -112,17 +124,19 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  public void map_MapsToMapperResult_ForRequiredPropertyWithPresentBinding() {
+  public void map_MapsToMapperResult_ForRequiredSchemaWithPresentBinding() {
     // Assert
-    StringProperty nameProperty = new StringProperty().required(true);
-    TupleEntity entity = new TupleEntity(
-        new Response().schema(new ArrayProperty().items(
-            new ObjectProperty().required(true).properties(ImmutableMap.of("name", nameProperty)))),
+    StringSchema nameSchema = new StringSchema();
+    TupleEntity entity = new TupleEntity(new ApiResponse().content(
+        new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+            new io.swagger.v3.oas.models.media.MediaType().schema(
+                new ArraySchema().items(new ObjectSchema().addRequiredItem("name").properties(
+                    ImmutableMap.of("name", nameSchema)))))),
         resultMock, requestContextMock);
     when(resultMock.hasNext()).thenReturn(true, false);
     when(resultMock.next()).thenReturn(
         new ListBindingSet(ImmutableList.of("name"), ImmutableList.of(DBEERPEDIA.BROUWTOREN_NAME)));
-    when(schemaMapperMock.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+    when(schemaMapperMock.mapTupleValue(any(StringSchema.class), any(TupleEntity.class),
         any(ValueContext.class))).thenReturn(DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
@@ -136,11 +150,13 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  public void map_MapsToAbsentOptionalValue_ForOptionalPropertyWithAbsentBinding() {
+  public void map_MapsToAbsentOptionalValue_ForOptionalSchemaWithAbsentBinding() {
     // Arrange
     TupleEntity entity = new TupleEntity(
-        new Response().schema(new ArrayProperty().items(new ObjectProperty().properties(
-            ImmutableMap.of("name", new StringProperty().required(false))))),
+        new ApiResponse().content(
+            new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+                new io.swagger.v3.oas.models.media.MediaType().schema(new ArraySchema().items(
+                    new ObjectSchema().properties(ImmutableMap.of("name", new StringSchema())))))),
         resultMock, requestContextMock);
     when(resultMock.hasNext()).thenReturn(true, false);
     when(resultMock.next()).thenReturn(new ListBindingSet(ImmutableList.of(), ImmutableList.of()));
@@ -156,18 +172,20 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  public void map_MapsToObjectProperty_ForSingleResult() {
+  public void map_MapsToObjectSchema_ForSingleResult() {
     // Arrange
-    StringProperty stringProperty = new StringProperty();
+    StringSchema stringSchema = new StringSchema();
     final TupleEntity entity = new TupleEntity(
-        new Response().schema(new ObjectProperty().properties(
-            ImmutableMap.of("name", stringProperty.required(false)))),
+        new ApiResponse().content(
+            new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+                new io.swagger.v3.oas.models.media.MediaType().schema(
+                    new ObjectSchema().properties(ImmutableMap.of("name", stringSchema))))),
         resultMock, requestContextMock);
     when(resultMock.hasNext()).thenReturn(true, false);
     QueryBindingSet bindingSet = new QueryBindingSet();
     bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
     when(resultMock.next()).thenReturn(bindingSet);
-    when(schemaMapperMock.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+    when(schemaMapperMock.mapTupleValue(any(StringSchema.class), any(TupleEntity.class),
         any(ValueContext.class))).thenReturn(DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     // Act
@@ -181,7 +199,7 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  public void map_MapsToResponseProperty_ForSingleResult() {
+  public void map_MapsToResponseSchema_ForSingleResult() {
     // Arrange
     QueryBindingSet bindingSet = new QueryBindingSet();
     bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
@@ -189,13 +207,15 @@ public class TupleEntityMapperTest {
     when(resultMock.hasNext()).thenReturn(true, false);
     when(resultMock.next()).thenReturn(bindingSet);
 
-    StringProperty stringProperty = new StringProperty();
-    when(schemaMapperMock.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+    StringSchema stringSchema = new StringSchema();
+    when(schemaMapperMock.mapTupleValue(any(StringSchema.class), any(TupleEntity.class),
         any(ValueContext.class))).thenReturn(DBEERPEDIA.BROUWTOREN_NAME.stringValue());
 
     TupleEntity entity = new TupleEntity(
-        new Response().schema(new ObjectProperty().properties(
-            ImmutableMap.of("name", stringProperty.required(false)))),
+        new ApiResponse().content(
+            new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+                new io.swagger.v3.oas.models.media.MediaType().schema(
+                    new ObjectSchema().properties(ImmutableMap.of("name", stringSchema))))),
         resultMock, requestContextMock);
 
     // Act
@@ -211,18 +231,20 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  public void map_ForObjectPropertyOnlyMapsFirstResult_ForMultipleResults() {
+  public void map_ForObjectSchemaOnlyMapsFirstResult_ForMultipleResults() {
     // Arrange
-    StringProperty stringProperty = new StringProperty();
+    StringSchema stringSchema = new StringSchema();
     final TupleEntity entity = new TupleEntity(
-        new Response().schema(new ObjectProperty().properties(
-            ImmutableMap.of("name", stringProperty.required(false)))),
+        new ApiResponse().content(
+            new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+                new io.swagger.v3.oas.models.media.MediaType().schema(
+                    new ObjectSchema().properties(ImmutableMap.of("name", stringSchema))))),
         resultMock, requestContextMock);
     when(resultMock.hasNext()).thenReturn(true, true, false);
     QueryBindingSet bindingSet = new QueryBindingSet();
     bindingSet.addBinding("name", DBEERPEDIA.BROUWTOREN_NAME);
     when(resultMock.next()).thenReturn(bindingSet, bindingSet);
-    when(schemaMapperMock.mapTupleValue(any(StringProperty.class), any(TupleEntity.class),
+    when(schemaMapperMock.mapTupleValue(any(StringSchema.class), any(TupleEntity.class),
         any(ValueContext.class))).thenReturn("firstName").thenReturn("secondName");
 
     // Act
@@ -238,10 +260,12 @@ public class TupleEntityMapperTest {
   @Test
   public void map_ThrowsException_ForSingleResultWithSingleObject() {
     // Arrange
-    StringProperty stringProperty = new StringProperty();
+    StringSchema stringSchema = new StringSchema();
     final TupleEntity entity = new TupleEntity(
-        new Response().schema(new ObjectProperty().properties(
-            ImmutableMap.of("name", stringProperty.required(false)))),
+        new ApiResponse().content(
+            new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+                new io.swagger.v3.oas.models.media.MediaType().schema(
+                    new ObjectSchema().properties(ImmutableMap.of("name", stringSchema))))),
         resultMock, requestContextMock);
     when(resultMock.hasNext()).thenReturn(false);
 
@@ -254,18 +278,21 @@ public class TupleEntityMapperTest {
   }
 
   @Test
-  public void map_ThrowException_ForRequiredPropertyWithAbsentBinding() {
+  public void map_ThrowException_ForRequiredSchemaWithAbsentBinding() {
     // Assert
     final TupleEntity entity = new TupleEntity(
-        new Response().schema(new ArrayProperty().items(new ObjectProperty().properties(
-            ImmutableMap.of("name", new StringProperty().required(true))))),
+        new ApiResponse().content(
+            new Content().addMediaType(MediaType.APPLICATION_JSON_TYPE.toString(),
+                new io.swagger.v3.oas.models.media.MediaType().schema(
+                    new ArraySchema().items(new ObjectSchema().addRequiredItem("name").properties(
+                        ImmutableMap.of("name", new StringSchema())))))),
         resultMock, requestContextMock);
     when(resultMock.hasNext()).thenReturn(true, false);
     when(resultMock.next()).thenReturn(new ListBindingSet(ImmutableList.of(), ImmutableList.of()));
 
     // Assert
     thrown.expect(EntityMapperRuntimeException.class);
-    thrown.expectMessage("Property 'name' is required.");
+    thrown.expectMessage("Schema 'name' is required.");
 
     // Act
     tupleEntityMapper.map(entity, MediaType.APPLICATION_JSON_TYPE);

@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.DateProperty;
+import io.swagger.v3.oas.models.media.DateSchema;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
@@ -36,25 +36,27 @@ public class DateSchemaMapperTest {
 
   @Mock
   private SchemaMapperAdapter schemaMapperAdapter;
+
   @Mock
   private Value valueMock;
+
   @Mock
   private LdPathExecutor ldPathExecutorMock;
 
   private DateSchemaMapper dateSchemaMapper;
-  private DateProperty dateProperty;
+  private DateSchema dateSchema;
 
   @Before
   public void setUp() {
     dateSchemaMapper = new DateSchemaMapper();
-    dateProperty = new DateProperty();
+    dateSchema = new DateSchema();
     when(graphEntityMock.getLdPathExecutor()).thenReturn(ldPathExecutorMock);
   }
 
   @Test
-  public void supports_ReturnsTrue_ForDateProperty() {
+  public void supports_ReturnsTrue_ForDateSchema() {
     // Act
-    boolean result = dateSchemaMapper.supports(dateProperty);
+    boolean result = dateSchemaMapper.supports(dateSchema);
 
     // Arrange
     assertThat(result, is(true));
@@ -65,16 +67,15 @@ public class DateSchemaMapperTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format(
-        "LDPathQuery '%s' yielded a value which is not a literal of supported type",
-        DUMMY_EXPR));
+        "LDPathQuery '%s' yielded a value which is not a literal of supported type", DUMMY_EXPR));
 
     // Arrange
-    dateProperty.setVendorExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
+    dateSchema.addExtension(OpenApiSpecificationExtensions.LDPATH, DUMMY_EXPR);
     when(ldPathExecutorMock.ldPathQuery(eq(valueMock), anyString())).thenReturn(
         ImmutableList.of(VALUE_3));
 
     // Act
-    dateSchemaMapper.mapGraphValue(dateProperty, graphEntityMock,
+    dateSchemaMapper.mapGraphValue(dateSchema, false, graphEntityMock,
         ValueContext.builder().value(valueMock).build(), schemaMapperAdapter);
   }
 }

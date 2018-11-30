@@ -1,165 +1,159 @@
 package org.dotwebstack.framework.frontend.openapi.mappers;
 
-import static javax.ws.rs.HttpMethod.GET;
-
-import com.atlassian.oai.validator.model.ApiOperation;
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.Operation;
-import io.swagger.models.Path;
-import io.swagger.models.RefModel;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.BodyParameter;
-import io.swagger.parser.SwaggerParser;
-import java.io.FileNotFoundException;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
+import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.ParseOptions;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import javax.ws.rs.HttpMethod;
+import lombok.Cleanup;
 import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.ApplicationProperties;
-import org.dotwebstack.framework.EnvironmentAwareResource;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
+import org.dotwebstack.framework.frontend.openapi.OpenApiSpecUtils;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.SwaggerUtils;
+import org.dotwebstack.framework.frontend.openapi.SpecEnvironmentResolver;
 import org.dotwebstack.framework.frontend.openapi.handlers.OpenApiSpecHandler;
 import org.dotwebstack.framework.frontend.openapi.handlers.OptionsRequestHandler;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.Resource.Builder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
-public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAware {
+public class OpenApiRequestMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(OpenApiRequestMapper.class);
+  private final OpenAPIV3Parser openApiParser;
 
-  private static final Path specPath;
+  private final ApplicationProperties applicationProperties;
 
-  private final SwaggerParser openApiParser;
+  private final List<RequestMapper> requestMappers;
 
-  private ApplicationProperties applicationProperties;
+  private final Environment environment;
 
-  private ResourceLoader resourceLoader;
-
-  private Environment environment;
-
-  private List<RequestMapper> requestMappers;
+  private static final ParseOptions OPTIONS = new ParseOptions();
 
   static {
-    specPath = new Path();
-    specPath.setGet(new Operation());
+    OPTIONS.setResolveFully(true);
   }
 
   @Autowired
-  public OpenApiRequestMapper(@NonNull SwaggerParser openApiParser,
-      @NonNull ApplicationProperties applicationProperties,
-      @NonNull List<RequestMapper> requestMappers) {
+  public OpenApiRequestMapper(@NonNull OpenAPIV3Parser openApiParser,
+                              @NonNull ApplicationProperties applicationProperties,
+                              @NonNull List<RequestMapper> requestMappers,
+                              @NonNull Environment environment) {
     this.openApiParser = openApiParser;
     this.applicationProperties = applicationProperties;
     this.requestMappers = requestMappers;
-  }
-
-  @Override
-  public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
-    this.resourceLoader = resourceLoader;
-  }
-
-  @Override
-  public void setEnvironment(@NonNull Environment environment) {
     this.environment = environment;
   }
 
   public void map(@NonNull HttpConfiguration httpConfiguration) throws IOException {
-    org.springframework.core.io.Resource[] resources;
+    SpecEnvironmentResolver resolver = new SpecEnvironmentResolver(environment);
+    String openApiPath = applicationProperties.getOpenApiResourcePath();
+    LOG.info("Looking for OA3 specs in: {}", openApiPath);
+
+    List<Path> openApiFiles;
 
     try {
-      resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(
-          applicationProperties.getResourcePath() + "/openapi/**.y*ml");
-    } catch (FileNotFoundException exp) {
-      LOG.warn("No Open API resources found in path:{}/openapi",
-          applicationProperties.getResourcePath());
-      return;
+      openApiFiles = Files.find(Paths.get(openApiPath), 2,
+          (path, bfa) -> path.getFileName().toString().endsWith(".oas3.yml")) //
+          .collect(Collectors.toList());
+    } catch (IOException ioe) {
+      throw new ConfigurationException("No compatible OAS3 files found", ioe);
     }
 
-    for (org.springframework.core.io.Resource resource : resources) {
-      InputStream inputStream =
-          new EnvironmentAwareResource(resource.getInputStream(), environment).getInputStream();
-      String result = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
-      if (!StringUtils.isBlank(result)) {
-        Swagger swagger = openApiParser.parse(result);
-        mapOpenApiDefinition(swagger, httpConfiguration);
-        addSpecResource(result, swagger, httpConfiguration);
-      }
+    for (Path path : openApiFiles) {
+      @Cleanup
+      BufferedReader reader = Files.newBufferedReader(path);
+
+      String yamlContent = reader.lines() //
+          .filter(Objects::nonNull) //
+          .map(resolver::replaceWithEnvVar) //
+          .collect(Collectors.joining("\n"));
+
+      OpenAPI openApi = resolver.resolve(getOpenApi(path));
+      mapOpenApiDefinition(openApi, httpConfiguration);
+      addSpecResource(yamlContent, openApi, httpConfiguration);
     }
   }
 
-  private void mapOpenApiDefinition(Swagger swagger, HttpConfiguration httpConfiguration) {
-    String basePath = createBasePath(swagger);
+  private OpenAPI getOpenApi(Path location) {
+    LOG.debug("OpenAPI file: {}/{}", location.getParent().getFileName(), location.getFileName());
+    return openApiParser.read(location.toString(), new ArrayList<>(), OPTIONS);
+  }
 
-    swagger.getPaths().forEach((path, pathItem) -> {
-      Collection<ApiOperation> apiOperations =
-          SwaggerUtils.extractApiOperations(swagger, path, pathItem);
+  private void mapOpenApiDefinition(@NonNull OpenAPI openApi, HttpConfiguration httpConfiguration) {
+    String basePath = createBasePath(openApi);
+
+    openApi.getPaths().forEach((path, pathItem) -> {
       String absolutePath = basePath.concat(path);
 
       Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
 
-      for (ApiOperation apiOperation : apiOperations) {
+      OpenApiSpecUtils.extractApiOperations(openApi, path, pathItem).forEach(apiOperation -> {
+        LOG.debug("Mapping {} for {}", apiOperation.getMethod().name(), absolutePath);
         Operation operation = apiOperation.getOperation();
+        Optional.ofNullable(operation.getRequestBody()).ifPresent(this::verifyRequestbody);
 
-        validateOperation(apiOperation, swagger);
+        requestMappers.stream() //
+            .filter(mapper -> mapper.supportsVendorExtension(operation.getExtensions())) //
+            .findFirst() //
+            .ifPresent(mapper -> mapper.map(resourceBuilder, openApi, apiOperation, absolutePath));
 
-        Optional<RequestMapper> optionalRequestMapper = requestMappers.stream().filter(
-            mapper -> mapper.supportsVendorExtension(operation.getVendorExtensions())).findFirst();
-
-        optionalRequestMapper.ifPresent(
-            mapper -> mapper.map(resourceBuilder, swagger, apiOperation, operation, absolutePath));
-
-        if (!optionalRequestMapper.isPresent()) {
+        if (requestMappers.stream() //
+            .noneMatch(mapper -> mapper.supportsVendorExtension(operation.getExtensions()))) {
           LOG.warn("Path '{}' is not mapped to an information product or transaction.",
               absolutePath);
         }
-      }
+      });
 
       if (!resourceBuilder.build().getAllMethods().isEmpty()) {
-        resourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(
-            new OptionsRequestHandler(pathItem));
+        resourceBuilder.addMethod(HttpMethod.OPTIONS) //
+            .handledBy(new OptionsRequestHandler(pathItem));
         httpConfiguration.registerResources(resourceBuilder.build());
       }
     });
   }
 
-  private void addSpecResource(String yaml, Swagger swagger, HttpConfiguration httpConfiguration)
+  private void addSpecResource(String yaml, OpenAPI openApi, HttpConfiguration httpConfiguration)
       throws IOException {
-    String basePath = createBasePath(swagger);
-    String specEndpoint = getSpecEndpoint(swagger).orElse("/");
-    OpenApiSpecHandler handler = new OpenApiSpecHandler(yaml);
-    Builder specResourceBuilder = Resource.builder().path(basePath + specEndpoint);
-    specResourceBuilder//
-        .addMethod(GET)//
-        .produces("text/yaml")//
-        .handledBy(handler);
-    specResourceBuilder.addMethod(HttpMethod.OPTIONS).handledBy(
-        new OptionsRequestHandler(specPath));
+    Builder specResourceBuilder =
+        Resource.builder().path(createBasePath(openApi) + getSpecEndpoint(openApi));
+    specResourceBuilder.addMethod(HttpMethod.GET) //
+        .produces("text/yaml") //
+        .handledBy(new OpenApiSpecHandler(yaml));
+    specResourceBuilder.addMethod(HttpMethod.OPTIONS) //
+        .handledBy(new OptionsRequestHandler(new PathItem().get(new Operation())));
     httpConfiguration.registerResources(specResourceBuilder.build());
   }
 
-  private Optional<String> getSpecEndpoint(Swagger swagger) {
-    return Optional.ofNullable(swagger.getVendorExtensions()).map(
-        map -> (String) map.get(OpenApiSpecificationExtensions.SPEC_ENDPOINT));
+  private String getSpecEndpoint(OpenAPI openApi) {
+    return Optional.ofNullable(openApi.getExtensions()).map(
+        map -> (String) map.get(OpenApiSpecificationExtensions.SPEC_ENDPOINT)) //
+        .orElse("/");
   }
 
   /**
@@ -167,46 +161,37 @@ public class OpenApiRequestMapper implements ResourceLoaderAware, EnvironmentAwa
    *         have a schema of type Object (because a schema of type Object is the only type we are
    *         currently supporting).
    */
-  private void validateOperation(ApiOperation apiOperation, Swagger swagger) {
-    apiOperation.getOperation().getParameters().stream().filter(
-        parameterBody -> "body".equalsIgnoreCase(parameterBody.getIn())).forEach(parameterBody -> {
-          if ((parameterBody instanceof BodyParameter)) {
-            ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
-            if (!"object".equalsIgnoreCase(parameterModel.getType())) {
-              throw new ConfigurationException("No object property in body parameter.");
-            }
-          }
-        });
+  private void verifyRequestbody(@Nullable RequestBody requestBody) {
+    String mediaType = Stream.of(requestBody) //
+        .filter(Objects::nonNull) //
+        .map(RequestBody::getContent) //
+        .filter(Objects::nonNull) //
+        .map(Map::values) //
+        .flatMap(Collection::stream) //
+        .map(MediaType::getSchema) //
+        .filter(Objects::nonNull) //
+        .map(Schema::getType) //
+        .filter("object"::equalsIgnoreCase) //
+        .findAny() //
+        .orElseThrow(() -> new ConfigurationException("No object property in body parameter."));
+    LOG.debug("Found {} in requestBody", mediaType);
   }
 
-  private ModelImpl getBodyParameter(@NonNull Swagger swagger, BodyParameter parameterBody) {
-    ModelImpl parameterModel = null;
-    if (parameterBody.getSchema() instanceof ModelImpl) {
-      parameterModel = ((ModelImpl) (parameterBody.getSchema()));
-    }
-    if (parameterBody.getSchema() instanceof RefModel) {
-      RefModel refModel = ((RefModel) (parameterBody.getSchema()));
-      parameterModel = (ModelImpl) swagger.getDefinitions().get(refModel.getSimpleRef());
-    }
-    return parameterModel;
-  }
+  private String createBasePath(OpenAPI openApi) {
+    String oas =
+        "https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#schema";
 
-  private String createBasePath(Swagger swagger) {
-    String basePath = "/";
-
-    if (swagger.getHost() == null) {
-      throw new ConfigurationException(
-          String.format("OpenAPI definition document '%s' must contain a 'host' attribute.",
-              swagger.getInfo().getDescription()));
-    }
-
-    basePath = basePath.concat(swagger.getHost());
-
-    if (swagger.getBasePath() != null) {
-      basePath = basePath.concat(swagger.getBasePath());
-    }
-
-    return basePath;
+    String url = Stream.of(openApi) //
+        .map(OpenAPI::getServers) //
+        .filter(Objects::nonNull) //
+        .flatMap(Collection::stream) //
+        .map(Server::getUrl) //
+        .filter(anotherString -> !"/".equalsIgnoreCase(anotherString)) //
+        .findAny() //
+        .orElseThrow(() -> new ConfigurationException(String.format(
+            "Expecting at least one server definition on the OpenAPI spec '%s'. See: %s",
+            openApi.getInfo().getDescription(), oas)));
+    return url.substring(url.indexOf("://") + 2);
   }
 
 }

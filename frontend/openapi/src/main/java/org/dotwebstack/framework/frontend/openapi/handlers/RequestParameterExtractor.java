@@ -1,12 +1,13 @@
 package org.dotwebstack.framework.frontend.openapi.handlers;
 
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.models.ModelImpl;
-import io.swagger.models.RefModel;
-import io.swagger.models.Swagger;
-import io.swagger.models.parameters.BodyParameter;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -20,16 +21,14 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.entity.ContentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 class RequestParameterExtractor {
-
-  private static final Logger LOG = LoggerFactory.getLogger(RequestParameterExtractor.class);
 
   static final String PARAM_GEOMETRY_QUERYTYPE = "geometry_querytype";
   static final String PARAM_GEOMETRY = "geometry";
@@ -42,7 +41,7 @@ class RequestParameterExtractor {
     this.objectMapper = objectMapper;
   }
 
-  RequestParameters extract(@NonNull ApiOperation apiOperation, @NonNull Swagger swagger,
+  RequestParameters extract(@NonNull ApiOperation apiOperation,
       @NonNull ContainerRequestContext containerRequestContext) {
 
     UriInfo uriInfo = containerRequestContext.getUriInfo();
@@ -54,16 +53,16 @@ class RequestParameterExtractor {
     parameters.putAll(containerRequestContext.getHeaders());
 
     try {
-      Optional<Parameter> parameter =
-          apiOperation.getOperation().getParameters().stream().filter(parameterBody -> {
-            if ((parameterBody instanceof BodyParameter)) {
-              ModelImpl parameterModel = getBodyParameter(swagger, (BodyParameter) parameterBody);
-              return "object".equalsIgnoreCase(parameterModel.getType())
-                  && "body".equalsIgnoreCase(parameterBody.getIn());
-            }
-            return false;
-          }).findFirst();
-      extractBodyParameter(parameters, containerRequestContext, parameter);
+      RequestBody requestBody = apiOperation.getOperation().getRequestBody();
+      Optional<Schema> schema = Optional.empty();
+      if (requestBody != null) {
+        Content content = defaultIfNull(requestBody.getContent(), new Content());
+        schema = content.values().stream() //
+            .filter(mediaType -> "object".equalsIgnoreCase(mediaType.getSchema().getType())) //
+            .findFirst() //
+            .map(MediaType::getSchema);
+      }
+      extractBodyParameter(parameters, containerRequestContext, schema);
     } catch (IOException ioe) {
       throw new InternalServerErrorException("Error processing request body.", ioe);
     }
@@ -73,30 +72,18 @@ class RequestParameterExtractor {
     return parameters;
   }
 
-  private static ModelImpl getBodyParameter(@NonNull Swagger swagger, BodyParameter parameterBody) {
-    ModelImpl parameterModel = null;
-    if (parameterBody.getSchema() instanceof ModelImpl) {
-      parameterModel = ((ModelImpl) (parameterBody.getSchema()));
-    }
-    if (parameterBody.getSchema() instanceof RefModel) {
-      RefModel refModel = ((RefModel) (parameterBody.getSchema()));
-      parameterModel = (ModelImpl) swagger.getDefinitions().get(refModel.getSimpleRef());
-    }
-    return parameterModel;
-  }
-
   /**
    * Extracts the body from the supplied request.
    */
   private void extractBodyParameter(final RequestParameters requestParameters,
-      final ContainerRequestContext ctx, final Optional<Parameter> parameter) throws IOException {
+      final ContainerRequestContext ctx, final Optional<Schema> schema) throws IOException {
 
     String body = extractBody(ctx);
     if (body == null) {
       return;
     }
     requestParameters.setRawBody(body);
-    if (!parameter.isPresent()) {
+    if (!schema.isPresent()) {
       return;
     }
 

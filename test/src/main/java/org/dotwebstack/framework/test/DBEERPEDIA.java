@@ -143,7 +143,7 @@ public final class DBEERPEDIA {
 
   public static final String OPENAPI_DESCRIPTION = "DBeerpedia API";
 
-  public static final String OPENAPI_HOST = "dbpeerpedia.org";
+  public static final String OPENAPI_HOST = "dbeerpedia.org";
 
   @java.lang.SuppressWarnings("squid:S1075")
   public static final String OPENAPI_BASE_PATH = "/api/v1";
@@ -239,6 +239,8 @@ public final class DBEERPEDIA {
 
   public static final Literal UPDATE_QUERY_SERVICE_TAG;
 
+  public static final Integer NUMBER_OF_FTE;
+
   static {
     ValueFactory valueFactory = SimpleValueFactory.getInstance();
     SHACL_CONCEPT_GRAPHNAME = valueFactory.createIRI(DBEERPEDIA.NAMESPACE, "ConceptShapeGraph");
@@ -291,7 +293,7 @@ public final class DBEERPEDIA {
         + ".org#> insert { ?concept rdfs:label ?label } where { ?s ?p ?o SERVICE "
         + "dbeerpedia:Backend { ?s rdfs:label ?p. } }");
 
-
+    NUMBER_OF_FTE = 10;
 
     BROUWTOREN = valueFactory.createIRI(DBEERPEDIA.OBJECT_NAMESPACE,
         "brewery/900e5c1c-d292-48c8-b9bd-1baf02ee2d2c");

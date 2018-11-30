@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.frontend.openapi;
 
-import io.swagger.models.Scheme;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.servers.Server;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Optional;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -20,50 +20,38 @@ public class BaseUriFactory {
   /**
    * Constructs a URI: {@code <scheme>://<host>[:<port>]/<basePath>}<br />
    * <br />
+   * If the given operation has 'servers' defined, the base URI is the 'url' of the first server
+   * entry for the operation.
+   * Otherwise, the base URI is the 'url' of the first server entry for the Open API Specification.
+   * If {@code X-Forwarded-Host}
    * Where:
-   *
    * <ul>
-   * <li>{@code <scheme>} is taken from the OpenAPI spec. It is the first scheme listed in the spec.
-   * Defaults to {@code https}.</li>
+   * <li>{@code <scheme>} and {@code <basePath} are taken from the Open API Spec. If the given
+   * operation has 'servers' defined, these are taken from the 'url' of the first server, otherwise
+   * these are taken from the 'url' of the first server entry fro the OpenAPI specification.</li>
    * <li>{@code <host>[:<port>]} The host, and optional port number are taken from the
    * {@code X-Forwarded-Host} header or from the request. If the {@code X-Forwarded-Host} header is
    * set, it's first value is used as host and port combination. If the header is not set, the host
    * and port number are taken from the request.</li>
-   * <li>{@code <basePath>} The base path is taken from the OpenAPI spec.</li>
    * </ul>
-   * 
    * @return The base uri for the give request and OpenAPI spec.
    */
-  public static String newBaseUri(@NonNull ContainerRequest containerRequest,
-      @NonNull Swagger swagger) {
-    String baseUri;
+  public static String determineBaseUri(@NonNull ContainerRequest containerRequest,
+      @NonNull OpenAPI openApi, @NonNull Operation operation) {
+    String openApiSpecUri = openApi.getServers().get(0).getUrl();
+
+    if (operation.getServers() != null) {
+      Server operationServer = operation.getServers().get(0);
+      if (operationServer != null) {
+        openApiSpecUri = operationServer.getUrl();
+      }
+    }
+
     try {
-      // @formatter:off
-      URI base = new URIBuilder()
-          .setScheme(getScheme(swagger))
-          .setHost(getHost(containerRequest))
-          .setPath(swagger.getBasePath())
-          .build();
-      // @formatter:on
-      baseUri = base.toString();
+      return new URIBuilder(openApiSpecUri).setHost(getHost(containerRequest)).build().toString();
     } catch (URISyntaxException use) {
       throw new IllegalStateException("BaseUri could not be constructed", use);
     }
-    return baseUri;
-  }
-
-  /**
-   * Returns the scheme for the base uri.
-   *
-   * @return The first scheme listed in the provided Open API spec, or {@code "https"}, if no scheme
-   *         is present in the spec.
-   */
-  private static String getScheme(@NonNull Swagger swagger) {
-    List<Scheme> schemes = swagger.getSchemes();
-    if (schemes != null && !schemes.isEmpty()) {
-      return schemes.get(0).toValue();
-    }
-    return "https";
   }
 
   /**
@@ -86,8 +74,9 @@ public class BaseUriFactory {
 
   private static Optional<String> getForwardedHostFromRequestHeader(
       ContainerRequest containerRequest) {
-    return Optional.ofNullable(containerRequest.getRequestHeaders().getFirst("x-forwarded-host"))
-        .map(header -> header.split(",")[0]);
+    return Optional.ofNullable(
+        containerRequest.getRequestHeaders().getFirst("x-forwarded-host")).map(
+            header -> header.split(",")[0]);
   }
 
   private static String getHostFromRequest(ContainerRequest containerRequest) {

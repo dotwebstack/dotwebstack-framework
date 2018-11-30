@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.atlassian.oai.validator.model.ApiOperation;
-import io.swagger.models.parameters.Parameter;
-import io.swagger.models.parameters.QueryParameter;
-import io.swagger.models.properties.ObjectProperty;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.parameters.QueryParameter;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ import org.dotwebstack.framework.param.term.IntegerTermParameter;
 import org.dotwebstack.framework.vocabulary.ELMO;
 import org.eclipse.rdf4j.model.IRI;
 
-abstract class AbstractLinkSchemaMapper implements SchemaMapper<ObjectProperty, Object> {
+abstract class AbstractLinkSchemaMapper implements SchemaMapper<ObjectSchema, Object> {
 
   AbstractLinkSchemaMapper() {}
 
@@ -37,8 +37,9 @@ abstract class AbstractLinkSchemaMapper implements SchemaMapper<ObjectProperty, 
         .filter(isQueryParameter())
         .map(toQueryParameter())
         .filter(p -> requestParams.get(p.getName()) != null)
-        .filter(p -> p.getDefault() == null
-            || !requestParams.get(p.getName()).equals(p.getDefault().toString()))
+        .filter(p -> p.getSchema() == null
+            || p.getSchema().getDefault() == null
+            || !requestParams.get(p.getName()).equals(p.getSchema().getDefault().toString()))
         .forEach(p -> builder.queryParam(p.getName(), requestParams.get(p.getName())));
     // @formatter:on
 
@@ -100,12 +101,12 @@ abstract class AbstractLinkSchemaMapper implements SchemaMapper<ObjectProperty, 
   }
 
   private static boolean mapsToTermParameter(QueryParameter parameter, IRI termParameter) {
-    if (parameter.getVendorExtensions() == null) {
+    if (parameter.getExtensions() == null) {
       return false;
     }
 
     return termParameter.stringValue().equals(
-        parameter.getVendorExtensions().get(OpenApiSpecificationExtensions.PARAMETER));
+        parameter.getExtensions().get(OpenApiSpecificationExtensions.PARAMETER));
   }
 
 }

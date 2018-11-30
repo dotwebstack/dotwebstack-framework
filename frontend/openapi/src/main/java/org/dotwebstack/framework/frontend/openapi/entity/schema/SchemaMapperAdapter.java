@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.frontend.openapi.entity.schema;
 
 import com.google.common.collect.ImmutableList;
-import io.swagger.models.properties.Property;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -12,32 +12,31 @@ import org.springframework.stereotype.Service;
 @Service
 public class SchemaMapperAdapter {
 
-  private final ImmutableList<SchemaMapper<? extends Property, ?>> schemaMappers;
+  private final ImmutableList<SchemaMapper<? extends Schema, ?>> schemaMappers;
 
   @Autowired
-  public SchemaMapperAdapter(@NonNull List<SchemaMapper<? extends Property, ?>> schemaMappers) {
+  public SchemaMapperAdapter(@NonNull List<SchemaMapper<? extends Schema, ?>> schemaMappers) {
     this.schemaMappers = ImmutableList.copyOf(schemaMappers);
   }
 
-  public <S extends Property> Object mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity,
+  public <S extends Schema> Object mapTupleValue(@NonNull S schema, @NonNull TupleEntity entity,
       @NonNull ValueContext valueContext) {
-    SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
-        candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
-            () -> new SchemaMapperRuntimeException(String.format(
-                "No schema mapper available for '%s'.", schema.getClass().getName())));
+    return getSchemaMapper(schema).mapTupleValue(schema, entity, valueContext);
+  }
 
-    return ((SchemaMapper<S, ?>) schemaMapper).mapTupleValue(schema, entity, valueContext);
+  public <S extends Schema> Object mapGraphValue(@NonNull S schema, boolean required,
+      GraphEntity entity, @NonNull ValueContext valueContext,
+      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
+    return getSchemaMapper(schema)
+        .mapGraphValue(schema, required, entity, valueContext, schemaMapperAdapter);
   }
 
   @SuppressWarnings("unchecked")
-  public <S extends Property> Object mapGraphValue(@NonNull S schema, GraphEntity entity,
-      @NonNull ValueContext valueContext, @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    SchemaMapper<? extends Property, ?> schemaMapper = schemaMappers.stream().filter(
-        candidateMapper -> candidateMapper.supports(schema)).findFirst().orElseThrow(
-            () -> new SchemaMapperRuntimeException(String.format(
-                "No schema mapper available for '%s'.", schema.getClass().getName())));
-
-    return ((SchemaMapper<S, ?>) schemaMapper).mapGraphValue(schema, entity, valueContext,
-        schemaMapperAdapter);
+  private <S extends Schema> SchemaMapper<S, ?> getSchemaMapper(@NonNull S schema) {
+    return (SchemaMapper<S, ?>) schemaMappers.stream() //
+        .filter(candidateMapper -> candidateMapper.supports(schema)) //
+        .findFirst() //
+        .orElseThrow(() -> new SchemaMapperRuntimeException(//
+            String.format("No schema mapper available for '%s'.", schema.getClass().getName())));
   }
 }

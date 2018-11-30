@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.properties.StringProperty;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.openapi.entity.LdPathExecutor;
 import org.dotwebstack.framework.frontend.openapi.handlers.RequestContext;
@@ -47,13 +47,13 @@ public class StringSchemaMapperRelativeLinkTest {
 
   private ValueContext valueContext;
   private SchemaMapperAdapter schemaMapperAdapter;
-  private SchemaMapper<StringProperty, ?> schemaMapper;
-  private StringProperty stringProperty;
+  private SchemaMapper<StringSchema, ?> schemaMapper;
+  private StringSchema stringSchema;
 
   @Before
   public void setUp() {
     schemaMapper = new StringSchemaMapper();
-    stringProperty = new StringProperty();
+    stringSchema = new StringSchema();
     schemaMapperAdapter = new SchemaMapperAdapter(ImmutableList.of(schemaMapper));
     valueContext = ValueContext.builder().value(VALUE_1).build();
 
@@ -67,10 +67,10 @@ public class StringSchemaMapperRelativeLinkTest {
   public void mapGraphValue_ReturnsAbsoluteLink_ForRelativeLinkWithoutPlaceHolder() {
     // Arrange
     String pattern = "/somePatternWithoutPlaceholder";
-    stringProperty.setVendorExtension(RELATIVE_LINK, ImmutableMap.of(PATTERN, pattern));
+    stringSchema.addExtension(RELATIVE_LINK, ImmutableMap.of(PATTERN, pattern));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(stringProperty, graphEntityMock, valueContext,
+    Object result = schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
 
     // Assert
@@ -80,14 +80,14 @@ public class StringSchemaMapperRelativeLinkTest {
   @Test
   public void mapGraphValue_ReplacesPlaceHolder_ForRelativeLinkWithsPlaceHolder() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK,
+    stringSchema.addExtension(RELATIVE_LINK,
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
     when(ldPathExecutorMock.ldPathQuery(eq(VALUE_1), anyString())).thenReturn(
         ImmutableList.of(VALUE_1));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(stringProperty, graphEntityMock, valueContext,
+    Object result = schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
 
     // Assert
@@ -97,11 +97,11 @@ public class StringSchemaMapperRelativeLinkTest {
   @Test
   public void mapGraphValue_ReturnsNull_ForLdPathExpressionWithoutResult() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK,
+    stringSchema.addExtension(RELATIVE_LINK,
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(stringProperty, graphEntityMock, valueContext,
+    Object result = schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
 
     // Assert
@@ -111,7 +111,7 @@ public class StringSchemaMapperRelativeLinkTest {
   @Test
   public void mapGraphValue_ThrowsEx_ForRelativeLinkWithLdPathExpressionWithMultipleResults() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK,
+    stringSchema.addExtension(RELATIVE_LINK,
         ImmutableMap.of(PATTERN, SOME_PATTERN, LDPATH, DUMMY_EXPR));
 
     when(ldPathExecutorMock.ldPathQuery(eq(VALUE_1), anyString())).thenReturn(
@@ -121,19 +121,19 @@ public class StringSchemaMapperRelativeLinkTest {
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(
-        String.format("LDPath query '%s' yielded multiple results (%d) for a property, which "
+        String.format("LDPath query '%s' yielded multiple results (%d) for a schema, which "
             + "requires a single result.", DUMMY_EXPR, 2));
 
     // Act
-    schemaMapper.mapGraphValue(stringProperty, graphEntityMock, valueContext,
+    schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
 
   }
 
   @Test
-  public void mapGraphValue_ThrowsException_ForRelativeLinkWithoutPatternProperty() {
+  public void mapGraphValue_ThrowsException_ForRelativeLinkWithoutPatternSchema() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK, ImmutableMap.<String, String>of());
+    stringSchema.addExtension(RELATIVE_LINK, ImmutableMap.<String, String>of());
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
@@ -141,21 +141,21 @@ public class StringSchemaMapperRelativeLinkTest {
         String.format("'%s' should have a '%s' property.", RELATIVE_LINK, PATTERN));
 
     // Act
-    schemaMapper.mapGraphValue(stringProperty, graphEntityMock, valueContext,
+    schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
   }
 
   @Test
   public void mapGraphValue_ThrowsException_ForRelativeLinkThatIsNull() {
     // Arrange
-    stringProperty.setVendorExtension(RELATIVE_LINK, null);
+    stringSchema.addExtension(RELATIVE_LINK, null);
 
     // Assert
     thrown.expect(SchemaMapperRuntimeException.class);
     thrown.expectMessage(String.format("'%s' can not be null.", RELATIVE_LINK));
 
     // Act
-    schemaMapper.mapGraphValue(stringProperty, graphEntityMock, valueContext,
+    schemaMapper.mapGraphValue(stringSchema, false, graphEntityMock, valueContext,
         schemaMapperAdapter);
   }
 

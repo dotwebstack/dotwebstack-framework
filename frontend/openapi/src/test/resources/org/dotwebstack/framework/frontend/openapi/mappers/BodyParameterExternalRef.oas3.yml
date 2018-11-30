@@ -1,0 +1,20 @@
+openapi: 3.0.0
+servers:
+  - url: http://dbeerpedia.org/api/v1
+info:
+  title: API
+  version: '1.0'
+x-dotwebstack-spec-endpoint: /docs/_spec
+paths:
+  /breweries:
+    post:
+      x-dotwebstack-transaction: 'http://dbeerpedia.org#Breweries'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+      requestBody:
+        $ref: '/org/dotwebstack/framework/frontend/openapi/mappers/RequestBody.yml#/requestBodies/Body'

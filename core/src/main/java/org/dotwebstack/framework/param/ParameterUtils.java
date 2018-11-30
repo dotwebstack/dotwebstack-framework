@@ -18,7 +18,7 @@ public final class ParameterUtils {
    */
   public static Parameter getParameter(@NonNull Collection<Parameter> parameters,
       @NonNull String parameterId) {
-    IRI iri = VALUE_FACTORY.createIRI((String) parameterId);
+    IRI iri = VALUE_FACTORY.createIRI(parameterId);
 
     for (Parameter<?> p : parameters) {
       if (p.getIdentifier().equals(iri)) {

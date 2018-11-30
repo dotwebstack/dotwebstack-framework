@@ -7,9 +7,9 @@ import static org.mockito.Mockito.when;
 
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.atlassian.oai.validator.model.NormalisedPath;
-import io.swagger.models.Operation;
-import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.ObjectProperty;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import java.net.URI;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -52,14 +52,14 @@ public class SelfLinkSchemaMapperTest {
 
   private SelfLinkSchemaMapper schemaMapper;
 
-  private ObjectProperty schema;
+  private ObjectSchema schema;
 
   @Before
   public void setUp() {
     schemaMapper = new SelfLinkSchemaMapper();
 
-    schema = new ObjectProperty();
-    schema.setVendorExtension(OpenApiSpecificationExtensions.TYPE,
+    schema = new ObjectSchema();
+    schema.addExtension(OpenApiSpecificationExtensions.TYPE,
         OpenApiSpecificationExtensions.TYPE_SELF_LINK);
 
     when(apiOperationMock.getRequestPath()).thenReturn(requestPathMock);
@@ -90,7 +90,7 @@ public class SelfLinkSchemaMapperTest {
     when(requestPathMock.normalised()).thenReturn("/breweries");
 
     // Act
-    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock,
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContextMock,
         schemaMapperAdapterMock);
 
     // Assert
@@ -98,7 +98,7 @@ public class SelfLinkSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsTrue_ForObjectPropertyWithRequiredVendorExtension() {
+  public void supports_ReturnsTrue_ForObjectSchemaWithRequiredVendorExtension() {
     // Act
     boolean result = schemaMapper.supports(schema);
 
@@ -107,18 +107,18 @@ public class SelfLinkSchemaMapperTest {
   }
 
   @Test
-  public void supports_ReturnsFalse_ForNonObjectProperty() {
+  public void supports_ReturnsFalse_ForNonObjectSchema() {
     // Act
-    boolean result = schemaMapper.supports(new ArrayProperty());
+    boolean result = schemaMapper.supports(new ArraySchema());
 
     // Assert
     assertThat(result, is(false));
   }
 
   @Test
-  public void supports_ReturnsFalse_ForObjectPropertyWithoutRequiredVendorExtension() {
+  public void supports_ReturnsFalse_ForObjectSchemaWithoutRequiredVendorExtension() {
     // Act
-    boolean result = schemaMapper.supports(new ObjectProperty());
+    boolean result = schemaMapper.supports(new ObjectSchema());
 
     // Assert
     assertThat(result, is(false));

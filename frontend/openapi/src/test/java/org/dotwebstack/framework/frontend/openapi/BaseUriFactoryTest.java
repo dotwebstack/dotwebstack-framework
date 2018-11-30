@@ -6,9 +6,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.swagger.models.Scheme;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.servers.Server;
+
 import java.net.URI;
+
 import org.glassfish.jersey.internal.util.collection.MultivaluedStringMap;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.junit.Before;
@@ -49,18 +52,16 @@ public class BaseUriFactoryTest {
   public void newBaseUri_returnsBaseUriString_ifXForwardedHostPresent() {
     // Arrange
     String forwardedHost = "forwardedHost";
-    // @formatter:off
-    Swagger swagger = new Swagger()
-        .scheme(Scheme.HTTP)
-        .basePath(basePath);
-    // @formatter:on
+    OpenAPI openApi = new OpenAPI() //
+        .addServersItem(new Server().url("http://example.com/" + basePath));
     when(containerRequestMock.getRequestHeaders().getFirst(any())).thenReturn(forwardedHost);
 
     // Act
-    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
+    String baseUri =
+        BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
 
     // Assert
-    assertThat(baseUri, is(getUriString(Scheme.HTTP, forwardedHost, basePath)));
+    assertThat(baseUri, is(getUriString("http", forwardedHost, basePath)));
   }
 
   @Test
@@ -69,117 +70,72 @@ public class BaseUriFactoryTest {
     String forwardedHost1 = "forwardedHost1";
     String forwardedHost2 = "forwardedHost2";
     // @formatter:off
-    Swagger swagger = new Swagger()
-        .scheme(Scheme.HTTP)
-        .basePath(basePath);
+    OpenAPI openApi = new OpenAPI() //
+        .addServersItem(new Server().url("http://example.com/" + basePath));
+    
     // @formatter:on
     when(containerRequestMock.getRequestHeaders().getFirst(any())).thenReturn(
-        forwardedHost1 + ", " + forwardedHost2
-    );
+        forwardedHost1 + ", " + forwardedHost2);
 
     // Act
-    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
+    String baseUri =
+        BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
 
     // Assert
-    assertThat(baseUri, is(getUriString(Scheme.HTTP, forwardedHost1, basePath)));
+    assertThat(baseUri, is(getUriString("http", forwardedHost1, basePath)));
   }
 
   @Test
   public void newBaseUri_returnsBaseUriString_ifXForwardedHostNotPresent() {
     // Arrange
-    // @formatter:off
-    Swagger swagger = new Swagger()
-        .scheme(Scheme.HTTP)
-        .basePath(basePath);
-    // @formatter:on
+    OpenAPI openApi = new OpenAPI() //
+        .addServersItem(new Server().url("http://example.com/" + basePath));
 
     // Act
-    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
+    String baseUri =
+        BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
 
     // Assert
-    assertThat(baseUri, is(getUriString(Scheme.HTTP, requestHost, basePath)));
+    assertThat(baseUri, is(getUriString("http", requestHost, basePath)));
   }
 
   @Test
   public void newBaseUri_returnsBaseUriString_withPortNumber() {
     // Arrange
-    // @formatter:off
-    Swagger swagger = new Swagger()
-        .scheme(Scheme.HTTP)
-        .basePath(basePath);
-    // @formatter:on
+    OpenAPI openApi = new OpenAPI() //
+        .addServersItem(new Server().url("http://example.com/" + basePath));
+
     when(baseUriMock.getPort()).thenReturn(123);
 
-    //Act
-    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
-
-    // Assert
-    assertThat(baseUri, is(getUriString(Scheme.HTTP, requestHost + ":123", basePath)));
-  }
-
-  @Test
-  public void newBaseUri_returnsBaseUriString_ifSchemesEmpty() {
-    // Arrange
-    Swagger swagger = new Swagger().basePath(basePath);
-
     // Act
-    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
+    String baseUri =
+        BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
 
     // Assert
-    assertThat(baseUri, is(getUriString(Scheme.HTTPS, requestHost, basePath)));
+    assertThat(baseUri, is(getUriString("http", requestHost + ":123", basePath)));
   }
 
-  @Test
-  public void newBaseUri_returnsBaseUriString_ifFirstSchemeIsHttps() {
-    // Arrange
-    // @formatter:off
-    Swagger swagger = new Swagger()
-        .scheme(Scheme.HTTPS)
-        .scheme(Scheme.HTTP)
-        .basePath(basePath);
-    // @formatter:on
-
-    // Act
-    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
-
-    // Assert
-    assertThat(baseUri, is(getUriString(Scheme.HTTPS, requestHost, basePath)));
-  }
-
-  @Test
-  public void newBaseUri_returnsBaseUriString_ifFirstSchemeIsHttp() {
-    // Arrange
-    // @formatter:off
-    Swagger swagger = new Swagger()
-        .scheme(Scheme.HTTP)
-        .scheme(Scheme.HTTPS)
-        .basePath(basePath);
-    // @formatter:on
-
-    // Act
-    String baseUri = BaseUriFactory.newBaseUri(containerRequestMock, swagger);
-
-    // Assert
-    assertThat(baseUri, is(getUriString(Scheme.HTTP, requestHost, basePath)));
-  }
 
   @Test
   public void newBaseUri_ThrowsIllegalStateException_whenMalformed() {
     // Arrange
     when(containerRequestMock.getRequestHeaders().getFirst(any())).thenReturn("!@#$%^&*()_+");
 
-    Swagger swagger = new Swagger().scheme(Scheme.HTTP).basePath(basePath);
+    OpenAPI openApi = new OpenAPI() //
+        .addServersItem(new Server().url("http://example.com/" + basePath));
 
     // Assert
     exception.expect(IllegalStateException.class);
     exception.expectMessage("BaseUri could not be constructed");
 
     // Act
-    BaseUriFactory.newBaseUri(containerRequestMock, swagger);
+    BaseUriFactory.determineBaseUri(containerRequestMock, openApi, new Operation());
   }
 
-  private String getUriString(Scheme scheme, String host, String path) {
-    return String.format("%s://%s%s", scheme.toValue(), host, path);
+  // TODO: Add test cases for url in operation specification
+
+  private String getUriString(String scheme, String host, String path) {
+    return String.format("%s://%s%s", scheme, host, path);
   }
 
 }

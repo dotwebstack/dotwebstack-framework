@@ -8,8 +8,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,10 +15,14 @@ import static org.mockito.Mockito.when;
 import com.atlassian.oai.validator.model.ApiOperation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.swagger.models.Operation;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.servers.Server;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Map;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -73,30 +75,27 @@ public class InformationProductRequestHandlerTest {
   private InformationProductRequestParameterMapper requestParameterMapperMock;
 
   @Mock
-  private Swagger swaggerMock;
+  private OpenAPI openApiMock;
 
-  private io.swagger.models.Response entityResponse;
+  private ApiResponse entityResponse;
 
   private InformationProductRequestHandler informationProductRequestHandler;
 
   @Before
   public void setUp() throws URISyntaxException {
-    entityResponse = new io.swagger.models.Response();
+    entityResponse = new ApiResponse();
     informationProductRequestHandler = new InformationProductRequestHandler(apiOperationMock,
-        informationProductMock, new io.swagger.models.Response(), requestParameterMapperMock,
-        apiRequestValidatorMock, swaggerMock);
+        informationProductMock, new ApiResponse(), requestParameterMapperMock,
+        apiRequestValidatorMock, openApiMock);
 
     when(containerRequestMock.getBaseUri()).thenReturn(new URI("http://host:123/path"));
 
-    RequestParameters requestParameters = new RequestParameters();
-    when(apiRequestValidatorMock.validate(apiOperationMock, swaggerMock,
-        containerRequestMock)).thenReturn(requestParameters);
-    Operation operation = new Operation();
-    when(apiOperationMock.getOperation()).thenReturn(operation);
+    when(apiRequestValidatorMock.validate(apiOperationMock, containerRequestMock)) //
+        .thenReturn(new RequestParameters());
+    when(apiOperationMock.getOperation()).thenReturn(new Operation());
     when(containerRequestMock.getRequestHeaders()).thenReturn(mock(MultivaluedStringMap.class));
 
-    when(requestParameterMapperMock.map(same(operation), eq(informationProductMock),
-        same(requestParameters))).thenReturn(ImmutableMap.of());
+    when(openApiMock.getServers()).thenReturn(Collections.singletonList(new Server().url("")));
   }
 
   @Test
@@ -123,7 +122,7 @@ public class InformationProductRequestHandlerTest {
   @Test
   public void apply_ReturnsOkResponseWithEmptySubjects_ForEmptySubjectQueryResult() {
     // Arrange
-    when(swaggerMock.getBasePath()).thenReturn("");
+
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
@@ -133,9 +132,12 @@ public class InformationProductRequestHandlerTest {
     when(informationProductMock.getResult(parameters)).thenReturn(result);
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
-    Operation operation = new Operation().vendorExtensions(ImmutableMap.of(
-        OpenApiSpecificationExtensions.SUBJECT_QUERY, "SELECT ?s WHERE { ?s ?p ?o }")).response(
-            Status.OK.getStatusCode(), new io.swagger.models.Response());
+    Operation operation = new Operation() //
+        .extensions(ImmutableMap.of(//
+            OpenApiSpecificationExtensions.SUBJECT_QUERY, //
+            "SELECT ?s WHERE { ?s ?p ?o }")) //
+        .responses(new ApiResponses() //
+            .addApiResponse(Status.OK.toString(), new ApiResponse()));
 
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
@@ -157,7 +159,6 @@ public class InformationProductRequestHandlerTest {
   @Test
   public void apply_ReturnsOkResponseWithSubjects_ForNonEmptySubjectQueryResult() {
     // Arrange
-    when(swaggerMock.getBasePath()).thenReturn("");
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
@@ -173,11 +174,12 @@ public class InformationProductRequestHandlerTest {
     when(informationProductMock.getResult(parameters)).thenReturn(result);
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
-    Operation operation = new Operation().vendorExtensions(
+    Operation operation = new Operation().extensions(
         ImmutableMap.of(OpenApiSpecificationExtensions.SUBJECT_QUERY,
             String.format("SELECT ?s WHERE {?s <%s> <%s> }", RDF.TYPE,
-                DBEERPEDIA.BREWERY_TYPE))).response(Status.OK.getStatusCode(),
-                    new io.swagger.models.Response());
+                DBEERPEDIA.BREWERY_TYPE))).responses(
+                    new ApiResponses().addApiResponse(Status.OK.toString(),
+                        new ApiResponse()));
 
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
@@ -202,7 +204,6 @@ public class InformationProductRequestHandlerTest {
     exception.expect(ConfigurationException.class);
 
     // Arrange
-    when(swaggerMock.getBasePath()).thenReturn("");
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
@@ -213,7 +214,8 @@ public class InformationProductRequestHandlerTest {
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
     Operation operation =
-        new Operation().response(Status.OK.getStatusCode(), new io.swagger.models.Response());
+        new Operation().responses(
+            new ApiResponses().addApiResponse(Status.OK.toString(), new ApiResponse()));
 
     when(apiOperationMock.getOperation()).thenReturn(operation);
 
@@ -227,7 +229,6 @@ public class InformationProductRequestHandlerTest {
     exception.expect(NotFoundException.class);
 
     // Arrange
-    when(swaggerMock.getBasePath()).thenReturn("");
     ExtendedUriInfo uriInfo = mock(ExtendedUriInfo.class);
     when(containerRequestMock.getUriInfo()).thenReturn(uriInfo);
 
@@ -237,10 +238,12 @@ public class InformationProductRequestHandlerTest {
     when(informationProductMock.getResult(parameters)).thenReturn(result);
     when(informationProductMock.getResultType()).thenReturn(ResultType.GRAPH);
 
-    Operation operation = new Operation().vendorExtensions(ImmutableMap.of(
-        OpenApiSpecificationExtensions.SUBJECT_QUERY, "SELECT ?s WHERE { ?s ?p ?o }")).response(
-            Status.OK.getStatusCode(), new io.swagger.models.Response()).response(
-                Status.NOT_FOUND.getStatusCode(), new io.swagger.models.Response());
+    Operation operation = new Operation() //
+        .extensions(ImmutableMap.of(//
+            OpenApiSpecificationExtensions.SUBJECT_QUERY, "SELECT ?s WHERE { ?s ?p ?o }")) //
+        .responses(new ApiResponses() //
+            .addApiResponse("200", new ApiResponse()) //
+            .addApiResponse("404", new ApiResponse())); //
 
     when(apiOperationMock.getOperation()).thenReturn(operation);
 

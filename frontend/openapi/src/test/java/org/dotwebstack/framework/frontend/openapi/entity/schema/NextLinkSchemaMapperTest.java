@@ -10,9 +10,10 @@ import com.atlassian.oai.validator.model.ApiOperation;
 import com.atlassian.oai.validator.model.NormalisedPath;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.QueryParameter;
-import io.swagger.models.properties.ObjectProperty;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.parameters.QueryParameter;
 import java.net.URI;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
 import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
@@ -67,26 +68,26 @@ public class NextLinkSchemaMapperTest {
 
   private NextLinkSchemaMapper schemaMapper;
 
-  private ObjectProperty schema;
+  private ObjectSchema schema;
 
-  private QueryParameter pageParameter;
+  private Parameter pageParameter;
 
-  private QueryParameter pageSizeParameter;
+  private Parameter pageSizeParameter;
 
   @Before
   public void setUp() {
     schemaMapper = new NextLinkSchemaMapper();
 
-    schema = new ObjectProperty();
-    schema.setVendorExtension(OpenApiSpecificationExtensions.TYPE,
+    schema = new ObjectSchema();
+    schema.addExtension(OpenApiSpecificationExtensions.TYPE,
         OpenApiSpecificationExtensions.TYPE_SELF_LINK);
 
     pageParameter = new QueryParameter().name("p");
-    pageParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+    pageParameter.addExtension(OpenApiSpecificationExtensions.PARAMETER,
         ELMO.PAGE_PARAMETER.stringValue());
 
     pageSizeParameter = new QueryParameter().name("ps");
-    pageSizeParameter.setVendorExtension(OpenApiSpecificationExtensions.PARAMETER,
+    pageSizeParameter.addExtension(OpenApiSpecificationExtensions.PARAMETER,
         ELMO.PAGE_SIZE_PARAMETER.stringValue());
 
     when(operationMock.getParameters()).thenReturn(
@@ -122,7 +123,7 @@ public class NextLinkSchemaMapperTest {
         ImmutableSet.of(DBEERPEDIA.BROUWTOREN, DBEERPEDIA.MAXIMUS));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock,
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContextMock,
         schemaMapperAdapterMock);
 
     // Assert
@@ -136,7 +137,7 @@ public class NextLinkSchemaMapperTest {
     when(graphEntityMock.getSubjects()).thenReturn(ImmutableSet.of(DBEERPEDIA.BROUWTOREN));
 
     // Act
-    Object result = schemaMapper.mapGraphValue(schema, graphEntityMock, valueContextMock,
+    Object result = schemaMapper.mapGraphValue(schema, false, graphEntityMock, valueContextMock,
         schemaMapperAdapterMock);
 
     // Assert
