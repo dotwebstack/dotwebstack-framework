@@ -7,15 +7,14 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-
 import javax.ws.rs.core.Variant;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
@@ -27,6 +26,7 @@ import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.glassfish.jersey.process.Inflector;
 
+@Slf4j
 public abstract class RequestHandler<T> implements Inflector<ContainerRequestContext, Response> {
 
   protected final T endpoint;
@@ -52,26 +52,27 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
       @NonNull Map<String, String> parameterValues) {
     InformationProduct informationProduct = representation.getInformationProduct();
 
-    endpointRequestParameterMapper.map(informationProduct, containerRequestContext).forEach(
-        parameterValues::put);
-    representation.getParameterMappers().forEach(
-        parameterMapper -> parameterValues.putAll(parameterMapper.map(containerRequestContext)));
+    endpointRequestParameterMapper.map(informationProduct, containerRequestContext)//
+        .forEach(parameterValues::put);
+    representation.getParameterMappers().stream()//
+        .map(parameterMapper ->  parameterMapper.map(containerRequestContext))//
+        .forEach(parameterValues::putAll);
+
+    MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
+
+    if (headers.get("accept") != null
+        || headers.get("accept").contains("text/html")
+        || headers.get("accept").contains("application/html")) {
+      URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
+      return generateHtmlResponse(representation.getHtmlTemplate(), uri.toString());
+    }
 
     Object result = informationProduct.getResult(parameterValues);
 
-    MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
-    List<String> acceptHeaders = headers.get("accept") != null
-        ? headers.get("accept") : Collections.emptyList();
-
-    if (acceptHeaders.contains("text/html") || acceptHeaders.contains("application/html")) {
-      Template htmlTemplate = representation.getHtmlTemplate();
-      URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
-      String uriString = uri.toString();
-      return generateHtmlResponse(htmlTemplate, uriString);
-    }
     if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
       return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
     }
+
     if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
       return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
     }
@@ -82,23 +83,26 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
   }
 
   private Response generateHtmlResponse(Template htmlTemplate, String uri)  {
-    if (htmlTemplate != null) {
-      Map<String, Object> freeMarkerDataModel = new HashMap<>();
-      freeMarkerDataModel.put("result", uri);
-      StringWriter stringWriter = new StringWriter();
-      try {
-        htmlTemplate.process(freeMarkerDataModel, stringWriter);
-        StringBuffer buffer = stringWriter.getBuffer();
-        String htmlString = buffer != null ? buffer.toString() : "UNKNOWN";
-        return Response.ok(htmlString).build();
-      } catch (TemplateException e) {
-        e.printStackTrace();
-        return Response.noContent().build();
-      } catch (IOException e) {
-        return Response.serverError().build();
-      }
+    if (htmlTemplate == null) {
+      return Response.notAcceptable(Collections.singletonList(
+          new Variant(MediaType.TEXT_HTML_TYPE, "en", "UTF-8"))).build();
     }
-    return Response.notAcceptable(Collections.singletonList(
-        new Variant(MediaType.TEXT_HTML_TYPE, "en", "UTF-8"))).build();
+
+    Map<String, Object> freeMarkerDataModel = new HashMap<>();
+    freeMarkerDataModel.put("result", uri);
+    StringWriter stringWriter = new StringWriter();
+    try {
+      htmlTemplate.process(freeMarkerDataModel, stringWriter);
+      StringBuffer buffer = stringWriter.getBuffer();
+      String htmlString = buffer != null ? buffer.toString() : "UNKNOWN";
+      return Response.ok(htmlString).build();
+    } catch (TemplateException te) {
+      LOG.error(te.getMessage(), te);
+      return Response.noContent().build();
+    } catch (IOException ioe) {
+      LOG.error(ioe.getMessage(), ioe);
+      return Response.serverError().build();
+    }
+
   }
 }

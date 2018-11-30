@@ -1,9 +1,10 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,7 +19,6 @@ import org.dotwebstack.framework.frontend.ld.writer.graph.GraphEntityWriter;
 import org.dotwebstack.framework.frontend.ld.writer.tuple.AbstractTupleEntityWriter;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.rio.RDFFormat;
-import org.hamcrest.core.IsCollectionContaining;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -65,8 +65,8 @@ public class SupportedWriterMediaTypesScannerTest {
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(2));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.GRAPH)),
-        IsCollectionContaining.hasItems(MediaTypes.LDJSON_TYPE));
-    assertThat(scanner.getGraphEntityWriters().size(), equalTo(1));
+        hasItems(MediaTypes.LDJSON_TYPE));
+    assertThat(scanner.getGraphEntityWriters(), hasSize(1));
   }
 
   @Test
@@ -78,8 +78,8 @@ public class SupportedWriterMediaTypesScannerTest {
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(2));
     assertThat(Arrays.asList(scanner.getMediaTypes(ResultType.TUPLE)),
-        IsCollectionContaining.hasItems(MediaTypes.SPARQL_RESULTS_JSON_TYPE));
-    assertThat(scanner.getTupleEntityWriters().size(), equalTo(1));
+        hasItems(MediaTypes.SPARQL_RESULTS_JSON_TYPE));
+    assertThat(scanner.getTupleEntityWriters(), hasSize(1));
   }
 
   @Test
@@ -92,8 +92,8 @@ public class SupportedWriterMediaTypesScannerTest {
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.TUPLE).length, equalTo(1));
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
-    assertThat(scanner.getGraphEntityWriters().size(), equalTo(0));
-    assertThat(scanner.getTupleEntityWriters().size(), equalTo(0));
+    assertThat(scanner.getGraphEntityWriters(), hasSize(0));
+    assertThat(scanner.getTupleEntityWriters(), hasSize(0));
   }
 
   @Test
@@ -104,7 +104,7 @@ public class SupportedWriterMediaTypesScannerTest {
 
     // Assert
     assertThat(scanner.getMediaTypes(ResultType.GRAPH).length, equalTo(1));
-    assertThat(scanner.getGraphEntityWriters().size(), equalTo(0));
+    assertThat(scanner.getGraphEntityWriters(), hasSize(0));
   }
 
   @EntityWriter(resultType = ResultType.GRAPH)
@@ -133,8 +133,7 @@ public class SupportedWriterMediaTypesScannerTest {
     }
 
     @Override
-    protected void write(TupleQueryResult tupleQueryResult, OutputStream outputStream)
-        throws IOException {
+    protected void write(TupleQueryResult tupleQueryResult, OutputStream outputStream) {
 
     }
   }

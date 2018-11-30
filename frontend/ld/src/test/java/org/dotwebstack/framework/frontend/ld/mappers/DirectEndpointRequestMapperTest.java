@@ -32,7 +32,6 @@ import org.dotwebstack.framework.frontend.ld.representation.RepresentationResour
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -98,8 +97,8 @@ public class DirectEndpointRequestMapperTest {
     when(directEndpoint.getStage().getFullPath()).thenReturn(
         "/" + DBEERPEDIA.ORG_HOST + DBEERPEDIA.BASE_PATH.getLabel());
     when(directEndpoint.getPathPattern()).thenReturn(DBEERPEDIA.PATH_PATTERN_VALUE);
-    when(directEndpoint.getGetRepresentation()).thenReturn(getRepresentation);
-    when(directEndpoint.getPostRepresentation()).thenReturn(postRepresentation);
+    when(directEndpoint.getRepresentationFor(HttpMethod.GET)).thenReturn(getRepresentation);
+    when(directEndpoint.getRepresentationFor(HttpMethod.POST)).thenReturn(postRepresentation);
 
     Map<org.eclipse.rdf4j.model.Resource, DirectEndpoint> endPointMap = new HashMap<>();
     endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, directEndpoint);
@@ -138,12 +137,11 @@ public class DirectEndpointRequestMapperTest {
     directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
 
     // Assert
-    Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
-    final ResourceMethod method = resource.getResourceMethods().get(0);
+    Resource resource = (Resource) httpConfiguration.getResources().toArray()[1];
     assertThat(httpConfiguration.getResources(), hasSize(2));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
+    assertThat(resource.getResourceMethods().get(0).getHttpMethod(), equalTo(HttpMethod.GET));
   }
 
   @Test

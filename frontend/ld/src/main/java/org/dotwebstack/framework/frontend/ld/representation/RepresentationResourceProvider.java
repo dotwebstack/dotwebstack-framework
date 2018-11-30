@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
 import freemarker.template.Template;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
@@ -89,9 +88,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     if (objectString.isPresent()) {
       try {
         return new Template(identifier.stringValue(), new StringReader(objectString.get()));
-      } catch (IOException e) {
-        log.warn("HTML template not defined.");
-        e.printStackTrace();
+      } catch (IOException ioe) {
+        LOG.error("HTML template not defined.", ioe);
       }
     }
     return null;
@@ -99,10 +97,12 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   @Override
   protected void finalizeResource(Model model, Representation resource) {
-    getObjectResources(model, resource.getIdentifier(), ELMO.CONTAINS_PROP).stream().forEach(
-        iri -> resource.addSubRepresentation(this.get(iri)));
+    getObjectResources(model, resource.getIdentifier(), ELMO.CONTAINS_PROP)//
+        .stream()//
+        .map(this::get)//
+        .forEach(resource::addSubRepresentation);
 
-    log.info("Updated resource: <{}>", resource.getIdentifier());
+    LOG.info("Updated resource: <{}>", resource.getIdentifier());
   }
 
 }
