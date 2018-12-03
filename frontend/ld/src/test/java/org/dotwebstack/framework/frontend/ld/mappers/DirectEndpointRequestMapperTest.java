@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.mappers;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -10,8 +11,11 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -32,6 +36,7 @@ import org.dotwebstack.framework.frontend.ld.representation.RepresentationResour
 import org.dotwebstack.framework.informationproduct.InformationProduct;
 import org.dotwebstack.framework.test.DBEERPEDIA;
 import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -131,7 +136,7 @@ public class DirectEndpointRequestMapperTest {
   public void loadRepresentations_MapRepresentation_WithValidData() {
     // Arrange
     when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
-        new MediaType[] {MediaType.valueOf("text/turtle")});
+        new MediaType[]{MediaType.valueOf("text/turtle")});
 
     // Act
     directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
@@ -141,7 +146,10 @@ public class DirectEndpointRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(2));
     assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(resource.getResourceMethods().get(0).getHttpMethod(), equalTo(HttpMethod.GET));
+    List<String> methods = resource.getResourceMethods().stream()//
+        .map(ResourceMethod::getHttpMethod)//
+        .collect(Collectors.toList());
+    assertThat(methods, hasItem(HttpMethod.GET));
   }
 
   @Test
@@ -159,6 +167,7 @@ public class DirectEndpointRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
 
+  // Duplicate of the one above. @TODO why is this one needed?
   @Test
   public void loadRepresentations_MapRepresentation_WithNullStage() {
     // Arrange
@@ -178,7 +187,7 @@ public class DirectEndpointRequestMapperTest {
   public void loadRepresentations_IgnoreSecondRepresentation_WhenAddedTwice() {
     // Arrange
     when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
-        new MediaType[] {MediaType.valueOf("text/turtle")});
+        new MediaType[]{MediaType.valueOf("text/turtle")});
 
     DirectEndpoint endPoint = (DirectEndpoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(getRepresentation).stage(stage).build();
@@ -200,7 +209,7 @@ public class DirectEndpointRequestMapperTest {
   public void loadRepresentations_UsesPathDomainParameter_WithMatchAllDomain() {
     // Arrange
     when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
-        new MediaType[] {MediaType.valueOf("text/turtle")});
+        new MediaType[]{MediaType.valueOf("text/turtle")});
 
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(
