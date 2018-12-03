@@ -45,7 +45,7 @@ public class SupportedWriterMediaTypesScanner {
   }
 
   private <T> List<MessageBodyWriter<T>> registerSupportedWriters(
-      List<MessageBodyWriter<T>> entityWriters) {//
+      List<MessageBodyWriter<T>> entityWriters) { //
     return entityWriters.stream()//
         .filter(this::validateAnnotations)//
         .peek(writer -> LOG.info("Registering {} writer for mediatypes.", writer.getClass()))//

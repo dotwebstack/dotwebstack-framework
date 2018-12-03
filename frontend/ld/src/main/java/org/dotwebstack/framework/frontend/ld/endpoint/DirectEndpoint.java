@@ -47,8 +47,8 @@ public class DirectEndpoint extends AbstractEndpoint {
     return putService;
   }
 
-  public Representation getRepresentationFor(String method){
-    switch(method) {
+  public Representation getRepresentationFor(String method) {
+    switch (method) {
       case HttpMethod.GET:
         return getRepresentation;
       case HttpMethod.POST:
@@ -58,8 +58,8 @@ public class DirectEndpoint extends AbstractEndpoint {
     }
   }
 
-  public Service getServiceFor(String method){
-    switch(method) {
+  public Service getServiceFor(String method) {
+    switch (method) {
       case HttpMethod.POST:
         return postService;
       case HttpMethod.PUT:

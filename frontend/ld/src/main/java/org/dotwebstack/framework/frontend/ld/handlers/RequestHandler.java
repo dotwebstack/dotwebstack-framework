@@ -61,8 +61,8 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
     MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
 
     if (headers.get("accept") != null
-        || headers.get("accept").contains("text/html")
-        || headers.get("accept").contains("application/html")) {
+        && (headers.get("accept").contains("text/html")
+        || headers.get("accept").contains("application/html"))) {
       URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
       return generateHtmlResponse(representation.getHtmlTemplate(), uri.toString());
     }

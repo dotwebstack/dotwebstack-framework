@@ -307,7 +307,7 @@ public class RepresentationRequestHandlerTest {
   private void arrangeMocksHtml(Template template, QueryResult queryResult) {
     when(headerMap.get("accept")).thenReturn(Collections.singletonList("text/html"));
     when(representation.getHtmlTemplate()).thenReturn(template);
-    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
+    //    when(informationProduct.getResult(ImmutableMap.of())).thenReturn(queryResult);
   }
 
   private void init(String get) {
