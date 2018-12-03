@@ -7,15 +7,14 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.backend.ResultType;
 import org.dotwebstack.framework.config.ConfigurationException;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
@@ -58,28 +57,26 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
         .map(parameterMapper ->  parameterMapper.map(containerRequestContext))//
         .forEach(parameterValues::putAll);
 
-    MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
+    List<Variant> reqVariants = Variant.mediaTypes(MediaType.TEXT_HTML_TYPE).build();
+    Variant prefered = containerRequestContext.getRequest().selectVariant(reqVariants);
 
-    if (headers.get("accept") != null
-        && (headers.get("accept").contains("text/html")
-        || headers.get("accept").contains("application/html"))) {
+    if (prefered.getMediaType().isCompatible(MediaType.TEXT_HTML_TYPE)) {
       URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
       return generateHtmlResponse(representation.getHtmlTemplate(), uri.toString());
     }
 
     Object result = informationProduct.getResult(parameterValues);
 
-    if (ResultType.GRAPH.equals(informationProduct.getResultType())) {
-      return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
+    switch (informationProduct.getResultType()) {
+      case GRAPH:
+        return Response.ok(new GraphEntity((GraphQueryResult) result, representation)).build();
+      case TUPLE:
+        return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
+      default:
+        throw new ConfigurationException(
+            String.format("Result type %s not supported for information product %s",
+                informationProduct.getResultType(), informationProduct.getIdentifier()));
     }
-
-    if (ResultType.TUPLE.equals(informationProduct.getResultType())) {
-      return Response.ok(new TupleEntity((TupleQueryResult) result, representation)).build();
-    }
-
-    throw new ConfigurationException(
-        String.format("Result type %s not supported for information product %s",
-            informationProduct.getResultType(), informationProduct.getIdentifier()));
   }
 
   private Response generateHtmlResponse(Template htmlTemplate, String uri)  {
