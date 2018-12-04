@@ -91,7 +91,6 @@ public class RepresentationRequestHandlerTest {
     when(endPoint.getGetRepresentation()).thenReturn(representation);
     when(endPoint.getPostRepresentation()).thenReturn(representation);
     when(representation.getInformationProduct()).thenReturn(informationProduct);
-    when(containerRequestContext.getHeaders()).thenReturn(headerMap);
   }
 
   @Test
