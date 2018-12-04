@@ -12,9 +12,11 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
@@ -142,11 +144,13 @@ public class DirectEndpointRequestMapperTest {
     directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
 
     // Assert
-    Resource resource = (Resource) httpConfiguration.getResources().toArray()[1];
+    Set<Resource> resources = httpConfiguration.getResources();
     assertThat(httpConfiguration.getResources(), hasSize(2));
-    assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
+    assertThat(resources.iterator().next().getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-    List<String> methods = resource.getResourceMethods().stream()//
+    List<String> methods = resources.stream()
+        .map(Resource::getResourceMethods)//
+        .flatMap(Collection::stream)
         .map(ResourceMethod::getHttpMethod)//
         .collect(Collectors.toList());
     assertThat(methods, hasItem(HttpMethod.GET));
