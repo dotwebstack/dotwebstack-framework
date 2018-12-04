@@ -16,6 +16,7 @@ import javax.ws.rs.core.Variant;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.config.ConfigurationException;
+import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndpoint;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -62,8 +63,10 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
 
     if (preferred != null && preferred.getMediaType().isCompatible(MediaType.TEXT_HTML_TYPE)) {
 
+      String path = ((AbstractEndpoint) endpoint).getPathPattern();
+
       String uri = representation.getStage() != null
-          ? representation.getStage().getFullPath()
+          ? representation.getStage().getFullPath() + path
           : containerRequestContext.getUriInfo().getAbsolutePath().toString();
 
       return generateHtmlResponse(representation.getHtmlTemplate(), uri);

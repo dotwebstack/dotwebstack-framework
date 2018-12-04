@@ -74,8 +74,11 @@ public class LdIntegrationTest {
 
   @Test
   public void get_InternalServerError_WhenRequiredIsMissing() {
+    // Arrange
+    MediaType mediaType = MediaType.valueOf("application/sparql-results+json");
+
     // Act
-    Response response = target.path("/dbp/ld/v1/tuple-brewery").request().get();
+    Response response = target.path("/dbp/ld/v1/tuple-brewery").request().accept(mediaType).get();
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
@@ -151,8 +154,7 @@ public class LdIntegrationTest {
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("hey " + target.getUri()
-        + host + path));
+    assertThat(response.readEntity(String.class), equalTo("hey " + host + path));
   }
 
   @Test
@@ -168,8 +170,7 @@ public class LdIntegrationTest {
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("hey " + target.getUri()
-        + host + path));
+    assertThat(response.readEntity(String.class), equalTo("hey " + host + path));
   }
 
   @Test
