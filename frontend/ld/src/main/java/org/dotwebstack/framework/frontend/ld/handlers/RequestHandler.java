@@ -58,11 +58,15 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
         .forEach(parameterValues::putAll);
 
     List<Variant> reqVariants = Variant.mediaTypes(MediaType.TEXT_HTML_TYPE).build();
-    Variant prefered = containerRequestContext.getRequest().selectVariant(reqVariants);
+    Variant preferred = containerRequestContext.getRequest().selectVariant(reqVariants);
 
-    if (prefered.getMediaType().isCompatible(MediaType.TEXT_HTML_TYPE)) {
-      URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
-      return generateHtmlResponse(representation.getHtmlTemplate(), uri.toString());
+    if (preferred != null && preferred.getMediaType().isCompatible(MediaType.TEXT_HTML_TYPE)) {
+
+      String uri = representation.getStage() != null
+          ? representation.getStage().getFullPath()
+          : containerRequestContext.getUriInfo().getAbsolutePath().toString();
+
+      return generateHtmlResponse(representation.getHtmlTemplate(), uri);
     }
 
     Object result = informationProduct.getResult(parameterValues);
