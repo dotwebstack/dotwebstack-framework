@@ -54,7 +54,7 @@ public class DirectEndpoint extends AbstractEndpoint {
       case HttpMethod.POST:
         return postRepresentation;
       default:
-        throw new IllegalStateException("Unsupported HTTP method");
+        throw new IllegalStateException("Unsupported HTTP method " + method);
     }
   }
 
