@@ -34,16 +34,16 @@ public class DirectEndpointRequestHandler extends RequestHandler<DirectEndpoint>
     if (uriInfo != null) {
       path = uriInfo.getPath();
 
-      final MultivaluedMap<String, String> pathParameters = uriInfo.getPathParameters();
+      MultivaluedMap<String, String> pathParameters = uriInfo.getPathParameters();
       pathParameters.forEach(
           (key, value) -> parameterValues.put(key, value.get(0)));
     }
 
     Request contextRequest = containerRequestContext.getRequest();
-    final String request = contextRequest != null
+    String request = contextRequest != null
         ? contextRequest.getMethod() : "No request method";
 
-    final Representation representation;
+    Representation representation;
     switch (request) {
       case HttpMethod.GET:
         LOG.debug("Handling GET request for path {}", path);

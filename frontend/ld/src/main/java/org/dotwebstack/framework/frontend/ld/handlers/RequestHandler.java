@@ -4,7 +4,6 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -92,14 +91,12 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
           new Variant(MediaType.TEXT_HTML_TYPE, "en", "UTF-8"))).build();
     }
 
-    Map<String, Object> freeMarkerDataModel = new HashMap<>();
+    Map<String, String> freeMarkerDataModel = new HashMap<>();
     freeMarkerDataModel.put("result", uri);
     StringWriter stringWriter = new StringWriter();
+
     try {
-      htmlTemplate.process(freeMarkerDataModel, stringWriter);
-      StringBuffer buffer = stringWriter.getBuffer();
-      String htmlString = buffer != null ? buffer.toString() : "UNKNOWN";
-      return Response.ok(htmlString).build();
+      return Response.ok(processTemplate(htmlTemplate, freeMarkerDataModel, stringWriter)).build();
     } catch (TemplateException te) {
       LOG.error(te.getMessage(), te);
       return Response.noContent().build();
@@ -107,6 +104,12 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
       LOG.error(ioe.getMessage(), ioe);
       return Response.serverError().build();
     }
+  }
 
+  private String processTemplate(Template htmlTemplate, Map<String, String> freeMarkerDataModel,
+                                 StringWriter stringWriter) throws TemplateException, IOException {
+    htmlTemplate.process(freeMarkerDataModel, stringWriter);
+    StringBuffer buffer = stringWriter.getBuffer();
+    return buffer.toString();
   }
 }

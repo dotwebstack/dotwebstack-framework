@@ -277,6 +277,7 @@ public class RepresentationRequestHandlerTest {
     thrown.expectMessage(String.format("Result type %s not supported for endpoint %s",
         HttpMethod.PUT, DBEERPEDIA.DOC_ENDPOINT));
 
+    // Arrange
     init(HttpMethod.PUT, false);
     DynamicEndpoint dynamicEndpoint = mock(DynamicEndpoint.class);
     when(dynamicEndpoint.getIdentifier()).thenReturn(DBEERPEDIA.DOC_ENDPOINT);
@@ -287,7 +288,6 @@ public class RepresentationRequestHandlerTest {
     requestHandler.apply(containerRequestContext);
   }
 
-  @Ignore
   @Test
   public void apply_ThrowsException_WhenQueryResultIsUnexpected() {
     // Arrange
@@ -299,7 +299,7 @@ public class RepresentationRequestHandlerTest {
     init(HttpMethod.GET, false);
 
     // Assert
-    thrown.expect(ConfigurationException.class);
+    thrown.expect(ClassCastException.class);
 
     // Act
     getRequestHandler.apply(containerRequestContext);

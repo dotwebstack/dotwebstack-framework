@@ -130,7 +130,7 @@ public class LdIntegrationTest {
   }
 
   @Test
-  public void get_GetRedirection_ThroughLdApi() throws URISyntaxException {
+  public void get_GetRedirection_ThroughLdApi() {
     // Act
     Response response = target.path("/dbp/ld/v1/id/breweries").request()
             .accept("image/gif", "image/jpeg").get();
@@ -139,6 +139,15 @@ public class LdIntegrationTest {
     assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
     assertThat(response.getLocation().getPath(), equalTo("/dbp/ld/v1/doc/breweries"));
     assertThat(response.readEntity(String.class), isEmptyString());
+  }
+
+  @Test
+  public void get_InternalServerErrorWhileAcceptingHtml_WhenNoRepresentation() {
+    // Act
+    Response response = target.path("/dbp/ld/v1/id/breweries").request().get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
   }
 
   @Test

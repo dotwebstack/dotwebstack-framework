@@ -171,7 +171,6 @@ public class DirectEndpointRequestMapperTest {
     assertThat(httpConfiguration.getResources(), hasSize(0));
   }
 
-  // Duplicate of the one above. @TODO why is this one needed?
   @Test
   public void loadRepresentations_MapRepresentation_WithNullStage() {
     // Arrange

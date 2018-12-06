@@ -106,7 +106,7 @@ public class DirectEndpointRequestMapper {
 
   private void registerResource(HttpConfiguration config, String method, Resource resource) {
     config.registerResources(resource);
-    LOG.debug("Mapped {} operation for request path {}", method, resource.getPath());
+    LOG.debug("Registered {} method for request path {}", method, resource.getPath());
   }
 
   private void registerService(HttpConfiguration config, DirectEndpoint endpoint, String method) {

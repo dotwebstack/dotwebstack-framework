@@ -11,7 +11,7 @@ import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
 import org.springframework.stereotype.Service;
 
 @Service
-@EntityWriter(resultType = ResultType.GRAPH)
+@EntityWriter(resultType = ResultType.TUPLE)
 @Produces({"text/html"})
 public class HtmlTupleEntityWriter {
 

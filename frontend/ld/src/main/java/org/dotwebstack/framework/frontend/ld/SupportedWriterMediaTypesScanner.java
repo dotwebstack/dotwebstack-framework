@@ -13,6 +13,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
@@ -27,7 +28,7 @@ public class SupportedWriterMediaTypesScanner {
 
   private List<MediaType> tupleMediaTypes;
 
-  private List<MediaType> htmlMediaTypes = Collections.singletonList(MediaType.TEXT_HTML_TYPE);
+  private List<MediaType> htmlMediaTypes = Collections.singletonList(MediaTypes.TEXT_HTML_TYPE);
 
   private List<MessageBodyWriter<GraphEntity>> graphEntityWriters;
 
@@ -46,9 +47,9 @@ public class SupportedWriterMediaTypesScanner {
 
   private <T> List<MessageBodyWriter<T>> registerSupportedWriters(
       List<MessageBodyWriter<T>> entityWriters) { //
-    return entityWriters.stream()//
-        .filter(this::validateAnnotations)//
-        .peek(writer -> LOG.info("Registering {} writer for mediatypes.", writer.getClass()))//
+    return entityWriters.stream() //
+        .filter(this::validateAnnotations) //
+        .peek(writer -> LOG.info("Registering {} writer for mediatypes.", writer.getClass())) //
         .collect(Collectors.toList());
   }
 
