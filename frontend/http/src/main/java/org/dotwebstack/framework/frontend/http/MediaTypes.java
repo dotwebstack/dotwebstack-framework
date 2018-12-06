@@ -38,7 +38,7 @@ public class MediaTypes {
 
   public static final String TEXT_HTML = "text/html";
 
-  public static final MediaType TEXT_HTML_TYPE = MediaType.valueOf(TEXT_HTML);
+  public static final MediaType TEXT_HTML_TYPE = MediaType.TEXT_HTML_TYPE;
 
   private MediaTypes() {
     throw new IllegalStateException(
