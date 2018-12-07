@@ -1,7 +1,11 @@
 package org.dotwebstack.framework.frontend.ld.mappers;
 
+import static javax.ws.rs.HttpMethod.DELETE;
+import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.POST;
+import static javax.ws.rs.HttpMethod.PUT;
+
 import java.util.Optional;
-import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.http.ExpandFormatParameter;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -48,71 +52,73 @@ public class DirectEndpointRequestMapper {
   }
 
   public void loadDirectEndpoints(HttpConfiguration httpConfiguration) {
-    for (DirectEndpoint endPoint : directEndpointResourceProvider.getAll().values()) {
-      if (endPoint.getStage() != null) {
-        mapService(endPoint, httpConfiguration);
-        mapRepresentation(endPoint, httpConfiguration);
-      } else {
-        LOG.warn("DirectEndpoint '{}' is not mapped to a stage.", endPoint.getIdentifier());
-      }
+    directEndpointResourceProvider.getAll().values().stream() //
+        .filter(DirectEndpointRequestMapper::noMappedStage) //
+        .forEach(endpoint -> {
+          registerRepresentation(httpConfiguration, endpoint, GET);
+          registerRepresentation(httpConfiguration, endpoint, POST);
+          registerService(httpConfiguration, endpoint, DELETE);
+          registerService(httpConfiguration, endpoint, POST);
+          registerService(httpConfiguration, endpoint, PUT);
+        });
+  }
+
+  private static boolean noMappedStage(DirectEndpoint endpoint) {
+    if (endpoint.getStage() != null) {
+      return true;
     }
+    LOG.warn("DirectEndpoint '{}' is not mapped to a stage.", endpoint.getIdentifier());
+    return false;
   }
 
-  private void mapService(DirectEndpoint endPoint, HttpConfiguration httpConfiguration) {
-    String basePath = endPoint.getStage().getFullPath();
-    String absolutePath = basePath.concat(endPoint.getPathPattern());
-    final Optional<Service> deleteService = Optional.ofNullable(endPoint.getDeleteService());
-    deleteService.ifPresent(service -> registerTransaction(service, HttpMethod.DELETE, absolutePath,
-        httpConfiguration));
-    final Optional<Service> postService = Optional.ofNullable(endPoint.getPostService());
-    postService.ifPresent(
-        service -> registerTransaction(service, HttpMethod.POST, absolutePath, httpConfiguration));
-    final Optional<Service> putService = Optional.ofNullable(endPoint.getPutService());
-    putService.ifPresent(
-        service -> registerTransaction(service, HttpMethod.PUT, absolutePath, httpConfiguration));
+  private void registerRepresentation(HttpConfiguration config, DirectEndpoint endpoint,
+      String method) {
+    Representation representation = endpoint.getRepresentationFor(method);
+
+    validateAndGetBuilder(config, endpoint, method, representation)//
+        .ifPresent(builder -> {
+          builder//
+              .addMethod(method)//
+              .handledBy(
+                  representationRequestHandlerFactory.newRepresentationRequestHandler(endpoint))//
+              .produces(supportedWriterMediaTypesScanner.getMediaTypes(
+                  representation.getInformationProduct().getResultType()))//
+              .nameBindings(ExpandFormatParameter.class);
+          registerResource(config, method, builder.build());
+        });
   }
 
-  private void mapRepresentation(DirectEndpoint endPoint, HttpConfiguration httpConfiguration) {
-    String basePath = endPoint.getStage().getFullPath();
-    String absolutePath = basePath.concat(endPoint.getPathPattern());
-    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-    Optional.ofNullable(endPoint.getGetRepresentation()).ifPresent(
-        getRepresentation -> buildResource(httpConfiguration, resourceBuilder, absolutePath,
-            HttpMethod.GET, getRepresentation, endPoint));
-    Optional.ofNullable(endPoint.getPostRepresentation()).ifPresent(
-        postRepresentation -> buildResource(httpConfiguration, resourceBuilder, absolutePath,
-            HttpMethod.POST, postRepresentation, endPoint));
-  }
-
-  private void registerTransaction(Service service, String httpMethod, String absolutePath,
-      HttpConfiguration httpConfiguration) {
-    Resource.Builder resourceBuilder = Resource.builder().path(absolutePath);
-    resourceBuilder.addMethod(httpMethod).handledBy(
-        serviceRequestHandlerFactory.newServiceRequestHandler(service)).consumes(
-            supportedReaderMediaTypesScanner.getMediaTypes());
-    buildResource(httpConfiguration, resourceBuilder, absolutePath, httpMethod, null, null);
-  }
-
-  private void buildResource(HttpConfiguration httpConfiguration,
-      final Resource.Builder resourceBuilder, String absolutePath, String httpMethod,
-      Representation representation, DirectEndpoint endPoint) {
-    Optional.ofNullable(representation).ifPresent(
-        optionalRepresentation -> Optional.ofNullable(endPoint).ifPresent(optionalEndpoint -> {
-          resourceBuilder.addMethod(httpMethod).handledBy(
-              representationRequestHandlerFactory.newRepresentationRequestHandler(
-                  optionalEndpoint)).produces(supportedWriterMediaTypesScanner.getMediaTypes(
-                      optionalRepresentation.getInformationProduct().getResultType())).nameBindings(
-                          ExpandFormatParameter.class);
-          LOG.debug("Found representation {} for method {}", representation.getIdentifier(),
-              httpMethod);
-        }));
-    if (!httpConfiguration.resourceAlreadyRegistered(absolutePath, httpMethod)) {
-      httpConfiguration.registerResources(resourceBuilder.build());
-      LOG.debug("Mapped {} operation for request path {}",
-          resourceBuilder.build().getResourceMethods(), absolutePath);
-    } else {
-      LOG.debug("Resource <{}> is not registered", absolutePath);
+  private Optional<Resource.Builder> validateAndGetBuilder(HttpConfiguration httpConfiguration,
+      DirectEndpoint endpoint,
+      String method, Representation representation) {
+    if (representation == null) {
+      return Optional.empty();
     }
+
+    String absolutePath = endpoint.getStage().getFullPath().concat(endpoint.getPathPattern());
+    if (httpConfiguration.resourceAlreadyRegistered(absolutePath, method)) {
+      LOG.debug("Method {} was already registered for resource <{}>", method, absolutePath);
+      return Optional.empty();
+    }
+
+    return Optional.of(Resource.builder(absolutePath));
+  }
+
+  private void registerResource(HttpConfiguration config, String method, Resource resource) {
+    config.registerResources(resource);
+    LOG.debug("Registered {} method for request path {}", method, resource.getPath());
+  }
+
+  private void registerService(HttpConfiguration config, DirectEndpoint endpoint, String method) {
+    Service service = endpoint.getServiceFor(method);
+    validateAndGetBuilder(config, endpoint, method, service)//
+        .ifPresent(builder -> {
+          builder//
+              .addMethod(method)//
+              .handledBy(serviceRequestHandlerFactory.newServiceRequestHandler(service))//
+              .consumes(supportedReaderMediaTypesScanner.getMediaTypes());//
+          registerResource(config, method, builder.build());
+        });
   }
 
 }

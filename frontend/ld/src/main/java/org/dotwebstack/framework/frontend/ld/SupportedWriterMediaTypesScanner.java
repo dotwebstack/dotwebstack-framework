@@ -1,8 +1,9 @@
 package org.dotwebstack.framework.frontend.ld;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -10,81 +11,91 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.MessageBodyWriter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.ResultType;
+import org.dotwebstack.framework.frontend.http.MediaTypes;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.writer.EntityWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class SupportedWriterMediaTypesScanner {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SupportedWriterMediaTypesScanner.class);
+  private List<MediaType> graphMediaTypes;
 
-  private List<MediaType> graphMediaTypes = new ArrayList<>();
+  private List<MediaType> tupleMediaTypes;
 
-  private List<MediaType> tupleMediaTypes = new ArrayList<>();
+  private List<MediaType> htmlMediaTypes = Collections.singletonList(MediaTypes.TEXT_HTML_TYPE);
 
-  private List<MessageBodyWriter<GraphEntity>> graphEntityWriters = new ArrayList<>();
+  private List<MessageBodyWriter<GraphEntity>> graphEntityWriters;
 
-  private List<MessageBodyWriter<TupleEntity>> tupleEntityWriters = new ArrayList<>();
+  private List<MessageBodyWriter<TupleEntity>> tupleEntityWriters;
+
 
   @Autowired
   public SupportedWriterMediaTypesScanner(
       @NonNull List<MessageBodyWriter<GraphEntity>> graphEntityWriters,
       @NonNull List<MessageBodyWriter<TupleEntity>> tupleEntityWriters) {
-    loadSupportedMediaTypes(graphEntityWriters, graphMediaTypes, this.graphEntityWriters);
-    loadSupportedMediaTypes(tupleEntityWriters, tupleMediaTypes, this.tupleEntityWriters);
+    this.graphEntityWriters = registerSupportedWriters(graphEntityWriters);
+    this.tupleEntityWriters = registerSupportedWriters(tupleEntityWriters);
+    this.graphMediaTypes = loadMediatypes(graphEntityWriters);
+    this.tupleMediaTypes = loadMediatypes(tupleEntityWriters);
+  }
+
+  private <T> List<MessageBodyWriter<T>> registerSupportedWriters(
+      List<MessageBodyWriter<T>> entityWriters) { //
+    return entityWriters.stream() //
+        .filter(this::validateAnnotations) //
+        .map(writer -> {
+          LOG.info("Registering {} writer for mediatypes.", writer.getClass());
+          return writer;
+        }) //
+        .collect(Collectors.toList());
+  }
+
+  private <T> boolean validateAnnotations(MessageBodyWriter<T> writer) {
+    if (!writer.getClass().isAnnotationPresent(EntityWriter.class)) {
+      LOG.warn("Found writer that did not specify the {} annotation correctly. Skipping {}",
+          EntityWriter.class, writer.getClass());
+      return false;
+    }
+
+    if (!writer.getClass().isAnnotationPresent(Produces.class)) {
+      LOG.warn("Found writer that did not specify the {} annotation correctly. Skipping {}",
+          Produces.class, writer.getClass());
+      return false;
+    }
+    return true;
+  }
+
+  private <T> List<MediaType> loadMediatypes(List<MessageBodyWriter<T>> entityWriters) {
+    return entityWriters.stream()//
+        .filter(this::validateAnnotations)//
+        .map(writer -> writer.getClass().getAnnotation(Produces.class).value())//
+        .flatMap(Arrays::stream)//
+        .map(MediaType::valueOf)//
+        .collect(Collectors.toList());
   }
 
   public Collection<MediaType> getAllSupportedMediaTypes() {
-    return Stream.concat(graphMediaTypes.stream(), tupleMediaTypes.stream()).collect(
-        Collectors.toList());
-  }
-
-  private <T> void loadSupportedMediaTypes(List<MessageBodyWriter<T>> entityWriters,
-      List<MediaType> list, List<MessageBodyWriter<T>> resultingList) {
-
-    entityWriters.forEach(writer -> {
-      Class<?> entityWriterClass = writer.getClass();
-      EntityWriter providerAnnotation = entityWriterClass.getAnnotation(EntityWriter.class);
-      Produces produceAnnotation = entityWriterClass.getAnnotation(Produces.class);
-
-      if (providerAnnotation == null) {
-        LOG.warn(
-            String.format("Found writer that did not specify the EntityWriter annotation correctly."
-                + " Skipping %s", writer.getClass()));
-        return;
-      }
-
-      if (produceAnnotation == null) {
-        LOG.warn(String.format(
-            "Found writer that did not specify the Produce annotation correctly. Skipping %s",
-            writer.getClass()));
-        return;
-      }
-
-      addMediaTypes(list, produceAnnotation);
-      resultingList.add(writer);
-      LOG.info(String.format("Registered %s writer for results.", writer.getClass()));
-    });
-  }
-
-  private void addMediaTypes(List<MediaType> graphMediaTypes, Produces produceAnnotation) {
-    for (String mediaType : produceAnnotation.value()) {
-      graphMediaTypes.add(MediaType.valueOf(mediaType));
-    }
+    return Stream.of(graphMediaTypes, tupleMediaTypes, htmlMediaTypes)//
+        .flatMap(Collection::stream)//
+        .collect(Collectors.toList());
   }
 
   public MediaType[] getMediaTypes(ResultType type) {
     switch (type) {
       case GRAPH:
-        return graphMediaTypes.toArray(new MediaType[0]);
+        return Stream.of(graphMediaTypes, htmlMediaTypes)//
+            .flatMap(Collection::stream)//
+            .toArray(MediaType[]::new);
       case TUPLE:
-        return tupleMediaTypes.toArray(new MediaType[0]);
+        return Stream.of(tupleMediaTypes, htmlMediaTypes)//
+            .flatMap(Collection::stream)//
+            .toArray(MediaType[]::new);
       default:
         throw new IllegalArgumentException(
             String.format("ResultType %s has no supported media types", type));
