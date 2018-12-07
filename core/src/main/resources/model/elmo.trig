@@ -462,10 +462,9 @@ elmo:name a owl:DatatypeProperty;
   # No rdfs:domain, name can be used in a lot of situations;
   rdfs:range xsd:string;
 .
-# Temporary disabled, not needed yet (part of the React UI prototype)
 elmo:htmlTemplate a owl:DatatypeProperty;
   rdfs:label "Html template"@en;
-  rdfs:comment "Specifies an optional template in Freemarker HTML for the main page. This template replaces a default generated template from the configuration";
+  rdfs:comment "Specifies an optional template in Freemarker HTML for the main page.";
   rdfs:domain elmo:Representation;
   rdfs:range xsd:string;
 .

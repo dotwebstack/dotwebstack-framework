@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.representation;
 
+import freemarker.template.Configuration;
 import freemarker.template.Template;
 import java.io.IOException;
 import java.io.StringReader;
@@ -35,6 +36,8 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
   private final StageResourceProvider stageResourceProvider;
 
   private final ParameterMapperResourceProvider parameterMapperResourceProvider;
+
+ private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_27);
 
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
@@ -87,7 +90,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
     Optional<String> objectString = getObjectString(model, identifier, ELMO.HTML_TEMPLATE);
     if (objectString.isPresent()) {
       try {
-        return new Template(identifier.stringValue(), new StringReader(objectString.get()));
+        return new Template(identifier.stringValue(), new StringReader(objectString.get()), cfg);
       } catch (IOException ioe) {
         LOG.error("HTML template not defined.", ioe);
       }

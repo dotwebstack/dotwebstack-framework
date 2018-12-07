@@ -49,7 +49,10 @@ public class SupportedWriterMediaTypesScanner {
       List<MessageBodyWriter<T>> entityWriters) { //
     return entityWriters.stream() //
         .filter(this::validateAnnotations) //
-        .peek(writer -> LOG.info("Registering {} writer for mediatypes.", writer.getClass())) //
+        .map(writer -> {
+          LOG.info("Registering {} writer for mediatypes.", writer.getClass());
+          return writer;
+        }) //
         .collect(Collectors.toList());
   }
 
