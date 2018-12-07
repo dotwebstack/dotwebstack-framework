@@ -37,7 +37,7 @@ public class RepresentationResourceProvider extends AbstractResourceProvider<Rep
 
   private final ParameterMapperResourceProvider parameterMapperResourceProvider;
 
- private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_27);
+  private final Configuration cfg = new Configuration(Configuration.VERSION_2_3_27);
 
   @Autowired
   public RepresentationResourceProvider(ConfigurationBackend configurationBackend,
