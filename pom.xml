@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -106,19 +108,21 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <spring.boot.version>1.5.17.RELEASE</spring.boot.version>
-    <!--higher spring.boot.version will fail the build for this release-->
-    <rdf4j.version>2.3.2</rdf4j.version>
+    <!--higher spring.boot.version will fail the build for this release -->
+    <rdf4j.version>2.4.2</rdf4j.version>
     <slf4j.version>1.7.25</slf4j.version>
     <junit.version>5.2.0</junit.version>
     <mockito.version>2.23.0</mockito.version>
     <com.fasterxml.jackson.datatype.version>2.8.11</com.fasterxml.jackson.datatype.version>
-    <!--higher version than 2.8.x for com.fasterxml.~ will fail the build for this release-->
+    <!--higher version than 2.8.x for com.fasterxml.~ will fail the build 
+      for this release -->
     <org.skyscreamer.version>1.5.0</org.skyscreamer.version>
     <org.hamcrest.version>1.3</org.hamcrest.version>
     <org.apache.marmotta.version>3.4.0</org.apache.marmotta.version>
     <com.taxonic.carml.version>0.2.1</com.taxonic.carml.version>
     <org.glassfish.jersey.version>2.25</org.glassfish.jersey.version>
-    <!--higher org.glassfish.jersey.version will fail the build for this release-->
+    <!--higher org.glassfish.jersey.version will fail the build for this 
+      release -->
   </properties>
 
   <modules>
@@ -274,9 +278,9 @@
       </dependency>
 
       <dependency>
-      <groupId>org.skyscreamer</groupId>
-      <artifactId>jsonassert</artifactId>
-      <version>${org.skyscreamer.version}</version>
+        <groupId>org.skyscreamer</groupId>
+        <artifactId>jsonassert</artifactId>
+        <version>${org.skyscreamer.version}</version>
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
@@ -498,18 +502,10 @@
               </execution>
             </executions>
           </plugin>
-          <!-- tmp disable plug because of travis error: Could not connect to MavenCentral plugin>
-              <groupId>org.owasp</groupId>
-              <artifactId>dependency-check-maven</artifactId>
-              <version>3.1.2</version>
-              <executions>
-                  <execution>
-                      <goals>
-                          <goal>check</goal>
-                      </goals>
-                  </execution>
-              </executions>
-          </plugin-->
+          <!-- tmp disable plug because of travis error: Could not connect 
+            to MavenCentral plugin> <groupId>org.owasp</groupId> <artifactId>dependency-check-maven</artifactId> 
+            <version>3.1.2</version> <executions> <execution> <goals> <goal>check</goal> 
+            </goals> </execution> </executions> </plugin -->
         </plugins>
       </build>
     </profile>
