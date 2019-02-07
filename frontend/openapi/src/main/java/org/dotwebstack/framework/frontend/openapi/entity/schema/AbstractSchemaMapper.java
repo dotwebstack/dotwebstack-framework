@@ -139,9 +139,10 @@ public abstract class AbstractSchemaMapper<S extends Schema, T> implements Schem
    * @throws SchemaMapperRuntimeException if none of these or multiple of these vendor extensions
    *         are encountered.
    */
-  void validateVendorExtensions(Schema schema, Set<String> supportedExtensions) {
-    if (schema.getExtensions().keySet().stream().filter(
-        supportedExtensions::contains).count() != 1) {
+  private void validateVendorExtensions(Schema schema, Set<String> supportedExtensions) {
+    if (schema.getExtensions().keySet().stream() //
+        .filter(supportedExtensions::contains) //
+        .count() != 1) {
 
       String message = schema.getClass().getSimpleName() + " object must have one of: "
           + supportedExtensions.toString().replaceAll("[\\[\\]]", "'").replaceAll(", ", "', '")
