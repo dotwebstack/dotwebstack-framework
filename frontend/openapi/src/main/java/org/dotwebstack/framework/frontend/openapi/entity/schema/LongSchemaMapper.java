@@ -4,11 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Set;
-import javax.validation.constraints.NotNull;
-import lombok.NonNull;
 import org.dotwebstack.framework.frontend.openapi.OpenApiSpecificationExtensions;
-import org.dotwebstack.framework.frontend.openapi.entity.GraphEntity;
-import org.dotwebstack.framework.frontend.openapi.entity.TupleEntity;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -24,19 +20,6 @@ public class LongSchemaMapper extends AbstractSchemaMapper<IntegerSchema, Long> 
   @Override
   protected Set<String> getSupportedVendorExtensions() {
     return SUPPORTED_VENDOR_EXTENSIONS;
-  }
-
-  @Override
-  public Long mapTupleValue(@NonNull IntegerSchema schema, @NonNull TupleEntity entity,
-      @NonNull ValueContext valueContext) {
-    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
-  }
-
-  @Override
-  public Long mapGraphValue(@NonNull IntegerSchema schema, boolean required,
-      @NonNull GraphEntity graphEntity, @NotNull ValueContext valueContext,
-      @NonNull SchemaMapperAdapter schemaMapperAdapter) {
-    return SchemaMapperUtils.castLiteralValue(valueContext.getValue()).longValue();
   }
 
   @Override
