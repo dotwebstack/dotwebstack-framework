@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.mappers;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -10,8 +11,13 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import org.dotwebstack.framework.frontend.http.HttpConfiguration;
@@ -98,8 +104,8 @@ public class DirectEndpointRequestMapperTest {
     when(directEndpoint.getStage().getFullPath()).thenReturn(
         "/" + DBEERPEDIA.ORG_HOST + DBEERPEDIA.BASE_PATH.getLabel());
     when(directEndpoint.getPathPattern()).thenReturn(DBEERPEDIA.PATH_PATTERN_VALUE);
-    when(directEndpoint.getGetRepresentation()).thenReturn(getRepresentation);
-    when(directEndpoint.getPostRepresentation()).thenReturn(postRepresentation);
+    when(directEndpoint.getRepresentationFor(HttpMethod.GET)).thenReturn(getRepresentation);
+    when(directEndpoint.getRepresentationFor(HttpMethod.POST)).thenReturn(postRepresentation);
 
     Map<org.eclipse.rdf4j.model.Resource, DirectEndpoint> endPointMap = new HashMap<>();
     endPointMap.put(DBEERPEDIA.DOC_ENDPOINT, directEndpoint);
@@ -132,18 +138,22 @@ public class DirectEndpointRequestMapperTest {
   public void loadRepresentations_MapRepresentation_WithValidData() {
     // Arrange
     when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
-        new MediaType[] {MediaType.valueOf("text/turtle")});
+        new MediaType[]{MediaType.valueOf("text/turtle")});
 
     // Act
     directEndpointRequestMapper.loadDirectEndpoints(httpConfiguration);
 
     // Assert
-    Resource resource = (Resource) httpConfiguration.getResources().toArray()[0];
-    final ResourceMethod method = resource.getResourceMethods().get(0);
+    Set<Resource> resources = httpConfiguration.getResources();
     assertThat(httpConfiguration.getResources(), hasSize(2));
-    assertThat(resource.getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
+    assertThat(resources.iterator().next().getPath(), equalTo("/" + DBEERPEDIA.ORG_HOST
         + DBEERPEDIA.BASE_PATH.getLabel() + DBEERPEDIA.PATH_PATTERN_VALUE));
-    assertThat(method.getHttpMethod(), equalTo(HttpMethod.GET));
+    List<String> methods = resources.stream()
+        .map(Resource::getResourceMethods)//
+        .flatMap(Collection::stream)
+        .map(ResourceMethod::getHttpMethod)//
+        .collect(Collectors.toList());
+    assertThat(methods, hasItem(HttpMethod.GET));
   }
 
   @Test
@@ -180,7 +190,7 @@ public class DirectEndpointRequestMapperTest {
   public void loadRepresentations_IgnoreSecondRepresentation_WhenAddedTwice() {
     // Arrange
     when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
-        new MediaType[] {MediaType.valueOf("text/turtle")});
+        new MediaType[]{MediaType.valueOf("text/turtle")});
 
     DirectEndpoint endPoint = (DirectEndpoint) new Builder(DBEERPEDIA.DOC_ENDPOINT,
         DBEERPEDIA.PATH_PATTERN_VALUE).getRepresentation(getRepresentation).stage(stage).build();
@@ -202,7 +212,7 @@ public class DirectEndpointRequestMapperTest {
   public void loadRepresentations_UsesPathDomainParameter_WithMatchAllDomain() {
     // Arrange
     when(supportedWriterMediaTypesScanner.getMediaTypes(any())).thenReturn(
-        new MediaType[] {MediaType.valueOf("text/turtle")});
+        new MediaType[]{MediaType.valueOf("text/turtle")});
 
     Site site = new Site.Builder(DBEERPEDIA.BREWERIES).build();
     Stage stage = new Stage.Builder(DBEERPEDIA.BREWERIES, site).basePath(

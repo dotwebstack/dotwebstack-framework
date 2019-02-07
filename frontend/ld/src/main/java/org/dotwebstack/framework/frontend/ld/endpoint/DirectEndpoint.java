@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.frontend.ld.endpoint;
 
+import javax.ws.rs.HttpMethod;
 import lombok.NonNull;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
 import org.dotwebstack.framework.frontend.ld.service.Service;
@@ -44,6 +45,30 @@ public class DirectEndpoint extends AbstractEndpoint {
 
   public Service getPutService() {
     return putService;
+  }
+
+  public Representation getRepresentationFor(String method) {
+    switch (method) {
+      case HttpMethod.GET:
+        return getRepresentation;
+      case HttpMethod.POST:
+        return postRepresentation;
+      default:
+        throw new IllegalStateException("Unsupported HTTP method " + method);
+    }
+  }
+
+  public Service getServiceFor(String method) {
+    switch (method) {
+      case HttpMethod.POST:
+        return postService;
+      case HttpMethod.PUT:
+        return putService;
+      case HttpMethod.DELETE:
+        return deleteService;
+      default:
+        throw new IllegalStateException("Unsupported HTTP method " + method);
+    }
   }
 
   public static class Builder extends EndpointBuilder<Builder> {

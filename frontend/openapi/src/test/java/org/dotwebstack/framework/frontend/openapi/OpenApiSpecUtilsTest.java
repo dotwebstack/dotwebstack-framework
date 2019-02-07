@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +28,7 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import javax.ws.rs.core.Response.Status;
 import org.dotwebstack.framework.EnvironmentAwareResource;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,11 +82,13 @@ public class OpenApiSpecUtilsTest {
   }
 
   private static OpenAPI createOpenApi() throws IOException {
-    String oasSpecContent = StreamUtils.copyToString(
-        OpenApiSpecUtilsTest.class.getResourceAsStream(
-            OpenApiSpecUtilsTest.class.getSimpleName() + ".yml"),
-        Charset.forName("UTF-8"));
-    return new OpenAPIV3Parser().readContents(oasSpecContent).getOpenAPI();
+    InputStream resource = OpenApiSpecUtilsTest.class.getResourceAsStream(
+        OpenApiSpecUtilsTest.class.getSimpleName() + ".yml");
+    String oasSpecContent = StreamUtils.copyToString(resource, Charset.defaultCharset());
+
+    SwaggerParseResult parseResult = new OpenAPIV3Parser().readContents(oasSpecContent);
+    parseResult.getMessages().forEach(Assert::fail);
+    return parseResult.getOpenAPI();
   }
 
   @Test

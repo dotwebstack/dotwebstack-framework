@@ -952,6 +952,12 @@ elmo-shape:Representation a sh:NodeShape;
     sh:datatype xsd:string;
     sh:maxCount 1;
   ];
+  sh:property [
+      sh:name "elmo:htmlTemplate";
+      sh:path elmo:htmlTemplate;
+      sh:datatype xsd:string;
+      sh:maxCount 1;
+  ];
   sh:xone (
     [
       sh:property [

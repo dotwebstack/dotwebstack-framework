@@ -26,6 +26,19 @@ GRAPH dbeerpedia:Theatre {
   dbeerpedia:GraphBreweryListRepresentation a elmo:Representation;
     elmo:stage dbeerpedia:Stage;
     elmo:informationProduct dbeerpedia:GraphBreweries;
+    elmo:htmlTemplate "hey ${result}";
+  .
+
+  dbeerpedia:WrongTemplateEndpoint a elmo:Endpoint;
+    elmo:stage dbeerpedia:Stage;
+    elmo:pathPattern "/wrong-template-graph-breweries";
+    elmo:getRepresentation dbeerpedia:WrongTemplateRepresentation;
+  .
+
+  dbeerpedia:WrongTemplateRepresentation a elmo:Representation;
+    elmo:stage dbeerpedia:Stage;
+    elmo:informationProduct dbeerpedia:GraphBreweries;
+    elmo:htmlTemplate "hey ${result2}";
   .
 
   dbeerpedia:TupleBreweryListEndpoint a elmo:Endpoint;
@@ -34,9 +47,32 @@ GRAPH dbeerpedia:Theatre {
     elmo:getRepresentation dbeerpedia:TupleBreweryListRepresentation;
   .
 
+  dbeerpedia:NoHtmlTupleBreweryListEndpoint a elmo:Endpoint;
+    elmo:stage dbeerpedia:Stage;
+    elmo:pathPattern "/no-html-tuple-breweries";
+    elmo:getRepresentation dbeerpedia:NoHTmlTupleBreweryListRepresentation;
+   .
+
+  dbeerpedia:NoHTmlTupleBreweryListRepresentation a elmo:Representation;
+    elmo:stage dbeerpedia:Stage;
+    elmo:informationProduct dbeerpedia:TupleBreweries;
+  .
+
+  dbeerpedia:NoHTmlGraphBreweryListEndpoint a elmo:Endpoint;
+    elmo:stage dbeerpedia:Stage;
+    elmo:pathPattern "/no-html-graph-breweries";
+    elmo:getRepresentation dbeerpedia:NoHTmlGraphBreweryListRepresentation;
+  .
+
+  dbeerpedia:NoHTmlGraphBreweryListRepresentation a elmo:Representation;
+    elmo:stage dbeerpedia:Stage;
+    elmo:informationProduct dbeerpedia:GraphBreweries;
+  .
+
   dbeerpedia:TupleBreweryListRepresentation a elmo:Representation;
     elmo:stage dbeerpedia:Stage;
     elmo:informationProduct dbeerpedia:TupleBreweries;
+    elmo:htmlTemplate "hey ${result}";
   .
 
   dbeerpedia:BreweryEndpoint a elmo:Endpoint;
@@ -60,6 +96,7 @@ GRAPH dbeerpedia:Theatre {
       elmo:stage dbeerpedia:Stage;
       elmo:parameterMapper dbeerpedia:SubjectFromUrl;
       elmo:informationProduct dbeerpedia:ResourceInformationProduct;
+      #elmo:appliesTo "http://{domain}/dbp/ld/v1/id/{reference}";
   .
 
   dbeerpedia:HomepageEndpoint a elmo:Endpoint;
