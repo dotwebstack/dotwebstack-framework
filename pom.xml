@@ -295,6 +295,11 @@
         <artifactId>ldpath-core</artifactId>
         <version>${org.apache.marmotta.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.marmotta</groupId>
+        <artifactId>ldpath-functions-text</artifactId>
+        <version>${org.apache.marmotta.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>com.taxonic.carml</groupId>

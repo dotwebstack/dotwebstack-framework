@@ -114,6 +114,10 @@
       <artifactId>ldpath-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.marmotta</groupId>
+      <artifactId>ldpath-functions-text</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
       <scope>test</scope>
