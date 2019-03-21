@@ -6,11 +6,11 @@ import java.util.Collection;
 import org.springframework.stereotype.Component;
 
 @Component
-final class CustomScalarProvider implements ScalarProvider {
+final class CoreScalarProvider implements ScalarProvider {
 
   @Override
   public Collection<GraphQLScalarType> getScalarTypes() {
-    return ImmutableList.of(CustomScalars.DATE);
+    return ImmutableList.of(CoreScalars.DATE);
   }
 
 }
