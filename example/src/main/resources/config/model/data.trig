@@ -5,9 +5,11 @@
 bag_id:123 a bag:Pand ;
   bag:identificatiecode "123" ;
   bag:status bag_beg:PandInGebruik ;
+  bag:oorspronkelijkBouwjaar 1984 ;
 .
 
 bag_id:456 a bag:Pand ;
   bag:identificatiecode "456" ;
   bag:status bag_beg:PandGesloopt ;
+  bag:oorspronkelijkBouwjaar 1928 ;
 .

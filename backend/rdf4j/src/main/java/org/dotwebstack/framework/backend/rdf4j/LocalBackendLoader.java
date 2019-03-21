@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.backend.rdf4j.query.BindingSetFetcher;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.backend.BackendRegistry;
@@ -27,6 +28,8 @@ final class LocalBackendLoader implements BackendLoader {
   private static final String MODEL_PATH_PATTERN = "classpath:config/model/**";
 
   private final ResourceLoader resourceLoader;
+
+  private final BindingSetFetcher bindingSetFetcher;
 
   @Override
   public void load(BackendRegistry backendRegistry) {
@@ -67,7 +70,8 @@ final class LocalBackendLoader implements BackendLoader {
           });
     }
 
-    backendRegistry.register(Rdf4jBackend.LOCAL_BACKEND_NAME, new Rdf4jBackend(repository));
+    backendRegistry
+        .register(Rdf4jBackend.LOCAL_BACKEND_NAME, new Rdf4jBackend(repository, bindingSetFetcher));
     LOG.debug("Registered '{}' RDF4J backend", Rdf4jBackend.LOCAL_BACKEND_NAME);
   }
 }

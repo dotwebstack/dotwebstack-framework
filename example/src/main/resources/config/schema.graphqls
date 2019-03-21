@@ -14,4 +14,5 @@ type Query {
 type Pand {
   identificatiecode: ID!
   status: String!
+  oorspronkelijkBouwjaar: Int!
 }
