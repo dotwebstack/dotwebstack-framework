@@ -1,0 +1,16 @@
+package org.dotwebstack.framework.core.graphql.scalars;
+
+import com.google.common.collect.ImmutableList;
+import graphql.schema.GraphQLScalarType;
+import java.util.Collection;
+import org.springframework.stereotype.Component;
+
+@Component
+final class CustomScalarProvider implements ScalarProvider {
+
+  @Override
+  public Collection<GraphQLScalarType> getScalarTypes() {
+    return ImmutableList.of(CustomScalars.DATE);
+  }
+
+}

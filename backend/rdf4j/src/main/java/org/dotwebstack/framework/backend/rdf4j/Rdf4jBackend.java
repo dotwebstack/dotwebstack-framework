@@ -15,8 +15,6 @@ final class Rdf4jBackend implements Backend {
 
   private final Repository repository;
 
-  private final BindingSetFetcher bindingSetFetcher;
-
   @Override
   public DataFetcher getObjectFetcher(GraphQLFieldDefinition fieldDefinition) {
     return new SelectOneFetcher(repository);
@@ -24,7 +22,7 @@ final class Rdf4jBackend implements Backend {
 
   @Override
   public DataFetcher getPropertyFetcher(GraphQLFieldDefinition fieldDefinition) {
-    return bindingSetFetcher;
+    return new BindingSetFetcher();
   }
 
 }

@@ -82,7 +82,10 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
     TupleQueryResult queryResult =
         repositoryConnection.prepareTupleQuery(selectQueryStr).evaluate();
 
-    return QueryResults.asList(queryResult).stream().findFirst().orElse(null);
+    return QueryResults.asList(queryResult)
+        .stream()
+        .findFirst()
+        .orElse(null);
   }
 
 }

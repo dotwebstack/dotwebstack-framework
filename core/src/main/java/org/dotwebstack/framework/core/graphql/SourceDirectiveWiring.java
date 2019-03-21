@@ -37,8 +37,8 @@ public class SourceDirectiveWiring implements NamedSchemaDirectiveWiring {
     GraphQLFieldsContainer parentType = environment.getFieldsContainer();
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
 
-    environment.getCodeRegistry().dataFetcher(parentType, fieldDefinition,
-        backend.getObjectFetcher(fieldDefinition));
+    environment.getCodeRegistry()
+        .dataFetcher(parentType, fieldDefinition, backend.getObjectFetcher(fieldDefinition));
 
     GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType());
 
