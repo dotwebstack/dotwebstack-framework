@@ -6,5 +6,4 @@
 .project
 .settings
 target
-!/frontend/ld/src/**/target
 *.iml

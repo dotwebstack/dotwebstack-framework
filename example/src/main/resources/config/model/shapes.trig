@@ -1,0 +1,30 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix bag: <http://bag.basisregistraties.overheid.nl/def/bag#> .
+@prefix bag_sh: <http://bag.basisregistraties.overheid.nl/def/bag/> .
+
+<http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag> {
+  bag_sh:Pand a sh:NodeShape ;
+    sh:targetClass bag:Pand ;
+    sh:property
+      bag_sh:Pand_identificatiecode ,
+      bag_sh:Pand_status
+    ;
+  .
+
+  bag_sh:Pand_identificatiecode a sh:PropertyShape ;
+    sh:path bag:identificatiecode ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
+  .
+
+  bag_sh:Pand_status a sh:PropertyShape ;
+    sh:path bag:status ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+  .
+}

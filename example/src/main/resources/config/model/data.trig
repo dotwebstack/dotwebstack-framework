@@ -1,0 +1,13 @@
+@prefix bag: <http://bag.basisregistraties.overheid.nl/def/bag#> .
+@prefix bag_id: <http://bag.basisregistraties.overheid.nl/bag/id/> .
+@prefix bag_beg: <http://bag.basisregistraties.overheid.nl/id/begrip/> .
+
+bag_id:123 a bag:Pand ;
+  bag:identificatiecode "123" ;
+  bag:status bag_beg:PandInGebruik ;
+.
+
+bag_id:456 a bag:Pand ;
+  bag:identificatiecode "456" ;
+  bag:status bag_beg:PandGesloopt ;
+.

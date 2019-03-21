@@ -1,0 +1,17 @@
+directive @source(backend: String!) on FIELD_DEFINITION
+directive @subject(prefix: String!) on ARGUMENT_DEFINITION
+
+schema {
+  query: Query
+}
+
+type Query {
+  pand(
+    identificatiecode: ID! @subject(prefix: "http://bag.basisregistraties.overheid.nl/bag/id/")
+  ): Pand @source(backend: "local")
+}
+
+type Pand {
+  identificatiecode: ID!
+  status: String!
+}
