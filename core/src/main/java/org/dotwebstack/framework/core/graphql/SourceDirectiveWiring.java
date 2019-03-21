@@ -25,9 +25,8 @@ public class SourceDirectiveWiring implements NamedSchemaDirectiveWiring {
   @Override
   public GraphQLFieldDefinition onField(
       SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
-    String backendName = (String) environment.getDirective()
-        .getArgument(DIRECTIVE_ARG_BACKEND)
-        .getValue();
+    String backendName =
+        (String) environment.getDirective().getArgument(DIRECTIVE_ARG_BACKEND).getValue();
 
     if (!backendRegistry.has(backendName)) {
       throw new InvalidConfigurationException(
@@ -38,8 +37,8 @@ public class SourceDirectiveWiring implements NamedSchemaDirectiveWiring {
     GraphQLFieldsContainer parentType = environment.getFieldsContainer();
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
 
-    environment.getCodeRegistry()
-        .dataFetcher(parentType, fieldDefinition, backend.getObjectFetcher(fieldDefinition));
+    environment.getCodeRegistry().dataFetcher(parentType, fieldDefinition,
+        backend.getObjectFetcher(fieldDefinition));
 
     GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType());
 
@@ -49,13 +48,9 @@ public class SourceDirectiveWiring implements NamedSchemaDirectiveWiring {
 
     GraphQLObjectType objectType = (GraphQLObjectType) outputType;
 
-    objectType.getFieldDefinitions()
-        .stream()
-        .forEach(childFieldDefinition -> {
-          environment.getCodeRegistry()
-              .dataFetcher(objectType, childFieldDefinition,
-                  backend.getPropertyFetcher(childFieldDefinition));
-        });
+    objectType.getFieldDefinitions().forEach(
+        childFieldDefinition -> environment.getCodeRegistry().dataFetcher(objectType,
+            childFieldDefinition, backend.getPropertyFetcher(childFieldDefinition)));
 
     return fieldDefinition;
   }

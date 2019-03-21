@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.rdf4j;
 
 import static com.pivovarit.function.ThrowingFunction.unchecked;
 
-import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -41,7 +40,7 @@ final class LocalBackendLoader implements BackendLoader {
           .getResourcePatternResolver(resourceLoader)
           .getResources(MODEL_PATH_PATTERN);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new InvalidConfigurationException("Could not read model-configuration folder.", e);
     }
 
     try (RepositoryConnection con = repository.getConnection()) {
@@ -49,7 +48,12 @@ final class LocalBackendLoader implements BackendLoader {
           .map(unchecked(Resource::getFile))
           .filter(File::isFile)
           .forEach(modelFile -> {
-            RDFFormat format = FileFormats.getFormat(Files.getFileExtension(modelFile.getName()));
+            String fileExtension = Arrays.stream(modelFile.getName().split("\\."))
+                .reduce((s1, s2) -> s2)
+                .orElseThrow(() -> new InvalidConfigurationException(String
+                    .format("Could not determine file extension for '%s'.", modelFile.getName())));
+
+            RDFFormat format = FileFormats.getFormat(fileExtension.toLowerCase());
 
             if (format != null) {
               LOG.debug("Adding '{}' into local RDF4J repository", modelFile.getName());

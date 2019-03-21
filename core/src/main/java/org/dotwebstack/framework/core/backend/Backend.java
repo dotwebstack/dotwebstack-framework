@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.backend;
 
-import graphql.language.FieldDefinition;
 import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLFieldDefinition;
 

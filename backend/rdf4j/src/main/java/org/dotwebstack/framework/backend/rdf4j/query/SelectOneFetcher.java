@@ -37,11 +37,12 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
   }
 
   @Override
-  public BindingSet get(DataFetchingEnvironment environment) throws Exception {
+  public BindingSet get(DataFetchingEnvironment environment) {
     SelectQuery selectQuery = Queries.SELECT();
     Variable subjectVar = SparqlBuilder.var(SUBJECT_VARIABLE_NAME);
 
-    Optional<IRI> subjectIri = environment.getFieldDefinition()
+    Optional<IRI> subjectIri = environment
+        .getFieldDefinition()
         .getArguments()
         .stream()
         .filter(argumentDefinition ->
@@ -49,7 +50,8 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
         .map(argumentDefinition -> {
           GraphQLDirective subjectDirective = argumentDefinition
               .getDirective(Rdf4jDirectives.SUBJECT_NAME);
-          String prefix = (String) subjectDirective.getArgument(Rdf4jDirectives.SUBJECT_ARG_PREFIX)
+          String prefix = (String) subjectDirective
+              .getArgument(Rdf4jDirectives.SUBJECT_ARG_PREFIX)
               .getValue();
           String localName = environment.getArgument(argumentDefinition.getName());
 
@@ -57,7 +59,8 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
         })
         .findFirst();
 
-    environment.getSelectionSet()
+    environment
+        .getSelectionSet()
         .getFields()
         .stream()
         .map(SelectedField::getName)
@@ -76,14 +79,10 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
     String selectQueryStr = selectQuery.getQueryString();
     LOG.debug("Exececuting query: {}", selectQueryStr);
 
-    TupleQueryResult queryResult = repositoryConnection
-        .prepareTupleQuery(selectQueryStr)
-        .evaluate();
+    TupleQueryResult queryResult =
+        repositoryConnection.prepareTupleQuery(selectQueryStr).evaluate();
 
-    return QueryResults.asList(queryResult)
-        .stream()
-        .findFirst()
-        .orElse(null);
+    return QueryResults.asList(queryResult).stream().findFirst().orElse(null);
   }
 
 }
