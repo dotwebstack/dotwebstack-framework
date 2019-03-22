@@ -1,7 +1,7 @@
 directive @source(backend: String!) on FIELD_DEFINITION
 directive @subject(prefix: String!) on ARGUMENT_DEFINITION
 
-scalar Date
+scalar DateTime
 
 schema {
   query: Query
@@ -17,5 +17,6 @@ type Pand {
   identificatiecode: ID!
   status: String!
   oorspronkelijkBouwjaar: Int!
-  beginGeldigheid: Date!
+  beginGeldigheid: DateTime!
+  eindGeldigheid: DateTime
 }

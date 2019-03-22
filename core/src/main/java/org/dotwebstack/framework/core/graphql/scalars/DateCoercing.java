@@ -4,17 +4,30 @@ import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
   @Override
   public LocalDate serialize(Object o) {
-    if (!(o instanceof String)) {
-      throw new CoercingSerializeException("Parsing date string failed.");
+    if (o == null) {
+      return null;
+    }
+
+    String dateStr;
+
+    if (o instanceof String) {
+      dateStr = (String) o;
+    } else if (o instanceof Literal && XMLSchema.DATE.equals(((Literal) o).getDatatype())) {
+      dateStr = ((Literal) o).stringValue();
+    } else {
+      throw new CoercingSerializeException(
+          String.format("Unable to parse date string from '%s' type.", o.getClass().getName()));
     }
 
     try {
-      return LocalDate.parse((String) o);
+      return LocalDate.parse(dateStr);
     } catch (DateTimeParseException e) {
       throw new CoercingSerializeException("Parsing date string failed.", e);
     }

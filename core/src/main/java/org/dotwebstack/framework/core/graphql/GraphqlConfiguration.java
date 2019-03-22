@@ -25,8 +25,11 @@ public class GraphqlConfiguration {
         .parse(ResourceUtils.getFile(SCHEMA_PATH));
 
     RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
+
+    // Register custom directives
     directives.forEach(directive -> runtimeWiringBuilder.directive(directive.getName(), directive));
 
+    // Register custom scalar types
     scalarProviders.forEach(scalarProvider -> scalarProvider.getScalarTypes()
         .forEach(runtimeWiringBuilder::scalar));
 

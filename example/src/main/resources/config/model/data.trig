@@ -8,12 +8,13 @@ bag_id:123 a bag:Pand ;
   bag:identificatiecode "123" ;
   bag:status bag_beg:PandInGebruik ;
   bag:oorspronkelijkBouwjaar 1984 ;
-  bag:beginGeldigheid "2013-09-06"^^xsd:date ;
+  bag:beginGeldigheid "2013-09-06T00:00:00.000+02:00"^^xsd:dateTime ;
 .
 
 bag_id:456 a bag:Pand ;
   bag:identificatiecode "456" ;
   bag:status bag_beg:PandGesloopt ;
   bag:oorspronkelijkBouwjaar 1928 ;
-  bag:beginGeldigheid "2008-09-04"^^xsd:date ;
+  bag:beginGeldigheid "2014-09-04T00:00:00.000+01:00"^^xsd:dateTime ;
+  bag:eindGeldigheid "2014-10-06T00:00:00.000+01:00"^^xsd:dateTime ;
 .

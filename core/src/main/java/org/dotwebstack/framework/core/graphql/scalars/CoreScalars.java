@@ -11,6 +11,13 @@ final class CoreScalars {
       .coercing(new DateCoercing())
       .build();
 
+  static final GraphQLScalarType DATETIME = GraphQLScalarType
+      .newScalar()
+      .name("DateTime")
+      .description("DateTime type")
+      .coercing(new DateTimeCoercing())
+      .build();
+
   private CoreScalars() {
     throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", CoreScalars.class));

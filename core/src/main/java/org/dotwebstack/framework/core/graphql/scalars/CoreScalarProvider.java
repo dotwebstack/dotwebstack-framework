@@ -10,7 +10,7 @@ final class CoreScalarProvider implements ScalarProvider {
 
   @Override
   public Collection<GraphQLScalarType> getScalarTypes() {
-    return ImmutableList.of(CoreScalars.DATE);
+    return ImmutableList.of(CoreScalars.DATE, CoreScalars.DATETIME);
   }
 
 }
