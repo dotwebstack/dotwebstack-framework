@@ -4,17 +4,14 @@ import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import lombok.NonNull;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
   @Override
-  public LocalDate serialize(Object o) {
-    if (o == null) {
-      return null;
-    }
-
+  public LocalDate serialize(@NonNull Object o) {
     String dateStr;
 
     if (o instanceof String) {

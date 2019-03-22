@@ -4,17 +4,14 @@ import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
+import lombok.NonNull;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
 
   @Override
-  public ZonedDateTime serialize(Object o) {
-    if (o == null) {
-      return null;
-    }
-
+  public ZonedDateTime serialize(@NonNull Object o) {
     String dateTimeStr;
 
     if (o instanceof String) {

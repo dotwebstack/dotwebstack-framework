@@ -9,7 +9,10 @@
     sh:targetClass bag:Pand ;
     sh:property
       bag_sh:Pand_identificatiecode ,
-      bag_sh:Pand_status
+      bag_sh:Pand_status ,
+      bag_sh:Pand_oorspronkelijkBouwjaar ,
+      bag_sh:Pand_beginGeldigheid ,
+      bag_sh:Pand_eindGeldigheid
     ;
   .
 
@@ -26,5 +29,29 @@
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:IRI ;
+  .
+
+  bag_sh:Pand_oorspronkelijkBouwjaar a sh:PropertyShape ;
+    sh:path bag:oorspronkelijkBouwjaar ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:short ;
+  .
+
+  bag_sh:Pand_beginGeldigheid a sh:PropertyShape ;
+    sh:path bag:beginGeldigheid ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:datetime ;
+  .
+
+  bag_sh:Pand_eindGeldigheid a sh:PropertyShape ;
+    sh:path bag:eindGeldigheid ;
+    sh:minCount 0 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:datetime ;
   .
 }
