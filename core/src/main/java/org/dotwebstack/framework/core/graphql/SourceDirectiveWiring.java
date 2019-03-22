@@ -5,6 +5,7 @@ import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -14,19 +15,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SourceDirectiveWiring implements NamedSchemaDirectiveWiring {
+public class SourceDirectiveWiring implements SchemaDirectiveWiring {
 
-  private static final String DIRECTIVE_NAME = "source";
-
-  private static final String DIRECTIVE_ARG_BACKEND = "backend";
+  private static final String ARG_BACKEND = "backend";
 
   private final BackendRegistry backendRegistry;
 
   @Override
   public GraphQLFieldDefinition onField(
       SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
-    String backendName =
-        (String) environment.getDirective().getArgument(DIRECTIVE_ARG_BACKEND).getValue();
+    String backendName = (String) environment.getDirective().getArgument(ARG_BACKEND).getValue();
 
     if (!backendRegistry.has(backendName)) {
       throw new InvalidConfigurationException(
@@ -53,11 +51,6 @@ public class SourceDirectiveWiring implements NamedSchemaDirectiveWiring {
             childFieldDefinition, backend.getPropertyFetcher(childFieldDefinition)));
 
     return fieldDefinition;
-  }
-
-  @Override
-  public String getName() {
-    return DIRECTIVE_NAME;
   }
 
 }

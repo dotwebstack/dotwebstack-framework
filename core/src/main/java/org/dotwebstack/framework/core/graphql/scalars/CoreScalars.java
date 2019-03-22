@@ -2,16 +2,16 @@ package org.dotwebstack.framework.core.graphql.scalars;
 
 import graphql.schema.GraphQLScalarType;
 
-final class CoreScalars {
+public final class CoreScalars {
 
-  static final GraphQLScalarType DATE = GraphQLScalarType
+  public static final GraphQLScalarType DATE = GraphQLScalarType
       .newScalar()
       .name("Date")
       .description("Date type")
       .coercing(new DateCoercing())
       .build();
 
-  static final GraphQLScalarType DATETIME = GraphQLScalarType
+  public static final GraphQLScalarType DATETIME = GraphQLScalarType
       .newScalar()
       .name("DateTime")
       .description("DateTime type")
