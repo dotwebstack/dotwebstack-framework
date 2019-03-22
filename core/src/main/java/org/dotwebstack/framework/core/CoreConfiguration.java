@@ -22,6 +22,8 @@ public class CoreConfiguration {
       throws FileNotFoundException {
     TypeDefinitionRegistry typeDefinitionRegistry = new SchemaParser()
         .parse(ResourceUtils.getFile(SCHEMA_PATH));
+    configurers
+        .forEach(configurer -> configurer.configureTypeDefinitionRegistry(typeDefinitionRegistry));
 
     RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
     configurers.forEach(configurer -> configurer.configureRuntimeWiring(runtimeWiringBuilder));

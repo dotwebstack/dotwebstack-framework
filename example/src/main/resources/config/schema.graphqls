@@ -1,8 +1,3 @@
-directive @source(backend: String!) on FIELD_DEFINITION
-directive @subject(prefix: String!) on ARGUMENT_DEFINITION
-
-scalar DateTime
-
 schema {
   query: Query
 }

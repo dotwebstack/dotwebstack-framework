@@ -17,14 +17,13 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SourceDirectiveWiring implements SchemaDirectiveWiring {
 
-  private static final String ARG_BACKEND = "backend";
-
   private final BackendRegistry backendRegistry;
 
   @Override
   public GraphQLFieldDefinition onField(
       SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
-    String backendName = (String) environment.getDirective().getArgument(ARG_BACKEND).getValue();
+    String backendName = (String) environment.getDirective()
+        .getArgument(Directives.SOURCE_ARG_BACKEND).getValue();
 
     if (!backendRegistry.has(backendName)) {
       throw new InvalidConfigurationException(

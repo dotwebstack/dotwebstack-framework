@@ -4,11 +4,11 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
-public final class Rdf4jUtils {
+public final class ValueUtils {
 
-  private Rdf4jUtils() {
+  private ValueUtils() {
     throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", Rdf4jUtils.class));
+        String.format("%s is not meant to be instantiated.", ValueUtils.class));
   }
 
   /**

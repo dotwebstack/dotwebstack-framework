@@ -2,7 +2,7 @@ package org.dotwebstack.framework.core.scalars;
 
 import graphql.schema.GraphQLScalarType;
 
-public final class CoreScalars {
+public final class Scalars {
 
   public static final GraphQLScalarType DATE = GraphQLScalarType
       .newScalar()
@@ -18,9 +18,9 @@ public final class CoreScalars {
       .coercing(new DateTimeCoercing())
       .build();
 
-  private CoreScalars() {
+  private Scalars() {
     throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", CoreScalars.class));
+        String.format("%s is not meant to be instantiated.", Scalars.class));
   }
 
 }

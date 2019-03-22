@@ -1,14 +1,14 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
-public final class Rdf4jDirectives {
+public final class Directives {
 
   public static final String SUBJECT_NAME;
 
   public static final String SUBJECT_ARG_PREFIX;
 
-  private Rdf4jDirectives() {
+  private Directives() {
     throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", Rdf4jDirectives.class));
+        String.format("%s is not meant to be instantiated.", Directives.class));
   }
 
   static {

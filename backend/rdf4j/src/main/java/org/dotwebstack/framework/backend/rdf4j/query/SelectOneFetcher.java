@@ -9,7 +9,7 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLDirective;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.backend.rdf4j.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.Directives;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -51,12 +51,12 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
         .getArguments()
         .stream()
         .filter(argumentDefinition ->
-            argumentDefinition.getDirective(Rdf4jDirectives.SUBJECT_NAME) != null)
+            argumentDefinition.getDirective(Directives.SUBJECT_NAME) != null)
         .map(argumentDefinition -> {
           GraphQLDirective subjectDirective = argumentDefinition
-              .getDirective(Rdf4jDirectives.SUBJECT_NAME);
+              .getDirective(Directives.SUBJECT_NAME);
           String prefix = (String) subjectDirective
-              .getArgument(Rdf4jDirectives.SUBJECT_ARG_PREFIX)
+              .getArgument(Directives.SUBJECT_ARG_PREFIX)
               .getValue();
           String localName = environment.getArgument(argumentDefinition.getName());
 
