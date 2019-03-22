@@ -7,6 +7,7 @@ import graphql.language.InputValueDefinition;
 import graphql.language.NonNullType;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import org.dotwebstack.framework.backend.rdf4j.directives.Directives;
 import org.dotwebstack.framework.core.Configurer;
 import org.springframework.stereotype.Component;
 

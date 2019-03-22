@@ -9,7 +9,7 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLDirective;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.backend.rdf4j.Directives;
+import org.dotwebstack.framework.backend.rdf4j.directives.Directives;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
