@@ -2,14 +2,14 @@ package org.dotwebstack.framework.core;
 
 import graphql.schema.idl.RuntimeWiring.Builder;
 import lombok.RequiredArgsConstructor;
-import org.dotwebstack.framework.core.graphql.CoreDirectives;
-import org.dotwebstack.framework.core.graphql.SourceDirectiveWiring;
-import org.dotwebstack.framework.core.graphql.scalars.CoreScalars;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.SourceDirectiveWiring;
+import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CoreConfigurer implements Configurer {
+class CoreConfigurer implements Configurer {
 
   private final SourceDirectiveWiring sourceDirectiveWiring;
 

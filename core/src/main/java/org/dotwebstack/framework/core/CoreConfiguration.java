@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql;
+package org.dotwebstack.framework.core;
 
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
@@ -8,13 +8,12 @@ import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.FileNotFoundException;
 import java.util.Collection;
-import org.dotwebstack.framework.core.Configurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ResourceUtils;
 
 @Configuration
-public class GraphqlConfiguration {
+public class CoreConfiguration {
 
   private static final String SCHEMA_PATH = "classpath:config/schema.graphqls";
 

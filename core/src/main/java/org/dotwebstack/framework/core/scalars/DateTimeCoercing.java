@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql.scalars;
+package org.dotwebstack.framework.core.scalars;
 
 import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
