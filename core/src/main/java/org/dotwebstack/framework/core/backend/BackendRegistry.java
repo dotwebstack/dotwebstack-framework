@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.backend;
 
-import java.util.Arrays;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +13,13 @@ public class BackendRegistry {
 
   private final HashMap<String, Backend> backends = new HashMap<>();
 
-  private final BackendLoader[] backendLoaders;
+  private final Collection<BackendLoader> backendLoaders;
 
   @PostConstruct
-  public void init() {
-    Arrays.stream(backendLoaders)
-        .forEach(loader -> loader.load(this));
+  public void init() throws IOException {
+    for (BackendLoader loader : backendLoaders) {
+      loader.load(this);
+    }
   }
 
   public void register(String name, Backend backend) {

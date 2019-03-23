@@ -30,19 +30,13 @@ final class LocalBackendLoader implements BackendLoader {
   private final ResourceLoader resourceLoader;
 
   @Override
-  public void load(@NonNull BackendRegistry backendRegistry) {
+  public void load(@NonNull BackendRegistry backendRegistry) throws IOException {
     SailRepository repository = new SailRepository(new MemoryStore());
     repository.init();
 
-    Resource[] resourceList;
-
-    try {
-      resourceList = ResourcePatternUtils
-          .getResourcePatternResolver(resourceLoader)
-          .getResources(MODEL_PATH_PATTERN);
-    } catch (IOException e) {
-      throw new InvalidConfigurationException("Could not read model-configuration folder.", e);
-    }
+    Resource[] resourceList = ResourcePatternUtils
+        .getResourcePatternResolver(resourceLoader)
+        .getResources(MODEL_PATH_PATTERN);
 
     try (RepositoryConnection con = repository.getConnection()) {
       Arrays.stream(resourceList)
