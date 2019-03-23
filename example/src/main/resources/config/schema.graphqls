@@ -8,7 +8,9 @@ type Query {
   ): Pand @source(backend: "local")
 }
 
-type Pand {
+type Pand
+    @shape(uri: "http://bag.basisregistraties.overheid.nl/def/bag/Pand",
+        graph: "http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag") {
   identificatiecode: ID!
   status: String!
   oorspronkelijkBouwjaar: Int!

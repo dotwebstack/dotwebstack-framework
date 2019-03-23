@@ -1,26 +1,30 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder.prefix;
-import static org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder.var;
-import static org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf.iri;
-
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLDirective;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.dotwebstack.framework.backend.rdf4j.directives.Directives;
+import org.dotwebstack.framework.backend.rdf4j.model.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.model.PropertyShape;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.sparqlbuilder.core.Prefix;
+import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
@@ -34,19 +38,71 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
 
   private static final ValueFactory vf = SimpleValueFactory.getInstance();
 
-  private static final String SUBJECT_VARIABLE_NAME = "subject";
-
   private final RepositoryConnection repositoryConnection;
 
-  public SelectOneFetcher(Repository repository) {
+  private final Model shapeModel;
+
+  private final NodeShape nodeShape;
+
+  public SelectOneFetcher(Repository repository, Model shapeModel, Resource nodeShape) {
     this.repositoryConnection = repository.getConnection();
+    this.shapeModel = shapeModel;
+    this.nodeShape = buildNodeShape(nodeShape);
   }
 
   @Override
   public BindingSet get(DataFetchingEnvironment environment) {
     SelectQuery selectQuery = Queries.SELECT();
+    Resource subject = findSubject(environment);
 
-    IRI subject = environment
+    RdfPredicateObjectList[] predObjList = environment
+        .getSelectionSet()
+        .getFields()
+        .stream()
+        .map(field -> nodeShape.getPropertyShapes().get(field.getName()))
+        .map(shape -> Rdf
+            .predicateObjectList(Rdf.iri(shape.getPath()), SparqlBuilder.var(shape.getName())))
+        .toArray(RdfPredicateObjectList[]::new);
+
+    TriplePattern triplePattern = GraphPatterns.tp(Rdf.iri(subject.stringValue()), predObjList);
+
+    String selectQueryStr = selectQuery
+        .where(triplePattern)
+        .getQueryString();
+
+    LOG.debug("Exececuting query:\n{}", selectQueryStr);
+
+    TupleQueryResult queryResult =
+        repositoryConnection.prepareTupleQuery(selectQueryStr).evaluate();
+
+    return QueryResults.asList(queryResult)
+        .stream()
+        .findFirst()
+        .orElse(null);
+  }
+
+  private NodeShape buildNodeShape(Resource nodeShape) {
+    return NodeShape.builder()
+        .targetClass(ValueUtils.findIri(shapeModel, nodeShape, SHACL.TARGET_CLASS))
+        .propertyShapes(buildPropertyShapes(nodeShape))
+        .build();
+  }
+
+  private Map<String, PropertyShape> buildPropertyShapes(Resource nodeShape) {
+    return Models
+        .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
+        .stream()
+        .map(shape -> PropertyShape.builder()
+            .name(ValueUtils.findLiteral(shapeModel, shape, SHACL.NAME).stringValue())
+            .path(ValueUtils.findIri(shapeModel, shape, SHACL.PATH))
+            .minCount(ValueUtils.findLiteral(shapeModel, shape, SHACL.MIN_COUNT).intValue())
+            .maxCount(ValueUtils.findLiteral(shapeModel, shape, SHACL.MAX_COUNT).intValue())
+            .build())
+        .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
+  }
+
+  private Resource findSubject(DataFetchingEnvironment environment) {
+    return environment
         .getFieldDefinition()
         .getArguments()
         .stream()
@@ -65,33 +121,6 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException(
             "No type arguments with @subject directive found."));
-
-    Prefix rdf = prefix(RDF.PREFIX, iri(RDF.NAMESPACE));
-    Prefix bag = prefix("bag", iri("http://bag.basisregistraties.overheid.nl/def/bag#"));
-    TriplePattern triplePattern = GraphPatterns.tp(subject, rdf.iri("type"), bag.iri("Pand"));
-
-    RdfPredicateObjectList[] predicateObjectLists = environment
-        .getSelectionSet()
-        .getFields()
-        .stream()
-        .map(field -> Rdf.predicateObjectList(
-            bag.iri(field.getName()), var(field.getName())))
-        .toArray(RdfPredicateObjectList[]::new);
-
-    String selectQueryStr = selectQuery
-        .prefix(rdf, bag)
-        .where(triplePattern.andHas(predicateObjectLists))
-        .getQueryString();
-
-    LOG.debug("Exececuting query:\n{}", selectQueryStr);
-
-    TupleQueryResult queryResult =
-        repositoryConnection.prepareTupleQuery(selectQueryStr).evaluate();
-
-    return QueryResults.asList(queryResult)
-        .stream()
-        .findFirst()
-        .orElse(null);
   }
 
 }

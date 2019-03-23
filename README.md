@@ -6,6 +6,16 @@ An extensible full-stack framework which offers the foundation and building bloc
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.dotwebstack.framework/dotwebstack-core/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/org.dotwebstack.framework/dotwebstack-core/)
 [![Coverage](https://sonarcloud.io/api/badges/measure?key=org.dotwebstack.framework:dotwebstack-framework&metric=coverage)](https://sonarcloud.io/dashboard?id=org.dotwebstack.framework%3Adotwebstack-framework)
 
+## TODO
+
+* Global configuration for namespaces
+* Query filter arguments
+* Query sort argument
+* Query collection output type
+* Validate SHACL shapes against GraphQL schema
+* Decide whether to use property shape names for GraphQL schema mapping
+* Support property paths for property shapes
+
 ## Release
 
 To release a new version, run the following statement and follow instructions:

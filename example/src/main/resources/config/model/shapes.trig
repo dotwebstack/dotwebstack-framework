@@ -17,6 +17,7 @@
   .
 
   bag_sh:Pand_identificatiecode a sh:PropertyShape ;
+    sh:name "identificatiecode" ;
     sh:path bag:identificatiecode ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -25,6 +26,7 @@
   .
 
   bag_sh:Pand_status a sh:PropertyShape ;
+    sh:name "status" ;
     sh:path bag:status ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -32,6 +34,7 @@
   .
 
   bag_sh:Pand_oorspronkelijkBouwjaar a sh:PropertyShape ;
+    sh:name "oorspronkelijkBouwjaar" ;
     sh:path bag:oorspronkelijkBouwjaar ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -40,6 +43,7 @@
   .
 
   bag_sh:Pand_beginGeldigheid a sh:PropertyShape ;
+    sh:name "beginGeldigheid" ;
     sh:path bag:beginGeldigheid ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -48,6 +52,7 @@
   .
 
   bag_sh:Pand_eindGeldigheid a sh:PropertyShape ;
+    sh:name "eindGeldigheid" ;
     sh:path bag:eindGeldigheid ;
     sh:minCount 0 ;
     sh:maxCount 1 ;
