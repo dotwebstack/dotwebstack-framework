@@ -3,9 +3,8 @@ schema {
 }
 
 type Query {
-  pand(
-    identificatiecode: ID! @subject(prefix: "http://bag.basisregistraties.overheid.nl/bag/id/")
-  ): Pand @source(backend: "local")
+  pand(identificatiecode: ID!): Pand
+    @rdf4j(subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
 }
 
 type Pand

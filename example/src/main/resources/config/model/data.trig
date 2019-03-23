@@ -1,17 +1,17 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 @prefix bag: <http://bag.basisregistraties.overheid.nl/def/bag#> .
-@prefix bag_id: <http://bag.basisregistraties.overheid.nl/bag/id/> .
 @prefix bag_beg: <http://bag.basisregistraties.overheid.nl/id/begrip/> .
+@prefix bag_pnd: <http://bag.basisregistraties.overheid.nl/bag/id/pand/> .
 
-bag_id:123 a bag:Pand ;
+bag_pnd:123 a bag:Pand ;
   bag:identificatiecode "123" ;
   bag:status bag_beg:PandInGebruik ;
   bag:oorspronkelijkBouwjaar 1984 ;
   bag:beginGeldigheid "2013-09-06T00:00:00.000+02:00"^^xsd:dateTime ;
 .
 
-bag_id:456 a bag:Pand ;
+bag_pnd:456 a bag:Pand ;
   bag:identificatiecode "456" ;
   bag:status bag_beg:PandGesloopt ;
   bag:oorspronkelijkBouwjaar 1928 ;
