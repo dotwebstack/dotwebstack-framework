@@ -4,15 +4,17 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLDirective;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.dotwebstack.framework.backend.rdf4j.directives.Directives;
 import org.dotwebstack.framework.backend.rdf4j.model.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.model.PropertyShape;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -83,7 +85,7 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
 
   private NodeShape buildNodeShape(Resource nodeShape) {
     return NodeShape.builder()
-        .targetClass(ValueUtils.findIri(shapeModel, nodeShape, SHACL.TARGET_CLASS))
+        .targetClass(findRequiredPropertyIri(nodeShape, SHACL.TARGET_CLASS))
         .propertyShapes(buildPropertyShapes(nodeShape))
         .build();
   }
@@ -92,13 +94,40 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
     return Models
         .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
-        .map(shape -> PropertyShape.builder()
-            .name(ValueUtils.findLiteral(shapeModel, shape, SHACL.NAME).stringValue())
-            .path(ValueUtils.findIri(shapeModel, shape, SHACL.PATH))
-            .minCount(ValueUtils.findLiteral(shapeModel, shape, SHACL.MIN_COUNT).intValue())
-            .maxCount(ValueUtils.findLiteral(shapeModel, shape, SHACL.MAX_COUNT).intValue())
-            .build())
+        .map(shape -> {
+          PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
+              .name(findRequiredPropertyLiteral(shape, SHACL.NAME).stringValue())
+              .path(findRequiredPropertyIri(shape, SHACL.PATH));
+
+          findPropertyLiteral(shape, SHACL.MIN_COUNT)
+              .ifPresent(value -> builder.minCount(value.intValue()));
+
+          findPropertyLiteral(shape, SHACL.MAX_COUNT)
+              .ifPresent(value -> builder.maxCount(value.intValue()));
+
+          return builder.build();
+        })
         .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
+  }
+
+  private Optional<IRI> findPropertyIri(Resource shape, IRI predicate) {
+    return Models.getPropertyIRI(shapeModel, shape, predicate);
+  }
+
+  private IRI findRequiredPropertyIri(Resource shape, IRI predicate) {
+    return findPropertyIri(shape, predicate)
+        .orElseThrow(() -> new InvalidConfigurationException(String
+            .format("Shape '%s' requires a '%s' IRI property.", shape, predicate)));
+  }
+
+  private Optional<Literal> findPropertyLiteral(Resource shape, IRI predicate) {
+    return Models.getPropertyLiteral(shapeModel, shape, predicate);
+  }
+
+  private Literal findRequiredPropertyLiteral(Resource shape, IRI predicate) {
+    return findPropertyLiteral(shape, predicate)
+        .orElseThrow(() -> new InvalidConfigurationException(String
+            .format("Shape '%s' requires a '%s' literal property.", shape, predicate)));
   }
 
   private Resource findSubject(DataFetchingEnvironment environment) {

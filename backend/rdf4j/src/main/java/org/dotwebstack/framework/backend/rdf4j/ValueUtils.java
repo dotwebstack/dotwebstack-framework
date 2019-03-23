@@ -1,11 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
-import org.dotwebstack.framework.core.InvalidConfigurationException;
+import lombok.NonNull;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 public final class ValueUtils {
@@ -18,7 +15,7 @@ public final class ValueUtils {
   /**
    * Convert literal to Java type so built-in scalar types can handle them.
    */
-  public static Object convertLiteral(Literal literal) {
+  public static Object convertLiteral(@NonNull Literal literal) {
     IRI dataType = literal.getDatatype();
 
     if (XMLSchema.STRING.equals(dataType)) {
@@ -44,20 +41,6 @@ public final class ValueUtils {
     }
 
     return literal;
-  }
-
-  public static IRI findIri(Model model, Resource subject, IRI predicate) {
-    return Models.getPropertyIRI(model, subject, predicate)
-        .orElseThrow(() -> new InvalidConfigurationException(String
-            .format("Node shape '%s' requires a '%s' IRI property.", subject.stringValue(),
-                predicate.stringValue())));
-  }
-
-  public static Literal findLiteral(Model model, Resource subject, IRI predicate) {
-    return Models.getPropertyLiteral(model, subject, predicate)
-        .orElseThrow(() -> new InvalidConfigurationException(String
-            .format("Node shape '%s' requires a '%s' literal property.", subject.stringValue(),
-                predicate.stringValue())));
   }
 
 }

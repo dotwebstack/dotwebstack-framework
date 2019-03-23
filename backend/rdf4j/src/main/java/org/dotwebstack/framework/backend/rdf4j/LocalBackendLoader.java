@@ -10,8 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.backend.BackendRegistry;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -27,8 +25,6 @@ import org.springframework.stereotype.Component;
 final class LocalBackendLoader implements BackendLoader {
 
   private static final String MODEL_PATH_PATTERN = "classpath:config/model/**";
-
-  private static final ValueFactory vf = SimpleValueFactory.getInstance();
 
   private final ResourceLoader resourceLoader;
 
