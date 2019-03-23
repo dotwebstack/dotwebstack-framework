@@ -94,19 +94,16 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
     return Models
         .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
-        .map(shape -> {
-          PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
-              .name(findRequiredPropertyLiteral(shape, SHACL.NAME).stringValue())
-              .path(findRequiredPropertyIri(shape, SHACL.PATH));
-
-          findPropertyLiteral(shape, SHACL.MIN_COUNT)
-              .ifPresent(value -> builder.minCount(value.intValue()));
-
-          findPropertyLiteral(shape, SHACL.MAX_COUNT)
-              .ifPresent(value -> builder.maxCount(value.intValue()));
-
-          return builder.build();
-        })
+        .map(shape -> PropertyShape.builder()
+            .name(findRequiredPropertyLiteral(shape, SHACL.NAME).stringValue())
+            .path(findRequiredPropertyIri(shape, SHACL.PATH))
+            .minCount(findPropertyLiteral(shape, SHACL.MIN_COUNT)
+                .map(Literal::intValue)
+                .orElse(0))
+            .maxCount(findPropertyLiteral(shape, SHACL.MAX_COUNT)
+                .map(Literal::intValue)
+                .orElse(Integer.MAX_VALUE))
+            .build())
         .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
   }
 
