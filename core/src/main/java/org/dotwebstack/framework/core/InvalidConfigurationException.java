@@ -1,12 +1,14 @@
 package org.dotwebstack.framework.core;
 
+import lombok.NonNull;
+
 public class InvalidConfigurationException extends RuntimeException {
 
-  public InvalidConfigurationException(String message) {
+  public InvalidConfigurationException(@NonNull String message) {
     super(message);
   }
 
-  public InvalidConfigurationException(String message, Throwable cause) {
+  public InvalidConfigurationException(@NonNull String message, @NonNull Throwable cause) {
     super(message, cause);
   }
 

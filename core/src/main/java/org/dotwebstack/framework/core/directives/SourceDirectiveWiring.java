@@ -7,6 +7,7 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.backend.Backend;
@@ -21,7 +22,7 @@ public class SourceDirectiveWiring implements SchemaDirectiveWiring {
 
   @Override
   public GraphQLFieldDefinition onField(
-      SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
+      @NonNull SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
     String backendName = (String) environment.getDirective()
         .getArgument(Directives.SOURCE_ARG_BACKEND).getValue();
 

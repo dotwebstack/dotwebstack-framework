@@ -8,6 +8,7 @@ import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.FileNotFoundException;
 import java.util.Collection;
+import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ResourceUtils;
@@ -18,7 +19,7 @@ public class CoreConfiguration {
   private static final String SCHEMA_PATH = "classpath:config/schema.graphqls";
 
   @Bean
-  public GraphQLSchema graphqlSchema(Collection<Configurer> configurers)
+  public GraphQLSchema graphqlSchema(@NonNull Collection<Configurer> configurers)
       throws FileNotFoundException {
     TypeDefinitionRegistry typeDefinitionRegistry = new SchemaParser()
         .parse(ResourceUtils.getFile(SCHEMA_PATH));
@@ -33,7 +34,7 @@ public class CoreConfiguration {
   }
 
   @Bean
-  public GraphQL graphql(GraphQLSchema graphqlSchema) {
+  public GraphQL graphql(@NonNull GraphQLSchema graphqlSchema) {
     return GraphQL
         .newGraphQL(graphqlSchema)
         .build();

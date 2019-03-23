@@ -8,6 +8,7 @@ import graphql.language.NonNullType;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.directives.Directives;
 import org.dotwebstack.framework.core.Configurer;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class Rdf4jConfigurer implements Configurer {
 
   @Override
-  public void configureTypeDefinitionRegistry(TypeDefinitionRegistry registry) {
+  public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
     Type stringType = NonNullType.newNonNullType(
         TypeName.newTypeName("String").build()).build();
 

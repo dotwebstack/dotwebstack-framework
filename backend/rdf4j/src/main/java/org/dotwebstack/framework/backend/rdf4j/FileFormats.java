@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import com.google.common.collect.ImmutableMap;
+import lombok.NonNull;
 import org.eclipse.rdf4j.rio.RDFFormat;
 
 final class FileFormats {
@@ -13,7 +14,7 @@ final class FileFormats {
         String.format("%s is not meant to be instantiated.", FileFormats.class));
   }
 
-  static RDFFormat getFormat(String extension) {
+  static RDFFormat getFormat(@NonNull String extension) {
     return FORMATS.get(extension);
   }
 

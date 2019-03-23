@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.directives.Directives;
@@ -47,14 +48,15 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
 
   private final NodeShape nodeShape;
 
-  public SelectOneFetcher(Repository repository, Model shapeModel, Resource nodeShape) {
+  public SelectOneFetcher(@NonNull Repository repository, @NonNull Model shapeModel,
+      @NonNull Resource nodeShape) {
     this.repositoryConnection = repository.getConnection();
     this.shapeModel = shapeModel;
     this.nodeShape = buildNodeShape(nodeShape);
   }
 
   @Override
-  public BindingSet get(DataFetchingEnvironment environment) {
+  public BindingSet get(@NonNull DataFetchingEnvironment environment) {
     SelectQuery selectQuery = Queries.SELECT();
     Resource subject = findSubject(environment);
 

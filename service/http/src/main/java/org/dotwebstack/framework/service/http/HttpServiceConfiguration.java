@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -18,8 +19,8 @@ public class HttpServiceConfiguration {
 
   @Bean
   @Order(-2)
-  WebExceptionHandler problemExceptionHandler(ObjectMapper mapper,
-      ExceptionHandling exceptionHandling) {
+  WebExceptionHandler problemExceptionHandler(@NonNull ObjectMapper mapper,
+      @NonNull ExceptionHandling exceptionHandling) {
     return new ProblemExceptionHandler(mapper, exceptionHandling);
   }
 

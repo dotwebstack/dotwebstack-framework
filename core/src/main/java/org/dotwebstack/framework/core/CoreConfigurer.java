@@ -9,6 +9,7 @@ import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.core.directives.Directives;
 import org.dotwebstack.framework.core.directives.SourceDirectiveWiring;
@@ -22,7 +23,7 @@ class CoreConfigurer implements Configurer {
   private final SourceDirectiveWiring sourceDirectiveWiring;
 
   @Override
-  public void configureTypeDefinitionRegistry(TypeDefinitionRegistry registry) {
+  public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
     registry.add(DirectiveDefinition.newDirectiveDefinition()
         .name(Directives.SOURCE_NAME)
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
@@ -40,7 +41,7 @@ class CoreConfigurer implements Configurer {
   }
 
   @Override
-  public void configureRuntimeWiring(Builder builder) {
+  public void configureRuntimeWiring(@NonNull Builder builder) {
     builder.directive(Directives.SOURCE_NAME, sourceDirectiveWiring);
     builder.scalar(Scalars.DATE);
     builder.scalar(Scalars.DATETIME);

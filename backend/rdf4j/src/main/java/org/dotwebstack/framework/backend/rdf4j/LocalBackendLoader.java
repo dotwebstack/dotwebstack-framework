@@ -5,6 +5,7 @@ import static com.pivovarit.function.ThrowingFunction.unchecked;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -29,7 +30,7 @@ final class LocalBackendLoader implements BackendLoader {
   private final ResourceLoader resourceLoader;
 
   @Override
-  public void load(BackendRegistry backendRegistry) {
+  public void load(@NonNull BackendRegistry backendRegistry) {
     SailRepository repository = new SailRepository(new MemoryStore());
     repository.init();
 
