@@ -11,7 +11,7 @@ import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Directives;
-import org.dotwebstack.framework.backend.rdf4j.model.ShapeMapping;
+import org.dotwebstack.framework.backend.rdf4j.model.ShapeReference;
 import org.dotwebstack.framework.backend.rdf4j.query.BindingSetFetcher;
 import org.dotwebstack.framework.backend.rdf4j.query.SelectOneFetcher;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -38,9 +38,9 @@ final class Rdf4jBackend implements Backend {
     GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType());
 
     if (outputType instanceof GraphQLObjectType) {
-      ShapeMapping shapeMapping = getShapeMapping((GraphQLObjectType) outputType);
-      return new SelectOneFetcher(repository, getShapeModel(shapeMapping.getShapeGraph()),
-          shapeMapping.getShapeUri());
+      ShapeReference shapeReference = getShapeReference((GraphQLObjectType) outputType);
+      return new SelectOneFetcher(repository, getShapeModel(shapeReference.getGraph()),
+          shapeReference.getUri());
     }
 
     throw new InvalidConfigurationException(
@@ -65,17 +65,16 @@ final class Rdf4jBackend implements Backend {
     }
   }
 
-  private static ShapeMapping getShapeMapping(GraphQLObjectType objectType) {
+  private static ShapeReference getShapeReference(GraphQLObjectType objectType) {
     GraphQLDirective shapeDirective = Optional
         .ofNullable(objectType.getDirective(Directives.SHAPE_NAME))
         .orElseThrow(() -> new InvalidConfigurationException(
             String.format("Object type '%s' requires @%s directive.", objectType.getName(),
                 Directives.SHAPE_NAME)));
 
-    return ShapeMapping.builder()
-        .shapeUri(
-            vf.createIRI((String) shapeDirective.getArgument(Directives.SHAPE_ARG_URI).getValue()))
-        .shapeGraph(vf.createIRI(
+    return ShapeReference.builder()
+        .uri(vf.createIRI((String) shapeDirective.getArgument(Directives.SHAPE_ARG_URI).getValue()))
+        .graph(vf.createIRI(
             (String) shapeDirective.getArgument(Directives.SHAPE_ARG_GRAPH).getValue()))
         .build();
   }

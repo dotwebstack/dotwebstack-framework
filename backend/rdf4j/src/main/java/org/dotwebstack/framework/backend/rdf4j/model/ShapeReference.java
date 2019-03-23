@@ -6,10 +6,10 @@ import org.eclipse.rdf4j.model.IRI;
 
 @Builder
 @Getter
-public final class ShapeMapping {
+public final class ShapeReference {
 
-  private final IRI shapeUri;
+  private final IRI uri;
 
-  private final IRI shapeGraph;
+  private final IRI graph;
 
 }
