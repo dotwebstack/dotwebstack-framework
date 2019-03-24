@@ -1,8 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import lombok.NonNull;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 public final class ValueUtils {
@@ -41,6 +45,19 @@ public final class ValueUtils {
     }
 
     return literal;
+  }
+
+  public static IRI findRequiredPropertyIri(Model model, Resource subject, IRI predicate) {
+    return Models.getPropertyIRI(model, subject, predicate)
+        .orElseThrow(() -> new InvalidConfigurationException(String
+            .format("Resource '%s' requires a '%s' IRI property.", subject, predicate)));
+  }
+
+  public static Literal findRequiredPropertyLiteral(Model model, Resource subject,
+      IRI predicate) {
+    return Models.getPropertyLiteral(model, subject, predicate)
+        .orElseThrow(() -> new InvalidConfigurationException(String
+            .format("Resource '%s' requires a '%s' literal property.", subject, predicate)));
   }
 
 }
