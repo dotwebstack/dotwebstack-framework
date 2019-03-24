@@ -15,7 +15,7 @@ final class FileFormats {
   }
 
   static RDFFormat getFormat(@NonNull String extension) {
-    return FORMATS.get(extension);
+    return FORMATS.get(extension.toLowerCase());
   }
 
 }

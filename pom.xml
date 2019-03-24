@@ -33,7 +33,8 @@
   <scm>
     <url>https://github.com/dotwebstack/dotwebstack-framework</url>
     <connection>scm:git:git@github.com:dotwebstack/dotwebstack-framework.git</connection>
-    <developerConnection>scm:git:git@github.com:dotwebstack/dotwebstack-framework.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:dotwebstack/dotwebstack-framework.git
+    </developerConnection>
     <tag>HEAD</tag>
   </scm>
 
@@ -90,6 +91,11 @@
         <groupId>com.pivovarit</groupId>
         <artifactId>throwing-function</artifactId>
         <version>1.5.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.4.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -155,6 +161,11 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.1</version>
       </plugin>
     </plugins>
   </build>
@@ -245,7 +256,7 @@
                           <minimum>0.6</minimum>
                         </limit>
                       </limits>
-                      <excludes />
+                      <excludes/>
                     </rule>
                   </rules>
                 </configuration>
