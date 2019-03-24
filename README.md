@@ -16,6 +16,8 @@ An extensible full-stack framework which offers the foundation and building bloc
 * Validate SHACL shapes against GraphQL schema
 * Decide whether to use property shape names for GraphQL schema mapping
 * Support property paths for property shapes
+* Combine local and (multiple?) remote repositories
+* Naming consistency: `iri` vs `uri`
 
 ## Release
 
