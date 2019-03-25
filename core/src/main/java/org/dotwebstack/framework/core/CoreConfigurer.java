@@ -8,7 +8,7 @@ import org.dotwebstack.framework.core.scalars.Scalars;
 import org.springframework.stereotype.Component;
 
 @Component
-class CoreConfigurer implements Configurer {
+public class CoreConfigurer implements Configurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {

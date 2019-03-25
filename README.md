@@ -18,6 +18,7 @@ An extensible full-stack framework which offers the foundation and building bloc
 * Support property paths for property shapes
 * Combine local and (multiple?) remote repositories
 * Naming consistency: `iri` vs `uri`
+* Prevent directive naming conflicts between modules
 
 ## Release
 

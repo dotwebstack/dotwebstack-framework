@@ -9,7 +9,8 @@ ex:shapes {
     sh:targetClass ex_def:Building ;
     sh:property
       ex_sh:Building_identifier ,
-      ex_sh:Building_height ;
+      ex_sh:Building_height ,
+      ex_sh:Building_builtAt ;
   .
 
   ex_sh:Building_identifier a sh:PropertyShape ;
@@ -28,5 +29,14 @@ ex:shapes {
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:int ;
+  .
+
+  ex_sh:Building_builtAt a sh:PropertyShape ;
+    sh:name "builtAt" ;
+    sh:path ex_def:builtAt ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:dateTime ;
   .
 }

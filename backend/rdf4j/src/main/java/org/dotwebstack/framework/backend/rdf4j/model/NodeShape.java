@@ -36,17 +36,30 @@ public final class NodeShape {
     return Models
         .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
-        .map(shape -> PropertyShape.builder()
-            .name(
-                ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME).stringValue())
-            .path(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.PATH))
-            .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
-                .map(Literal::intValue)
-                .orElse(0))
-            .maxCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MAX_COUNT)
-                .map(Literal::intValue)
-                .orElse(Integer.MAX_VALUE))
-            .build())
+        .map(shape -> {
+          IRI nodeKind = ValueUtils
+              .findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
+
+          PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
+              .identifier(shape)
+              .name(
+                  ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME)
+                      .stringValue())
+              .path(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.PATH))
+              .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
+                  .map(Literal::intValue)
+                  .orElse(0))
+              .maxCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MAX_COUNT)
+                  .map(Literal::intValue)
+                  .orElse(Integer.MAX_VALUE))
+              .nodeKind(nodeKind);
+
+          if (nodeKind.equals(SHACL.LITERAL)) {
+            builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.DATATYPE));
+          }
+
+          return builder.build();
+        })
         .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
   }
 

@@ -1,17 +1,27 @@
 package org.dotwebstack.framework.backend.rdf4j.directives;
 
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_HEIGHT_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_REQ_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_SHAPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_SUBJECT;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_TYPE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import graphql.Scalars;
 import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
@@ -21,11 +31,11 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jConfigurer;
 import org.dotwebstack.framework.backend.rdf4j.query.BindingSetFetcher;
 import org.dotwebstack.framework.backend.rdf4j.query.SelectOneFetcher;
 import org.dotwebstack.framework.core.CoreConfiguration;
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.dotwebstack.framework.core.CoreConfigurer;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,23 +44,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
-@Import({Rdf4jConfigurer.class, SelectDirectiveWiring.class})
+@Import({CoreConfigurer.class, Rdf4jConfigurer.class, SelectDirectiveWiring.class})
 @ContextConfiguration(classes = {CoreConfiguration.class, Rdf4jConfiguration.class})
 class SelectDirectiveWiringTest {
-
-  private static final ValueFactory VF = SimpleValueFactory.getInstance();
-
-  private static final String BUILDING_FIELD = "building";
-
-  private static final String BUILDING_REQ_FIELD = "buildingReq";
-
-  private static final IRI BUILDING_SHAPE = VF.createIRI("example:shapes#Building");
-
-  private static final String BUILDING_SUBJECT = "example:building/${identifier}";
-
-  private static final String BUILDING_IDENTIFIER_FIELD = "identifier";
-
-  private static final String BUILDING_HEIGHT_FIELD = "height";
 
   @Autowired
   private RepositoryConnection repositoryConnection;
@@ -67,7 +63,7 @@ class SelectDirectiveWiringTest {
 
   @ParameterizedTest
   @ValueSource(strings = {BUILDING_FIELD, BUILDING_REQ_FIELD})
-  void onField_registersSelectOneFetcher_forObjectResult(String fieldName) {
+  void onField_registersSelectOneFetcher_forObjectFields(String fieldName) {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = schema.getQueryType().getFieldDefinition(fieldName);
     GraphQLCodeRegistry codeRegistry = schema.getCodeRegistry();
@@ -98,6 +94,54 @@ class SelectDirectiveWiringTest {
     assertThat(codeRegistry
             .getDataFetcher(objectType, objectType.getFieldDefinition(BUILDING_HEIGHT_FIELD)),
         is(instanceOf(BindingSetFetcher.class)));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {BUILDING_FIELD, BUILDING_REQ_FIELD})
+  void onField_throwsException_forListOutputType(String fieldName) {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = schema.getQueryType().getFieldDefinition(fieldName)
+        .transform(builder -> builder
+            .type(GraphQLList.list(schema.getQueryType().getFieldDefinition(fieldName))));
+    SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
+        schema.getQueryType(), fieldDefinition,
+        fieldDefinition.getDirective(Directives.SELECT_NAME), schema.getCodeRegistry());
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class, () ->
+        selectDirectiveWiring.onField(environment));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {BUILDING_FIELD, BUILDING_REQ_FIELD})
+  void onField_throwsException_forScalarOutputType(String fieldName) {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = schema.getQueryType().getFieldDefinition(fieldName)
+        .transform(builder -> builder.type(Scalars.GraphQLString));
+    SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
+        schema.getQueryType(), fieldDefinition,
+        fieldDefinition.getDirective(Directives.SELECT_NAME), schema.getCodeRegistry());
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class, () ->
+        selectDirectiveWiring.onField(environment));
+  }
+
+  @Test
+  void onField_throwsException_forMissingSubjectDirective() {
+    // Arrange
+    GraphQLObjectType outputType = schema.getObjectType(BUILDING_TYPE)
+        .transform(GraphQLObjectType.Builder::clearDirectives);
+    GraphQLFieldDefinition fieldDefinition = schema.getQueryType()
+        .getFieldDefinition(BUILDING_FIELD)
+        .transform(builder -> builder.type(outputType));
+    SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
+        schema.getQueryType(), fieldDefinition,
+        fieldDefinition.getDirective(Directives.SELECT_NAME), schema.getCodeRegistry());
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class, () ->
+        selectDirectiveWiring.onField(environment));
   }
 
   private static SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> createEnvironment(

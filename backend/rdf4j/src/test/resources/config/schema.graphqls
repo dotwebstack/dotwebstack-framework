@@ -13,4 +13,5 @@ type Building
     @shape(uri: "example:shapes#Building", graph: "example:shapes") {
   identifier: ID!
   height: Int!
+  builtAt: DateTime!
 }

@@ -19,4 +19,8 @@ public final class PropertyShape {
 
   private final int maxCount;
 
+  private final IRI nodeKind;
+
+  private final IRI datatype;
+
 }
