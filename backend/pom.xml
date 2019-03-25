@@ -15,6 +15,8 @@
 
   <modules>
     <module>rdf4j</module>
+    <module>rdf4j-graphql</module>
+    <module>rdf4j-local</module>
   </modules>
 
 </project>

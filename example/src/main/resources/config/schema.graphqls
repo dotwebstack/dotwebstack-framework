@@ -4,12 +4,13 @@ schema {
 
 type Query {
   pand(identificatiecode: ID!): Pand
-    @select(subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
+    @select(backend: "local", subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
 }
 
 type Pand
-    @shape(uri: "http://bag.basisregistraties.overheid.nl/def/bag/Pand",
-        graph: "http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag") {
+    @shape(backend: "local",
+        graph: "http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag",
+        uri: "http://bag.basisregistraties.overheid.nl/def/bag/Pand") {
   identificatiecode: ID!
   status: String!
   oorspronkelijkBouwjaar: Int!
