@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SelectDirectiveWiring implements SchemaDirectiveWiring {
 
-  private static final ValueFactory vf = SimpleValueFactory.getInstance();
+  private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   private final RepositoryConnection repositoryConnection;
 
@@ -82,8 +82,8 @@ public class SelectDirectiveWiring implements SchemaDirectiveWiring {
                 Directives.SHAPE_NAME)));
 
     return ShapeReference.builder()
-        .uri(vf.createIRI((String) shapeDirective.getArgument(Directives.SHAPE_ARG_URI).getValue()))
-        .graph(vf.createIRI(
+        .uri(VF.createIRI((String) shapeDirective.getArgument(Directives.SHAPE_ARG_URI).getValue()))
+        .graph(VF.createIRI(
             (String) shapeDirective.getArgument(Directives.SHAPE_ARG_GRAPH).getValue()))
         .build();
   }

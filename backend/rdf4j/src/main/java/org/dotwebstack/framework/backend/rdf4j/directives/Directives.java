@@ -18,7 +18,7 @@ public final class Directives {
   }
 
   static {
-    SELECT_NAME = "rdf4j";
+    SELECT_NAME = "select";
     SELECT_ARG_SUBJECT = "subject";
     SHAPE_NAME = "shape";
     SHAPE_ARG_URI = "uri";

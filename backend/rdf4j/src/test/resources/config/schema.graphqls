@@ -1,0 +1,16 @@
+schema {
+  query: Query
+}
+
+type Query {
+  building(identifier: ID!): Building
+    @select(subject: "example:building/${identifier}")
+  buildingReq(identifier: ID!): Building!
+    @select(subject: "example:building/${identifier}")
+}
+
+type Building
+    @shape(uri: "example:shapes#Building", graph: "example:shapes") {
+  identifier: ID!
+  height: Int!
+}

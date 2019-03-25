@@ -25,26 +25,26 @@ import org.junit.jupiter.api.Test;
 
 class ValueUtilsTest {
 
-  private static final ValueFactory vf = SimpleValueFactory.getInstance();
+  private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
-  private static Resource SUBJECT = vf.createIRI("foo:1");
+  private static Resource SUBJECT = VF.createIRI("foo:1");
 
-  private static Literal LABEL = vf.createLiteral("foo");
+  private static Literal LABEL = VF.createLiteral("foo");
 
   @Test
   void convertLiteral_ReturnsSpecificType_ForBuiltInScalars() {
     // Arrange
     ImmutableMap.Builder<Class, Literal> builder = ImmutableMap.builder();
-    builder.put(String.class, vf.createLiteral(""));
-    builder.put(Boolean.class, vf.createLiteral(true));
-    builder.put(Integer.class, vf.createLiteral(Integer.MIN_VALUE));
-    builder.put(BigInteger.class, vf.createLiteral(BigInteger.ONE));
-    builder.put(Short.class, vf.createLiteral(Short.MIN_VALUE));
-    builder.put(Long.class, vf.createLiteral(Long.MIN_VALUE));
-    builder.put(Float.class, vf.createLiteral(Float.MIN_VALUE));
-    builder.put(Double.class, vf.createLiteral(Double.MIN_VALUE));
-    builder.put(BigDecimal.class, vf.createLiteral(BigDecimal.ONE));
-    builder.put(Byte.class, vf.createLiteral(Byte.MIN_VALUE));
+    builder.put(String.class, VF.createLiteral(""));
+    builder.put(Boolean.class, VF.createLiteral(true));
+    builder.put(Integer.class, VF.createLiteral(Integer.MIN_VALUE));
+    builder.put(BigInteger.class, VF.createLiteral(BigInteger.ONE));
+    builder.put(Short.class, VF.createLiteral(Short.MIN_VALUE));
+    builder.put(Long.class, VF.createLiteral(Long.MIN_VALUE));
+    builder.put(Float.class, VF.createLiteral(Float.MIN_VALUE));
+    builder.put(Double.class, VF.createLiteral(Double.MIN_VALUE));
+    builder.put(BigDecimal.class, VF.createLiteral(BigDecimal.ONE));
+    builder.put(Byte.class, VF.createLiteral(Byte.MIN_VALUE));
     Map<Class, Literal> literals = builder.build();
 
     // Act & Assert
@@ -57,7 +57,7 @@ class ValueUtilsTest {
   @Test
   void convertLiteral_ReturnsLiteral_ForNonBuiltInScalars() {
     // Act
-    Object result = ValueUtils.convertLiteral(vf.createLiteral(new Date()));
+    Object result = ValueUtils.convertLiteral(VF.createLiteral(new Date()));
 
     // Assert
     assertThat(result, is(instanceOf(Literal.class)));

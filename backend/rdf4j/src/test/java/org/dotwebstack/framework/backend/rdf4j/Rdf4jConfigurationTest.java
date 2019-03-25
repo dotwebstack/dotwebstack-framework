@@ -30,7 +30,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 
 class Rdf4jConfigurationTest {
 
-  private static final ValueFactory vf = SimpleValueFactory.getInstance();
+  private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   private Rdf4jConfiguration rdf4jConfiguration = new Rdf4jConfiguration();
 
@@ -90,8 +90,8 @@ class Rdf4jConfigurationTest {
         .asList(repositoryConnection.getStatements(null, null, null));
     assertThat(result.size(), is(equalTo(2)));
     assertThat(result, hasItems(
-        vf.createStatement(vf.createIRI("foo:1"), RDF.TYPE, RDFS.CLASS),
-        vf.createStatement(vf.createIRI("foo:2"), RDF.TYPE, RDFS.CLASS)));
+        VF.createStatement(VF.createIRI("foo:1"), RDF.TYPE, RDFS.CLASS),
+        VF.createStatement(VF.createIRI("foo:2"), RDF.TYPE, RDFS.CLASS)));
   }
 
   @Test

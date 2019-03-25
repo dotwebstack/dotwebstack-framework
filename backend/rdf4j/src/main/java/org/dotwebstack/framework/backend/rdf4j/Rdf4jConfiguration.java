@@ -17,7 +17,7 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 
 @Slf4j
 @Configuration
-class Rdf4jConfiguration {
+public class Rdf4jConfiguration {
 
   private static final String MODEL_PATH_PATTERN = "classpath:config/model/**";
 

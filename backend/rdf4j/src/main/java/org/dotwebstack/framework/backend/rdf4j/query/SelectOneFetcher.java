@@ -5,6 +5,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +27,11 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicateObjectList;
 
 @Slf4j
+@Getter
 @RequiredArgsConstructor
 public final class SelectOneFetcher implements DataFetcher<BindingSet> {
 
-  private static final ValueFactory vf = SimpleValueFactory.getInstance();
+  private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   private final RepositoryConnection repositoryConnection;
 
@@ -97,7 +99,7 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
 
     regexMatcher.appendTail(stringBuffer);
 
-    return vf.createIRI(stringBuffer.toString());
+    return VF.createIRI(stringBuffer.toString());
   }
 
 }

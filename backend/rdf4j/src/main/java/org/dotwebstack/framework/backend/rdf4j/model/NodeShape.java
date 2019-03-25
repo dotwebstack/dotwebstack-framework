@@ -25,6 +25,7 @@ public final class NodeShape {
 
   public static NodeShape fromShapeModel(Model shapeModel, Resource nodeShape) {
     return builder()
+        .identifier(nodeShape)
         .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, nodeShape, SHACL.TARGET_CLASS))
         .propertyShapes(buildPropertyShapes(shapeModel, nodeShape))
         .build();

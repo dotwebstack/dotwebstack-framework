@@ -12,8 +12,7 @@
       bag_sh:Pand_status ,
       bag_sh:Pand_oorspronkelijkBouwjaar ,
       bag_sh:Pand_beginGeldigheid ,
-      bag_sh:Pand_eindGeldigheid
-    ;
+      bag_sh:Pand_eindGeldigheid ;
   .
 
   bag_sh:Pand_identificatiecode a sh:PropertyShape ;

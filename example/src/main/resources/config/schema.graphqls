@@ -4,7 +4,7 @@ schema {
 
 type Query {
   pand(identificatiecode: ID!): Pand
-    @rdf4j(subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
+    @select(subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
 }
 
 type Pand
