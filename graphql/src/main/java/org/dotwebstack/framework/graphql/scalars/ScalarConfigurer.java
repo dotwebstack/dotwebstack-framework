@@ -1,10 +1,10 @@
-package org.dotwebstack.framework.core.scalars;
+package org.dotwebstack.framework.graphql.scalars;
 
 import graphql.language.ScalarTypeDefinition;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.GraphqlConfigurer;
+import org.dotwebstack.framework.graphql.GraphqlConfigurer;
 import org.springframework.stereotype.Component;
 
 @Component

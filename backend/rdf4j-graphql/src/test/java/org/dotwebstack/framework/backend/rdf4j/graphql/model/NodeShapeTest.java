@@ -15,8 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.dotwebstack.framework.backend.rdf4j.local.LocalBackend;
 import org.dotwebstack.framework.backend.rdf4j.local.LocalBackendConfigurer;
+import org.dotwebstack.framework.core.BackendConfiguration;
 import org.dotwebstack.framework.core.BackendRegistry;
-import org.dotwebstack.framework.core.CoreConfiguration;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
-@ContextConfiguration(classes = CoreConfiguration.class)
+@ContextConfiguration(classes = BackendConfiguration.class)
 @Import(LocalBackendConfigurer.class)
 class NodeShapeTest {
 

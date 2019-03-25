@@ -24,11 +24,11 @@ import org.dotwebstack.framework.backend.rdf4j.graphql.Rdf4jGraphqlConfigurer;
 import org.dotwebstack.framework.backend.rdf4j.graphql.query.BindingSetFetcher;
 import org.dotwebstack.framework.backend.rdf4j.graphql.query.SelectOneFetcher;
 import org.dotwebstack.framework.backend.rdf4j.local.LocalBackendConfigurer;
+import org.dotwebstack.framework.core.BackendConfiguration;
 import org.dotwebstack.framework.core.BackendRegistry;
-import org.dotwebstack.framework.core.CoreConfiguration;
-import org.dotwebstack.framework.core.GraphqlConfiguration;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.scalars.ScalarConfigurer;
+import org.dotwebstack.framework.graphql.GraphqlConfiguration;
+import org.dotwebstack.framework.graphql.scalars.ScalarConfigurer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,7 +39,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
-@ContextConfiguration(classes = {CoreConfiguration.class, GraphqlConfiguration.class})
+@ContextConfiguration(classes = {BackendConfiguration.class, GraphqlConfiguration.class})
 @Import({LocalBackendConfigurer.class, ScalarConfigurer.class, Rdf4jGraphqlConfigurer.class,
     SelectDirectiveWiring.class})
 class SelectDirectiveWiringTest {

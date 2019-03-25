@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core;
+package org.dotwebstack.framework.graphql;
 
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;

@@ -64,7 +64,7 @@ class BindingSetFetcherTest {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
         .name(Constants.BUILDING_BUILT_AT_NAME)
-        .type(org.dotwebstack.framework.core.scalars.Scalars.DATETIME)
+        .type(org.dotwebstack.framework.graphql.scalars.Scalars.DATETIME)
         .build();
     MapBindingSet bindingSet = new MapBindingSet();
     bindingSet.addBinding(Constants.BUILDING_BUILT_AT_NAME, Constants.BUILDING_BUILT_AT_EXAMPLE);

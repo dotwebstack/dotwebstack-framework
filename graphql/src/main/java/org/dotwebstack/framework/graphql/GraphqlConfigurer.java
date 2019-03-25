@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core;
+package org.dotwebstack.framework.graphql;
 
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;

@@ -13,7 +13,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.graphql.directives.Directives;
 import org.dotwebstack.framework.backend.rdf4j.graphql.directives.SelectDirectiveWiring;
-import org.dotwebstack.framework.core.GraphqlConfigurer;
+import org.dotwebstack.framework.graphql.GraphqlConfigurer;
 import org.springframework.stereotype.Component;
 
 @Component

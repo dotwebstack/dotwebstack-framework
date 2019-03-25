@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class CoreConfiguration {
+public class BackendConfiguration {
 
   @Bean
   BackendRegistry backendRegistry(Collection<BackendConfigurer> configurers) {

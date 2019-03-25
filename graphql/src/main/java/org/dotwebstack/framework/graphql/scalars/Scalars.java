@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.scalars;
+package org.dotwebstack.framework.graphql.scalars;
 
 import graphql.schema.GraphQLScalarType;
 
