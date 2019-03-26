@@ -4,13 +4,20 @@ schema {
 
 type Query {
   building(identifier: ID!): Building
-    @select(backend: "local", subject: "example:building/${identifier}")
+    @select(
+      backend: "local",
+      subject: "http://example/building/${identifier}")
   buildingReq(identifier: ID!): Building!
-    @select(backend: "local", subject: "example:building/${identifier}")
+    @select(
+      backend: "local",
+      subject: "http://example/building/${identifier}")
 }
 
 type Building
-    @shape(backend: "local", graph: "example:shapes", uri: "example:shapes#Building") {
+    @shape(
+      backend: "local",
+      graph: "http://example/shapes",
+      uri: "http://example/shapes#Building") {
   identifier: ID!
   height: Int!
   builtAt: DateTime!

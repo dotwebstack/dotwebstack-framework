@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql;
 
+import java.math.BigInteger;
 import java.util.Date;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -20,13 +21,13 @@ public final class Constants {
 
   public static final String BUILDING_TYPE = "Building";
 
-  public static final IRI SHAPE_GRAPH = VF.createIRI("example:shapes");
+  public static final IRI SHAPE_GRAPH = VF.createIRI("http://example/shapes");
 
-  public static final IRI BUILDING_SHAPE = VF.createIRI("example:shapes#Building");
+  public static final IRI BUILDING_SHAPE = VF.createIRI("http://example/shapes#Building");
 
-  public static final IRI BUILDING_CLASS = VF.createIRI("example:def#Building");
+  public static final IRI BUILDING_CLASS = VF.createIRI("http://example/def#Building");
 
-  public static final String BUILDING_SUBJECT = "example:building/${identifier}";
+  public static final String BUILDING_SUBJECT = "http://example/building/${identifier}";
 
   // Building.identifier
 
@@ -35,13 +36,15 @@ public final class Constants {
   public static final String BUILDING_IDENTIFIER_FIELD = "identifier";
 
   public static final IRI BUILDING_IDENTIFIER_SHAPE = VF
-      .createIRI("example:shapes#Building_identifier");
+      .createIRI("http://example/shapes#Building_identifier");
 
   public static final String BUILDING_IDENTIFIER_NAME = "identifier";
 
-  public static final IRI BUILDING_IDENTIFIER_PATH = VF.createIRI("example:def#identifier");
+  public static final IRI BUILDING_IDENTIFIER_PATH = VF.createIRI("http://example/def#identifier");
 
   // Building.height
+
+  public static final Literal BUILDING_HEIGHT_EXAMPLE = VF.createLiteral(BigInteger.valueOf(24));
 
   public static final String BUILDING_HEIGHT_FIELD = "height";
 

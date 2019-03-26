@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
 import graphql.schema.DataFetcher;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
@@ -130,6 +131,30 @@ class SelectDirectiveWiringTest {
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
         schema.getQueryType(), fieldDefinition,
         fieldDefinition.getDirective(Directives.SELECT_NAME), schema.getCodeRegistry());
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class, () ->
+        selectDirectiveWiring.onField(environment));
+  }
+
+  @Test
+  void onField_throwsException_forAbsentBackend() {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = schema.getQueryType()
+        .getFieldDefinition(Constants.BUILDING_FIELD);
+    GraphQLDirective directive = GraphQLDirective.newDirective()
+        .name(Directives.SELECT_NAME)
+        .argument(GraphQLArgument.newArgument()
+            .name(Directives.SELECT_ARG_BACKEND)
+            .type(Scalars.GraphQLString)
+            .value("foo"))
+        .argument(GraphQLArgument.newArgument()
+            .name(Directives.SELECT_ARG_SUBJECT)
+            .type(Scalars.GraphQLString)
+            .value("bar"))
+        .build();
+    SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
+        schema.getQueryType(), fieldDefinition, directive, schema.getCodeRegistry());
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->

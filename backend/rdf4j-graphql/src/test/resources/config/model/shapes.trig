@@ -1,8 +1,8 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix ex: <example:> .
-@prefix ex_def: <example:def#> .
-@prefix ex_sh: <example:shapes#> .
+@prefix ex: <http://example/> .
+@prefix ex_def: <http://example/def#> .
+@prefix ex_sh: <http://example/shapes#> .
 
 ex:shapes {
   ex_sh:Building a sh:NodeShape ;
@@ -28,7 +28,7 @@ ex:shapes {
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:int ;
+    sh:datatype xsd:integer ;
   .
 
   ex_sh:Building_builtAt a sh:PropertyShape ;
