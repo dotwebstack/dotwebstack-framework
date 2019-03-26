@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql.query;
 
+import static org.dotwebstack.framework.test.Constants.BUILDING_BUILT_AT_EXAMPLE;
+import static org.dotwebstack.framework.test.Constants.BUILDING_BUILT_AT_FIELD;
+import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_NAME;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -9,7 +13,6 @@ import static org.mockito.Mockito.when;
 import graphql.Scalars;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
-import org.dotwebstack.framework.test.Constants;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
@@ -26,7 +29,7 @@ class BindingSetFetcherTest {
   void get_returnsNull_forAbsentProperty() {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name(Constants.BUILDING_IDENTIFIER_NAME)
+        .name(BUILDING_IDENTIFIER_NAME)
         .type(Scalars.GraphQLID)
         .build();
     BindingSet bindingSet = new EmptyBindingSet();
@@ -43,12 +46,12 @@ class BindingSetFetcherTest {
   void get_returnsSpecificType_forBuiltInScalarProperty() {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name(Constants.BUILDING_IDENTIFIER_NAME)
+        .name(BUILDING_IDENTIFIER_NAME)
         .type(Scalars.GraphQLID)
         .build();
     MapBindingSet bindingSet = new MapBindingSet();
     bindingSet
-        .addBinding(Constants.BUILDING_IDENTIFIER_NAME, Constants.BUILDING_IDENTIFIER_EXAMPLE_1);
+        .addBinding(BUILDING_IDENTIFIER_NAME, BUILDING_IDENTIFIER_EXAMPLE_1);
     DataFetchingEnvironment environment = createEnvironment(fieldDefinition, bindingSet);
 
     // Act
@@ -57,36 +60,36 @@ class BindingSetFetcherTest {
     // Assert
     MatcherAssert
         .assertThat(result,
-            CoreMatchers.is(Constants.BUILDING_IDENTIFIER_EXAMPLE_1.stringValue()));
+            CoreMatchers.is(BUILDING_IDENTIFIER_EXAMPLE_1.stringValue()));
   }
 
   @Test
   void get_returnsLiteral_forCustomScalarProperty() {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name(Constants.BUILDING_BUILT_AT_FIELD)
+        .name(BUILDING_BUILT_AT_FIELD)
         .type(org.dotwebstack.framework.graphql.scalars.Scalars.DATETIME)
         .build();
     MapBindingSet bindingSet = new MapBindingSet();
-    bindingSet.addBinding(Constants.BUILDING_BUILT_AT_FIELD, Constants.BUILDING_BUILT_AT_EXAMPLE);
+    bindingSet.addBinding(BUILDING_BUILT_AT_FIELD, BUILDING_BUILT_AT_EXAMPLE);
     DataFetchingEnvironment environment = createEnvironment(fieldDefinition, bindingSet);
 
     // Act
     Object result = bindingSetFetcher.get(environment);
 
     // Assert
-    MatcherAssert.assertThat(result, CoreMatchers.is(Constants.BUILDING_BUILT_AT_EXAMPLE));
+    MatcherAssert.assertThat(result, CoreMatchers.is(BUILDING_BUILT_AT_EXAMPLE));
   }
 
   @Test
   void get_returnsString_forIriProperty() {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name(Constants.BUILDING_IDENTIFIER_NAME)
+        .name(BUILDING_IDENTIFIER_NAME)
         .type(Scalars.GraphQLID)
         .build();
     MapBindingSet bindingSet = new MapBindingSet();
-    bindingSet.addBinding(Constants.BUILDING_IDENTIFIER_NAME, RDF.SUBJECT);
+    bindingSet.addBinding(BUILDING_IDENTIFIER_NAME, RDF.SUBJECT);
     DataFetchingEnvironment environment = createEnvironment(fieldDefinition, bindingSet);
 
     // Act

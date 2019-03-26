@@ -1,5 +1,10 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql.directives;
 
+import static org.dotwebstack.framework.test.Constants.BUILDING_FIELD;
+import static org.dotwebstack.framework.test.Constants.BUILDING_HEIGHT_FIELD;
+import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.test.Constants.BUILDING_REQ_FIELD;
+import static org.dotwebstack.framework.test.Constants.BUILDING_TYPE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -29,7 +34,6 @@ import org.dotwebstack.framework.core.BackendRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.graphql.GraphqlConfiguration;
 import org.dotwebstack.framework.graphql.scalars.ScalarConfigurer;
-import org.dotwebstack.framework.test.Constants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -59,7 +63,7 @@ class SelectDirectiveWiringTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {Constants.BUILDING_FIELD, Constants.BUILDING_REQ_FIELD})
+  @ValueSource(strings = {BUILDING_FIELD, BUILDING_REQ_FIELD})
   void onField_registersSelectOneFetcher_forObjectFields(String fieldName) {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = schema.getQueryType().getFieldDefinition(fieldName);
@@ -80,17 +84,15 @@ class SelectDirectiveWiringTest {
     GraphQLObjectType objectType = (GraphQLObjectType) GraphQLTypeUtil
         .unwrapNonNull(fieldDefinition.getType());
     assertThat(codeRegistry
-            .getDataFetcher(objectType, objectType.getFieldDefinition(
-                Constants.BUILDING_IDENTIFIER_FIELD)),
+            .getDataFetcher(objectType, objectType.getFieldDefinition(BUILDING_IDENTIFIER_FIELD)),
         is(instanceOf(BindingSetFetcher.class)));
     assertThat(codeRegistry
-            .getDataFetcher(objectType, objectType.getFieldDefinition(
-                Constants.BUILDING_HEIGHT_FIELD)),
+            .getDataFetcher(objectType, objectType.getFieldDefinition(BUILDING_HEIGHT_FIELD)),
         is(instanceOf(BindingSetFetcher.class)));
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {Constants.BUILDING_FIELD, Constants.BUILDING_REQ_FIELD})
+  @ValueSource(strings = {BUILDING_FIELD, BUILDING_REQ_FIELD})
   void onField_throwsException_forListOutputType(String fieldName) {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = schema.getQueryType().getFieldDefinition(fieldName)
@@ -106,7 +108,7 @@ class SelectDirectiveWiringTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {Constants.BUILDING_FIELD, Constants.BUILDING_REQ_FIELD})
+  @ValueSource(strings = {BUILDING_FIELD, BUILDING_REQ_FIELD})
   void onField_throwsException_forScalarOutputType(String fieldName) {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = schema.getQueryType().getFieldDefinition(fieldName)
@@ -123,10 +125,10 @@ class SelectDirectiveWiringTest {
   @Test
   void onField_throwsException_forMissingSubjectDirective() {
     // Arrange
-    GraphQLObjectType outputType = schema.getObjectType(Constants.BUILDING_TYPE)
+    GraphQLObjectType outputType = schema.getObjectType(BUILDING_TYPE)
         .transform(GraphQLObjectType.Builder::clearDirectives);
     GraphQLFieldDefinition fieldDefinition = schema.getQueryType()
-        .getFieldDefinition(Constants.BUILDING_FIELD)
+        .getFieldDefinition(BUILDING_FIELD)
         .transform(builder -> builder.type(outputType));
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
         schema.getQueryType(), fieldDefinition,
@@ -141,7 +143,7 @@ class SelectDirectiveWiringTest {
   void onField_throwsException_forAbsentBackend() {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = schema.getQueryType()
-        .getFieldDefinition(Constants.BUILDING_FIELD);
+        .getFieldDefinition(BUILDING_FIELD);
     GraphQLDirective directive = GraphQLDirective.newDirective()
         .name(Directives.SELECT_NAME)
         .argument(GraphQLArgument.newArgument()
