@@ -4,6 +4,7 @@ import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import java.util.Optional;
+import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jBackend;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -39,10 +40,10 @@ abstract class AbstractDirectiveWiring implements SchemaDirectiveWiring {
     IRI shapeUri = VF
         .createIRI(DirectiveUtils.getStringArgument(shapeDirective, Directives.SHAPE_ARG_URI));
 
-    try (RepositoryConnection con = shapeBackend.getRepository().getConnection()) {
-      Model shapeModel = QueryResults.asModel(con.getStatements(null, null, null, shapeGraph));
-      return NodeShape.fromShapeModel(shapeModel, shapeUri);
-    }
+    @Cleanup RepositoryConnection con = shapeBackend.getRepository().getConnection();
+    Model shapeModel = QueryResults.asModel(con.getStatements(null, null, null, shapeGraph));
+
+    return NodeShape.fromShapeModel(shapeModel, shapeUri);
   }
 
   Rdf4jBackend getBackend(String backendName) {

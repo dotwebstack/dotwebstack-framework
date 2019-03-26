@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.rdf4j.LocalBackend.LOCAL_BACKEND
 
 import java.io.IOException;
 import java.util.Arrays;
+import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.BackendConfigurer;
@@ -45,28 +46,28 @@ public class LocalBackendConfigurer implements BackendConfigurer {
         .getResourcePatternResolver(resourceLoader)
         .getResources(MODEL_PATH_PATTERN);
 
-    try (RepositoryConnection con = repository.getConnection()) {
-      Arrays.stream(resourceList)
-          .filter(Resource::isReadable)
-          .filter(resource -> resource.getFilename() != null)
-          .forEach(modelResource -> {
-            String fileExtension = Arrays
-                .stream(modelResource.getFilename().split("\\."))
-                .reduce("", (s1, s2) -> s2);
+    @Cleanup RepositoryConnection con = repository.getConnection();
 
-            RDFFormat format = FileFormats.getFormat(fileExtension);
+    Arrays.stream(resourceList)
+        .filter(Resource::isReadable)
+        .filter(resource -> resource.getFilename() != null)
+        .forEach(modelResource -> {
+          String fileExtension = Arrays
+              .stream(modelResource.getFilename().split("\\."))
+              .reduce("", (s1, s2) -> s2);
 
-            if (format != null) {
-              LOG.debug("Adding '{}' into local repository", modelResource.getFilename());
+          RDFFormat format = FileFormats.getFormat(fileExtension);
 
-              try {
-                con.add(modelResource.getInputStream(), "", format);
-              } catch (IOException e) {
-                throw new InvalidConfigurationException("Error while loading data.", e);
-              }
+          if (format != null) {
+            LOG.debug("Adding '{}' into local repository", modelResource.getFilename());
+
+            try {
+              con.add(modelResource.getInputStream(), "", format);
+            } catch (IOException e) {
+              throw new InvalidConfigurationException("Error while loading data.", e);
             }
-          });
-    }
+          }
+        });
 
     return repository;
   }
