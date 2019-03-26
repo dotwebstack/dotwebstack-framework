@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.graphql.directives;
 
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 
@@ -11,7 +12,13 @@ public final class DirectiveUtils {
   }
 
   public static String getStringArgument(GraphQLDirective directive, String argName) {
-    Object argValue = directive.getArgument(argName).getValue();
+    GraphQLArgument arg = directive.getArgument(argName);
+
+    if (arg == null) {
+      return null;
+    }
+
+    Object argValue = arg.getValue();
 
     if (!(argValue instanceof String)) {
       throw new InvalidConfigurationException(

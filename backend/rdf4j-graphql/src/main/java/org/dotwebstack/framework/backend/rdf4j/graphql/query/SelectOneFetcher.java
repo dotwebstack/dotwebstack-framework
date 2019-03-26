@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.backend.rdf4j.graphql.model.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;

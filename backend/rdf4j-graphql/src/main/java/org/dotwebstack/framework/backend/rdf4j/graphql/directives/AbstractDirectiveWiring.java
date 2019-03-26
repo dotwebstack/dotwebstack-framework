@@ -6,7 +6,7 @@ import graphql.schema.idl.SchemaDirectiveWiring;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jBackend;
-import org.dotwebstack.framework.backend.rdf4j.graphql.model.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.Backend;
 import org.dotwebstack.framework.core.BackendRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;

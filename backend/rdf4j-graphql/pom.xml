@@ -15,19 +15,13 @@
   <dependencies>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>graphql</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.dotwebstack.framework</groupId>
       <artifactId>backend-rdf4j</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>backend-rdf4j-local</artifactId>
+      <artifactId>graphql</artifactId>
       <version>${project.parent.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
