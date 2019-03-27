@@ -7,6 +7,8 @@ type Query {
     @select(
       backend: "local",
       subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
+  panden: [Pand!]!
+    @select(backend: "local")
 }
 
 type Pand

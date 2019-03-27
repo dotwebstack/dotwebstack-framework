@@ -11,6 +11,9 @@ type Query {
     @select(
       backend: "local",
       subject: "http://example/building/${identifier}")
+  buildings: [Building!]!
+    @select(
+      backend: "local")
 }
 
 type Building

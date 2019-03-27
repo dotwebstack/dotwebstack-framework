@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.test;
 
-import java.math.BigInteger;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import org.eclipse.rdf4j.model.IRI;
@@ -33,6 +32,8 @@ public final class Constants {
 
   public static final String BUILDING_REQ_FIELD = "buildingReq";
 
+  public static final String BUILDINGS_FIELD = "buildings";
+
   // Building
 
   public static final String BUILDING_TYPE = "Building";
@@ -62,7 +63,7 @@ public final class Constants {
 
   // Building.height
 
-  public static final Literal BUILDING_HEIGHT_EXAMPLE = VF.createLiteral(BigInteger.valueOf(24));
+  public static final Literal BUILDING_HEIGHT_EXAMPLE = VF.createLiteral(24);
 
   public static final String BUILDING_HEIGHT_FIELD = "height";
 
