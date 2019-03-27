@@ -3,11 +3,10 @@ package org.dotwebstack.framework.backend.rdf4j.graphql.query;
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -40,7 +39,9 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
   @Override
   public BindingSet get(@NonNull DataFetchingEnvironment environment) {
     SelectQuery selectQuery = Queries.SELECT();
-    Resource subject = findSubject(environment);
+
+    StringSubstitutor substitutor = new StringSubstitutor(environment.getArguments());
+    Resource subject = VF.createIRI(substitutor.replace(subjectTemplate));
 
     ImmutableList.Builder<RdfPredicateObjectList> reqPredObjBuilder = ImmutableList.builder();
     ImmutableList.Builder<RdfPredicateObjectList> optPredObjBuilder = ImmutableList.builder();
@@ -81,22 +82,6 @@ public final class SelectOneFetcher implements DataFetcher<BindingSet> {
         .stream()
         .findFirst()
         .orElse(null);
-  }
-
-  private Resource findSubject(DataFetchingEnvironment environment) {
-    Pattern regex = Pattern.compile("\\$\\{(\\w+)}");
-    Matcher regexMatcher = regex.matcher(subjectTemplate);
-    StringBuffer stringBuffer = new StringBuffer();
-
-    while (regexMatcher.find()) {
-      String argName = regexMatcher.group(1);
-      String argValue = environment.getArgument(argName);
-      regexMatcher.appendReplacement(stringBuffer, argValue);
-    }
-
-    regexMatcher.appendTail(stringBuffer);
-
-    return VF.createIRI(stringBuffer.toString());
   }
 
 }
