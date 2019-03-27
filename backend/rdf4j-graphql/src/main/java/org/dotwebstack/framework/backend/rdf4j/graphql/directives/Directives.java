@@ -2,19 +2,19 @@ package org.dotwebstack.framework.backend.rdf4j.graphql.directives;
 
 public final class Directives {
 
-  public static final String SELECT_NAME;
+  public static final String SPARQL_NAME;
 
-  public static final String SELECT_ARG_BACKEND;
+  public static final String SPARQL_ARG_BACKEND;
 
-  public static final String SELECT_ARG_SUBJECT;
+  public static final String SPARQL_ARG_SUBJECT;
 
-  public static final String SHAPE_NAME;
+  public static final String SHACL_NAME;
 
-  public static final String SHAPE_ARG_BACKEND;
+  public static final String SHACL_ARG_BACKEND;
 
-  public static final String SHAPE_ARG_URI;
+  public static final String SHACL_ARG_GRAPH;
 
-  public static final String SHAPE_ARG_GRAPH;
+  public static final String SHACL_ARG_SHAPE;
 
   private Directives() {
     throw new IllegalStateException(
@@ -22,13 +22,13 @@ public final class Directives {
   }
 
   static {
-    SELECT_NAME = "select";
-    SELECT_ARG_BACKEND = "backend";
-    SELECT_ARG_SUBJECT = "subject";
-    SHAPE_NAME = "shape";
-    SHAPE_ARG_BACKEND = "backend";
-    SHAPE_ARG_URI = "uri";
-    SHAPE_ARG_GRAPH = "graph";
+    SPARQL_NAME = "sparql";
+    SPARQL_ARG_BACKEND = "backend";
+    SPARQL_ARG_SUBJECT = "subject";
+    SHACL_NAME = "shacl";
+    SHACL_ARG_BACKEND = "backend";
+    SHACL_ARG_GRAPH = "graph";
+    SHACL_ARG_SHAPE = "shape";
   }
 
 }

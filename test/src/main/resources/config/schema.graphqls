@@ -2,25 +2,19 @@ schema {
   query: Query
 }
 
-type Query {
+type Query
+    @sparql(backend: "local")
+    @shacl(backend: "local", graph: "http://example/shapes") {
   building(identifier: ID!): Building
-    @select(
-      backend: "local",
-      subject: "http://example/building/${identifier}")
+    @sparql(subject: "http://example/building/${identifier}")
   buildingReq(identifier: ID!): Building!
-    @select(
-      backend: "local",
-      subject: "http://example/building/${identifier}")
+    @sparql(subject: "http://example/building/${identifier}")
   buildings: [Building!]!
-    @select(
-      backend: "local")
+    @sparql
 }
 
 type Building
-    @shape(
-      backend: "local",
-      graph: "http://example/shapes",
-      uri: "http://example/shapes#Building") {
+    @shacl(shape: "http://example/shapes#Building") {
   identifier: ID!
   height: Int!
   builtAt: DateTime!

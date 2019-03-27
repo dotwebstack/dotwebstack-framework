@@ -49,8 +49,8 @@ import org.springframework.test.context.ContextConfiguration;
 @SpringBootTest
 @ContextConfiguration(classes = {BackendConfiguration.class, GraphqlConfiguration.class})
 @Import({LocalBackendConfigurer.class, ScalarConfigurer.class, Rdf4jGraphqlConfigurer.class,
-    SelectDirectiveWiring.class})
-class SelectDirectiveWiringTest {
+    SparqlDirectiveWiring.class})
+class SparqlDirectiveWiringTest {
 
   @Autowired
   private BackendRegistry backendRegistry;
@@ -58,11 +58,11 @@ class SelectDirectiveWiringTest {
   @Autowired
   private GraphQLSchema schema;
 
-  private SelectDirectiveWiring selectDirectiveWiring;
+  private SparqlDirectiveWiring sparqlDirectiveWiring;
 
   @BeforeEach
   void setUp() {
-    selectDirectiveWiring = new SelectDirectiveWiring(backendRegistry);
+    sparqlDirectiveWiring = new SparqlDirectiveWiring(backendRegistry);
   }
 
   @ParameterizedTest
@@ -73,10 +73,10 @@ class SelectDirectiveWiringTest {
     GraphQLCodeRegistry codeRegistry = schema.getCodeRegistry();
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
         schema.getQueryType(), fieldDefinition,
-        fieldDefinition.getDirective(Directives.SELECT_NAME), codeRegistry);
+        fieldDefinition.getDirective(Directives.SPARQL_NAME), codeRegistry);
 
     // Act
-    GraphQLFieldDefinition result = selectDirectiveWiring.onField(environment);
+    GraphQLFieldDefinition result = sparqlDirectiveWiring.onField(environment);
 
     // Assert
     assertThat(result, is(equalTo(fieldDefinition)));
@@ -102,10 +102,10 @@ class SelectDirectiveWiringTest {
     GraphQLCodeRegistry codeRegistry = schema.getCodeRegistry();
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
         schema.getQueryType(), fieldDefinition,
-        fieldDefinition.getDirective(Directives.SELECT_NAME), codeRegistry);
+        fieldDefinition.getDirective(Directives.SPARQL_NAME), codeRegistry);
 
     // Act
-    GraphQLFieldDefinition result = selectDirectiveWiring.onField(environment);
+    GraphQLFieldDefinition result = sparqlDirectiveWiring.onField(environment);
 
     // Assert
     assertThat(result, is(equalTo(fieldDefinition)));
@@ -132,11 +132,11 @@ class SelectDirectiveWiringTest {
             GraphQLList.list(Scalars.GraphQLString)));
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
         schema.getQueryType(), fieldDefinition,
-        fieldDefinition.getDirective(Directives.SELECT_NAME), schema.getCodeRegistry());
+        fieldDefinition.getDirective(Directives.SPARQL_NAME), schema.getCodeRegistry());
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
-        selectDirectiveWiring.onField(environment));
+        sparqlDirectiveWiring.onField(environment));
   }
 
 
@@ -148,11 +148,11 @@ class SelectDirectiveWiringTest {
         .transform(builder -> builder.type(Scalars.GraphQLString));
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
         schema.getQueryType(), fieldDefinition,
-        fieldDefinition.getDirective(Directives.SELECT_NAME), schema.getCodeRegistry());
+        fieldDefinition.getDirective(Directives.SPARQL_NAME), schema.getCodeRegistry());
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
-        selectDirectiveWiring.onField(environment));
+        sparqlDirectiveWiring.onField(environment));
   }
 
   @Test
@@ -165,35 +165,53 @@ class SelectDirectiveWiringTest {
         .transform(builder -> builder.type(outputType));
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
         schema.getQueryType(), fieldDefinition,
-        fieldDefinition.getDirective(Directives.SELECT_NAME), schema.getCodeRegistry());
+        fieldDefinition.getDirective(Directives.SPARQL_NAME), schema.getCodeRegistry());
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
-        selectDirectiveWiring.onField(environment));
+        sparqlDirectiveWiring.onField(environment));
   }
 
   @Test
-  void onField_throwsException_forAbsentBackend() {
+  void onField_throwsException_forMissingBackendArgument() {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = schema.getQueryType()
+        .getFieldDefinition(BUILDING_FIELD);
+    GraphQLDirective directive = fieldDefinition.getDirective(Directives.SPARQL_NAME);
+    GraphQLObjectType parentType = schema.getQueryType()
+        .transform(GraphQLObjectType.Builder::clearDirectives);
+    SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
+        parentType, fieldDefinition, directive, schema.getCodeRegistry());
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class, () ->
+        sparqlDirectiveWiring.onField(environment));
+  }
+
+  @Test
+  void onField_throwsException_forInvalidBackend() {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = schema.getQueryType()
         .getFieldDefinition(BUILDING_FIELD);
     GraphQLDirective directive = GraphQLDirective.newDirective()
-        .name(Directives.SELECT_NAME)
+        .name(Directives.SPARQL_NAME)
         .argument(GraphQLArgument.newArgument()
-            .name(Directives.SELECT_ARG_BACKEND)
+            .name(Directives.SPARQL_ARG_BACKEND)
             .type(Scalars.GraphQLString)
             .value("foo"))
         .argument(GraphQLArgument.newArgument()
-            .name(Directives.SELECT_ARG_SUBJECT)
+            .name(Directives.SPARQL_ARG_SUBJECT)
             .type(Scalars.GraphQLString)
             .value("bar"))
         .build();
+    GraphQLObjectType parentType = schema.getQueryType()
+        .transform(GraphQLObjectType.Builder::clearDirectives);
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
-        schema.getQueryType(), fieldDefinition, directive, schema.getCodeRegistry());
+        parentType, fieldDefinition, directive, schema.getCodeRegistry());
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
-        selectDirectiveWiring.onField(environment));
+        sparqlDirectiveWiring.onField(environment));
   }
 
   private static SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> createEnvironment(

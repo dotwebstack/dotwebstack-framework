@@ -2,6 +2,7 @@ package org.dotwebstack.framework.graphql.directives;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 
 public final class DirectiveUtils {
@@ -11,14 +12,19 @@ public final class DirectiveUtils {
         String.format("%s is not meant to be instantiated.", DirectiveUtils.class));
   }
 
-  public static String getStringArgument(GraphQLDirective directive, String argName) {
-    GraphQLArgument arg = directive.getArgument(argName);
+  public static String getStringArgument(@NonNull String argName,
+      @NonNull GraphQLDirective directive) {
+    GraphQLArgument argument = directive.getArgument(argName);
 
-    if (arg == null) {
+    if (argument == null) {
       return null;
     }
 
-    Object argValue = arg.getValue();
+    Object argValue = directive.getArgument(argName).getValue();
+
+    if (argValue == null) {
+      return null;
+    }
 
     if (!(argValue instanceof String)) {
       throw new InvalidConfigurationException(

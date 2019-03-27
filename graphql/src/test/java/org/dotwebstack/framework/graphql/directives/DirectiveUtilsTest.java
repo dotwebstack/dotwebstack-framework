@@ -26,7 +26,7 @@ class DirectiveUtilsTest {
         .build();
 
     // Act
-    String value = DirectiveUtils.getStringArgument(directive, "foo");
+    String value = DirectiveUtils.getStringArgument("foo", directive);
 
     // Assert
     assertThat(value, is(equalTo("bar")));
@@ -40,7 +40,24 @@ class DirectiveUtilsTest {
         .build();
 
     // Act
-    String value = DirectiveUtils.getStringArgument(directive, "foo");
+    String value = DirectiveUtils.getStringArgument("foo", directive);
+
+    // Assert
+    assertThat(value, is(nullValue()));
+  }
+
+  @Test
+  void getStringArgument_returnsNull_forArgumentWithNullValue() {
+    // Arrange
+    GraphQLDirective directive = GraphQLDirective.newDirective()
+        .name("foo")
+        .argument(GraphQLArgument.newArgument()
+            .name("foo")
+            .type(Scalars.GraphQLString))
+        .build();
+
+    // Act
+    String value = DirectiveUtils.getStringArgument("foo", directive);
 
     // Assert
     assertThat(value, is(nullValue()));
@@ -59,7 +76,7 @@ class DirectiveUtilsTest {
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
-        DirectiveUtils.getStringArgument(directive, "foo"));
+        DirectiveUtils.getStringArgument("foo", directive));
   }
 
 }
