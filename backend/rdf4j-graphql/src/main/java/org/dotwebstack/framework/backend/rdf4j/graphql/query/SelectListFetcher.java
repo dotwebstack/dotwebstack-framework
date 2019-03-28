@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql.query;
 
-import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
@@ -17,10 +16,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
-import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicateObjectList;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -35,33 +31,15 @@ public final class SelectListFetcher implements DataFetcher<List<BindingSet>> {
     SelectQuery selectQuery = Queries.SELECT();
     Variable subject = SparqlBuilder.var("subject");
 
-    ImmutableList.Builder<RdfPredicateObjectList> reqPredObjBuilder = ImmutableList.builder();
-    ImmutableList.Builder<RdfPredicateObjectList> optPredObjBuilder = ImmutableList.builder();
-
-    reqPredObjBuilder
-        .add(Rdf.predicateObjectList(Rdf.iri(RDF.TYPE), Rdf.iri(nodeShape.getTargetClass())));
+    selectQuery.where(GraphPatterns.tp(subject, RDF.TYPE, nodeShape.getTargetClass()));
 
     environment
         .getSelectionSet()
         .getFields()
         .stream()
         .map(field -> nodeShape.getPropertyShapes().get(field.getName()))
-        .forEach(shape -> {
-          ImmutableList.Builder<RdfPredicateObjectList> builder =
-              shape.getMinCount() > 0 ? reqPredObjBuilder : optPredObjBuilder;
-          builder.add(Rdf.predicateObjectList(Rdf.iri(shape.getPath()),
-              SparqlBuilder.var(shape.getName())));
-        });
-
-    // Add a single triple pattern for required properties
-    selectQuery.where(GraphPatterns
-        .tp(subject, reqPredObjBuilder.build().toArray(new RdfPredicateObjectList[0])));
-
-    // Add separate triple patterns for optional properties
-    optPredObjBuilder.build()
-        .stream()
-        .map(predObjList -> (GraphPattern) GraphPatterns.tp(subject, predObjList))
-        .forEach(triplePattern -> selectQuery.where(GraphPatterns.optional(triplePattern)));
+        .forEach(shape -> selectQuery.where(GraphPatterns.optional(
+            GraphPatterns.tp(subject, shape.getPath(), SparqlBuilder.var(shape.getName())))));
 
     String selectQueryStr = selectQuery.getQueryString();
     LOG.debug("Exececuting query:\n{}", selectQueryStr);
