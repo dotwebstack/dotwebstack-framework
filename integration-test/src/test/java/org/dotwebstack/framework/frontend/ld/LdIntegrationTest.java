@@ -8,6 +8,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Map;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -140,6 +141,20 @@ public class LdIntegrationTest {
     assertThat(response.getLocation().getPath(), equalTo("/dbp/ld/v1/doc/breweries"));
     assertThat(response.readEntity(String.class), isEmptyString());
   }
+
+  @Test
+  public void get_GetHttpsRedirection_ThroughLdApi() {
+    // Act
+    Response response = target.path("/dbp/ld/v1/id/breweries").request()
+        .accept("image/gif", "image/jpeg").header("x-forwarded-proto", "https").get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
+    assertThat(response.getLocation().getPath(), equalTo("/dbp/ld/v1/doc/breweries"));
+    assertThat(response.getLocation().getScheme(), equalTo("https"));
+    assertThat(response.readEntity(String.class), isEmptyString());
+  }
+
 
   @Test
   public void get_InternalServerErrorWhileAcceptingHtml_WhenNoRepresentation() {
