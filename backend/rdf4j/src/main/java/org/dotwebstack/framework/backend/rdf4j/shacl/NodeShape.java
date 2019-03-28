@@ -23,11 +23,11 @@ public final class NodeShape {
 
   private final Map<String, PropertyShape> propertyShapes;
 
-  public static NodeShape fromShapeModel(Model shapeModel, Resource nodeShape) {
+  public static NodeShape fromShapeModel(Model shapeModel, Resource identifier) {
     return builder()
-        .identifier(nodeShape)
-        .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, nodeShape, SHACL.TARGET_CLASS))
-        .propertyShapes(buildPropertyShapes(shapeModel, nodeShape))
+        .identifier(identifier)
+        .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, identifier, SHACL.TARGET_CLASS))
+        .propertyShapes(buildPropertyShapes(shapeModel, identifier))
         .build();
   }
 

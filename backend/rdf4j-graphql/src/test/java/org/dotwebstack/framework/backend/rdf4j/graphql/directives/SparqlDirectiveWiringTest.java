@@ -5,7 +5,6 @@ import static org.dotwebstack.framework.test.Constants.BUILDING_FIELD;
 import static org.dotwebstack.framework.test.Constants.BUILDING_HEIGHT_FIELD;
 import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_FIELD;
 import static org.dotwebstack.framework.test.Constants.BUILDING_REQ_FIELD;
-import static org.dotwebstack.framework.test.Constants.BUILDING_TYPE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -26,7 +25,9 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
+import org.dotwebstack.framework.backend.rdf4j.LocalBackend;
 import org.dotwebstack.framework.backend.rdf4j.LocalBackendConfigurer;
+import org.dotwebstack.framework.backend.rdf4j.graphql.GraphqlObjectShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.graphql.Rdf4jGraphqlConfigurer;
 import org.dotwebstack.framework.backend.rdf4j.graphql.query.BindingSetFetcher;
 import org.dotwebstack.framework.backend.rdf4j.graphql.query.SelectListFetcher;
@@ -49,11 +50,14 @@ import org.springframework.test.context.ContextConfiguration;
 @SpringBootTest
 @ContextConfiguration(classes = {BackendConfiguration.class, GraphqlConfiguration.class})
 @Import({LocalBackendConfigurer.class, ScalarConfigurer.class, Rdf4jGraphqlConfigurer.class,
-    SparqlDirectiveWiring.class})
+    GraphqlObjectShapeRegistry.class, ShaclDirectiveWiring.class, SparqlDirectiveWiring.class})
 class SparqlDirectiveWiringTest {
 
   @Autowired
   private BackendRegistry backendRegistry;
+
+  @Autowired
+  private GraphqlObjectShapeRegistry objectShapeRegistry;
 
   @Autowired
   private GraphQLSchema schema;
@@ -62,7 +66,7 @@ class SparqlDirectiveWiringTest {
 
   @BeforeEach
   void setUp() {
-    sparqlDirectiveWiring = new SparqlDirectiveWiring(backendRegistry);
+    sparqlDirectiveWiring = new SparqlDirectiveWiring(backendRegistry, objectShapeRegistry);
   }
 
   @ParameterizedTest
@@ -158,14 +162,19 @@ class SparqlDirectiveWiringTest {
   @Test
   void onField_throwsException_forMissingSubjectDirective() {
     // Arrange
-    GraphQLObjectType outputType = schema.getObjectType(BUILDING_TYPE)
-        .transform(GraphQLObjectType.Builder::clearDirectives);
     GraphQLFieldDefinition fieldDefinition = schema.getQueryType()
-        .getFieldDefinition(BUILDING_FIELD)
-        .transform(builder -> builder.type(outputType));
+        .getFieldDefinition(BUILDING_FIELD);
+    GraphQLDirective directive = GraphQLDirective.newDirective()
+        .name(Directives.SPARQL_NAME)
+        .argument(GraphQLArgument.newArgument()
+            .name(Directives.SPARQL_ARG_SUBJECT)
+            .type(Scalars.GraphQLString)
+            .value("bar"))
+        .build();
+    GraphQLObjectType parentType = schema.getQueryType()
+        .transform(GraphQLObjectType.Builder::clearDirectives);
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(
-        schema.getQueryType(), fieldDefinition,
-        fieldDefinition.getDirective(Directives.SPARQL_NAME), schema.getCodeRegistry());
+        parentType, fieldDefinition, directive, schema.getCodeRegistry());
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
@@ -177,7 +186,13 @@ class SparqlDirectiveWiringTest {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = schema.getQueryType()
         .getFieldDefinition(BUILDING_FIELD);
-    GraphQLDirective directive = fieldDefinition.getDirective(Directives.SPARQL_NAME);
+    GraphQLDirective directive = GraphQLDirective.newDirective()
+        .name(Directives.SPARQL_NAME)
+        .argument(GraphQLArgument.newArgument()
+            .name(Directives.SPARQL_ARG_SUBJECT)
+            .type(Scalars.GraphQLString)
+            .value(LocalBackend.LOCAL_BACKEND_NAME))
+        .build();
     GraphQLObjectType parentType = schema.getQueryType()
         .transform(GraphQLObjectType.Builder::clearDirectives);
     SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment = createEnvironment(

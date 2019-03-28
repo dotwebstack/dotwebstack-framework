@@ -13,18 +13,24 @@ import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jBackend;
+import org.dotwebstack.framework.backend.rdf4j.graphql.GraphqlObjectShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.graphql.query.BindingSetFetcher;
 import org.dotwebstack.framework.backend.rdf4j.graphql.query.SelectListFetcher;
 import org.dotwebstack.framework.backend.rdf4j.graphql.query.SelectOneFetcher;
 import org.dotwebstack.framework.core.BackendRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.graphql.directives.DirectiveUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SparqlDirectiveWiring extends AbstractDirectiveWiring {
 
-  SparqlDirectiveWiring(BackendRegistry backendRegistry) {
+  private final GraphqlObjectShapeRegistry objectShapeRegistry;
+
+  SparqlDirectiveWiring(BackendRegistry backendRegistry,
+      GraphqlObjectShapeRegistry objectShapeRegistry) {
     super(backendRegistry);
+    this.objectShapeRegistry = objectShapeRegistry;
   }
 
   @Override
@@ -33,15 +39,8 @@ public class SparqlDirectiveWiring extends AbstractDirectiveWiring {
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
     GraphQLFieldsContainer parentType = environment.getFieldsContainer();
 
-    GraphQLObjectType queryType;
-    if (parentType.getName().equals("Query") && parentType instanceof GraphQLObjectType) {
-      queryType = (GraphQLObjectType) parentType;
-    } else {
-      throw new InvalidConfigurationException("Query type could not be found.");
-    }
-
-    Rdf4jBackend backend = getBackend(getInheritableArgument(Directives.SPARQL_ARG_BACKEND,
-        environment.getDirective(), queryType));
+    Rdf4jBackend backend = getBackend(DirectiveUtils
+        .getStringArgument(Directives.SPARQL_ARG_BACKEND, environment.getDirective()));
     GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType());
 
     if (outputType instanceof GraphQLObjectType) {
@@ -49,7 +48,7 @@ public class SparqlDirectiveWiring extends AbstractDirectiveWiring {
       String subjectTemplate = (String) environment.getDirective()
           .getArgument(Directives.SPARQL_ARG_SUBJECT).getValue();
       SelectOneFetcher dataFetcher = new SelectOneFetcher(backend.getRepository().getConnection(),
-          getNodeShape(objectType, queryType), subjectTemplate);
+          objectShapeRegistry.get(objectType), subjectTemplate);
       environment.getCodeRegistry().dataFetcher(parentType, fieldDefinition, dataFetcher);
       configureFields(objectType, environment.getCodeRegistry());
 
@@ -62,7 +61,7 @@ public class SparqlDirectiveWiring extends AbstractDirectiveWiring {
       if (listType instanceof GraphQLObjectType) {
         GraphQLObjectType objectType = (GraphQLObjectType) listType;
         SelectListFetcher dataFetcher = new SelectListFetcher(
-            backend.getRepository().getConnection(), getNodeShape(objectType, queryType));
+            backend.getRepository().getConnection(), objectShapeRegistry.get(objectType));
         environment.getCodeRegistry().dataFetcher(parentType, fieldDefinition, dataFetcher);
         configureFields(objectType, environment.getCodeRegistry());
 

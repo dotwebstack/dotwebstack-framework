@@ -2,17 +2,21 @@ schema {
   query: Query
 }
 
-type Query
-    @sparql(backend: "local")
-    @shacl(backend: "local", graph: "http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag") {
+type Query {
   pand(identificatiecode: ID!): Pand
-    @sparql(subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
+    @sparql(
+      backend: "local",
+      subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
   panden: [Pand!]!
-    @sparql
+    @sparql(
+      backend: "local")
 }
 
 type Pand
-    @shacl(shape: "http://bag.basisregistraties.overheid.nl/def/bag/Pand") {
+    @shacl(
+      backend: "local"
+      graph: "http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag",
+      shape: "http://bag.basisregistraties.overheid.nl/def/bag/Pand") {
   identificatiecode: ID!
   status: String!
   oorspronkelijkBouwjaar: Int!
