@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.test.Constants.BUILDING_BUILT_AT_EXAMPLE
 import static org.dotwebstack.framework.test.Constants.BUILDING_BUILT_AT_FIELD;
 import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
 import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_NAME;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -96,7 +97,7 @@ class BindingSetFetcherTest {
     Object result = bindingSetFetcher.get(environment);
 
     // Assert
-    assertThat(result, is(RDF.SUBJECT.stringValue()));
+    assertThat(result, is(equalTo(RDF.SUBJECT)));
   }
 
   private static DataFetchingEnvironment createEnvironment(GraphQLFieldDefinition fieldDefinition,

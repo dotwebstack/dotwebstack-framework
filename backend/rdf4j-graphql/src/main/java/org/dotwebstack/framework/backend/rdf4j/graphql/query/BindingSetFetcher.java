@@ -25,7 +25,7 @@ public final class BindingSetFetcher implements DataFetcher<Object> {
       return ValueUtils.convertLiteral((Literal) bindingValue);
     }
 
-    return bindingValue.stringValue();
+    return bindingValue;
   }
 
 }
