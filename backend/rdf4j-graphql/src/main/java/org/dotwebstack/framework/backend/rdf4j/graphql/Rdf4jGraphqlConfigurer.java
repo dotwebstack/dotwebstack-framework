@@ -29,6 +29,7 @@ public class Rdf4jGraphqlConfigurer implements GraphqlConfigurer {
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
     Type optionalString = TypeName.newTypeName("String").build();
     Type requiredString = NonNullType.newNonNullType(optionalString).build();
+    Type requiredIri = NonNullType.newNonNullType(TypeName.newTypeName("IRI").build()).build();
 
     registry.add(DirectiveDefinition.newDirectiveDefinition()
         .name(Directives.SPARQL_NAME)
@@ -56,11 +57,11 @@ public class Rdf4jGraphqlConfigurer implements GraphqlConfigurer {
             .build())
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
             .name(Directives.SHACL_ARG_SHAPE)
-            .type(requiredString)
+            .type(requiredIri)
             .build())
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
             .name(Directives.SHACL_ARG_GRAPH)
-            .type(requiredString)
+            .type(requiredIri)
             .build())
         .directiveLocation(DirectiveLocation.newDirectiveLocation()
             .name(Introspection.DirectiveLocation.OBJECT.name())

@@ -18,6 +18,13 @@ public final class Scalars {
       .coercing(new DateTimeCoercing())
       .build();
 
+  public static final GraphQLScalarType IRI = GraphQLScalarType
+      .newScalar()
+      .name("IRI")
+      .description("IRI type")
+      .coercing(new IriCoercing())
+      .build();
+
   private Scalars() {
     throw new IllegalStateException(
         String.format("%s is not meant to be instantiated.", Scalars.class));

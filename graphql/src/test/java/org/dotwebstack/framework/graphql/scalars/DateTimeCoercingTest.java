@@ -89,4 +89,5 @@ class DateTimeCoercingTest {
     assertThrows(UnsupportedOperationException.class, () ->
         coercing.parseLiteral(new Object()));
   }
+
 }

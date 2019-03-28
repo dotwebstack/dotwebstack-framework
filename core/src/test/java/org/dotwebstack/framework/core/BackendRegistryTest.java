@@ -27,7 +27,7 @@ class BackendRegistryTest {
     registry.register("foo", backend);
 
     // Assert
-    assertThat(registry.get("foo"), is(equalTo(registry.get("foo"))));
+    assertThat(registry.get("foo"), is(equalTo(backend)));
   }
 
   @Test

@@ -14,12 +14,14 @@ public class ScalarConfigurer implements GraphqlConfigurer {
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
     registry.add(new ScalarTypeDefinition(Scalars.DATE.getName()));
     registry.add(new ScalarTypeDefinition(Scalars.DATETIME.getName()));
+    registry.add(new ScalarTypeDefinition(Scalars.IRI.getName()));
   }
 
   @Override
   public void configureRuntimeWiring(@NonNull Builder builder) {
     builder.scalar(Scalars.DATE);
     builder.scalar(Scalars.DATETIME);
+    builder.scalar(Scalars.IRI);
   }
 
 }

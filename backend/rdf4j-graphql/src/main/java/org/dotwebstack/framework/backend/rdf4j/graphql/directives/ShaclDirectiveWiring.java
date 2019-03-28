@@ -11,16 +11,12 @@ import org.dotwebstack.framework.core.BackendRegistry;
 import org.dotwebstack.framework.graphql.directives.DirectiveUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ShaclDirectiveWiring extends AbstractDirectiveWiring {
-
-  private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   private final GraphqlObjectShapeRegistry objectShapeRegistry;
 
@@ -38,10 +34,8 @@ public class ShaclDirectiveWiring extends AbstractDirectiveWiring {
 
     Rdf4jBackend backend = getBackend(
         DirectiveUtils.getStringArgument(Directives.SHACL_ARG_BACKEND, directive));
-    IRI shapeGraph = VF.createIRI(
-        DirectiveUtils.getStringArgument(Directives.SHACL_ARG_GRAPH, directive));
-    IRI shape = VF
-        .createIRI(DirectiveUtils.getStringArgument(Directives.SHACL_ARG_SHAPE, directive));
+    IRI shapeGraph = (IRI) directive.getArgument(Directives.SHACL_ARG_GRAPH).getValue();
+    IRI shape = (IRI) directive.getArgument(Directives.SHACL_ARG_SHAPE).getValue();
 
     @Cleanup RepositoryConnection con = backend.getRepository().getConnection();
     Model shapeModel = QueryResults.asModel(con.getStatements(null, null, null, shapeGraph));
