@@ -88,6 +88,21 @@ public class RedirectionRequestHandlerTest {
   }
 
   @Test
+  public void apply_ReturnValidHttpsRedirection_WithXForwardedProto() {
+    // Arrange
+    when(uri.getPath()).thenReturn("/" + DBEERPEDIA.NL_HOST + DBEERPEDIA.BREWERY_ID_PATH);
+    when(containerRequestContext.getHeaderString("X-FORWARDED-PROTO")).thenReturn("https");
+
+    // Act
+    Response response = redirectionRequestHandler.apply(containerRequestContext);
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.SEE_OTHER.getStatusCode()));
+    assertThat(response.getLocation().getScheme(), equalTo("https"));
+  }
+
+
+  @Test
   public void apply_ThrowsException_WithInvalidPath() {
     // Assert
     thrown.expect(IllegalArgumentException.class);

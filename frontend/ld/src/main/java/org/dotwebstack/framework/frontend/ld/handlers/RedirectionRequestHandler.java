@@ -9,6 +9,8 @@ import org.dotwebstack.framework.frontend.ld.redirection.Redirection;
 import org.glassfish.jersey.process.Inflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriTemplate;
 
 public class RedirectionRequestHandler implements Inflector<ContainerRequestContext, Response> {
@@ -25,6 +27,7 @@ public class RedirectionRequestHandler implements Inflector<ContainerRequestCont
   public Response apply(ContainerRequestContext containerRequestContext) {
     URI uri = containerRequestContext.getUriInfo().getAbsolutePath();
     String path = uri.getPath();
+    String protocol = containerRequestContext.getHeaderString("X-FORWARDED-PROTO");
 
     LOG.debug("Handling GET redirect for path {}", path);
 
@@ -37,9 +40,13 @@ public class RedirectionRequestHandler implements Inflector<ContainerRequestCont
      */
     String fullPath = redirection.getStage().getFullPath().replaceAll("^/" + uri.getHost(), "");
     UriTemplate redirectTemplate = new UriTemplate(fullPath + redirection.getRedirectTemplate());
-
     URI redirectUri = redirectTemplate.expand(pathParameters);
 
+    if (protocol != null) {
+      redirectUri = UriComponentsBuilder.newInstance()
+          .scheme(protocol).host(redirectUri.getHost())
+          .path(redirectUri.getPath()).build().toUri();
+    }
     return Response.seeOther(redirectUri).location(redirectUri).build();
   }
 
