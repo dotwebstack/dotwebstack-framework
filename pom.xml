@@ -5,7 +5,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.1.7-SNAPSHOT</version>
+  <version>0.1.7</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -34,7 +34,7 @@
     <connection>scm:git:git@github.com:dotwebstack/dotwebstack-framework.git</connection>
     <developerConnection>scm:git:git@github.com:dotwebstack/dotwebstack-framework.git
     </developerConnection>
-    <tag>HEAD</tag>
+    <tag>v0.1.7</tag>
   </scm>
 
   <developers>
