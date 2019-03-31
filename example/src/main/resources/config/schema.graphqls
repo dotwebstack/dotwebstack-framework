@@ -13,13 +13,16 @@ type Query {
 }
 
 type Pand
-    @shacl(
-      backend: "local"
-      graph: "http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag",
-      shape: "http://bag.basisregistraties.overheid.nl/def/bag/Pand") {
+    @shacl(shape: "http://bag.basisregistraties.overheid.nl/def/bag/Pand") {
   identificatiecode: ID!
   status: String!
   oorspronkelijkBouwjaar: Int!
   beginGeldigheid: DateTime!
   eindGeldigheid: DateTime
+}
+
+type Verblijfsobject
+    @shacl(shape: "http://bag.basisregistraties.overheid.nl/def/bag/Verblijfsobject") {
+  identificatiecode: ID!
+  status: String!
 }

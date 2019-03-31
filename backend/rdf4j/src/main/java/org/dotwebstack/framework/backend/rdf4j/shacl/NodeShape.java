@@ -5,6 +5,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -23,7 +24,11 @@ public final class NodeShape {
 
   private final Map<String, PropertyShape> propertyShapes;
 
-  public static NodeShape fromShapeModel(Model shapeModel, Resource identifier) {
+  public PropertyShape getPropertyShape(String name) {
+    return this.propertyShapes.get(name);
+  }
+
+  public static NodeShape fromShapeModel(@NonNull Model shapeModel, @NonNull Resource identifier) {
     return builder()
         .identifier(identifier)
         .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, identifier, SHACL.TARGET_CLASS))

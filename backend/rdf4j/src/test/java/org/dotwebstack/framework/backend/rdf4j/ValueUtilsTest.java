@@ -12,6 +12,7 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.Map;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.test.Constants;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -32,7 +33,7 @@ class ValueUtilsTest {
   private static Literal LABEL = VF.createLiteral("foo");
 
   @Test
-  void convertLiteral_ReturnsSpecificType_ForBuiltInScalars() {
+  void convertValue_ReturnsSpecificType_ForBuiltInScalars() {
     // Arrange
     ImmutableMap.Builder<Class, Literal> builder = ImmutableMap.builder();
     builder.put(String.class, VF.createLiteral(""));
@@ -49,18 +50,27 @@ class ValueUtilsTest {
 
     // Act & Assert
     literals.forEach((literalType, literal) -> {
-      Object result = ValueUtils.convertLiteral(literal);
+      Object result = ValueUtils.convertValue(literal);
       assertThat(result, is(instanceOf(literalType)));
     });
   }
 
   @Test
-  void convertLiteral_ReturnsLiteral_ForNonBuiltInScalars() {
+  void convertValue_ReturnsLiteral_ForNonBuiltInScalars() {
     // Act
-    Object result = ValueUtils.convertLiteral(VF.createLiteral(new Date()));
+    Object result = ValueUtils.convertValue(VF.createLiteral(new Date()));
 
     // Assert
     assertThat(result, is(instanceOf(Literal.class)));
+  }
+
+  @Test
+  void convertValue_ReturnsInput_ForNonLiterals() {
+    // Act
+    Object result = ValueUtils.convertValue(Constants.BUILDING_EXAMPLE_1);
+
+    // Assert
+    assertThat(result, is(equalTo(Constants.BUILDING_EXAMPLE_1)));
   }
 
   @Test

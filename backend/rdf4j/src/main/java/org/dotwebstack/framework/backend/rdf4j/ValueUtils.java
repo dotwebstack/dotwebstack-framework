@@ -6,6 +6,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
@@ -17,9 +18,14 @@ public final class ValueUtils {
   }
 
   /**
-   * Convert literal to Java type so built-in scalar types can handle them.
+   * Convert value to Java type so built-in scalar types can handle them.
    */
-  public static Object convertLiteral(@NonNull Literal literal) {
+  public static Object convertValue(@NonNull Value value) {
+    if (!(value instanceof Literal)) {
+      return value;
+    }
+
+    Literal literal = (Literal) value;
     IRI dataType = literal.getDatatype();
 
     if (XMLSchema.STRING.equals(dataType)) {

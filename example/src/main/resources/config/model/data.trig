@@ -3,6 +3,7 @@
 @prefix bag: <http://bag.basisregistraties.overheid.nl/def/bag#> .
 @prefix bag_beg: <http://bag.basisregistraties.overheid.nl/id/begrip/> .
 @prefix bag_pnd: <http://bag.basisregistraties.overheid.nl/bag/id/pand/> .
+@prefix bag_pnd_doc: <http://bag.basisregistraties.overheid.nl/bag/doc/pand/> .
 
 bag_pnd:123 a bag:Pand ;
   bag:identificatiecode "123" ;

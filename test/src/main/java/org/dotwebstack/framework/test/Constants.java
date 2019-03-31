@@ -48,7 +48,11 @@ public final class Constants {
 
   // Building.identifier
 
+  public static final IRI BUILDING_EXAMPLE_1 = VF.createIRI("http://example/building/123");
+
   public static final Literal BUILDING_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("123");
+
+  public static final IRI BUILDING_EXAMPLE_2 = VF.createIRI("http://example/building/456");
 
   public static final Literal BUILDING_IDENTIFIER_EXAMPLE_2 = VF.createLiteral("456");
 
@@ -56,8 +60,6 @@ public final class Constants {
 
   public static final IRI BUILDING_IDENTIFIER_SHAPE = VF
       .createIRI("http://example/shapes#Building_identifier");
-
-  public static final String BUILDING_IDENTIFIER_NAME = "identifier";
 
   public static final IRI BUILDING_IDENTIFIER_PATH = VF.createIRI("http://example/def#identifier");
 

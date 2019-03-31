@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.shacl;
 import static org.dotwebstack.framework.backend.rdf4j.LocalBackend.LOCAL_BACKEND_NAME;
 import static org.dotwebstack.framework.test.Constants.BUILDING_CLASS;
 import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_FIELD;
-import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_NAME;
 import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_PATH;
 import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_SHAPE;
 import static org.dotwebstack.framework.test.Constants.BUILDING_SHAPE;
@@ -58,7 +57,7 @@ class NodeShapeTest {
 
     PropertyShape identifierShape = nodeShape.getPropertyShapes().get(BUILDING_IDENTIFIER_FIELD);
     assertThat(identifierShape.getIdentifier(), is(equalTo(BUILDING_IDENTIFIER_SHAPE)));
-    assertThat(identifierShape.getName(), is(equalTo(BUILDING_IDENTIFIER_NAME)));
+    assertThat(identifierShape.getName(), is(equalTo(BUILDING_IDENTIFIER_FIELD)));
     assertThat(identifierShape.getPath(), is(equalTo(BUILDING_IDENTIFIER_PATH)));
     assertThat(identifierShape.getMinCount(), is(equalTo(1)));
     assertThat(identifierShape.getMaxCount(), is(equalTo(1)));

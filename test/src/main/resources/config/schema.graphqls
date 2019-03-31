@@ -12,10 +12,7 @@ type Query {
 }
 
 type Building
-    @shacl(
-      backend: "local",
-      graph: "http://example/shapes",
-      shape: "http://example/shapes#Building") {
+    @shacl(shape: "http://example/shapes#Building") {
   identifier: ID!
   height: Int!
   builtAt: DateTime!

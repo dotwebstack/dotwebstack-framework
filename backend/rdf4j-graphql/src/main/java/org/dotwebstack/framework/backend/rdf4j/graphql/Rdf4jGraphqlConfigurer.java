@@ -21,9 +21,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class Rdf4jGraphqlConfigurer implements GraphqlConfigurer {
 
-  private final SparqlDirectiveWiring sparqlDirectiveWiring;
-
   private final ShaclDirectiveWiring shaclDirectiveWiring;
+
+  private final SparqlDirectiveWiring sparqlDirectiveWiring;
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
@@ -52,15 +52,7 @@ public class Rdf4jGraphqlConfigurer implements GraphqlConfigurer {
     registry.add(DirectiveDefinition.newDirectiveDefinition()
         .name(Directives.SHACL_NAME)
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Directives.SHACL_ARG_BACKEND)
-            .type(requiredString)
-            .build())
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
             .name(Directives.SHACL_ARG_SHAPE)
-            .type(requiredIri)
-            .build())
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Directives.SHACL_ARG_GRAPH)
             .type(requiredIri)
             .build())
         .directiveLocation(DirectiveLocation.newDirectiveLocation()
@@ -71,8 +63,8 @@ public class Rdf4jGraphqlConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureRuntimeWiring(@NonNull RuntimeWiring.Builder builder) {
-    builder.directive(Directives.SPARQL_NAME, sparqlDirectiveWiring);
     builder.directive(Directives.SHACL_NAME, shaclDirectiveWiring);
+    builder.directive(Directives.SPARQL_NAME, sparqlDirectiveWiring);
   }
 
 }

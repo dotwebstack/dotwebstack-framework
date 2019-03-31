@@ -3,78 +3,91 @@ package org.dotwebstack.framework.backend.rdf4j.graphql.directives;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.dotwebstack.framework.backend.rdf4j.LocalBackendConfigurer;
-import org.dotwebstack.framework.backend.rdf4j.graphql.GraphqlObjectShapeRegistry;
-import org.dotwebstack.framework.backend.rdf4j.graphql.Rdf4jGraphqlConfigurer;
+import org.dotwebstack.framework.backend.rdf4j.graphql.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.BackendConfiguration;
 import org.dotwebstack.framework.core.BackendRegistry;
-import org.dotwebstack.framework.graphql.GraphqlConfiguration;
-import org.dotwebstack.framework.graphql.scalars.ScalarConfigurer;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.graphql.scalars.Scalars;
 import org.dotwebstack.framework.test.Constants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest
-@ContextConfiguration(classes = {BackendConfiguration.class, GraphqlConfiguration.class})
-@Import({LocalBackendConfigurer.class, ScalarConfigurer.class, Rdf4jGraphqlConfigurer.class,
-    GraphqlObjectShapeRegistry.class, ShaclDirectiveWiring.class, SparqlDirectiveWiring.class})
+@ContextConfiguration(classes = {BackendConfiguration.class})
+@Import({LocalBackendConfigurer.class})
 class ShaclDirectiveWiringTest {
 
   @Autowired
   private BackendRegistry backendRegistry;
 
-  @Autowired
-  private GraphQLSchema schema;
+  @Value("${dotwebstack.rdf4j.shapeGraph}")
+  private String shapeGraph;
 
-  private GraphqlObjectShapeRegistry objectShapeRegistry;
+  @Mock
+  private SchemaDirectiveWiringEnvironment<GraphQLObjectType> environment;
 
-  private ShaclDirectiveWiring shaclDirectiveWiring;
+  private NodeShapeRegistry nodeShapeRegistry;
 
   @BeforeEach
   void setUp() {
-    objectShapeRegistry = new GraphqlObjectShapeRegistry();
-    shaclDirectiveWiring = new ShaclDirectiveWiring(backendRegistry, objectShapeRegistry);
+    nodeShapeRegistry = new NodeShapeRegistry();
   }
 
   @Test
   void onObject_RegistersNodeShapes_ForAnnotatedTypes() {
     // Arrange
-    GraphQLObjectType objectType = schema.getObjectType(Constants.BUILDING_TYPE);
-    GraphQLDirective directive = objectType.getDirective(Directives.SHACL_NAME);
-    SchemaDirectiveWiringEnvironment<GraphQLObjectType> environment = createEnvironment(objectType,
-        directive);
+    ShaclDirectiveWiring shaclDirectiveWiring =
+        new ShaclDirectiveWiring(backendRegistry, nodeShapeRegistry, shapeGraph);
+    shaclDirectiveWiring.initialize();
+
+    GraphQLObjectType objectType = GraphQLObjectType.newObject()
+        .name(Constants.BUILDING_TYPE)
+        .build();
+    when(environment.getElement()).thenReturn(objectType);
+
+    GraphQLDirective directive = GraphQLDirective.newDirective()
+        .name(Directives.SHACL_NAME)
+        .argument(GraphQLArgument.newArgument()
+            .name(Directives.SHACL_ARG_SHAPE)
+            .type(Scalars.IRI)
+            .value(Constants.BUILDING_SHAPE))
+        .build();
+    when(environment.getDirective()).thenReturn(directive);
 
     // Act
     GraphQLObjectType result = shaclDirectiveWiring.onObject(environment);
 
     // Assert
     assertThat(result, is(equalTo(objectType)));
-    NodeShape nodeShape = objectShapeRegistry.get(objectType);
+    NodeShape nodeShape = nodeShapeRegistry.get(objectType);
     assertThat(nodeShape.getIdentifier(), is(equalTo(Constants.BUILDING_SHAPE)));
   }
 
-  private static SchemaDirectiveWiringEnvironment<GraphQLObjectType> createEnvironment(
-      GraphQLObjectType objectType, GraphQLDirective directive) {
-    @SuppressWarnings("unchecked")
-    SchemaDirectiveWiringEnvironment<GraphQLObjectType> environment =
-        mock(SchemaDirectiveWiringEnvironment.class);
+  @Test
+  void onObject_ThrowsException_ForMissingLocalBackend() {
+    // Arrange
+    BackendRegistry backendRegistry = new BackendRegistry();
+    ShaclDirectiveWiring shaclDirectiveWiring =
+        new ShaclDirectiveWiring(backendRegistry, nodeShapeRegistry, shapeGraph);
 
-    when(environment.getElement()).thenReturn(objectType);
-    when(environment.getDirective()).thenReturn(directive);
-
-    return environment;
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class, () ->
+        shaclDirectiveWiring.initialize());
   }
 
 }

@@ -58,4 +58,28 @@
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:datetime ;
   .
+
+  bag_sh:Verblijfsobject a sh:NodeShape ;
+    sh:targetClass bag:Verblijfsobject ;
+    sh:property
+      bag_sh:Verblijfsobject_identificatiecode ,
+      bag_sh:Verblijfsobject_status ;
+  .
+
+  bag_sh:Verblijfsobject_identificatiecode a sh:PropertyShape ;
+    sh:name "identificatiecode" ;
+    sh:path bag:identificatiecode ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
+  .
+
+  bag_sh:Verblijfsobject_status a sh:PropertyShape ;
+    sh:name "status" ;
+    sh:path bag:status ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+  .
 }

@@ -1,2 +1,5 @@
 logging:
   level.org.dotwebstack: DEBUG
+
+dotwebstack:
+  rdf4j.shapeGraph: http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag
