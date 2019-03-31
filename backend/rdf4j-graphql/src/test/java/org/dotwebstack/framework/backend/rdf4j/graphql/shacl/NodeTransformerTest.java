@@ -9,7 +9,6 @@ import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_PATH;
 import static org.dotwebstack.framework.test.Constants.BUILDING_SHAPE;
 import static org.dotwebstack.framework.test.Constants.SHAPE_GRAPH;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -102,10 +101,9 @@ class NodeTransformerTest {
         .transform(model, ImmutableList.of(BUILDING_EXAMPLE_1), nodeShape, selectionSet);
 
     // Assert
-    assertThat(result.size(), is(equalTo(1)));
-    assertThat(result, hasItems(
+    assertThat(result, is(equalTo(ImmutableList.of(
         ImmutableMap.of(BUILDING_IDENTIFIER_FIELD,
-            Optional.of(BUILDING_IDENTIFIER_EXAMPLE_1.stringValue()))));
+            Optional.of(BUILDING_IDENTIFIER_EXAMPLE_1.stringValue()))))));
   }
 
   @Test
@@ -127,11 +125,11 @@ class NodeTransformerTest {
 
     // Assert
     assertThat(result.size(), is(equalTo(2)));
-    assertThat(result, hasItems(
+    assertThat(result, is(equalTo(ImmutableList.of(
         ImmutableMap.of(BUILDING_IDENTIFIER_FIELD,
             Optional.of(BUILDING_IDENTIFIER_EXAMPLE_1.stringValue())),
         ImmutableMap.of(BUILDING_IDENTIFIER_FIELD,
-            Optional.of(BUILDING_IDENTIFIER_EXAMPLE_2.stringValue()))));
+            Optional.of(BUILDING_IDENTIFIER_EXAMPLE_2.stringValue()))))));
   }
 
   private SelectedField mockSelectedField(String name, GraphQLOutputType fieldType) {
