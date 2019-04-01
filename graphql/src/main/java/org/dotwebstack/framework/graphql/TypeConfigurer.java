@@ -1,14 +1,15 @@
-package org.dotwebstack.framework.graphql.scalars;
+package org.dotwebstack.framework.graphql;
 
 import graphql.language.ScalarTypeDefinition;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
 import org.dotwebstack.framework.graphql.GraphqlConfigurer;
+import org.dotwebstack.framework.graphql.scalars.Scalars;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ScalarConfigurer implements GraphqlConfigurer {
+public class TypeConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
