@@ -37,7 +37,8 @@ public final class ValueFetcher implements DataFetcher<Object> {
 
     return Models
         .getProperty(source.getModel(), source.getSubject(), propertyShape.getPath())
-        .map(ValueUtils::convertValue);
+        .map(ValueUtils::convertValue)
+        .orElse(null);
   }
 
 }
