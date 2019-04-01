@@ -10,7 +10,6 @@ import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.dotwebstack.framework.backend.rdf4j.graphql.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
 import org.springframework.stereotype.Component;
 
@@ -36,15 +35,9 @@ public final class ValueFetcher implements DataFetcher<Object> {
     PropertyShape propertyShape = nodeShape
         .getPropertyShape(environment.getFieldDefinition().getName());
 
-    Value fieldValue = Models
+    return Models
         .getProperty(source.getModel(), source.getSubject(), propertyShape.getPath())
-        .orElse(null);
-
-    if (fieldValue == null) {
-      return null;
-    }
-
-    return ValueUtils.convertValue(fieldValue);
+        .map(ValueUtils::convertValue);
   }
 
 }
