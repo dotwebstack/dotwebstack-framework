@@ -21,7 +21,6 @@ import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jBackend;
 import org.dotwebstack.framework.backend.rdf4j.graphql.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.graphql.directives.Directives;
-import org.dotwebstack.framework.backend.rdf4j.graphql.shacl.NodeTransformer;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.Backend;
@@ -51,15 +50,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public final class ModelFetcher implements DataFetcher<Object> {
+public final class QueryFetcher implements DataFetcher<Object> {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   private final BackendRegistry backendRegistry;
 
   private final NodeShapeRegistry nodeShapeRegistry;
-
-  private final NodeTransformer nodeTransformer;
 
   @Override
   public Object get(@NonNull DataFetchingEnvironment environment) {
@@ -79,14 +76,13 @@ public final class ModelFetcher implements DataFetcher<Object> {
     // Fetch graph for given subjects
     Model model = fetchGraph(subjects, environment.getSelectionSet(), nodeShape, con);
 
-    List<Map<String, Object>> results = nodeTransformer
-        .transform(model, subjects, nodeShape, environment.getSelectionSet());
-
-    if (!GraphQLTypeUtil.isList(outputType)) {
-      return results.isEmpty() ? null : results.get(0);
+    if (GraphQLTypeUtil.isList(outputType)) {
+      return subjects.stream()
+          .map(subject -> new QuerySolution(model, subject))
+          .collect(Collectors.toList());
     }
 
-    return results;
+    return model.isEmpty() ? null : new QuerySolution(model, subjects.get(0));
   }
 
   private RepositoryConnection getRepositoryConnection(GraphQLDirective sparqlDirective) {
@@ -160,10 +156,14 @@ public final class ModelFetcher implements DataFetcher<Object> {
         .map(GraphPatterns::optional)
         .collect(Collectors.toList());
 
+    // Fetch type statement to discover if subject exists (e.g. in case of only nullable fields)
+    TriplePattern typePattern = GraphPatterns.tp(subjectVar, RDF.TYPE, nodeShape.getTargetClass());
+
+    query.construct(typePattern);
     query.construct(Iterables.toArray(triplePatterns, TriplePattern.class))
-        .where(GraphPatterns
-            .and(Iterables.toArray(wherePatterns, GraphPattern.class))
-            .filter(filterExpr));
+        .where(typePattern
+            .filter(filterExpr)
+            .and(Iterables.toArray(wherePatterns, GraphPattern.class)));
 
     String queryStr = query.getQueryString();
     LOG.debug("Exececuting query for graph:\n{}", queryStr);

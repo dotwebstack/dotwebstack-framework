@@ -7,14 +7,14 @@ import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.dotwebstack.framework.backend.rdf4j.graphql.query.ModelFetcher;
+import org.dotwebstack.framework.backend.rdf4j.graphql.query.QueryFetcher;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
-  private final ModelFetcher modelFetcher;
+  private final QueryFetcher queryFetcher;
 
   @Override
   public GraphQLFieldDefinition onField(
@@ -27,7 +27,7 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     }
 
     environment.getCodeRegistry()
-        .dataFetcher(environment.getFieldsContainer(), fieldDefinition, modelFetcher);
+        .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
 
     return fieldDefinition;
   }

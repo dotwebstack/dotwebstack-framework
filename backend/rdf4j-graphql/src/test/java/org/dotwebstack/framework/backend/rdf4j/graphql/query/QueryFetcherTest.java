@@ -1,9 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql.query;
 
+import static org.dotwebstack.framework.test.Constants.BUILDING_CLASS;
 import static org.dotwebstack.framework.test.Constants.BUILDING_EXAMPLE_1;
-import static org.dotwebstack.framework.test.Constants.BUILDING_EXAMPLE_2;
 import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_EXAMPLE_2;
 import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_FIELD;
 import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_PATH;
 import static org.dotwebstack.framework.test.Constants.BUILDING_SHAPE;
@@ -14,11 +13,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -41,13 +36,13 @@ import org.dotwebstack.framework.backend.rdf4j.LocalBackendConfigurer;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jBackend;
 import org.dotwebstack.framework.backend.rdf4j.graphql.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.graphql.directives.Directives;
-import org.dotwebstack.framework.backend.rdf4j.graphql.shacl.NodeTransformer;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.BackendConfiguration;
 import org.dotwebstack.framework.core.BackendRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,16 +58,13 @@ import org.springframework.test.context.ContextConfiguration;
 @SpringBootTest
 @ContextConfiguration(classes = BackendConfiguration.class)
 @Import({LocalBackendConfigurer.class})
-class ModelFetcherTest {
+class QueryFetcherTest {
 
   @Autowired
   private BackendRegistry backendRegistry;
 
   @Mock
   private NodeShapeRegistry nodeShapeRegistry;
-
-  @Mock
-  private NodeTransformer nodeTransformer;
 
   @Mock
   private DataFetchingFieldSelectionSet selectionSet;
@@ -83,7 +75,7 @@ class ModelFetcherTest {
   @Captor
   private ArgumentCaptor<NodeShape> nodeShapeCaptor;
 
-  private ModelFetcher modelFetcher;
+  private QueryFetcher queryFetcher;
 
   private Model shapeModel;
 
@@ -95,7 +87,7 @@ class ModelFetcherTest {
         .getConnection();
 
     shapeModel = QueryResults.asModel(con.getStatements(null, null, null, SHAPE_GRAPH));
-    modelFetcher = new ModelFetcher(backendRegistry, nodeShapeRegistry, nodeTransformer);
+    queryFetcher = new QueryFetcher(backendRegistry, nodeShapeRegistry);
   }
 
   @Test
@@ -103,31 +95,21 @@ class ModelFetcherTest {
     // Arrange
     List<SelectedField> selectedFields = ImmutableList
         .of(mockSelectedField(BUILDING_IDENTIFIER_FIELD, Scalars.GraphQLID));
-    List<Map<String, Object>> expectedResult = ImmutableList.of(
-        ImmutableMap.of(BUILDING_IDENTIFIER_FIELD, BUILDING_IDENTIFIER_EXAMPLE_1.stringValue()));
-    when(nodeTransformer
-        .transform(any(Model.class), anyList(), any(NodeShape.class), eq(selectionSet)))
-        .thenReturn(expectedResult);
     DataFetchingEnvironment environment = mockEnvironment(selectedFields,
         ImmutableMap.of(BUILDING_IDENTIFIER_FIELD, BUILDING_IDENTIFIER_EXAMPLE_1.stringValue()),
         LocalBackend.LOCAL_BACKEND_NAME, BUILDING_SUBJECT);
 
     // Act
-    Object result = modelFetcher.get(environment);
+    Object result = queryFetcher.get(environment);
 
     // Assert
-    assertThat(result, is(equalTo(expectedResult.get(0))));
-    verify(nodeTransformer)
-        .transform(modelCaptor.capture(), eq(ImmutableList.of(BUILDING_EXAMPLE_1)),
-            nodeShapeCaptor.capture(), eq(selectionSet));
-
-    Model capturedModel = modelCaptor.getValue();
-    assertThat(capturedModel.size(), is(equalTo(1)));
-    assertThat(Models.getPropertyLiteral(capturedModel, BUILDING_EXAMPLE_1,
+    QuerySolution querySolution = (QuerySolution) result;
+    assertThat(querySolution.getSubject(), is(equalTo(BUILDING_EXAMPLE_1)));
+    assertThat(querySolution.getModel().size(), is(equalTo(2)));
+    assertThat(Models.getPropertyIRI(querySolution.getModel(), BUILDING_EXAMPLE_1,
+        RDF.TYPE).orElse(null), is(equalTo(BUILDING_CLASS)));
+    assertThat(Models.getPropertyLiteral(querySolution.getModel(), BUILDING_EXAMPLE_1,
         BUILDING_IDENTIFIER_PATH).orElse(null), is(equalTo(BUILDING_IDENTIFIER_EXAMPLE_1)));
-
-    NodeShape capturedNodeShape = nodeShapeCaptor.getValue();
-    assertThat(capturedNodeShape.getIdentifier(), is(equalTo(BUILDING_SHAPE)));
   }
 
   @Test
@@ -135,36 +117,26 @@ class ModelFetcherTest {
     // Arrange
     List<SelectedField> selectedFields = ImmutableList
         .of(mockSelectedField(BUILDING_IDENTIFIER_FIELD, Scalars.GraphQLID));
-    List<Map<String, Object>> expectedResult = ImmutableList.of(
-        ImmutableMap.of(BUILDING_IDENTIFIER_FIELD, BUILDING_IDENTIFIER_EXAMPLE_1.stringValue()),
-        ImmutableMap.of(BUILDING_IDENTIFIER_FIELD, BUILDING_IDENTIFIER_EXAMPLE_2.stringValue()));
-    when(nodeTransformer
-        .transform(any(Model.class), anyList(), any(NodeShape.class), eq(selectionSet)))
-        .thenReturn(expectedResult);
     DataFetchingEnvironment environment = mockEnvironment(
         selectedFields, ImmutableMap.of(), LocalBackend.LOCAL_BACKEND_NAME, null);
 
     // Act
-    Object result = modelFetcher.get(environment);
+    Object result = queryFetcher.get(environment);
 
     // Assert
-    assertThat(result, is(equalTo(expectedResult)));
-    verify(nodeTransformer)
-        .transform(modelCaptor.capture(),
-            eq(ImmutableList.of(BUILDING_EXAMPLE_1, BUILDING_EXAMPLE_2)),
-            nodeShapeCaptor.capture(), eq(selectionSet));
-
-    Model capturedModel = modelCaptor.getValue();
-    assertThat(capturedModel.size(), is(equalTo(2)));
-    assertThat(Models.getPropertyLiteral(capturedModel, BUILDING_EXAMPLE_1,
-        BUILDING_IDENTIFIER_PATH).orElse(null),
-        is(equalTo(BUILDING_IDENTIFIER_EXAMPLE_1)));
-    assertThat(Models.getPropertyLiteral(capturedModel, BUILDING_EXAMPLE_2,
-        BUILDING_IDENTIFIER_PATH).orElse(null),
-        is(equalTo(BUILDING_IDENTIFIER_EXAMPLE_2)));
-
-    NodeShape capturedNodeShape = nodeShapeCaptor.getValue();
-    assertThat(capturedNodeShape.getIdentifier(), is(equalTo(BUILDING_SHAPE)));
+    @SuppressWarnings("unchecked")
+    List<QuerySolution> querySolutions = (List<QuerySolution>) result;
+    assertThat(querySolutions.size(), is(equalTo(2)));
+    assertThat(querySolutions.get(0).getModel().size(), is(equalTo(4)));
+    assertThat(Models.getPropertyIRI(querySolutions.get(0).getModel(), BUILDING_EXAMPLE_1,
+        RDF.TYPE).orElse(null), is(equalTo(BUILDING_CLASS)));
+    assertThat(Models.getPropertyLiteral(querySolutions.get(0).getModel(), BUILDING_EXAMPLE_1,
+        BUILDING_IDENTIFIER_PATH).orElse(null), is(equalTo(BUILDING_IDENTIFIER_EXAMPLE_1)));
+    assertThat(querySolutions.get(1).getModel().size(), is(equalTo(4)));
+    assertThat(Models.getPropertyIRI(querySolutions.get(1).getModel(), BUILDING_EXAMPLE_1,
+        RDF.TYPE).orElse(null), is(equalTo(BUILDING_CLASS)));
+    assertThat(Models.getPropertyLiteral(querySolutions.get(1).getModel(), BUILDING_EXAMPLE_1,
+        BUILDING_IDENTIFIER_PATH).orElse(null), is(equalTo(BUILDING_IDENTIFIER_EXAMPLE_1)));
   }
 
   @Test
@@ -175,7 +147,7 @@ class ModelFetcherTest {
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
-        modelFetcher.get(environment));
+        queryFetcher.get(environment));
   }
 
   @Test
@@ -190,7 +162,7 @@ class ModelFetcherTest {
 
     // Act / Assert
     assertThrows(UnsupportedOperationException.class, () ->
-        modelFetcher.get(environment));
+        queryFetcher.get(environment));
   }
 
   private DataFetchingEnvironment mockEnvironment(List<SelectedField> selectedFields,

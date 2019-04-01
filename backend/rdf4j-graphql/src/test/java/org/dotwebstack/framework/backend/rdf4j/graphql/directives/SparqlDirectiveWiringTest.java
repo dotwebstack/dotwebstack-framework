@@ -15,7 +15,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-import org.dotwebstack.framework.backend.rdf4j.graphql.query.ModelFetcher;
+import org.dotwebstack.framework.backend.rdf4j.graphql.query.QueryFetcher;
 import org.dotwebstack.framework.test.Constants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SparqlDirectiveWiringTest {
 
   @Mock
-  private ModelFetcher modelFetcher;
+  private QueryFetcher queryFetcher;
 
   @Mock
   private SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment;
@@ -45,7 +45,7 @@ class SparqlDirectiveWiringTest {
 
   @BeforeEach
   void setUp() {
-    sparqlDirectiveWiring = new SparqlDirectiveWiring(modelFetcher);
+    sparqlDirectiveWiring = new SparqlDirectiveWiring(queryFetcher);
     when(environment.getElement()).thenReturn(fieldDefinition);
   }
 
@@ -64,7 +64,7 @@ class SparqlDirectiveWiringTest {
 
     // Assert
     assertThat(result, is(equalTo(fieldDefinition)));
-    verify(codeRegistry).dataFetcher(eq(parentType), eq(fieldDefinition), eq(modelFetcher));
+    verify(codeRegistry).dataFetcher(eq(parentType), eq(fieldDefinition), eq(queryFetcher));
   }
 
   @Test

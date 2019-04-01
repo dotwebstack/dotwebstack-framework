@@ -7,11 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.dotwebstack.framework.backend.rdf4j.LocalBackendConfigurer;
 import org.dotwebstack.framework.backend.rdf4j.graphql.NodeShapeRegistry;
+import org.dotwebstack.framework.backend.rdf4j.graphql.query.ValueFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.BackendConfiguration;
 import org.dotwebstack.framework.core.BackendRegistry;
@@ -39,20 +41,27 @@ class ShaclDirectiveWiringTest {
   private String shapeGraph;
 
   @Mock
+  private ValueFetcher valueFetcher;
+
+  @Mock
   private SchemaDirectiveWiringEnvironment<GraphQLObjectType> environment;
+
+  @Mock
+  private GraphQLCodeRegistry.Builder codeRegistry;
 
   private NodeShapeRegistry nodeShapeRegistry;
 
   @BeforeEach
   void setUp() {
     nodeShapeRegistry = new NodeShapeRegistry();
+    when(environment.getCodeRegistry()).thenReturn(codeRegistry);
   }
 
   @Test
   void onObject_RegistersNodeShapes_ForAnnotatedTypes() {
     // Arrange
     ShaclDirectiveWiring shaclDirectiveWiring =
-        new ShaclDirectiveWiring(backendRegistry, nodeShapeRegistry, shapeGraph);
+        new ShaclDirectiveWiring(backendRegistry, nodeShapeRegistry, valueFetcher, shapeGraph);
     shaclDirectiveWiring.initialize();
 
     GraphQLObjectType objectType = GraphQLObjectType.newObject()
@@ -83,7 +92,7 @@ class ShaclDirectiveWiringTest {
     // Arrange
     BackendRegistry backendRegistry = new BackendRegistry();
     ShaclDirectiveWiring shaclDirectiveWiring =
-        new ShaclDirectiveWiring(backendRegistry, nodeShapeRegistry, shapeGraph);
+        new ShaclDirectiveWiring(backendRegistry, nodeShapeRegistry, valueFetcher, shapeGraph);
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
