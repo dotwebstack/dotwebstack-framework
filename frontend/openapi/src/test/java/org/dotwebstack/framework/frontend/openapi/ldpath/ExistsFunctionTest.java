@@ -32,7 +32,6 @@ public class ExistsFunctionTest extends AbstractFunctionTest {
   public void testNodeExists() throws ParseException {
     IRI subject = iri("ex", "foo");
     IRI predicate = iri("ex", "bar");
-    IRI unpredicated = iri("ex", "qux");
     Literal object = repository.getValueFactory().createLiteral(" \t\n\rbas \t\n\r");
 
     addStatement(repository.getValueFactory().createStatement(subject, predicate, object));
@@ -43,6 +42,7 @@ public class ExistsFunctionTest extends AbstractFunctionTest {
     assertThat(result, hasSize(1));
     assertThat(result, contains(true));
 
+    IRI unpredicated = iri("ex", "qux");
     ldPath = String.format("fn:exists(<%s>) :: xsd:boolean", unpredicated.stringValue());
     result = evaluateRule(ldPath, subject);
 
