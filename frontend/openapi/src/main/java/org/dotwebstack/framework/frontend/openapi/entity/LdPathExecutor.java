@@ -9,6 +9,7 @@ import org.apache.marmotta.ldpath.model.Constants;
 import org.apache.marmotta.ldpath.parser.Configuration;
 import org.apache.marmotta.ldpath.parser.DefaultConfiguration;
 import org.dotwebstack.framework.frontend.openapi.entity.backend.Rdf4jRepositoryBackend;
+import org.dotwebstack.framework.frontend.openapi.ldpath.ExistsFunction;
 import org.dotwebstack.framework.frontend.openapi.ldpath.JoinFunction;
 import org.dotwebstack.framework.frontend.openapi.ldpath.KeepAfterLastFunction;
 import org.dotwebstack.framework.frontend.openapi.ldpath.SortByPropertyFunction;
@@ -26,6 +27,7 @@ public class LdPathExecutor {
         new KeepAfterLastFunction<>());
     LD_PATH_CONFIG.addFunction(Constants.NS_LMF_FUNCS + "trim", new TrimFunction<>());
     LD_PATH_CONFIG.addFunction(Constants.NS_LMF_FUNCS + "join", new JoinFunction<>());
+    LD_PATH_CONFIG.addFunction(Constants.NS_LMF_FUNCS + "exists", new ExistsFunction<>());
   }
 
   private final LDPath<Value> ldpath;
