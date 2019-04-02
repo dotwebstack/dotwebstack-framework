@@ -76,4 +76,6 @@ public final class Constants {
 
   public static final String BUILDING_BUILT_AT_FIELD = "builtAt";
 
+  public static final IRI BUILDING_BUILT_AT_PATH = VF.createIRI("http://example/def#builtAt");
+
 }

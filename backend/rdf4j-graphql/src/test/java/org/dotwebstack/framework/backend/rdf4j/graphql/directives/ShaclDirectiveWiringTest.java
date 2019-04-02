@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql.directives;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.when;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.dotwebstack.framework.backend.rdf4j.LocalBackendConfigurer;
@@ -46,15 +48,15 @@ class ShaclDirectiveWiringTest {
   @Mock
   private SchemaDirectiveWiringEnvironment<GraphQLObjectType> environment;
 
-  @Mock
-  private GraphQLCodeRegistry.Builder codeRegistry;
+  private GraphQLCodeRegistry.Builder codeRegistryBuilder;
 
   private NodeShapeRegistry nodeShapeRegistry;
 
   @BeforeEach
   void setUp() {
+    codeRegistryBuilder = GraphQLCodeRegistry.newCodeRegistry();
     nodeShapeRegistry = new NodeShapeRegistry();
-    when(environment.getCodeRegistry()).thenReturn(codeRegistry);
+    when(environment.getCodeRegistry()).thenReturn(codeRegistryBuilder);
   }
 
   @Test
@@ -64,8 +66,14 @@ class ShaclDirectiveWiringTest {
         new ShaclDirectiveWiring(backendRegistry, nodeShapeRegistry, valueFetcher, shapeGraph);
     shaclDirectiveWiring.initialize();
 
+    GraphQLFieldDefinition identifierField = GraphQLFieldDefinition.newFieldDefinition()
+        .name(Constants.BUILDING_IDENTIFIER_FIELD)
+        .type(graphql.Scalars.GraphQLID)
+        .build();
+
     GraphQLObjectType objectType = GraphQLObjectType.newObject()
         .name(Constants.BUILDING_TYPE)
+        .field(identifierField)
         .build();
     when(environment.getElement()).thenReturn(objectType);
 
@@ -83,8 +91,13 @@ class ShaclDirectiveWiringTest {
 
     // Assert
     assertThat(result, is(equalTo(objectType)));
+
     NodeShape nodeShape = nodeShapeRegistry.get(objectType);
     assertThat(nodeShape.getIdentifier(), is(equalTo(Constants.BUILDING_SHAPE)));
+
+    GraphQLCodeRegistry codeRegistry = codeRegistryBuilder.build();
+    assertThat(codeRegistry.getDataFetcher(objectType, identifierField),
+        instanceOf(ValueFetcher.class));
   }
 
   @Test
