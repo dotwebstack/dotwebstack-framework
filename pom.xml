@@ -51,7 +51,6 @@
     <module>backend</module>
     <module>core</module>
     <module>example</module>
-    <module>graphql</module>
     <module>service</module>
     <module>test</module>
   </modules>
@@ -98,6 +97,12 @@
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter</artifactId>
         <version>5.4.1</version>
+      </dependency>
+      <!-- Should not be needed, because it's provided by Spring Boot BOM -->
+      <dependency>
+        <groupId>jakarta.validation</groupId>
+        <artifactId>jakarta.validation-api</artifactId>
+        <version>2.0.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

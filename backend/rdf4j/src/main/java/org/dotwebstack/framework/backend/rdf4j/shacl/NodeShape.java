@@ -18,7 +18,7 @@ import org.eclipse.rdf4j.model.vocabulary.SHACL;
 @Getter
 public final class NodeShape {
 
-  private final Resource identifier;
+  private final IRI identifier;
 
   private final IRI targetClass;
 
@@ -28,7 +28,7 @@ public final class NodeShape {
     return this.propertyShapes.get(name);
   }
 
-  public static NodeShape fromShapeModel(@NonNull Model shapeModel, @NonNull Resource identifier) {
+  public static NodeShape fromShapeModel(@NonNull Model shapeModel, @NonNull IRI identifier) {
     return builder()
         .identifier(identifier)
         .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, identifier, SHACL.TARGET_CLASS))

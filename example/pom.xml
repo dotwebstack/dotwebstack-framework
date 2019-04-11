@@ -19,7 +19,7 @@
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>backend-rdf4j-graphql</artifactId>
+      <artifactId>backend-rdf4j</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

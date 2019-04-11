@@ -4,15 +4,14 @@ schema {
 
 type Query {
   building(identifier: ID!): Building
-    @sparql(backend: "local", subject: "http://example/building/${identifier}")
+    @sparql(repository: "local", subject: "http://example/building/${identifier}")
   buildingReq(identifier: ID!): Building!
-    @sparql(backend: "local", subject: "http://example/building/${identifier}")
+    @sparql(repository: "local", subject: "http://example/building/${identifier}")
   buildings: [Building!]!
-    @sparql(backend: "local")
+    @sparql(repository: "local")
 }
 
-type Building
-    @shacl(shape: "http://example/shapes#Building") {
+type Building {
   identifier: ID!
   height: Int!
   builtAt: DateTime!

@@ -5,15 +5,14 @@ schema {
 type Query {
   pand(identificatiecode: ID!): Pand
     @sparql(
-      backend: "local",
+      repository: "local",
       subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
   panden: [Pand!]!
     @sparql(
-      backend: "local")
+      repository: "local")
 }
 
-type Pand
-    @shacl(shape: "http://bag.basisregistraties.overheid.nl/def/bag/Pand") {
+type Pand {
   identificatiecode: ID!
   status: String!
   oorspronkelijkBouwjaar: Int!
@@ -21,8 +20,7 @@ type Pand
   eindGeldigheid: DateTime
 }
 
-type Verblijfsobject
-    @shacl(shape: "http://bag.basisregistraties.overheid.nl/def/bag/Verblijfsobject") {
+type Verblijfsobject {
   identificatiecode: ID!
   status: String!
 }

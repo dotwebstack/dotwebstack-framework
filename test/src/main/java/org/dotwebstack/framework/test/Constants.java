@@ -26,6 +26,12 @@ public final class Constants {
         String.format("%s is not meant to be instantiated.", Constants.class));
   }
 
+  // Properties
+
+  public static final IRI SHAPE_GRAPH = VF.createIRI("http://example/shapes");
+
+  public static final String SHAPE_PREFIX = "http://example/shapes#";
+
   // Query
 
   public static final String BUILDING_FIELD = "building";
@@ -38,9 +44,7 @@ public final class Constants {
 
   public static final String BUILDING_TYPE = "Building";
 
-  public static final IRI SHAPE_GRAPH = VF.createIRI("http://example/shapes");
-
-  public static final IRI BUILDING_SHAPE = VF.createIRI("http://example/shapes#Building");
+  public static final IRI BUILDING_SHAPE = VF.createIRI(SHAPE_PREFIX.concat("Building"));
 
   public static final IRI BUILDING_CLASS = VF.createIRI("http://example/def#Building");
 
