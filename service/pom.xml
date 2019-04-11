@@ -10,11 +10,12 @@
     <version>0.2.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>backend</artifactId>
+  <artifactId>service</artifactId>
   <packaging>pom</packaging>
 
   <modules>
-    <module>rdf4j</module>
+    <module>http</module>
+    <module>graphql</module>
   </modules>
 
 </project>

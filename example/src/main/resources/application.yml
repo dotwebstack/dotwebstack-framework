@@ -1,0 +1,13 @@
+logging:
+  level.org.dotwebstack: DEBUG
+
+dotwebstack:
+  rdf4j:
+    shape:
+      graph: http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag
+      prefix: http://bag.basisregistraties.overheid.nl/def/bag/
+    repositories:
+      data:
+        type: sparql
+        args:
+          endpointUrl: https://data.pdok.nl/sparql

@@ -1,0 +1,26 @@
+schema {
+  query: Query
+}
+
+type Query {
+  pand(identificatiecode: ID!): Pand
+    @sparql(
+      repository: "local",
+      subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
+  panden: [Pand!]!
+    @sparql(
+      repository: "local")
+}
+
+type Pand {
+  identificatiecode: ID!
+  status: String!
+  oorspronkelijkBouwjaar: Int!
+  beginGeldigheid: DateTime!
+  eindGeldigheid: DateTime
+}
+
+type Verblijfsobject {
+  identificatiecode: ID!
+  status: String!
+}

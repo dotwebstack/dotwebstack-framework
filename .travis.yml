@@ -1,6 +1,7 @@
 language: java
 jdk:
   - oraclejdk8
+  - oraclejdk11
 cache:
   directories:
     - $HOME/.m2/repository
@@ -18,8 +19,6 @@ addons:
     organization: dotwebstack
     token:
       secure: HSdBT8AaylyTtZHq73L98HmMXvuUQ7exj4/ApZnu6z1k5q7mymphDjOuMrXkWL4Tp6+2HAXpqlKnckrjx2G7h/3O5N/hf1FQMrnbQK8jGeKtG8X0yuRg/H2CZwv4aVORlrvpt86FnwivuC3TaOhcecbcs5b/f1kORn6aSmyV6KAV1rV6uNzZPHXNdcC+YK98RpTHxzh2kjW9/IHMByn14Jli27/GLW4ks5Uc7oyC1vGSIHuEqAcGPPoXVUxsfOYEakPsdyKHCk71HQ1OdukZahkNnjdSOaJNKjBJFlcgg4umYUuRD4cRVV9rDSOqwuYGwktpU7tLveggM9Ihyv/WEuOmplms8pjZH5aY6FI8/UHh83tybQfSfyE+HAMnJIyVZ6iVLEh2GDGfd45WRmqR25BSsKhU/F45nyahVzEP3jMZQ9fXOg4cYzEbdD8Df3zOjw6Q4vUqno7MbieH3QEDYuX++4GrzILFwSX6j+4zIRGayZyZRrQuQw1GSvf9ro+T2G9B5XS4xJcDFQ2GJ7+CgVHwBjC+e9zGkzv6ipx8oI1BO3vcaX7vWvgtUGhzlvMArPdZAvGfM89XkGKpShMFqZvrJXlCqqHiWF4J4f9Qtly6//Er5Rf3vSC53BJUIvd+R1BeVg3/Ynb/blwLJHRTwiKsqHrwJOGH+DdC3+Scois=
-    github_token:
-      secure: "AxSPD8GbpIZgZdnuyO804xHzUIgfa0GERMfGuKsNde3IgkZvXdEGBxiZKaTyduX/ab0fX1f+bMTT8kjky2/T6xP3aGoqK05gGURiEpgNjDIwe00ghRDQkSwGh/igL0l50u2RkwlYTCNUjDvqEy9c0TFZ37R6HixPhcAgMvPx/3xOkXz21lMY6XqRTzaiuSSz0ZYHdawYeyago4i4ndCYWR5+bXapEOrDmEu4Kgn1z/98X+OsjtKtGo0LZz/xRtmVlHIwU5c705A0bKVhdSeF0keT2haRkyc7GALM1iX+Jaecj4ZAY1zCFfYFLbLC74HBCMik+ubvabJps4sC/ezPtsGe+0gpCP76UMHdz52zX9a9+cBbVrHemhdSo6/EIG7M50SyKkivc6iH0utyKMyNYbaIGyJ+lW2h53+k39aOBmXNqxgwEPJysvDCwDbow6GYATeOOnrANL2pMhm2/bwZkCZqN39ACrcWiHdsCumhptUOsndKSFbm/mBWLuWs/IpgZ4a0Z32JoaR3awfA2OCJ8K6HRr5W4WDi6CkA8/vCaLfxwo6fGC+wQ6hgDrdn9jCbpuleJSJyi48BIpSVWgfOxlnlmbKYGVJAUajMrZEHPZ/x+gUTm1vkpuLt5P/m+GbWxdJsbP/Kho4aM/FWyhTk1IJxswp9EEK3suZQDYjMNfY="
 script:
   - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar
 before_deploy:

@@ -1,0 +1,15 @@
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix ex_def: <http://example/def#> .
+@prefix ex_building: <http://example/building/> .
+
+ex_building:123 a ex_def:Building ;
+  ex_def:identifier "123" ;
+  ex_def:height "24"^^xsd:int ;
+  ex_def:builtAt "2018-05-30T09:30:10+02:00"^^xsd:dateTime
+.
+
+ex_building:456 a ex_def:Building ;
+  ex_def:identifier "456" ;
+  ex_def:height "5"^^xsd:int ;
+.

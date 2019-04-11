@@ -1,0 +1,8 @@
+logging.level.root: OFF
+spring.main.banner-mode: 'off'
+
+dotwebstack:
+  rdf4j:
+    shape:
+      graph: http://example/shapes
+      prefix: http://example/shapes#

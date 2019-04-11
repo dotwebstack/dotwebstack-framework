@@ -1,0 +1,18 @@
+schema {
+  query: Query
+}
+
+type Query {
+  building(identifier: ID!): Building
+    @sparql(repository: "local", subject: "http://example/building/${identifier}")
+  buildingReq(identifier: ID!): Building!
+    @sparql(repository: "local", subject: "http://example/building/${identifier}")
+  buildings: [Building!]!
+    @sparql(repository: "local")
+}
+
+type Building {
+  identifier: ID!
+  height: Int!
+  builtAt: DateTime!
+}
