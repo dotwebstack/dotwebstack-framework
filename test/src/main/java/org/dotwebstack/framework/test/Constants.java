@@ -44,7 +44,7 @@ public final class Constants {
 
   public static final String BUILDING_TYPE = "Building";
 
-  public static final IRI BUILDING_SHAPE = VF.createIRI(SHAPE_PREFIX.concat("Building"));
+  public static final IRI BUILDING_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BUILDING_TYPE));
 
   public static final IRI BUILDING_CLASS = VF.createIRI("http://example/def#Building");
 
