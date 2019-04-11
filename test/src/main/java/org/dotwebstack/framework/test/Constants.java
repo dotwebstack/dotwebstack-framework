@@ -26,6 +26,10 @@ public final class Constants {
         String.format("%s is not meant to be instantiated.", Constants.class));
   }
 
+  // Repository
+
+  public static final String CUSTOM_REPOSITORY_ID = "repo";
+
   // Properties
 
   public static final IRI SHAPE_GRAPH = VF.createIRI("http://example/shapes");

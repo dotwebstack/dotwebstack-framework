@@ -3,6 +3,8 @@ package org.dotwebstack.framework.backend.rdf4j;
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map.Entry;
 import lombok.Cleanup;
@@ -11,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -40,6 +41,8 @@ public class Rdf4jConfiguration {
 
   public static final String LOCAL_REPOSITORY_ID = "local";
 
+  public static final String BASE_DIR_PREFIX = "rdf4j";
+
   private static final String MODEL_PATH_PATTERN = "classpath:config/model/**";
 
   @Bean
@@ -48,12 +51,13 @@ public class Rdf4jConfiguration {
   }
 
   @Bean
-  RepositoryManager repositoryManager(@NonNull Rdf4jProperties configurationProperties,
-      @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader) {
+  RepositoryManager repositoryManager(@NonNull Rdf4jProperties rdf4jProperties,
+      @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader)
+      throws IOException {
     LOG.debug("Initializing repository manager");
 
-    LocalRepositoryManager repositoryManager = new LocalRepositoryManager(
-        new File("./.rdf4j/"));
+    File baseDir = Files.createTempDirectory(BASE_DIR_PREFIX).toFile();
+    LocalRepositoryManager repositoryManager = new LocalRepositoryManager(baseDir);
     repositoryManager.init();
 
     // Add & populate local repository
@@ -61,11 +65,11 @@ public class Rdf4jConfiguration {
     populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader);
 
     // Add repositories from external config
-    if (configurationProperties.getRepositories() != null) {
-      configurationProperties.getRepositories()
+    if (rdf4jProperties.getRepositories() != null) {
+      rdf4jProperties.getRepositories()
           .entrySet()
           .stream()
-          .map(p -> this.createRepositoryConfig(p, configFactory))
+          .map(p -> createRepositoryConfig(p, configFactory))
           .forEach(repositoryManager::addRepositoryConfig);
     }
 
@@ -88,7 +92,7 @@ public class Rdf4jConfiguration {
     return registry;
   }
 
-  private RepositoryConfig createRepositoryConfig(
+  private static RepositoryConfig createRepositoryConfig(
       Entry<String, RepositoryProperties> repositoryEntry, ConfigFactory configFactory) {
     String repositoryId = repositoryEntry.getKey();
     RepositoryProperties repository = repositoryEntry.getValue();
@@ -101,12 +105,13 @@ public class Rdf4jConfiguration {
     return new RepositoryConfig(repositoryId, repositoryImplConfig);
   }
 
-  private RepositoryConfig createLocalRepositoryConfig() {
+  private static RepositoryConfig createLocalRepositoryConfig() {
     SailRepositoryConfig repositoryConfig = new SailRepositoryConfig(new MemoryStoreConfig());
     return new RepositoryConfig(LOCAL_REPOSITORY_ID, repositoryConfig);
   }
 
-  private void populateLocalRepository(Repository repository, ResourceLoader resourceLoader) {
+  private static void populateLocalRepository(Repository repository,
+      ResourceLoader resourceLoader) {
     Resource[] resourceList;
 
     try {
@@ -114,7 +119,7 @@ public class Rdf4jConfiguration {
           .getResourcePatternResolver(resourceLoader)
           .getResources(MODEL_PATH_PATTERN);
     } catch (IOException e) {
-      throw new InvalidConfigurationException("Error while loading local model.", e);
+      throw new UncheckedIOException("Error while loading local model.", e);
     }
 
     @Cleanup RepositoryConnection con = repository.getConnection();
@@ -136,7 +141,7 @@ public class Rdf4jConfiguration {
             try {
               con.add(modelResource.getInputStream(), "", format);
             } catch (IOException e) {
-              throw new InvalidConfigurationException("Error while loading data.", e);
+              throw new UncheckedIOException("Error while loading data.", e);
             }
           }
         });

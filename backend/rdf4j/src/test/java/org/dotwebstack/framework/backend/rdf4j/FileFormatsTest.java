@@ -28,7 +28,7 @@ class FileFormatsTest {
   }
 
   @Test
-  void getFormat_ThrowsException_ForUnknownExtension() {
+  void getFormat_ReturnsNull_ForUnknownExtension() {
     // Act
     RDFFormat format = FileFormats.getFormat("doc");
 
