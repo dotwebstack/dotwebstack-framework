@@ -14,7 +14,9 @@ import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import org.dotwebstack.framework.test.TestApplication;
+import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,13 +37,12 @@ class Rdf4jIntegrationTest {
 
     // Assert
     assertThat(result.getErrors().isEmpty(), is(equalTo(true)));
-    assertThat(result.getData(), is(equalTo(ImmutableMap.of(
-        Constants.BUILDING_FIELD,
-        ImmutableMap
-            .of(BUILDING_IDENTIFIER_FIELD, BUILDING_IDENTIFIER_EXAMPLE_1.stringValue(),
-                BUILDING_HEIGHT_FIELD, BUILDING_HEIGHT_EXAMPLE_1.intValue(),
-                BUILDING_BUILT_AT_FIELD,
-                ZonedDateTime.parse(BUILDING_BUILT_AT_EXAMPLE_1.stringValue()))))));
+    Map<String, Object> data = result.getData();
+    assertThat(data, IsMapContaining.hasEntry(Constants.BUILDING_FIELD, ImmutableMap
+        .of(BUILDING_IDENTIFIER_FIELD, BUILDING_IDENTIFIER_EXAMPLE_1.stringValue(),
+            BUILDING_HEIGHT_FIELD, BUILDING_HEIGHT_EXAMPLE_1.intValue(),
+            BUILDING_BUILT_AT_FIELD,
+            ZonedDateTime.parse(BUILDING_BUILT_AT_EXAMPLE_1.stringValue()))));
   }
 
 }
