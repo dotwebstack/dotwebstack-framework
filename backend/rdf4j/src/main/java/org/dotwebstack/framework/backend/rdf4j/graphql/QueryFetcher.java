@@ -148,8 +148,9 @@ public final class QueryFetcher implements DataFetcher<Object> {
     // Fetch type statement to discover if subject exists (e.g. in case of only nullable fields)
     TriplePattern typePattern = GraphPatterns.tp(subjectVar, RDF.TYPE, nodeShape.getTargetClass());
 
-    query.construct(typePattern);
-    query.construct(Iterables.toArray(triplePatterns, TriplePattern.class))
+    query
+        .construct(typePattern)
+        .construct(Iterables.toArray(triplePatterns, TriplePattern.class))
         .where(typePattern
             .filter(filterExpr)
             .and(Iterables.toArray(wherePatterns, GraphPattern.class)));

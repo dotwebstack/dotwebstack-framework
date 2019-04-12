@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
 import static org.dotwebstack.framework.test.Constants.BUILDING_SHAPE;
+import static org.dotwebstack.framework.test.Constants.BUILDING_TYPE;
 import static org.dotwebstack.framework.test.Constants.SHAPE_PREFIX;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -47,6 +48,20 @@ class NodeShapeRegistryTest {
 
     // Assert
     assertThat(nodeShape, is(nullValue()));
+  }
+
+  @Test
+  void get_returnsNodeShape_ForGivenObjectType() {
+    // Arrange
+    GraphQLObjectType objectType = GraphQLObjectType.newObject()
+        .name(BUILDING_TYPE)
+        .build();
+
+    // Act
+    NodeShape nodeShape = nodeShapeRegistry.get(objectType);
+
+    // Assert
+    assertThat(nodeShape, is(equalTo(nodeShape)));
   }
 
 }

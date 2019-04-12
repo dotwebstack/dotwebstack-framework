@@ -4,7 +4,6 @@
 .factorypath
 .idea
 .project
-.rdf4j
 .settings
 target
 *.iml
