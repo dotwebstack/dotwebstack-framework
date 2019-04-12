@@ -12,7 +12,6 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.Map;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.test.Constants;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;

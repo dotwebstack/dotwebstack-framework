@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
-import static org.dotwebstack.framework.test.Constants.BUILDING_SHAPE;
-import static org.dotwebstack.framework.test.Constants.BUILDING_TYPE;
-import static org.dotwebstack.framework.test.Constants.SHAPE_PREFIX;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_SHAPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_TYPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.SHAPE_PREFIX;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;

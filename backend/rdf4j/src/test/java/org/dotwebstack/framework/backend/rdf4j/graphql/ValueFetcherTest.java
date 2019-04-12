@@ -1,13 +1,13 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql;
 
-import static org.dotwebstack.framework.test.Constants.BUILDING_BUILT_AT_EXAMPLE;
-import static org.dotwebstack.framework.test.Constants.BUILDING_BUILT_AT_FIELD;
-import static org.dotwebstack.framework.test.Constants.BUILDING_BUILT_AT_PATH;
-import static org.dotwebstack.framework.test.Constants.BUILDING_EXAMPLE_1;
-import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_FIELD;
-import static org.dotwebstack.framework.test.Constants.BUILDING_IDENTIFIER_PATH;
-import static org.dotwebstack.framework.test.Constants.BUILDING_TYPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_PATH;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_IDENTIFIER_PATH;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_TYPE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -17,9 +17,9 @@ import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLObjectType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.core.graphql.scalars.CoreScalars;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
@@ -62,17 +62,17 @@ class ValueFetcherTest {
         .path(BUILDING_BUILT_AT_PATH)
         .build());
     Model model = new ModelBuilder()
-        .add(BUILDING_EXAMPLE_1, BUILDING_BUILT_AT_PATH, BUILDING_BUILT_AT_EXAMPLE)
+        .add(BUILDING_EXAMPLE_1, BUILDING_BUILT_AT_PATH, BUILDING_BUILT_AT_EXAMPLE_1)
         .build();
     when(environment.getFieldType()).thenReturn(
-        org.dotwebstack.framework.core.graphql.scalars.Scalars.DATETIME);
+        CoreScalars.DATETIME);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BUILDING_EXAMPLE_1));
 
     // Act
     Object result = valueFetcher.get(environment);
 
     // Assert
-    assertThat(result, is(equalTo(BUILDING_BUILT_AT_EXAMPLE)));
+    assertThat(result, is(equalTo(BUILDING_BUILT_AT_EXAMPLE_1)));
   }
 
   @Test

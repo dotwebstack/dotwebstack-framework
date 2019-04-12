@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql.scalars;
+package org.dotwebstack.framework.backend.rdf4j.graphql.scalars;
 
 import graphql.language.StringValue;
 import graphql.schema.Coercing;

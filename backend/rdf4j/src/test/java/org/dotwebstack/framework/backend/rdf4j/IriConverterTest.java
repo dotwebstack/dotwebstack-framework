@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
-import static org.dotwebstack.framework.test.Constants.BUILDING_CLASS;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_CLASS;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

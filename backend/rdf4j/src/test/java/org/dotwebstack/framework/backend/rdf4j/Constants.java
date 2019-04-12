@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.test;
+package org.dotwebstack.framework.backend.rdf4j;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -40,10 +40,6 @@ public final class Constants {
 
   public static final String BUILDING_FIELD = "building";
 
-  public static final String BUILDING_REQ_FIELD = "buildingReq";
-
-  public static final String BUILDINGS_FIELD = "buildings";
-
   // Building
 
   public static final String BUILDING_TYPE = "Building";
@@ -52,38 +48,29 @@ public final class Constants {
 
   public static final IRI BUILDING_CLASS = VF.createIRI("http://example/def#Building");
 
-  public static final String BUILDING_SUBJECT = "http://example/building/${identifier}";
+  public static final IRI BUILDING_EXAMPLE_1 = VF.createIRI("http://example/building/123");
 
   // Building.identifier
 
-  public static final IRI BUILDING_EXAMPLE_1 = VF.createIRI("http://example/building/123");
-
-  public static final Literal BUILDING_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("123");
-
-  public static final IRI BUILDING_EXAMPLE_2 = VF.createIRI("http://example/building/456");
-
-  public static final Literal BUILDING_IDENTIFIER_EXAMPLE_2 = VF.createLiteral("456");
-
   public static final String BUILDING_IDENTIFIER_FIELD = "identifier";
-
-  public static final IRI BUILDING_IDENTIFIER_SHAPE = VF
-      .createIRI("http://example/shapes#Building_identifier");
 
   public static final IRI BUILDING_IDENTIFIER_PATH = VF.createIRI("http://example/def#identifier");
 
-  // Building.height
+  public static final Literal BUILDING_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("123");
 
-  public static final Literal BUILDING_HEIGHT_EXAMPLE = VF.createLiteral(24);
+  // Building.height
 
   public static final String BUILDING_HEIGHT_FIELD = "height";
 
-  // Building.builtAt
+  public static final Literal BUILDING_HEIGHT_EXAMPLE_1 = VF.createLiteral(24);
 
-  public static final Literal BUILDING_BUILT_AT_EXAMPLE = VF
-      .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
+  // Building.builtAt
 
   public static final String BUILDING_BUILT_AT_FIELD = "builtAt";
 
   public static final IRI BUILDING_BUILT_AT_PATH = VF.createIRI("http://example/def#builtAt");
+
+  public static final Literal BUILDING_BUILT_AT_EXAMPLE_1 = VF
+      .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
 
 }

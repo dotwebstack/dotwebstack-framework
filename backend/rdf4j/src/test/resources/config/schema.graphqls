@@ -3,9 +3,7 @@ schema {
 }
 
 type Query {
-  building(identifier: ID!): Building
-    @sparql(repository: "local", subject: "http://example/building/${identifier}")
-  buildingReq(identifier: ID!): Building!
+  building(identifier: ID!): Building!
     @sparql(repository: "local", subject: "http://example/building/${identifier}")
   buildings: [Building!]!
     @sparql(repository: "local")

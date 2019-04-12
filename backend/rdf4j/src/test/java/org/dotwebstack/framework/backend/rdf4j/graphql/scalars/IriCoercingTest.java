@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql.scalars;
+package org.dotwebstack.framework.backend.rdf4j.graphql.scalars;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.language.StringValue;
 import graphql.schema.CoercingParseLiteralException;
-import org.dotwebstack.framework.test.Constants;
+import org.dotwebstack.framework.backend.rdf4j.Constants;
 import org.eclipse.rdf4j.model.IRI;
 import org.junit.jupiter.api.Test;
 
