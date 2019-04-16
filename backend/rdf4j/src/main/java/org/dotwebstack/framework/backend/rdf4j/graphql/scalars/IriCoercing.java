@@ -18,12 +18,12 @@ class IriCoercing implements Coercing<IRI, IRI> {
   }
 
   @Override
-  public IRI parseValue(Object o) {
+  public IRI parseValue(@NonNull Object o) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public IRI parseLiteral(Object o) {
+  public IRI parseLiteral(@NonNull Object o) {
     if (!(o instanceof StringValue)) {
       throw new CoercingParseLiteralException(
           String.format("Unable to parse IRI from '%s' type.", o.getClass().getName()));

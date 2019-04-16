@@ -18,7 +18,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
-import org.dotwebstack.framework.backend.rdf4j.graphql.directives.Directives;
+import org.dotwebstack.framework.backend.rdf4j.graphql.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -56,7 +56,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   @Override
   public Object get(@NonNull DataFetchingEnvironment environment) {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
-        .getDirective(Directives.SPARQL_NAME);
+        .getDirective(Rdf4jDirectives.SPARQL_NAME);
     GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
     GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(outputType);
 
@@ -87,7 +87,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   private List<IRI> fetchSubjects(GraphQLDirective sparqlDirective, Map<String, Object> arguments,
       NodeShape nodeShape, RepositoryConnection con) {
     String subjectTemplate = DirectiveUtils
-        .getStringArgument(Directives.SPARQL_ARG_SUBJECT, sparqlDirective);
+        .getStringArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective);
 
     if (subjectTemplate != null) {
       StringSubstitutor substitutor = new StringSubstitutor(arguments);

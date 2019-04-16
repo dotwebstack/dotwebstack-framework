@@ -31,12 +31,12 @@ class DateCoercing implements Coercing<LocalDate, LocalDate> {
   }
 
   @Override
-  public LocalDate parseValue(Object o) {
+  public LocalDate parseValue(@NonNull Object o) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDate parseLiteral(Object o) {
+  public LocalDate parseLiteral(@NonNull Object o) {
     throw new UnsupportedOperationException();
   }
 

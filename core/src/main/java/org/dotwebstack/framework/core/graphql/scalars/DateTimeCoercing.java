@@ -31,12 +31,12 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
   }
 
   @Override
-  public ZonedDateTime parseValue(Object o) {
+  public ZonedDateTime parseValue(@NonNull Object o) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public ZonedDateTime parseLiteral(Object o) {
+  public ZonedDateTime parseLiteral(@NonNull Object o) {
     throw new UnsupportedOperationException();
   }
 

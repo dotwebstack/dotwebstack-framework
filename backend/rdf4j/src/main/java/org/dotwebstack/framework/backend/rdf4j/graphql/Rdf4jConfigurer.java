@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.dotwebstack.framework.backend.rdf4j.graphql.directives.Directives;
+import org.dotwebstack.framework.backend.rdf4j.graphql.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.graphql.directives.SparqlDirectiveWiring;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -36,13 +36,13 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
     Type requiredString = NonNullType.newNonNullType(optionalString).build();
 
     registry.add(DirectiveDefinition.newDirectiveDefinition()
-        .name(Directives.SPARQL_NAME)
+        .name(Rdf4jDirectives.SPARQL_NAME)
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Directives.SPARQL_ARG_REPOSITORY)
+            .name(Rdf4jDirectives.SPARQL_ARG_REPOSITORY)
             .type(requiredString)
             .build())
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Directives.SPARQL_ARG_SUBJECT)
+            .name(Rdf4jDirectives.SPARQL_ARG_SUBJECT)
             .type(optionalString)
             .build())
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
@@ -62,7 +62,7 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
   public void configureRuntimeWiring(@NonNull RuntimeWiring.Builder builder) {
     builder
         .codeRegistry(registerValueFetchers())
-        .directive(Directives.SPARQL_NAME, sparqlDirectiveWiring);
+        .directive(Rdf4jDirectives.SPARQL_NAME, sparqlDirectiveWiring);
   }
 
   private GraphQLCodeRegistry registerValueFetchers() {

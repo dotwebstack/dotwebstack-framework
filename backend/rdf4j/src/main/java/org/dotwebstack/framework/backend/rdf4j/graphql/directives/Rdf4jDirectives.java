@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql.directives;
 
-public final class Directives {
+public final class Rdf4jDirectives {
 
   public static final String SPARQL_NAME;
 
@@ -8,9 +8,9 @@ public final class Directives {
 
   public static final String SPARQL_ARG_SUBJECT;
 
-  private Directives() {
+  private Rdf4jDirectives() {
     throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", Directives.class));
+        String.format("%s is not meant to be instantiated.", Rdf4jDirectives.class));
   }
 
   static {
