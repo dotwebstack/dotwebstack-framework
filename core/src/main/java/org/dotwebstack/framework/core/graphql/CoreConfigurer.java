@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.graphql;
 
+import graphql.Scalars;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
 import graphql.language.DirectiveLocation;
@@ -28,7 +29,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
     registry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
     registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
 
-    Type optionalString = TypeName.newTypeName("String").build();
+    Type optionalString = TypeName.newTypeName(Scalars.GraphQLString.getName()).build();
     Type requiredString = NonNullType.newNonNullType(optionalString).build();
 
     registry.add(DirectiveDefinition.newDirectiveDefinition()
