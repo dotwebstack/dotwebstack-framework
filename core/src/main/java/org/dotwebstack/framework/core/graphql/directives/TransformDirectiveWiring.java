@@ -53,7 +53,7 @@ public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
 
   private static JexlContext createContext(DataFetchingEnvironment environment, Object value) {
     return new MapContext(ImmutableMap.of(
-        environment.getField().getName(), value));
+        environment.getFieldDefinition().getName(), value));
   }
 
 }
