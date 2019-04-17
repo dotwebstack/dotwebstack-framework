@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.graphql.directives;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -17,6 +18,7 @@ import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
+import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -29,6 +31,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
 class TransformDirectiveWiringTest {
@@ -71,25 +75,13 @@ class TransformDirectiveWiringTest {
   }
 
   @Test
-  void onField_WrapsExistingFetcher_ForScalarField() throws Exception {
+  void onField_WrapsExistingFetcher_ForScalarFieldWithValue() throws Exception {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
         .name(FIELD_NAME)
         .type(Scalars.GraphQLString)
         .build();
-    when(environment.getElement()).thenReturn(fieldDefinition);
-    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
-    when(dataFetcher.get(dataFetchingEnvironment)).thenReturn(FIELD_VALUE);
-
-    when(codeRegistry.getDataFetcher(parentType, fieldDefinition)).thenReturn(dataFetcher);
-    when(environment.getCodeRegistry()).thenReturn(codeRegistry);
-    when(environment.getDirective()).thenReturn(GraphQLDirective.newDirective()
-        .name(CoreDirectives.TRANSFORM_NAME)
-        .argument(GraphQLArgument.newArgument()
-            .name(CoreDirectives.TRANSFORM_ARG_EXPR)
-            .type(Scalars.GraphQLString)
-            .value(TRANSFORM_EXPR))
-        .build());
+    prepareEnvironment(fieldDefinition, FIELD_VALUE);
 
     // Act
     GraphQLFieldDefinition result = transformDirectiveWiring.onField(environment);
@@ -99,7 +91,47 @@ class TransformDirectiveWiringTest {
     verify(codeRegistry)
         .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
     assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
-        equalTo(FIELD_VALUE.length()));
+        is(equalTo(FIELD_VALUE.length())));
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  void onField_WrapsExistingFetcher_ForScalarFieldWithoutValue() throws Exception {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name(FIELD_NAME)
+        .type(Scalars.GraphQLString)
+        .build();
+    prepareEnvironment(fieldDefinition, null);
+
+    // Act
+    GraphQLFieldDefinition result = transformDirectiveWiring.onField(environment);
+
+    // Assert
+    assertThat(result, is(sameInstance(fieldDefinition)));
+    verify(codeRegistry)
+        .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
+    assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment), is(nullValue()));
+  }
+
+  @Test
+  void onField_WrapsExistingFetcher_ForNonNullScalarFieldWithValue() throws Exception {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name(FIELD_NAME)
+        .type(GraphQLNonNull.nonNull(Scalars.GraphQLString))
+        .build();
+    prepareEnvironment(fieldDefinition, FIELD_VALUE);
+
+    // Act
+    GraphQLFieldDefinition result = transformDirectiveWiring.onField(environment);
+
+    // Assert
+    assertThat(result, is(sameInstance(fieldDefinition)));
+    verify(codeRegistry)
+        .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
+    assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
+        is(equalTo(FIELD_VALUE.length())));
   }
 
   @Test
@@ -114,6 +146,22 @@ class TransformDirectiveWiringTest {
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
         transformDirectiveWiring.onField(environment));
+  }
+
+  private void prepareEnvironment(GraphQLFieldDefinition fieldDefinition, Object value)
+      throws Exception {
+    when(environment.getElement()).thenReturn(fieldDefinition);
+    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(dataFetcher.get(dataFetchingEnvironment)).thenReturn(value);
+    when(codeRegistry.getDataFetcher(parentType, fieldDefinition)).thenReturn(dataFetcher);
+    when(environment.getCodeRegistry()).thenReturn(codeRegistry);
+    when(environment.getDirective()).thenReturn(GraphQLDirective.newDirective()
+        .name(CoreDirectives.TRANSFORM_NAME)
+        .argument(GraphQLArgument.newArgument()
+            .name(CoreDirectives.TRANSFORM_ARG_EXPR)
+            .type(Scalars.GraphQLString)
+            .value(TRANSFORM_EXPR))
+        .build());
   }
 
 }

@@ -13,29 +13,33 @@ class IriCoercing implements Coercing<IRI, IRI> {
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   @Override
-  public IRI serialize(@NonNull Object o) {
+  public IRI serialize(@NonNull Object value) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public IRI parseValue(@NonNull Object o) {
+  public IRI parseValue(@NonNull Object value) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public IRI parseLiteral(@NonNull Object o) {
-    if (!(o instanceof StringValue)) {
-      throw new CoercingParseLiteralException(
-          String.format("Unable to parse IRI from '%s' type.", o.getClass().getName()));
+  public IRI parseLiteral(@NonNull Object value) {
+    if (value instanceof IRI) {
+      return (IRI) value;
     }
 
-    String value = ((StringValue) o).getValue();
+    if (!(value instanceof StringValue)) {
+      throw new CoercingParseLiteralException(
+          String.format("Unable to parse IRI from '%s' type.", value.getClass().getName()));
+    }
+
+    String valueStr = ((StringValue) value).getValue();
 
     try {
-      return VF.createIRI(value);
+      return VF.createIRI(valueStr);
     } catch (IllegalArgumentException e) {
       throw new CoercingParseLiteralException(String
-          .format("Unable to parse IRI from string value '%s'.", value), e);
+          .format("Unable to parse IRI from string value '%s'.", valueStr), e);
     }
   }
 

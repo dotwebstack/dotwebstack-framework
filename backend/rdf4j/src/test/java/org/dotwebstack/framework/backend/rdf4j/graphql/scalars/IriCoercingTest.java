@@ -30,6 +30,15 @@ class IriCoercingTest {
   }
 
   @Test
+  void parseLiteral_ReturnsIri_ForIriValue() {
+    // Act
+    IRI result = coercing.parseLiteral(Constants.BUILDING_SHAPE);
+
+    // Assert
+    assertThat(result, is(equalTo(Constants.BUILDING_SHAPE)));
+  }
+
+  @Test
   void parseLiteral_ReturnsIri_ForValidStringValue() {
     // Arrange
     StringValue stringValue = StringValue
@@ -42,7 +51,6 @@ class IriCoercingTest {
     // Assert
     assertThat(result, is(equalTo(Constants.BUILDING_SHAPE)));
   }
-
 
   @Test
   void parseValue_ThrowsException_ForInvalidStringValue() {

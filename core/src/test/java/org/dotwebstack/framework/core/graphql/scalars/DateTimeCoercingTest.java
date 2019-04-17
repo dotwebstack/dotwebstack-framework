@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.graphql.scalars;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -32,7 +33,19 @@ class DateTimeCoercingTest {
   }
 
   @Test
-  void serialize_ReturnsDate_ForValidDateTimeString() {
+  void serialize_ReturnsDateTime_ForDateTime() {
+    // Arrange
+    ZonedDateTime input = ZonedDateTime.now();
+
+    // Act
+    ZonedDateTime dateTime = coercing.serialize(input);
+
+    // Assert
+    assertThat(dateTime, is(sameInstance(input)));
+  }
+
+  @Test
+  void serialize_ReturnsDateTime_ForValidDateTimeString() {
     // Act
     ZonedDateTime dateTime = coercing.serialize("2018-05-30T09:30:10+02:00");
 
@@ -49,7 +62,7 @@ class DateTimeCoercingTest {
   }
 
   @Test
-  void serialize_ReturnsDate_ForValidLiteral() {
+  void serialize_ReturnsDateTime_ForValidLiteral() {
     // Arrange
     Literal dateTimeLiteral = VF.createLiteral(
         datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
@@ -63,7 +76,7 @@ class DateTimeCoercingTest {
   }
 
   @Test
-  void serialize_ReturnsDate_ForInvalidLiteral() {
+  void serialize_ReturnsDateTime_ForInvalidLiteral() {
     // Act / Assert
     assertThrows(CoercingSerializeException.class, () ->
         coercing.serialize(VF.createLiteral("foo")));

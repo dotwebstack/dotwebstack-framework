@@ -11,16 +11,21 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
 
   @Override
-  public ZonedDateTime serialize(@NonNull Object o) {
+  public ZonedDateTime serialize(@NonNull Object value) {
+    if (value instanceof ZonedDateTime) {
+      return (ZonedDateTime) value;
+    }
+
     String dateTimeStr;
 
-    if (o instanceof String) {
-      dateTimeStr = (String) o;
-    } else if (o instanceof Literal && XMLSchema.DATETIME.equals(((Literal) o).getDatatype())) {
-      dateTimeStr = ((Literal) o).stringValue();
+    if (value instanceof String) {
+      dateTimeStr = (String) value;
+    } else if (value instanceof Literal && XMLSchema.DATETIME
+        .equals(((Literal) value).getDatatype())) {
+      dateTimeStr = ((Literal) value).stringValue();
     } else {
       throw new CoercingSerializeException(String
-          .format("Unable to parse date-time string from '%s' type.", o.getClass().getName()));
+          .format("Unable to parse date-time string from '%s' type.", value.getClass().getName()));
     }
 
     try {
@@ -31,12 +36,12 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
   }
 
   @Override
-  public ZonedDateTime parseValue(@NonNull Object o) {
+  public ZonedDateTime parseValue(@NonNull Object value) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public ZonedDateTime parseLiteral(@NonNull Object o) {
+  public ZonedDateTime parseLiteral(@NonNull Object value) {
     throw new UnsupportedOperationException();
   }
 

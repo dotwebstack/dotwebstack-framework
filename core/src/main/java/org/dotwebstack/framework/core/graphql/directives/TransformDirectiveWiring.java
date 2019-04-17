@@ -29,7 +29,7 @@ public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
     GraphQLFieldsContainer parentType = environment.getFieldsContainer();
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
 
-    if (!GraphQLTypeUtil.isScalar(fieldDefinition.getType())) {
+    if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()))) {
       throw new InvalidConfigurationException(
           "Directive @transform can only be used with scalar fields.");
     }
@@ -43,7 +43,7 @@ public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
 
     DataFetcher wrappedDataFetcher = DataFetcherFactories
         .wrapDataFetcher(delegateDataFetcher, (delegateEnv, value) ->
-            expression.evaluate(createContext(delegateEnv, value)));
+            value == null ? null : expression.evaluate(createContext(delegateEnv, value)));
 
     environment.getCodeRegistry()
         .dataFetcher(parentType, fieldDefinition, wrappedDataFetcher);

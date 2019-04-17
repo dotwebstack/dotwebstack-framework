@@ -15,7 +15,6 @@ type Query {
 type Pand {
   identificatiecode: ID!
   status: String!
-    @transform(expr: "status.getLocalName()")
   oorspronkelijkBouwjaar: Int!
   beginGeldigheid: DateTime!
   eindGeldigheid: DateTime

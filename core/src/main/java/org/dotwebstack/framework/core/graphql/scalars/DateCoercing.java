@@ -11,16 +11,20 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
   @Override
-  public LocalDate serialize(@NonNull Object o) {
+  public LocalDate serialize(@NonNull Object value) {
+    if (value instanceof LocalDate) {
+      return (LocalDate) value;
+    }
+
     String dateStr;
 
-    if (o instanceof String) {
-      dateStr = (String) o;
-    } else if (o instanceof Literal && XMLSchema.DATE.equals(((Literal) o).getDatatype())) {
-      dateStr = ((Literal) o).stringValue();
+    if (value instanceof String) {
+      dateStr = (String) value;
+    } else if (value instanceof Literal && XMLSchema.DATE.equals(((Literal) value).getDatatype())) {
+      dateStr = ((Literal) value).stringValue();
     } else {
       throw new CoercingSerializeException(
-          String.format("Unable to parse date string from '%s' type.", o.getClass().getName()));
+          String.format("Unable to parse date string from '%s' type.", value.getClass().getName()));
     }
 
     try {
@@ -31,12 +35,12 @@ class DateCoercing implements Coercing<LocalDate, LocalDate> {
   }
 
   @Override
-  public LocalDate parseValue(@NonNull Object o) {
+  public LocalDate parseValue(@NonNull Object value) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDate parseLiteral(@NonNull Object o) {
+  public LocalDate parseLiteral(@NonNull Object value) {
     throw new UnsupportedOperationException();
   }
 
