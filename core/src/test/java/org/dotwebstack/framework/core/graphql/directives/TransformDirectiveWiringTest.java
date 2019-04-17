@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import graphql.Scalars;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -18,6 +19,7 @@ import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
@@ -39,7 +41,9 @@ class TransformDirectiveWiringTest {
 
   private static final String FIELD_NAME = "foo";
 
-  private static final String FIELD_VALUE = "bar";
+  private static final String FIELD_VALUE_1 = "bar";
+
+  private static final String FIELD_VALUE_2 = "bazzz";
 
   private static final String TRANSFORM_EXPR = "foo.length()";
 
@@ -81,7 +85,7 @@ class TransformDirectiveWiringTest {
         .name(FIELD_NAME)
         .type(Scalars.GraphQLString)
         .build();
-    prepareEnvironment(fieldDefinition, FIELD_VALUE);
+    prepareEnvironment(fieldDefinition, FIELD_VALUE_1);
 
     // Act
     GraphQLFieldDefinition result = transformDirectiveWiring.onField(environment);
@@ -91,7 +95,7 @@ class TransformDirectiveWiringTest {
     verify(codeRegistry)
         .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
     assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
-        is(equalTo(FIELD_VALUE.length())));
+        is(equalTo(FIELD_VALUE_1.length())));
   }
 
   @Test
@@ -121,7 +125,7 @@ class TransformDirectiveWiringTest {
         .name(FIELD_NAME)
         .type(GraphQLNonNull.nonNull(Scalars.GraphQLString))
         .build();
-    prepareEnvironment(fieldDefinition, FIELD_VALUE);
+    prepareEnvironment(fieldDefinition, FIELD_VALUE_1);
 
     // Act
     GraphQLFieldDefinition result = transformDirectiveWiring.onField(environment);
@@ -131,7 +135,48 @@ class TransformDirectiveWiringTest {
     verify(codeRegistry)
         .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
     assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
-        is(equalTo(FIELD_VALUE.length())));
+        is(equalTo(FIELD_VALUE_1.length())));
+  }
+
+  @Test
+  void onField_WrapsExistingFetcher_ForListScalarFieldWithValue() throws Exception {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name(FIELD_NAME)
+        .type(GraphQLList.list(Scalars.GraphQLString))
+        .build();
+    prepareEnvironment(fieldDefinition, ImmutableList.of(FIELD_VALUE_1, FIELD_VALUE_2));
+
+    // Act
+    GraphQLFieldDefinition result = transformDirectiveWiring.onField(environment);
+
+    // Assert
+    assertThat(result, is(sameInstance(fieldDefinition)));
+    verify(codeRegistry)
+        .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
+    assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
+        is(equalTo(ImmutableList.of(FIELD_VALUE_1.length(), FIELD_VALUE_2.length()))));
+  }
+
+  @Test
+  void onField_WrapsExistingFetcher_ForNonNullListScalarFieldWithValue() throws Exception {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name(FIELD_NAME)
+        .type(GraphQLNonNull.nonNull(GraphQLList.list(
+            GraphQLNonNull.nonNull(Scalars.GraphQLString))))
+        .build();
+    prepareEnvironment(fieldDefinition, ImmutableList.of(FIELD_VALUE_1, FIELD_VALUE_2));
+
+    // Act
+    GraphQLFieldDefinition result = transformDirectiveWiring.onField(environment);
+
+    // Assert
+    assertThat(result, is(sameInstance(fieldDefinition)));
+    verify(codeRegistry)
+        .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
+    assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
+        is(equalTo(ImmutableList.of(FIELD_VALUE_1.length(), FIELD_VALUE_2.length()))));
   }
 
   @Test

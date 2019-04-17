@@ -9,6 +9,8 @@ import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
+import java.util.Collection;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -29,21 +31,35 @@ public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
     GraphQLFieldsContainer parentType = environment.getFieldsContainer();
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
 
-    if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()))) {
+    if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(fieldDefinition.getType()))) {
       throw new InvalidConfigurationException(
-          "Directive @transform can only be used with scalar fields.");
+          "Directive @transform can only be used with (a list of) scalar fields.");
     }
+
+    boolean isListType = GraphQLTypeUtil.isList(
+        GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
+
+    JexlExpression expression = jexlEngine.createExpression(DirectiveUtils
+        .getStringArgument(CoreDirectives.TRANSFORM_ARG_EXPR, environment.getDirective()));
 
     DataFetcher delegateDataFetcher = environment
         .getCodeRegistry()
         .getDataFetcher(parentType, fieldDefinition);
 
-    JexlExpression expression = jexlEngine.createExpression(DirectiveUtils
-        .getStringArgument(CoreDirectives.TRANSFORM_ARG_EXPR, environment.getDirective()));
-
     DataFetcher wrappedDataFetcher = DataFetcherFactories
-        .wrapDataFetcher(delegateDataFetcher, (delegateEnv, value) ->
-            value == null ? null : expression.evaluate(createContext(delegateEnv, value)));
+        .wrapDataFetcher(delegateDataFetcher, (delegateEnv, value) -> {
+          if (value == null) {
+            return null;
+          }
+
+          if (isListType) {
+            return ((Collection<?>) value).stream()
+                .map(listItem -> expression.evaluate(createContext(delegateEnv, listItem)))
+                .collect(Collectors.toList());
+          }
+
+          return expression.evaluate(createContext(delegateEnv, value));
+        });
 
     environment.getCodeRegistry()
         .dataFetcher(parentType, fieldDefinition, wrappedDataFetcher);
