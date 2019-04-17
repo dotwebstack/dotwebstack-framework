@@ -49,9 +49,6 @@ class TransformDirectiveWiringTest {
   private DataFetcher dataFetcher;
 
   @Mock
-  private GraphQLFieldDefinition fieldDefinition;
-
-  @Mock
   private GraphQLFieldsContainer parentType;
 
   @Mock
@@ -71,15 +68,16 @@ class TransformDirectiveWiringTest {
   @BeforeEach
   void setUp() {
     when(environment.getFieldsContainer()).thenReturn(parentType);
-    when(environment.getElement()).thenReturn(fieldDefinition);
   }
 
   @Test
   void onField_WrapsExistingFetcher_ForScalarField() throws Exception {
     // Arrange
-    when(fieldDefinition.getName()).thenReturn(FIELD_NAME);
-    when(fieldDefinition.getType()).thenReturn(Scalars.GraphQLString);
-
+    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name(FIELD_NAME)
+        .type(Scalars.GraphQLString)
+        .build();
+    when(environment.getElement()).thenReturn(fieldDefinition);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(dataFetcher.get(dataFetchingEnvironment)).thenReturn(FIELD_VALUE);
 
@@ -107,9 +105,11 @@ class TransformDirectiveWiringTest {
   @Test
   void onField_ThrowsException_ForNonScalarField() {
     // Arrange
-    when(fieldDefinition.getType()).thenReturn(GraphQLObjectType.newObject()
+    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
         .name(FIELD_NAME)
-        .build());
+        .type(GraphQLObjectType.newObject().name(FIELD_NAME))
+        .build();
+    when(environment.getElement()).thenReturn(fieldDefinition);
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
