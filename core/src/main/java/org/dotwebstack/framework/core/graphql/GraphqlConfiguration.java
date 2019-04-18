@@ -11,6 +11,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Collection;
 import lombok.NonNull;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlEngine;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
@@ -42,6 +44,14 @@ public class GraphqlConfiguration {
     return GraphQL
         .newGraphQL(graphqlSchema)
         .build();
+  }
+
+  @Bean
+  public JexlEngine jexlBuilder() {
+    return new JexlBuilder()
+        .silent(false)
+        .strict(true)
+        .create();
   }
 
 }

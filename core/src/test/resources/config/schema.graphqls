@@ -1,0 +1,15 @@
+schema {
+  query: Query
+}
+
+type Query {
+  building(identifier: ID!): Building!
+}
+
+type Building {
+  identifier: ID!
+  height: Int!
+  builtAt: DateTime!
+  builtAtYear: Int!
+    @transform(expr: "builtAtYear.getYear()")
+}

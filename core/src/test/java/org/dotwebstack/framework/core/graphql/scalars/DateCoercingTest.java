@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.graphql.scalars;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -28,6 +29,18 @@ class DateCoercingTest {
     } catch (DatatypeConfigurationException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  @Test
+  void serialize_ReturnsDate_ForDate() {
+    // Arrange
+    LocalDate input = LocalDate.now();
+
+    // Act
+    LocalDate date = coercing.serialize(input);
+
+    // Assert
+    assertThat(date, is(sameInstance(input)));
   }
 
   @Test

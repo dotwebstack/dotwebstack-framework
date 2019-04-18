@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql;
 
+import graphql.Scalars;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
 import graphql.language.DirectiveLocation;
@@ -32,7 +33,7 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
-    Type optionalString = TypeName.newTypeName("String").build();
+    Type optionalString = TypeName.newTypeName(Scalars.GraphQLString.getName()).build();
     Type requiredString = NonNullType.newNonNullType(optionalString).build();
 
     registry.add(DirectiveDefinition.newDirectiveDefinition()
