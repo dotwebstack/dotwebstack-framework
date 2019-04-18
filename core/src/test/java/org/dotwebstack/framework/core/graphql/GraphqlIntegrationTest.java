@@ -38,7 +38,6 @@ class GraphqlIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    System.out.println(result.getErrors());
     assertThat(result.getErrors().isEmpty(), is(equalTo(true)));
     Map<String, Object> data = result.getData();
     assertThat(data, IsMapContaining.hasEntry(BUILDING_FIELD, ImmutableMap
