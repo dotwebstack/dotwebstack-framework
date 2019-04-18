@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
@@ -24,10 +23,10 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.impl.TreeModel;
+import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
-import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -53,15 +52,19 @@ public final class QueryFetcher implements DataFetcher<Object> {
           "Field types other than object fields are not yet supported.");
     }
 
-    GraphQLObjectType objectType = (GraphQLObjectType) rawType;
+    QueryEnvironment queryEnvironment = QueryEnvironment.builder()
+        .objectType((GraphQLObjectType) rawType)
+        .selectionSet(environment.getSelectionSet())
+        .nodeShapeRegistry(nodeShapeRegistry)
+        .prefixMap(prefixMap)
+        .build();
 
     // Find shapes matching request
-    List<IRI> subjects = fetchSubjects(sparqlDirective, environment.getArguments(), objectType,
-        repositoryConnection);
+    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective,
+        environment.getArguments(), repositoryConnection);
 
     // Fetch graph for given subjects
-    Model model = fetchGraph(subjects, environment.getSelectionSet(), objectType,
-        repositoryConnection);
+    Model model = fetchGraph(queryEnvironment, subjects, repositoryConnection);
 
     if (GraphQLTypeUtil.isList(outputType)) {
       return subjects.stream()
@@ -72,8 +75,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
     return model.isEmpty() ? null : new QuerySolution(model, subjects.get(0));
   }
 
-  private List<IRI> fetchSubjects(GraphQLDirective sparqlDirective, Map<String, Object> arguments,
-      GraphQLObjectType objectType, RepositoryConnection con) {
+  private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
+      Map<String, Object> arguments, RepositoryConnection con) {
     String subjectTemplate = DirectiveUtils
         .getStringArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective);
 
@@ -85,34 +88,38 @@ public final class QueryFetcher implements DataFetcher<Object> {
     }
 
     String subjectQuery = SubjectQueryBuilder
-        .create(objectType, nodeShapeRegistry, prefixMap)
+        .create(environment)
         .getQueryString();
 
     LOG.debug("Exececuting query for subjects:\n{}", subjectQuery);
 
-    return QueryResults.asList(con.prepareTupleQuery(subjectQuery).evaluate())
+    TupleQueryResult queryResult = con
+        .prepareTupleQuery(subjectQuery)
+        .evaluate();
+
+    return QueryResults.asList(queryResult)
         .stream()
         .map(bindings -> (IRI) bindings.getValue("s"))
         .collect(Collectors.toList());
   }
 
-  private Model fetchGraph(List<IRI> subjects, DataFetchingFieldSelectionSet selectionSet,
-      GraphQLObjectType objectType, RepositoryConnection con) {
+  private Model fetchGraph(QueryEnvironment environment, List<IRI> subjects,
+      RepositoryConnection con) {
     if (subjects.isEmpty()) {
       return new TreeModel();
     }
 
     String graphQuery = GraphQueryBuilder
-        .create(objectType, subjects, selectionSet, nodeShapeRegistry, prefixMap)
+        .create(environment, subjects)
         .getQueryString();
 
     LOG.debug("Exececuting query for graph:\n{}", graphQuery);
 
-    return QueryResults.asModel(con.prepareGraphQuery(graphQuery).evaluate());
-  }
+    GraphQueryResult queryResult = con
+        .prepareGraphQuery(graphQuery)
+        .evaluate();
 
-  private Iri fromIri(IRI iri) {
-    return Rdf.iri(iri.getNamespace(), iri.getLocalName());
+    return QueryResults.asModel(queryResult);
   }
 
 }

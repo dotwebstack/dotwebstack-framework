@@ -1,15 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import com.google.common.collect.Iterables;
-import graphql.schema.DataFetchingFieldSelectionSet;
-import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
-import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -26,27 +22,20 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
   private final List<IRI> subjects;
 
-  private final DataFetchingFieldSelectionSet selectionSet;
-
-  private GraphQueryBuilder(GraphQLObjectType objectType, List<IRI> subjects,
-      DataFetchingFieldSelectionSet selectionSet, NodeShapeRegistry nodeShapeRegistry,
-      Map<String, String> prefixMap) {
-    super(objectType, nodeShapeRegistry, prefixMap, Queries.CONSTRUCT());
+  private GraphQueryBuilder(QueryEnvironment environment, List<IRI> subjects) {
+    super(environment, Queries.CONSTRUCT());
     this.subjects = subjects;
-    this.selectionSet = selectionSet;
   }
 
-  static GraphQueryBuilder create(GraphQLObjectType objectType, List<IRI> subjects,
-      DataFetchingFieldSelectionSet selectionSet, NodeShapeRegistry nodeShapeRegistry,
-      Map<String, String> prefixMap) {
-    return new GraphQueryBuilder(objectType, subjects, selectionSet, nodeShapeRegistry, prefixMap);
+  static GraphQueryBuilder create(QueryEnvironment environment, List<IRI> subjects) {
+    return new GraphQueryBuilder(environment, subjects);
   }
 
   String getQueryString() {
     Variable subjectVar = query.var();
-    NodeShape nodeShape = nodeShapeRegistry.get(objectType);
+    NodeShape nodeShape = environment.getNodeShapeRegistry().get(environment.getObjectType());
 
-    List<TriplePattern> triplePatterns = selectionSet
+    List<TriplePattern> triplePatterns = environment.getSelectionSet()
         .getFields()
         .stream()
         .map(field -> {
