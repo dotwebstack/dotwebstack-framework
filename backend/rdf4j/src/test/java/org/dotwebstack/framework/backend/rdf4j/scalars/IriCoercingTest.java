@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.graphql.scalars;
+package org.dotwebstack.framework.backend.rdf4j.scalars;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

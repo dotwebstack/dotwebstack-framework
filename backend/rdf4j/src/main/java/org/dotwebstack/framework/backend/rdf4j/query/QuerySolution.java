@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.graphql;
+package org.dotwebstack.framework.backend.rdf4j.query;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

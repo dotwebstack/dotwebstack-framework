@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.graphql.scalars;
+package org.dotwebstack.framework.backend.rdf4j.scalars;
 
 import graphql.schema.GraphQLScalarType;
 

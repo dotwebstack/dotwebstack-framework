@@ -6,6 +6,10 @@ dotwebstack:
     shape:
       graph: http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag
       prefix: http://bag.basisregistraties.overheid.nl/def/bag/
+    prefixes:
+      rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+      bag: http://bag.basisregistraties.overheid.nl/def/bag#
+      bag_pnd: http://bag.basisregistraties.overheid.nl/bag/id/pand/
     repositories:
       data:
         type: sparql

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.graphql;
+package org.dotwebstack.framework.backend.rdf4j.query;
 
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_FIELD;

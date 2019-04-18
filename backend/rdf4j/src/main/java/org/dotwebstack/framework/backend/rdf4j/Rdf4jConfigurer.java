@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.graphql;
+package org.dotwebstack.framework.backend.rdf4j;
 
 import graphql.Scalars;
 import graphql.introspection.Introspection;
@@ -13,9 +13,10 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.dotwebstack.framework.backend.rdf4j.graphql.directives.Rdf4jDirectives;
-import org.dotwebstack.framework.backend.rdf4j.graphql.directives.SparqlDirectiveWiring;
-import org.dotwebstack.framework.backend.rdf4j.graphql.scalars.Rdf4jScalars;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.directives.SparqlDirectiveWiring;
+import org.dotwebstack.framework.backend.rdf4j.query.ValueFetcher;
+import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.graphql.GraphqlConfigurer;
 import org.springframework.stereotype.Component;

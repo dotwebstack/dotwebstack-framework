@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.graphql;
+package org.dotwebstack.framework.backend.rdf4j.query;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -10,7 +10,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.model.util.Models;
 
 @RequiredArgsConstructor
-final class ValueFetcher implements DataFetcher<Object> {
+public final class ValueFetcher implements DataFetcher<Object> {
 
   private final PropertyShape propertyShape;
 

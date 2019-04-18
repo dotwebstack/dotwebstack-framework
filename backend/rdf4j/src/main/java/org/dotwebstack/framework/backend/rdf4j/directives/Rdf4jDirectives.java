@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.graphql.directives;
+package org.dotwebstack.framework.backend.rdf4j.directives;
 
 public final class Rdf4jDirectives {
 
