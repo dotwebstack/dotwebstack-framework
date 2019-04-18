@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql.scalars;
 
 import graphql.schema.GraphQLScalarType;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public final class Rdf4jScalars {
 
   public static final GraphQLScalarType IRI = GraphQLScalarType
@@ -10,10 +12,5 @@ public final class Rdf4jScalars {
       .description("IRI type")
       .coercing(new IriCoercing())
       .build();
-
-  private Rdf4jScalars() {
-    throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", Rdf4jScalars.class));
-  }
 
 }
