@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationPropertiesBinding
-public class IriConverter implements Converter<String, IRI> {
+class IriConverter implements Converter<String, IRI> {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 

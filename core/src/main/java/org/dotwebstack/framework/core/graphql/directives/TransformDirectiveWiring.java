@@ -42,11 +42,11 @@ public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
     JexlExpression expression = jexlEngine.createExpression(DirectiveUtils
         .getStringArgument(CoreDirectives.TRANSFORM_ARG_EXPR, environment.getDirective()));
 
-    DataFetcher delegateDataFetcher = environment
+    DataFetcher<?> delegateDataFetcher = environment
         .getCodeRegistry()
         .getDataFetcher(parentType, fieldDefinition);
 
-    DataFetcher wrappedDataFetcher = DataFetcherFactories
+    DataFetcher<?> wrappedDataFetcher = DataFetcherFactories
         .wrapDataFetcher(delegateDataFetcher, (delegateEnv, value) -> {
           if (value == null) {
             return null;

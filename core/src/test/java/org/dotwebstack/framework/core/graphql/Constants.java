@@ -2,7 +2,7 @@ package org.dotwebstack.framework.core.graphql;
 
 import java.time.ZonedDateTime;
 
-public final class Constants {
+final class Constants {
 
   private Constants() {
     throw new IllegalStateException(

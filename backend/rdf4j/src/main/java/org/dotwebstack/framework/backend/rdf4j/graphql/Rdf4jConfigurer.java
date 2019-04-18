@@ -6,20 +6,17 @@ import graphql.language.DirectiveDefinition;
 import graphql.language.DirectiveLocation;
 import graphql.language.InputValueDefinition;
 import graphql.language.NonNullType;
-import graphql.language.Type;
 import graphql.language.TypeName;
-import graphql.schema.DataFetcher;
+import graphql.schema.FieldCoordinates;
 import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.graphql.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.graphql.directives.SparqlDirectiveWiring;
+import org.dotwebstack.framework.backend.rdf4j.graphql.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.graphql.GraphqlConfigurer;
 import org.springframework.stereotype.Component;
 
@@ -33,8 +30,8 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
-    Type optionalString = TypeName.newTypeName(Scalars.GraphQLString.getName()).build();
-    Type requiredString = NonNullType.newNonNullType(optionalString).build();
+    TypeName optionalString = TypeName.newTypeName(Scalars.GraphQLString.getName()).build();
+    NonNullType requiredString = NonNullType.newNonNullType(optionalString).build();
 
     registry.add(DirectiveDefinition.newDirectiveDefinition()
         .name(Rdf4jDirectives.SPARQL_NAME)
@@ -63,6 +60,7 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
   public void configureRuntimeWiring(@NonNull RuntimeWiring.Builder builder) {
     builder
         .codeRegistry(registerValueFetchers())
+        .scalar(Rdf4jScalars.IRI)
         .directive(Rdf4jDirectives.SPARQL_NAME, sparqlDirectiveWiring);
   }
 
@@ -73,13 +71,11 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
         .forEach(nodeShape -> {
           String typeName = nodeShape.getIdentifier().getLocalName();
 
-          Map<String, DataFetcher> dataFetchers = nodeShape
-              .getPropertyShapes()
+          nodeShape.getPropertyShapes()
               .values()
-              .stream()
-              .collect(Collectors.toMap(PropertyShape::getName, ValueFetcher::new));
-
-          builder.dataFetchers(typeName, dataFetchers);
+              .forEach(propertyShape -> builder
+                  .dataFetcher(FieldCoordinates.coordinates(typeName, propertyShape.getName()),
+                      new ValueFetcher(propertyShape)));
         });
 
     return builder.build();

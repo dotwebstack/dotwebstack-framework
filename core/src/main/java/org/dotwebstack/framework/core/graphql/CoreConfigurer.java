@@ -1,13 +1,13 @@
 package org.dotwebstack.framework.core.graphql;
 
-import graphql.Scalars;
+import static graphql.Scalars.GraphQLString;
+
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
 import graphql.language.DirectiveLocation;
 import graphql.language.InputValueDefinition;
 import graphql.language.NonNullType;
 import graphql.language.ScalarTypeDefinition;
-import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -29,8 +29,8 @@ public class CoreConfigurer implements GraphqlConfigurer {
     registry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
     registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
 
-    Type optionalString = TypeName.newTypeName(Scalars.GraphQLString.getName()).build();
-    Type requiredString = NonNullType.newNonNullType(optionalString).build();
+    TypeName optionalString = TypeName.newTypeName(GraphQLString.getName()).build();
+    NonNullType requiredString = NonNullType.newNonNullType(optionalString).build();
 
     registry.add(DirectiveDefinition.newDirectiveDefinition()
         .name(CoreDirectives.TRANSFORM_NAME)
@@ -46,9 +46,10 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureRuntimeWiring(@NonNull Builder builder) {
-    builder.scalar(CoreScalars.DATE);
-    builder.scalar(CoreScalars.DATETIME);
-    builder.directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring);
+    builder
+        .scalar(CoreScalars.DATE)
+        .scalar(CoreScalars.DATETIME)
+        .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring);
   }
 
 }

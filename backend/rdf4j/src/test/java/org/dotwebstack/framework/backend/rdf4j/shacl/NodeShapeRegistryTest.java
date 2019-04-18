@@ -20,9 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class NodeShapeRegistryTest {
 
   @Mock
-  private GraphQLObjectType objectType;
-
-  @Mock
   private NodeShape nodeShape;
 
   private NodeShapeRegistry nodeShapeRegistry;

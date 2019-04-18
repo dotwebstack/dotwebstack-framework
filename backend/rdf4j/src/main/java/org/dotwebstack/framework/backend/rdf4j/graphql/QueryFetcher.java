@@ -135,10 +135,11 @@ public final class QueryFetcher implements DataFetcher<Object> {
         })
         .collect(Collectors.toList());
 
-    Expression filterExpr = Expressions.or(Iterables.toArray(subjects
-        .stream()
-        .map(subject -> Expressions.equals(subjectVar, Rdf.iri(subject)))
-        .collect(Collectors.toList()), Expression.class));
+    Expression<?> filterExpr = Expressions
+        .or(Iterables.toArray(subjects
+            .stream()
+            .map(subject -> Expressions.equals(subjectVar, Rdf.iri(subject)))
+            .collect(Collectors.toList()), Expression.class));
 
     List<GraphPattern> wherePatterns = triplePatterns
         .stream()

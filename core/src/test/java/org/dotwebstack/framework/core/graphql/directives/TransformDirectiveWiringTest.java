@@ -54,7 +54,7 @@ class TransformDirectiveWiringTest {
   private DataFetchingEnvironment dataFetchingEnvironment;
 
   @Mock
-  private DataFetcher dataFetcher;
+  private DataFetcher<Object> dataFetcher;
 
   @Mock
   private GraphQLFieldsContainer parentType;
@@ -63,7 +63,7 @@ class TransformDirectiveWiringTest {
   private GraphQLCodeRegistry.Builder codeRegistry;
 
   @Captor
-  private ArgumentCaptor<DataFetcher> dataFetcherCaptor;
+  private ArgumentCaptor<DataFetcher<Object>> dataFetcherCaptor;
 
   private final JexlEngine jexlEngine = new JexlBuilder()
       .silent(false)
