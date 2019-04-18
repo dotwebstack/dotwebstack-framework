@@ -11,7 +11,7 @@ public final class Constants {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
-  private static DatatypeFactory datatypeFactory;
+  private static final DatatypeFactory datatypeFactory;
 
   static {
     try {

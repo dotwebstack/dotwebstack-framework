@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 @Setter
 @Validated
 @ConfigurationProperties(prefix = "dotwebstack.rdf4j")
-public class Rdf4jProperties {
+class Rdf4jProperties {
 
   @NotNull
   private ShapeProperties shape;

@@ -27,14 +27,14 @@ class ValueUtilsTest {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
-  private static Resource SUBJECT = VF.createIRI("foo:1");
+  private static final Resource SUBJECT = VF.createIRI("foo:1");
 
-  private static Literal LABEL = VF.createLiteral("foo");
+  private static final Literal LABEL = VF.createLiteral("foo");
 
   @Test
   void convertValue_ReturnsSpecificType_ForBuiltInScalars() {
     // Arrange
-    ImmutableMap.Builder<Class, Literal> builder = ImmutableMap.builder();
+    ImmutableMap.Builder<Class<?>, Literal> builder = ImmutableMap.builder();
     builder.put(String.class, VF.createLiteral(""));
     builder.put(Boolean.class, VF.createLiteral(true));
     builder.put(Integer.class, VF.createLiteral(Integer.MIN_VALUE));
@@ -45,7 +45,7 @@ class ValueUtilsTest {
     builder.put(Double.class, VF.createLiteral(Double.MIN_VALUE));
     builder.put(BigDecimal.class, VF.createLiteral(BigDecimal.ONE));
     builder.put(Byte.class, VF.createLiteral(Byte.MIN_VALUE));
-    Map<Class, Literal> literals = builder.build();
+    Map<Class<?>, Literal> literals = builder.build();
 
     // Act & Assert
     literals.forEach((literalType, literal) -> {

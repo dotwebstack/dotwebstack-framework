@@ -10,7 +10,7 @@ import org.zalando.problem.ProblemModule;
 import org.zalando.problem.spring.webflux.advice.ProblemExceptionHandler;
 
 @Configuration
-public class HttpServiceConfiguration {
+class HttpServiceConfiguration {
 
   @Bean
   ProblemModule problemModule() {

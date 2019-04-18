@@ -19,7 +19,7 @@ class DateCoercingTest {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
-  private static DatatypeFactory datatypeFactory;
+  private static final DatatypeFactory datatypeFactory;
 
   private final DateCoercing coercing = new DateCoercing();
 

@@ -12,16 +12,12 @@ import org.dotwebstack.framework.backend.rdf4j.graphql.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.graphql.directives.DirectiveUtils;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
-
-  private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   private final RepositoryManager repositoryManager;
 

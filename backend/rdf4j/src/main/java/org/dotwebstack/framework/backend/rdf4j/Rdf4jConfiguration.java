@@ -37,11 +37,11 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 @Slf4j
 @Configuration
 @EnableConfigurationProperties(Rdf4jProperties.class)
-public class Rdf4jConfiguration {
+class Rdf4jConfiguration {
 
   public static final String LOCAL_REPOSITORY_ID = "local";
 
-  public static final String BASE_DIR_PREFIX = "rdf4j";
+  private static final String BASE_DIR_PREFIX = "rdf4j";
 
   private static final String MODEL_PATH_PATTERN = "classpath:config/model/**";
 

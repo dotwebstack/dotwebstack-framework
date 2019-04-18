@@ -10,7 +10,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.model.util.Models;
 
 @RequiredArgsConstructor
-public final class ValueFetcher implements DataFetcher<Object> {
+final class ValueFetcher implements DataFetcher<Object> {
 
   private final PropertyShape propertyShape;
 

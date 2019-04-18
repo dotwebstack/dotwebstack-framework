@@ -24,12 +24,6 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>test</artifactId>
-      <version>${project.parent.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
     </dependency>
