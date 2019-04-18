@@ -1,8 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.graphql.directives;
 
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
 public final class Rdf4jDirectives {
 
   public static final String SPARQL_NAME;
@@ -10,6 +7,11 @@ public final class Rdf4jDirectives {
   public static final String SPARQL_ARG_REPOSITORY;
 
   public static final String SPARQL_ARG_SUBJECT;
+
+  private Rdf4jDirectives() {
+    throw new IllegalStateException(
+        String.format("%s is not meant to be instantiated.", Rdf4jDirectives.class));
+  }
 
   static {
     SPARQL_NAME = "sparql";

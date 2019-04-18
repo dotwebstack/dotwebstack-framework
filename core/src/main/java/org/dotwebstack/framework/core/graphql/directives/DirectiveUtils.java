@@ -3,11 +3,14 @@ package org.dotwebstack.framework.core.graphql.directives;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 
-@UtilityClass
 public final class DirectiveUtils {
+
+  private DirectiveUtils() {
+    throw new IllegalStateException(
+        String.format("%s is not meant to be instantiated.", DirectiveUtils.class));
+  }
 
   public static String getStringArgument(@NonNull String argName,
       @NonNull GraphQLDirective directive) {

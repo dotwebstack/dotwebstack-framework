@@ -1,10 +1,13 @@
 package org.dotwebstack.framework.core.graphql;
 
 import java.time.ZonedDateTime;
-import lombok.experimental.UtilityClass;
 
-@UtilityClass
 public final class Constants {
+
+  private Constants() {
+    throw new IllegalStateException(
+        String.format("%s is not meant to be instantiated.", Constants.class));
+  }
 
   // Query
 

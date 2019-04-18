@@ -2,13 +2,11 @@ package org.dotwebstack.framework.backend.rdf4j;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-import lombok.experimental.UtilityClass;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-@UtilityClass
 public final class Constants {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
@@ -21,6 +19,11 @@ public final class Constants {
     } catch (DatatypeConfigurationException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  private Constants() {
+    throw new IllegalStateException(
+        String.format("%s is not meant to be instantiated.", Constants.class));
   }
 
   // Repository

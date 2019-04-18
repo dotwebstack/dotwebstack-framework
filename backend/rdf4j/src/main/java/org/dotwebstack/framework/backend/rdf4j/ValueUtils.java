@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -11,8 +10,12 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
-@UtilityClass
 public final class ValueUtils {
+
+  private ValueUtils() {
+    throw new IllegalStateException(
+        String.format("%s is not meant to be instantiated.", ValueUtils.class));
+  }
 
   /**
    * Convert value to Java type so built-in scalar types can handle them.
