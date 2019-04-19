@@ -18,7 +18,7 @@ import org.dotwebstack.framework.backend.rdf4j.directives.SparqlDirectiveWiring;
 import org.dotwebstack.framework.backend.rdf4j.query.ValueFetcher;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.core.graphql.GraphqlConfigurer;
+import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.springframework.stereotype.Component;
 
 @Component

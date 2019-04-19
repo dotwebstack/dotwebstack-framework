@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql;
+package org.dotwebstack.framework.core;
 
 import static graphql.Scalars.GraphQLString;
 
@@ -13,9 +13,9 @@ import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.dotwebstack.framework.core.graphql.directives.CoreDirectives;
-import org.dotwebstack.framework.core.graphql.directives.TransformDirectiveWiring;
-import org.dotwebstack.framework.core.graphql.scalars.CoreScalars;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
+import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -19,7 +19,7 @@ import graphql.Scalars;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.core.graphql.scalars.CoreScalars;
+import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.ModelBuilder;

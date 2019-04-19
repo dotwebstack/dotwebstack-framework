@@ -1,14 +1,14 @@
-package org.dotwebstack.framework.core.graphql;
+package org.dotwebstack.framework.core;
 
-import static org.dotwebstack.framework.core.graphql.Constants.BUILDING_BUILT_AT_EXAMPLE_1;
-import static org.dotwebstack.framework.core.graphql.Constants.BUILDING_BUILT_AT_FIELD;
-import static org.dotwebstack.framework.core.graphql.Constants.BUILDING_BUILT_AT_YEAR_EXAMPLE_1;
-import static org.dotwebstack.framework.core.graphql.Constants.BUILDING_BUILT_AT_YEAR_FIELD;
-import static org.dotwebstack.framework.core.graphql.Constants.BUILDING_FIELD;
-import static org.dotwebstack.framework.core.graphql.Constants.BUILDING_HEIGHT_EXAMPLE_1;
-import static org.dotwebstack.framework.core.graphql.Constants.BUILDING_HEIGHT_FIELD;
-import static org.dotwebstack.framework.core.graphql.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.core.graphql.Constants.BUILDING_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.core.Constants.BUILDING_BUILT_AT_EXAMPLE_1;
+import static org.dotwebstack.framework.core.Constants.BUILDING_BUILT_AT_FIELD;
+import static org.dotwebstack.framework.core.Constants.BUILDING_BUILT_AT_YEAR_EXAMPLE_1;
+import static org.dotwebstack.framework.core.Constants.BUILDING_BUILT_AT_YEAR_FIELD;
+import static org.dotwebstack.framework.core.Constants.BUILDING_FIELD;
+import static org.dotwebstack.framework.core.Constants.BUILDING_HEIGHT_EXAMPLE_1;
+import static org.dotwebstack.framework.core.Constants.BUILDING_HEIGHT_FIELD;
+import static org.dotwebstack.framework.core.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.core.Constants.BUILDING_IDENTIFIER_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

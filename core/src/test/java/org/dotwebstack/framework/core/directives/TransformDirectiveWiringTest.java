@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql.directives;
+package org.dotwebstack.framework.core.directives;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

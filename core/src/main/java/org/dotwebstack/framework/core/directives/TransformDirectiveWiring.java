@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql.directives;
+package org.dotwebstack.framework.core.directives;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetcher;

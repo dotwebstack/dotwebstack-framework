@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.graphql.scalars;
+package org.dotwebstack.framework.core.scalars;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -7,8 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.schema.CoercingSerializeException;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import org.eclipse.rdf4j.model.Literal;
@@ -16,13 +15,13 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.Test;
 
-class DateTimeCoercingTest {
+class DateCoercingTest {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   private static final DatatypeFactory datatypeFactory;
 
-  private final DateTimeCoercing coercing = new DateTimeCoercing();
+  private final DateCoercing coercing = new DateCoercing();
 
   static {
     try {
@@ -33,50 +32,48 @@ class DateTimeCoercingTest {
   }
 
   @Test
-  void serialize_ReturnsDateTime_ForDateTime() {
+  void serialize_ReturnsDate_ForDate() {
     // Arrange
-    ZonedDateTime input = ZonedDateTime.now();
+    LocalDate input = LocalDate.now();
 
     // Act
-    ZonedDateTime dateTime = coercing.serialize(input);
+    LocalDate date = coercing.serialize(input);
 
     // Assert
-    assertThat(dateTime, is(sameInstance(input)));
+    assertThat(date, is(sameInstance(input)));
   }
 
   @Test
-  void serialize_ReturnsDateTime_ForValidDateTimeString() {
+  void serialize_ReturnsDate_ForValidDateString() {
     // Act
-    ZonedDateTime dateTime = coercing.serialize("2018-05-30T09:30:10+02:00");
+    LocalDate date = coercing.serialize("2018-05-30");
 
     // Assert
-    ZonedDateTime expected = ZonedDateTime.of(2018, 5, 30, 9, 30, 10, 0, ZoneId.of("GMT+2"));
-    assertThat(dateTime.isEqual(expected), is(equalTo(true)));
+    assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
   }
 
   @Test
-  void serialize_ThrowsException_ForInvalidDateTimeString() {
+  void serialize_ThrowsException_ForInvalidDateString() {
     // Act / Assert
     assertThrows(CoercingSerializeException.class, () ->
         coercing.serialize("foo"));
   }
 
   @Test
-  void serialize_ReturnsDateTime_ForValidLiteral() {
+  void serialize_ReturnsDate_ForValidLiteral() {
     // Arrange
-    Literal dateTimeLiteral = VF.createLiteral(
-        datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
+    Literal dateLiteral = VF.createLiteral(
+        datatypeFactory.newXMLGregorianCalendar("2018-05-30"));
 
     // Act
-    ZonedDateTime dateTime = coercing.serialize(dateTimeLiteral);
+    LocalDate date = coercing.serialize(dateLiteral);
 
     // Assert
-    ZonedDateTime expected = ZonedDateTime.of(2018, 5, 30, 9, 30, 10, 0, ZoneId.of("GMT+2"));
-    assertThat(dateTime.isEqual(expected), is(equalTo(true)));
+    assertThat(date, is(equalTo(LocalDate.of(2018, 5, 30))));
   }
 
   @Test
-  void serialize_ReturnsDateTime_ForInvalidLiteral() {
+  void serialize_ReturnsDate_ForInvalidLiteral() {
     // Act / Assert
     assertThrows(CoercingSerializeException.class, () ->
         coercing.serialize(VF.createLiteral("foo")));
