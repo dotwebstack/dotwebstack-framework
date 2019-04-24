@@ -24,6 +24,7 @@ import lombok.Cleanup;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.ShapeProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.CoreProperties;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
@@ -51,6 +52,8 @@ class Rdf4jConfigurationTest {
 
   private Rdf4jProperties rdf4jProperties;
 
+  private CoreProperties coreProperties;
+
   @BeforeEach
   void setUp() {
     ShapeProperties shapeProperties = new ShapeProperties();
@@ -58,6 +61,8 @@ class Rdf4jConfigurationTest {
     shapeProperties.setPrefix(SHAPE_PREFIX);
     rdf4jProperties = new Rdf4jProperties();
     rdf4jProperties.setShape(shapeProperties);
+
+    coreProperties = new CoreProperties();
   }
 
   @Test
@@ -76,7 +81,7 @@ class Rdf4jConfigurationTest {
 
     // Act
     RepositoryManager result = rdf4jConfiguration
-        .repositoryManager(rdf4jProperties, configFactory, resourceLoader);
+        .repositoryManager(coreProperties,rdf4jProperties, configFactory, resourceLoader);
 
     // Assert
     @Cleanup RepositoryConnection con = result
@@ -106,7 +111,8 @@ class Rdf4jConfigurationTest {
 
     // Act
     RepositoryManager result = rdf4jConfiguration
-        .repositoryManager(rdf4jProperties, configFactory, resourceLoader);
+        .repositoryManager(coreProperties, rdf4jProperties, configFactory,
+                resourceLoader);
 
     // Assert
     @Cleanup RepositoryConnection con = result
@@ -128,7 +134,8 @@ class Rdf4jConfigurationTest {
 
     // Act / Assert
     assertThrows(RDFParseException.class, () ->
-        rdf4jConfiguration.repositoryManager(rdf4jProperties, configFactory, resourceLoader));
+        rdf4jConfiguration.repositoryManager(coreProperties,rdf4jProperties, configFactory,
+                resourceLoader));
   }
 
   @Test
@@ -143,7 +150,8 @@ class Rdf4jConfigurationTest {
 
     // Act / Assert
     assertThrows(UncheckedIOException.class, () ->
-        rdf4jConfiguration.repositoryManager(rdf4jProperties, configFactory, resourceLoader));
+        rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory,
+                resourceLoader));
   }
 
   @Test
@@ -153,7 +161,8 @@ class Rdf4jConfigurationTest {
 
     // Act / Assert
     assertThrows(UncheckedIOException.class, () ->
-        rdf4jConfiguration.repositoryManager(rdf4jProperties, configFactory, resourceLoader));
+        rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory,
+                resourceLoader));
   }
 
   @Test
@@ -173,7 +182,7 @@ class Rdf4jConfigurationTest {
 
     // Act
     RepositoryManager result = rdf4jConfiguration
-        .repositoryManager(rdf4jProperties, configFactory, resourceLoader);
+        .repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Assert
     RepositoryConfig repositoryConfig = result.getRepositoryConfig(CUSTOM_REPOSITORY_ID);
@@ -185,7 +194,7 @@ class Rdf4jConfigurationTest {
     // Arrange
     when(resourceLoader.getResources(anyString())).thenReturn(new Resource[0]);
     RepositoryManager repositoryManager = rdf4jConfiguration
-        .repositoryManager(rdf4jProperties, configFactory, resourceLoader);
+        .repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Act
     NodeShapeRegistry nodeShapeRegistry = rdf4jConfiguration
@@ -201,7 +210,7 @@ class Rdf4jConfigurationTest {
     when(resourceLoader.getResources(anyString()))
         .thenReturn(new Resource[]{new ClassPathResource("config/model/shapes.trig")});
     RepositoryManager repositoryManager = rdf4jConfiguration
-        .repositoryManager(rdf4jProperties, configFactory, resourceLoader);
+        .repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Act
     NodeShapeRegistry nodeShapeRegistry = rdf4jConfiguration
