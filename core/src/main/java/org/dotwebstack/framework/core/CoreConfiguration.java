@@ -22,7 +22,7 @@ import org.springframework.core.io.ResourceLoader;
 @EnableConfigurationProperties(CoreProperties.class)
 public class CoreConfiguration {
 
-  private static final String SCHEMA_PATH = "/schema.graphqls";
+  private static final String FIXED_SCHEMA_NAME = "schema.graphqls";
 
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull ResourceLoader resourceLoader,
@@ -30,7 +30,7 @@ public class CoreConfiguration {
                                      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers)
           throws IOException {
     Reader reader = new InputStreamReader(resourceLoader.getResource(coreProperties
-            .getResourcePath() + SCHEMA_PATH).getInputStream());
+            .getResourcePath() + FIXED_SCHEMA_NAME).getInputStream());
     TypeDefinitionRegistry typeDefinitionRegistry = new SchemaParser().parse(reader);
     graphqlConfigurers
         .forEach(graphqlConfigurer -> graphqlConfigurer

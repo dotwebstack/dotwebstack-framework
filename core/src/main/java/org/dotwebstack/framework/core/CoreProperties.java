@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -12,7 +14,10 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "dotwebstack")
 public class CoreProperties {
 
-  @NonNull
-  private String resourcePath = "classpath:/config";
+  private static final String CLASSPATH_PREFIX = "classpath:/";
 
+  @NonNull
+  private URI resourcePath = new URI(CLASSPATH_PREFIX + "config/");
+
+  public CoreProperties() throws URISyntaxException { }
 }

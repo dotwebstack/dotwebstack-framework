@@ -2,7 +2,7 @@ logging:
   level.org.dotwebstack: DEBUG
 
 dotwebstack:
-  resourcePath: classpath:/config
+  resourcePath: classpath:config/
   rdf4j:
     shape:
       graph: http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag

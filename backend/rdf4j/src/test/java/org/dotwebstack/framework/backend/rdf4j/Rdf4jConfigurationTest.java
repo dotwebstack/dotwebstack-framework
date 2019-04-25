@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
 import java.util.Map;
 import lombok.Cleanup;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
@@ -55,7 +56,7 @@ class Rdf4jConfigurationTest {
   private CoreProperties coreProperties;
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws URISyntaxException {
     ShapeProperties shapeProperties = new ShapeProperties();
     shapeProperties.setGraph(SHAPE_GRAPH);
     shapeProperties.setPrefix(SHAPE_PREFIX);

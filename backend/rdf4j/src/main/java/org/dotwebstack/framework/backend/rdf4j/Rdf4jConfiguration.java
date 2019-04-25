@@ -44,7 +44,7 @@ class Rdf4jConfiguration {
 
   private static final String BASE_DIR_PREFIX = "rdf4j";
 
-  private static final String MODEL_PATH_PATTERN = "/model/**";
+  private static final String MODEL_PATH_PATTERN = "model/**";
 
   @Bean
   ConfigFactory configFactory() {
@@ -66,7 +66,7 @@ class Rdf4jConfiguration {
     // Add & populate local repository
     repositoryManager.addRepositoryConfig(createLocalRepositoryConfig());
     populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader,
-            coreProperties.getResourcePath());
+            coreProperties.getResourcePath().toString());
 
     // Add repositories from external config
     if (rdf4jProperties.getRepositories() != null) {
