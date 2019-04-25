@@ -13,19 +13,24 @@ import java.util.Collection;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
 
 @Configuration
-class CoreConfiguration {
+@EnableConfigurationProperties(CoreProperties.class)
+public class CoreConfiguration {
 
-  private static final String SCHEMA_PATH = "classpath:config/schema.graphqls";
+  private static final String FIXED_SCHEMA_NAME = "schema.graphqls";
 
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull ResourceLoader resourceLoader,
-      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers) throws IOException {
-    Reader reader = new InputStreamReader(resourceLoader.getResource(SCHEMA_PATH).getInputStream());
+                                     @NonNull CoreProperties coreProperties,
+                                     @NonNull Collection<GraphqlConfigurer> graphqlConfigurers)
+          throws IOException {
+    Reader reader = new InputStreamReader(resourceLoader.getResource(coreProperties
+            .getResourcePath().resolve(FIXED_SCHEMA_NAME).toString()).getInputStream());
     TypeDefinitionRegistry typeDefinitionRegistry = new SchemaParser().parse(reader);
     graphqlConfigurers
         .forEach(graphqlConfigurer -> graphqlConfigurer

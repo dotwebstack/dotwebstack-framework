@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map.Entry;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.CoreProperties;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -43,7 +45,7 @@ class Rdf4jConfiguration {
 
   private static final String BASE_DIR_PREFIX = "rdf4j";
 
-  private static final String MODEL_PATH_PATTERN = "classpath:config/model/**";
+  private static final String MODEL_PATH_PATTERN = "model/**";
 
   @Bean
   ConfigFactory configFactory() {
@@ -51,8 +53,10 @@ class Rdf4jConfiguration {
   }
 
   @Bean
-  RepositoryManager repositoryManager(@NonNull Rdf4jProperties rdf4jProperties,
-      @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader)
+  RepositoryManager repositoryManager(@NonNull CoreProperties coreProperties,
+                                      @NonNull Rdf4jProperties rdf4jProperties,
+                                      @NonNull ConfigFactory configFactory,
+                                      @NonNull ResourceLoader resourceLoader)
       throws IOException {
     LOG.debug("Initializing repository manager");
 
@@ -62,7 +66,8 @@ class Rdf4jConfiguration {
 
     // Add & populate local repository
     repositoryManager.addRepositoryConfig(createLocalRepositoryConfig());
-    populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader);
+    populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader,
+            coreProperties.getResourcePath());
 
     // Add repositories from external config
     if (rdf4jProperties.getRepositories() != null) {
@@ -111,13 +116,13 @@ class Rdf4jConfiguration {
   }
 
   private static void populateLocalRepository(Repository repository,
-      ResourceLoader resourceLoader) {
+                                              ResourceLoader resourceLoader, URI resourcePath) {
     Resource[] resourceList;
 
     try {
       resourceList = ResourcePatternUtils
           .getResourcePatternResolver(resourceLoader)
-          .getResources(MODEL_PATH_PATTERN);
+              .getResources(resourcePath.resolve(MODEL_PATH_PATTERN).toString());
     } catch (IOException e) {
       throw new UncheckedIOException("Error while loading local model.", e);
     }
