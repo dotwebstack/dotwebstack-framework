@@ -19,7 +19,11 @@ public class CoreProperties {
   @NonNull
   private URI resourcePath;
 
-  public CoreProperties() throws URISyntaxException {
-    resourcePath = new URI(CLASSPATH_PREFIX + "config/");
+  public CoreProperties() {
+    try {
+      resourcePath = new URI(CLASSPATH_PREFIX + "config/");
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException("The resourcePath that you are trying to set is invalid", e);
+    }
   }
 }
