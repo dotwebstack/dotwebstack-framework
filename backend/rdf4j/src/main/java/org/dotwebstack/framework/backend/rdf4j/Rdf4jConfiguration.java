@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Map.Entry;
@@ -66,7 +67,7 @@ class Rdf4jConfiguration {
     // Add & populate local repository
     repositoryManager.addRepositoryConfig(createLocalRepositoryConfig());
     populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader,
-            coreProperties.getResourcePath().toString());
+            coreProperties.getResourcePath());
 
     // Add repositories from external config
     if (rdf4jProperties.getRepositories() != null) {
@@ -115,13 +116,13 @@ class Rdf4jConfiguration {
   }
 
   private static void populateLocalRepository(Repository repository,
-                                              ResourceLoader resourceLoader, String resourcePath) {
+                                              ResourceLoader resourceLoader, URI resourcePath) {
     Resource[] resourceList;
 
     try {
       resourceList = ResourcePatternUtils
           .getResourcePatternResolver(resourceLoader)
-              .getResources(resourcePath + MODEL_PATH_PATTERN);
+              .getResources(resourcePath.resolve(MODEL_PATH_PATTERN).toString());
     } catch (IOException e) {
       throw new UncheckedIOException("Error while loading local model.", e);
     }

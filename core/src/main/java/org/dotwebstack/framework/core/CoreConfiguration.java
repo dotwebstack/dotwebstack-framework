@@ -30,7 +30,7 @@ public class CoreConfiguration {
                                      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers)
           throws IOException {
     Reader reader = new InputStreamReader(resourceLoader.getResource(coreProperties
-            .getResourcePath() + FIXED_SCHEMA_NAME).getInputStream());
+            .getResourcePath().resolve(FIXED_SCHEMA_NAME).toString()).getInputStream());
     TypeDefinitionRegistry typeDefinitionRegistry = new SchemaParser().parse(reader);
     graphqlConfigurers
         .forEach(graphqlConfigurer -> graphqlConfigurer
