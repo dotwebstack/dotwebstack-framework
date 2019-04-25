@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -17,14 +16,6 @@ public class CoreProperties {
   private static final String CLASSPATH_PREFIX = "classpath:/";
 
   @NonNull
-  private URI resourcePath;
-
-  public CoreProperties() {
-    try {
-      this.resourcePath = new URI(CLASSPATH_PREFIX + "config/");
-    } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("The given resourcePath is invalid", e);
-    }
-  }
+  private URI resourcePath = URI.create(CLASSPATH_PREFIX + "config/");
 
 }
