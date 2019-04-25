@@ -2,7 +2,6 @@ logging.level.root: OFF
 spring.main.banner-mode: 'off'
 
 dotwebstack:
-  resourcePath: classpath:config
   rdf4j:
     shape:
       graph: http://example/shapes

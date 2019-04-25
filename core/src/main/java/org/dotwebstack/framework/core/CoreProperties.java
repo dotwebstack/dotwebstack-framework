@@ -13,6 +13,6 @@ import org.springframework.validation.annotation.Validated;
 public class CoreProperties {
 
   @NonNull
-  private String resourcePath;
+  private String resourcePath = "classpath:/config";
 
 }

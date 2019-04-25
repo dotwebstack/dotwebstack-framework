@@ -37,7 +37,7 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 
 @Slf4j
 @Configuration
-@EnableConfigurationProperties({CoreProperties.class, Rdf4jProperties.class})
+@EnableConfigurationProperties(Rdf4jProperties.class)
 class Rdf4jConfiguration {
 
   public static final String LOCAL_REPOSITORY_ID = "local";

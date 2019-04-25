@@ -81,7 +81,7 @@ class Rdf4jConfigurationTest {
 
     // Act
     RepositoryManager result = rdf4jConfiguration
-        .repositoryManager(coreProperties,rdf4jProperties, configFactory, resourceLoader);
+        .repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Assert
     @Cleanup RepositoryConnection con = result
@@ -134,7 +134,7 @@ class Rdf4jConfigurationTest {
 
     // Act / Assert
     assertThrows(RDFParseException.class, () ->
-        rdf4jConfiguration.repositoryManager(coreProperties,rdf4jProperties, configFactory,
+        rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory,
                 resourceLoader));
   }
 

@@ -20,7 +20,7 @@ import org.springframework.core.io.ResourceLoader;
 
 @Configuration
 @EnableConfigurationProperties(CoreProperties.class)
-class CoreConfiguration {
+public class CoreConfiguration {
 
   private static final String SCHEMA_PATH = "/schema.graphqls";
 
