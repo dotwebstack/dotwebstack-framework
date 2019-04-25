@@ -56,7 +56,7 @@ class Rdf4jConfigurationTest {
   private CoreProperties coreProperties;
 
   @BeforeEach
-  void setUp() throws URISyntaxException {
+  void setUp() {
     ShapeProperties shapeProperties = new ShapeProperties();
     shapeProperties.setGraph(SHAPE_GRAPH);
     shapeProperties.setPrefix(SHAPE_PREFIX);

@@ -21,9 +21,10 @@ public class CoreProperties {
 
   public CoreProperties() {
     try {
-      resourcePath = new URI(CLASSPATH_PREFIX + "config/");
+      this.resourcePath = new URI(CLASSPATH_PREFIX + "config/");
     } catch (URISyntaxException e) {
-      throw new IllegalArgumentException("The resourcePath that you are trying to set is invalid", e);
+      throw new IllegalArgumentException("The given resourcePath is invalid", e);
     }
   }
+
 }
