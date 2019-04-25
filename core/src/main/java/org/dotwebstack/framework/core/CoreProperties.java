@@ -17,7 +17,9 @@ public class CoreProperties {
   private static final String CLASSPATH_PREFIX = "classpath:/";
 
   @NonNull
-  private URI resourcePath = new URI(CLASSPATH_PREFIX + "config/");
+  private URI resourcePath;
 
-  public CoreProperties() throws URISyntaxException { }
+  public CoreProperties() throws URISyntaxException {
+    resourcePath = new URI(CLASSPATH_PREFIX + "config/");
+  }
 }
