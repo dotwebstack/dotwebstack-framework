@@ -97,6 +97,7 @@ GRAPH dbeerpedia:Theatre {
       elmo:parameterMapper dbeerpedia:SubjectFromUrl;
       elmo:informationProduct dbeerpedia:ResourceInformationProduct;
       #elmo:appliesTo "http://{domain}/dbp/ld/v1/id/{reference}";
+      elmo:htmlTemplate "hey ${result}";
   .
 
   dbeerpedia:HomepageEndpoint a elmo:Endpoint;

@@ -4,6 +4,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,6 @@ import javax.ws.rs.core.Variant;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.config.ConfigurationException;
-import org.dotwebstack.framework.frontend.ld.endpoint.AbstractEndpoint;
 import org.dotwebstack.framework.frontend.ld.entity.GraphEntity;
 import org.dotwebstack.framework.frontend.ld.entity.TupleEntity;
 import org.dotwebstack.framework.frontend.ld.representation.Representation;
@@ -62,11 +62,12 @@ public abstract class RequestHandler<T> implements Inflector<ContainerRequestCon
 
     if (preferred != null && preferred.getMediaType().isCompatible(MediaType.TEXT_HTML_TYPE)) {
 
-      String path = ((AbstractEndpoint) endpoint).getPathPattern();
-
-      String uri = representation.getStage() != null
-          ? representation.getStage().getFullPath() + path
-          : containerRequestContext.getUriInfo().getAbsolutePath().toString();
+      // Strip X-Forwarded-Host from path. Otherwise the request send will be
+      // /X-Forwarded-Host/X-Forwarded-Host
+      List<String> strings =
+          Arrays.asList(containerRequestContext.getUriInfo().getPath()
+              .split("/"));
+      String uri = "/" + String.join("/", strings.subList(1, strings.size()));
 
       return generateHtmlResponse(representation.getHtmlTemplate(), uri);
     }
