@@ -178,7 +178,7 @@ public class LdIntegrationTest {
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("hey " + host + path));
+    assertThat(response.readEntity(String.class), equalTo("hey " + path));
   }
 
   @Test
@@ -194,7 +194,7 @@ public class LdIntegrationTest {
     // Assert
     assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
     assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("hey " + host + path));
+    assertThat(response.readEntity(String.class), equalTo("hey " + path));
   }
 
   @Test
@@ -233,6 +233,22 @@ public class LdIntegrationTest {
 
     // Assert
     assertThat(response.getStatus(), equalTo(Status.NO_CONTENT.getStatusCode()));
+  }
+
+  @Test
+  public void get_HtmlResponseForTuple_WhenEndpointIsDynamic() {
+    // Arrange
+    arrangeTupleModel();
+    String path = "/dbp/ld/v1/doc/breweries";
+    String host = "/localhost";
+
+    // Act
+    Response response = target.path(path).request("text/html").get();
+
+    // Assert
+    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_HTML_TYPE));
+    assertThat(response.readEntity(String.class), equalTo("hey " + path));
   }
 
   @Test

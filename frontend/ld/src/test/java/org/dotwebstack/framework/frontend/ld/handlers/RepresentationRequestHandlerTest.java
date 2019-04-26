@@ -313,14 +313,15 @@ public class RepresentationRequestHandlerTest {
     UriInfo uriInfo = mock(UriInfo.class);
     MultivaluedMap<String, String> parameterValues = mock(MultivaluedMap.class);
     when(containerRequestContext.getUriInfo()).thenReturn(uriInfo);
-    when(uriInfo.getAbsolutePath()).thenReturn(URI.create("http://localhost"));
     when(containerRequestContext.getUriInfo().getPathParameters()).thenReturn(parameterValues);
-    when(uriInfo.getPath()).thenReturn("/");
     when(containerRequestContext.getRequest()).thenReturn(mock(Request.class));
     if (html) {
       List<Variant> reqVariants = Variant.mediaTypes(MediaType.TEXT_HTML_TYPE).build();
       when(containerRequestContext.getRequest().selectVariant(reqVariants))
           .thenReturn(Variant.mediaTypes(MediaType.TEXT_HTML_TYPE).build().get(0));
+      when(uriInfo.getPath()).thenReturn("/test/");
+    } else {
+      when(uriInfo.getPath()).thenReturn("/");
     }
     when(containerRequestContext.getRequest().getMethod()).thenReturn(get);
   }
