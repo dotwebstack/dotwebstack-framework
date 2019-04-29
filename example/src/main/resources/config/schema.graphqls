@@ -13,6 +13,12 @@ type Query {
       limit: "pageSize",
       offset: "(page - 1) * pageSize"
     )
+  panden_from_input(input: CollectionQueryInput): [Pand!]!
+    @sparql(
+      repository: "local",
+      limit: "input.pageSize",
+      offset: "(input.page - 1) * input.pageSize"
+    )
 }
 
 type Pand {
@@ -27,4 +33,9 @@ type Pand {
 type Verblijfsobject {
   identificatiecode: ID!
   status: String!
+}
+
+input CollectionQueryInput {
+  page: Int = 1
+  pageSize: Int = 10
 }

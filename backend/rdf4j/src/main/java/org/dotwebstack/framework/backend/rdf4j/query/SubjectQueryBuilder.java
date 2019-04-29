@@ -35,8 +35,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   String getQueryString(final Map<String, Object> arguments,
                         final GraphQLDirective sparqlDirective) {
-    Variable subjectVar = SparqlBuilder.var("s");
-    NodeShape nodeShape = environment.getNodeShapeRegistry().get(environment.getObjectType());
+    final Variable subjectVar = SparqlBuilder.var("s");
+    final NodeShape nodeShape = environment.getNodeShapeRegistry().get(environment.getObjectType());
 
     arguments.putIfAbsent("page", DEFAULT_PAGE);
     arguments.putIfAbsent("pageSize", DEFAULT_PAGESIZE);
@@ -46,9 +46,17 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         .getStringArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT, sparqlDirective));
     Integer limit = (Integer) limitExpression.evaluate(context);
 
+    if (limit == null || limit < 0) {
+      throw new IllegalArgumentException("The given pageSize is invalid");
+    }
+
     JexlExpression offsetExpression = jexlEngine.createExpression(DirectiveUtils
         .getStringArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET, sparqlDirective));
     Integer offset = (Integer) offsetExpression.evaluate(context);
+
+    if (offset == null || offset < 0) {
+      throw new IllegalArgumentException("The given page is invalid");
+    }
 
     query.select(subjectVar)
     .where(GraphPatterns
