@@ -14,9 +14,12 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -39,6 +42,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
   private final NodeShapeRegistry nodeShapeRegistry;
 
   private final Map<String, String> prefixMap;
+
+  private final JexlEngine jexlEngine;
 
   @Override
   public Object get(@NonNull DataFetchingEnvironment environment) {
@@ -88,10 +93,10 @@ public final class QueryFetcher implements DataFetcher<Object> {
     }
 
     String subjectQuery = SubjectQueryBuilder
-        .create(environment)
-        .getQueryString(arguments);
+        .create(environment, jexlEngine)
+        .getQueryString(arguments, sparqlDirective);
 
-    LOG.debug("Exececuting query for subjects:\n{}", subjectQuery);
+    LOG.debug("Executing query for subjects:\n{}", subjectQuery);
 
     TupleQueryResult queryResult = con
         .prepareTupleQuery(subjectQuery)
@@ -113,7 +118,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .create(environment, subjects)
         .getQueryString();
 
-    LOG.debug("Exececuting query for graph:\n{}", graphQuery);
+    LOG.debug("Executing query for graph:\n{}", graphQuery);
 
     GraphQueryResult queryResult = con
         .prepareGraphQuery(graphQuery)
