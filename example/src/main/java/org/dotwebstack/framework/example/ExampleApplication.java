@@ -6,7 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan("org.dotwebstack.framework")
-class ExampleApplication {
+public class ExampleApplication {
 
   public static void main(String[] args) {
     SpringApplication.run(ExampleApplication.class, args);
