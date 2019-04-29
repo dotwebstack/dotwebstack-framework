@@ -7,9 +7,12 @@ type Query {
     @sparql(
       repository: "local",
       subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
-  panden: [Pand!]!
+  panden(page: Int = 1, pageSize: Int = 10): [Pand!]!
     @sparql(
-      repository: "local")
+      repository: "local",
+      limit: "pageSize",
+      offset: "(page - 1) * pageSize"
+    )
 }
 
 type Pand {
