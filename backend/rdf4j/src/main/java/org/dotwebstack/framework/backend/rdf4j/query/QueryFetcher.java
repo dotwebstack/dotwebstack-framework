@@ -89,7 +89,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
     String subjectQuery = SubjectQueryBuilder
         .create(environment)
-        .getQueryString();
+        .getQueryString(arguments);
 
     LOG.debug("Exececuting query for subjects:\n{}", subjectQuery);
 
