@@ -1,10 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import com.google.common.collect.ImmutableMap;
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLDirective;
 import java.util.Map;
-import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
@@ -31,11 +28,13 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     this.jexlEngine = jexlEngine;
   }
 
-  static SubjectQueryBuilder create(final QueryEnvironment environment, final JexlEngine jexlEngine) {
+  static SubjectQueryBuilder create(final QueryEnvironment environment,
+                                    final JexlEngine jexlEngine) {
     return new SubjectQueryBuilder(environment, jexlEngine);
   }
 
-  public String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective) {
+  String getQueryString(final Map<String, Object> arguments,
+                        final GraphQLDirective sparqlDirective) {
     Variable subjectVar = SparqlBuilder.var("s");
     NodeShape nodeShape = environment.getNodeShapeRegistry().get(environment.getObjectType());
 
@@ -44,18 +43,18 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     MapContext context = new MapContext(arguments);
 
     JexlExpression limitExpression = jexlEngine.createExpression(DirectiveUtils
-            .getStringArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT, sparqlDirective));
+        .getStringArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT, sparqlDirective));
     Integer limit = (Integer) limitExpression.evaluate(context);
 
     JexlExpression offsetExpression = jexlEngine.createExpression(DirectiveUtils
-            .getStringArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET, sparqlDirective));
+        .getStringArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET, sparqlDirective));
     Integer offset = (Integer) offsetExpression.evaluate(context);
 
-  query.select(subjectVar)
+    query.select(subjectVar)
     .where(GraphPatterns
-    .tp(subjectVar, ns(RDF.TYPE), ns(nodeShape.getTargetClass())))
-    .limit(limit)
-    .offset(offset);
+      .tp(subjectVar, ns(RDF.TYPE), ns(nodeShape.getTargetClass())))
+      .limit(limit)
+      .offset(offset);
 
     return query.getQueryString();
   }

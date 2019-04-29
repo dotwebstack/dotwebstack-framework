@@ -63,7 +63,8 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     }
 
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId).getConnection();
-    QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine);
+    QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap,
+            jexlEngine);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
