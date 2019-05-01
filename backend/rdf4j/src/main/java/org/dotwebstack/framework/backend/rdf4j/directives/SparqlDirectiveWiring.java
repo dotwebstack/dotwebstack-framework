@@ -30,17 +30,16 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private final Map<String, String> prefixMap;
 
-  private final JexlEngine jexlEngine = new JexlBuilder()
-          .silent(false)
-          .strict(true)
-          .create();
+  private final JexlEngine jexlEngine;
 
   public SparqlDirectiveWiring(RepositoryManager repositoryManager,
-      NodeShapeRegistry nodeShapeRegistry, Rdf4jProperties rdf4jProperties) {
+      NodeShapeRegistry nodeShapeRegistry, Rdf4jProperties rdf4jProperties,
+      JexlEngine jexlEngine) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null
         ? HashBiMap.create(rdf4jProperties.getPrefixes()).inverse() : ImmutableMap.of();
+    this.jexlEngine = jexlEngine;
   }
 
   @Override

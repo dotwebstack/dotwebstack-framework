@@ -17,15 +17,20 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 
 class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
-  public static final Integer DEFAULT_PAGE = 1;
+  private static final Integer DEFAULT_PAGE = 1;
 
-  public static final Integer DEFAULT_PAGESIZE = 10;
+  private static final Integer DEFAULT_PAGESIZE = 10;
+
+  private static final Variable SUBJECT_VAR = SparqlBuilder.var("s");
 
   private final JexlEngine jexlEngine;
+
+  private final NodeShape nodeShape;
 
   private SubjectQueryBuilder(final QueryEnvironment environment, final JexlEngine jexlEngine) {
     super(environment, Queries.SELECT());
     this.jexlEngine = jexlEngine;
+    this.nodeShape = this.environment.getNodeShapeRegistry().get(this.environment.getObjectType());
   }
 
   static SubjectQueryBuilder create(final QueryEnvironment environment,
@@ -35,35 +40,53 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   String getQueryString(final Map<String, Object> arguments,
                         final GraphQLDirective sparqlDirective) {
-    final Variable subjectVar = SparqlBuilder.var("s");
-    final NodeShape nodeShape = environment.getNodeShapeRegistry().get(environment.getObjectType());
-
     arguments.putIfAbsent("page", DEFAULT_PAGE);
     arguments.putIfAbsent("pageSize", DEFAULT_PAGESIZE);
-    MapContext context = new MapContext(arguments);
+    final MapContext context = new MapContext(arguments);
 
-    JexlExpression limitExpression = jexlEngine.createExpression(DirectiveUtils
-        .getStringArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT, sparqlDirective));
-    Integer limit = (Integer) limitExpression.evaluate(context);
+    this.query.select(SUBJECT_VAR)
+    .where(GraphPatterns
+      .tp(SUBJECT_VAR, ns(RDF.TYPE), ns(this.nodeShape.getTargetClass())))
+      .limit(getLimitFromContext(context, sparqlDirective))
+      .offset(getOffsetFromContext(context, sparqlDirective));
 
-    if (limit == null || limit < 0) {
+    return this.query.getQueryString();
+  }
+
+  Integer getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {
+    JexlExpression limitExpression = this.jexlEngine.createExpression(DirectiveUtils
+            .getStringArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT, sparqlDirective));
+    Object limitObject = limitExpression.evaluate(context);
+
+    if (!(limitObject instanceof Integer)) {
+      throw new IllegalArgumentException(("The given limit expression is invalid"));
+    }
+
+    Integer limit = (Integer) limitObject;
+
+    if (limit < 1) {
       throw new IllegalArgumentException("The given pageSize is invalid");
     }
 
-    JexlExpression offsetExpression = jexlEngine.createExpression(DirectiveUtils
-        .getStringArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET, sparqlDirective));
-    Integer offset = (Integer) offsetExpression.evaluate(context);
+    return limit;
+  }
 
-    if (offset == null || offset < 0) {
+  Integer getOffsetFromContext(MapContext context, GraphQLDirective sparqlDirective) {
+    JexlExpression offsetExpression = this.jexlEngine.createExpression(DirectiveUtils
+            .getStringArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET, sparqlDirective));
+    Object offsetObject = offsetExpression.evaluate(context);
+
+    if (!(offsetObject instanceof Integer)) {
+      throw new IllegalArgumentException(("The given offset expression is invalid"));
+    }
+
+    Integer offset = (Integer) offsetObject;
+
+    if (offset < 0) {
       throw new IllegalArgumentException("The given page is invalid");
     }
 
-    query.select(subjectVar)
-    .where(GraphPatterns
-      .tp(subjectVar, ns(RDF.TYPE), ns(nodeShape.getTargetClass())))
-      .limit(limit)
-      .offset(offset);
-
-    return query.getQueryString();
+    return offset;
   }
+
 }
