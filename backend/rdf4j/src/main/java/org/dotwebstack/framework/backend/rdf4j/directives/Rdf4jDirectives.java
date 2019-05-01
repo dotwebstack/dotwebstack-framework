@@ -8,6 +8,8 @@ public final class Rdf4jDirectives {
 
   public static final String SPARQL_ARG_SUBJECT;
 
+  public static final String SPARQL_ARG_ORDERBY;
+
   public static final String SPARQL_ARG_LIMIT;
 
   public static final String SPARQL_ARG_OFFSET;
@@ -21,6 +23,7 @@ public final class Rdf4jDirectives {
     SPARQL_NAME = "sparql";
     SPARQL_ARG_REPOSITORY = "repository";
     SPARQL_ARG_SUBJECT = "subject";
+    SPARQL_ARG_ORDERBY = "orderBy";
     SPARQL_ARG_LIMIT = "limit";
     SPARQL_ARG_OFFSET = "offset";
   }

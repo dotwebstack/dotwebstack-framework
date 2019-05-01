@@ -7,17 +7,24 @@ type Query {
     @sparql(
       repository: "local",
       subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
-  panden(page: Int = 1, pageSize: Int = 10): [Pand!]!
+  panden(sort: [SortField!] = [{ field: "identificatiecode", order: DESC }],
+         page: Int = 1, pageSize: Int = 10): [Pand!]!
     @sparql(
       repository: "local",
       limit: "pageSize",
-      offset: "(page - 1) * pageSize"
+      offset: "(page - 1) * pageSize",
+      orderBy: "sort"
     )
-  panden_from_input(input: CollectionQueryInput): [Pand!]!
+  panden_paging_input(input: CollectionQueryInput): [Pand!]!
     @sparql(
       repository: "local",
       limit: "input.pageSize",
       offset: "(input.page - 1) * input.pageSize"
+    )
+  panden_sort_input(input: QueryInput): [Pand!]!
+    @sparql(
+      repository: "local"
+      orderBy: "input.sort")
     )
 }
 
@@ -33,6 +40,20 @@ type Pand {
 type Verblijfsobject {
   identificatiecode: ID!
   status: String!
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+input SortField {
+  field: String!
+  order: SortOrder!
+}
+
+input QueryInput {
+  sort: [SortField!] = [{ field: "identificatiecode", order: DESC }]
 }
 
 input CollectionQueryInput {
