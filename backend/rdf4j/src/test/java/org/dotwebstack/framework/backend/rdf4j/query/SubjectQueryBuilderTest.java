@@ -14,6 +14,7 @@ import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLObjectType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
@@ -108,9 +109,9 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
     assertThat(subjectQueryBuilder.getLimitFromContext(context, emptySparqlDirective),
-            is(equalTo(null)));
+            is(equalTo(Optional.empty())));
     assertThat(subjectQueryBuilder.getOffsetFromContext(context, emptySparqlDirective),
-            is(equalTo(null)));
+            is(equalTo(Optional.empty())));
   }
 
   @Test
@@ -136,9 +137,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThat(subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
-            is(equalTo(12)));
+            is(equalTo(Optional.of(12))));
     assertThat(subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective),
-            is(equalTo(48)));
+            is(equalTo(Optional.of(48))));
   }
 
   @Test
@@ -151,12 +152,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThat(subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
-            is(equalTo(12)));
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            is(equalTo(Optional.of(12))));
+    assertThrows(IllegalArgumentException.class, () ->
             subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
-
-    assertThat(exception.toString(), equalTo(
-            "java.lang.IllegalArgumentException: The given page is invalid"));
   }
 
   @Test
@@ -169,11 +167,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThat(subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
-            is(equalTo(12)));
-    IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+            is(equalTo(Optional.of(12))));
+    assertThrows(IllegalArgumentException.class, () ->
             subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
-    assertThat(exception.toString(), equalTo(
-            "java.lang.NumberFormatException: For input string: \"test\""));
   }
 
   @Test
@@ -185,14 +181,10 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    IllegalArgumentException limitException = assertThrows(IllegalArgumentException.class, () ->
+    assertThrows(IllegalArgumentException.class, () ->
             subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
-    assertThat(limitException.toString(), equalTo(
-            "java.lang.IllegalArgumentException: The given pageSize is invalid"));
-    IllegalArgumentException offsetException = assertThrows(IllegalArgumentException.class, () ->
+    assertThrows(IllegalArgumentException.class, () ->
             subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
-    assertThat(offsetException.toString(), equalTo(
-            "java.lang.IllegalArgumentException: The given page is invalid"));
   }
 
   @Test
@@ -204,14 +196,10 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    IllegalArgumentException limitException = assertThrows(IllegalArgumentException.class, () ->
+    assertThrows(IllegalArgumentException.class, () ->
             subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
-    assertThat(limitException.toString(), equalTo(
-            "java.lang.IllegalArgumentException: The given limit expression is invalid"));
-    IllegalArgumentException offsetException = assertThrows(IllegalArgumentException.class, () ->
+    assertThrows(IllegalArgumentException.class, () ->
             subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
-    assertThat(offsetException.toString(), equalTo(
-            "java.lang.NumberFormatException: For input string: \"test\""));
   }
 
   @Test
@@ -224,17 +212,10 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    JexlException.Parsing limitException = assertThrows(JexlException.Parsing.class, () ->
+    assertThrows(JexlException.Parsing.class, () ->
             subjectQueryBuilder.getLimitFromContext(context, invalidSparqlDirective));
-    assertThat(limitException.toString(), equalTo(
-            "org.apache.commons.jexl3.JexlException$Parsing: org.dotwebstack.framework.backend."
-                    + "rdf4j.query.SubjectQueryBuilder.getLimitFromContext@1:6 parsing error in "
-                    + "'is'"));
-    JexlException.Parsing offsetException = assertThrows(JexlException.Parsing.class, () ->
+
+    assertThrows(JexlException.Parsing.class, () ->
             subjectQueryBuilder.getOffsetFromContext(context, invalidSparqlDirective));
-    assertThat(offsetException.toString(), equalTo(
-            "org.apache.commons.jexl3.JexlException$Parsing: org.dotwebstack.framework.backend."
-                    + "rdf4j.query.SubjectQueryBuilder.getOffsetFromContext@1:6 parsing error in "
-                    + "'is'"));
   }
 }

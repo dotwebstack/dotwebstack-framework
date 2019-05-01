@@ -20,13 +20,7 @@ public final class DirectiveUtils {
       return null;
     }
 
-    GraphQLArgument arg = directive.getArgument(argName);
-
-    if (arg == null) {
-      return null;
-    }
-
-    Object argValue = arg.getValue();
+    Object argValue = argument.getValue();
 
     if (argValue == null) {
       return null;
