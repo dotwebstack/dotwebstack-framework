@@ -45,17 +45,17 @@ class SubjectQueryBuilderTest {
   private NodeShape nodeShapeMock = mock(NodeShape.class);
 
   @Mock
-  GraphQLObjectType objectTypeMock = mock(GraphQLObjectType.class);
+  private GraphQLObjectType objectTypeMock = mock(GraphQLObjectType.class);
 
   private SubjectQueryBuilder subjectQueryBuilder;
 
   @BeforeEach
   void setUp() {
-    when(environmentMock.getNodeShapeRegistry()).thenReturn(registryMock);
-    when(environmentMock.getObjectType()).thenReturn(objectTypeMock);
-    when(environmentMock.getNodeShapeRegistry().get(any(GraphQLObjectType.class)))
-            .thenReturn(nodeShapeMock);
-    subjectQueryBuilder = SubjectQueryBuilder.create(environmentMock, jexlEngine);
+    when(this.environmentMock.getNodeShapeRegistry()).thenReturn(this.registryMock);
+    when(this.environmentMock.getObjectType()).thenReturn(this.objectTypeMock);
+    when(this.environmentMock.getNodeShapeRegistry().get(any(GraphQLObjectType.class)))
+            .thenReturn(this.nodeShapeMock);
+    this.subjectQueryBuilder = SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine);
   }
 
   private GraphQLDirective getValidSparqlDirective() {
@@ -108,9 +108,9 @@ class SubjectQueryBuilderTest {
     arguments.put("pageSize", 12);
 
     MapContext context = new MapContext(arguments);
-    assertThat(subjectQueryBuilder.getLimitFromContext(context, emptySparqlDirective),
+    assertThat(this.subjectQueryBuilder.getLimitFromContext(context, emptySparqlDirective),
             is(equalTo(Optional.empty())));
-    assertThat(subjectQueryBuilder.getOffsetFromContext(context, emptySparqlDirective),
+    assertThat(this.subjectQueryBuilder.getOffsetFromContext(context, emptySparqlDirective),
             is(equalTo(Optional.empty())));
   }
 
@@ -122,9 +122,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThrows(org.apache.commons.jexl3.JexlException.Variable.class, () ->
-            subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
     assertThrows(org.apache.commons.jexl3.JexlException.Variable.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -136,9 +136,9 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    assertThat(subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
+    assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
             is(equalTo(Optional.of(12))));
-    assertThat(subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective),
+    assertThat(this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective),
             is(equalTo(Optional.of(48))));
   }
 
@@ -151,10 +151,10 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    assertThat(subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
+    assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
             is(equalTo(Optional.of(12))));
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -166,10 +166,10 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    assertThat(subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
+    assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
             is(equalTo(Optional.of(12))));
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -182,9 +182,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -197,9 +197,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -213,9 +213,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThrows(JexlException.Parsing.class, () ->
-            subjectQueryBuilder.getLimitFromContext(context, invalidSparqlDirective));
+            this.subjectQueryBuilder.getLimitFromContext(context, invalidSparqlDirective));
 
     assertThrows(JexlException.Parsing.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, invalidSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, invalidSparqlDirective));
   }
 }
