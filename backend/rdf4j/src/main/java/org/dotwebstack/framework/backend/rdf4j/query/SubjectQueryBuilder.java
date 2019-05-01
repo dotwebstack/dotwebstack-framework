@@ -72,7 +72,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     }
 
     if (!(offset instanceof Integer) || (Integer) offset < 0) {
-      throw new IllegalArgumentException(("An error occured in the offset expression evaluation"));
+      throw new IllegalArgumentException("An error occured in the offset expression evaluation");
     }
 
     return Optional.of((Integer) offset);
