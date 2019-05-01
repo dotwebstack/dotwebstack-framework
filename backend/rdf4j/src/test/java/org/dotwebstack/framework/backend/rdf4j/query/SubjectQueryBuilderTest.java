@@ -96,6 +96,24 @@ class SubjectQueryBuilderTest {
   }
 
   @Test
+  void test_pagingParameters_whenNoExpressionsSet() {
+    GraphQLDirective emptySparqlDirective = GraphQLDirective
+            .newDirective()
+            .name("sparql")
+            .build();
+
+    Map<String, Object> arguments = new HashMap<>();
+    arguments.put("page", 1);
+    arguments.put("pageSize", 12);
+
+    MapContext context = new MapContext(arguments);
+    assertThat(subjectQueryBuilder.getLimitFromContext(context, emptySparqlDirective),
+            is(equalTo(null)));
+    assertThat(subjectQueryBuilder.getOffsetFromContext(context, emptySparqlDirective),
+            is(equalTo(null)));
+  }
+
+  @Test
   void test_pagingParameters_whenNoValuesSet() {
     GraphQLDirective validSparqlDirective = getValidSparqlDirective();
     Map<String, Object> arguments = new HashMap<>();
@@ -112,8 +130,8 @@ class SubjectQueryBuilderTest {
   void test_pagingParameters_withValidPageAndPageSize() {
     GraphQLDirective validSparqlDirective = getValidSparqlDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", 5);
-    arguments.putIfAbsent("pageSize", 12);
+    arguments.put("page", 5);
+    arguments.put("pageSize", 12);
 
     MapContext context = new MapContext(arguments);
 
@@ -127,8 +145,8 @@ class SubjectQueryBuilderTest {
   void test_pagingParameters_withInvalidPage() {
     GraphQLDirective validSparqlDirective = getValidSparqlDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", -1);
-    arguments.putIfAbsent("pageSize", 12);
+    arguments.put("page", -1);
+    arguments.put("pageSize", 12);
 
     MapContext context = new MapContext(arguments);
 
@@ -145,8 +163,8 @@ class SubjectQueryBuilderTest {
   void test_pagingParameters_withInvalidPageType() {
     GraphQLDirective validSparqlDirective = getValidSparqlDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", "test");
-    arguments.putIfAbsent("pageSize", 12);
+    arguments.put("page", "test");
+    arguments.put("pageSize", 12);
 
     MapContext context = new MapContext(arguments);
 
@@ -162,8 +180,8 @@ class SubjectQueryBuilderTest {
   void test_pagingParameters_withInvalidPageSize() {
     GraphQLDirective validSparqlDirective = getValidSparqlDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", 13);
-    arguments.putIfAbsent("pageSize", -1);
+    arguments.put("page", 13);
+    arguments.put("pageSize", -1);
 
     MapContext context = new MapContext(arguments);
 
@@ -181,8 +199,8 @@ class SubjectQueryBuilderTest {
   void test_pagingParameters_withInvalidPageSizeType() {
     GraphQLDirective validSparqlDirective = getValidSparqlDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", 13);
-    arguments.putIfAbsent("pageSize", "test");
+    arguments.put("page", 13);
+    arguments.put("pageSize", "test");
 
     MapContext context = new MapContext(arguments);
 
@@ -201,8 +219,8 @@ class SubjectQueryBuilderTest {
     GraphQLDirective invalidSparqlDirective = getInvalidSparqlDirective();
 
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", 1);
-    arguments.putIfAbsent("pageSize", 5);
+    arguments.put("page", 1);
+    arguments.put("pageSize", 5);
 
     MapContext context = new MapContext(arguments);
 
