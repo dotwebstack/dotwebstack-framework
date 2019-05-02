@@ -21,10 +21,10 @@ type Query {
       limit: "input.pageSize",
       offset: "(input.page - 1) * input.pageSize"
     )
-  panden_sort_input(input: QueryInput): [Pand!]!
+  panden_sort_input(input: SortQueryInput): [Pand!]!
     @sparql(
-      repository: "local"
-      orderBy: "input.sort")
+      repository: "local",
+      orderBy: "input.sort"
     )
 }
 

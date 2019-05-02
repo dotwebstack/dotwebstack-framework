@@ -67,17 +67,19 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       throw new IllegalArgumentException("an error occurred in the sort expression evaluation");
     }
 
+    @SuppressWarnings("unchecked")
     List<Map<String, String>> orderByList = (List<Map<String, String>>) orderByObject;
 
     Orderable[] conditions = orderByList.stream().map(orderBy -> {
       String field = orderBy.get("field");
       String order = orderBy.get("order");
 
+      Variable var = SparqlBuilder.var(field);
+
       // get the predicate property shape based on the order property field
       PropertyShape pred = this.nodeShape.getPropertyShape(field);
 
       // add the order property to the query
-      Variable var = SparqlBuilder.var(field);
       query.where(GraphPatterns.tp(SUBJECT_VAR, pred.getPath(), var));
 
       return order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
