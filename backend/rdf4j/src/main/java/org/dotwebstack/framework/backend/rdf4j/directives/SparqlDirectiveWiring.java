@@ -10,6 +10,7 @@ import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.Map;
 import lombok.NonNull;
+import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
@@ -28,12 +29,16 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private final Map<String, String> prefixMap;
 
+  private final JexlEngine jexlEngine;
+
   public SparqlDirectiveWiring(RepositoryManager repositoryManager,
-      NodeShapeRegistry nodeShapeRegistry, Rdf4jProperties rdf4jProperties) {
+      NodeShapeRegistry nodeShapeRegistry, Rdf4jProperties rdf4jProperties,
+      JexlEngine jexlEngine) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null
         ? HashBiMap.create(rdf4jProperties.getPrefixes()).inverse() : ImmutableMap.of();
+    this.jexlEngine = jexlEngine;
   }
 
   @Override
@@ -56,7 +61,8 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     }
 
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId).getConnection();
-    QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap);
+    QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap,
+            jexlEngine);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);

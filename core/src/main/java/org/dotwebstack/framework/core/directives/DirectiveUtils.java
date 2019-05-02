@@ -20,7 +20,7 @@ public final class DirectiveUtils {
       return null;
     }
 
-    Object argValue = directive.getArgument(argName).getValue();
+    Object argValue = argument.getValue();
 
     if (argValue == null) {
       return null;
