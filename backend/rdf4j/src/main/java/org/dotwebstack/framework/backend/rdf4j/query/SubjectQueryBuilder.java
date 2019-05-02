@@ -1,15 +1,20 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import graphql.schema.GraphQLDirective;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.swing.text.html.Option;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
+import org.checkerframework.checker.nullness.Opt;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
@@ -44,8 +49,41 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
+    getOrderByFromContext(context, sparqlDirective).ifPresent(query::orderBy);
 
     return this.query.getQueryString();
+  }
+
+  Optional<Orderable[]> getOrderByFromContext(MapContext context,
+                                              GraphQLDirective sparqlDirective) {
+    Object orderByObject = evaluateExpressionFromContext(context,
+            Rdf4jDirectives.SPARQL_ARG_ORDERBY, sparqlDirective);
+
+    if (orderByObject == null) {
+      return Optional.empty();
+    }
+
+    if (!(orderByObject instanceof List)) {
+      throw new IllegalArgumentException("an error occurred in the sort expression evaluation");
+    }
+
+    List<Map<String, String>> orderByList = (List<Map<String, String>>) orderByObject;
+
+    Orderable[] conditions = orderByList.stream().map(orderBy -> {
+      String field = orderBy.get("field");
+      String order = orderBy.get("order");
+
+      // get the predicate property shape based on the order property field
+      PropertyShape pred = this.nodeShape.getPropertyShape(field);
+
+      // add the order property to the query
+      Variable var = SparqlBuilder.var(field);
+      query.where(GraphPatterns.tp(SUBJECT_VAR, pred.getPath(), var));
+
+      return order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
+    }).toArray(Orderable[]::new);
+
+    return Optional.of(conditions);
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {

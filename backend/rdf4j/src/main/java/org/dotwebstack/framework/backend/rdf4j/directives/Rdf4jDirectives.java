@@ -8,11 +8,11 @@ public final class Rdf4jDirectives {
 
   public static final String SPARQL_ARG_SUBJECT;
 
-  public static final String SPARQL_ARG_ORDERBY;
-
   public static final String SPARQL_ARG_LIMIT;
 
   public static final String SPARQL_ARG_OFFSET;
+
+  public static final String SPARQL_ARG_ORDERBY;
 
   private Rdf4jDirectives() {
     throw new IllegalStateException(

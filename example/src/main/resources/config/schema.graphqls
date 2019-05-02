@@ -52,11 +52,16 @@ input SortField {
   order: SortOrder!
 }
 
-input QueryInput {
+input SortQueryInput {
   sort: [SortField!] = [{ field: "identificatiecode", order: DESC }]
 }
 
 input CollectionQueryInput {
+  page: Int = 1
+  pageSize: Int = 10
+}
+
+input PageQueryInput {
   page: Int = 1
   pageSize: Int = 10
 }

@@ -19,3 +19,11 @@ bag_pnd:456 a bag:Pand ;
   bag:beginGeldigheid "2014-09-04T00:00:00.000+01:00"^^xsd:dateTime ;
   bag:eindGeldigheid "2014-10-06T00:00:00.000+01:00"^^xsd:dateTime ;
 .
+
+bag_pnd:789 a bag:Pand ;
+  bag:identificatiecode "789" ;
+  bag:status bag_beg:PandGesloopt ;
+  bag:oorspronkelijkBouwjaar 1928 ;
+  bag:beginGeldigheid "2014-09-04T00:00:00.000+01:00"^^xsd:dateTime ;
+  bag:eindGeldigheid "2014-10-06T00:00:00.000+01:00"^^xsd:dateTime ;
+.
