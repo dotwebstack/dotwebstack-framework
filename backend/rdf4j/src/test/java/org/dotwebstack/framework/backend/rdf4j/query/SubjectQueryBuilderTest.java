@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf.iri;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,9 +15,7 @@ import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLObjectType;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -26,9 +25,9 @@ import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
-import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
-import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,6 +50,9 @@ class SubjectQueryBuilderTest {
 
   @Mock
   private NodeShape nodeShapeMock = mock(NodeShape.class);
+
+  @Mock
+  private PropertyShape propertyShapeMock = mock(PropertyShape.class);
 
   @Mock
   private GraphQLObjectType objectTypeMock = mock(GraphQLObjectType.class);
@@ -241,15 +243,53 @@ class SubjectQueryBuilderTest {
   }
 
   @Test
-  void test_SortingParameters_withValidOrderByExpressions() {
+  void test_sortCondition_withValidOrderByExpressions() {
+    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
+    when(this.propertyShapeMock.getPath()).thenReturn(
+            SimpleValueFactory
+                    .getInstance()
+                    .createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
+
     GraphQLDirective validSparqlDirective = getValidSortDirective();
 
     Map<String, Object> arguments = new HashMap<>();
-    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identificatiecode", "order", "DESC")));
+    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identificatiecode",
+            "order", "DESC")));
 
     MapContext context = new MapContext(arguments);
-    Orderable orderable = this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective).get()[0];
+    Optional<Orderable[]> optional = this.subjectQueryBuilder.getOrderByFromContext(context,
+            validSparqlDirective);
 
-    assertThat(orderable.getQueryString(), is(equalTo("DESC( ?identificatiecode )")));
+    assertThat(optional.isPresent(), is(true));
+
+    optional.ifPresent(orderables ->
+        assertThat(orderables[0].getQueryString(),
+              is(equalTo("DESC( ?identificatiecode )")))
+    );
+  }
+
+  @Test
+  void test_sortCondition_withoutSortProperty() {
+    GraphQLDirective validSparqlDirective = getValidSortDirective();
+    Map<String, Object> arguments = new HashMap<>();
+
+    MapContext context = new MapContext(arguments);
+    assertThrows(JexlException.Variable.class, () ->
+            this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
+  }
+
+  @Test
+  void test_sortingProperty_whenSortPropertyNotExistsOnNodeshape() {
+    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(null);
+
+    GraphQLDirective validSparqlDirective = getValidSortDirective();
+
+    Map<String, Object> arguments = new HashMap<>();
+    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identificatiecode",
+            "order", "DESC")));
+
+    MapContext context = new MapContext(arguments);
+    assertThrows(IllegalArgumentException.class, () ->
+            this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
   }
 }

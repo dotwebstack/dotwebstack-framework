@@ -4,11 +4,9 @@ import graphql.schema.GraphQLDirective;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.swing.text.html.Option;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
-import org.checkerframework.checker.nullness.Opt;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -78,7 +76,11 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
       // get the predicate property shape based on the order property field
       PropertyShape pred = this.nodeShape.getPropertyShape(field);
-
+      if (pred == null) {
+        throw new IllegalArgumentException(
+                "not possible to order by field \"" + field + "\", it does not exist on "
+                + nodeShape.getIdentifier());
+      }
       // add the order property to the query
       query.where(GraphPatterns.tp(SUBJECT_VAR, pred.getPath(), var));
 

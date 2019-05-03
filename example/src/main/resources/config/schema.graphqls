@@ -7,7 +7,7 @@ type Query {
     @sparql(
       repository: "local",
       subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
-  panden(sort: [SortField!] = [{ field: "identificatiecode", order: DESC }],
+  panden(sort: [SortField!] = [{ field: "idedentificatiecode", order: DESC }],
          page: Int = 1, pageSize: Int = 10): [Pand!]!
     @sparql(
       repository: "local",
@@ -15,7 +15,7 @@ type Query {
       offset: "(page - 1) * pageSize",
       orderBy: "sort"
     )
-  panden_paging_input(input: CollectionQueryInput): [Pand!]!
+  panden_paging_input(input: PageQueryInput): [Pand!]!
     @sparql(
       repository: "local",
       limit: "input.pageSize",
@@ -54,11 +54,6 @@ input SortField {
 
 input SortQueryInput {
   sort: [SortField!] = [{ field: "identificatiecode", order: DESC }]
-}
-
-input CollectionQueryInput {
-  page: Int = 1
-  pageSize: Int = 10
 }
 
 input PageQueryInput {
