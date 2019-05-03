@@ -1,9 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import graphql.schema.GraphQLDirective;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
@@ -18,6 +15,11 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
@@ -47,13 +49,22 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
-    getOrderByFromContext(context, sparqlDirective).ifPresent(query::orderBy);
+    getOrderByFromContext(context, sparqlDirective).ifPresent(this::buildOrderBy);
 
     return this.query.getQueryString();
   }
 
-  Optional<Orderable[]> getOrderByFromContext(MapContext context,
-                                              GraphQLDirective sparqlDirective) {
+  private void buildOrderBy(List<OrderContext> orderContexts) {
+    orderContexts.forEach(orderContext -> {
+      query.orderBy(orderContext.getOrderable());
+      // add the order property to the query
+      query.where(GraphPatterns.tp(SUBJECT_VAR, orderContext.getPropertyShape().getPath(),
+              SparqlBuilder.var(orderContext.getField())));
+    });
+  }
+
+  Optional<List<OrderContext>> getOrderByFromContext(MapContext context,
+                                                     GraphQLDirective sparqlDirective) {
     Object orderByObject = evaluateExpressionFromContext(context,
             Rdf4jDirectives.SPARQL_ARG_ORDERBY, sparqlDirective);
 
@@ -68,26 +79,32 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     @SuppressWarnings("unchecked")
     List<Map<String, String>> orderByList = (List<Map<String, String>>) orderByObject;
 
-    Orderable[] conditions = orderByList.stream().map(orderBy -> {
-      String field = orderBy.get("field");
-      String order = orderBy.get("order");
+    return Optional.of(orderByList.stream().map(this::getOrderContext)
+            .collect(Collectors.toList()));
+  }
+
+  private OrderContext getOrderContext(Map<String,String> orderMap) {
+      String field = orderMap.get("field");
+      String order = orderMap.get("order");
 
       Variable var = SparqlBuilder.var(field);
 
-      // get the predicate property shape based on the order property field
-      PropertyShape pred = this.nodeShape.getPropertyShape(field);
-      if (pred == null) {
-        throw new IllegalArgumentException(
-                "not possible to order by field \"" + field + "\", it does not exist on "
-                + nodeShape.getIdentifier());
-      }
-      // add the order property to the query
-      query.where(GraphPatterns.tp(SUBJECT_VAR, pred.getPath(), var));
+      Orderable orderable = order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
 
-      return order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
-    }).toArray(Orderable[]::new);
+      PropertyShape propertyShape = getPropertyShapeForField(field);
 
-    return Optional.of(conditions);
+      return new OrderContext(field,orderable,propertyShape);
+  }
+
+  private PropertyShape getPropertyShapeForField(String field) {
+    // get the predicate property shape based on the order property field
+    PropertyShape pred = this.nodeShape.getPropertyShape(field);
+    if (pred == null) {
+      throw new IllegalArgumentException(
+              "not possible to order by field \"" + field + "\", it does not exist on "
+                      + nodeShape.getIdentifier());
+    }
+    return pred;
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {

@@ -1,23 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf.iri;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLObjectType;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
@@ -26,13 +14,24 @@ import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SubjectQueryBuilderTest {
@@ -245,10 +244,6 @@ class SubjectQueryBuilderTest {
   @Test
   void test_sortCondition_withValidOrderByExpressions() {
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
-    when(this.propertyShapeMock.getPath()).thenReturn(
-            SimpleValueFactory
-                    .getInstance()
-                    .createIRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
 
     GraphQLDirective validSparqlDirective = getValidSortDirective();
 
@@ -257,13 +252,13 @@ class SubjectQueryBuilderTest {
             "order", "DESC")));
 
     MapContext context = new MapContext(arguments);
-    Optional<Orderable[]> optional = this.subjectQueryBuilder.getOrderByFromContext(context,
+    Optional<List<OrderContext>> optional = this.subjectQueryBuilder.getOrderByFromContext(context,
             validSparqlDirective);
 
     assertThat(optional.isPresent(), is(true));
 
-    optional.ifPresent(orderables ->
-        assertThat(orderables[0].getQueryString(),
+    optional.ifPresent(orderContexts ->
+        assertThat(orderContexts.get(0).getOrderable().getQueryString(),
               is(equalTo("DESC( ?identificatiecode )")))
     );
   }
