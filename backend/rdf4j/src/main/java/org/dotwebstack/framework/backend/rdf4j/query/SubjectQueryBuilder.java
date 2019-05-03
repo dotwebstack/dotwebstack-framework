@@ -1,6 +1,10 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import graphql.schema.GraphQLDirective;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
@@ -15,11 +19,6 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
@@ -84,16 +83,16 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   private OrderContext getOrderContext(Map<String,String> orderMap) {
-      String field = orderMap.get("field");
-      String order = orderMap.get("order");
+    String field = orderMap.get("field");
+    String order = orderMap.get("order");
 
-      Variable var = SparqlBuilder.var(field);
+    Variable var = SparqlBuilder.var(field);
 
-      Orderable orderable = order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
+    Orderable orderable = order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
 
-      PropertyShape propertyShape = getPropertyShapeForField(field);
+    PropertyShape propertyShape = getPropertyShapeForField(field);
 
-      return new OrderContext(field,orderable,propertyShape);
+    return new OrderContext(field,orderable,propertyShape);
   }
 
   private PropertyShape getPropertyShapeForField(String field) {
