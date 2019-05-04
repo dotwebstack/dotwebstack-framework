@@ -28,9 +28,7 @@ public final class ValueUtils {
     Literal literal = (Literal) value;
     IRI dataType = literal.getDatatype();
 
-    if (XMLSchema.STRING.equals(dataType)) {
-      return literal.stringValue();
-    } else if (XMLSchema.BOOLEAN.equals(dataType)) {
+    if (XMLSchema.BOOLEAN.equals(dataType)) {
       return literal.booleanValue();
     } else if (XMLSchema.INT.equals(dataType)) {
       return literal.intValue();
@@ -50,7 +48,7 @@ public final class ValueUtils {
       return literal.byteValue();
     }
 
-    return literal;
+    return literal.stringValue();
   }
 
   public static IRI findRequiredPropertyIri(Model model, Resource subject, IRI predicate) {

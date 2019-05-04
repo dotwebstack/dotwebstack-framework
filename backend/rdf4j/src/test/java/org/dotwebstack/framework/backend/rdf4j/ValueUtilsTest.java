@@ -55,12 +55,13 @@ class ValueUtilsTest {
   }
 
   @Test
-  void convertValue_ReturnsLiteral_ForNonBuiltInScalars() {
+  void convertValue_ReturnsString_ForNonBuiltInScalars() {
     // Act
-    Object result = ValueUtils.convertValue(VF.createLiteral(new Date()));
+    Literal literal = VF.createLiteral(new Date());
+    Object result = ValueUtils.convertValue(literal);
 
     // Assert
-    assertThat(result, is(instanceOf(Literal.class)));
+    assertThat(result, is(equalTo(literal.stringValue())));
   }
 
   @Test
