@@ -14,17 +14,13 @@ class DateCoercing implements Coercing<LocalDate, LocalDate> {
       return (LocalDate) value;
     }
 
-    String dateStr;
-
-    if (value instanceof String) {
-      dateStr = (String) value;
-    } else {
+    if (!(value instanceof String)) {
       throw new CoercingSerializeException(
           String.format("Unable to parse date string from '%s' type.", value.getClass().getName()));
     }
 
     try {
-      return LocalDate.parse(dateStr);
+      return LocalDate.parse((String) value);
     } catch (DateTimeParseException e) {
       throw new CoercingSerializeException("Parsing date string failed.", e);
     }
