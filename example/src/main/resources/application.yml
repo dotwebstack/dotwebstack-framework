@@ -4,12 +4,12 @@ logging:
 dotwebstack:
   rdf4j:
     shape:
-      graph: http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag
-      prefix: http://bag.basisregistraties.overheid.nl/def/bag/
+      graph: http://dbeerpedia.com/id/shapes
+      prefix: http://dbeerpedia.com/def/
     prefixes:
       rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
-      bag: http://bag.basisregistraties.overheid.nl/def/bag#
-      bag_pnd: http://bag.basisregistraties.overheid.nl/bag/id/pand/
+      dbeer: http://dbeerpedia.com/def#
+      brewery_id: http://dbeerpedia.com/id/brewery/
     repositories:
       data:
         type: sparql

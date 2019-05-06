@@ -1,85 +1,64 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-@prefix bag: <http://bag.basisregistraties.overheid.nl/def/bag#> .
-@prefix bag_sh: <http://bag.basisregistraties.overheid.nl/def/bag/> .
+@prefix schema: <http://schema.org/> .
+@prefix dbeer: <http://dbeerpedia.com/def#> .
+@prefix dbeer_sh: <http://dbeerpedia.com/def/> .
 
-<http://bag.basisregistraties.overheid.nl/bag/id/shapes/imbag> {
-  bag_sh:Pand a sh:NodeShape ;
-    sh:targetClass bag:Pand ;
+<http://dbeerpedia.com/id/shapes> {
+  dbeer_sh:Brewery a sh:NodeShape ;
+    sh:targetClass dbeer:Brewery ;
     sh:property
-      bag_sh:Pand_identificatiecode ,
-      bag_sh:Pand_status ,
-      bag_sh:Pand_oorspronkelijkBouwjaar ,
-      bag_sh:Pand_beginGeldigheid ,
-      bag_sh:Pand_eindGeldigheid ;
+      dbeer_sh:Brewery_id ,
+      dbeer_sh:Brewery_name ,
+      dbeer_sh:Brewery_founded ,
+      dbeer_sh:Brewery_openinghours ,
+      dbeer_sh:Brewery_url ;
   .
 
-  bag_sh:Pand_identificatiecode a sh:PropertyShape ;
-    sh:name "identificatiecode" ;
-    sh:path bag:identificatiecode ;
+  dbeer_sh:Brewery_id a sh:PropertyShape ;
+    sh:name "id" ;
+    sh:path dbeer:id ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string ;
   .
 
-  bag_sh:Pand_status a sh:PropertyShape ;
-    sh:name "status" ;
-    sh:path bag:status ;
+  dbeer_sh:Brewery_name a sh:PropertyShape ;
+    sh:name "name" ;
+    sh:path schema:name ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:IRI ;
   .
 
-  bag_sh:Pand_oorspronkelijkBouwjaar a sh:PropertyShape ;
-    sh:name "oorspronkelijkBouwjaar" ;
-    sh:path bag:oorspronkelijkBouwjaar ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:Literal ;
-    sh:datatype xsd:short ;
-  .
+   dbeer_sh:Brewery_founded a sh:PropertyShape ;
+      sh:name "founded" ;
+      sh:path dbeer:founded ;
+      sh:minCount 1 ;
+      sh:maxCount 1 ;
+      sh:nodeKind sh:Literal ;
+      sh:datatype xsd:string ;
+    .
 
-  bag_sh:Pand_beginGeldigheid a sh:PropertyShape ;
-    sh:name "beginGeldigheid" ;
-    sh:path bag:beginGeldigheid ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:Literal ;
-    sh:datatype xsd:datetime ;
-  .
-
-  bag_sh:Pand_eindGeldigheid a sh:PropertyShape ;
-    sh:name "eindGeldigheid" ;
-    sh:path bag:eindGeldigheid ;
-    sh:minCount 0 ;
-    sh:maxCount 1 ;
-    sh:nodeKind sh:Literal ;
-    sh:datatype xsd:datetime ;
-  .
-
-  bag_sh:Verblijfsobject a sh:NodeShape ;
-    sh:targetClass bag:Verblijfsobject ;
-    sh:property
-      bag_sh:Verblijfsobject_identificatiecode ,
-      bag_sh:Verblijfsobject_status ;
-  .
-
-  bag_sh:Verblijfsobject_identificatiecode a sh:PropertyShape ;
-    sh:name "identificatiecode" ;
-    sh:path bag:identificatiecode ;
+ dbeer_sh:Brewery_openinghours a sh:PropertyShape ;
+    sh:name "openinghours" ;
+    sh:path dbeer:openinghours ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string ;
   .
 
-  bag_sh:Verblijfsobject_status a sh:PropertyShape ;
-    sh:name "status" ;
-    sh:path bag:status ;
+ dbeer_sh:Brewery_url a sh:PropertyShape ;
+    sh:name "url" ;
+    sh:path schema:url ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:nodeKind sh:IRI ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
   .
+
+
 }
