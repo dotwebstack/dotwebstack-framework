@@ -3,10 +3,10 @@ schema {
 }
 
 type Query {
-  brewery(id: ID!): Brewery
+  brewery(identifier: ID!): Brewery
     @sparql(
       repository: "local",
-      subject: "http://dbeerpedia.com/id/brewery/${id}")
+      subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
   breweries(page: Int = 1, pageSize: Int = 10): [Brewery!]!
     @sparql(
       repository: "local",
@@ -22,11 +22,13 @@ type Query {
 }
 
 type Brewery {
-  id: ID!
+  identifier: ID!
   name: String!
   founded: String!
+    @transform(expr: "founded.calendarValue().getYear()")
   openinghours: String
   url: String!
+    @transform(expr: "url.getLocalName()")
 }
 
 input CollectionQueryInput {

@@ -4,14 +4,9 @@ logging:
 dotwebstack:
   rdf4j:
     shape:
-      graph: http://dbeerpedia.com/id/shapes
-      prefix: http://dbeerpedia.com/def/
+      graph: https://github.com/dotwebstack/beer/shapes
+      prefix: https://github.com/dotwebstack/beer/shapes#
     prefixes:
       rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
-      dbeer: http://dbeerpedia.com/def#
-      brewery_id: http://dbeerpedia.com/id/brewery/
-    repositories:
-      data:
-        type: sparql
-        args:
-          endpointUrl: https://data.pdok.nl/sparql
+      beer_def: https://github.com/dotwebstack/beer/def#
+      brewery_id: https://github.com/dotwebstack/beer/id/brewery/

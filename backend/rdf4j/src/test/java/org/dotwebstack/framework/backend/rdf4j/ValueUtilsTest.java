@@ -66,10 +66,10 @@ class ValueUtilsTest {
   @Test
   void convertValue_ReturnsInput_ForNonLiterals() {
     // Act
-    Object result = ValueUtils.convertValue(Constants.BUILDING_EXAMPLE_1);
+    Object result = ValueUtils.convertValue(Constants.BREWERY_EXAMPLE_1);
 
     // Assert
-    assertThat(result, is(equalTo(Constants.BUILDING_EXAMPLE_1)));
+    assertThat(result, is(equalTo(Constants.BREWERY_EXAMPLE_1)));
   }
 
   @Test

@@ -2,30 +2,31 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 @prefix schema: <http://schema.org/> .
-@prefix dbeer: <http://dbeerpedia.com/def#> .
-@prefix dbeer_sh: <http://dbeerpedia.com/def/> .
+@prefix beer: <https://github.com/dotwebstack/beer/> .
+@prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
+@prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
 
-<http://dbeerpedia.com/id/shapes> {
-  dbeer_sh:Brewery a sh:NodeShape ;
-    sh:targetClass dbeer:Brewery ;
+<https://github.com/dotwebstack/beer/shapes> {
+  beer_sh:Brewery a sh:NodeShape ;
+    sh:targetClass beer_def:Brewery ;
     sh:property
-      dbeer_sh:Brewery_id ,
-      dbeer_sh:Brewery_name ,
-      dbeer_sh:Brewery_founded ,
-      dbeer_sh:Brewery_openinghours ,
-      dbeer_sh:Brewery_url ;
+      beer_sh:Brewery_identifier ,
+      beer_sh:Brewery_name ,
+      beer_sh:Brewery_founded ,
+      beer_sh:Brewery_openinghours ,
+      beer_sh:Brewery_url ;
   .
 
-  dbeer_sh:Brewery_id a sh:PropertyShape ;
-    sh:name "id" ;
-    sh:path dbeer:id ;
+  beer_sh:Brewery_identifier a sh:PropertyShape ;
+    sh:name "identifier" ;
+    sh:path beer_def:identifier ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string ;
   .
 
-  dbeer_sh:Brewery_name a sh:PropertyShape ;
+  beer_sh:Brewery_name a sh:PropertyShape ;
     sh:name "name" ;
     sh:path schema:name ;
     sh:minCount 1 ;
@@ -33,25 +34,25 @@
     sh:nodeKind sh:IRI ;
   .
 
-   dbeer_sh:Brewery_founded a sh:PropertyShape ;
+   beer_sh:Brewery_founded a sh:PropertyShape ;
       sh:name "founded" ;
-      sh:path dbeer:founded ;
+      sh:path beer_def:founded ;
       sh:minCount 1 ;
       sh:maxCount 1 ;
       sh:nodeKind sh:Literal ;
-      sh:datatype xsd:string ;
+      sh:datatype xsd:dateTime ;
     .
 
- dbeer_sh:Brewery_openinghours a sh:PropertyShape ;
+ beer_sh:Brewery_openinghours a sh:PropertyShape ;
     sh:name "openinghours" ;
-    sh:path dbeer:openinghours ;
+    sh:path beer_def:openinghours ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string ;
   .
 
- dbeer_sh:Brewery_url a sh:PropertyShape ;
+ beer_sh:Brewery_url a sh:PropertyShape ;
     sh:name "url" ;
     sh:path schema:url ;
     sh:minCount 1 ;
