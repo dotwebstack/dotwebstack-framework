@@ -11,8 +11,10 @@ import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.dotwebstack.framework.core.directives.ConstraintDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Component;
 public class CoreConfigurer implements GraphqlConfigurer {
 
   private final TransformDirectiveWiring transformDirectiveWiring;
+  private final ConstraintDirectiveWiring constraintDirectiveWiring;
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
@@ -42,14 +45,37 @@ public class CoreConfigurer implements GraphqlConfigurer {
             .name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
             .build())
         .build());
+
+    registry.add(DirectiveDefinition.newDirectiveDefinition()
+        .name(CoreDirectives.CONSTRAINT_NAME)
+        .inputValueDefinitions(
+            List.of(
+                InputValueDefinition.newInputValueDefinition()
+                .name(CoreDirectives.CONSTRAINT_ARG_MIN)
+                .type(optionalString)
+                .build(),
+                InputValueDefinition.newInputValueDefinition()
+                .name(CoreDirectives.CONSTRAINT_ARG_MAX)
+                .type(optionalString)
+                .build(),
+                InputValueDefinition.newInputValueDefinition()
+                .name(CoreDirectives.CONSTRAINT_ARG_ONEOF)
+                .type(optionalString)
+                .build()))
+        .directiveLocation(
+            DirectiveLocation.newDirectiveLocation()
+            .name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
+            .build())
+        .build());
   }
 
   @Override
   public void configureRuntimeWiring(@NonNull Builder builder) {
     builder
-        .scalar(CoreScalars.DATE)
-        .scalar(CoreScalars.DATETIME)
-        .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring);
+    .scalar(CoreScalars.DATE)
+    .scalar(CoreScalars.DATETIME)
+    .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring)
+    .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring);
   }
 
 }
