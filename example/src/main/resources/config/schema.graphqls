@@ -46,16 +46,6 @@ type Verblijfsobject {
   status: String!
 }
 
-enum SortOrder {
-  ASC
-  DESC
-}
-
-input SortField {
-  field: String!
-  order: SortOrder!
-}
-
 input SortQueryInput {
   sort: [SortField!] = [{ field: "identificatiecode", order: DESC }]
 }

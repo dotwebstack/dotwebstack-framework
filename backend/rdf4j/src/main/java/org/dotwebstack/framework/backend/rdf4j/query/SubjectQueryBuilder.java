@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import graphql.schema.GraphQLDirective;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,14 +67,14 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   Optional<List<OrderContext>> getOrderByFromContext(MapContext context,
                                                      GraphQLDirective sparqlDirective) {
     Object orderByObject = evaluateExpressionFromContext(context,
-            Rdf4jDirectives.SPARQL_ARG_ORDERBY, sparqlDirective);
+            Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective);
 
     if (orderByObject == null) {
       return Optional.empty();
     }
 
     if (!(orderByObject instanceof List)) {
-      throw new IllegalArgumentException("an error occurred in the sort expression evaluation");
+      orderByObject = Arrays.asList(orderByObject);
     }
 
     @SuppressWarnings("unchecked")
@@ -100,8 +102,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     PropertyShape pred = this.nodeShape.getPropertyShape(field);
     if (pred == null) {
       throw new IllegalArgumentException(
-              "not possible to order by field \"" + field + "\", it does not exist on "
-                      + nodeShape.getIdentifier());
+              String.format("Not possible to order by field %s, it does not exist on %s.",
+                      field, nodeShape.getIdentifier()));
     }
     return pred;
   }
@@ -115,7 +117,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     }
 
     if (!(limit instanceof Integer) || ((Integer) limit < 1)) {
-      throw new IllegalArgumentException("An error occured in the limit expression evaluation");
+      throw new IllegalArgumentException("An error occured in the limit expression evaluation.");
     }
 
     return Optional.of((Integer) limit);
@@ -130,7 +132,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     }
 
     if (!(offset instanceof Integer) || (Integer) offset < 0) {
-      throw new IllegalArgumentException("An error occured in the offset expression evaluation");
+      throw new IllegalArgumentException("An error occured in the offset expression evaluation.");
     }
 
     return Optional.of((Integer) offset);

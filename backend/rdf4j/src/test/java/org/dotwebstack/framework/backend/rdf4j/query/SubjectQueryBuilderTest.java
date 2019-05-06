@@ -91,7 +91,7 @@ class SubjectQueryBuilderTest {
             .name("sparql")
             .argument(GraphQLArgument
                     .newArgument()
-                    .name(Rdf4jDirectives.SPARQL_ARG_ORDERBY)
+                    .name(Rdf4jDirectives.SPARQL_ARG_ORDER_BY)
                     .type(Scalars.GraphQLString)
                     .value("sort")
                     .build())
