@@ -1,21 +1,111 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-@prefix bag: <http://bag.basisregistraties.overheid.nl/def/bag#> .
-@prefix bag_beg: <http://bag.basisregistraties.overheid.nl/id/begrip/> .
-@prefix bag_pnd: <http://bag.basisregistraties.overheid.nl/bag/id/pand/> .
-@prefix bag_pnd_doc: <http://bag.basisregistraties.overheid.nl/bag/doc/pand/> .
+@prefix schema: <http://schema.org/> .
+@prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
+@prefix brewery_id: <https://github.com/dotwebstack/beer/id/brewery/> .
 
-bag_pnd:123 a bag:Pand ;
-  bag:identificatiecode "123" ;
-  bag:status bag_beg:PandInGebruik ;
-  bag:oorspronkelijkBouwjaar 1984 ;
-  bag:beginGeldigheid "2013-09-06T00:00:00.000+02:00"^^xsd:dateTime ;
-.
+{
+	brewery_id:1 a beer_def:Brewery ;
+	    beer_def:identifier "1" ;
+		beer_def:brewmasters "Jeroen van Hees" ;
+		beer_def:founded "2014-01-01T00:00:00+02:00"^^xsd:dateTime ;
+		beer_def:group "Onafhankelijk" ;
+		beer_def:owners "J.v.Hees" , "I.Verhoef" , "L.du Clou" , "M.Kuijpers" ;
+		schema:state "Zuid-Holland" ;
+		schema:address _:b1 ;
+		schema:email "bier@brouwerij1923.nl" ;
+		schema:name "Brouwerij 1923" ;
+		schema:taxID "61195251" ;
+		schema:telephone "06-10816700" ;
+		schema:url <http://www.brouwerij1923.nl> .
 
-bag_pnd:456 a bag:Pand ;
-  bag:identificatiecode "456" ;
-  bag:status bag_beg:PandGesloopt ;
-  bag:oorspronkelijkBouwjaar 1928 ;
-  bag:beginGeldigheid "2014-09-04T00:00:00.000+01:00"^^xsd:dateTime ;
-  bag:eindGeldigheid "2014-10-06T00:00:00.000+01:00"^^xsd:dateTime ;
-.
+	_:b1 schema:addressLocality "Moordrecht" ;
+		schema:latitude "51.98776545" ;
+		schema:longitude "4.67090183" ;
+		schema:postalCode "2841 XB" ;
+		schema:streetAddress "Burgemeester Brandtstraat 23" .
+
+	brewery_id:2 a beer_def:Brewery ;
+	    beer_def:identifier "2" ;
+		beer_def:address _:b3 ;
+		beer_def:founded "2017-01-01T00:00:00+02:00"^^xsd:dateTime ;
+		beer_def:group "Onafhankelijk" ;
+		schema:state "Noord-Brabant" ;
+		schema:address _:b4 ;
+		schema:email "info@58egenot.nl" ;
+		schema:name "Brouwerij Het 58e Genot i.o." ;
+		schema:taxID "67452701" ;
+		schema:url <http://www.58egenot.nl> .
+
+	_:b3 schema:addressLocality "Zundert" ;
+		schema:latitude "51.46376967" ;
+		schema:longitude "4.60958924" ;
+		schema:postalCode "4881 AZ" ;
+		schema:streetAddress "Achtmaalseweg 137A" .
+
+	_:b4 schema:postalCode "4881 AZ" ;
+		schema:streetAddress "Achtmaalseweg 137A" .
+
+	brewery_id:3 a beer_def:Brewery ;
+		beer_def:identifier "3" ;
+		beer_def:annualproduction "140000 hl." ;
+		beer_def:brewmasters "Erik Bielders" ;
+		beer_def:fax "046-4432835" ;
+		beer_def:founded "1870-01-01T00:00:00+02:00"^^xsd:dateTime ;
+		beer_def:group "Onafhankelijk" ;
+		beer_def:openinghours "Alle dagen van de week op aanvraag (12.30-16.00 uur)" ;
+		beer_def:owners "Harry Meens" ;
+		schema:state "Limburg" ;
+		schema:address _:b6 ;
+		schema:name "Alfa Brouwerij" ;
+		schema:taxID "14034012" ;
+		schema:telephone "046-4432888" ;
+		schema:url <http://www.alfabier.nl> .
+
+	_:b6 schema:addressLocality "Schinnen" ;
+		schema:latitude "50.93621081" ;
+		schema:longitude "5.89316555" ;
+		schema:postalCode "6365 AC" ;
+		schema:streetAddress "Thull 15" .
+
+	brewery_id:4 a beer_def:Brewery ;
+	    beer_def:identifier "4" ;
+		beer_def:brewmasters "Max Schreuder" , "Yvonne van Breda" ;
+		beer_def:founded "2014-01-01T00:00:00+02:00"^^xsd:dateTime ;
+		beer_def:group "Onafhankelijk" ;
+		beer_def:owners "Max Schreuder" , "Yvonne van Breda" ;
+		schema:state "Limburg" ;
+		schema:address _:b8 ;
+		schema:email "info@ambrass.nl" ;
+		schema:name "Ambrass Bierbrouwerij" ;
+		schema:taxID "52966534" ;
+		schema:telephone "046-4009300" ;
+		schema:url <http://www.ambrass.nl> .
+
+	_:b8 schema:addressLocality "Sittard" ;
+		schema:latitude "50.99279662" ;
+		schema:longitude "5.86118305" ;
+		schema:postalCode "6133 WZ" ;
+		schema:streetAddress "Berkenlaan 8" .
+
+	brewery_id:5 a beer_def:Brewery ;
+		beer_def:identifier "5" ;
+		beer_def:brewmasters "Doeke Visser" ;
+		beer_def:founded "2008-01-01T00:00:00+02:00"^^xsd:dateTime ;
+		beer_def:group "Onafhankelijk" ;
+		beer_def:openinghours "Bezoek op afspraak." ;
+		beer_def:owners "Doeke" , "Eva Visser" ;
+		schema:state "Friesland" ;
+		schema:address _:b10 ;
+		schema:email "info@amelanderbier.nl" ;
+		schema:name "Amelander Bierbrouwerij" ;
+		schema:taxID "01138714" ;
+		schema:telephone "0519-554365" ;
+		schema:url <http://www.amelanderbier.nl> .
+
+	_:b10 schema:addressLocality "Ballum" ;
+		schema:latitude "53.44025996" ;
+		schema:longitude "5.70644929" ;
+		schema:postalCode "9162 EC" ;
+		schema:streetAddress "Smitteweg 6" .
+}

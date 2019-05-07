@@ -11,30 +11,30 @@ final class Constants {
 
   // Query
 
-  public static final String BUILDING_FIELD = "building";
+  public static final String BREWERY_FIELD = "brewery";
 
-  // Building.identifier
+  // Brewery.id
 
-  public static final String BUILDING_IDENTIFIER_FIELD = "identifier";
+  public static final String BREWERY_IDENTIFIER_FIELD = "identifier";
 
-  public static final String BUILDING_IDENTIFIER_EXAMPLE_1 = "123";
+  public static final String BREWERY_IDENTIFIER_EXAMPLE_1 = "123";
 
-  // Building.height
+  // Brewery.name
 
-  public static final String BUILDING_HEIGHT_FIELD = "height";
+  public static final String BREWERY_NAME_FIELD = "name";
 
-  public static final int BUILDING_HEIGHT_EXAMPLE_1 = 24;
+  public static final String BREWERY_NAME_EXAMPLE_1 = "Brouwerij 1923";
 
-  // Building.builtAt
+  // Brewery.founded
 
-  public static final String BUILDING_BUILT_AT_FIELD = "builtAt";
+  public static final String BREWERY_FOUNDED_FIELD = "founded";
 
-  public static final ZonedDateTime BUILDING_BUILT_AT_EXAMPLE_1 = ZonedDateTime.now();
+  public static final ZonedDateTime BREWERY_FOUNDED_EXAMPLE_1 = ZonedDateTime.now();
 
-  // Building.builtAtYear
+  // Building.foundedAtYear
 
-  public static final String BUILDING_BUILT_AT_YEAR_FIELD = "builtAtYear";
+  public static final String BREWERY_FOUNDED_AT_YEAR_FIELD = "foundedAtYear";
 
-  public static final int BUILDING_BUILT_AT_YEAR_EXAMPLE_1 = BUILDING_BUILT_AT_EXAMPLE_1.getYear();
+  public static final int BREWERY_FOUNDED_AT_YEAR_EXAMPLE_1 = BREWERY_FOUNDED_EXAMPLE_1.getYear();
 
 }

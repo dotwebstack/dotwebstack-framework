@@ -4,5 +4,5 @@ spring.main.banner-mode: 'off'
 dotwebstack:
   rdf4j:
     shape:
-      graph: http://example/shapes
-      prefix: http://example/shapes#
+      graph: https://github.com/dotwebstack/beer/shapes
+      prefix: https://github.com/dotwebstack/beer/shapes#

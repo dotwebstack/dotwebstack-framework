@@ -32,24 +32,24 @@ class IriCoercingTest {
   @Test
   void parseLiteral_ReturnsIri_ForIriValue() {
     // Act
-    IRI result = coercing.parseLiteral(Constants.BUILDING_SHAPE);
+    IRI result = coercing.parseLiteral(Constants.BREWERY_SHAPE);
 
     // Assert
-    assertThat(result, is(equalTo(Constants.BUILDING_SHAPE)));
+    assertThat(result, is(equalTo(Constants.BREWERY_SHAPE)));
   }
 
   @Test
   void parseLiteral_ReturnsIri_ForValidStringValue() {
     // Arrange
     StringValue stringValue = StringValue
-        .newStringValue(Constants.BUILDING_SHAPE.stringValue())
+        .newStringValue(Constants.BREWERY_SHAPE.stringValue())
         .build();
 
     // Act
     IRI result = coercing.parseLiteral(stringValue);
 
     // Assert
-    assertThat(result, is(equalTo(Constants.BUILDING_SHAPE)));
+    assertThat(result, is(equalTo(Constants.BREWERY_SHAPE)));
   }
 
   @Test
