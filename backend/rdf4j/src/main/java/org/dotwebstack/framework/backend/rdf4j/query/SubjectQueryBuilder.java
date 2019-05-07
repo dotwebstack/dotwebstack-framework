@@ -4,6 +4,7 @@ import graphql.schema.GraphQLDirective;
 
 import java.util.List;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
 
 class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
@@ -45,23 +47,28 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
                         final GraphQLDirective sparqlDirective) {
     final MapContext context = new MapContext(arguments);
 
-    this.query.select(SUBJECT_VAR)
-        .where(GraphPatterns.tp(SUBJECT_VAR, ns(RDF.TYPE), ns(this.nodeShape.getTargetClass())));
+    this.query.select(SUBJECT_VAR);
+
+    Map<String, TriplePattern> whereStatements = new HashMap<>();
+    TriplePattern whereSubjectType = GraphPatterns.tp(SUBJECT_VAR, ns(RDF.TYPE),
+            ns(this.nodeShape.getTargetClass()));
+    whereStatements.put(whereSubjectType.getQueryString(), whereSubjectType);
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
-    getOrderByFromContext(context, sparqlDirective).ifPresent(this::buildOrderBy);
+    getOrderByFromContext(context, sparqlDirective).ifPresent(contexts ->
+      contexts.forEach(orderContext -> {
+        query.orderBy(orderContext.getOrderable());
+
+        TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR, orderContext.getPropertyShape().getPath(),
+            SparqlBuilder.var(orderContext.getField()));
+        whereStatements.put(triplePattern.getQueryString(), triplePattern);
+      })
+    );
+
+    whereStatements.values().forEach(query::where);
 
     return this.query.getQueryString();
-  }
-
-  private void buildOrderBy(List<OrderContext> orderContexts) {
-    orderContexts.forEach(orderContext -> {
-      query.orderBy(orderContext.getOrderable());
-      // add the order property to the query
-      query.where(GraphPatterns.tp(SUBJECT_VAR, orderContext.getPropertyShape().getPath(),
-          SparqlBuilder.var(orderContext.getField())));
-    });
   }
 
   @SuppressWarnings({"unchecked","rawtypes"})
