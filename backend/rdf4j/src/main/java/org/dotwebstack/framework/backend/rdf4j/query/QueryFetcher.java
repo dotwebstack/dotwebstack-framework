@@ -81,7 +81,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
       Map<String, Object> arguments, RepositoryConnection con) {
     String subjectTemplate = DirectiveUtils
-        .getStringArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective);
+        .getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 
     if (subjectTemplate != null) {
       StringSubstitutor substitutor = new StringSubstitutor(arguments);

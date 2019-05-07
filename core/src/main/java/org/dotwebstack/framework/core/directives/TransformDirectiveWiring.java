@@ -40,7 +40,7 @@ public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
         GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
 
     JexlExpression expression = jexlEngine.createExpression(DirectiveUtils
-        .getStringArgument(CoreDirectives.TRANSFORM_ARG_EXPR, environment.getDirective()));
+        .getArgument(CoreDirectives.TRANSFORM_ARG_EXPR, environment.getDirective(), String.class));
 
     DataFetcher<?> delegateDataFetcher = environment
         .getCodeRegistry()
