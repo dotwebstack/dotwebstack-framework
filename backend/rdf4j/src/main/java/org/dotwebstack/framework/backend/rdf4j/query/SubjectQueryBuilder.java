@@ -74,7 +74,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     Optional<List> orderByObject = jexlHelper.evaluateDirectiveArgument(
         Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class);
 
-    if (orderByObject.isEmpty()) {
+    if (!orderByObject.isPresent()) {
       return Optional.empty();
     } else {
       List<Map<String, String>> orderByList = (List<Map<String, String>>) orderByObject.get();

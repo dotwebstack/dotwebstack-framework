@@ -5,11 +5,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.jexl3.JexlBuilder;
@@ -32,14 +32,14 @@ public class JexlHelperTest {
     // Arrange
     final GraphQLDirective directive = getGraphQlDirective();
     final String expectedValue = "value1";
-    final JexlContext context = new MapContext(Map.of("directiveValue1", expectedValue));
+    final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
     // Act
     final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument("directiveArg1",
         directive, context, String.class);
 
     // Assert
-    assertThat("expected non-empty optional", !evaluated.isEmpty());
+    assertThat("expected non-empty optional", evaluated.isPresent());
     assertThat(expectedValue, is(equalTo(evaluated.get())));
   }
 
@@ -49,14 +49,14 @@ public class JexlHelperTest {
     // Arrange
     final GraphQLDirective directive = getGraphQlDirective();
     final String expectedValue = "value1";
-    final JexlContext context = new MapContext(Map.of("directiveValue1", expectedValue));
+    final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
     // Act
     final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument("directiveArg2",
         directive, context, String.class);
 
     // Assert
-    assertThat("expected empty optional", evaluated.isEmpty());
+    assertThat("expected empty optional", !evaluated.isPresent());
   }
 
   @Test
@@ -64,7 +64,7 @@ public class JexlHelperTest {
     // Arrange
     final GraphQLDirective directive = getGraphQlDirective();
     final String expectedValue = "value1";
-    final JexlContext context = new MapContext(Map.of("directiveValue1", expectedValue));
+    final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
     // Assert
     assertThrows(IllegalArgumentException.class, () ->
@@ -76,20 +76,20 @@ public class JexlHelperTest {
   @Test
   public void evaluateExpression_returns_value() {
     final String expectedValue = "value1";
-    final JexlContext context = new MapContext(Map.of("directiveValue1", expectedValue));
+    final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
     final Optional<String> evaluated = this.jexlHelper.evaluateExpression(
         "directiveValue1", context, String.class);
 
     // Assert
-    assertThat("expected non-empty optional", !evaluated.isEmpty());
+    assertThat("expected non-empty optional", evaluated.isPresent());
     assertThat(expectedValue, is(equalTo(evaluated.get())));
   }
 
   @Test
   public void evaluateExpression_throwsException_forTypeMismatch() {
     final String expectedValue = "value1";
-    final JexlContext context = new MapContext(Map.of("directiveValue1", expectedValue));
+    final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
     // Assert
     assertThrows(IllegalArgumentException.class, () ->
