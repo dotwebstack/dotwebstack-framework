@@ -2,9 +2,8 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import graphql.schema.GraphQLDirective;
 
-import java.util.List;
-
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -56,15 +55,16 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
-    getOrderByFromContext(context, sparqlDirective).ifPresent(contexts ->
+    getOrderByFromContext(context, sparqlDirective).ifPresent(contexts -> {
       contexts.forEach(orderContext -> {
         query.orderBy(orderContext.getOrderable());
 
-        TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR, orderContext.getPropertyShape().getPath(),
-            SparqlBuilder.var(orderContext.getField()));
+        TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR,
+                orderContext.getPropertyShape().getPath(),
+                SparqlBuilder.var(orderContext.getField()));
         whereStatements.put(triplePattern.getQueryString(), triplePattern);
-      })
-    );
+      });
+    });
 
     whereStatements.values().forEach(query::where);
 
