@@ -9,7 +9,7 @@ type Query {
       subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
   panden(
     page: Int = 1 @constraint(min: 1), 
-    pageSize: Int = 10 @constraint(oneOf: [10, 20, 50]
+    pageSize: Int = 10 @constraint(oneOf: [10, 20, 50])
   ): [Pand!]!
     @sparql(
       repository: "local",
