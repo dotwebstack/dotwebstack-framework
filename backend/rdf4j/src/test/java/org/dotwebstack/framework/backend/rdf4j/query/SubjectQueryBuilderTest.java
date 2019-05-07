@@ -143,23 +143,23 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThrows(org.apache.commons.jexl3.JexlException.Variable.class, () ->
-            subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
     assertThrows(org.apache.commons.jexl3.JexlException.Variable.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
   void test_pagingParameters_withValidPageAndPageSize() {
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", 5);
-    arguments.putIfAbsent("pageSize", 12);
+    arguments.put("page", 5);
+    arguments.put("pageSize", 12);
 
     MapContext context = new MapContext(arguments);
 
-    assertThat(subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
+    assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
             is(equalTo(Optional.of(12))));
-    assertThat(subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective),
+    assertThat(this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective),
             is(equalTo(Optional.of(48))));
   }
 
@@ -167,60 +167,60 @@ class SubjectQueryBuilderTest {
   void test_pagingParameters_withInvalidPage() {
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", -1);
-    arguments.putIfAbsent("pageSize", 12);
+    arguments.put("page", -1);
+    arguments.put("pageSize", 12);
 
     MapContext context = new MapContext(arguments);
 
-    assertThat(subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
+    assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
             is(equalTo(Optional.of(12))));
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
   void test_pagingParameters_withInvalidPageType() {
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", "test");
-    arguments.putIfAbsent("pageSize", 12);
+    arguments.put("page", "test");
+    arguments.put("pageSize", 12);
 
     MapContext context = new MapContext(arguments);
 
-    assertThat(subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
+    assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
             is(equalTo(Optional.of(12))));
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
   void test_pagingParameters_withInvalidPageSize() {
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", 13);
-    arguments.putIfAbsent("pageSize", -1);
+    arguments.put("page", 13);
+    arguments.put("pageSize", -1);
 
     MapContext context = new MapContext(arguments);
 
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
   void test_pagingParameters_withInvalidPageSizeType() {
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", 13);
-    arguments.putIfAbsent("pageSize", "test");
+    arguments.put("page", 13);
+    arguments.put("pageSize", "test");
 
     MapContext context = new MapContext(arguments);
 
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
     assertThrows(IllegalArgumentException.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -228,15 +228,15 @@ class SubjectQueryBuilderTest {
     GraphQLDirective invalidSparqlDirective = getInvalidPagingDirective();
 
     Map<String, Object> arguments = new HashMap<>();
-    arguments.putIfAbsent("page", 1);
-    arguments.putIfAbsent("pageSize", 5);
+    arguments.put("page", 1);
+    arguments.put("pageSize", 5);
 
     MapContext context = new MapContext(arguments);
 
     assertThrows(org.apache.commons.jexl3.JexlException.Parsing.class, () ->
-            subjectQueryBuilder.getLimitFromContext(context, invalidSparqlDirective));
+            this.subjectQueryBuilder.getLimitFromContext(context, invalidSparqlDirective));
     assertThrows(org.apache.commons.jexl3.JexlException.Parsing.class, () ->
-            subjectQueryBuilder.getOffsetFromContext(context, invalidSparqlDirective));
+            this.subjectQueryBuilder.getOffsetFromContext(context, invalidSparqlDirective));
   }
 
   @Test
