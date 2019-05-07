@@ -1,39 +1,40 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix ex: <http://example/> .
-@prefix ex_def: <http://example/def#> .
-@prefix ex_sh: <http://example/shapes#> .
+@prefix schema: <http://schema.org/> .
+@prefix beer: <https://github.com/dotwebstack/beer/> .
+@prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
+@prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
 
-ex:shapes {
-  ex_sh:Building a sh:NodeShape ;
-    sh:targetClass ex_def:Building ;
+beer:shapes {
+  beer_sh:Brewery a sh:NodeShape ;
+    sh:targetClass beer_def:Brewery ;
     sh:property
-      ex_sh:Building_identifier ,
-      ex_sh:Building_height ,
-      ex_sh:Building_builtAt ;
+      beer_sh:Brewery_identifier ,
+      beer_sh:Brewery_name ,
+      beer_sh:Brewery_founded ;
   .
 
-  ex_sh:Building_identifier a sh:PropertyShape ;
+  beer_sh:Brewery_identifier a sh:PropertyShape ;
     sh:name "identifier" ;
-    sh:path ex_def:identifier ;
+    sh:path beer_def:identifier ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string ;
   .
 
-  ex_sh:Building_height a sh:PropertyShape ;
-    sh:name "height" ;
-    sh:path ex_def:height ;
+  beer_sh:Brewery_name a sh:PropertyShape ;
+    sh:name "name" ;
+    sh:path schema:name ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:int ;
+    sh:datatype xsd:string ;
   .
 
-  ex_sh:Building_builtAt a sh:PropertyShape ;
-    sh:name "builtAt" ;
-    sh:path ex_def:builtAt ;
+  beer_sh:Brewery_founded a sh:PropertyShape ;
+    sh:name "founded" ;
+    sh:path beer_def:founded ;
     sh:minCount 0 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;

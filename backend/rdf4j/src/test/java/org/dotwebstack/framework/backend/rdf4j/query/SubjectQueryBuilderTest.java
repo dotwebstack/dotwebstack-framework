@@ -246,7 +246,7 @@ class SubjectQueryBuilderTest {
     GraphQLDirective validSparqlDirective = getValidSortDirective();
 
     Map<String, Object> arguments = new HashMap<>();
-    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identificatiecode",
+    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier",
             "order", "DESC")));
 
     MapContext context = new MapContext(arguments);
@@ -257,7 +257,7 @@ class SubjectQueryBuilderTest {
 
     optional.ifPresent(orderContexts ->
         assertThat(orderContexts.get(0).getOrderable().getQueryString(),
-              is(equalTo("DESC( ?identificatiecode )")))
+              is(equalTo("DESC( ?identifier )")))
     );
   }
 
@@ -278,7 +278,7 @@ class SubjectQueryBuilderTest {
     GraphQLDirective validSparqlDirective = getValidSortDirective();
 
     Map<String, Object> arguments = new HashMap<>();
-    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identificatiecode",
+    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier",
             "order", "DESC")));
 
     MapContext context = new MapContext(arguments);

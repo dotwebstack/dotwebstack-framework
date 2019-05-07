@@ -3,14 +3,13 @@ schema {
 }
 
 type Query {
-  pand(identificatiecode: ID!): Pand
+  brewery(identifier: ID!): Brewery
     @sparql(
       repository: "local",
-      subject: "http://bag.basisregistraties.overheid.nl/bag/id/pand/${identificatiecode}")
+      subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
-  panden(sort: [SortField!] = [{ field: "status", order: ASC },
-                               { field: "identificatiecode", order: DESC }],
-         page: Int = 1, pageSize: Int = 10): [Pand!]!
+  breweries(sort: [SortField!] = [{ field: "name", order: ASC }],
+            page: Int = 1, pageSize: Int = 10): [Brewery!]!
     @sparql(
       repository: "local",
       limit: "pageSize",
@@ -18,32 +17,28 @@ type Query {
       orderBy: "sort"
     )
 
-  panden_paging_input(input: PageQueryInput): [Pand!]!
+  breweries_paging_input(input: PageQueryInput): [Brewery!]!
     @sparql(
       repository: "local",
       limit: "input.pageSize",
       offset: "(input.page - 1) * input.pageSize"
     )
 
-  panden_sort_input(input: SortQueryInput): [Pand!]!
+  breweries_sort_input(input: CollectionQueryInput): [Brewery!]!
     @sparql(
       repository: "local",
       orderBy: "input.sort"
     )
 }
 
-type Pand {
-  identificatiecode: ID!
-  status: String!
-    @transform(expr: "status.getLocalName()")
-  oorspronkelijkBouwjaar: Int!
-  beginGeldigheid: DateTime!
-  eindGeldigheid: DateTime
-}
-
-type Verblijfsobject {
-  identificatiecode: ID!
-  status: String!
+type Brewery {
+  identifier: ID!
+  name: String!
+  founded: String!
+    @transform(expr: "founded.calendarValue().getYear()")
+  openinghours: String
+  url: String!
+    @transform(expr: "url.getLocalName()")
 }
 
 input SortQueryInput {

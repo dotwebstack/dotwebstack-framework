@@ -1,13 +1,13 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_PATH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_IDENTIFIER_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_IDENTIFIER_PATH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_TYPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_PATH;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_PATH;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_TYPE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -38,53 +38,54 @@ class ValueFetcherTest {
   void get_ReturnsConvertedLiteral_ForBuiltInScalarField() {
     // Arrange
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
-        .name(BUILDING_IDENTIFIER_FIELD)
-        .path(BUILDING_IDENTIFIER_PATH)
+        .name(BREWERY_IDENTIFIER_FIELD)
+        .path(BREWERY_IDENTIFIER_PATH)
         .build());
     Model model = new ModelBuilder()
-        .add(BUILDING_EXAMPLE_1, BUILDING_IDENTIFIER_PATH, BUILDING_IDENTIFIER_EXAMPLE_1)
+        .add(BREWERY_EXAMPLE_1, BREWERY_IDENTIFIER_PATH,
+                BREWERY_IDENTIFIER_EXAMPLE_1)
         .build();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
-    when(environment.getSource()).thenReturn(new QuerySolution(model, BUILDING_EXAMPLE_1));
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
     // Act
     Object result = valueFetcher.get(environment);
 
     // Assert
-    assertThat(result, is(equalTo(BUILDING_IDENTIFIER_EXAMPLE_1.stringValue())));
+    assertThat(result, is(equalTo(BREWERY_IDENTIFIER_EXAMPLE_1.stringValue())));
   }
 
   @Test
   void get_ReturnsLiteral_ForForeignScalarField() {
     // Arrange
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
-        .name(BUILDING_BUILT_AT_FIELD)
-        .path(BUILDING_BUILT_AT_PATH)
+        .name(BREWERY_FOUNDED_FIELD)
+        .path(BREWERY_FOUNDED_PATH)
         .build());
     Model model = new ModelBuilder()
-        .add(BUILDING_EXAMPLE_1, BUILDING_BUILT_AT_PATH, BUILDING_BUILT_AT_EXAMPLE_1)
+        .add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
         .build();
     when(environment.getFieldType()).thenReturn(
         CoreScalars.DATETIME);
-    when(environment.getSource()).thenReturn(new QuerySolution(model, BUILDING_EXAMPLE_1));
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
     // Act
     Object result = valueFetcher.get(environment);
 
     // Assert
-    assertThat(result, is(equalTo(BUILDING_BUILT_AT_EXAMPLE_1)));
+    assertThat(result, is(equalTo(BREWERY_FOUNDED_EXAMPLE_1)));
   }
 
   @Test
   void get_ReturnsNull_ForAbsentScalarField() {
     // Arrange
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
-        .name(BUILDING_IDENTIFIER_FIELD)
-        .path(BUILDING_IDENTIFIER_PATH)
+        .name(BREWERY_IDENTIFIER_FIELD)
+        .path(BREWERY_IDENTIFIER_PATH)
         .build());
     Model model = new TreeModel();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
-    when(environment.getSource()).thenReturn(new QuerySolution(model, BUILDING_EXAMPLE_1));
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
     // Act
     Object result = valueFetcher.get(environment);
@@ -99,9 +100,9 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder().build());
     Model model = new TreeModel();
     when(environment.getFieldType()).thenReturn(GraphQLObjectType.newObject()
-        .name(BUILDING_TYPE)
+        .name(BREWERY_TYPE)
         .build());
-    when(environment.getSource()).thenReturn(new QuerySolution(model, BUILDING_EXAMPLE_1));
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
     // Act / Assert
     assertThrows(UnsupportedOperationException.class, () ->

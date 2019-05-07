@@ -1,11 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_BUILT_AT_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_HEIGHT_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_HEIGHT_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,7 +31,7 @@ class Rdf4jIntegrationTest {
   @Test
   void graphqlQuery_ReturnsMap_ForObjectQueryField() {
     // Arrange
-    String query = "{ building(identifier: \"123\") { identifier, height, builtAt }}";
+    String query = "{ brewery(identifier: \"123\") { identifier, name, founded }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -38,11 +39,11 @@ class Rdf4jIntegrationTest {
     // Assert
     assertThat(result.getErrors().isEmpty(), is(equalTo(true)));
     Map<String, Object> data = result.getData();
-    assertThat(data, IsMapContaining.hasEntry(Constants.BUILDING_FIELD, ImmutableMap
-        .of(BUILDING_IDENTIFIER_FIELD, BUILDING_IDENTIFIER_EXAMPLE_1.stringValue(),
-            BUILDING_HEIGHT_FIELD, BUILDING_HEIGHT_EXAMPLE_1.intValue(),
-            BUILDING_BUILT_AT_FIELD,
-            ZonedDateTime.parse(BUILDING_BUILT_AT_EXAMPLE_1.stringValue()))));
+    assertThat(data, IsMapContaining.hasEntry(BREWERY_FIELD, ImmutableMap
+        .of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(),
+                BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue(),
+                BREWERY_FOUNDED_FIELD,
+            ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
   }
 
 }

@@ -1,14 +1,14 @@
 package org.dotwebstack.framework.core;
 
-import static org.dotwebstack.framework.core.Constants.BUILDING_BUILT_AT_EXAMPLE_1;
-import static org.dotwebstack.framework.core.Constants.BUILDING_BUILT_AT_FIELD;
-import static org.dotwebstack.framework.core.Constants.BUILDING_BUILT_AT_YEAR_EXAMPLE_1;
-import static org.dotwebstack.framework.core.Constants.BUILDING_BUILT_AT_YEAR_FIELD;
-import static org.dotwebstack.framework.core.Constants.BUILDING_FIELD;
-import static org.dotwebstack.framework.core.Constants.BUILDING_HEIGHT_EXAMPLE_1;
-import static org.dotwebstack.framework.core.Constants.BUILDING_HEIGHT_FIELD;
-import static org.dotwebstack.framework.core.Constants.BUILDING_IDENTIFIER_EXAMPLE_1;
-import static org.dotwebstack.framework.core.Constants.BUILDING_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.core.Constants.BREWERY_FIELD;
+import static org.dotwebstack.framework.core.Constants.BREWERY_FOUNDED_AT_YEAR_EXAMPLE_1;
+import static org.dotwebstack.framework.core.Constants.BREWERY_FOUNDED_AT_YEAR_FIELD;
+import static org.dotwebstack.framework.core.Constants.BREWERY_FOUNDED_EXAMPLE_1;
+import static org.dotwebstack.framework.core.Constants.BREWERY_FOUNDED_FIELD;
+import static org.dotwebstack.framework.core.Constants.BREWERY_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.core.Constants.BREWERY_IDENTIFIER_FIELD;
+import static org.dotwebstack.framework.core.Constants.BREWERY_NAME_EXAMPLE_1;
+import static org.dotwebstack.framework.core.Constants.BREWERY_NAME_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,7 +32,7 @@ class GraphqlIntegrationTest {
   @Test
   void graphqlQuery_ReturnsMap_ForObjectQueryField() {
     // Arrange
-    String query = "{ building(identifier: \"123\") { identifier, height, builtAt, builtAtYear }}";
+    String query = "{ brewery(identifier: \"123\") { identifier, name, founded, foundedAtYear }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -40,10 +40,12 @@ class GraphqlIntegrationTest {
     // Assert
     assertThat(result.getErrors().isEmpty(), is(equalTo(true)));
     Map<String, Object> data = result.getData();
-    assertThat(data, IsMapContaining.hasEntry(BUILDING_FIELD, ImmutableMap
-        .of(BUILDING_IDENTIFIER_FIELD, BUILDING_IDENTIFIER_EXAMPLE_1, BUILDING_HEIGHT_FIELD,
-            BUILDING_HEIGHT_EXAMPLE_1, BUILDING_BUILT_AT_FIELD, BUILDING_BUILT_AT_EXAMPLE_1,
-            BUILDING_BUILT_AT_YEAR_FIELD, BUILDING_BUILT_AT_YEAR_EXAMPLE_1)));
+
+    assertThat(data, IsMapContaining.hasEntry(BREWERY_FIELD,
+            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1,
+                            BREWERY_NAME_FIELD,BREWERY_NAME_EXAMPLE_1,
+                            BREWERY_FOUNDED_FIELD,BREWERY_FOUNDED_EXAMPLE_1,
+                            BREWERY_FOUNDED_AT_YEAR_FIELD,BREWERY_FOUNDED_AT_YEAR_EXAMPLE_1)));
   }
 
 }

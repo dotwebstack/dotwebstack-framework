@@ -32,45 +32,45 @@ public final class Constants {
 
   // Properties
 
-  public static final IRI SHAPE_GRAPH = VF.createIRI("http://example/shapes");
+  public static final IRI SHAPE_GRAPH = VF.createIRI("https://github.com/dotwebstack/beer/shapes");
 
-  public static final String SHAPE_PREFIX = "http://example/shapes#";
+  public static final String SHAPE_PREFIX = "https://github.com/dotwebstack/beer/shapes#";
 
   // Query
 
-  public static final String BUILDING_FIELD = "building";
+  public static final String BREWERY_FIELD = "brewery";
 
   // Building
 
-  public static final String BUILDING_TYPE = "Building";
+  public static final String BREWERY_TYPE = "Brewery";
 
-  public static final IRI BUILDING_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BUILDING_TYPE));
+  public static final IRI BREWERY_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_TYPE));
 
-  public static final IRI BUILDING_CLASS = VF.createIRI("http://example/def#Building");
+  public static final IRI BREWERY_CLASS = VF.createIRI("https://github.com/dotwebstack/beer/def#Building");
 
-  public static final IRI BUILDING_EXAMPLE_1 = VF.createIRI("http://example/building/123");
+  public static final IRI BREWERY_EXAMPLE_1 = VF.createIRI("https://github.com/dotwebstack/beer/identifier/brewery/123");
 
-  // Building.identifier
+  // Brewery.id
 
-  public static final String BUILDING_IDENTIFIER_FIELD = "identifier";
+  public static final String BREWERY_IDENTIFIER_FIELD = "identifier";
 
-  public static final IRI BUILDING_IDENTIFIER_PATH = VF.createIRI("http://example/def#identifier");
+  public static final IRI BREWERY_IDENTIFIER_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#identifier");
 
-  public static final Literal BUILDING_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("123");
+  public static final Literal BREWERY_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("123");
 
-  // Building.height
+  // Brewery.name
 
-  public static final String BUILDING_HEIGHT_FIELD = "height";
+  public static final String BREWERY_NAME_FIELD = "name";
 
-  public static final Literal BUILDING_HEIGHT_EXAMPLE_1 = VF.createLiteral(24);
+  public static final Literal BREWERY_NAME_EXAMPLE_1 = VF.createLiteral("Brouwerij 1923");
 
-  // Building.builtAt
+  // Brewery.founded
 
-  public static final String BUILDING_BUILT_AT_FIELD = "builtAt";
+  public static final String BREWERY_FOUNDED_FIELD = "founded";
 
-  public static final IRI BUILDING_BUILT_AT_PATH = VF.createIRI("http://example/def#builtAt");
+  public static final IRI BREWERY_FOUNDED_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def##founded");
 
-  public static final Literal BUILDING_BUILT_AT_EXAMPLE_1 = VF
+  public static final Literal BREWERY_FOUNDED_EXAMPLE_1 = VF
       .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
 
 }

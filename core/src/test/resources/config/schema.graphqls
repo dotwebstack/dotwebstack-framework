@@ -3,13 +3,13 @@ schema {
 }
 
 type Query {
-  building(identifier: ID!): Building!
+  brewery(identifier: ID!): Brewery!
 }
 
-type Building {
+type Brewery {
   identifier: ID!
-  height: Int!
-  builtAt: DateTime!
-  builtAtYear: Int!
-    @transform(expr: "builtAtYear.getYear()")
+  name: String!
+  founded: DateTime!
+  foundedAtYear: Int!
+    @transform(expr: "foundedAtYear.getYear()")
 }
