@@ -7,17 +7,27 @@ type Query {
     @sparql(
       repository: "local",
       subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
-  breweries(page: Int = 1, pageSize: Int = 10): [Brewery!]!
+
+  breweries(sort: [SortField!] = [{ field: "name", order: ASC }],
+            page: Int = 1, pageSize: Int = 10): [Brewery!]!
     @sparql(
       repository: "local",
       limit: "pageSize",
-      offset: "(page - 1) * pageSize"
+      offset: "(page - 1) * pageSize",
+      orderBy: "sort"
     )
-  breweries_from_input(input: CollectionQueryInput): [Brewery!]!
+
+  breweries_paging_input(input: PageQueryInput): [Brewery!]!
     @sparql(
       repository: "local",
       limit: "input.pageSize",
       offset: "(input.page - 1) * input.pageSize"
+    )
+
+  breweries_sort_input(input: PageQueryInput): [Brewery!]!
+    @sparql(
+      repository: "local",
+      orderBy: "input.sort"
     )
 }
 
@@ -31,7 +41,11 @@ type Brewery {
     @transform(expr: "url.getLocalName()")
 }
 
-input CollectionQueryInput {
+input SortQueryInput {
+  sort: [SortField!] = [{ field: "name", order: ASC }]
+}
+
+input PageQueryInput {
   page: Int = 1
   pageSize: Int = 10
 }

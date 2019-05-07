@@ -53,7 +53,7 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
             .type(optionalString)
             .build())
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name("orderBy")
+            .name(Rdf4jDirectives.SPARQL_ARG_ORDER_BY)
             .type(optionalString)
             .build())
         .directiveLocation(DirectiveLocation.newDirectiveLocation()

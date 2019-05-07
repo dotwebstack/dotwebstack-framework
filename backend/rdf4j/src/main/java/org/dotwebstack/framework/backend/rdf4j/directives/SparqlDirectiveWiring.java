@@ -53,7 +53,8 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     }
 
     String repositoryId = DirectiveUtils
-        .getStringArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, environment.getDirective());
+        .getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, environment.getDirective(),
+            String.class);
 
     if (!repositoryManager.hasRepositoryConfig(repositoryId)) {
       throw new InvalidConfigurationException(

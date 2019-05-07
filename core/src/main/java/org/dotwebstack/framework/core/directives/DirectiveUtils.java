@@ -12,26 +12,25 @@ public final class DirectiveUtils {
         String.format("%s is not meant to be instantiated.", DirectiveUtils.class));
   }
 
-  public static String getStringArgument(@NonNull String argName,
-      @NonNull GraphQLDirective directive) {
-    GraphQLArgument argument = directive.getArgument(argName);
+  public static <T> T getArgument(@NonNull String argName,
+                                  @NonNull GraphQLDirective directive,
+                                  @NonNull Class<T> clazz) {
+    final GraphQLArgument argument = directive.getArgument(argName);
 
     if (argument == null) {
       return null;
     }
 
-    Object argValue = argument.getValue();
+    final Object argValue = argument.getValue();
 
     if (argValue == null) {
       return null;
-    }
-
-    if (!(argValue instanceof String)) {
+    } else if (!clazz.isInstance(argValue)) {
       throw new InvalidConfigurationException(
-          String.format("Argument '%s' is not a string.", argName));
+          String.format("Argument type mismatch for '%s': expected[%s], but was [%s].",
+              argName, clazz, argValue.getClass()));
+    } else {
+      return clazz.cast(argValue);
     }
-
-    return (String) argValue;
   }
-
 }
