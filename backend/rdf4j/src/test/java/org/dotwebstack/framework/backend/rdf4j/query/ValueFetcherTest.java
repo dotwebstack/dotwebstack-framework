@@ -43,7 +43,7 @@ class ValueFetcherTest {
         .build());
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_IDENTIFIER_PATH,
-                BREWERY_IDENTIFIER_EXAMPLE_1)
+            BREWERY_IDENTIFIER_EXAMPLE_1)
         .build();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
@@ -56,7 +56,7 @@ class ValueFetcherTest {
   }
 
   @Test
-  void get_ReturnsLiteral_ForForeignScalarField() {
+  void get_ReturnsString_ForForeignScalarField() {
     // Arrange
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_FOUNDED_FIELD)
@@ -73,7 +73,7 @@ class ValueFetcherTest {
     Object result = valueFetcher.get(environment);
 
     // Assert
-    assertThat(result, is(equalTo(BREWERY_FOUNDED_EXAMPLE_1)));
+    assertThat(result, is(equalTo(BREWERY_FOUNDED_EXAMPLE_1.stringValue())));
   }
 
   @Test
