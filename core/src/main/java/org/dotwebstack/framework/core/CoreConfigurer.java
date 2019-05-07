@@ -1,19 +1,21 @@
 package org.dotwebstack.framework.core;
 
+import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLString;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.TypeName.newTypeName;
 
+import com.google.common.collect.Lists;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
 import graphql.language.DirectiveLocation;
 import graphql.language.InputValueDefinition;
+import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.core.directives.ConstraintDirectiveWiring;
@@ -30,6 +32,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
   private final ConstraintDirectiveWiring constraintDirectiveWiring;
 
   private static final TypeName optionalString = newTypeName(GraphQLString.getName()).build();
+  private static final TypeName optionalInt = newTypeName(GraphQLInt.getName()).build();
   private static final NonNullType requiredString = newNonNullType(optionalString).build();
 
   @Override
@@ -55,26 +58,31 @@ public class CoreConfigurer implements GraphqlConfigurer {
   }
 
   private DirectiveDefinition createConstraintDefinition() {
+
+
     return DirectiveDefinition.newDirectiveDefinition()
             .name(CoreDirectives.CONSTRAINT_NAME)
             .inputValueDefinitions(
-                    List.of(
+                    Lists.newArrayList(
                             InputValueDefinition.newInputValueDefinition()
                                     .name(CoreDirectives.CONSTRAINT_ARG_MIN)
-                                    .type(optionalString)
+                                    .type(optionalInt)
                                     .build(),
                             InputValueDefinition.newInputValueDefinition()
                                     .name(CoreDirectives.CONSTRAINT_ARG_MAX)
-                                    .type(optionalString)
+                                    .type(optionalInt)
                                     .build(),
                             InputValueDefinition.newInputValueDefinition()
                                     .name(CoreDirectives.CONSTRAINT_ARG_ONEOF)
-                                    .type(optionalString)
+                                    .type(new ListType(new TypeName(GraphQLInt.getName())))
                                     .build()))
-            .directiveLocation(
+            .directiveLocations(Lists.newArrayList(
                     DirectiveLocation.newDirectiveLocation()
-                            .name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
-                            .build())
+                            .name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
+                            .build(),
+                    DirectiveLocation.newDirectiveLocation()
+                            .name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
+                            .build()))
             .build();
   }
 
