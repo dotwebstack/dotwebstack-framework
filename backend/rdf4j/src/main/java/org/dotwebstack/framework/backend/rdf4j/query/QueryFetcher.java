@@ -11,6 +11,7 @@ import graphql.schema.GraphQLUnmodifiedType;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.directives.DirectiveValidatorDelegator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -43,6 +45,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final JexlEngine jexlEngine;
 
+  private final DirectiveValidatorDelegator directiveValidatorDelegator;
+
   @Override
   public Object get(@NonNull DataFetchingEnvironment environment) {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
@@ -54,6 +58,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
       throw new UnsupportedOperationException(
           "Field types other than object fields are not yet supported.");
     }
+
+    directiveValidatorDelegator.delegate(environment);
 
     QueryEnvironment queryEnvironment = QueryEnvironment.builder()
         .objectType((GraphQLObjectType) rawType)

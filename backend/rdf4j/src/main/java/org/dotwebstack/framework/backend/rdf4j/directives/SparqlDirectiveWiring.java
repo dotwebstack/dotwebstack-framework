@@ -8,6 +8,7 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
+
 import java.util.Map;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
@@ -16,6 +17,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.directives.DirectiveValidatorDelegator;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.springframework.stereotype.Component;
@@ -31,14 +33,17 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private final JexlEngine jexlEngine;
 
+  private DirectiveValidatorDelegator directiveValidatorDelegator;
+
   public SparqlDirectiveWiring(RepositoryManager repositoryManager,
       NodeShapeRegistry nodeShapeRegistry, Rdf4jProperties rdf4jProperties,
-      JexlEngine jexlEngine) {
+      JexlEngine jexlEngine, DirectiveValidatorDelegator directiveValidatorDelegator) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null
         ? HashBiMap.create(rdf4jProperties.getPrefixes()).inverse() : ImmutableMap.of();
     this.jexlEngine = jexlEngine;
+    this.directiveValidatorDelegator = directiveValidatorDelegator;
   }
 
   @Override
@@ -63,7 +68,7 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId).getConnection();
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap,
-            jexlEngine);
+            jexlEngine, directiveValidatorDelegator);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
