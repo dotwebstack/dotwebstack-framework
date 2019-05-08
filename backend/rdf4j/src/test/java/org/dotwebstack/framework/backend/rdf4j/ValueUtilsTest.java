@@ -55,21 +55,22 @@ class ValueUtilsTest {
   }
 
   @Test
-  void convertValue_ReturnsLiteral_ForNonBuiltInScalars() {
+  void convertValue_ReturnsString_ForNonBuiltInScalars() {
     // Act
-    Object result = ValueUtils.convertValue(VF.createLiteral(new Date()));
+    Literal literal = VF.createLiteral(new Date());
+    Object result = ValueUtils.convertValue(literal);
 
     // Assert
-    assertThat(result, is(instanceOf(Literal.class)));
+    assertThat(result, is(equalTo(literal.stringValue())));
   }
 
   @Test
   void convertValue_ReturnsInput_ForNonLiterals() {
     // Act
-    Object result = ValueUtils.convertValue(Constants.BUILDING_EXAMPLE_1);
+    Object result = ValueUtils.convertValue(Constants.BREWERY_EXAMPLE_1);
 
     // Assert
-    assertThat(result, is(equalTo(Constants.BUILDING_EXAMPLE_1)));
+    assertThat(result, is(equalTo(Constants.BREWERY_EXAMPLE_1)));
   }
 
   @Test

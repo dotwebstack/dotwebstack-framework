@@ -1,15 +1,19 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-@prefix ex_def: <http://example/def#> .
-@prefix ex_building: <http://example/building/> .
+@prefix schema: <http://schema.org/> .
+@prefix beer: <https://github.com/dotwebstack/beer/> .
+@prefix beer_brewery: <https://github.com/dotwebstack/beer/id/brewery/> .
+@prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
+@prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
 
-ex_building:123 a ex_def:Building ;
-  ex_def:identifier "123" ;
-  ex_def:height "24"^^xsd:int ;
-  ex_def:builtAt "2018-05-30T09:30:10+02:00"^^xsd:dateTime
+beer_brewery:123 a beer_def:Brewery ;
+  beer_def:identifier "123" ;
+  schema:name "Brouwerij 1923"^^xsd:string ;
+  beer_def:founded "2018-05-30T09:30:10+02:00"^^xsd:dateTime
 .
 
-ex_building:456 a ex_def:Building ;
-  ex_def:identifier "456" ;
-  ex_def:height "5"^^xsd:int ;
+beer_brewery:456 a beer_def:Brewery ;
+  beer_def:identifier "456" ;
+  schema:name "Brouwerij Het 58e Genot i.o."^^xsd:dateTime ;
+  beer_def:founded "2010-05-10T09:30:10+02:00"^^xsd:dateTime
 .

@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.URISyntaxException;
 import java.util.Map;
 import lombok.Cleanup;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
@@ -218,7 +217,7 @@ class Rdf4jConfigurationTest {
         .nodeShapeRegistry(repositoryManager, rdf4jProperties);
 
     // Assert
-    assertThat(nodeShapeRegistry.get(Constants.BUILDING_SHAPE), is(notNullValue()));
+    assertThat(nodeShapeRegistry.get(Constants.BREWERY_SHAPE), is(notNullValue()));
   }
 
 }

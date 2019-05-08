@@ -9,28 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import graphql.schema.CoercingSerializeException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.jupiter.api.Test;
 
 class DateTimeCoercingTest {
 
-  private static final ValueFactory VF = SimpleValueFactory.getInstance();
-
-  private static final DatatypeFactory datatypeFactory;
-
   private final DateTimeCoercing coercing = new DateTimeCoercing();
-
-  static {
-    try {
-      datatypeFactory = DatatypeFactory.newInstance();
-    } catch (DatatypeConfigurationException e) {
-      throw new IllegalStateException(e);
-    }
-  }
 
   @Test
   void serialize_ReturnsDateTime_ForDateTime() {
@@ -59,27 +42,6 @@ class DateTimeCoercingTest {
     // Act / Assert
     assertThrows(CoercingSerializeException.class, () ->
         coercing.serialize("foo"));
-  }
-
-  @Test
-  void serialize_ReturnsDateTime_ForValidLiteral() {
-    // Arrange
-    Literal dateTimeLiteral = VF.createLiteral(
-        datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
-
-    // Act
-    ZonedDateTime dateTime = coercing.serialize(dateTimeLiteral);
-
-    // Assert
-    ZonedDateTime expected = ZonedDateTime.of(2018, 5, 30, 9, 30, 10, 0, ZoneId.of("GMT+2"));
-    assertThat(dateTime.isEqual(expected), is(equalTo(true)));
-  }
-
-  @Test
-  void serialize_ReturnsDateTime_ForInvalidLiteral() {
-    // Act / Assert
-    assertThrows(CoercingSerializeException.class, () ->
-        coercing.serialize(VF.createLiteral("foo")));
   }
 
   @Test

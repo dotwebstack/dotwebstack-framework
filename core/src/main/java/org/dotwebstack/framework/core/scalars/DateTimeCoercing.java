@@ -5,8 +5,6 @@ import graphql.schema.CoercingSerializeException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import lombok.NonNull;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
 
@@ -16,20 +14,13 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
       return (ZonedDateTime) value;
     }
 
-    String dateTimeStr;
-
-    if (value instanceof String) {
-      dateTimeStr = (String) value;
-    } else if (value instanceof Literal && XMLSchema.DATETIME
-        .equals(((Literal) value).getDatatype())) {
-      dateTimeStr = ((Literal) value).stringValue();
-    } else {
+    if (!(value instanceof String)) {
       throw new CoercingSerializeException(String
           .format("Unable to parse date-time string from '%s' type.", value.getClass().getName()));
     }
 
     try {
-      return ZonedDateTime.parse(dateTimeStr);
+      return ZonedDateTime.parse((String) value);
     } catch (DateTimeParseException e) {
       throw new CoercingSerializeException("Parsing date-time string failed.", e);
     }

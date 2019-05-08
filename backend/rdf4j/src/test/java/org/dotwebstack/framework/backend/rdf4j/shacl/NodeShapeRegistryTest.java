@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_SHAPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BUILDING_TYPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_SHAPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_TYPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SHAPE_PREFIX;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -32,10 +32,10 @@ class NodeShapeRegistryTest {
   @Test
   void register_addsNodeShapeToRegistry() {
     // Act
-    nodeShapeRegistry.register(BUILDING_SHAPE, nodeShape);
+    nodeShapeRegistry.register(BREWERY_SHAPE, nodeShape);
 
     // Assert
-    assertThat(nodeShapeRegistry.get(BUILDING_SHAPE), is(equalTo(nodeShape)));
+    assertThat(nodeShapeRegistry.get(BREWERY_SHAPE), is(equalTo(nodeShape)));
   }
 
   @Test
@@ -51,7 +51,7 @@ class NodeShapeRegistryTest {
   void get_returnsNodeShape_ForGivenObjectType() {
     // Arrange
     GraphQLObjectType objectType = GraphQLObjectType.newObject()
-        .name(BUILDING_TYPE)
+        .name(BREWERY_TYPE)
         .build();
 
     // Act

@@ -3,14 +3,14 @@ schema {
 }
 
 type Query {
-  building(identifier: ID!): Building!
-    @sparql(repository: "local", subject: "http://example/building/${identifier}")
-  buildings: [Building!]!
+  brewery(identifier: ID!): Brewery!
+    @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
+  breweries: [Brewery!]!
     @sparql(repository: "local")
 }
 
-type Building {
+type Brewery {
   identifier: ID!
-  height: Int!
-  builtAt: DateTime!
+  name: String!
+  founded: DateTime!
 }
