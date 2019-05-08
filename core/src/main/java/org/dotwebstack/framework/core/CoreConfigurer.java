@@ -18,7 +18,6 @@ import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.dotwebstack.framework.core.directives.ConstraintDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
@@ -29,7 +28,6 @@ import org.springframework.stereotype.Component;
 public class CoreConfigurer implements GraphqlConfigurer {
 
   private final TransformDirectiveWiring transformDirectiveWiring;
-  private final ConstraintDirectiveWiring constraintDirectiveWiring;
 
   private static final TypeName optionalString = newTypeName(GraphQLString.getName()).build();
   private static final TypeName optionalInt = newTypeName(GraphQLInt.getName()).build();
@@ -78,6 +76,9 @@ public class CoreConfigurer implements GraphqlConfigurer {
                                     .build()))
             .directiveLocations(Lists.newArrayList(
                     DirectiveLocation.newDirectiveLocation()
+                            .name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
+                            .build(),
+                    DirectiveLocation.newDirectiveLocation()
                             .name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
                             .build(),
                     DirectiveLocation.newDirectiveLocation()
@@ -91,8 +92,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
     builder
       .scalar(CoreScalars.DATE)
       .scalar(CoreScalars.DATETIME)
-      .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring)
-      .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring);
+      .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring);
   }
 
 }
