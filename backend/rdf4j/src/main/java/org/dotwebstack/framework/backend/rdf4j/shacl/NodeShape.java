@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.rdf4j.shacl;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -39,26 +40,27 @@ public final class NodeShape {
   public static NodeShape fromShapeModel(@NonNull Model shapeModel, @NonNull IRI identifier) {
     return builder()
         .identifier(identifier)
-        .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, identifier, SHACL.TARGET_CLASS))
+        .targetClass((IRI) ValueUtils.findRequiredProperty(shapeModel, identifier,
+            SHACL.TARGET_CLASS))
         .propertyShapes(buildPropertyShapes(shapeModel, identifier))
         .build();
   }
 
   private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel,
-      Resource nodeShape) {
+                                                                Resource nodeShape) {
     return Models
         .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
         .map(shape -> {
-          IRI nodeKind = ValueUtils
-              .findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
+          IRI nodeKind = (IRI) ValueUtils
+              .findRequiredProperty(shapeModel, shape, SHACL.NODE_KIND_PROP);
 
           PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
               .identifier(shape)
               .name(
                   ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME)
                       .stringValue())
-              .path(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.PATH))
+              .path(ValueUtils.createPropertyPath(shapeModel, shape, SHACL.PATH))
               .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
                   .map(Literal::intValue)
                   .orElse(0))
@@ -68,7 +70,8 @@ public final class NodeShape {
               .nodeKind(nodeKind);
 
           if (nodeKind.equals(SHACL.LITERAL)) {
-            builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.DATATYPE));
+            builder.datatype((IRI) ValueUtils.findRequiredProperty(shapeModel, shape,
+                SHACL.DATATYPE));
           }
 
           return builder.build();

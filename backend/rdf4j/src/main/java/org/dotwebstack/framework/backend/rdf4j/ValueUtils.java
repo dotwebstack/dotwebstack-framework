@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPath;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.SequencePath;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -9,6 +12,7 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
+import org.eclipse.rdf4j.sail.memory.model.MemBNode;
 
 public final class ValueUtils {
 
@@ -51,14 +55,22 @@ public final class ValueUtils {
     return literal.stringValue();
   }
 
-  public static IRI findRequiredPropertyIri(Model model, Resource subject, IRI predicate) {
-    return Models.getPropertyIRI(model, subject, predicate)
-        .orElseThrow(() -> new InvalidConfigurationException(
-            "Resource '{}' requires a '{}' IRI property.", subject, predicate));
+  public static PropertyPath createPropertyPath(Model model, Resource subject, IRI predicate) {
+    Value v = findRequiredProperty(model, subject, predicate);
+    if (v instanceof MemBNode) {
+      return SequencePath.builder().blankNode((MemBNode) v).predicateIri(predicate).build();
+    }
+    return PredicatePath.builder().iri((IRI) v).build();
+  }
+
+  public static Value findRequiredProperty(Model model, Resource subject, IRI predicate) {
+    return Models.getProperty(model, subject, predicate)
+        .orElseThrow(() -> new InvalidConfigurationException(String
+            .format("Resource '%s' requires a '%s' IRI property.", subject, predicate)));
   }
 
   public static Literal findRequiredPropertyLiteral(Model model, Resource subject,
-      IRI predicate) {
+                                                    IRI predicate) {
     return Models.getPropertyLiteral(model, subject, predicate)
         .orElseThrow(() -> new InvalidConfigurationException(
             "Resource '{}' requires a '{}' literal property.", subject, predicate));

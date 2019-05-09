@@ -26,6 +26,7 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import java.util.List;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.TreeModel;
@@ -47,7 +48,7 @@ class ValueFetcherTest {
     // Arrange
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_IDENTIFIER_FIELD)
-        .path(BREWERY_IDENTIFIER_PATH)
+        .path(PredicatePath.builder().iri(BREWERY_IDENTIFIER_PATH).build())
         .build());
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_IDENTIFIER_PATH,
@@ -94,7 +95,7 @@ class ValueFetcherTest {
     // Arrange
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_FOUNDED_FIELD)
-        .path(BREWERY_FOUNDED_PATH)
+        .path(PredicatePath.builder().iri(BREWERY_FOUNDED_PATH).build())
         .build());
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
@@ -115,7 +116,7 @@ class ValueFetcherTest {
     // Arrange
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_IDENTIFIER_FIELD)
-        .path(BREWERY_IDENTIFIER_PATH)
+        .path(PredicatePath.builder().iri(BREWERY_IDENTIFIER_PATH).build())
         .build());
     Model model = new TreeModel();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);

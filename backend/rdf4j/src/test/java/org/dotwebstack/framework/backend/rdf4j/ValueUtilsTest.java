@@ -81,7 +81,7 @@ class ValueUtilsTest {
         .build();
 
     // Act
-    IRI property = ValueUtils.findRequiredPropertyIri(model, SUBJECT, RDF.TYPE);
+    IRI property = (IRI)ValueUtils.findRequiredProperty(model, SUBJECT, RDF.TYPE);
 
     // Assert
     assertThat(property, is(equalTo(RDFS.CLASS)));
@@ -94,7 +94,7 @@ class ValueUtilsTest {
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
-        ValueUtils.findRequiredPropertyIri(model, SUBJECT, RDF.TYPE));
+        ValueUtils.findRequiredProperty(model, SUBJECT, RDF.TYPE));
   }
 
   @Test

@@ -60,7 +60,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         query.orderBy(orderContext.getOrderable());
 
         TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR,
-                orderContext.getPropertyShape().getPath(),
+            toPredicate(orderContext.getPropertyShape().getPath()),
                 SparqlBuilder.var(orderContext.getField()));
         whereStatements.put(triplePattern.getQueryString(), triplePattern);
       });

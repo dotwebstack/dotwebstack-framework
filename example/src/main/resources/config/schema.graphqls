@@ -39,6 +39,7 @@ type Brewery {
   owners: [String]
   url: String!
     @transform(expr: "url.getLocalName()")
+  postalCode: String!
 }
 
 input SortQueryInput {

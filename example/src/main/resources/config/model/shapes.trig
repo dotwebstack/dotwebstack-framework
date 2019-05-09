@@ -15,8 +15,18 @@
       beer_sh:Brewery_founded ,
       beer_sh:Brewery_owners ,
       beer_sh:Brewery_openinghours ,
+      beer_sh:Brewery_postalCode,
       beer_sh:Brewery_url ;
   .
+
+ beer_sh:Brewery_postalCode a sh:PropertyShape ;
+     sh:name "postalCode" ;
+     sh:path ( schema:address schema:postalCode ) ;
+     sh:minCount 1 ;
+     sh:maxCount 1 ;
+     sh:nodeKind sh:Literal ;
+     sh:datatype xsd:string ;
+ .
 
   beer_sh:Brewery_identifier a sh:PropertyShape ;
     sh:name "identifier" ;

@@ -3,8 +3,12 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import com.google.common.collect.Iterables;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeUtil;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.model.IRI;
@@ -17,6 +21,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
+
 
 class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
@@ -35,20 +40,25 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     Variable subjectVar = query.var();
     NodeShape nodeShape = environment.getNodeShapeRegistry().get(environment.getObjectType());
 
-    List<TriplePattern> triplePatterns = environment.getSelectionSet()
+    // define path pattern
+
+    // create class to use .
+    final Map<String, TriplePattern> whereStatements = new HashMap<>();
+    environment.getSelectionSet()
         .getFields()
         .stream()
-        .map(field -> {
+        .forEach(field -> {
           GraphQLOutputType fieldType = field.getFieldDefinition().getType();
 
           if (GraphQLTypeUtil.isLeaf(fieldType)) {
             PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
-            return GraphPatterns.tp(subjectVar, ns(propertyShape.getPath()), query.var());
-          } else {
+            TriplePattern tp = GraphPatterns.tp(subjectVar, toPredicate(propertyShape.getPath()),
+                query.var());
+            whereStatements.put(tp.getQueryString(), tp);
+          } else { //detect
             throw new UnsupportedOperationException("Non-leaf nodes are not yet supported.");
           }
-        })
-        .collect(Collectors.toList());
+        });
 
     Expression<?> filterExpr = Expressions
         .or(Iterables.toArray(subjects
@@ -56,7 +66,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
             .map(subject -> Expressions.equals(subjectVar, ns(subject)))
             .collect(Collectors.toList()), Expression.class));
 
-    List<GraphPattern> wherePatterns = triplePatterns
+    List<GraphPattern> wherePatterns = whereStatements.values()
         .stream()
         .map(GraphPatterns::optional)
         .collect(Collectors.toList());
@@ -67,7 +77,8 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     query
         .construct(typePattern)
-        .construct(Iterables.toArray(triplePatterns, TriplePattern.class))
+        .construct(Iterables.toArray(whereStatements.values(), TriplePattern.class))
+
         .where(typePattern
             .filter(filterExpr)
             .and(Iterables.toArray(wherePatterns, GraphPattern.class)));
