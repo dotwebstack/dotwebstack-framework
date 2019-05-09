@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.directives;
 
-import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import graphql.schema.DataFetchingEnvironment;

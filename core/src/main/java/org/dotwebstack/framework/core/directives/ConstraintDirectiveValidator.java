@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAIN
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_MIN;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF_INT;
-import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 
 import graphql.schema.GraphQLArgument;
