@@ -62,8 +62,8 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
             String.class);
 
     if (!repositoryManager.hasRepositoryConfig(repositoryId)) {
-      throw new InvalidConfigurationException(
-          String.format("Repository '%s' was never configured.", repositoryId));
+      throw new InvalidConfigurationException("Repository '{}' was never configured.",
+              repositoryId);
     }
 
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId).getConnection();

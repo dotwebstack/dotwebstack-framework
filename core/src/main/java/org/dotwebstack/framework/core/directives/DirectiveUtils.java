@@ -27,8 +27,8 @@ public final class DirectiveUtils {
       return null;
     } else if (!clazz.isInstance(argValue)) {
       throw new InvalidConfigurationException(
-          String.format("Argument type mismatch for '%s': expected[%s], but was [%s].",
-              argName, clazz, argValue.getClass()));
+              "Argument type mismatch for '{}': expected[{}], but was [{}].",
+              argName, clazz, argValue.getClass());
     } else {
       return clazz.cast(argValue);
     }

@@ -16,6 +16,7 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
+import org.dotwebstack.framework.core.helpers.JexlHelper;
 import org.junit.jupiter.api.Test;
 
 

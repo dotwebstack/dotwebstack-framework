@@ -21,11 +21,13 @@ import graphql.language.InputObjectTypeDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ScalarTypeDefinition;
+import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.dotwebstack.framework.core.directives.ConstraintDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
@@ -37,6 +39,7 @@ import org.springframework.stereotype.Component;
 public class CoreConfigurer implements GraphqlConfigurer {
 
   private final TransformDirectiveWiring transformDirectiveWiring;
+  private final ConstraintDirectiveWiring constraintDirectiveWiring;
 
   private static final TypeName optionalString = newTypeName(GraphQLString.getName()).build();
   private static final TypeName optionalInt = newTypeName(GraphQLInt.getName()).build();
@@ -108,12 +111,13 @@ public class CoreConfigurer implements GraphqlConfigurer {
                                     .build(),
                             newInputValueDefinition()
                                     .name(CoreDirectives.CONSTRAINT_ARG_ONEOF)
+                                    .type(new ListType(new TypeName(GraphQLString.getName())))
+                                    .build(),
+                            newInputValueDefinition()
+                                    .name(CoreDirectives.CONSTRAINT_ARG_ONEOF_INT)
                                     .type(new ListType(new TypeName(GraphQLInt.getName())))
                                     .build()))
             .directiveLocations(ImmutableList.of(
-                    newDirectiveLocation()
-                            .name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
-                            .build(),
                     newDirectiveLocation()
                             .name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
                             .build(),
@@ -128,7 +132,8 @@ public class CoreConfigurer implements GraphqlConfigurer {
     builder
       .scalar(CoreScalars.DATE)
       .scalar(CoreScalars.DATETIME)
-      .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring);
+      .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring)
+      .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring);
   }
 
 }

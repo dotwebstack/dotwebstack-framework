@@ -1,9 +1,9 @@
-package org.dotwebstack.framework.core.jexl;
+package org.dotwebstack.framework.core.helpers;
+
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 
 import graphql.schema.GraphQLDirective;
-
 import java.util.Optional;
-
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -27,7 +27,7 @@ public class JexlHelper {
           String.format("Jexl evaluateDirectiveArgument type mismatch: expected[%s], but was [%s].",
               clazz, evaluated.getClass()));
     } else {
-      return Optional.of(clazz.cast(evaluated));
+      return Optional.of(cast(clazz,evaluated));
     }
   }
 

@@ -2,16 +2,16 @@ package org.dotwebstack.framework.core;
 
 import lombok.NonNull;
 
-public class InvalidConfigurationException extends RuntimeException {
+public class InvalidConfigurationException extends DotWebStackRuntimeException {
 
-  private static final long serialVersionUID = -5876935563736110824L;
+  private static final long serialVersionUID = 7760665084527035669L;
 
-  public InvalidConfigurationException(@NonNull String message) {
-    super(message);
+  public InvalidConfigurationException(@NonNull String message, Object... arguments) {
+    super(message, arguments);
   }
 
-  public InvalidConfigurationException(@NonNull String message, @NonNull Throwable cause) {
-    super(message, cause);
+  public InvalidConfigurationException(@NonNull String message, Throwable cause,
+                                       Object... arguments) {
+    super(message, cause, arguments);
   }
-
 }

@@ -1,9 +1,17 @@
 package org.dotwebstack.framework.core.directives;
 
+import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_MAX;
+import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_MIN;
+import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF;
+import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF_INT;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
+
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLInputObjectField;
 import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,46 +36,44 @@ public class ConstraintDirectiveValidator implements DirectiveValidator {
     directive.getArguments().stream()
             .filter(directiveArgument -> directiveArgument.getValue() != null)
             .forEach(directiveArgument -> validate(directiveArgument,
-                    inputObjectField.getName(),value));
+                    inputObjectField.getName(), value));
   }
 
-  @SuppressWarnings("unchecked")
   private void validate(GraphQLArgument argument, String name, Object value) {
     switch (argument.getName()) {
-      case "min":
-        checkMin(name,(Integer)argument.getValue(),(Integer)value);
+      case CONSTRAINT_ARG_MIN:
+        checkMin(name,(Integer) argument.getValue(),(Integer) value);
         break;
-      case "max":
-        checkMax(name,(Integer)argument.getValue(), (Integer) value);
+      case CONSTRAINT_ARG_MAX:
+        checkMax(name,(Integer) argument.getValue(),(Integer) value);
         break;
-      case "oneOf":
-        checkOneOf(name,(List)argument.getValue(),value);
+      case CONSTRAINT_ARG_ONEOF:
+      case CONSTRAINT_ARG_ONEOF_INT:
+        checkOneOf(name, castToList(argument.getValue()),value);
         break;
       default:
-        throw new IllegalArgumentException("Unimplemented directive argument!");
+        throw new DirectiveValidationException("Unsupported constraint argument with name '{}'");
     }
   }
 
   private void checkMin(String name, Integer constraint, Integer value)  {
     if (value < constraint) {
-      throw new RuntimeException(
-              String.format("Constraint 'min' on '%s' with value %s not satisfied!",name,value));
+      throw new DirectiveValidationException(
+              "Constraint 'min' [{}] violated on '{}' with value '{}'",constraint,name,value);
     }
   }
 
   private void checkMax(String name, Integer constraint, Integer value) {
     if (value > constraint) {
-      throw new RuntimeException(
-              String.format("Constraint 'max' on '%s' with value %s not satisfied!",name,value));
+      throw new DirectiveValidationException(
+              "Constraint 'max' [{}] violated on '{}' with value '{}'",constraint,name,value);
     }
   }
 
   private void checkOneOf(String name, List<Object> constraint, Object value) {
     if (!constraint.contains(value)) {
-      throw new RuntimeException(
-              String.format("Constraint 'oneOf' on '%s' with value %s not satisfied!",name,value));
+      throw new DirectiveValidationException(
+              "Constraint 'oneOf' {} violated on '{}' with value '{}'",constraint,name,value);
     }
   }
-
-
 }
