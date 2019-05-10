@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -35,6 +36,8 @@ public final class Constants {
   public static final IRI SHAPE_GRAPH = VF.createIRI("https://github.com/dotwebstack/beer/shapes");
 
   public static final String SHAPE_PREFIX = "https://github.com/dotwebstack/beer/shapes#";
+
+  public static final String SCHEMA_PREFIX = "http://schema.org/";
 
   // Query
 
@@ -78,9 +81,27 @@ public final class Constants {
 
   public static final String BREWERY_FOUNDED_FIELD = "founded";
 
-  public static final IRI BREWERY_FOUNDED_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def##founded");
+  public static final String BREWERY_FOUNDED_TYPE = "Brewery_founded";
+
+  public static final IRI BREWERY_FOUNDED_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#founded");
+
+  public static final IRI BREWERY_FOUNDED_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(
+      BREWERY_FOUNDED_TYPE));
 
   public static final Literal BREWERY_FOUNDED_EXAMPLE_1 = VF
       .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
+
+  // Brewery.postalCode
+
+  public static final String BREWERY_POSTAL_CODE_TYPE = "Brewery_postalCode";
+
+  public static final IRI BREWERY_POSTAL_CODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(
+      BREWERY_POSTAL_CODE_TYPE));
+
+  //Address
+
+  public static final IRI SCHEMA_ADDRESS = VF.createIRI(SCHEMA_PREFIX + "address");
+
+  public static final IRI SCHEMA_POSTAL_CODE = VF.createIRI(SCHEMA_PREFIX + "postalCode");
 
 }

@@ -11,7 +11,8 @@ beer:shapes {
     sh:property
       beer_sh:Brewery_identifier ,
       beer_sh:Brewery_name ,
-      beer_sh:Brewery_founded ;
+      beer_sh:Brewery_founded,
+      beer_sh:Brewery_postalCode ;
   .
 
   beer_sh:Brewery_identifier a sh:PropertyShape ;
@@ -40,4 +41,13 @@ beer:shapes {
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:dateTime ;
   .
+  beer_sh:Brewery_postalCode a sh:PropertyShape ;
+       sh:name "postalCode" ;
+       sh:path ( schema:address schema:postalCode ) ;
+       sh:minCount 1 ;
+       sh:maxCount 1 ;
+       sh:nodeKind sh:Literal ;
+       sh:datatype xsd:string ;
+   .
+
 }
