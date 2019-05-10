@@ -83,7 +83,7 @@
 
  beer_sh:Brewery_beers a sh:PropertyShape ;
    sh:name "beers" ;
-   sh:path [ sh:inversePath ( beer_sh:Beer_brewery beer_sh:Beer_name ) ] ;
+   sh:path ( [ sh:inversePath beer_def:brewery ] schema:name ) ;
    sh:minCount 0 ;
    sh:nodeKind sh:Literal ;
    sh:datatype xsd:string ;
@@ -111,15 +111,16 @@
    sh:path schema:name ;
    sh:minCount 1 ;
    sh:maxCount 1 ;
-   sh:nodeKind sh:IRI ;
-  .
+   sh:nodeKind sh:Literal ;
+   sh:datatype xsd:string ;
+ .
 
  beer_sh:Beer_brewery a sh:PropertyShape ;
    sh:name "brewery" ;
-   sh:path schema:name ;
+   sh:path beer_def:brewery ;
    sh:minCount 1 ;
    sh:maxCount 1 ;
-   sh:nodeKind sh:IRI ;
+   sh:nodeKind sh:BlankNode
  .
 
 

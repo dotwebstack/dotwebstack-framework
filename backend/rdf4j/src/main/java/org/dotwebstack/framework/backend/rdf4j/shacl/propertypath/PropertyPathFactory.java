@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
-import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -49,7 +48,7 @@ public class PropertyPathFactory  {
                     .build();
           case INVERSE_PATH:
             return InversePath.builder()
-                    .object(create(model, subjectStatements.get(0).getSubject(),
+                    .object((PredicatePath) create(model, subjectStatements.get(0).getSubject(),
                             subjectStatements.get(0).getPredicate()))
                     .build();
           case ALTERNATIVE_PATH:

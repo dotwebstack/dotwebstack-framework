@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 public class InversePath extends PropertyPath {
 
-  private final PropertyPath object;
+  private final PredicatePath object;
 
 }
