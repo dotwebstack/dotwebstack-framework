@@ -6,24 +6,20 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.SHACL;
 
 public class PropertyPathHelper {
 
-  private static final String SHACL_NS = "http://www.w3.org/ns/shacl#";
+  static final String SEQUENCE_PATH = RDF.NAMESPACE + "first";
 
-  private static final String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+  static final String INVERSE_PATH = SHACL.NAMESPACE + "inversePath";
 
-  private static final String NIL = RDF_NS + "nil";
+  static final String ALTERNATIVE_PATH = SHACL.NAMESPACE + "alternativePath";
 
-  static final String SEQUENCE_PATH = RDF_NS + "first";
+  static final String ZERO_OR_MORE_PATH = SHACL.NAMESPACE + "zeroOrMorePath";
 
-  static final String INVERSE_PATH = SHACL_NS + "inversePath";
-
-  static final String ALTERNATIVE_PATH = SHACL_NS + "alternativePath";
-
-  static final String ZERO_OR_MORE_PATH = SHACL_NS + "zeroOrMorePath";
-
-  static final String ONE_OR_MORE_PATH = SHACL_NS + "oneOrMorePath";
+  static final String ONE_OR_MORE_PATH = SHACL.NAMESPACE + "oneOrMorePath";
 
   private PropertyPathHelper() {
     throw new IllegalStateException(
@@ -38,6 +34,6 @@ public class PropertyPathHelper {
   }
 
   public static boolean isNil(PredicatePath predicatePath) {
-    return predicatePath.getIri().toString().equals(NIL);
+    return predicatePath.getIri().toString().equals(RDF.NIL);
   }
 }
