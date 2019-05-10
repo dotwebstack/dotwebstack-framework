@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.jexl;
+package org.dotwebstack.framework.core.helpers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

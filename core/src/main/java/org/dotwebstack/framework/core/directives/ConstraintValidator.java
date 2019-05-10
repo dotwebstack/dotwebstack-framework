@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConstraintValidator {
 
-  public void validate(GraphQLArgument argument, String name, Object value) {
+  void validate(GraphQLArgument argument, String name, Object value) {
 
     if (argument.getValue() == null) {
       return;
@@ -32,7 +32,8 @@ public class ConstraintValidator {
         checkOneOf(name, castToList(argument.getValue()),value);
         break;
       default:
-        throw new DirectiveValidationException("Unsupported constraint argument with name '{}'");
+        throw new DirectiveValidationException(
+                "Unsupported constraint argument with name '{}'",argument.getName());
     }
   }
 
