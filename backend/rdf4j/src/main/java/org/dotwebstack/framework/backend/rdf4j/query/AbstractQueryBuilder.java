@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.InversePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.SequencePath;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 import org.eclipse.rdf4j.sparqlbuilder.core.Prefix;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
@@ -42,25 +44,44 @@ abstract class AbstractQueryBuilder<Q extends OuterQuery<?>> {
   }
 
   RdfPredicate toPredicate(final PropertyPath path) {
-    if (path instanceof PredicatePath) {
-      return ns(((PredicatePath) path).getIri());
-    } else if (path instanceof SequencePath) {
-      return toPredicate(((SequencePath)path).getIris());
-    }
-    throw new IllegalArgumentException("not implemented yet");
+    return () -> {
+      StringBuilder builder = new StringBuilder();
+      add(builder, path);
+      return builder.toString();
+    };
   }
 
-  private RdfPredicate toPredicate(final List<IRI> iris) {
-    return () -> {
-      final StringBuilder sb = new StringBuilder();
-      String prefix = "";
-      for (IRI iri : iris) {
-        sb.append(prefix);
-        sb.append(ns(iri).getQueryString());
-        prefix = "/";
+  private void add(StringBuilder builder, PropertyPath path) {
+    if (path instanceof PredicatePath) {
+      add(builder, (PredicatePath) path);
+    } else if (path instanceof SequencePath) {
+      add(builder, (SequencePath) path);
+    } else if (path instanceof InversePath) {
+      add(builder, (InversePath) path);
+    } else {
+      throw new IllegalArgumentException("not implemented yet");
+    }
+  }
+
+  private void add(StringBuilder builder, InversePath path) {
+    builder.append("^");
+    add(builder, path.getObject());
+  }
+
+  private void add(StringBuilder builder, SequencePath path) {
+    add(builder, path.getFirst());
+    if ((path.getRest() instanceof PredicatePath)) {
+      PredicatePath predicatePath = (PredicatePath) path.getRest();
+      if (predicatePath.getIri() instanceof MemIRI && predicatePath.getIri().toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")) {
+        return;
       }
-      return sb.toString();
-    };
+    }
+    builder.append("/");
+    add(builder, path.getRest());
+  }
+
+  private void add(StringBuilder builder, PredicatePath path) {
+    builder.append(ns(path.getIri()).getQueryString());
   }
 
 

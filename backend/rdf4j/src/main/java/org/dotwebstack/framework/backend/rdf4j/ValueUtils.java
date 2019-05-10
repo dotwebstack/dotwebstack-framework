@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.InversePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.SequencePath;
@@ -13,6 +14,8 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 import org.eclipse.rdf4j.sail.memory.model.MemBNode;
+import org.eclipse.rdf4j.sail.memory.model.MemIRI;
+import org.eclipse.rdf4j.sail.memory.model.MemValue;
 
 public final class ValueUtils {
 
@@ -55,25 +58,10 @@ public final class ValueUtils {
     return literal.stringValue();
   }
 
-  public static PropertyPath createPropertyPath(Model model, Resource subject, IRI predicate) {
-    Value v = findRequiredProperty(model, subject, predicate);
-    if (v instanceof MemBNode) {
-      return SequencePath.builder().blankNode((MemBNode) v).predicateIri(predicate).build();
-    }
-    return PredicatePath.builder().iri((IRI) v).build();
-  }
-
-  public static Value findRequiredProperty(Model model, Resource subject, IRI predicate) {
-    return Models.getProperty(model, subject, predicate)
-        .orElseThrow(() -> new InvalidConfigurationException(String
-            .format("Resource '%s' requires a '%s' IRI property.", subject, predicate)));
-  }
-
   public static Literal findRequiredPropertyLiteral(Model model, Resource subject,
                                                     IRI predicate) {
     return Models.getPropertyLiteral(model, subject, predicate)
         .orElseThrow(() -> new InvalidConfigurationException(
             "Resource '{}' requires a '{}' literal property.", subject, predicate));
   }
-
 }

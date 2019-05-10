@@ -2,12 +2,13 @@ package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.eclipse.rdf4j.model.IRI;
+import lombok.Setter;
 
 @Builder
 @Getter
-public class PredicatePath extends PropertyPath {
+@Setter
+public class InversePath extends PropertyPath {
 
-  private final IRI iri;
+  private final PropertyPath object;
 
 }
