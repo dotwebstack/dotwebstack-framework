@@ -41,7 +41,7 @@ public final class NodeShape {
   public static NodeShape fromShapeModel(@NonNull Model shapeModel, @NonNull IRI identifier) {
     return builder()
         .identifier(identifier)
-        .targetClass((IRI) PropertyPathHelper.findRequiredProperty(shapeModel, identifier,
+        .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, identifier,
             SHACL.TARGET_CLASS))
         .propertyShapes(buildPropertyShapes(shapeModel, identifier))
         .build();
@@ -53,8 +53,8 @@ public final class NodeShape {
         .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
         .map(shape -> {
-          IRI nodeKind = (IRI) PropertyPathHelper
-              .findRequiredProperty(shapeModel, shape, SHACL.NODE_KIND_PROP);
+          IRI nodeKind = ValueUtils
+                  .findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
 
           PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
               .identifier(shape)
@@ -71,7 +71,7 @@ public final class NodeShape {
               .nodeKind(nodeKind);
 
           if (nodeKind.equals(SHACL.LITERAL)) {
-            builder.datatype((IRI) PropertyPathHelper.findRequiredProperty(shapeModel, shape,
+            builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, shape,
                 SHACL.DATATYPE));
           }
 

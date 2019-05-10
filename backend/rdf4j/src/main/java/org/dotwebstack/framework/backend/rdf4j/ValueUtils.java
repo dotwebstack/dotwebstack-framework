@@ -51,6 +51,12 @@ public final class ValueUtils {
     return literal.stringValue();
   }
 
+  public static IRI findRequiredPropertyIri(Model model, Resource subject, IRI predicate) {
+    return Models.getPropertyIRI(model, subject, predicate)
+        .orElseThrow(() -> new InvalidConfigurationException(String
+            .format("Resource '%s' requires a '%s' IRI property.", subject, predicate)));
+  }
+
   public static Literal findRequiredPropertyLiteral(Model model, Resource subject, IRI predicate) {
     return Models.getPropertyLiteral(model, subject, predicate)
         .orElseThrow(() -> new InvalidConfigurationException(
