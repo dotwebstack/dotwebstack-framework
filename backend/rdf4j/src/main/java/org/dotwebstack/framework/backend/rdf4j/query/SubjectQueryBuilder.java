@@ -1,13 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLDirective;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
@@ -31,6 +30,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   private final NodeShape nodeShape;
 
+  private final ImmutableMap.Builder<String, TriplePattern> whereBuilder = ImmutableMap.builder();
+
   private SubjectQueryBuilder(final QueryEnvironment environment, final JexlEngine jexlEngine) {
     super(environment, Queries.SELECT());
     this.jexlHelper = new JexlHelper(jexlEngine);
@@ -48,27 +49,29 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
     this.query.select(SUBJECT_VAR);
 
-    Map<String, TriplePattern> whereStatements = new HashMap<>();
     TriplePattern whereSubjectType = GraphPatterns.tp(SUBJECT_VAR, ns(RDF.TYPE),
             ns(this.nodeShape.getTargetClass()));
-    whereStatements.put(whereSubjectType.getQueryString(), whereSubjectType);
+    whereBuilder.put(whereSubjectType.getQueryString(), whereSubjectType);
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
-    getOrderByFromContext(context, sparqlDirective).ifPresent(contexts -> {
-      contexts.forEach(orderContext -> {
-        query.orderBy(orderContext.getOrderable());
+    getOrderByFromContext(context, sparqlDirective).ifPresent(this::buildOrderBy);
 
-        TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR,
-            toPredicate(orderContext.getPropertyShape().getPath()),
-                SparqlBuilder.var(orderContext.getField()));
-        whereStatements.put(triplePattern.getQueryString(), triplePattern);
-      });
-    });
-
-    whereStatements.values().forEach(query::where);
+    whereBuilder.build().values().forEach(query::where);
 
     return this.query.getQueryString();
+  }
+
+  private void buildOrderBy(List<OrderContext> contexts) {
+    contexts.forEach(orderContext -> {
+      query.orderBy(orderContext.getOrderable());
+
+      TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR,
+              toPredicate(orderContext.getPropertyShape().getPath()),
+              SparqlBuilder.var(orderContext.getField()));
+
+      whereBuilder.put(triplePattern.getQueryString(), triplePattern);
+    });
   }
 
   @SuppressWarnings({"unchecked","rawtypes"})

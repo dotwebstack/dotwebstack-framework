@@ -1,16 +1,14 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.InversePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPath;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.SequencePath;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.sail.memory.model.MemIRI;
 import org.eclipse.rdf4j.sparqlbuilder.core.Prefix;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
@@ -72,7 +70,7 @@ abstract class AbstractQueryBuilder<Q extends OuterQuery<?>> {
     add(builder, path.getFirst());
     if ((path.getRest() instanceof PredicatePath)) {
       PredicatePath predicatePath = (PredicatePath) path.getRest();
-      if (predicatePath.getIri() instanceof MemIRI && predicatePath.getIri().toString().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil")) {
+      if (PropertyPathHelper.isNil(predicatePath)) {
         return;
       }
     }
@@ -83,7 +81,4 @@ abstract class AbstractQueryBuilder<Q extends OuterQuery<?>> {
   private void add(StringBuilder builder, PredicatePath path) {
     builder.append(ns(path.getIri()).getQueryString());
   }
-
-
-
 }

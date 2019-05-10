@@ -7,7 +7,7 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class InversePath extends PropertyPath {
+public class InversePath implements PropertyPath {
 
   private final PredicatePath object;
 

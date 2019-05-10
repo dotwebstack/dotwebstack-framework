@@ -7,7 +7,7 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class OneOrMorePath extends PropertyPath {
+public class OneOrMorePath implements PropertyPath {
 
   private final PropertyPath object;
 

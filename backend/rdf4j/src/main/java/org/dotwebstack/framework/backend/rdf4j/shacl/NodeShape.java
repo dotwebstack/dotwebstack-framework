@@ -3,13 +3,13 @@ package org.dotwebstack.framework.backend.rdf4j.shacl;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactory;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathHelper;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -41,7 +41,7 @@ public final class NodeShape {
   public static NodeShape fromShapeModel(@NonNull Model shapeModel, @NonNull IRI identifier) {
     return builder()
         .identifier(identifier)
-        .targetClass((IRI) PropertyPathFactory.findRequiredProperty(shapeModel, identifier,
+        .targetClass((IRI) PropertyPathHelper.findRequiredProperty(shapeModel, identifier,
             SHACL.TARGET_CLASS))
         .propertyShapes(buildPropertyShapes(shapeModel, identifier))
         .build();
@@ -53,7 +53,7 @@ public final class NodeShape {
         .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
         .map(shape -> {
-          IRI nodeKind = (IRI) PropertyPathFactory
+          IRI nodeKind = (IRI) PropertyPathHelper
               .findRequiredProperty(shapeModel, shape, SHACL.NODE_KIND_PROP);
 
           PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
@@ -71,7 +71,7 @@ public final class NodeShape {
               .nodeKind(nodeKind);
 
           if (nodeKind.equals(SHACL.LITERAL)) {
-            builder.datatype((IRI) PropertyPathFactory.findRequiredProperty(shapeModel, shape,
+            builder.datatype((IRI) PropertyPathHelper.findRequiredProperty(shapeModel, shape,
                 SHACL.DATATYPE));
           }
 

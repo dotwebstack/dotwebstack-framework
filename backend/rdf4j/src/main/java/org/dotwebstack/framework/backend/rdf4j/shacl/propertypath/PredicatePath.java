@@ -6,7 +6,7 @@ import org.eclipse.rdf4j.model.IRI;
 
 @Builder
 @Getter
-public class PredicatePath extends PropertyPath {
+public class PredicatePath implements PropertyPath {
 
   private final IRI iri;
 
