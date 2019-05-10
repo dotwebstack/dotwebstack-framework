@@ -1,26 +1,28 @@
 package org.dotwebstack.framework.core.directives;
 
+import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLScalarType;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
-public class DirectiveValidatorDelegator {
+public class ConstraintTraverser {
 
-  private final List<DirectiveValidator> validators;
+  private final ConstraintValidator validator;
 
-  public void delegate(DataFetchingEnvironment dataFetchingEnvironment) {
+  public void traverse(DataFetchingEnvironment dataFetchingEnvironment) {
     GraphQLFieldDefinition fieldDefinition = dataFetchingEnvironment.getFieldDefinition();
     Map<String,Object> arguments = dataFetchingEnvironment.getArguments();
 
@@ -29,10 +31,11 @@ public class DirectiveValidatorDelegator {
   }
 
 
-  private void onArguments(GraphQLArgument argument, Object value) {
+  void onArguments(GraphQLArgument argument, Object value) {
     if (argument.getType() instanceof GraphQLInputObjectType) {
 
-      onInputObjectType((GraphQLInputObjectType) argument.getType(), castToMap(value));
+      onInputObjectType((GraphQLInputObjectType) argument.getType(),
+              value != null ? castToMap(value) : new HashMap<>());
       return;
     }
 
@@ -41,9 +44,7 @@ public class DirectiveValidatorDelegator {
       return;
     }
 
-    for (GraphQLDirective directive : argument.getDirectives()) {
-      getDirectiveValidator(directive).ifPresent(val -> val.onArgument(directive,argument,value));
-    }
+    validate(argument,argument.getName(),ofNullable(value).orElse(argument.getDefaultValue()));
   }
 
   private void onInputObjectType(GraphQLInputObjectType inputObjectType,
@@ -58,17 +59,18 @@ public class DirectiveValidatorDelegator {
     // Process fields on inputObjectType
     inputObjectType.getFields().stream()
             .filter(field -> field.getType() instanceof GraphQLScalarType)
-            .forEach(field -> {
-              for (GraphQLDirective directive : field.getDirectives()) {
-                getDirectiveValidator(directive).ifPresent(val ->
-                        val.onInputObjectField(directive,field,
-                                arguments.get(field.getName())));
-              }
-            });
+            .forEach(field -> onInputObjectField(field,arguments.get(field.getName())));
   }
 
-  private Optional<DirectiveValidator> getDirectiveValidator(GraphQLDirective directive) {
-    return validators.stream().filter(val -> val.supports(directive.getName())).findFirst();
+  void onInputObjectField(GraphQLInputObjectField inputObjectField, Object value) {
+    validate(inputObjectField,inputObjectField.getName(),
+            ofNullable(value).orElse(inputObjectField.getDefaultValue()));
   }
 
+  private void validate(GraphQLDirectiveContainer directiveContainer, String name, Object value) {
+    ofNullable(directiveContainer.getDirective(CoreDirectives.CONSTRAINT_NAME))
+        .map(GraphQLDirective::getArguments).ifPresent(directiveArguments ->
+          directiveArguments.forEach(directiveArgument ->
+                  validator.validate(directiveArgument, name,value)));
+  }
 }

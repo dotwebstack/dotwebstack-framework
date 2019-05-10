@@ -16,8 +16,8 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
-import org.dotwebstack.framework.core.directives.DirectiveValidatorDelegator;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.springframework.stereotype.Component;
@@ -33,17 +33,17 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private final JexlEngine jexlEngine;
 
-  private DirectiveValidatorDelegator directiveValidatorDelegator;
+  private ConstraintTraverser constraintTraverser;
 
   public SparqlDirectiveWiring(RepositoryManager repositoryManager,
-      NodeShapeRegistry nodeShapeRegistry, Rdf4jProperties rdf4jProperties,
-      JexlEngine jexlEngine, DirectiveValidatorDelegator directiveValidatorDelegator) {
+                               NodeShapeRegistry nodeShapeRegistry, Rdf4jProperties rdf4jProperties,
+                               JexlEngine jexlEngine, ConstraintTraverser constraintTraverser) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null
         ? HashBiMap.create(rdf4jProperties.getPrefixes()).inverse() : ImmutableMap.of();
     this.jexlEngine = jexlEngine;
-    this.directiveValidatorDelegator = directiveValidatorDelegator;
+    this.constraintTraverser = constraintTraverser;
   }
 
   @Override
@@ -68,7 +68,7 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId).getConnection();
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap,
-            jexlEngine, directiveValidatorDelegator);
+            jexlEngine, constraintTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);

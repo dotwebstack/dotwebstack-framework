@@ -29,4 +29,9 @@ public class ExceptionHelper {
     return newArguments;
   }
 
+  public static IllegalArgumentException illegalArgumentException(final String message,
+                                                                  final Object... arguments) {
+    return new IllegalArgumentException(formatMessage(message, arguments), findCause(arguments));
+  }
+
 }

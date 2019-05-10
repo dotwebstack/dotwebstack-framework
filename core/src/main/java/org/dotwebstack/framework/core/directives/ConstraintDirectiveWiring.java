@@ -12,17 +12,15 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
 
-  private ConstraintDirectiveValidator constraintDirectiveValidator;
+  private ConstraintTraverser constraintTraverser;
 
   @Override
   public GraphQLArgument onArgument(
           SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     try {
-      constraintDirectiveValidator.onArgument(environment.getDirective(), environment.getElement(),
-              environment.getElement().getDefaultValue());
-    } catch (DirectiveValidationException e) {
-      throw new InvalidConfigurationException(
-              "Default value in constraint directive is violating constraint!",e);
+      constraintTraverser.onArguments(environment.getElement(),null);
+    } catch (DirectiveValidationException exception) {
+      throwConfigurationException(exception);
     }
     return environment.getElement();
   }
@@ -31,13 +29,16 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
   public GraphQLInputObjectField onInputObjectField(
           SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     try {
-      constraintDirectiveValidator.onInputObjectField(environment.getDirective(),
-              environment.getElement(), environment.getElement().getDefaultValue());
-    } catch (DirectiveValidationException e) {
-      throw new InvalidConfigurationException(
-              "Default value in constraint directive is violating constraint!",e);
+      constraintTraverser.onInputObjectField(environment.getElement(), null);
+    } catch (DirectiveValidationException exception) {
+      throwConfigurationException(exception);
     }
     return environment.getElement();
+  }
+
+  private void throwConfigurationException(Exception cause) {
+    throw new InvalidConfigurationException(
+            "Default value in constraint directive is violating constraint!",cause);
   }
 
 }

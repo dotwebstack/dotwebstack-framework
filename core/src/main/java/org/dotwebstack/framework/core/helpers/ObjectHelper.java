@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import java.util.List;
 import java.util.Map;
 
@@ -10,8 +12,8 @@ public class ObjectHelper {
       throw new IllegalArgumentException("Object null!");
     }
     if (!(clazz.isAssignableFrom(value.getClass()))) {
-      throw new IllegalArgumentException(String.format("Object class '%s' not instance of %s!",
-              value.getClass().getSimpleName(),clazz.getSimpleName()));
+      throw illegalArgumentException("Object class '{}' not instance of {}!",
+              value.getClass().getSimpleName(),clazz.getSimpleName());
     }
 
     return clazz.cast(value);

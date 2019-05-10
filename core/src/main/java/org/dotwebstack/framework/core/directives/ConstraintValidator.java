@@ -7,38 +7,19 @@ import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAIN
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 
 import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLInputObjectField;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConstraintDirectiveValidator implements DirectiveValidator {
+public class ConstraintValidator {
 
-  @Override
-  public boolean supports(String directiveName) {
-    return CoreDirectives.CONSTRAINT_NAME.equals(directiveName);
-  }
+  public void validate(GraphQLArgument argument, String name, Object value) {
 
-  @Override
-  public void onArgument(GraphQLDirective directive, GraphQLArgument argument,
-                         Object value) {
-    directive.getArguments().stream()
-            .filter(directiveArgument -> directiveArgument.getValue() != null)
-            .forEach(directiveArgument -> validate(directiveArgument,argument.getName(),value));
-  }
+    if (argument.getValue() == null) {
+      return;
+    }
 
-  @Override
-  public void onInputObjectField(GraphQLDirective directive,
-                                 GraphQLInputObjectField inputObjectField, Object value) {
-    directive.getArguments().stream()
-            .filter(directiveArgument -> directiveArgument.getValue() != null)
-            .forEach(directiveArgument -> validate(directiveArgument,
-                    inputObjectField.getName(), value));
-  }
-
-  private void validate(GraphQLArgument argument, String name, Object value) {
     switch (argument.getName()) {
       case CONSTRAINT_ARG_MIN:
         checkMin(name,(Integer) argument.getValue(),(Integer) value);

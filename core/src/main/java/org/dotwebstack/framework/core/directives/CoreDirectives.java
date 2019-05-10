@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.directives;
 
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+
 public final class CoreDirectives {
 
   public static final String TRANSFORM_NAME = "transform";
@@ -18,7 +20,7 @@ public final class CoreDirectives {
 
 
   private CoreDirectives() {
-    throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", CoreDirectives.class));
+    throw ExceptionHelper.illegalArgumentException(
+            "{} is not meant to be instantiated.", CoreDirectives.class);
   }
 }
