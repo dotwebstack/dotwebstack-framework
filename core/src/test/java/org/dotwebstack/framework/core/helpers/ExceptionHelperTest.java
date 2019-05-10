@@ -12,7 +12,5 @@ class ExceptionHelperTest {
     Object[] result = ExceptionHelper.joinArguments(cause,new String[]{"foo","bar"});
     assertEquals(3,result.length);
     assertEquals(cause,result[2]);
-
   }
-
 }

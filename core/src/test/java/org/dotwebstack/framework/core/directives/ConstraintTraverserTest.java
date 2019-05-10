@@ -65,7 +65,7 @@ class ConstraintTraverserTest {
                         .type(GraphQLString)
                         .defaultValue(1)
                         .withDirective(directive)).build())
-            .build();
+                .build();
 
     GraphQLFieldDefinition fieldDefinition =
             GraphQLFieldDefinition.newFieldDefinition().name("query")
@@ -77,7 +77,5 @@ class ConstraintTraverserTest {
     constraintTraverser.traverse(dataFetchingEnvironment);
 
     verify(constraintValidator).validate(directiveArgument,"field",1);
-
-
   }
 }
