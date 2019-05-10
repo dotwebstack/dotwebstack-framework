@@ -34,6 +34,6 @@ public class PropertyPathHelper {
   }
 
   public static boolean isNil(PredicatePath predicatePath) {
-    return predicatePath.getIri().toString().equals(RDF.NIL);
+    return predicatePath.getIri().toString().equals(RDF.NIL.toString());
   }
 }
