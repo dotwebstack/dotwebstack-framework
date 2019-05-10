@@ -7,6 +7,8 @@ import java.util.Map;
 
 public class ObjectHelper {
 
+  public ObjectHelper() { }
+
   public static <T> T cast(Class<T> clazz, Object value) {
     if (value == null) {
       throw new IllegalArgumentException("Object null!");

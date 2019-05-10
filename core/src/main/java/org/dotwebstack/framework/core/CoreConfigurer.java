@@ -21,7 +21,6 @@ import graphql.language.InputObjectTypeDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ScalarTypeDefinition;
-import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;

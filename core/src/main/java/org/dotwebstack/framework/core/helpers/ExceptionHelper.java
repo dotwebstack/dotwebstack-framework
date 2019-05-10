@@ -2,6 +2,8 @@ package org.dotwebstack.framework.core.helpers;
 
 public class ExceptionHelper {
 
+  private ExceptionHelper() { }
+
   public static String formatMessage(final String message,
                                      final Object... arguments) {
     if (message != null) {
