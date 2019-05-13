@@ -23,12 +23,12 @@ public class SequencePath implements PropertyPath {
   public Optional<Value> resolvePath(Model model, Resource subject) {
     if (this.first instanceof PredicatePath) {
       return Models.getProperty(model, subject, ((PredicatePath) this.first).getIri())
-          .map(o -> resolveRest(model, o));
+          .map(value -> resolveRest(model, value));
     }
 
     if (this.first instanceof InversePath) {
       return this.first.resolvePath(model, subject)
-          .map(o -> resolveRest(model, o));
+          .map(value -> resolveRest(model, value));
     }
 
     throw new UnsupportedOperationException("Not yet implemented.");
