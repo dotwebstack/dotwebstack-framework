@@ -33,28 +33,28 @@ public class ConstraintValidator {
         break;
       default:
         throw new DirectiveValidationException(
-                "Unsupported constraint argument with name '{}'",argument.getName());
+            "Unsupported constraint argument with name '{}'",argument.getName());
     }
   }
 
   private void checkMin(String name, Integer constraint, Integer value)  {
     if (value < constraint) {
       throw new DirectiveValidationException(
-              "Constraint 'min' [{}] violated on '{}' with value '{}'",constraint,name,value);
+          "Constraint 'min' [{}] violated on '{}' with value '{}'",constraint,name,value);
     }
   }
 
   private void checkMax(String name, Integer constraint, Integer value) {
     if (value > constraint) {
       throw new DirectiveValidationException(
-              "Constraint 'max' [{}] violated on '{}' with value '{}'",constraint,name,value);
+          "Constraint 'max' [{}] violated on '{}' with value '{}'",constraint,name,value);
     }
   }
 
   private void checkOneOf(String name, List<Object> constraint, Object value) {
     if (!constraint.contains(value)) {
       throw new DirectiveValidationException(
-              "Constraint 'oneOf' {} violated on '{}' with value '{}'",constraint,name,value);
+          "Constraint 'oneOf' {} violated on '{}' with value '{}'",constraint,name,value);
     }
   }
 }

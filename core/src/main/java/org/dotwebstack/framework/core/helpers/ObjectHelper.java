@@ -15,7 +15,7 @@ public class ObjectHelper {
     }
     if (!(clazz.isAssignableFrom(value.getClass()))) {
       throw illegalArgumentException("Object class '{}' not instance of {}!",
-              value.getClass().getSimpleName(),clazz.getSimpleName());
+          value.getClass().getSimpleName(),clazz.getSimpleName());
     }
 
     return clazz.cast(value);

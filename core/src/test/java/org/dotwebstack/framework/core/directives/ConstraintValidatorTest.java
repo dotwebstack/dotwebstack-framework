@@ -17,16 +17,16 @@ class ConstraintValidatorTest {
   @Test
   void validate_throwsException_ForGivenUnknownArgument() {
     assertThrows(DirectiveValidationException.class,() -> validator.validate(
-            GraphQLArgument.newArgument()
-                .name("unknownArg")
-                .value(1L)
-                .type(GraphQLInt).build(),"name",1));
+        GraphQLArgument.newArgument()
+            .name("unknownArg")
+            .value(1L)
+            .type(GraphQLInt).build(),"name",1));
   }
 
   @Test
   void validate_returnsNull_ForGivenNullArgument() {
     validator.validate(GraphQLArgument.newArgument().name(
-            CoreDirectives.CONSTRAINT_ARG_MIN).type(GraphQLInt).build(),"name",1);
+        CoreDirectives.CONSTRAINT_ARG_MIN).type(GraphQLInt).build(),"name",1);
   }
 
   @Test
@@ -37,7 +37,7 @@ class ConstraintValidatorTest {
   @Test
   void validate_throwsException_ForInvalidMinArgument() {
     assertThrows(DirectiveValidationException.class,() ->
-            validator.validate(minArgument(2),"name",1));
+        validator.validate(minArgument(2),"name",1));
   }
 
   @Test
@@ -48,7 +48,7 @@ class ConstraintValidatorTest {
   @Test
   void validate_throwsException_ForInvalidMaxArgument() {
     assertThrows(DirectiveValidationException.class,() ->
-            validator.validate(maxArgument(21),"name",22));
+        validator.validate(maxArgument(21),"name",22));
   }
 
   @Test
@@ -59,7 +59,7 @@ class ConstraintValidatorTest {
   @Test
   void validate_throwsException_ForOneOfArgument() {
     assertThrows(DirectiveValidationException.class,() ->
-            validator.validate(oneOfArgument(Arrays.asList("foo","bar")),"name","boom!"));
+        validator.validate(oneOfArgument(Arrays.asList("foo","bar")),"name","boom!"));
   }
 
   @Test
@@ -70,8 +70,7 @@ class ConstraintValidatorTest {
   @Test
   void validate_throwsException_ForOneOfIntArgument() {
     assertThrows(DirectiveValidationException.class,() ->
-            validator.validate(oneOfIntArgument(Arrays.asList(1,2)),"name",3));
-
+        validator.validate(oneOfIntArgument(Arrays.asList(1,2)),"name",3));
   }
 
   private GraphQLArgument minArgument(Object value) {

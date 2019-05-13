@@ -27,7 +27,7 @@ public class ConstraintTraverser {
     Map<String,Object> arguments = dataFetchingEnvironment.getArguments();
 
     fieldDefinition.getArguments().forEach(argument ->
-            onArguments(argument, arguments.get(argument.getName())));
+        onArguments(argument, arguments.get(argument.getName())));
   }
 
 
@@ -35,7 +35,7 @@ public class ConstraintTraverser {
     if (argument.getType() instanceof GraphQLInputObjectType) {
 
       onInputObjectType((GraphQLInputObjectType) argument.getType(),
-              value != null ? castToMap(value) : ImmutableMap.of());
+          value != null ? castToMap(value) : ImmutableMap.of());
       return;
     }
 
@@ -52,25 +52,25 @@ public class ConstraintTraverser {
 
     // Process nested inputObjectTypes
     inputObjectType.getFields().stream()
-            .filter(field -> field.getType() instanceof GraphQLInputObjectType)
-            .forEach(field -> onInputObjectType((GraphQLInputObjectType) field.getType(),
-                    castToMap(arguments.get(field.getName()))));
+        .filter(field -> field.getType() instanceof GraphQLInputObjectType)
+        .forEach(field -> onInputObjectType((GraphQLInputObjectType) field.getType(),
+            castToMap(arguments.get(field.getName()))));
 
     // Process fields on inputObjectType
     inputObjectType.getFields().stream()
-            .filter(field -> field.getType() instanceof GraphQLScalarType)
-            .forEach(field -> onInputObjectField(field,arguments.get(field.getName())));
+        .filter(field -> field.getType() instanceof GraphQLScalarType)
+        .forEach(field -> onInputObjectField(field,arguments.get(field.getName())));
   }
 
   void onInputObjectField(GraphQLInputObjectField inputObjectField, Object value) {
     validate(inputObjectField,inputObjectField.getName(),
-            ofNullable(value).orElse(inputObjectField.getDefaultValue()));
+        ofNullable(value).orElse(inputObjectField.getDefaultValue()));
   }
 
   private void validate(GraphQLDirectiveContainer directiveContainer, String name, Object value) {
     ofNullable(directiveContainer.getDirective(CoreDirectives.CONSTRAINT_NAME))
         .map(GraphQLDirective::getArguments).ifPresent(directiveArguments ->
           directiveArguments.forEach(directiveArgument ->
-                  validator.validate(directiveArgument, name,value)));
+              validator.validate(directiveArgument, name,value)));
   }
 }

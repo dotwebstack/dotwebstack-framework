@@ -38,10 +38,10 @@ class ConstraintDirectiveWiringTest {
   void onArgument_returnsNull_forGivenArgument() {
 
     GraphQLArgument argument = GraphQLArgument.newArgument()
-            .name(CoreDirectives.CONSTRAINT_ARG_MIN)
-            .type(Scalars.GraphQLInt)
-            .value(1)
-            .build();
+        .name(CoreDirectives.CONSTRAINT_ARG_MIN)
+        .type(Scalars.GraphQLInt)
+        .value(1)
+        .build();
 
     when(argumentEnvironment.getElement()).thenReturn(argument);
 
@@ -56,15 +56,15 @@ class ConstraintDirectiveWiringTest {
     when(argumentEnvironment.getElement()).thenThrow(new DirectiveValidationException("boom!"));
 
     Assertions.assertThrows(InvalidConfigurationException.class, () ->
-            constraintDirectiveWiring.onArgument(argumentEnvironment));
+        constraintDirectiveWiring.onArgument(argumentEnvironment));
   }
 
   @Test
   void onInputObjectField_returnsNull_forGivenArgument() {
     GraphQLInputObjectField field = GraphQLInputObjectField.newInputObjectField()
-            .name("input")
-            .type(Scalars.GraphQLInt)
-            .build();
+        .name("input")
+        .type(Scalars.GraphQLInt)
+        .build();
 
     when(inputObjectFieldEnvironment.getElement()).thenReturn(field);
 
@@ -77,7 +77,7 @@ class ConstraintDirectiveWiringTest {
   @Test
   void onInputObjectField_throwsException_forGivenArgument() {
     when(inputObjectFieldEnvironment.getElement())
-            .thenThrow(new DirectiveValidationException("boom!"));
+        .thenThrow(new DirectiveValidationException("boom!"));
 
     Assertions.assertThrows(InvalidConfigurationException.class, () ->
             constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment));
