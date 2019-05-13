@@ -11,8 +11,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.Map;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactory;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathHelper;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
