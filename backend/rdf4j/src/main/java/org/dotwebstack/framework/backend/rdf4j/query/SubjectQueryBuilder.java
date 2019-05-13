@@ -20,6 +20,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
@@ -48,8 +49,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
     this.query.select(SUBJECT_VAR);
 
-    TriplePattern whereSubjectType = GraphPatterns.tp(SUBJECT_VAR, ns(RDF.TYPE),
-            ns(this.nodeShape.getTargetClass()));
+    TriplePattern whereSubjectType = GraphPatterns.tp(SUBJECT_VAR, RDF.TYPE,
+        Rdf.iri(this.nodeShape.getTargetClass()));
     whereBuilder.put(whereSubjectType.getQueryString(), whereSubjectType);
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
@@ -66,7 +67,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       query.orderBy(orderContext.getOrderable());
 
       TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR,
-              toPredicate(orderContext.getPropertyShape().getPath()),
+              orderContext.getPropertyShape().getPath().toPredicate(),
               SparqlBuilder.var(orderContext.getField()));
 
       whereBuilder.put(triplePattern.getQueryString(), triplePattern);
@@ -79,7 +80,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     Optional<List> orderByObject = jexlHelper.evaluateDirectiveArgument(
         Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class);
 
-    if (!orderByObject.isPresent()) {
+    if (orderByObject.isEmpty()) {
       return Optional.empty();
     } else {
       List<Map<String, String>> orderByList = (List<Map<String, String>>) orderByObject.get();

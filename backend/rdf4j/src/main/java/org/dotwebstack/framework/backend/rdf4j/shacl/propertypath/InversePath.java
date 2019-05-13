@@ -8,6 +8,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 @Builder
 @Getter
@@ -19,5 +20,10 @@ public class InversePath implements PropertyPath {
   @Override
   public Optional<Value> resolvePath(Model model, Resource subject) {
     return Models.subject(model.filter(null, object.getIri(), subject)).map(resource -> resource);
+  }
+
+  @Override
+  public RdfPredicate toPredicate() {
+    return () -> "^" + object.toPredicate().getQueryString();
   }
 }

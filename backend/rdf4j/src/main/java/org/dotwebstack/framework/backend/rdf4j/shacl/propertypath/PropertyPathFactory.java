@@ -74,21 +74,21 @@ public class PropertyPathFactory  {
   private static PropertyPath alternativePath(List<PropertyPath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return AlternativePath.builder()
-        .object(propertyPaths.get(0))
+        .object((PredicatePath) propertyPaths.get(0))
         .build();
   }
 
   private static PropertyPath zeroOrMore(List<PropertyPath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return ZeroOrMorePath.builder()
-        .object(propertyPaths.get(0))
+        .object((PredicatePath) propertyPaths.get(0))
         .build();
   }
 
   private static PropertyPath oneOrMore(List<PropertyPath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return OneOrMorePath.builder()
-        .object(propertyPaths.get(0))
+        .object((PredicatePath) propertyPaths.get(0))
         .build();
   }
 }

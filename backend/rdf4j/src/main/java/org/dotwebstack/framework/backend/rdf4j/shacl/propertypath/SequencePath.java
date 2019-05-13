@@ -9,6 +9,8 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
+import org.mapdb.Atomic;
 
 @Builder
 @Getter
@@ -36,5 +38,19 @@ public class SequencePath implements PropertyPath {
 
   private Value resolveRest(Model model, Value value) {
     return value instanceof BNode ? rest.resolvePath(model, (Resource) value).orElse(null) : value;
+  }
+
+  @Override
+  public RdfPredicate toPredicate() {
+    return () -> {
+      StringBuilder sb = new StringBuilder();
+      sb.append(first.toPredicate().getQueryString());
+
+      if (!(rest instanceof PredicatePath && PropertyPathHelper.isNil((PredicatePath) rest))) {
+        sb.append("/").append(rest.toPredicate().getQueryString());
+      }
+
+      return sb.toString();
+    };
   }
 }
