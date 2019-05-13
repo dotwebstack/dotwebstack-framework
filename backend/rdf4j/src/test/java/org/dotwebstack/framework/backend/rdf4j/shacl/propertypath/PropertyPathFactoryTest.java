@@ -3,22 +3,14 @@ package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_PATH;
-
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_SHAPE;
-
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_POSTAL_CODE_SHAPE;
-
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_ADDRESS;
-
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_POSTAL_CODE;
-
 import static org.hamcrest.CoreMatchers.equalTo;
-
 import static org.hamcrest.MatcherAssert.assertThat;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -28,9 +20,9 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
@@ -43,23 +35,19 @@ import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-
-
-
 public class PropertyPathFactoryTest {
 
   private static Model shapeModel;
 
   @BeforeAll
-  static void setup() throws IOException {
+  public static void setup() throws IOException {
     shapeModel = loadShapeModel();
   }
 
   @Test
   void createPropertyPath_ReturnsSequencePath() {
     // Act
-    final PropertyPath propertyPath = PropertyPathFactory.create(shapeModel,
-        BREWERY_POSTAL_CODE_SHAPE, SHACL.PATH);
+    final PropertyPath propertyPath = createPropertyPath(BREWERY_POSTAL_CODE_SHAPE);
 
     // Assert
     assertTrue(propertyPath instanceof SequencePath);
@@ -70,8 +58,7 @@ public class PropertyPathFactoryTest {
   @Test
   void createPropertyPath_ReturnsPredicatePath() {
     // Act
-    final PropertyPath propertyPath = PropertyPathFactory.create(shapeModel,
-        BREWERY_FOUNDED_SHAPE, SHACL.PATH);
+    final PropertyPath propertyPath = createPropertyPath(BREWERY_FOUNDED_SHAPE);
 
     // Assert
     assertTrue(propertyPath instanceof PredicatePath);
@@ -81,8 +68,7 @@ public class PropertyPathFactoryTest {
   @Test
   void createPropertyPath_ReturnsInversePathInsideSequencePath() {
     // Act
-    final PropertyPath propertyPath = PropertyPathFactory.create(shapeModel,
-        BREWERY_BEERS_SHAPE, SHACL.PATH);
+    final PropertyPath propertyPath = createPropertyPath(BREWERY_BEERS_SHAPE);
 
     // Assert sequence path
     assertTrue(propertyPath instanceof SequencePath);
@@ -94,6 +80,10 @@ public class PropertyPathFactoryTest {
     assertTrue(first instanceof InversePath);
     final PropertyPath object = ((InversePath)first).getObject();
     assertTrue(object instanceof PredicatePath);
+  }
+
+  public static PropertyPath createPropertyPath(Resource subject) {
+    return PropertyPathFactory.create(shapeModel, subject, SHACL.PATH);
   }
 
   private static List<IRI> resolveIris(PropertyPath propertyPath) {

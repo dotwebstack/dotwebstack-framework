@@ -13,7 +13,7 @@ beer:shapes {
       beer_sh:Brewery_name ,
       beer_sh:Brewery_founded,
       beer_sh:Brewery_beers ,
-      beer_sh:Brewery_postalCode ;
+      beer_sh:Brewery_postalCode;
   .
 
   beer_sh:Brewery_identifier a sh:PropertyShape ;

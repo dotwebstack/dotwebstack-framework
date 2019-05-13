@@ -2,7 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
-
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -91,14 +91,24 @@ public final class Constants {
   public static final Literal BREWERY_FOUNDED_EXAMPLE_1 = VF
       .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
 
+  // Brewery.address
+
+  public static final BNode ADDRESS_EXAMPLE_1 = VF.createBNode();
+
   // Brewery.postalCode
+
+  public static final String POSTAL_CODE_FIELD = "postalCode";
 
   public static final String BREWERY_POSTAL_CODE_TYPE = "Brewery_postalCode";
 
   public static final IRI BREWERY_POSTAL_CODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(
       BREWERY_POSTAL_CODE_TYPE));
 
+  public static final String POSTAL_CODE_1 = "1234 AB";
+
   // Brewery.beers
+
+  public static final String BEERS_FIELD = "beers";
 
   public static final String BREWERY_BEERS_TYPE = "Brewery_beers";
 
@@ -108,9 +118,9 @@ public final class Constants {
   public static final IRI BREWERY_BEERS_PATH = VF.createIRI(
       "https://github.com/dotwebstack/beer/def#brewery");
 
-  // Beer
+  public static final BNode BEER_EXAMPLE_1 = VF.createBNode();
 
-  public static final String BEER_TYPE = "Beer";
+  public static final String BEER_NAME_EXAMPLE_1 = "Beer 1";
 
   //Schema
 
