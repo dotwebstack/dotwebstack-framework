@@ -5,10 +5,8 @@ public class ExceptionHelper {
   private ExceptionHelper() { }
 
   public static String formatMessage(String message, Object... arguments) {
-    if (message != null) {
-      return String.format(message.replaceAll("\\{\\}", "%s"), arguments);
-    }
-    return "";
+    return message != null ? String.format(
+        message.replaceAll("\\{\\}", "%s"), arguments) : "";
   }
 
   public static Throwable findCause(Object... arguments) {
