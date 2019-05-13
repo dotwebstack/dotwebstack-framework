@@ -22,20 +22,19 @@ public class SequencePath implements PropertyPath {
   @Override
   public Optional<Value> resolvePath(Model model, Resource subject) {
     if (this.first instanceof PredicatePath) {
-      Optional<Value> o = Models.getProperty(model, subject, ((PredicatePath) this.first).getIri());
-      if (o.isPresent() && (o.get() instanceof BNode)) {
-        subject = (Resource) o.get();
-        return rest.resolvePath(model, subject);
-      }
-
-      return o;
-    } else if (this.first instanceof InversePath) {
-      Optional<Value> o = this.first.resolvePath(model, subject);
-      if (o.isPresent()) {
-        return this.rest.resolvePath(model, (Resource) o.get());
-      }
-      return Optional.empty();
+      return Models.getProperty(model, subject, ((PredicatePath) this.first).getIri())
+          .map(o -> resolveRest(model, o));
     }
-    throw new IllegalArgumentException("Not yet implemented");
+
+    if (this.first instanceof InversePath) {
+      return this.first.resolvePath(model, subject)
+          .map(o -> resolveRest(model, o));
+    }
+
+    throw new UnsupportedOperationException("Not yet implemented.");
+  }
+
+  private Value resolveRest(Model model, Value value) {
+    return value instanceof BNode ? rest.resolvePath(model, (Resource) value).orElse(null) : value;
   }
 }

@@ -18,11 +18,6 @@ public class InversePath implements PropertyPath {
 
   @Override
   public Optional<Value> resolvePath(Model model, Resource subject) {
-    Optional<Resource> o = Models.subject(model.filter(null, object.getIri(), subject));
-    if (o.isPresent()) {
-      // cast resource to value...
-      return Optional.of(o.get());
-    }
-    return Optional.empty();
+    return Models.subject(model.filter(null, object.getIri(), subject)).map(resource -> resource);
   }
 }

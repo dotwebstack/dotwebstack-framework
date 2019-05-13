@@ -9,7 +9,6 @@ import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactory;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathHelper;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;

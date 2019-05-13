@@ -36,9 +36,6 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     Variable subjectVar = query.var();
     NodeShape nodeShape = environment.getNodeShapeRegistry().get(environment.getObjectType());
 
-    // define path pattern
-
-    // create class to use .
     final Map<String, TriplePattern> whereStatements = environment.getSelectionSet()
         .getFields()
         .stream()
@@ -46,13 +43,14 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
           GraphQLOutputType fieldType = field.getFieldDefinition().getType();
 
           if (GraphQLTypeUtil.isLeaf(fieldType)) {
-            PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
-            return GraphPatterns.tp(subjectVar, toPredicate(propertyShape.getPath()),
-                query.var());
+            return nodeShape.getPropertyShape(field.getName());
           } else { //detect
             throw new UnsupportedOperationException("Non-leaf nodes are not yet supported.");
           }
-        }).collect(Collectors.toMap(TriplePattern::getQueryString, x -> x));
+        }).collect(Collectors.toMap(
+            PropertyShape::getName,
+            propertyShape -> GraphPatterns.tp(subjectVar, toPredicate(propertyShape.getPath()),
+                query.var())));
 
     Expression<?> filterExpr = Expressions
         .or(Iterables.toArray(subjects

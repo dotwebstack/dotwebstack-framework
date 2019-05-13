@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -27,18 +29,17 @@ public class PropertyPathFactory  {
           SHACL.ZERO_OR_MORE_PATH, PropertyPathFactory::zeroOrMore,
           SHACL.ONE_OR_MORE_PATH, PropertyPathFactory::oneOrMore);
 
-
   public static PropertyPath create(Model model, Resource subject, IRI predicate) {
-    Value value = PropertyPathHelper.findRequiredProperty(model, subject, predicate);
+    Value value = ValueUtils.findRequiredProperty(model, subject, predicate);
 
     if (value instanceof MemBNode) {
       MemBNode blankNode = (MemBNode) value;
       IRI iri = blankNode.getSubjectStatementList().get(0).getPredicate();
 
       List<PropertyPath> childs = memStatements(blankNode.getSubjectStatementList())
-              .stream()
-              .map(child -> create(model,child.getSubject(),child.getPredicate()))
-              .collect(Collectors.toList());
+          .stream()
+          .map(child -> create(model,child.getSubject(),child.getPredicate()))
+          .collect(Collectors.toList());
 
       return MAP.get(iri).apply(childs);
     }

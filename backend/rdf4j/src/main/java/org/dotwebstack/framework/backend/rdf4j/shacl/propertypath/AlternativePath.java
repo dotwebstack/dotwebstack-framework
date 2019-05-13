@@ -17,6 +17,6 @@ public class AlternativePath implements PropertyPath {
 
   @Override
   public Optional<Value> resolvePath(Model model, Resource subject) {
-    throw new IllegalArgumentException("Not yet implemented");
+    throw new UnsupportedOperationException("Not yet implemented.");
   }
 }

@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLDirective;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
