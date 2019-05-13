@@ -16,45 +16,43 @@ public class ConstraintValidator {
 
   void validate(GraphQLArgument argument, String name, Object value) {
 
-    if (argument.getValue() == null) {
-      return;
-    }
-
-    switch (argument.getName()) {
-      case CONSTRAINT_ARG_MIN:
-        checkMin(name,(Integer) argument.getValue(),(Integer) value);
-        break;
-      case CONSTRAINT_ARG_MAX:
-        checkMax(name,(Integer) argument.getValue(),(Integer) value);
-        break;
-      case CONSTRAINT_ARG_ONEOF:
-      case CONSTRAINT_ARG_ONEOF_INT:
-        checkOneOf(name, castToList(argument.getValue()),value);
-        break;
-      default:
-        throw new DirectiveValidationException(
-                "Unsupported constraint argument with name '{}'",argument.getName());
+    if (argument.getValue() != null) {
+      switch (argument.getName()) {
+        case CONSTRAINT_ARG_MIN:
+          checkMin(name, (Integer) argument.getValue(), (Integer) value);
+          break;
+        case CONSTRAINT_ARG_MAX:
+          checkMax(name, (Integer) argument.getValue(), (Integer) value);
+          break;
+        case CONSTRAINT_ARG_ONEOF:
+        case CONSTRAINT_ARG_ONEOF_INT:
+          checkOneOf(name, castToList(argument.getValue()), value);
+          break;
+        default:
+          throw new DirectiveValidationException(
+              "Unsupported constraint argument with name '{}'", argument.getName());
+      }
     }
   }
 
   private void checkMin(String name, Integer constraint, Integer value)  {
     if (value < constraint) {
       throw new DirectiveValidationException(
-              "Constraint 'min' [{}] violated on '{}' with value '{}'",constraint,name,value);
+              "Constraint 'min' [{}] violated on '{}' with value '{}'", constraint, name, value);
     }
   }
 
   private void checkMax(String name, Integer constraint, Integer value) {
     if (value > constraint) {
       throw new DirectiveValidationException(
-              "Constraint 'max' [{}] violated on '{}' with value '{}'",constraint,name,value);
+              "Constraint 'max' [{}] violated on '{}' with value '{}'", constraint, name, value);
     }
   }
 
   private void checkOneOf(String name, List<Object> constraint, Object value) {
     if (!constraint.contains(value)) {
       throw new DirectiveValidationException(
-              "Constraint 'oneOf' {} violated on '{}' with value '{}'",constraint,name,value);
+              "Constraint 'oneOf' {} violated on '{}' with value '{}'", constraint, name, value);
     }
   }
 }

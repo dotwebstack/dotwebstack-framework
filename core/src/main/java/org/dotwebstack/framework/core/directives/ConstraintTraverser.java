@@ -33,18 +33,11 @@ public class ConstraintTraverser {
 
   void onArguments(GraphQLArgument argument, Object value) {
     if (argument.getType() instanceof GraphQLInputObjectType) {
-
       onInputObjectType((GraphQLInputObjectType) argument.getType(),
               value != null ? castToMap(value) : ImmutableMap.of());
-      return;
+    } else  if ((argument.getType() instanceof GraphQLScalarType)) {
+      validate(argument,argument.getName(),ofNullable(value).orElse(argument.getDefaultValue()));
     }
-
-    if (!(argument.getType() instanceof GraphQLScalarType)) {
-      // only call validator on argument method for scalar types!
-      return;
-    }
-
-    validate(argument,argument.getName(),ofNullable(value).orElse(argument.getDefaultValue()));
   }
 
   private void onInputObjectType(GraphQLInputObjectType inputObjectType,
