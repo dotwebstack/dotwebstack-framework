@@ -4,17 +4,16 @@ public class ExceptionHelper {
 
   private ExceptionHelper() { }
 
-  public static String formatMessage(final String message,
-                                     final Object... arguments) {
+  public static String formatMessage(String message, Object... arguments) {
     if (message != null) {
       return String.format(message.replaceAll("\\{\\}", "%s"), arguments);
     }
     return "";
   }
 
-  public static Throwable findCause(final Object... arguments) {
+  public static Throwable findCause(Object... arguments) {
     if (arguments != null && arguments.length > 0) {
-      final Object lastArgument = arguments[arguments.length - 1];
+      Object lastArgument = arguments[arguments.length - 1];
       if (lastArgument instanceof Throwable) {
         return (Throwable) lastArgument;
       }
@@ -22,17 +21,16 @@ public class ExceptionHelper {
     return null;
   }
 
-  public static Object[] joinArguments(final Throwable cause,
-                                       final Object[] arguments) {
-    final Object[] newArguments = new Object[arguments.length + 1];
+  public static Object[] joinArguments(Throwable cause, Object[] arguments) {
+    Object[] newArguments = new Object[arguments.length + 1];
     System.arraycopy(arguments, 0, newArguments, 0, arguments.length);
     newArguments[newArguments.length - 1] = cause;
 
     return newArguments;
   }
 
-  public static IllegalArgumentException illegalArgumentException(final String message,
-                                                                  final Object... arguments) {
+  public static IllegalArgumentException illegalArgumentException(
+      String message, Object... arguments) {
     return new IllegalArgumentException(formatMessage(message, arguments), findCause(arguments));
   }
 

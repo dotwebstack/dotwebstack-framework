@@ -54,14 +54,14 @@ public final class ValueUtils {
   public static IRI findRequiredPropertyIri(Model model, Resource subject, IRI predicate) {
     return Models.getPropertyIRI(model, subject, predicate)
         .orElseThrow(() -> new InvalidConfigurationException(
-                "Resource '{}' requires a '{}' IRI property.", subject, predicate));
+            "Resource '{}' requires a '{}' IRI property.", subject, predicate));
   }
 
   public static Literal findRequiredPropertyLiteral(Model model, Resource subject,
       IRI predicate) {
     return Models.getPropertyLiteral(model, subject, predicate)
         .orElseThrow(() -> new InvalidConfigurationException(
-                "Resource '{}' requires a '{}' literal property.", subject, predicate));
+            "Resource '{}' requires a '{}' literal property.", subject, predicate));
   }
 
 }

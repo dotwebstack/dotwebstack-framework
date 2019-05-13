@@ -23,6 +23,7 @@ public class JexlHelperTest {
       .silent(false)
       .strict(true)
       .create();
+
   private final JexlHelper jexlHelper = new JexlHelper(this.jexlEngine);
 
   @Test
@@ -33,8 +34,8 @@ public class JexlHelperTest {
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
     // Act
-    final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument("directiveArg1",
-        directive, context, String.class);
+    final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument(
+        "directiveArg1", directive, context, String.class);
 
     // Assert
     assertThat("expected non-empty optional", evaluated.isPresent());
@@ -50,8 +51,8 @@ public class JexlHelperTest {
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
     // Act
-    final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument("directiveArg2",
-        directive, context, String.class);
+    final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument(
+        "directiveArg2", directive, context, String.class);
 
     // Assert
     assertThat("expected empty optional", !evaluated.isPresent());

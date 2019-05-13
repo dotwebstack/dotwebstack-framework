@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.directives;
 import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
+import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
@@ -11,7 +12,6 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLScalarType;
-import java.util.HashMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -35,7 +35,7 @@ public class ConstraintTraverser {
     if (argument.getType() instanceof GraphQLInputObjectType) {
 
       onInputObjectType((GraphQLInputObjectType) argument.getType(),
-              value != null ? castToMap(value) : new HashMap<>());
+              value != null ? castToMap(value) : ImmutableMap.of());
       return;
     }
 

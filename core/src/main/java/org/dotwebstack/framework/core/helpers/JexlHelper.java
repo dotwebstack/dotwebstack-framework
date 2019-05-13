@@ -1,9 +1,13 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 
 import graphql.schema.GraphQLDirective;
 import java.util.Optional;
+
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -13,29 +17,26 @@ import org.dotwebstack.framework.core.directives.DirectiveUtils;
 @RequiredArgsConstructor
 public class JexlHelper {
 
-  final JexlEngine engine;
+  @NonNull JexlEngine engine;
 
-  public <T> Optional<T> evaluateExpression(final String expressionString,
-                                            final JexlContext context,
-                                            final Class<T> clazz) {
-    final JexlExpression expression = this.engine.createExpression(expressionString);
-    final Object evaluated = expression.evaluate(context);
+  public <T> Optional<T> evaluateExpression(
+      String expressionString, JexlContext context, Class<T> clazz) {
+    JexlExpression expression = this.engine.createExpression(expressionString);
+    Object evaluated = expression.evaluate(context);
     if (evaluated == null) {
       return Optional.empty();
     } else if (!clazz.isInstance(evaluated)) {
-      throw new IllegalArgumentException(
-          String.format("Jexl evaluateDirectiveArgument type mismatch: expected[%s], but was [%s].",
-              clazz, evaluated.getClass()));
+      throw illegalArgumentException(
+          "Jexl evaluateDirectiveArgument type mismatch: expected[{}], but was [{}].",
+          clazz, evaluated.getClass());
     } else {
       return Optional.of(cast(clazz,evaluated));
     }
   }
 
-  public <T> Optional<T> evaluateDirectiveArgument(final String argumentName,
-                                                   final GraphQLDirective directive,
-                                                   final JexlContext context,
-                                                   final Class<T> clazz) {
-    final String expressionString = DirectiveUtils.getArgument(argumentName, directive,
+  public <T> Optional<T> evaluateDirectiveArgument(
+      String argumentName, GraphQLDirective directive, JexlContext context, Class<T> clazz) {
+    String expressionString = DirectiveUtils.getArgument(argumentName, directive,
         String.class);
     if (expressionString == null) {
       return Optional.empty();

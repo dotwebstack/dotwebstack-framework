@@ -18,9 +18,9 @@ class ConstraintValidatorTest {
   void validate_throwsException_ForGivenUnknownArgument() {
     assertThrows(DirectiveValidationException.class,() -> validator.validate(
             GraphQLArgument.newArgument()
-                    .name("unknownArg")
-                    .value(1L)
-                    .type(GraphQLInt).build(),"name",1));
+                .name("unknownArg")
+                .value(1L)
+                .type(GraphQLInt).build(),"name",1));
   }
 
   @Test
@@ -76,24 +76,33 @@ class ConstraintValidatorTest {
 
   private GraphQLArgument minArgument(Object value) {
     return GraphQLArgument.newArgument()
-            .name(CoreDirectives.CONSTRAINT_ARG_MIN)
-            .type(GraphQLInt)
-            .value(value)
-            .build();
+        .name(CoreDirectives.CONSTRAINT_ARG_MIN)
+        .type(GraphQLInt)
+        .value(value)
+        .build();
   }
 
   private GraphQLArgument maxArgument(Object value) {
-    return GraphQLArgument.newArgument().name(CoreDirectives.CONSTRAINT_ARG_MAX)
-            .type(GraphQLInt).value(value).build();
+    return GraphQLArgument.newArgument()
+        .name(CoreDirectives.CONSTRAINT_ARG_MAX)
+        .type(GraphQLInt)
+        .value(value)
+        .build();
   }
 
   private GraphQLArgument oneOfArgument(List<String> values) {
-    return GraphQLArgument.newArgument().name(CoreDirectives.CONSTRAINT_ARG_ONEOF)
-            .type(GraphQLList.list(GraphQLString)).value(values).build();
+    return GraphQLArgument.newArgument()
+        .name(CoreDirectives.CONSTRAINT_ARG_ONEOF)
+        .type(GraphQLList.list(GraphQLString))
+        .value(values)
+        .build();
   }
 
   private GraphQLArgument oneOfIntArgument(List<Integer> values) {
-    return GraphQLArgument.newArgument().name(CoreDirectives.CONSTRAINT_ARG_ONEOF_INT)
-            .type(GraphQLList.list(GraphQLInt)).value(values).build();
+    return GraphQLArgument.newArgument()
+        .name(CoreDirectives.CONSTRAINT_ARG_ONEOF_INT)
+        .type(GraphQLList.list(GraphQLInt))
+        .value(values)
+        .build();
   }
 }

@@ -8,7 +8,6 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-
 import java.util.Map;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
@@ -35,9 +34,10 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private ConstraintTraverser constraintTraverser;
 
-  public SparqlDirectiveWiring(RepositoryManager repositoryManager,
-                               NodeShapeRegistry nodeShapeRegistry, Rdf4jProperties rdf4jProperties,
-                               JexlEngine jexlEngine, ConstraintTraverser constraintTraverser) {
+  public SparqlDirectiveWiring(
+      RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
+      Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine,
+      ConstraintTraverser constraintTraverser) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null

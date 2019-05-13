@@ -19,8 +19,5 @@ public final class CoreDirectives {
   public static final String CONSTRAINT_ARG_ONEOF_INT = "oneOfInt";
 
 
-  private CoreDirectives() {
-    throw ExceptionHelper.illegalArgumentException(
-            "{} is not meant to be instantiated.", CoreDirectives.class);
-  }
+  private CoreDirectives() {}
 }
