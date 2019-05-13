@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_PATH;
 
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_SHAPE;
@@ -8,6 +10,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_POSTAL_C
 
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_ADDRESS;
 
+import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_POSTAL_CODE;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -73,6 +76,24 @@ public class PropertyPathFactoryTest {
     // Assert
     assertTrue(propertyPath instanceof PredicatePath);
     assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(BREWERY_FOUNDED_PATH)));
+  }
+
+  @Test
+  void createPropertyPath_ReturnsInversePathInsideSequencePath() {
+    // Act
+    final PropertyPath propertyPath = PropertyPathFactory.create(shapeModel,
+        BREWERY_BEERS_SHAPE, SHACL.PATH);
+
+    // Assert sequence path
+    assertTrue(propertyPath instanceof SequencePath);
+    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(BREWERY_BEERS_PATH, SCHEMA_NAME,
+        RDF.NIL)));
+
+    // Assert inverse path
+    final PropertyPath first = ((SequencePath)propertyPath).getFirst();
+    assertTrue(first instanceof InversePath);
+    final PropertyPath object = ((InversePath)first).getObject();
+    assertTrue(object instanceof PredicatePath);
   }
 
   private static List<IRI> resolveIris(PropertyPath propertyPath) {

@@ -12,6 +12,7 @@ beer:shapes {
       beer_sh:Brewery_identifier ,
       beer_sh:Brewery_name ,
       beer_sh:Brewery_founded,
+      beer_sh:Brewery_beers ,
       beer_sh:Brewery_postalCode ;
   .
 
@@ -50,4 +51,45 @@ beer:shapes {
        sh:datatype xsd:string ;
    .
 
+  beer_sh:Brewery_beers a sh:PropertyShape ;
+    sh:name "beers" ;
+    sh:path ( [ sh:inversePath beer_def:brewery ] schema:name ) ;
+    sh:minCount 0 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
+  .
+
+ beer_sh:Beer a sh:NodeShape ;
+   sh:targetClass beer_def:Beer ;
+   sh:property
+    beer_sh:Beer_identifier ,
+    beer_sh:Beer_name ,
+    beer_sh:Beer_brewery,
+ .
+
+ beer_sh:Beer_identifier a sh:PropertyShape ;
+   sh:name "identifier" ;
+   sh:path beer_def:identifier ;
+   sh:minCount 1 ;
+   sh:maxCount 1 ;
+   sh:nodeKind sh:Literal ;
+   sh:datatype xsd:string ;
+ .
+
+ beer_sh:Beer_name a sh:PropertyShape ;
+   sh:name "name" ;
+   sh:path schema:name ;
+   sh:minCount 1 ;
+   sh:maxCount 1 ;
+   sh:nodeKind sh:Literal ;
+   sh:datatype xsd:string ;
+ .
+
+ beer_sh:Beer_brewery a sh:PropertyShape ;
+   sh:name "brewery" ;
+   sh:path beer_def:brewery ;
+   sh:minCount 1 ;
+   sh:maxCount 1 ;
+   sh:nodeKind sh:BlankNode
+ .
 }

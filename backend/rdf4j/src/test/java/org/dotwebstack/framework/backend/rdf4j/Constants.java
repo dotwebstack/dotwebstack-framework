@@ -98,9 +98,25 @@ public final class Constants {
   public static final IRI BREWERY_POSTAL_CODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(
       BREWERY_POSTAL_CODE_TYPE));
 
-  //Address
+  // Brewery.beers
+
+  public static final String BREWERY_BEERS_TYPE = "Brewery_beers";
+
+  public static final IRI BREWERY_BEERS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(
+      BREWERY_BEERS_TYPE));
+
+  public static final IRI BREWERY_BEERS_PATH = VF.createIRI(
+      "https://github.com/dotwebstack/beer/def#brewery");
+
+  // Beer
+
+  public static final String BEER_TYPE = "Beer";
+
+  //Schema
 
   public static final IRI SCHEMA_ADDRESS = VF.createIRI(SCHEMA_PREFIX + "address");
+
+  public static final IRI SCHEMA_NAME = VF.createIRI(SCHEMA_PREFIX + "name");
 
   public static final IRI SCHEMA_POSTAL_CODE = VF.createIRI(SCHEMA_PREFIX + "postalCode");
 
