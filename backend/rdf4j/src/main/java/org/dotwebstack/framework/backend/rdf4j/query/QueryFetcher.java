@@ -18,6 +18,7 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -43,6 +44,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final JexlEngine jexlEngine;
 
+  private final ConstraintTraverser constraintTraverser;
+
   @Override
   public Object get(@NonNull DataFetchingEnvironment environment) {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
@@ -54,6 +57,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
       throw new UnsupportedOperationException(
           "Field types other than object fields are not yet supported.");
     }
+
+    constraintTraverser.traverse(environment);
 
     QueryEnvironment queryEnvironment = QueryEnvironment.builder()
         .objectType((GraphQLObjectType) rawType)

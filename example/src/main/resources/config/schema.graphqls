@@ -9,7 +9,7 @@ type Query {
       subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
 
   breweries(sort: [SortField!] = [{ field: "name", order: ASC }],
-            page: Int = 1, pageSize: Int = 10): [Brewery!]!
+            page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50])): [Brewery!]!
     @sparql(
       repository: "local",
       limit: "pageSize",
@@ -35,7 +35,6 @@ type Brewery {
   identifier: ID!
   name: String!
   founded: String!
-    @transform(expr: "founded.calendarValue().getYear()")
   openinghours: String
   url: String!
     @transform(expr: "url.getLocalName()")
@@ -46,6 +45,6 @@ input SortQueryInput {
 }
 
 input PageQueryInput {
-  page: Int = 1
-  pageSize: Int = 10
+  page: Int = 1 @constraint(min: 1)
+  pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50])
 }

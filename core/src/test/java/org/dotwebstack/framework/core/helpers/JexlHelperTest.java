@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.jexl;
+package org.dotwebstack.framework.core.helpers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -9,9 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
-
 import java.util.Optional;
-
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -25,6 +23,7 @@ public class JexlHelperTest {
       .silent(false)
       .strict(true)
       .create();
+
   private final JexlHelper jexlHelper = new JexlHelper(this.jexlEngine);
 
   @Test
@@ -35,8 +34,8 @@ public class JexlHelperTest {
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
     // Act
-    final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument("directiveArg1",
-        directive, context, String.class);
+    final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument(
+        "directiveArg1", directive, context, String.class);
 
     // Assert
     assertThat("expected non-empty optional", evaluated.isPresent());
@@ -52,8 +51,8 @@ public class JexlHelperTest {
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
 
     // Act
-    final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument("directiveArg2",
-        directive, context, String.class);
+    final Optional<String> evaluated = this.jexlHelper.evaluateDirectiveArgument(
+        "directiveArg2", directive, context, String.class);
 
     // Assert
     assertThat("expected empty optional", !evaluated.isPresent());

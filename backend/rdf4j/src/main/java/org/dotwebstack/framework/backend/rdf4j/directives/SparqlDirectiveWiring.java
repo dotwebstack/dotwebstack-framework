@@ -15,6 +15,7 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
@@ -31,14 +32,18 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private final JexlEngine jexlEngine;
 
-  public SparqlDirectiveWiring(RepositoryManager repositoryManager,
-      NodeShapeRegistry nodeShapeRegistry, Rdf4jProperties rdf4jProperties,
-      JexlEngine jexlEngine) {
+  private ConstraintTraverser constraintTraverser;
+
+  public SparqlDirectiveWiring(
+      RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
+      Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine,
+      ConstraintTraverser constraintTraverser) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null
         ? HashBiMap.create(rdf4jProperties.getPrefixes()).inverse() : ImmutableMap.of();
     this.jexlEngine = jexlEngine;
+    this.constraintTraverser = constraintTraverser;
   }
 
   @Override
@@ -57,13 +62,13 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
             String.class);
 
     if (!repositoryManager.hasRepositoryConfig(repositoryId)) {
-      throw new InvalidConfigurationException(
-          String.format("Repository '%s' was never configured.", repositoryId));
+      throw new InvalidConfigurationException("Repository '{}' was never configured.",
+              repositoryId);
     }
 
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId).getConnection();
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap,
-            jexlEngine);
+            jexlEngine, constraintTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
