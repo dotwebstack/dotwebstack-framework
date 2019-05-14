@@ -10,7 +10,6 @@ import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
-import org.mapdb.Atomic;
 
 @Builder
 @Getter

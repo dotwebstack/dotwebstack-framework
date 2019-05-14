@@ -40,7 +40,7 @@
 
   beer_sh:Brewery_name a sh:PropertyShape ;
     sh:name "name" ;
-    sh:path schema:name ;
+    sh:path [sh:alternativePath ( schema:name beer_def:label ) ] ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:IRI ;

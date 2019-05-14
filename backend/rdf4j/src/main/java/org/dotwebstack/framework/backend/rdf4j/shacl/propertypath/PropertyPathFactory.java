@@ -74,7 +74,7 @@ public class PropertyPathFactory  {
   private static PropertyPath alternativePath(List<PropertyPath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return AlternativePath.builder()
-        .object((PredicatePath) propertyPaths.get(0))
+        .object((SequencePath) propertyPaths.get(0))
         .build();
   }
 
