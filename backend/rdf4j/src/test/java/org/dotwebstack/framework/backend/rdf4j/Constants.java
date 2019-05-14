@@ -65,6 +65,12 @@ public final class Constants {
 
   public static final String BREWERY_NAME_FIELD = "name";
 
+  public static final String BREWERY_NAME_TYPE = "Brewery_name";
+
+  public static final IRI BREWERY_LABEL = VF.createIRI("https://github.com/dotwebstack/beer/def#label");
+
+  public static final IRI BREWERY_LABEL_PATH = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_NAME_TYPE));
+
   public static final Literal BREWERY_NAME_EXAMPLE_1 = VF.createLiteral("Brouwerij 1923");
 
   // Brewery.owners

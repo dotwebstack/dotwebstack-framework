@@ -25,6 +25,8 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.POSTAL_CODE_FIEL
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_ADDRESS;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_POSTAL_CODE;
+import static graphql.Scalars.GraphQLString;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -212,5 +214,39 @@ class ValueFetcherTest {
 
     // Assert
     assertThat(result, is(equalTo(BEER_NAME_EXAMPLE_1)));
+  }
+
+  @Test
+  void get_ReturnsString_ForAlternativePropertyPath() {
+    // Arrange
+    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_LABEL_PATH);
+
+    ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
+        .name(BREWERY_NAME_FIELD)
+        .path(propertyPath)
+        .build());
+    Model model = new ModelBuilder()
+        .add(BREWERY_EXAMPLE_1, BREWERY_LABEL, BREWERY_NAME_EXAMPLE_1)
+        .build();
+    when(environment.getFieldType()).thenReturn(GraphQLString);
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
+
+    // Act
+    Object result = valueFetcher.get(environment);
+
+    // Assert
+    assertThat(result, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
+
+    model = new ModelBuilder()
+        .add(BREWERY_EXAMPLE_1, SCHEMA_NAME, BREWERY_NAME_EXAMPLE_1)
+        .build();
+    when(environment.getFieldType()).thenReturn(GraphQLString);
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
+
+    // Act
+    result = valueFetcher.get(environment);
+
+    // Assert
+    assertThat(result, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
   }
 }
