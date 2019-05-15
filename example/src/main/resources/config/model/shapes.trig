@@ -40,7 +40,7 @@
     sh:path beer_def:owners ;
     sh:minCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:dateTime ;
+    sh:datatype xsd:string ;
   .
 
    beer_sh:Brewery_founded a sh:PropertyShape ;
