@@ -26,7 +26,7 @@ public final class ValueFetcher implements DataFetcher<Object> {
       return getScalar(source);
     }
 
-    if (GraphQLTypeUtil.isList(fieldType)) {
+    if (GraphQLTypeUtil.isList(fieldType) && GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapOne(fieldType))) {
       return getList(source);
     }
 
