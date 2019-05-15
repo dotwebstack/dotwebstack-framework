@@ -13,6 +13,7 @@
       beer_sh:Brewery_identifier ,
       beer_sh:Brewery_name ,
       beer_sh:Brewery_founded ,
+      beer_sh:Brewery_owners ,
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_url ;
   .
@@ -32,6 +33,14 @@
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:IRI ;
+  .
+
+  beer_sh:Brewery_owners a sh:PropertyShape ;
+    sh:name "owners" ;
+    sh:path beer_def:owners ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
   .
 
    beer_sh:Brewery_founded a sh:PropertyShape ;

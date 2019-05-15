@@ -1,12 +1,19 @@
 package org.dotwebstack.framework.core.helpers;
 
+import java.util.MissingFormatArgumentException;
+import org.dotwebstack.framework.core.DotWebStackRuntimeException;
+
 public class ExceptionHelper {
 
   private ExceptionHelper() { }
 
   public static String formatMessage(String message, Object... arguments) {
-    return message != null ? String.format(
-        message.replaceAll("\\{\\}", "%s"), arguments) : "";
+    try {
+      return message != null ? String.format(
+          message.replaceAll("\\{\\}", "%s"), arguments) : "";
+    } catch (MissingFormatArgumentException exception) {
+      throw new DotWebStackRuntimeException("Missing argument for exception with message '{}'",message);
+    }
   }
 
   public static Throwable findCause(Object... arguments) {
@@ -32,4 +39,7 @@ public class ExceptionHelper {
     return new IllegalArgumentException(formatMessage(message, arguments), findCause(arguments));
   }
 
+  public static UnsupportedOperationException unsupportedOperationException(String message, Object... arguments) {
+    return new UnsupportedOperationException(formatMessage(message,arguments), findCause(arguments));
+  }
 }
