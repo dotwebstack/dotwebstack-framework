@@ -7,8 +7,13 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_PATH;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_EXAMPLE_2;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_TYPE;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,12 +22,15 @@ import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
+import java.util.List;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -53,6 +61,32 @@ class ValueFetcherTest {
 
     // Assert
     assertThat(result, is(equalTo(BREWERY_IDENTIFIER_EXAMPLE_1.stringValue())));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void get_ReturnsList_ForBuiltInListWithScalarField() {
+    // Arrange
+    ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
+        .name(BREWERY_OWNERS_FIELD)
+        .path(BREWERY_OWNERS_PATH)
+        .build());
+    Model model = new ModelBuilder()
+        .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH,
+            BREWERY_OWNERS_EXAMPLE_1)
+        .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH,
+            BREWERY_OWNERS_EXAMPLE_2)
+        .build();
+    when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
+
+    // Act
+    Object result = valueFetcher.get(environment);
+
+    // Assert
+    assertThat(result,instanceOf(List.class));
+    assertThat((List<String>) result,
+        CoreMatchers.hasItems(BREWERY_OWNERS_EXAMPLE_1.stringValue(),BREWERY_OWNERS_EXAMPLE_2.stringValue()));
   }
 
   @Test

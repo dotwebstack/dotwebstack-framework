@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -25,7 +26,14 @@ public final class NodeShape {
   private final Map<String, PropertyShape> propertyShapes;
 
   public PropertyShape getPropertyShape(String name) {
-    return this.propertyShapes.get(name);
+    PropertyShape propertyShape = this.propertyShapes.get(name);
+
+    // We need to validate the graphql definition against the shacl definition on bootstrap
+    if (propertyShape == null) {
+      throw new InvalidConfigurationException("No property shape found for name '{}'",name);
+    }
+
+    return propertyShape;
   }
 
   public static NodeShape fromShapeModel(@NonNull Model shapeModel, @NonNull IRI identifier) {

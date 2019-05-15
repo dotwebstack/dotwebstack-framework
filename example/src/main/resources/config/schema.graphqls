@@ -36,6 +36,7 @@ type Brewery {
   name: String!
   founded: String!
   openinghours: String
+  owners: [String]
   url: String!
     @transform(expr: "url.getLocalName()")
 }

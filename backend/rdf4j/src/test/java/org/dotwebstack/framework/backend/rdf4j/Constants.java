@@ -64,6 +64,16 @@ public final class Constants {
 
   public static final Literal BREWERY_NAME_EXAMPLE_1 = VF.createLiteral("Brouwerij 1923");
 
+  // Brewery.owners
+
+  public static final String BREWERY_OWNERS_FIELD = "owners";
+
+  public static final Literal BREWERY_OWNERS_EXAMPLE_1 = VF.createLiteral("T. Bier");
+
+  public static final Literal BREWERY_OWNERS_EXAMPLE_2 = VF.createLiteral("P. Pils");
+
+  public static final IRI BREWERY_OWNERS_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#owners");
+
   // Brewery.founded
 
   public static final String BREWERY_FOUNDED_FIELD = "founded";
