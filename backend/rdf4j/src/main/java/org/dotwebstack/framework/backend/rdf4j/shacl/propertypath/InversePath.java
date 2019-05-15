@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 @Builder
@@ -15,15 +14,15 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 @Setter
 public class InversePath implements PropertyPath {
 
-  private final PredicatePath object;
+  private final PropertyPath object;
 
   @Override
-  public Optional<Value> resolvePath(Model model, Resource subject) {
-    return Models.subject(model.filter(null, object.getIri(), subject)).map(resource -> resource);
+  public Optional<Value> resolvePath(Model model, Resource subject, boolean inversed) {
+    return object.resolvePath(model, subject, !inversed);
   }
 
   @Override
-  public RdfPredicate toPredicate() {
-    return () -> "^" + object.toPredicate().getQueryString();
+  public RdfPredicate toPredicate(boolean inversed) {
+    return () -> object.toPredicate(!inversed).getQueryString();
   }
 }

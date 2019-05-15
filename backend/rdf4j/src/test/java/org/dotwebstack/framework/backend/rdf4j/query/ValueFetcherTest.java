@@ -42,6 +42,7 @@ import graphql.schema.GraphQLObjectType;
 import java.util.List;
 import java.io.IOException;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.AlternativePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactoryTest;
@@ -221,32 +222,40 @@ class ValueFetcherTest {
     // Arrange
     PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_LABEL_PATH);
 
+    assertThat(propertyPath, is(instanceOf(AlternativePath.class)));
+
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_NAME_FIELD)
         .path(propertyPath)
         .build());
-    Model model = new ModelBuilder()
+
+    Model model1 = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_LABEL, BREWERY_NAME_EXAMPLE_1)
         .build();
-    when(environment.getFieldType()).thenReturn(GraphQLString);
-    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
 
-    // Act
-    Object result = valueFetcher.get(environment);
-
-    // Assert
-    assertThat(result, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
-
-    model = new ModelBuilder()
+    Model model2 = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, SCHEMA_NAME, BREWERY_NAME_EXAMPLE_1)
         .build();
-    when(environment.getFieldType()).thenReturn(GraphQLString);
-    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
+
+    Model model3 = new ModelBuilder()
+        .add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
+        .build();
+
 
     // Act
-    result = valueFetcher.get(environment);
+    when(environment.getFieldType()).thenReturn(GraphQLString);
+    when(environment.getSource()).thenReturn(new QuerySolution(model1, BREWERY_EXAMPLE_1));
+    Object result1 = valueFetcher.get(environment);
+
+    when(environment.getSource()).thenReturn(new QuerySolution(model2, BREWERY_EXAMPLE_1));
+    Object result2 = valueFetcher.get(environment);
+
+    when(environment.getSource()).thenReturn(new QuerySolution(model3, BREWERY_EXAMPLE_1));
+    Object result3 = valueFetcher.get(environment);
 
     // Assert
-    assertThat(result, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
+    assertThat(result1, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
+    assertThat(result2, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
+    assertThat(result3, is(equalTo(null)));
   }
 }

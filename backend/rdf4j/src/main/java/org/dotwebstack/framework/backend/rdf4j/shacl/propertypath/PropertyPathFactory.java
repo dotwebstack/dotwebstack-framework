@@ -38,7 +38,7 @@ public class PropertyPathFactory  {
 
       List<PropertyPath> childs = memStatements(blankNode.getSubjectStatementList())
           .stream()
-          .map(child -> create(model,child.getSubject(),child.getPredicate()))
+          .map(child -> create(model, child.getSubject(), child.getPredicate()))
           .collect(Collectors.toList());
 
       return MAP.get(iri).apply(childs);
@@ -67,7 +67,7 @@ public class PropertyPathFactory  {
   private static PropertyPath inversePath(List<PropertyPath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return InversePath.builder()
-        .object((PredicatePath) propertyPaths.get(0))
+        .object(propertyPaths.get(0))
         .build();
   }
 

@@ -18,11 +18,14 @@ public class PredicatePath implements PropertyPath {
   private final IRI iri;
 
   @Override
-  public Optional<Value> resolvePath(Model model, Resource subject) {
+  public Optional<Value> resolvePath(Model model, Resource subject, boolean inversed) {
+    if (inversed) {
+      return Models.subject(model.filter(null, iri, subject)).map(resource -> resource);
+    }
     return Models.getProperty(model, subject, this.iri);
   }
 
-  public RdfPredicate toPredicate() {
-    return () -> Rdf.iri(getIri()).getQueryString();
+  public RdfPredicate toPredicate(boolean inversed) {
+    return () -> (inversed ? "^" : "") + Rdf.iri(getIri()).getQueryString();
   }
 }

@@ -17,12 +17,12 @@ public class OneOrMorePath implements PropertyPath {
   private final PredicatePath object;
 
   @Override
-  public Optional<Value> resolvePath(Model model, Resource subject) {
+  public Optional<Value> resolvePath(Model model, Resource subject, boolean inversed) {
     throw new UnsupportedOperationException("Not yet implemented.");
   }
 
   @Override
-  public RdfPredicate toPredicate() {
+  public RdfPredicate toPredicate(boolean inversed) {
     throw new UnsupportedOperationException("Not yet implemented.");
   }
 }

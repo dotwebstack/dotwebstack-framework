@@ -20,20 +20,20 @@ public class AlternativePath implements PropertyPath {
   private final SequencePath object;
 
   @Override
-  public Optional<Value> resolvePath(Model model, Resource subject) {
+  public Optional<Value> resolvePath(Model model, Resource subject, boolean inversed) {
     return getChildren()
         .stream()
-        .map(child -> child.resolvePath(model, subject))
+        .map(child -> child.resolvePath(model, subject, inversed))
         .filter(Optional::isPresent)
         .findFirst()
-        .orElse(null);
+        .orElse(Optional.empty());
   }
 
   @Override
-  public RdfPredicate toPredicate() {
+  public RdfPredicate toPredicate(boolean inversed) {
     return () -> String.join("|", this.getChildren()
         .stream()
-        .map(child -> child.toPredicate().getQueryString())
+        .map(child -> child.toPredicate(inversed).getQueryString())
         .collect(Collectors.toList()));
   }
 

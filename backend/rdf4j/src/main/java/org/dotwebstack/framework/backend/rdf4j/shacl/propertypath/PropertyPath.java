@@ -8,8 +8,8 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 public interface PropertyPath {
 
-  Optional<Value> resolvePath(Model model, Resource subject);
+  Optional<Value> resolvePath(Model model, Resource subject, boolean inversed);
 
-  RdfPredicate toPredicate();
+  RdfPredicate toPredicate(boolean inversed);
 
 }

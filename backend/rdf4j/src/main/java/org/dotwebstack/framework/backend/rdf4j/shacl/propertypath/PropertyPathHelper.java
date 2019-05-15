@@ -6,7 +6,7 @@ public class PropertyPathHelper {
 
   private PropertyPathHelper() {}
 
-  public static boolean isNil(PredicatePath predicatePath) {
-    return RDF.NIL.equals(predicatePath.getIri());
+  public static boolean isNil(PropertyPath propertyPath) {
+    return propertyPath instanceof PredicatePath && RDF.NIL.equals(((PredicatePath) propertyPath).getIri());
   }
 }
