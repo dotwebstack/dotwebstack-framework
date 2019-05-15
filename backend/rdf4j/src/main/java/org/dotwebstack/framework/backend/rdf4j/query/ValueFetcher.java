@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.stream.Collectors;
@@ -26,7 +27,8 @@ public final class ValueFetcher implements DataFetcher<Object> {
       return getScalar(source);
     }
 
-    if (GraphQLTypeUtil.isList(fieldType) && GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapOne(fieldType))) {
+    if (GraphQLTypeUtil.isList(fieldType) &&
+        GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapNonNull(((GraphQLList)fieldType).getWrappedType()))) {
       return getList(source);
     }
 
