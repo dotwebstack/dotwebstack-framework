@@ -1,6 +1,10 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,16 +24,20 @@ public class SequencePath implements PropertyPath {
   private final PropertyPath rest;
 
   @Override
-  public Optional<Value> resolvePath(Model model, Resource subject, boolean inversed) {
+  public Set<Value> resolvePath(Model model, Resource subject, boolean inversed) {
+
     return this.first.resolvePath(model, subject, inversed)
-        .map(value -> resolveRest(model, value, inversed));
+        .stream()
+        .map(value -> resolveRest(model, value, inversed))
+        .flatMap(Set::stream)
+        .collect(Collectors.toSet());
   }
 
-  private Value resolveRest(Model model, Value value, Boolean inversed) {
+  private Set<Value> resolveRest(Model model, Value value, Boolean inversed) {
     if (!PropertyPathHelper.isNil(rest) && value instanceof BNode) {
-      return rest.resolvePath(model, (Resource) value, inversed).orElse(null);
+      return rest.resolvePath(model, (Resource) value, inversed);
     }
-    return value;
+    return Collections.singleton(value);
   }
 
   @Override

@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
-import java.util.Optional;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Getter;
 import org.eclipse.rdf4j.model.IRI;
@@ -18,11 +19,13 @@ public class PredicatePath implements PropertyPath {
   private final IRI iri;
 
   @Override
-  public Optional<Value> resolvePath(Model model, Resource subject, boolean inversed) {
+  public Set<Value> resolvePath(Model model, Resource subject, boolean inversed) {
     if (inversed) {
-      return Models.subject(model.filter(null, iri, subject)).map(resource -> resource);
+      Set<Value> set = new HashSet<>();
+      model.filter(null, iri, subject).forEach(st -> set.add(st.getSubject()));
+      return set;
     }
-    return Models.getProperty(model, subject, this.iri);
+    return Models.getProperties(model, subject, this.iri);
   }
 
   public RdfPredicate toPredicate(boolean inversed) {

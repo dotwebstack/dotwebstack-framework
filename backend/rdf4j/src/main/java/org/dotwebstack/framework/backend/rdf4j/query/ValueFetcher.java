@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.eclipse.rdf4j.model.util.Models;
 
 @RequiredArgsConstructor
 public final class ValueFetcher implements DataFetcher<Object> {
@@ -36,15 +35,15 @@ public final class ValueFetcher implements DataFetcher<Object> {
   }
 
   private Object getScalar(QuerySolution source) {
-    return Models
-        .getProperty(source.getModel(), source.getSubject(), propertyShape.getPath())
+    return propertyShape.getPath().resolvePath(source.getModel(), source.getSubject(), false)
+        .stream()
+        .findFirst()
         .map(ValueUtils::convertValue)
         .orElse(null);
   }
 
   private Object getList(QuerySolution source) {
-    return Models
-        .getProperties(source.getModel(), source.getSubject(), propertyShape.getPath())
+    return propertyShape.getPath().resolvePath(source.getModel(), source.getSubject(), false)
         .stream()
         .map(ValueUtils::convertValue)
         .collect(Collectors.toList());

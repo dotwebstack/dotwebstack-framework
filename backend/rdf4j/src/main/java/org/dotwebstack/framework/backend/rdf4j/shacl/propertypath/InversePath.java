@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
-import java.util.Optional;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +17,7 @@ public class InversePath implements PropertyPath {
   private final PropertyPath object;
 
   @Override
-  public Optional<Value> resolvePath(Model model, Resource subject, boolean inversed) {
+  public Set<Value> resolvePath(Model model, Resource subject, boolean inversed) {
     return object.resolvePath(model, subject, !inversed);
   }
 
