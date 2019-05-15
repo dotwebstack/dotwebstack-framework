@@ -30,7 +30,7 @@ public final class ValueFetcher implements DataFetcher<Object> {
       return getList(source);
     }
 
-    throw unsupportedOperationException("Field type '{}' not supported.", environment.getFieldType());
+    throw unsupportedOperationException("Field type '{}' not supported.", fieldType);
   }
 
   private Object getScalar(QuerySolution source) {
