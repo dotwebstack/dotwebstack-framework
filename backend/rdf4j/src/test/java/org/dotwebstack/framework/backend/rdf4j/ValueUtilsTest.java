@@ -94,7 +94,7 @@ class ValueUtilsTest {
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () ->
-            ValueUtils.findRequiredPropertyIri(model, SUBJECT, RDF.TYPE));
+        ValueUtils.findRequiredPropertyIri(model, SUBJECT, RDF.TYPE));
   }
 
   @Test

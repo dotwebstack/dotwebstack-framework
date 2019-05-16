@@ -38,13 +38,11 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     this.nodeShape = this.environment.getNodeShapeRegistry().get(this.environment.getObjectType());
   }
 
-  static SubjectQueryBuilder create(final QueryEnvironment environment,
-                                    final JexlEngine jexlEngine) {
+  static SubjectQueryBuilder create(final QueryEnvironment environment, final JexlEngine jexlEngine) {
     return new SubjectQueryBuilder(environment, jexlEngine);
   }
 
-  String getQueryString(final Map<String, Object> arguments,
-                        final GraphQLDirective sparqlDirective) {
+  String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective) {
     final MapContext context = new MapContext(arguments);
 
     this.query.select(SUBJECT_VAR);
@@ -67,16 +65,15 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       query.orderBy(orderContext.getOrderable());
 
       TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR,
-              orderContext.getPropertyShape().getPath().toPredicate(),
-              SparqlBuilder.var(orderContext.getField()));
+          orderContext.getPropertyShape().getPath().toPredicate(),
+          SparqlBuilder.var(orderContext.getField()));
 
       whereBuilder.put(triplePattern.getQueryString(), triplePattern);
     });
   }
 
   @SuppressWarnings({"unchecked","rawtypes"})
-  Optional<List<OrderContext>> getOrderByFromContext(MapContext context,
-                                                     GraphQLDirective sparqlDirective) {
+  Optional<List<OrderContext>> getOrderByFromContext(MapContext context, GraphQLDirective sparqlDirective) {
     Optional<List> orderByObject = jexlHelper.evaluateDirectiveArgument(
         Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class);
 

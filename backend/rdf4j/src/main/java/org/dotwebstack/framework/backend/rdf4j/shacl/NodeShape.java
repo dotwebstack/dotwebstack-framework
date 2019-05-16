@@ -51,13 +51,12 @@ public final class NodeShape {
         .stream()
         .map(shape -> {
           IRI nodeKind = ValueUtils
-                  .findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
+              .findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
 
           PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
               .identifier(shape)
-              .name(
-                  ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME)
-                      .stringValue())
+              .name(ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME)
+                  .stringValue())
               .path(PropertyPathFactory.create(shapeModel, shape, SHACL.PATH))
               .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
                   .map(Literal::intValue)
