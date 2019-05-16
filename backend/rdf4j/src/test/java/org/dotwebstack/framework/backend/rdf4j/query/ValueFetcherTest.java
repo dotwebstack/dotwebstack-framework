@@ -11,20 +11,18 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_E
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_PATH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_TYPE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLObjectType;
 import java.util.List;
+import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.eclipse.rdf4j.model.Model;
@@ -42,13 +40,16 @@ class ValueFetcherTest {
   @Mock
   private DataFetchingEnvironment environment;
 
+  @Mock
+  private NodeShapeRegistry nodeShapeRegistry;
+
   @Test
   void get_ReturnsConvertedLiteral_ForBuiltInScalarField() {
     // Arrange
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_IDENTIFIER_FIELD)
         .path(BREWERY_IDENTIFIER_PATH)
-        .build());
+        .build(),nodeShapeRegistry);
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_IDENTIFIER_PATH,
             BREWERY_IDENTIFIER_EXAMPLE_1)
@@ -70,7 +71,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_OWNERS_FIELD)
         .path(BREWERY_OWNERS_PATH)
-        .build());
+        .build(),nodeShapeRegistry);
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH,
             BREWERY_OWNERS_EXAMPLE_1)
@@ -95,7 +96,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_FOUNDED_FIELD)
         .path(BREWERY_FOUNDED_PATH)
-        .build());
+        .build(),nodeShapeRegistry);
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
         .build();
@@ -116,7 +117,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_IDENTIFIER_FIELD)
         .path(BREWERY_IDENTIFIER_PATH)
-        .build());
+        .build(),nodeShapeRegistry);
     Model model = new TreeModel();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
@@ -127,20 +128,4 @@ class ValueFetcherTest {
     // Assert
     assertThat(result, is(nullValue()));
   }
-
-  @Test
-  void get_ThrowsException_ForNonScalarField() {
-    // Arrange
-    ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder().build());
-    Model model = new TreeModel();
-    when(environment.getFieldType()).thenReturn(GraphQLObjectType.newObject()
-        .name(BREWERY_TYPE)
-        .build());
-    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
-
-    // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () ->
-        valueFetcher.get(environment));
-  }
-
 }
