@@ -133,9 +133,19 @@ public final class Constants {
 
   public static final String BREWERY_BEERTYPE_TYPE = "Beer_beerTypes";
 
+  public static final String BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE = "Beer_beerTypesZeroOrMore";
+
+  public static final String BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE = "Beer_beerTypesZeroOrOne";
+
   public static final IRI BEER_BEERTYPE_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#beertype");
 
   public static final IRI BEER_BEERTYPE_SHAPE = VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_TYPE);
+
+  public static final IRI BEER_BEERTYPE_ZERO_OR_MORE_SHAPE = VF.createIRI(SHAPE_PREFIX
+      + BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE);
+
+  public static final IRI BEER_BEERTYPE_ZERO_OR_ONE_SHAPE = VF.createIRI(SHAPE_PREFIX
+      + BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE);
 
   public static final BNode BEERTYPE_EXAMPLE_1 = VF.createBNode();
 

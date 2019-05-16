@@ -94,7 +94,9 @@
     beer_sh:Beer_identifier ,
     beer_sh:Beer_name ,
     beer_sh:Beer_brewery,
-    beer_sh:Beer_beerTypes ;
+    beer_sh:Beer_beerTypes,
+    beer_sh:Beer_beerTypesZeroOrMore,
+    beer_sh:Beer_beerTypesZeroOrOne;
  .
 
  beer_sh:Beer_identifier a sh:PropertyShape ;
@@ -129,5 +131,21 @@
     sh:minCount 0 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string ;
+  .
+
+  beer_sh:Beer_beerTypesZeroOrMore a sh:PropertyShape ;
+      sh:name "beerTypesZeroOrMore" ;
+      sh:path ( [ sh:zeroOrMorePath beer_def:beertype ] schema:name );
+      sh:minCount 0 ;
+      sh:nodeKind sh:Literal ;
+      sh:datatype xsd:string ;
+  .
+
+  beer_sh:Beer_beerTypesZeroOrOne a sh:PropertyShape ;
+      sh:name "beerTypesZeroOrOne" ;
+      sh:path ( [ sh:zeroOrOnePath beer_def:beertype ] schema:name );
+      sh:minCount 0 ;
+      sh:nodeKind sh:Literal ;
+      sh:datatype xsd:string ;
   .
 }

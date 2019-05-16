@@ -2,10 +2,12 @@ package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -17,16 +19,24 @@ import org.eclipse.rdf4j.sail.memory.model.MemBNode;
 import org.eclipse.rdf4j.sail.memory.model.MemStatement;
 import org.eclipse.rdf4j.sail.memory.model.MemStatementList;
 
-public class PropertyPathFactory  {
+public class PropertyPathFactory {
 
-  private PropertyPathFactory() {}
+  private PropertyPathFactory() {
+  }
 
-  private static final Map<IRI, Function<List<PropertyPath>,PropertyPath>> MAP =
-      ImmutableMap.of(RDF.FIRST, PropertyPathFactory::sequencePath,
-          SHACL.INVERSE_PATH, PropertyPathFactory::inversePath,
-          SHACL.ALTERNATIVE_PATH, PropertyPathFactory::alternativePath,
-          SHACL.ZERO_OR_MORE_PATH, PropertyPathFactory::zeroOrMore,
-          SHACL.ONE_OR_MORE_PATH, PropertyPathFactory::oneOrMore);
+  private static final ImmutableMap.Builder<IRI, Function<List<PropertyPath>, PropertyPath>>
+      BUILDER = new ImmutableMap.Builder<>();
+
+  static {
+    BUILDER.put(RDF.FIRST, PropertyPathFactory::sequencePath);
+    BUILDER.put(SHACL.INVERSE_PATH, PropertyPathFactory::inversePath);
+    BUILDER.put(SHACL.ALTERNATIVE_PATH, PropertyPathFactory::alternativePath);
+    BUILDER.put(SHACL.ZERO_OR_MORE_PATH, PropertyPathFactory::zeroOrMore);
+    BUILDER.put(SHACL.ONE_OR_MORE_PATH, PropertyPathFactory::oneOrMore);
+    BUILDER.put(SHACL.ZERO_OR_ONE_PATH, PropertyPathFactory::zeroOrOne);
+  }
+
+  private static final Map<IRI, Function<List<PropertyPath>, PropertyPath>> MAP = BUILDER.build();
 
   public static PropertyPath create(Model model, Resource subject, IRI predicate) {
     Value value = ValueUtils.findRequiredProperty(model, subject, predicate);
@@ -87,6 +97,13 @@ public class PropertyPathFactory  {
   private static PropertyPath oneOrMore(List<PropertyPath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return OneOrMorePath.builder()
+        .object((PredicatePath) propertyPaths.get(0))
+        .build();
+  }
+
+  private static PropertyPath zeroOrOne(List<PropertyPath> propertyPaths) {
+    assert propertyPaths.size() == 1;
+    return ZeroOrOnePath.builder()
         .object((PredicatePath) propertyPaths.get(0))
         .build();
   }

@@ -10,11 +10,15 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_2_NAME;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_SHAPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_ZERO_OR_MORE_SHAPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_ZERO_OR_ONE_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_NAME_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_SHAPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_FIELD;
@@ -271,7 +275,7 @@ class ValueFetcherTest {
   }
 
   @Test
-  void get_ReturnsString_ForOneOrMorePropertyPath() {
+  void get_ReturnsStringList_ForOneOrMorePropertyPath() {
     // Arrange
     PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(
         BEER_BEERTYPE_SHAPE);
@@ -293,5 +297,53 @@ class ValueFetcherTest {
 
     // Assert
     assertThat(result, is(equalTo(Arrays.asList(BEERTYPE_EXAMPLE_1_NAME, BEERTYPE_EXAMPLE_2_NAME))));
+  }
+
+  @Test
+  void get_ReturnsStringList_ForZeroOrMorePropertyPath() {
+    // Arrange
+    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(
+        BEER_BEERTYPE_ZERO_OR_MORE_SHAPE);
+    ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
+        .name(BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE)
+        .path(propertyPath)
+        .build());
+    Model model = new ModelBuilder()
+        .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
+        .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_2)
+        .add(BEERTYPE_EXAMPLE_2, SCHEMA_NAME, BEERTYPE_EXAMPLE_2_NAME)
+        .build();
+    when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
+
+    // Act
+    Object result = valueFetcher.get(environment);
+
+    // Assert
+    assertThat(result, is(equalTo(Arrays.asList(BEERTYPE_EXAMPLE_1_NAME, BEERTYPE_EXAMPLE_2_NAME))));
+  }
+
+  @Test
+  void get_ReturnsString_ForZeroOrOnePropertyPath() {
+    // Arrange
+    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(
+        BEER_BEERTYPE_ZERO_OR_ONE_SHAPE);
+    ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
+        .name(BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE)
+        .path(propertyPath)
+        .build());
+    Model model = new ModelBuilder()
+        .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
+        .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
+        .build();
+    when(environment.getFieldType()).thenReturn(Scalars.GraphQLString);
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
+
+    // Act
+    Object result = valueFetcher.get(environment);
+
+    // Assert
+    assertThat(result, is(equalTo(BEERTYPE_EXAMPLE_1_NAME)));
   }
 }
