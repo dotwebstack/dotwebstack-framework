@@ -10,17 +10,17 @@
 {
   brewery_id:1 a beer_def:Brewery ;
     beer_def:identifier "1" ;
-	  beer_def:brewmasters "Jeroen van Hees" ;
-	  beer_def:founded "2014-01-01T00:00:00+02:00"^^xsd:dateTime ;
-	  beer_def:group "Onafhankelijk" ;
-	  beer_def:label "1923 Brouwerij";
-	  beer_def:owners "J.v.Hees" , "I.Verhoef" , "L.du Clou" , "M.Kuijpers" ;
-	  schema:state "Zuid-Holland" ;
-	  schema:address _:b1 ;
-	  schema:email "bier@brouwerij1923.nl" ;
-	  schema:taxID "61195251" ;
-	  schema:telephone "06-10816700" ;
-	  :schema:url <http://www.brouwerij1923.nl>
+    beer_def:brewmasters "Jeroen van Hees" ;
+    beer_def:founded "2014-01-01T00:00:00+02:00"^^xsd:dateTime ;
+    beer_def:group "Onafhankelijk" ;
+    beer_def:label "1923 Brouwerij";
+    beer_def:owners "J.v.Hees" , "I.Verhoef" , "L.du Clou" , "M.Kuijpers" ;
+    schema:state "Zuid-Holland" ;
+    schema:address _:b1 ;
+    schema:email "bier@brouwerij1923.nl" ;
+    schema:taxID "61195251" ;
+    schema:telephone "06-10816700" ;
+    schema:url <http://www.brouwerij1923.nl>
   .
 
   _:b1 schema:addressLocality "Moordrecht" ;
