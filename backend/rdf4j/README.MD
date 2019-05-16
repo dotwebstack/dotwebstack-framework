@@ -48,10 +48,15 @@ For example, finding the names of all people a person knows either directly, or 
 - `ex:knows+/ex:firstName`
 
 ### ZeroOrMore Path (https://www.w3.org/TR/shacl/#property-path-zero-or-more)
-The zero or more path works in the same way as the zero or one path, but uses the `*` operator and allowing paths of
+The zero or more path works in the same way as the one or more path, but uses the `*` operator and allows paths of
 length 0.
 
 For example, finding the names of people a person knows using the `ex:knows` predicate, including the name of the person:
 -`ex:knows*/ex:firstName`
 
 ### ZeroOrOne Path (https://www.w3.org/TR/shacl/#property-path-zero-or-one)
+The zero or more path works in the same way as the zero or more path, but uses the `?` operator and allows paths of
+length 0 or 1.
+
+For example, finding the names of people a person knows directly using the `ex:knows` predicate, including the name of the person:
+-`ex:knows?/ex:firstName`
