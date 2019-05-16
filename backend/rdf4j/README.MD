@@ -42,5 +42,16 @@ In the previous example I used a couple of constructions. Again it is possible t
 as well.  
 
 ### OneOrMore Path (https://www.w3.org/TR/shacl/#property-path-one-or-more)
+The one or more path finds a connection between subjects and objects using the predicate, and matching the pattern one or more times.
+For example, finding the names of all people a person knows either directly, or through another person using the `ex:knows` predicate:
+
+- `ex:knows+/ex:firstName`
+
 ### ZeroOrMore Path (https://www.w3.org/TR/shacl/#property-path-zero-or-more)
+The zero or more path works in the same way as the zero or one path, but uses the `*` operator and allowing paths of
+length 0.
+
+For example, finding the names of people a person knows using the `ex:knows` predicate, including the name of the person:
+-`ex:knows*/ex:firstName`
+
 ### ZeroOrOne Path (https://www.w3.org/TR/shacl/#property-path-zero-or-one)
