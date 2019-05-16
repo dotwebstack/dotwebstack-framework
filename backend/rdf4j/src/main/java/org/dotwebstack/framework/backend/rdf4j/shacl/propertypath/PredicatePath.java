@@ -28,7 +28,7 @@ public class PredicatePath implements PropertyPath {
     return Models.getProperties(model, subject, this.iri);
   }
 
-  public RdfPredicate toPredicate(boolean inversed) {
-    return () -> (inversed ? "^" : "") + Rdf.iri(getIri()).getQueryString();
+  public RdfPredicate toPredicate() {
+    return () -> Rdf.iri(getIri()).getQueryString();
   }
 }

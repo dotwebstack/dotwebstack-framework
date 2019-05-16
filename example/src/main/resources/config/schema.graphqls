@@ -41,6 +41,7 @@ type Brewery {
     @transform(expr: "url.getLocalName()")
   postalCode: String!
   beers: [String]
+  ingredients: [String]
 }
 
 input SortQueryInput {

@@ -22,7 +22,7 @@ public class OneOrMorePath implements PropertyPath {
   }
 
   @Override
-  public RdfPredicate toPredicate(boolean inversed) {
+  public RdfPredicate toPredicate() {
     throw new UnsupportedOperationException("Not yet implemented.");
   }
 }

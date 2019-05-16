@@ -115,6 +115,11 @@
 	    beer_def:brewery brewery_id:3;
 	    schema:name "Alfa Edel Pils" .
 
+	ingredient_id:1 a beer_def:Ingredient;
+        beer_def:identifier "1";
+        beer_def:beer beer_id:1;
+        schema:name "Gist" .
+
 	beer_id:2 a beer_def:Beer ;
         beer_def:identifier "2";
         beer_def:brewery brewery_id:3;

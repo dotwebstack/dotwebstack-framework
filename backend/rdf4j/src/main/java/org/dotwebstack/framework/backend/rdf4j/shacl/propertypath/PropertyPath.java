@@ -11,6 +11,6 @@ public interface PropertyPath {
 
   Set<Value> resolvePath(Model model, Resource subject, boolean inversed);
 
-  RdfPredicate toPredicate(boolean inversed);
+  RdfPredicate toPredicate();
 
 }

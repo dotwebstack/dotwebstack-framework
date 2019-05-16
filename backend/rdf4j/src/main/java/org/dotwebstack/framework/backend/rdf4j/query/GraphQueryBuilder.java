@@ -45,7 +45,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
         .map(field -> getPropertyShape(nodeShape, field))
         .collect(Collectors.toMap(
             PropertyShape::getName,
-            propertyShape -> GraphPatterns.tp(subjectVar, propertyShape.getPath().toPredicate(false),
+            propertyShape -> GraphPatterns.tp(subjectVar, propertyShape.getPath().toPredicate(),
                 query.var())));
 
     Expression<?> filterExpr = Expressions

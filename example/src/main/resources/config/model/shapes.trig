@@ -17,6 +17,7 @@
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
+      beer_sh:Brewery_ingredients ,
       beer_sh:Brewery_url
   .
 
@@ -88,6 +89,14 @@
    sh:nodeKind sh:Literal ;
    sh:datatype xsd:string ;
  .
+
+  beer_sh:Brewery_ingredients a sh:PropertyShape ;
+    sh:name "ingredients" ;
+    sh:path ( [ sh:inversePath ( beer_def:beer beer_def:brewery ) ] schema:name ) ;
+    sh:minCount 0 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
+  .
 
  beer_sh:Beer a sh:NodeShape ;
    sh:targetClass beer_def:Beer ;

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,29 +24,31 @@ public class SequencePath implements PropertyPath {
 
   @Override
   public Set<Value> resolvePath(Model model, Resource subject, boolean inversed) {
+    PropertyPath usedPath = (inversed && !PropertyPathHelper.isNil(rest)) ? this.rest : this.first;
 
-    return this.first.resolvePath(model, subject, inversed)
+    return usedPath.resolvePath(model, subject, inversed)
         .stream()
         .map(value -> resolveRest(model, value, inversed))
         .flatMap(Set::stream)
         .collect(Collectors.toSet());
   }
 
-  private Set<Value> resolveRest(Model model, Value value, Boolean inversed) {
+  private Set<Value> resolveRest(Model model, Value value, boolean inversed) {
+    PropertyPath usedPath = inversed ? this.first : this.rest;
     if (!PropertyPathHelper.isNil(rest) && value instanceof BNode) {
-      return rest.resolvePath(model, (Resource) value, inversed);
+      return usedPath.resolvePath(model, (Resource) value, inversed);
     }
     return Collections.singleton(value);
   }
 
   @Override
-  public RdfPredicate toPredicate(boolean inversed) {
+  public RdfPredicate toPredicate() {
     return () -> {
       StringBuilder sb = new StringBuilder();
-      sb.append(first.toPredicate(inversed).getQueryString());
+      sb.append(first.toPredicate().getQueryString());
 
       if (!(PropertyPathHelper.isNil(rest))) {
-        sb.append("/").append(rest.toPredicate(inversed).getQueryString());
+        sb.append("/").append(rest.toPredicate().getQueryString());
       }
 
       return sb.toString();

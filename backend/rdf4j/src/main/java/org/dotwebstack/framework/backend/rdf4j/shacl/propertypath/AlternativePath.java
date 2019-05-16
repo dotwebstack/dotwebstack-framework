@@ -31,10 +31,10 @@ public class AlternativePath implements PropertyPath {
   }
 
   @Override
-  public RdfPredicate toPredicate(boolean inversed) {
+  public RdfPredicate toPredicate() {
     return () -> String.join("|", this.getChildren()
         .stream()
-        .map(child -> child.toPredicate(inversed).getQueryString())
+        .map(child -> child.toPredicate().getQueryString())
         .collect(Collectors.toList()));
   }
 
