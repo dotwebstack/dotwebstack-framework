@@ -1,7 +1,7 @@
 # Backend-Rdf4J
 
 ## Property Paths (https://www.w3.org/TR/shacl/#property-paths)
-While it is possible to query an object for of its properties directly, with SHACL SPARQL allows you can do a lot more. 
+While it's possible to query object fields directly, SHACL property paths allows you to do a lot more. 
 For our RDF4J backend we have built support for the paths described in this document. We will discuss the possibillities 
 in the following paragraphs. 
 
