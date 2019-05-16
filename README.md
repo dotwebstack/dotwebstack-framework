@@ -14,7 +14,6 @@ An extensible full-stack framework which offers the foundation and building bloc
 * Query sort argument
 * Validate SHACL shapes against GraphQL schema
 * Decide whether to use property shape names for GraphQL schema mapping
-* Support property paths for property shapes
 * Combine query results from multiple backends
 * Naming consistency: `iri` vs `uri`
 * Single or multiple repository connections?

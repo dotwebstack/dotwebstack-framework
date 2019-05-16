@@ -5,15 +5,35 @@
 @prefix beer_brewery: <https://github.com/dotwebstack/beer/id/brewery/> .
 @prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
 @prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
+@prefix brewery_id: <https://github.com/dotwebstack/beer/id/brewery/> .
+@prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
 
 beer_brewery:123 a beer_def:Brewery ;
   beer_def:identifier "123" ;
   schema:name "Brouwerij 1923"^^xsd:string ;
+  schema:address _:b1 ;
   beer_def:founded "2018-05-30T09:30:10+02:00"^^xsd:dateTime
 .
+
+_:b1 schema:addressLocality "Moordrecht" ;
+  schema:latitude "51.98776545" ;
+  schema:longitude "4.67090183" ;
+  schema:postalCode "2841 XB" ;
+  schema:streetAddress "Burgemeester Brandtstraat 23" .
 
 beer_brewery:456 a beer_def:Brewery ;
   beer_def:identifier "456" ;
   schema:name "Brouwerij Het 58e Genot i.o."^^xsd:dateTime ;
   beer_def:founded "2010-05-10T09:30:10+02:00"^^xsd:dateTime
 .
+
+beer_brewery:789 a beer_def:Brewery ;
+  beer_def:identifier "789" ;
+  beer_def:label "Alfa Brouwerij"^^xsd:dateTime ;
+  beer_def:founded "2010-05-10T09:30:10+02:00"^^xsd:dateTime
+.
+
+beer_id:6 a beer_def:Beer ;
+  beer_def:identifier "1";
+  beer_def:brewery brewery_id:123;
+  schema:name "Alfa Edel Pils" .

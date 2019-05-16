@@ -1,13 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLDirective;
-
 import java.util.List;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
@@ -21,6 +19,8 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
@@ -30,43 +30,50 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   private final NodeShape nodeShape;
 
+  private final ImmutableMap.Builder<String, TriplePattern> whereBuilder = ImmutableMap.builder();
+
   private SubjectQueryBuilder(final QueryEnvironment environment, final JexlEngine jexlEngine) {
     super(environment, Queries.SELECT());
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.nodeShape = this.environment.getNodeShapeRegistry().get(this.environment.getObjectType());
   }
 
-  static SubjectQueryBuilder create(final QueryEnvironment environment,
-                                    final JexlEngine jexlEngine) {
+  static SubjectQueryBuilder create(final QueryEnvironment environment, final JexlEngine jexlEngine) {
     return new SubjectQueryBuilder(environment, jexlEngine);
   }
 
-  String getQueryString(final Map<String, Object> arguments,
-                        final GraphQLDirective sparqlDirective) {
+  String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective) {
     final MapContext context = new MapContext(arguments);
 
-    this.query.select(SUBJECT_VAR)
-        .where(GraphPatterns.tp(SUBJECT_VAR, ns(RDF.TYPE), ns(this.nodeShape.getTargetClass())));
+    this.query.select(SUBJECT_VAR);
+
+    TriplePattern whereSubjectType = GraphPatterns.tp(SUBJECT_VAR, RDF.TYPE,
+        Rdf.iri(this.nodeShape.getTargetClass()));
+    whereBuilder.put(whereSubjectType.getQueryString(), whereSubjectType);
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
     getOrderByFromContext(context, sparqlDirective).ifPresent(this::buildOrderBy);
 
+    whereBuilder.build().values().forEach(query::where);
+
     return this.query.getQueryString();
   }
 
-  private void buildOrderBy(List<OrderContext> orderContexts) {
-    orderContexts.forEach(orderContext -> {
+  private void buildOrderBy(List<OrderContext> contexts) {
+    contexts.forEach(orderContext -> {
       query.orderBy(orderContext.getOrderable());
-      // add the order property to the query
-      query.where(GraphPatterns.tp(SUBJECT_VAR, orderContext.getPropertyShape().getPath(),
-          SparqlBuilder.var(orderContext.getField())));
+
+      TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR,
+          orderContext.getPropertyShape().getPath().toPredicate(),
+          SparqlBuilder.var(orderContext.getField()));
+
+      whereBuilder.put(triplePattern.getQueryString(), triplePattern);
     });
   }
 
   @SuppressWarnings({"unchecked","rawtypes"})
-  Optional<List<OrderContext>> getOrderByFromContext(MapContext context,
-                                                     GraphQLDirective sparqlDirective) {
+  Optional<List<OrderContext>> getOrderByFromContext(MapContext context, GraphQLDirective sparqlDirective) {
     Optional<List> orderByObject = jexlHelper.evaluateDirectiveArgument(
         Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class);
 

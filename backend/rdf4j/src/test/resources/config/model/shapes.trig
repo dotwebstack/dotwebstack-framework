@@ -1,17 +1,31 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
 @prefix schema: <http://schema.org/> .
 @prefix beer: <https://github.com/dotwebstack/beer/> .
 @prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
 @prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
 
-beer:shapes {
+<https://github.com/dotwebstack/beer/shapes> {
   beer_sh:Brewery a sh:NodeShape ;
     sh:targetClass beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_identifier ,
       beer_sh:Brewery_name ,
-      beer_sh:Brewery_founded ;
+      beer_sh:Brewery_founded ,
+      beer_sh:Brewery_openinghours ,
+      beer_sh:Brewery_postalCode ,
+      beer_sh:Brewery_beers ,
+      beer_sh:Brewery_url
+  .
+
+  beer_sh:Brewery_postalCode a sh:PropertyShape ;
+    sh:name "postalCode" ;
+    sh:path ( schema:address schema:postalCode ) ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
   .
 
   beer_sh:Brewery_identifier a sh:PropertyShape ;
@@ -20,24 +34,118 @@ beer:shapes {
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string ;
+    sh:datatype xsd:string
   .
 
   beer_sh:Brewery_name a sh:PropertyShape ;
     sh:name "name" ;
-    sh:path schema:name ;
+    sh:path [sh:alternativePath ( schema:name beer_def:label ) ] ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
+    sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Brewery_owners a sh:PropertyShape ;
+    sh:name "owners" ;
+    sh:path beer_def:owners ;
+    sh:minCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string ;
+    sh:datatype xsd:string
   .
 
   beer_sh:Brewery_founded a sh:PropertyShape ;
     sh:name "founded" ;
     sh:path beer_def:founded ;
-    sh:minCount 0 ;
+    sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:dateTime ;
+    sh:datatype xsd:dateTime
+  .
+
+  beer_sh:Brewery_openinghours a sh:PropertyShape ;
+    sh:name "openinghours" ;
+    sh:path beer_def:openinghours ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Brewery_url a sh:PropertyShape ;
+    sh:name "url" ;
+    sh:path schema:url ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Brewery_beers a sh:PropertyShape ;
+    sh:name "beers" ;
+    sh:path ( [ sh:inversePath beer_def:brewery ] schema:name ) ;
+    sh:minCount 0 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Beer a sh:NodeShape ;
+    sh:targetClass beer_def:Beer ;
+    sh:property
+      beer_sh:Beer_identifier ,
+      beer_sh:Beer_name ,
+      beer_sh:Beer_brewery ,
+      beer_sh:Beer_beerTypes ,
+      beer_sh:Beer_beerTypesZeroOrMore,
+      beer_sh:Beer_beerTypesZeroOrOne
+  .
+
+  beer_sh:Beer_identifier a sh:PropertyShape ;
+    sh:name "identifier" ;
+    sh:path beer_def:identifier ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Beer_name a sh:PropertyShape ;
+    sh:name "name" ;
+    sh:path schema:name ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Beer_brewery a sh:PropertyShape ;
+    sh:name "brewery" ;
+    sh:path beer_def:brewery ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Beer_beerTypes a sh:PropertyShape ;
+    sh:name "beerTypes" ;
+    sh:path ( [ sh:oneOrMorePath beer_def:beertype ] schema:name );
+    sh:minCount 0 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Beer_beerTypesZeroOrMore a sh:PropertyShape ;
+      sh:name "beerTypesZeroOrMore" ;
+      sh:path ( [ sh:zeroOrMorePath beer_def:beertype ] schema:name );
+      sh:minCount 0 ;
+      sh:nodeKind sh:Literal ;
+      sh:datatype xsd:string ;
+  .
+
+  beer_sh:Beer_beerTypesZeroOrOne a sh:PropertyShape ;
+      sh:name "beerTypesZeroOrOne" ;
+      sh:path ( [ sh:zeroOrOnePath beer_def:beertype ] schema:name );
+      sh:minCount 0 ;
+      sh:nodeKind sh:Literal ;
+      sh:datatype xsd:string ;
   .
 }
