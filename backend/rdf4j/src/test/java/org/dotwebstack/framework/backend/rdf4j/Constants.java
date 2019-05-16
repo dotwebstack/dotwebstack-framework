@@ -91,8 +91,7 @@ public final class Constants {
 
   public static final IRI BREWERY_FOUNDED_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#founded");
 
-  public static final IRI BREWERY_FOUNDED_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(
-      BREWERY_FOUNDED_TYPE));
+  public static final IRI BREWERY_FOUNDED_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_FOUNDED_TYPE));
 
   public static final Literal BREWERY_FOUNDED_EXAMPLE_1 = VF
       .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
@@ -107,8 +106,7 @@ public final class Constants {
 
   public static final String BREWERY_POSTAL_CODE_TYPE = "Brewery_postalCode";
 
-  public static final IRI BREWERY_POSTAL_CODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(
-      BREWERY_POSTAL_CODE_TYPE));
+  public static final IRI BREWERY_POSTAL_CODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_POSTAL_CODE_TYPE));
 
   public static final String POSTAL_CODE_1 = "1234 AB";
 
@@ -118,11 +116,9 @@ public final class Constants {
 
   public static final String BREWERY_BEERS_TYPE = "Brewery_beers";
 
-  public static final IRI BREWERY_BEERS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(
-      BREWERY_BEERS_TYPE));
+  public static final IRI BREWERY_BEERS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERS_TYPE));
 
-  public static final IRI BREWERY_BEERS_PATH = VF.createIRI(
-      "https://github.com/dotwebstack/beer/def#brewery");
+  public static final IRI BREWERY_BEERS_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#brewery");
 
   public static final BNode BEER_EXAMPLE_1 = VF.createBNode();
 

@@ -40,14 +40,12 @@ public final class NodeShape {
   public static NodeShape fromShapeModel(@NonNull Model shapeModel, @NonNull IRI identifier) {
     return builder()
         .identifier(identifier)
-        .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, identifier,
-            SHACL.TARGET_CLASS))
+        .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, identifier, SHACL.TARGET_CLASS))
         .propertyShapes(buildPropertyShapes(shapeModel, identifier))
         .build();
   }
 
-  private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel,
-                                                                Resource nodeShape) {
+  private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel, Resource nodeShape) {
     return Models
         .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
@@ -70,8 +68,7 @@ public final class NodeShape {
               .nodeKind(nodeKind);
 
           if (nodeKind.equals(SHACL.LITERAL)) {
-            builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, shape,
-                SHACL.DATATYPE));
+            builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.DATATYPE));
           }
 
           return builder.build();
