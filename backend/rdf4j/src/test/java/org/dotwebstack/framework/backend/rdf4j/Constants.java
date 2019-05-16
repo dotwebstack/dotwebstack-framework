@@ -110,6 +110,7 @@ public final class Constants {
 
   public static final String POSTAL_CODE_1 = "1234 AB";
 
+
   // Brewery.beers
 
   public static final String BEERS_FIELD = "beers";
@@ -122,7 +123,27 @@ public final class Constants {
 
   public static final BNode BEER_EXAMPLE_1 = VF.createBNode();
 
+  public static final IRI BEER_EXAMPLE_2 = VF.createIRI("https://github.com/dotwebstack/beer/identifier/beer/1");
+
   public static final String BEER_NAME_EXAMPLE_1 = "Beer 1";
+
+  // Beer.beertypes
+
+  public static final String BEERTYPES_FIELD = "beerTypes";
+
+  public static final String BREWERY_BEERTYPE_TYPE = "Beer_beerTypes";
+
+  public static final IRI BEER_BEERTYPE_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#beertype");
+
+  public static final IRI BEER_BEERTYPE_SHAPE = VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_TYPE);
+
+  public static final BNode BEERTYPE_EXAMPLE_1 = VF.createBNode();
+
+  public static final String BEERTYPE_EXAMPLE_1_NAME = "Beertype1";
+
+  public static final BNode BEERTYPE_EXAMPLE_2 = VF.createBNode();
+
+  public static final String BEERTYPE_EXAMPLE_2_NAME = "Beertype2";
 
   //Schema
 

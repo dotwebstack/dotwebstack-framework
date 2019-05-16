@@ -3,7 +3,15 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import static graphql.Scalars.GraphQLString;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPES_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_1_NAME;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_2;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_2_NAME;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_PATH;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_NAME_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_SHAPE;
@@ -42,6 +50,7 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.AlternativePath;
@@ -259,5 +268,30 @@ class ValueFetcherTest {
     assertThat(result1, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
     assertThat(result2, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
     assertThat(result3, is(equalTo(null)));
+  }
+
+  @Test
+  void get_ReturnsString_ForOneOrMorePropertyPath() {
+    // Arrange
+    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(
+        BEER_BEERTYPE_SHAPE);
+    ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
+        .name(BEERTYPES_FIELD)
+        .path(propertyPath)
+        .build());
+    Model model = new ModelBuilder()
+        .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
+        .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_2)
+        .add(BEERTYPE_EXAMPLE_2, SCHEMA_NAME, BEERTYPE_EXAMPLE_2_NAME)
+        .build();
+    when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
+
+    // Act
+    Object result = valueFetcher.get(environment);
+
+    // Assert
+    assertThat(result, is(equalTo(Arrays.asList(BEERTYPE_EXAMPLE_1_NAME, BEERTYPE_EXAMPLE_2_NAME))));
   }
 }

@@ -29,6 +29,18 @@ type Query {
       repository: "local",
       orderBy: "input.sort"
     )
+
+  beers(sort: [SortField!] =[{field: "name", order: ASC}]): [Beer!]!
+    @sparql(
+      repository: "local"
+      orderBy: "sort"
+    )
+
+  beerTypes(sort: [SortField!] =[{field: "name", order: ASC}]): [BeerType!]!
+      @sparql(
+        repository: "local"
+        orderBy: "sort"
+      )
 }
 
 type Brewery {
@@ -42,6 +54,18 @@ type Brewery {
   postalCode: String!
   beers: [String]
   ingredients: [String]
+}
+
+type Beer {
+  identifier: ID!
+  name: String!
+  brewery: String!
+  beerTypes: [String]!
+}
+
+type BeerType {
+  identifier: ID!
+  name: String!
 }
 
 input SortQueryInput {

@@ -45,6 +45,14 @@
     sh:nodeKind sh:IRI ;
   .
 
+  beer_sh:Brewery_owners a sh:PropertyShape ;
+    sh:name "owners" ;
+    sh:path beer_def:owners ;
+    sh:minCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
+  .
+
   beer_sh:Brewery_founded a sh:PropertyShape ;
       sh:name "founded" ;
       sh:path beer_def:founded ;
@@ -86,6 +94,7 @@
     beer_sh:Beer_identifier ,
     beer_sh:Beer_name ,
     beer_sh:Beer_brewery,
+    beer_sh:Beer_beerTypes ;
  .
 
  beer_sh:Beer_identifier a sh:PropertyShape ;
@@ -111,6 +120,14 @@
    sh:path beer_def:brewery ;
    sh:minCount 1 ;
    sh:maxCount 1 ;
-   sh:nodeKind sh:BlankNode
+   sh:nodeKind sh:IRI
  .
+
+  beer_sh:Beer_beerTypes a sh:PropertyShape ;
+    sh:name "beerTypes" ;
+    sh:path ( [ sh:oneOrMorePath beer_def:beertype ] schema:name );
+    sh:minCount 0 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
+  .
 }
