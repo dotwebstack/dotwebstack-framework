@@ -13,4 +13,10 @@ type Brewery {
   identifier: ID!
   name: String!
   founded: DateTime!
+  address: Address
 }
+
+type Address {
+  postalCode: String!
+}
+

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_FIELD;
@@ -44,6 +45,23 @@ class Rdf4jIntegrationTest {
                 BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue(),
                 BREWERY_FOUNDED_FIELD,
             ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForObjectQueryNestedField() {
+    // Arrange
+    String query = "{ brewery(identifier: \"123\") { identifier, name, address { postalCode }}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors().isEmpty(), is(equalTo(true)));
+    Map<String, Object> data = result.getData();
+    assertThat(data, IsMapContaining.hasEntry(BREWERY_FIELD, ImmutableMap
+        .of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(),
+            BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue(),
+            BREWERY_ADDRESS_FIELD, ImmutableMap.of("postalCode","2841 XB"))));
   }
 
 }
