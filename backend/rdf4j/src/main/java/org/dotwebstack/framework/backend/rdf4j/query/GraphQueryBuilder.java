@@ -36,25 +36,27 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
 
   private List<TriplePattern> getTriplePatterns(List<SelectedField> fields, NodeShape nodeShape, Variable subject) {
-    return fields
-        .stream()
+    return fields.stream()
         .filter(field -> !field.getQualifiedName().contains("/"))
-        .flatMap(field -> {
-          GraphQLOutputType fieldType = field.getFieldDefinition().getType();
+        .flatMap(field -> getTriplePatterns(field, nodeShape, subject).stream())
+        .collect(Collectors.toList());
+  }
 
-          PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
-          List<TriplePattern> result = new ArrayList<>();
-          Variable variable = query.var();
+  private List<TriplePattern> getTriplePatterns(SelectedField field,NodeShape nodeShape, Variable subject) {
+    GraphQLOutputType fieldType = field.getFieldDefinition().getType();
 
-          result.add(GraphPatterns.tp(subject, propertyShape.getPath().toPredicate(), variable));
+    PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
+    List<TriplePattern> result = new ArrayList<>();
+    Variable variable = query.var();
 
-          if (!GraphQLTypeUtil.isLeaf(fieldType)) {
-            NodeShape nodeShape1 = environment.getNodeShapeRegistry().get((IRI) propertyShape.getIdentifier());
-            result.addAll(getTriplePatterns(field.getSelectionSet().getFields(), nodeShape1, variable));
-          }
+    result.add(GraphPatterns.tp(subject, propertyShape.getPath().toPredicate(), variable));
 
-          return result.stream();
-        }).collect(Collectors.toList());
+    if (!GraphQLTypeUtil.isLeaf(fieldType)) {
+      NodeShape childShape = environment.getNodeShapeRegistry().get((IRI) propertyShape.getIdentifier());
+      result.addAll(getTriplePatterns(field.getSelectionSet().getFields(), childShape, variable));
+    }
+
+    return result;
   }
 
   String getQueryString() {
