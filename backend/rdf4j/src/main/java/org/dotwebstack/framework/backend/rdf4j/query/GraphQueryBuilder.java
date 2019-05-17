@@ -88,14 +88,4 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     return query.getQueryString();
   }
-
-  private PropertyShape getPropertyShape(NodeShape nodeShape, SelectedField field) {
-    GraphQLOutputType fieldType = field.getFieldDefinition().getType();
-
-    if (GraphQLTypeUtil.isLeaf(fieldType)) {
-      return nodeShape.getPropertyShape(field.getName());
-    } else { //detect
-      throw new UnsupportedOperationException("Non-leaf nodes are not yet supported.");
-    }
-  }
 }
