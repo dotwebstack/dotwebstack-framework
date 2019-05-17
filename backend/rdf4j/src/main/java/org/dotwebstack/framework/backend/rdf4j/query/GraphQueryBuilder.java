@@ -45,7 +45,8 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
           PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
           List<TriplePattern> result = new ArrayList<>();
           Variable variable = query.var();
-          result.add(GraphPatterns.tp(subject, ns(propertyShape.getPath()), variable));
+
+          result.add(GraphPatterns.tp(subject, propertyShape.getPath().toPredicate(), variable));
 
           if (!GraphQLTypeUtil.isLeaf(fieldType)) {
             NodeShape nodeShape1 = environment.getNodeShapeRegistry().get((IRI) propertyShape.getIdentifier());

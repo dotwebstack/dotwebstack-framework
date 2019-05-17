@@ -1,7 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_PATH;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPES_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_1;
@@ -15,18 +20,13 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_ZE
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_NAME_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_PATH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_SHAPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_FIELD;
@@ -43,7 +43,6 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_E
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_POSTAL_CODE_SHAPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_TYPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.POSTAL_CODE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.POSTAL_CODE_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_ADDRESS;
@@ -130,7 +129,7 @@ class ValueFetcherTest {
         .propertyShapes(ImmutableMap.of("postalCode",
             PropertyShape.builder()
                 .name(ADDRESS_POSTALCODE_FIELD)
-                .path(ADDRESS_POSTALCODE_PATH)
+                .path(PredicatePath.builder().iri(ADDRESS_POSTALCODE_PATH).build())
                 .identifier(ADDRESS_SHAPE)
                 .build()))
         .build();
@@ -147,7 +146,7 @@ class ValueFetcherTest {
     // Arrange
     PropertyShape propertyShape = PropertyShape.builder()
         .name(BREWERY_ADDRESS_FIELD)
-        .path(BREWERY_ADDRESS_PATH)
+        .path(PredicatePath.builder().iri(BREWERY_ADDRESS_PATH).build())
         .identifier(ADDRESS_SHAPE)
         .build();
 
@@ -176,8 +175,9 @@ class ValueFetcherTest {
         .name(BREWERY_OWNERS_FIELD)
         .path(PredicatePath.builder()
             .iri(BREWERY_OWNERS_PATH)
-            .build()))
+            .build())
         .build(),nodeShapeRegistry);
+
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH,
             BREWERY_OWNERS_EXAMPLE_1)
@@ -199,10 +199,11 @@ class ValueFetcherTest {
   @Test
   void get_ReturnsString_ForForeignScalarField() {
     // Arrange
-    ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
+    ValueFetcher valueFetcher = new ValueFetcher(
+        PropertyShape.builder()
         .name(BREWERY_FOUNDED_FIELD)
         .path(PredicatePath.builder().iri(BREWERY_FOUNDED_PATH).build())
-        .build());
+        .build(),nodeShapeRegistry);
 
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
@@ -224,7 +225,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_IDENTIFIER_FIELD)
         .path(PredicatePath.builder().iri(BREWERY_IDENTIFIER_PATH).build())
-        .build());
+        .build(),nodeShapeRegistry);
 
     Model model = new TreeModel();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
@@ -245,7 +246,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(POSTAL_CODE_FIELD)
         .path(propertyPath)
-        .build());
+        .build(),nodeShapeRegistry);
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, SCHEMA_ADDRESS, ADDRESS_EXAMPLE_1)
         .add(ADDRESS_EXAMPLE_1, SCHEMA_POSTAL_CODE, POSTAL_CODE_1)
@@ -267,7 +268,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BEERS_FIELD)
         .path(propertyPath)
-        .build());
+        .build(),nodeShapeRegistry);
     Model model = new ModelBuilder()
         .add(BEER_EXAMPLE_1, BREWERY_BEERS_PATH, BREWERY_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, SCHEMA_NAME, BREWERY_NAME_EXAMPLE_1)
@@ -293,7 +294,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_NAME_FIELD)
         .path(propertyPath)
-        .build());
+        .build(),nodeShapeRegistry);
 
     Model model1 = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_LABEL, BREWERY_NAME_EXAMPLE_1)
@@ -333,7 +334,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BEERTYPES_FIELD)
         .path(propertyPath)
-        .build());
+        .build(),nodeShapeRegistry);
     Model model = new ModelBuilder()
         .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
         .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
@@ -358,7 +359,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE)
         .path(propertyPath)
-        .build());
+        .build(),nodeShapeRegistry);
     Model model = new ModelBuilder()
         .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
         .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
@@ -383,7 +384,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE)
         .path(propertyPath)
-        .build());
+        .build(),nodeShapeRegistry);
     Model model = new ModelBuilder()
         .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
         .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)

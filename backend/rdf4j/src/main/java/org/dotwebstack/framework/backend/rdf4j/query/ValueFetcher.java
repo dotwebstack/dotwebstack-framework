@@ -21,7 +21,6 @@ import org.dotwebstack.framework.core.DotWebStackRuntimeException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
-import org.eclipse.rdf4j.model.util.Models;
 
 @RequiredArgsConstructor
 public final class ValueFetcher implements DataFetcher<Object> {
@@ -44,43 +43,31 @@ public final class ValueFetcher implements DataFetcher<Object> {
     }
 
     if (GraphQLTypeUtil.isScalar(fieldType)) {
-      return getScalar(model,subject,propertyShape.getPath());
+      return getScalar(model,subject,propertyShape);
     }
 
     if (GraphQLTypeUtil.isList(fieldType)
         && GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapNonNull(((GraphQLList)fieldType).getWrappedType()))) {
-      return getList(model,subject);
+      return getList(model,subject,propertyShape);
     }
 
     if (fieldType instanceof GraphQLObjectType) {
       NodeShape nodeShape = nodeShapeRegistry.get((IRI)propertyShape.getIdentifier());
       ImmutableMap.Builder<String,Object> builder = ImmutableMap.builder();
 
-      Models.getProperty(model, subject, propertyShape.getPath())
-          .map(value -> (Resource) value).ifPresent(resource -> {
-            Model subModel = model.filter(resource,null,null);
-
-            subModel.forEach(statement -> {
-              PropertyShape childShape = getChildShape(nodeShape, statement.getPredicate());
+      propertyShape.getPath().resolvePath(model,subject,false).stream()
+          .map(value -> (Resource) value)
+          .forEach(resource -> {
+            for (PropertyShape childShape : nodeShape.getPropertyShapes().values()) {
               builder.put(childShape.getName(),
-                  getValue(subModel,resource, getChildType(fieldType, childShape), childShape));
-            });
+                  getValue(model,resource, getChildType(fieldType, childShape), childShape));
+            }
           });
 
       return builder.build();
     }
 
     throw unsupportedOperationException("Field type '{}' not supported.", fieldType);
-  }
-
-  private PropertyShape getChildShape(NodeShape nodeShape, IRI predicate) {
-    return nodeShape.getPropertyShapes().values()
-        .stream()
-        .filter(shape -> shape.getPath().equals(predicate))
-        .findFirst()
-        .orElseThrow(() ->
-            new DotWebStackRuntimeException("No child shape found for predicate {} within nodeShape {}",
-                predicate,nodeShape.getIdentifier()));
   }
 
   private GraphQLType getChildType(GraphQLType fieldType, PropertyShape shape) {
@@ -91,15 +78,15 @@ public final class ValueFetcher implements DataFetcher<Object> {
         .orElseThrow(() -> new DotWebStackRuntimeException("No type found for propertyShape {}",shape.getName()));
   }
 
-  private Object getScalar(Model model, Resource subject, IRI path) {
-    return propertyShape.getPath().resolvePath(source.getModel(), source.getSubject(), false)
+  private Object getScalar(Model model, Resource subject, PropertyShape propertyShape) {
+    return propertyShape.getPath().resolvePath(model, subject, false)
         .stream()
         .findFirst()
         .map(ValueUtils::convertValue)
         .orElse(null);
   }
 
-  private Object getList(Model model, Resource subject) {
+  private Object getList(Model model, Resource subject, PropertyShape propertyShape) {
     return propertyShape.getPath().resolvePath(model, subject, false)
         .stream()
         .map(ValueUtils::convertValue)
