@@ -2,7 +2,7 @@
 
 ## Field selections
 
-The RDF4J backend supports direct and nested field selections like the following example.
+The RDF4J backend supports direct and nested field GraphQL query selections like the following example.
 
 ```graphql
 {
