@@ -83,4 +83,24 @@ public final class Constants {
   public static final Literal BREWERY_FOUNDED_EXAMPLE_1 = VF
       .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
 
+  // Brewery.address
+
+  public static final String ADDRESS_TYPE = "Brewery_Address";
+
+  public static final IRI ADDRESS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(ADDRESS_TYPE));
+
+  public static final String BREWERY_ADDRESS_FIELD = "address";
+
+  public static final IRI BREWERY_ADDRESS_PATH = VF.createIRI("http://schema.org/address");
+
+  public static final IRI BREWERY_ADDRESS_EXAMPLE_1 = VF.createIRI("http://schema/address/1");
+
+  // Address.postalCode
+
+  public static final String ADDRESS_POSTALCODE_FIELD = "postalCode";
+
+  public static final IRI ADDRESS_POSTALCODE_PATH = VF.createIRI("http://schema.org/postalCode");
+
+  public static final String ADDRESS_POSTALCODE_EXAMPLE_1 = "1234 AC";
+
 }
