@@ -92,15 +92,15 @@ public final class ValueFetcher implements DataFetcher<Object> {
   }
 
   private Object getScalar(Model model, Resource subject, IRI path) {
-    return Models
-        .getProperty(model, subject, path)
+    return propertyShape.getPath().resolvePath(source.getModel(), source.getSubject(), false)
+        .stream()
+        .findFirst()
         .map(ValueUtils::convertValue)
         .orElse(null);
   }
 
   private Object getList(Model model, Resource subject) {
-    return Models
-        .getProperties(model, subject, propertyShape.getPath())
+    return propertyShape.getPath().resolvePath(model, subject, false)
         .stream()
         .map(ValueUtils::convertValue)
         .collect(Collectors.toList());

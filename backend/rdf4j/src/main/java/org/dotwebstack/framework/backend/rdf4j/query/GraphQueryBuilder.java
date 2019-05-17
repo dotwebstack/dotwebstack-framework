@@ -19,6 +19,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
@@ -47,8 +48,8 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
           result.add(GraphPatterns.tp(subject, ns(propertyShape.getPath()), variable));
 
           if (!GraphQLTypeUtil.isLeaf(fieldType)) {
-            NodeShape nodeShape1 = environment.getNodeShapeRegistry().get((IRI)propertyShape.getIdentifier());
-            result.addAll(getTriplePatterns(field.getSelectionSet().getFields(),nodeShape1,variable));
+            NodeShape nodeShape1 = environment.getNodeShapeRegistry().get((IRI) propertyShape.getIdentifier());
+            result.addAll(getTriplePatterns(field.getSelectionSet().getFields(), nodeShape1, variable));
           }
 
           return result.stream();
@@ -65,7 +66,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     Expression<?> filterExpr = Expressions
         .or(Iterables.toArray(subjects
             .stream()
-            .map(subject -> Expressions.equals(subjectVar, ns(subject)))
+            .map(subject -> Expressions.equals(subjectVar, Rdf.iri(subject)))
             .collect(Collectors.toList()), Expression.class));
 
     List<GraphPattern> wherePatterns = triplePatterns
@@ -75,7 +76,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     // Fetch type statement to discover if subject exists (e.g. in case of only nullable fields)
     TriplePattern typePattern = GraphPatterns
-        .tp(subjectVar, ns(RDF.TYPE), ns(nodeShape.getTargetClass()));
+        .tp(subjectVar, RDF.TYPE, nodeShape.getTargetClass());
 
     query
         .construct(typePattern)
@@ -87,4 +88,13 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     return query.getQueryString();
   }
 
+  private PropertyShape getPropertyShape(NodeShape nodeShape, SelectedField field) {
+    GraphQLOutputType fieldType = field.getFieldDefinition().getType();
+
+    if (GraphQLTypeUtil.isLeaf(fieldType)) {
+      return nodeShape.getPropertyShape(field.getName());
+    } else { //detect
+      throw new UnsupportedOperationException("Non-leaf nodes are not yet supported.");
+    }
+  }
 }

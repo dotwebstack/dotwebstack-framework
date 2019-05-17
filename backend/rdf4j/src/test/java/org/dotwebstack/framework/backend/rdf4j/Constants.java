@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -36,6 +37,8 @@ public final class Constants {
 
   public static final String SHAPE_PREFIX = "https://github.com/dotwebstack/beer/shapes#";
 
+  public static final String SCHEMA_PREFIX = "http://schema.org/";
+
   // Query
 
   public static final String BREWERY_FIELD = "brewery";
@@ -62,6 +65,12 @@ public final class Constants {
 
   public static final String BREWERY_NAME_FIELD = "name";
 
+  public static final String BREWERY_NAME_TYPE = "Brewery_name";
+
+  public static final IRI BREWERY_LABEL = VF.createIRI("https://github.com/dotwebstack/beer/def#label");
+
+  public static final IRI BREWERY_LABEL_PATH = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_NAME_TYPE));
+
   public static final Literal BREWERY_NAME_EXAMPLE_1 = VF.createLiteral("Brouwerij 1923");
 
   // Brewery.owners
@@ -78,10 +87,81 @@ public final class Constants {
 
   public static final String BREWERY_FOUNDED_FIELD = "founded";
 
-  public static final IRI BREWERY_FOUNDED_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def##founded");
+  public static final String BREWERY_FOUNDED_TYPE = "Brewery_founded";
+
+  public static final IRI BREWERY_FOUNDED_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#founded");
+
+  public static final IRI BREWERY_FOUNDED_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_FOUNDED_TYPE));
 
   public static final Literal BREWERY_FOUNDED_EXAMPLE_1 = VF
       .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
+
+  // Brewery.address
+
+  public static final BNode ADDRESS_EXAMPLE_1 = VF.createBNode();
+
+  // Brewery.postalCode
+
+  public static final String POSTAL_CODE_FIELD = "postalCode";
+
+  public static final String BREWERY_POSTAL_CODE_TYPE = "Brewery_postalCode";
+
+  public static final IRI BREWERY_POSTAL_CODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_POSTAL_CODE_TYPE));
+
+  public static final String POSTAL_CODE_1 = "1234 AB";
+
+
+  // Brewery.beers
+
+  public static final String BEERS_FIELD = "beers";
+
+  public static final String BREWERY_BEERS_TYPE = "Brewery_beers";
+
+  public static final IRI BREWERY_BEERS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERS_TYPE));
+
+  public static final IRI BREWERY_BEERS_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#brewery");
+
+  public static final BNode BEER_EXAMPLE_1 = VF.createBNode();
+
+  public static final IRI BEER_EXAMPLE_2 = VF.createIRI("https://github.com/dotwebstack/beer/identifier/beer/1");
+
+  public static final String BEER_NAME_EXAMPLE_1 = "Beer 1";
+
+  // Beer.beertypes
+
+  public static final String BEERTYPES_FIELD = "beerTypes";
+
+  public static final String BREWERY_BEERTYPE_TYPE = "Beer_beerTypes";
+
+  public static final String BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE = "Beer_beerTypesZeroOrMore";
+
+  public static final String BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE = "Beer_beerTypesZeroOrOne";
+
+  public static final IRI BEER_BEERTYPE_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#beertype");
+
+  public static final IRI BEER_BEERTYPE_SHAPE = VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_TYPE);
+
+  public static final IRI BEER_BEERTYPE_ZERO_OR_MORE_SHAPE = VF.createIRI(SHAPE_PREFIX
+      + BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE);
+
+  public static final IRI BEER_BEERTYPE_ZERO_OR_ONE_SHAPE = VF.createIRI(SHAPE_PREFIX
+      + BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE);
+
+  public static final BNode BEERTYPE_EXAMPLE_1 = VF.createBNode();
+
+  public static final String BEERTYPE_EXAMPLE_1_NAME = "Beertype1";
+
+  public static final BNode BEERTYPE_EXAMPLE_2 = VF.createBNode();
+
+  public static final String BEERTYPE_EXAMPLE_2_NAME = "Beertype2";
+
+  //Schema
+
+  public static final IRI SCHEMA_ADDRESS = VF.createIRI(SCHEMA_PREFIX + "address");
+
+  public static final IRI SCHEMA_NAME = VF.createIRI(SCHEMA_PREFIX + "name");
+
+  public static final IRI SCHEMA_POSTAL_CODE = VF.createIRI(SCHEMA_PREFIX + "postalCode");
 
   // Brewery.address
 

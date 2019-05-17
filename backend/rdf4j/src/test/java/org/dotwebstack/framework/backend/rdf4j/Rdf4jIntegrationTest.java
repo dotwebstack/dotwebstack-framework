@@ -40,11 +40,10 @@ class Rdf4jIntegrationTest {
     // Assert
     assertThat(result.getErrors().isEmpty(), is(equalTo(true)));
     Map<String, Object> data = result.getData();
-    assertThat(data, IsMapContaining.hasEntry(BREWERY_FIELD, ImmutableMap
-        .of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(),
-                BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue(),
-                BREWERY_FOUNDED_FIELD,
-            ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
+    assertThat(data, IsMapContaining.hasEntry(BREWERY_FIELD, ImmutableMap.of(
+        BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
+        BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_FOUNDED_FIELD,
+        ZonedDateTime.parse(BREWERY_FOUNDED_EXAMPLE_1.stringValue()))));
   }
 
   @Test

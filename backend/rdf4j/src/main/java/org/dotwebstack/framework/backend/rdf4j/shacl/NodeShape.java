@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactory;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
@@ -44,8 +45,7 @@ public final class NodeShape {
         .build();
   }
 
-  private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel,
-      Resource nodeShape) {
+  private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel, Resource nodeShape) {
     return Models
         .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
@@ -55,10 +55,9 @@ public final class NodeShape {
 
           PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
               .identifier(shape)
-              .name(
-                  ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME)
-                      .stringValue())
-              .path(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.PATH))
+              .name(ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME)
+                  .stringValue())
+              .path(PropertyPathFactory.create(shapeModel, shape, SHACL.PATH))
               .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
                   .map(Literal::intValue)
                   .orElse(0))
