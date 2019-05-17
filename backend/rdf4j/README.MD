@@ -18,7 +18,7 @@ The RDF4J backend supports direct and nested field selections like the following
 
 ## Property paths
 
-[W3C SHACL specification]((https://www.w3.org/TR/shacl/#property-paths))
+[W3C SHACL specification](https://www.w3.org/TR/shacl/#property-paths)
 
 While it's possible to query object fields directly, SHACL property paths allows you to do a lot more. 
 For our RDF4J backend we have built support for the paths described in this document. We will discuss the possibillities 
@@ -185,7 +185,7 @@ beer:shapes {
 ```
 
 ### ZeroOrMore path
-The *zero or more* path works in the same way as the 'one or more' path, but uses the `*` operator and allows paths of
+The *zero or more* path works in the same way as the 'one or more' path and allows paths of
 length 0.
 
 ```shacl
@@ -214,7 +214,7 @@ beer:shapes {
 ```
 
 ### ZeroOrOne path
-The *zero or one* path works in the same way as the 'zero or more' path, but uses the `?` operator and allows paths of
+The *zero or one* path works in the same way as the 'zero or more' path, but allows paths of
 length 0 or 1.
 
 ```shacl
