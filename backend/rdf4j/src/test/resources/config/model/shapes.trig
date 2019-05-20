@@ -149,13 +149,21 @@ beer:shapes {
       sh:datatype xsd:string ;
   .
 
-  beer_sh:Brewery_address a sh:NodeShape ;
+  beer_sh:Brewery_address a sh:PropertyShape ;
     sh:name "address" ;
     sh:path schema:address ;
-    sh:targetClass schema:Address ;
-    sh:property
-    beer_sh:Address_postalcode;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
     sh:nodeKind sh:IRI ;
+    sh:node beer_sh:Address
+  .
+
+  beer_sh:Address a sh:NodeShape ;
+    sh:name "address" ;
+    sh:targetClass schema:address ;
+    sh:property
+    beer_sh:Address_postalcode ;
+    sh:nodeKind sh:IRI
   .
 
   beer_sh:Address_postalcode a sh:PropertyShape ;

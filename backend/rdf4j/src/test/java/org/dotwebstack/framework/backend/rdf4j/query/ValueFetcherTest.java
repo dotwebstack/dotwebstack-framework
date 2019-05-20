@@ -2,9 +2,8 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_EXAMPLE_1;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_FIELD;
@@ -21,6 +20,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_NAME_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
@@ -55,7 +55,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -64,9 +63,6 @@ import graphql.schema.GraphQLObjectType;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
-import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.AlternativePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
@@ -77,7 +73,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -90,9 +85,6 @@ class ValueFetcherTest {
   @Mock
   private DataFetchingEnvironment environment;
 
-  @Mock
-  private NodeShapeRegistry nodeShapeRegistry;
-
   @BeforeAll
   public static void setup() throws IOException {
     PropertyPathFactoryTest.setup();
@@ -104,7 +96,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_IDENTIFIER_FIELD)
         .path(PredicatePath.builder().iri(BREWERY_IDENTIFIER_PATH).build())
-        .build(),nodeShapeRegistry);
+        .build());
 
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_IDENTIFIER_PATH,
@@ -121,18 +113,7 @@ class ValueFetcherTest {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  void get_ReturnsConvertedLiteral_ForNestedObjectType() {
-
-    NodeShape nodeShape = NodeShape.builder()
-        .identifier(BREWERY_ADDRESS_PATH)
-        .propertyShapes(ImmutableMap.of("postalCode",
-            PropertyShape.builder()
-                .name(ADDRESS_POSTALCODE_FIELD)
-                .path(PredicatePath.builder().iri(ADDRESS_POSTALCODE_PATH).build())
-                .identifier(ADDRESS_SHAPE)
-                .build()))
-        .build();
+  void get_ReturnsQuerySolution_ForNestedObjectType() {
 
     GraphQLObjectType fieldType = GraphQLObjectType.newObject()
         .name("address")
@@ -141,8 +122,6 @@ class ValueFetcherTest {
             .type(GraphQLNonNull.nonNull(Scalars.GraphQLString)))
         .build();
 
-    when(nodeShapeRegistry.get(ADDRESS_SHAPE)).thenReturn(nodeShape);
-
     // Arrange
     PropertyShape propertyShape = PropertyShape.builder()
         .name(BREWERY_ADDRESS_FIELD)
@@ -150,7 +129,7 @@ class ValueFetcherTest {
         .identifier(ADDRESS_SHAPE)
         .build();
 
-    ValueFetcher valueFetcher = new ValueFetcher(propertyShape,nodeShapeRegistry);
+    ValueFetcher valueFetcher = new ValueFetcher(propertyShape);
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_ADDRESS_PATH, BREWERY_ADDRESS_EXAMPLE_1)
         .add(BREWERY_ADDRESS_EXAMPLE_1,ADDRESS_POSTALCODE_PATH,ADDRESS_POSTALCODE_EXAMPLE_1)
@@ -163,8 +142,71 @@ class ValueFetcherTest {
     Object result = valueFetcher.get(environment);
 
     // Assert
-    assertThat(result,instanceOf(Map.class));
-    assertThat((Map<String,Object>)result, IsMapContaining.hasEntry("postalCode","1234 AC"));
+    assertThat(result,instanceOf(QuerySolution.class));
+  }
+
+  @Test
+  void get_ReturnsConvertedLiteralList_ForScalarFieldList() {
+
+    // Arrange
+    ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
+        .name(BREWERY_OWNERS_FIELD)
+        .path(PredicatePath.builder().iri(BREWERY_OWNERS_PATH).build())
+        .build());
+
+    Model model = new ModelBuilder()
+        .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH, BREWERY_OWNERS_EXAMPLE_1)
+        .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH, BREWERY_OWNERS_EXAMPLE_2)
+        .build();
+
+    when(environment.getFieldType()).thenReturn(GraphQLList.list(GraphQLString));
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
+
+    // Act
+    Object result = valueFetcher.get(environment);
+
+    // Assert
+    assertThat(result,instanceOf(List.class));
+    assertThat(((List)result).get(0),equalTo(BREWERY_OWNERS_EXAMPLE_1.stringValue()));
+    assertThat(((List)result).get(1),equalTo(BREWERY_OWNERS_EXAMPLE_2.stringValue()));
+  }
+
+  @Test
+  void get_ReturnsQuerySolutionList_ForNestedObjectTypeList() {
+
+    GraphQLList fieldType = GraphQLList.list(GraphQLObjectType.newObject()
+        .name("address")
+        .field(newFieldDefinition()
+            .name("postalCode")
+            .type(GraphQLNonNull.nonNull(Scalars.GraphQLString)))
+        .build());
+
+    // Arrange
+    PropertyShape propertyShape = PropertyShape.builder()
+        .name(BREWERY_ADDRESS_FIELD)
+        .path(PredicatePath.builder().iri(BREWERY_ADDRESS_PATH).build())
+        .identifier(ADDRESS_SHAPE)
+        .build();
+
+    ValueFetcher valueFetcher = new ValueFetcher(propertyShape);
+    Model model = new ModelBuilder()
+        .add(BREWERY_EXAMPLE_1, BREWERY_ADDRESS_PATH, BREWERY_ADDRESS_EXAMPLE_1)
+        .add(BREWERY_EXAMPLE_1, BREWERY_ADDRESS_PATH, BREWERY_ADDRESS_EXAMPLE_2)
+        .add(BREWERY_ADDRESS_EXAMPLE_1,ADDRESS_POSTALCODE_PATH,ADDRESS_POSTALCODE_EXAMPLE_1)
+        .add(BREWERY_ADDRESS_EXAMPLE_2,ADDRESS_POSTALCODE_PATH,ADDRESS_POSTALCODE_EXAMPLE_2)
+        .build();
+
+    when(environment.getFieldType()).thenReturn(fieldType);
+    when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
+
+    // Act
+    Object result = valueFetcher.get(environment);
+
+    // Assert
+    assertThat(result,instanceOf(List.class));
+    assertThat(((List)result).size(),equalTo(2));
+    assertThat(((List)result).get(0),instanceOf(QuerySolution.class));
+    assertThat(((List)result).get(1),instanceOf(QuerySolution.class));
   }
 
   @Test
@@ -176,7 +218,7 @@ class ValueFetcherTest {
         .path(PredicatePath.builder()
             .iri(BREWERY_OWNERS_PATH)
             .build())
-        .build(),nodeShapeRegistry);
+        .build());
 
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH,
@@ -203,7 +245,7 @@ class ValueFetcherTest {
         PropertyShape.builder()
         .name(BREWERY_FOUNDED_FIELD)
         .path(PredicatePath.builder().iri(BREWERY_FOUNDED_PATH).build())
-        .build(),nodeShapeRegistry);
+        .build());
 
     Model model = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
@@ -225,7 +267,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_IDENTIFIER_FIELD)
         .path(PredicatePath.builder().iri(BREWERY_IDENTIFIER_PATH).build())
-        .build(),nodeShapeRegistry);
+        .build());
 
     Model model = new TreeModel();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
@@ -246,10 +288,10 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(POSTAL_CODE_FIELD)
         .path(propertyPath)
-        .build(),nodeShapeRegistry);
+        .build());
     Model model = new ModelBuilder()
-        .add(BREWERY_EXAMPLE_1, SCHEMA_ADDRESS, ADDRESS_EXAMPLE_1)
-        .add(ADDRESS_EXAMPLE_1, SCHEMA_POSTAL_CODE, POSTAL_CODE_1)
+        .add(BREWERY_EXAMPLE_1, SCHEMA_ADDRESS, BREWERY_ADDRESS_EXAMPLE_1)
+        .add(BREWERY_ADDRESS_EXAMPLE_1, SCHEMA_POSTAL_CODE, POSTAL_CODE_1)
         .build();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
@@ -268,7 +310,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BEERS_FIELD)
         .path(propertyPath)
-        .build(),nodeShapeRegistry);
+        .build());
     Model model = new ModelBuilder()
         .add(BEER_EXAMPLE_1, BREWERY_BEERS_PATH, BREWERY_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, SCHEMA_NAME, BREWERY_NAME_EXAMPLE_1)
@@ -294,7 +336,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_NAME_FIELD)
         .path(propertyPath)
-        .build(),nodeShapeRegistry);
+        .build());
 
     Model model1 = new ModelBuilder()
         .add(BREWERY_EXAMPLE_1, BREWERY_LABEL, BREWERY_NAME_EXAMPLE_1)
@@ -334,7 +376,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BEERTYPES_FIELD)
         .path(propertyPath)
-        .build(),nodeShapeRegistry);
+        .build());
     Model model = new ModelBuilder()
         .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
         .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
@@ -359,7 +401,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE)
         .path(propertyPath)
-        .build(),nodeShapeRegistry);
+        .build());
     Model model = new ModelBuilder()
         .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
         .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
@@ -384,7 +426,7 @@ class ValueFetcherTest {
     ValueFetcher valueFetcher = new ValueFetcher(PropertyShape.builder()
         .name(BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE)
         .path(propertyPath)
-        .build(),nodeShapeRegistry);
+        .build());
     Model model = new ModelBuilder()
         .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
         .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)

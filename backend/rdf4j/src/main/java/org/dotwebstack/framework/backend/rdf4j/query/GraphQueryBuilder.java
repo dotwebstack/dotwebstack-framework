@@ -1,7 +1,13 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
 import com.google.common.collect.Iterables;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNonNull;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
@@ -34,7 +40,6 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     return new GraphQueryBuilder(environment, subjects);
   }
 
-
   private List<TriplePattern> getTriplePatterns(List<SelectedField> fields, NodeShape nodeShape, Variable subject) {
     return fields.stream()
         .filter(field -> !field.getQualifiedName().contains("/"))
@@ -52,11 +57,30 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     result.add(GraphPatterns.tp(subject, propertyShape.getPath().toPredicate(), variable));
 
     if (!GraphQLTypeUtil.isLeaf(fieldType)) {
-      NodeShape childShape = environment.getNodeShapeRegistry().get((IRI) propertyShape.getIdentifier());
-      result.addAll(getTriplePatterns(field.getSelectionSet().getFields(), childShape, variable));
+      GraphQLType innerType = getInnerType(fieldType);
+
+      if (innerType instanceof GraphQLObjectType) {
+        NodeShape childShape = environment.getNodeShapeRegistry().get((GraphQLObjectType) innerType);
+        result.addAll(getTriplePatterns(field.getSelectionSet().getFields(), childShape, variable));
+      } else {
+        throw unsupportedOperationException(
+            "SPARQL triple pattern construction for type {} not supported!", innerType);
+      }
     }
 
     return result;
+  }
+
+  private GraphQLType getInnerType(GraphQLType type) {
+    if (type instanceof GraphQLNonNull) {
+      return getInnerType(GraphQLTypeUtil.unwrapNonNull(type));
+    }
+
+    if (type instanceof GraphQLList) {
+      return ((GraphQLList)type).getWrappedType();
+    }
+
+    return type;
   }
 
   String getQueryString() {

@@ -84,7 +84,7 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
               .values()
               .forEach(propertyShape -> builder
                   .dataFetcher(FieldCoordinates.coordinates(typeName, propertyShape.getName()),
-                      new ValueFetcher(propertyShape,nodeShapeRegistry)));
+                      new ValueFetcher(propertyShape)));
         });
 
     return builder.build();

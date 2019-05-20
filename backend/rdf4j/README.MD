@@ -21,7 +21,7 @@ The RDF4J backend supports GraphQL field selections on any level within a graph.
 [W3C SHACL specification](https://www.w3.org/TR/shacl/#property-paths)
 
 While it's possible to query object fields directly, SHACL property paths allows you to do a lot more. 
-For our RDF4J backend we have built support for the paths described in this document. We will discuss the possibillities 
+For our RDF4J backend we have built support for the paths described in this document. We will discuss the possibilities 
 in the following paragraphs. 
 
 ### Predicate paths
@@ -56,7 +56,7 @@ beer:shapes {
 
 ### Alternative paths
 The *alternative path* describes the option get either the object from this predicate `OR` the object from that predicate.
-You can chain as many paths as you like, and you can use both predicate paths and any of the other path constructions as well. 
+You can chain as many paths as you like, and you can use both predicate paths and any of the other path constructions. 
    
 ```shacl
 @prefix sh: <http://www.w3.org/ns/shacl#> .
@@ -119,12 +119,11 @@ Again, this is the simple example. You can also use any of the other property pa
 
 ```shacl
 ([sh:alternativePath (ex:father ex:mother)] ex:firstname)
-([sh:inversePath ex:child] ex:firstname)
 ```
 
 ### Inverse paths
 The *inverse path* traverses the predicate in the opposite direction. This can be useful when you only have an explicit relation
-in one way, but not the other. So in our previous examples that would mean that we have a relation from a child to a parent,
+in one direction, but not the other. So in our previous examples that would mean that we have a relation from a child to a parent,
  but not from a parent to a child. In that case you can use the following inverse path to obtain the name of the child:
  
 ```shacl
@@ -152,7 +151,7 @@ beer:shapes {
 }
 ```
 
-In the previous example I used a couple of constructions. Again it is possible to use the other paths within an inverse path
+In the previous example a couple of constructions are used. Again it is possible to use the other paths within an inverse path
 as well.  
 
 ### OneOrMore path
