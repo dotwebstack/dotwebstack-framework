@@ -16,7 +16,8 @@
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
-      beer_sh:Brewery_url
+      beer_sh:Brewery_url ,
+      beer_sh:Brewery_address ;
   .
 
  beer_sh:Brewery_postalCode a sh:PropertyShape ;
@@ -130,4 +131,40 @@
    sh:nodeKind sh:Literal ;
    sh:datatype xsd:string
  .
+
+ beer_sh:Brewery_address a sh:PropertyShape ;
+   sh:name "address" ;
+   sh:path schema:address ;
+   sh:minCount 1 ;
+   sh:maxCount 1 ;
+   sh:nodeKind sh:IRI ;
+   sh:node beer_sh:Address
+ .
+
+ beer_sh:Address a sh:NodeShape ;
+   sh:name "address" ;
+   sh:targetClass schema:address ;
+   sh:property
+     beer_sh:Address_postalcode,
+     beer_sh:Address_streetAddress;
+   sh:nodeKind sh:IRI
+ .
+
+  beer_sh:Address_postalcode a sh:PropertyShape ;
+    sh:name "postalCode" ;
+    sh:path schema:postalCode ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Address_streetAddress a sh:PropertyShape ;
+    sh:name "streetAddress" ;
+    sh:path schema:streetAddress ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
 }

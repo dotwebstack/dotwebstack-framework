@@ -45,9 +45,15 @@ type Brewery {
   owners: [String]
   url: String!
     @transform(expr: "url.getLocalName()")
+  address: Address!
   postalCode: String!
   beers: [String]
   ingredients: [String]
+}
+
+type Address {
+  postalCode: String!
+  streetAddress: String!
 }
 
 type Beer {

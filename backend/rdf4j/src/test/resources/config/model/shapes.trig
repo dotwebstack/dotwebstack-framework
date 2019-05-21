@@ -1,17 +1,17 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-
 @prefix schema: <http://schema.org/> .
 @prefix beer: <https://github.com/dotwebstack/beer/> .
 @prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
 @prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
 
-<https://github.com/dotwebstack/beer/shapes> {
+beer:shapes {
   beer_sh:Brewery a sh:NodeShape ;
     sh:targetClass beer_def:Brewery ;
     sh:property
       beer_sh:Brewery_identifier ,
       beer_sh:Brewery_name ,
+      beer_sh:Brewery_address ,
       beer_sh:Brewery_founded ,
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
@@ -96,7 +96,8 @@
       beer_sh:Beer_brewery ,
       beer_sh:Beer_beerTypes ,
       beer_sh:Beer_beerTypesZeroOrMore,
-      beer_sh:Beer_beerTypesZeroOrOne
+      beer_sh:Beer_beerTypesZeroOrOne,
+      beer_sh:Beer_beerTypesRaw
   .
 
   beer_sh:Beer_identifier a sh:PropertyShape ;
@@ -125,6 +126,31 @@
     sh:nodeKind sh:IRI
   .
 
+  beer_sh:Beer_beerTypesRaw a sh:PropertyShape ;
+      sh:name "beerTypesRaw" ;
+      sh:path beer_def:beertype ;
+      sh:minCount 0 ;
+      sh:nodeKind sh:IRI ;
+      sh:node beer_sh:BeerType
+    .
+
+  beer_sh:BeerType a sh:NodeShape ;
+    sh:name "beerTypeRaw" ;
+    sh:targetClass beer_def:beertype ;
+    sh:property
+      beer_sh:BeerType_name ;
+    sh:nodeKind sh:IRI
+  .
+
+ beer_sh:BeerType_name a sh:PropertyShape ;
+    sh:name "name" ;
+    sh:path schema:name ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:datatype xsd:string ;
+  .
+
   beer_sh:Beer_beerTypes a sh:PropertyShape ;
     sh:name "beerTypes" ;
     sh:path ( [ sh:oneOrMorePath beer_def:beertype ] schema:name );
@@ -147,5 +173,31 @@
       sh:minCount 0 ;
       sh:nodeKind sh:Literal ;
       sh:datatype xsd:string ;
+  .
+
+  beer_sh:Brewery_address a sh:PropertyShape ;
+    sh:name "address" ;
+    sh:path schema:address ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:node beer_sh:Address
+  .
+
+  beer_sh:Address a sh:NodeShape ;
+    sh:name "address" ;
+    sh:targetClass schema:address ;
+    sh:property
+    beer_sh:Address_postalcode ;
+    sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Address_postalcode a sh:PropertyShape ;
+    sh:name "postalCode" ;
+    sh:path schema:postalCode ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
   .
 }

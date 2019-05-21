@@ -1,11 +1,17 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
 import com.google.common.collect.Iterables;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLNonNull;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
+import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -34,19 +40,55 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     return new GraphQueryBuilder(environment, subjects);
   }
 
+  private List<TriplePattern> getTriplePatterns(List<SelectedField> fields, NodeShape nodeShape, Variable subject) {
+    return fields.stream()
+        .filter(field -> !field.getQualifiedName().contains("/"))
+        .flatMap(field -> getTriplePatterns(field, nodeShape, subject).stream())
+        .collect(Collectors.toList());
+  }
+
+  private List<TriplePattern> getTriplePatterns(SelectedField field,NodeShape nodeShape, Variable subject) {
+    GraphQLOutputType fieldType = field.getFieldDefinition().getType();
+
+    PropertyShape propertyShape = nodeShape.getPropertyShape(field.getName());
+    List<TriplePattern> result = new ArrayList<>();
+    Variable variable = query.var();
+
+    result.add(GraphPatterns.tp(subject, propertyShape.getPath().toPredicate(), variable));
+
+    if (!GraphQLTypeUtil.isLeaf(fieldType)) {
+      GraphQLType innerType = getInnerType(fieldType);
+
+      if (innerType instanceof GraphQLObjectType) {
+        NodeShape childShape = environment.getNodeShapeRegistry().get((GraphQLObjectType) innerType);
+        result.addAll(getTriplePatterns(field.getSelectionSet().getFields(), childShape, variable));
+      } else {
+        throw unsupportedOperationException(
+            "SPARQL triple pattern construction for type {} not supported!", innerType);
+      }
+    }
+
+    return result;
+  }
+
+  private GraphQLType getInnerType(GraphQLType type) {
+    if (type instanceof GraphQLNonNull) {
+      return getInnerType(GraphQLTypeUtil.unwrapNonNull(type));
+    }
+
+    if (type instanceof GraphQLList) {
+      return getInnerType(((GraphQLList)type).getWrappedType());
+    }
+
+    return type;
+  }
+
   String getQueryString() {
     Variable subjectVar = query.var();
     NodeShape nodeShape = environment.getNodeShapeRegistry().get(environment.getObjectType());
 
-    final Map<String, TriplePattern> whereStatements = environment.getSelectionSet()
-        .getFields()
-        .stream()
-        .distinct()
-        .map(field -> getPropertyShape(nodeShape, field))
-        .collect(Collectors.toMap(
-            PropertyShape::getName,
-            propertyShape -> GraphPatterns.tp(subjectVar, propertyShape.getPath().toPredicate(),
-                query.var())));
+    List<TriplePattern> triplePatterns = getTriplePatterns(
+        environment.getSelectionSet().getFields(),nodeShape,subjectVar);
 
     Expression<?> filterExpr = Expressions
         .or(Iterables.toArray(subjects
@@ -54,7 +96,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
             .map(subject -> Expressions.equals(subjectVar, Rdf.iri(subject)))
             .collect(Collectors.toList()), Expression.class));
 
-    List<GraphPattern> wherePatterns = whereStatements.values()
+    List<GraphPattern> wherePatterns = triplePatterns
         .stream()
         .map(GraphPatterns::optional)
         .collect(Collectors.toList());
@@ -65,22 +107,11 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     query
         .construct(typePattern)
-        .construct(Iterables.toArray(whereStatements.values(), TriplePattern.class))
-
+        .construct(Iterables.toArray(triplePatterns, TriplePattern.class))
         .where(typePattern
             .filter(filterExpr)
             .and(Iterables.toArray(wherePatterns, GraphPattern.class)));
 
     return query.getQueryString();
-  }
-
-  private PropertyShape getPropertyShape(NodeShape nodeShape, SelectedField field) {
-    GraphQLOutputType fieldType = field.getFieldDefinition().getType();
-
-    if (GraphQLTypeUtil.isLeaf(fieldType)) {
-      return nodeShape.getPropertyShape(field.getName());
-    } else { //detect
-      throw new UnsupportedOperationException("Non-leaf nodes are not yet supported.");
-    }
   }
 }

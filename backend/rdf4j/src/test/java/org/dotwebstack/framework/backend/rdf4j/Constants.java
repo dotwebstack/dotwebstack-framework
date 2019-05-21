@@ -96,10 +96,6 @@ public final class Constants {
   public static final Literal BREWERY_FOUNDED_EXAMPLE_1 = VF
       .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
 
-  // Brewery.address
-
-  public static final BNode ADDRESS_EXAMPLE_1 = VF.createBNode();
-
   // Brewery.postalCode
 
   public static final String POSTAL_CODE_FIELD = "postalCode";
@@ -125,11 +121,18 @@ public final class Constants {
 
   public static final IRI BEER_EXAMPLE_2 = VF.createIRI("https://github.com/dotwebstack/beer/identifier/beer/1");
 
+  public static final Literal BEER_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("1");
+
   public static final String BEER_NAME_EXAMPLE_1 = "Beer 1";
+
+  public static final String BEER_FIELD = "beer";
+
 
   // Beer.beertypes
 
   public static final String BEERTYPES_FIELD = "beerTypes";
+
+  public static final String BEERTYPES_RAW_FIELD = "beerTypesRaw";
 
   public static final String BREWERY_BEERTYPE_TYPE = "Beer_beerTypes";
 
@@ -162,5 +165,28 @@ public final class Constants {
   public static final IRI SCHEMA_NAME = VF.createIRI(SCHEMA_PREFIX + "name");
 
   public static final IRI SCHEMA_POSTAL_CODE = VF.createIRI(SCHEMA_PREFIX + "postalCode");
+
+  // Brewery.address
+
+  public static final String ADDRESS_TYPE = "Brewery_Address";
+
+  public static final IRI ADDRESS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(ADDRESS_TYPE));
+
+  public static final String BREWERY_ADDRESS_FIELD = "address";
+
+  public static final IRI BREWERY_ADDRESS_PATH = VF.createIRI("http://schema.org/address");
+
+  public static final BNode BREWERY_ADDRESS_EXAMPLE_1 = VF.createBNode();
+
+  public static final BNode BREWERY_ADDRESS_EXAMPLE_2 = VF.createBNode();
+
+  // Address.postalCode
+
+  public static final IRI ADDRESS_POSTALCODE_PATH = VF.createIRI("http://schema.org/postalCode");
+
+  public static final String ADDRESS_POSTALCODE_EXAMPLE_1 = "1234 AC";
+
+  public static final String ADDRESS_POSTALCODE_EXAMPLE_2 = "1234 BD";
+
 
 }
