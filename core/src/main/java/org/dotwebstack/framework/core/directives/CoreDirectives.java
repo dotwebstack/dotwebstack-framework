@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.core.directives;
 
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
-
 public final class CoreDirectives {
 
   public static final String TRANSFORM_NAME = "transform";
