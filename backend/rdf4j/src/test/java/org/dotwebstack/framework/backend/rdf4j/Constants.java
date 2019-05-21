@@ -121,11 +121,18 @@ public final class Constants {
 
   public static final IRI BEER_EXAMPLE_2 = VF.createIRI("https://github.com/dotwebstack/beer/identifier/beer/1");
 
+  public static final Literal BEER_IDENTIFIER_EXAMPLE_1 = VF.createLiteral("1");
+
   public static final String BEER_NAME_EXAMPLE_1 = "Beer 1";
+
+  public static final String BEER_FIELD = "beer";
+
 
   // Beer.beertypes
 
   public static final String BEERTYPES_FIELD = "beerTypes";
+
+  public static final String BEERTYPES_RAW_FIELD = "beerTypesRaw";
 
   public static final String BREWERY_BEERTYPE_TYPE = "Beer_beerTypes";
 

@@ -96,7 +96,8 @@ beer:shapes {
       beer_sh:Beer_brewery ,
       beer_sh:Beer_beerTypes ,
       beer_sh:Beer_beerTypesZeroOrMore,
-      beer_sh:Beer_beerTypesZeroOrOne
+      beer_sh:Beer_beerTypesZeroOrOne,
+      beer_sh:Beer_beerTypesRaw
   .
 
   beer_sh:Beer_identifier a sh:PropertyShape ;
@@ -123,6 +124,31 @@ beer:shapes {
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Beer_beerTypesRaw a sh:PropertyShape ;
+      sh:name "beerTypesRaw" ;
+      sh:path beer_def:beertype ;
+      sh:minCount 0 ;
+      sh:nodeKind sh:IRI ;
+      sh:node beer_sh:BeerType
+    .
+
+  beer_sh:BeerType a sh:NodeShape ;
+    sh:name "beerTypeRaw" ;
+    sh:targetClass beer_def:beertype ;
+    sh:property
+      beer_sh:BeerType_name ;
+    sh:nodeKind sh:IRI
+  .
+
+ beer_sh:BeerType_name a sh:PropertyShape ;
+    sh:name "name" ;
+    sh:path schema:name ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:datatype xsd:string ;
   .
 
   beer_sh:Beer_beerTypes a sh:PropertyShape ;

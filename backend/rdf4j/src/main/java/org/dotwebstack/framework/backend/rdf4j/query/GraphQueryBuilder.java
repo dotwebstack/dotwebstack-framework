@@ -77,7 +77,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     }
 
     if (type instanceof GraphQLList) {
-      return ((GraphQLList)type).getWrappedType();
+      return getInnerType(((GraphQLList)type).getWrappedType());
     }
 
     return type;
