@@ -7,17 +7,13 @@ import graphql.language.DirectiveLocation;
 import graphql.language.InputValueDefinition;
 import graphql.language.NonNullType;
 import graphql.language.TypeName;
-import graphql.schema.FieldCoordinates;
-import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.directives.SparqlDirectiveWiring;
-import org.dotwebstack.framework.backend.rdf4j.query.ValueFetcher;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
-import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +22,6 @@ import org.springframework.stereotype.Component;
 public class Rdf4jConfigurer implements GraphqlConfigurer {
 
   private final SparqlDirectiveWiring sparqlDirectiveWiring;
-
-  private final NodeShapeRegistry nodeShapeRegistry;
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
@@ -68,26 +62,7 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
   @Override
   public void configureRuntimeWiring(@NonNull RuntimeWiring.Builder builder) {
     builder
-        .codeRegistry(registerValueFetchers())
         .scalar(Rdf4jScalars.IRI)
         .directive(Rdf4jDirectives.SPARQL_NAME, sparqlDirectiveWiring);
   }
-
-  private GraphQLCodeRegistry registerValueFetchers() {
-    GraphQLCodeRegistry.Builder builder = GraphQLCodeRegistry.newCodeRegistry();
-
-    nodeShapeRegistry.all()
-        .forEach(nodeShape -> {
-          String typeName = nodeShape.getIdentifier().getLocalName();
-
-          nodeShape.getPropertyShapes()
-              .values()
-              .forEach(propertyShape -> builder
-                  .dataFetcher(FieldCoordinates.coordinates(typeName, propertyShape.getName()),
-                      new ValueFetcher(propertyShape)));
-        });
-
-    return builder.build();
-  }
-
 }

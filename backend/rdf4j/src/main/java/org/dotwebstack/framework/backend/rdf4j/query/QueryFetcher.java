@@ -99,7 +99,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .create(environment, jexlEngine)
         .getQueryString(arguments, sparqlDirective);
 
-    LOG.debug("Executing query for subjects:\n{}", subjectQuery);
+    LOG.debug("Executing datafetchers for subjects:\n{}", subjectQuery);
 
     TupleQueryResult queryResult = con
         .prepareTupleQuery(subjectQuery)
@@ -121,7 +121,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .create(environment, subjects)
         .getQueryString();
 
-    LOG.debug("Executing query for graph:\n{}", graphQuery);
+    LOG.debug("Executing datafetchers for graph:\n{}", graphQuery);
 
     GraphQueryResult queryResult = con
         .prepareGraphQuery(graphQuery)

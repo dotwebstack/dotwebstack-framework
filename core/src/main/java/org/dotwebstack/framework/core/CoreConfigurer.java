@@ -19,12 +19,15 @@ import graphql.language.EnumTypeDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
+import graphql.language.ObjectTypeDefinition;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
+import graphql.schema.FieldCoordinates;
+import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import org.dotwebstack.framework.core.datafetchers.DataFetcherRouter;
 import org.dotwebstack.framework.core.directives.ConstraintDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
@@ -33,26 +36,42 @@ import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class CoreConfigurer implements GraphqlConfigurer {
 
   private static final TypeName optionalString = newTypeName(GraphQLString.getName()).build();
+
   private static final TypeName optionalInt = newTypeName(GraphQLInt.getName()).build();
+
   private static final NonNullType requiredString = newNonNullType(optionalString).build();
+
   private static final NonNullType requiredSortEnum =
       NonNullType.newNonNullType(TypeName.newTypeName(CoreInputTypes.SORT_ORDER).build()).build();
 
   private final TransformDirectiveWiring transformDirectiveWiring;
+
   private final ConstraintDirectiveWiring constraintDirectiveWiring;
 
+  private final DataFetcherRouter dataFetcher;
+
+  private TypeDefinitionRegistry typeDefinitionRegistry;
+
+  public CoreConfigurer(final TransformDirectiveWiring transformDirectiveWiring,
+                        final ConstraintDirectiveWiring constraintDirectiveWiring,
+                        final DataFetcherRouter dataFetcher) {
+    this.transformDirectiveWiring = transformDirectiveWiring;
+    this.constraintDirectiveWiring = constraintDirectiveWiring;
+    this.dataFetcher = dataFetcher;
+  }
+
   @Override
-  public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
-    registry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
-    registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
-    registry.add(createSortEnumDefinition());
-    registry.add(createSortInputObjectDefinition());
-    registry.add(createTransformDefinition());
-    registry.add(createConstraintDefinition());
+  public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
+    this.typeDefinitionRegistry = typeDefinitionRegistry;
+    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
+    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    typeDefinitionRegistry.add(createSortEnumDefinition());
+    typeDefinitionRegistry.add(createSortInputObjectDefinition());
+    typeDefinitionRegistry.add(createTransformDefinition());
+    typeDefinitionRegistry.add(createConstraintDefinition());
   }
 
   private InputObjectTypeDefinition createSortInputObjectDefinition() {
@@ -128,9 +147,28 @@ public class CoreConfigurer implements GraphqlConfigurer {
   @Override
   public void configureRuntimeWiring(@NonNull Builder builder) {
     builder
+      .codeRegistry(registerDataFetchers())
       .scalar(CoreScalars.DATE)
       .scalar(CoreScalars.DATETIME)
       .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring)
       .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring);
+  }
+
+  private GraphQLCodeRegistry registerDataFetchers() {
+    GraphQLCodeRegistry.Builder builder = GraphQLCodeRegistry.newCodeRegistry();
+
+    this.typeDefinitionRegistry.types().values()
+        .stream()
+        .filter(type -> type instanceof ObjectTypeDefinition)
+//        .filter(type -> !type.getName().equals("Query"))
+        .forEach(type -> {
+          type.getName();
+          ((ObjectTypeDefinition) type).getFieldDefinitions()
+              .forEach(fieldDefinition ->
+                  builder.dataFetcher(FieldCoordinates.coordinates(type.getName(), fieldDefinition.getName()),
+                      dataFetcher));
+        });
+
+    return builder.build();
   }
 }

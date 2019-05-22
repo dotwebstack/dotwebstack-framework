@@ -68,7 +68,7 @@ class ConstraintTraverserTest {
         .build();
 
     GraphQLFieldDefinition fieldDefinition =
-        GraphQLFieldDefinition.newFieldDefinition().name("query")
+        GraphQLFieldDefinition.newFieldDefinition().name("datafetchers")
             .type(GraphQLNonNull.nonNull(GraphQLString))
             .argument(argument).argument(inputArgument)
             .build();

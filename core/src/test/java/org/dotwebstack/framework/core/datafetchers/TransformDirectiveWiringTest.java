@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.directives;
+package org.dotwebstack.framework.core.datafetchers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -26,6 +26,8 @@ import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +39,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
-class TransformDirectiveWiringTest {
+class TransformDirectiveDataFetcherTest {
 
   private static final String FIELD_NAME = "foo";
 
@@ -48,13 +50,12 @@ class TransformDirectiveWiringTest {
   private static final String TRANSFORM_EXPR = "foo.length()";
 
   @Mock
-  private SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment;
+  private DataFetchingEnvironment environment;
 
   @Mock
   private DataFetchingEnvironment dataFetchingEnvironment;
 
-  @Mock
-  private DataFetcher<Object> dataFetcher;
+  private TransformDirectiveDataFetcher dataFetcher;
 
   @Mock
   private GraphQLFieldsContainer parentType;
@@ -70,12 +71,11 @@ class TransformDirectiveWiringTest {
       .strict(true)
       .create();
 
-  private final TransformDirectiveWiring transformDirectiveWiring = new TransformDirectiveWiring(
-      jexlEngine);
+  private final TransformDirectiveWiring transformDirectiveWiring = new TransformDirectiveWiring();
 
   @BeforeEach
   void setUp() {
-    when(environment.getFieldsContainer()).thenReturn(parentType);
+    dataFetcher = new TransformDirectiveDataFetcher(jexlEngine);
   }
 
   @Test
@@ -88,7 +88,7 @@ class TransformDirectiveWiringTest {
     prepareEnvironment(fieldDefinition, FIELD_VALUE_1);
 
     // Act
-    GraphQLFieldDefinition result = transformDirectiveWiring.onField(environment);
+    GraphQLFieldDefinition result = dataFetcher.get(environment);
 
     // Assert
     assertThat(result, is(sameInstance(fieldDefinition)));
