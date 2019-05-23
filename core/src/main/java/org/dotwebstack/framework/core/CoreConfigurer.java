@@ -10,6 +10,7 @@ import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinitio
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.TypeName.newTypeName;
+import static graphql.schema.FieldCoordinates.coordinates;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -19,12 +20,14 @@ import graphql.language.EnumTypeDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
+import graphql.language.ObjectTypeDefinition;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
+import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import org.dotwebstack.framework.core.datafetchers.DataFetcherRouter;
 import org.dotwebstack.framework.core.directives.ConstraintDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
@@ -33,7 +36,6 @@ import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class CoreConfigurer implements GraphqlConfigurer {
 
   private static final TypeName optionalString = newTypeName(GraphQLString.getName()).build();
@@ -42,82 +44,126 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   private static final NonNullType requiredString = newNonNullType(optionalString).build();
 
-  private static final NonNullType requiredSortEnum = NonNullType
-      .newNonNullType(TypeName.newTypeName(CoreInputTypes.SORT_ORDER)
-          .build())
-      .build();
+  private static final NonNullType requiredSortEnum =
+      NonNullType.newNonNullType(TypeName.newTypeName(CoreInputTypes.SORT_ORDER).build()).build();
 
   private final TransformDirectiveWiring transformDirectiveWiring;
 
   private final ConstraintDirectiveWiring constraintDirectiveWiring;
 
+  private final DataFetcherRouter dataFetcher;
+
+  private TypeDefinitionRegistry typeDefinitionRegistry;
+
+  public CoreConfigurer(final TransformDirectiveWiring transformDirectiveWiring,
+      final ConstraintDirectiveWiring constraintDirectiveWiring, final DataFetcherRouter dataFetcher) {
+    this.transformDirectiveWiring = transformDirectiveWiring;
+    this.constraintDirectiveWiring = constraintDirectiveWiring;
+    this.dataFetcher = dataFetcher;
+  }
+
   @Override
-  public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
-    registry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
-    registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
-    registry.add(createSortEnumDefinition());
-    registry.add(createSortInputObjectDefinition());
-    registry.add(createTransformDefinition());
-    registry.add(createConstraintDefinition());
+  public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
+    this.typeDefinitionRegistry = typeDefinitionRegistry;
+    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
+    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    typeDefinitionRegistry.add(createSortEnumDefinition());
+    typeDefinitionRegistry.add(createSortInputObjectDefinition());
+    typeDefinitionRegistry.add(createTransformDefinition());
+    typeDefinitionRegistry.add(createConstraintDefinition());
   }
 
   private InputObjectTypeDefinition createSortInputObjectDefinition() {
-    return newInputObjectDefinition().name(CoreInputTypes.SORT_FIELD)
-        .inputValueDefinition(newInputValueDefinition().name(CoreInputTypes.SORT_FIELD_FIELD)
+    return newInputObjectDefinition()
+        .name(CoreInputTypes.SORT_FIELD)
+        .inputValueDefinition(newInputValueDefinition()
+            .name(CoreInputTypes.SORT_FIELD_FIELD)
             .type(requiredString)
             .build())
-        .inputValueDefinition(newInputValueDefinition().name(CoreInputTypes.SORT_FIELD_ORDER)
+        .inputValueDefinition(newInputValueDefinition()
+            .name(CoreInputTypes.SORT_FIELD_ORDER)
             .type(requiredSortEnum)
             .build())
         .build();
   }
 
   private EnumTypeDefinition createSortEnumDefinition() {
-    return newEnumTypeDefinition().name(CoreInputTypes.SORT_ORDER)
-        .enumValueDefinition(newEnumValueDefinition().name("ASC")
+    return newEnumTypeDefinition()
+        .name(CoreInputTypes.SORT_ORDER)
+        .enumValueDefinition(newEnumValueDefinition()
+            .name("ASC")
             .build())
-        .enumValueDefinition(newEnumValueDefinition().name("DESC")
+        .enumValueDefinition(newEnumValueDefinition()
+            .name("DESC")
             .build())
         .build();
   }
 
   private DirectiveDefinition createTransformDefinition() {
-    return newDirectiveDefinition().name(CoreDirectives.TRANSFORM_NAME)
-        .inputValueDefinition(newInputValueDefinition().name(CoreDirectives.TRANSFORM_ARG_EXPR)
+    return newDirectiveDefinition()
+        .name(CoreDirectives.TRANSFORM_NAME)
+        .inputValueDefinition(newInputValueDefinition()
+            .name(CoreDirectives.TRANSFORM_ARG_EXPR)
             .type(requiredString)
             .build())
-        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
+        .directiveLocation(newDirectiveLocation()
+            .name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
             .build())
         .build();
   }
 
   private DirectiveDefinition createConstraintDefinition() {
-    return newDirectiveDefinition().name(CoreDirectives.CONSTRAINT_NAME)
-        .inputValueDefinitions(Lists.newArrayList(newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_MIN)
-            .type(optionalInt)
-            .build(),
-            newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_MAX)
-                .type(optionalInt)
-                .build(),
-            newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_ONEOF)
-                .type(new ListType(new TypeName(GraphQLString.getName())))
-                .build(),
-            newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_ONEOF_INT)
-                .type(new ListType(new TypeName(GraphQLInt.getName())))
-                .build()))
-        .directiveLocations(ImmutableList.of(
-            newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
-                .build(),
-            newDirectiveLocation().name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
-                .build()))
-        .build();
+    return newDirectiveDefinition()
+        .name(CoreDirectives.CONSTRAINT_NAME)
+        .inputValueDefinitions(
+            Lists.newArrayList(
+                newInputValueDefinition()
+                    .name(CoreDirectives.CONSTRAINT_ARG_MIN)
+                    .type(optionalInt)
+                    .build(),
+                newInputValueDefinition()
+                    .name(CoreDirectives.CONSTRAINT_ARG_MAX)
+                    .type(optionalInt)
+                    .build(),
+                newInputValueDefinition()
+                    .name(CoreDirectives.CONSTRAINT_ARG_ONEOF)
+                    .type(new ListType(new TypeName(GraphQLString.getName())))
+                    .build(),
+                newInputValueDefinition()
+                    .name(CoreDirectives.CONSTRAINT_ARG_ONEOF_INT)
+                    .type(new ListType(new TypeName(GraphQLInt.getName())))
+                    .build()))
+            .directiveLocations(ImmutableList.of(
+                newDirectiveLocation()
+                    .name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
+                    .build(),
+                newDirectiveLocation()
+                    .name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
+                    .build()))
+            .build();
   }
 
   @Override
   public void configureRuntimeWiring(@NonNull Builder builder) {
-    builder.scalar(CoreScalars.DATE)
-        .scalar(CoreScalars.DATETIME)
-        .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring)
-        .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring);
+    builder
+      .codeRegistry(registerDataFetchers())
+      .scalar(CoreScalars.DATE)
+      .scalar(CoreScalars.DATETIME)
+      .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring)
+      .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring);
+  }
+
+  private GraphQLCodeRegistry registerDataFetchers() {
+    GraphQLCodeRegistry.Builder builder = GraphQLCodeRegistry.newCodeRegistry();
+
+    this.typeDefinitionRegistry.types().values()
+        .stream()
+        .filter(type -> type instanceof ObjectTypeDefinition)
+        .forEach(type -> ((ObjectTypeDefinition) type).getFieldDefinitions()
+            .forEach(fieldDefinition ->
+                builder.dataFetcher(coordinates(type.getName(), fieldDefinition.getName()),
+                    dataFetcher)));
+
+    return builder.build();
   }
 }

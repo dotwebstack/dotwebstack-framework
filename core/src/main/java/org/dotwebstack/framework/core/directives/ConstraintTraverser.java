@@ -12,6 +12,8 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLScalarType;
+import graphql.schema.GraphQLTypeUtil;
+import java.util.AbstractMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,46 +26,56 @@ public class ConstraintTraverser {
 
   public void traverse(DataFetchingEnvironment dataFetchingEnvironment) {
     GraphQLFieldDefinition fieldDefinition = dataFetchingEnvironment.getFieldDefinition();
-    Map<String, Object> arguments = dataFetchingEnvironment.getArguments();
+    Map<String,Object> arguments = dataFetchingEnvironment.getArguments();
 
-    fieldDefinition.getArguments()
-        .forEach(argument -> onArguments(argument, arguments.get(argument.getName())));
+    fieldDefinition.getArguments().forEach(argument ->
+        onArguments(argument, arguments.get(argument.getName())));
+
+    if (dataFetchingEnvironment.getSelectionSet() != null) {
+      dataFetchingEnvironment.getSelectionSet().getFields()
+          .stream()
+          .filter(selectedField -> selectedField.getArguments().size() > 0)
+          .flatMap(selectedField -> selectedField.getFieldDefinition().getArguments()
+              .stream()
+              .map(argumentDefinition -> new AbstractMap.SimpleEntry<>(argumentDefinition,
+                  selectedField.getArguments().get(argumentDefinition.getName()))))
+          .forEach(entry -> onArguments(entry.getKey(), entry.getValue()));
+    }
   }
-
 
   void onArguments(GraphQLArgument argument, Object value) {
     if (argument.getType() instanceof GraphQLInputObjectType) {
       onInputObjectType((GraphQLInputObjectType) argument.getType(),
-          value != null ? castToMap(value) : ImmutableMap.of());
-    } else if ((argument.getType() instanceof GraphQLScalarType)) {
-      validate(argument, argument.getName(), ofNullable(value).orElse(argument.getDefaultValue()));
+              value != null ? castToMap(value) : ImmutableMap.of());
+    } else  if ((GraphQLTypeUtil.unwrapNonNull(argument.getType()) instanceof GraphQLScalarType)) {
+      validate(argument,argument.getName(),ofNullable(value).orElse(argument.getDefaultValue()));
     }
   }
 
-  private void onInputObjectType(GraphQLInputObjectType inputObjectType, Map<String, Object> arguments) {
+  private void onInputObjectType(GraphQLInputObjectType inputObjectType,
+                                 Map<String,Object> arguments) {
 
     // Process nested inputObjectTypes
-    inputObjectType.getFields()
-        .stream()
+    inputObjectType.getFields().stream()
         .filter(field -> field.getType() instanceof GraphQLInputObjectType)
         .forEach(field -> onInputObjectType((GraphQLInputObjectType) field.getType(),
             castToMap(arguments.get(field.getName()))));
 
     // Process fields on inputObjectType
-    inputObjectType.getFields()
-        .stream()
+    inputObjectType.getFields().stream()
         .filter(field -> field.getType() instanceof GraphQLScalarType)
-        .forEach(field -> onInputObjectField(field, arguments.get(field.getName())));
+        .forEach(field -> onInputObjectField(field,arguments.get(field.getName())));
   }
 
   void onInputObjectField(GraphQLInputObjectField inputObjectField, Object value) {
-    validate(inputObjectField, inputObjectField.getName(),
+    validate(inputObjectField,inputObjectField.getName(),
         ofNullable(value).orElse(inputObjectField.getDefaultValue()));
   }
 
   private void validate(GraphQLDirectiveContainer directiveContainer, String name, Object value) {
-    ofNullable(directiveContainer.getDirective(CoreDirectives.CONSTRAINT_NAME)).map(GraphQLDirective::getArguments)
-        .ifPresent(directiveArguments -> directiveArguments
-            .forEach(directiveArgument -> validator.validate(directiveArgument, name, value)));
+    ofNullable(directiveContainer.getDirective(CoreDirectives.CONSTRAINT_NAME))
+        .map(GraphQLDirective::getArguments).ifPresent(directiveArguments ->
+          directiveArguments.forEach(directiveArgument ->
+              validator.validate(directiveArgument, name,value)));
   }
 }

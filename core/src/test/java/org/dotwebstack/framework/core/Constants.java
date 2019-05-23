@@ -2,7 +2,7 @@ package org.dotwebstack.framework.core;
 
 import java.time.ZonedDateTime;
 
-final class Constants {
+public final class Constants {
 
   private Constants() {
     throw new IllegalStateException(String.format("%s is not meant to be instantiated.", Constants.class));
