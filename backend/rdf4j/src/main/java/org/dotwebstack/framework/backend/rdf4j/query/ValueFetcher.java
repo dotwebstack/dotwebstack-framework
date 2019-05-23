@@ -77,6 +77,6 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   @Override
   public boolean supports(DataFetchingEnvironment environment) {
-    return true;
+    return (environment.getSource() instanceof QuerySolution);
   }
 }

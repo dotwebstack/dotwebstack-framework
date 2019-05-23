@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers;
 
-public abstract class SourceDataFetcher implements DotWebStackDataFetcher<Object> {
+public abstract class SourceDataFetcher implements CoreDataFetcher<Object> {
 
   @Override
   public DataFetcherType getType() {

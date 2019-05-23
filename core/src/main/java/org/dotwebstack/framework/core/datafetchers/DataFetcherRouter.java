@@ -13,19 +13,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataFetcherRouter implements DataFetcher<Object> {
 
-  private final Set<DotWebStackDataFetcher<Object>> dataFetchers;
+  private final Set<CoreDataFetcher<Object>> dataFetchers;
 
-  public DataFetcherRouter(final Set<DotWebStackDataFetcher<Object>> dataFetchers) {
+  public DataFetcherRouter(final Set<CoreDataFetcher<Object>> dataFetchers) {
     this.dataFetchers = dataFetchers;
   }
 
   @Override
   public Object get(DataFetchingEnvironment environment) throws Exception {
-    DotWebStackDataFetcher<Object> sourceDataFetcher = findSupportedDataFetcher(environment, DataFetcherType.SOURCE)
+    CoreDataFetcher<Object> sourceDataFetcher = findSupportedDataFetcher(environment, DataFetcherType.SOURCE)
         .orElseThrow(() -> ExceptionHelper.illegalArgumentException(
             "No source data fetcher is available for the given environment"));
 
-    Optional<DotWebStackDataFetcher<Object>> delegateDataFetcher = findSupportedDataFetcher(environment,
+    Optional<CoreDataFetcher<Object>> delegateDataFetcher = findSupportedDataFetcher(environment,
         DataFetcherType.DELEGATE);
 
     if (delegateDataFetcher.isPresent()) {
@@ -38,7 +38,7 @@ public class DataFetcherRouter implements DataFetcher<Object> {
     return sourceDataFetcher.get(environment);
   }
 
-  private Optional<DotWebStackDataFetcher<Object>> findSupportedDataFetcher(
+  private Optional<CoreDataFetcher<Object>> findSupportedDataFetcher(
       DataFetchingEnvironment environment, DataFetcherType type) {
     return dataFetchers.stream()
         .filter(dataFetcher -> type.equals(dataFetcher.getType()))

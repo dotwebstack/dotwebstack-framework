@@ -6,7 +6,7 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.function.Supplier;
 
-public abstract class DelegateDataFetcher implements DotWebStackDataFetcher<Object> {
+public abstract class DelegateDataFetcher implements CoreDataFetcher<Object> {
 
   protected DataFetcher<Object> getDelegate(DataFetchingEnvironment dataFetchingEnvironment) {
     if (dataFetchingEnvironment.getLocalContext() != null) {
