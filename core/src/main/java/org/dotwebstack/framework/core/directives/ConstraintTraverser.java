@@ -12,6 +12,8 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLScalarType;
+import graphql.schema.GraphQLTypeUtil;
+import java.util.AbstractMap;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -28,14 +30,24 @@ public class ConstraintTraverser {
 
     fieldDefinition.getArguments().forEach(argument ->
         onArguments(argument, arguments.get(argument.getName())));
-  }
 
+    if (dataFetchingEnvironment.getSelectionSet() != null) {
+      dataFetchingEnvironment.getSelectionSet().getFields()
+          .stream()
+          .filter(selectedField -> selectedField.getArguments().size() > 0)
+          .flatMap(selectedField -> selectedField.getFieldDefinition().getArguments()
+              .stream()
+              .map(argumentDefinition -> new AbstractMap.SimpleEntry<>(argumentDefinition,
+                  selectedField.getArguments().get(argumentDefinition.getName()))))
+          .forEach(entry -> onArguments(entry.getKey(), entry.getValue()));
+    }
+  }
 
   void onArguments(GraphQLArgument argument, Object value) {
     if (argument.getType() instanceof GraphQLInputObjectType) {
       onInputObjectType((GraphQLInputObjectType) argument.getType(),
               value != null ? castToMap(value) : ImmutableMap.of());
-    } else  if ((argument.getType() instanceof GraphQLScalarType)) {
+    } else  if ((GraphQLTypeUtil.unwrapNonNull(argument.getType()) instanceof GraphQLScalarType)) {
       validate(argument,argument.getName(),ofNullable(value).orElse(argument.getDefaultValue()));
     }
   }
