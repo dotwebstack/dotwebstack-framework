@@ -33,7 +33,7 @@ Eclipse can be configured to use the included formatter and import order file.
 
 ## Additional conventions
 The following conventions are not validated by checkstyle and should be applied manually:
-* `final`: only use the `final` for classes and class fields. Checkstyle provides the `ParameterAssignment` as 
+* `final`: only use `final` for classes and class fields. Checkstyle provides the `ParameterAssignment` as 
 an alternative to declaring method and constructor arguments as final.
 * private constructors: private constructors used to hide public constructors for utility classes should
 not throw exceptions.

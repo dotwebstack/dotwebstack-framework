@@ -26,12 +26,6 @@ public class CoreConfiguration {
 
   private static final String FIXED_SCHEMA_NAME = "schema.graphqls";
 
-  private static final String S2 = "";
-
-  private String s1;
-
-  private String s2;
-
   @Bean
   public GraphQLSchema graphqlSchema(@NonNull ResourceLoader resourceLoader, @NonNull CoreProperties coreProperties,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers) throws IOException {

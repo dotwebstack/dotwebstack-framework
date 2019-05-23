@@ -16,8 +16,6 @@ public final class CoreScalars {
       .coercing(new DateTimeCoercing())
       .build();
 
-  private CoreScalars() {
-    throw new IllegalStateException(String.format("%s is not meant to be instantiated.", CoreScalars.class));
-  }
+  private CoreScalars() {}
 
 }

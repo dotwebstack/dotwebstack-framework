@@ -7,9 +7,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 
 public final class DirectiveUtils {
 
-  private DirectiveUtils() {
-    throw new IllegalStateException(String.format("%s is not meant to be instantiated.", DirectiveUtils.class));
-  }
+  private DirectiveUtils() {}
 
   public static <T> T getArgument(@NonNull String argName, @NonNull GraphQLDirective directive,
       @NonNull Class<T> clazz) {
