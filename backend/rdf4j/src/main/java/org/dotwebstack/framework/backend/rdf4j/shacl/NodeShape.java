@@ -31,27 +31,24 @@ public final class NodeShape {
 
     // We need to validate the graphql definition against the shacl definition on bootstrap
     if (propertyShape == null) {
-      throw new InvalidConfigurationException("No property shape found for name '{}'",name);
+      throw new InvalidConfigurationException("No property shape found for name '{}'", name);
     }
 
     return propertyShape;
   }
 
   public static NodeShape fromShapeModel(@NonNull Model shapeModel, @NonNull IRI identifier) {
-    return builder()
-        .identifier(identifier)
+    return builder().identifier(identifier)
         .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, identifier, SHACL.TARGET_CLASS))
         .propertyShapes(buildPropertyShapes(shapeModel, identifier))
         .build();
   }
 
   private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel, Resource nodeShape) {
-    return Models
-        .getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
+    return Models.getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
         .map(shape -> {
-          IRI nodeKind = ValueUtils
-              .findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
+          IRI nodeKind = ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
 
           PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
               .identifier(shape)

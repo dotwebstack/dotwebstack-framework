@@ -15,8 +15,8 @@ class DateCoercing implements Coercing<LocalDate, LocalDate> {
     }
 
     if (!(value instanceof String)) {
-      throw new CoercingSerializeException(
-          String.format("Unable to parse date string from '%s' type.", value.getClass().getName()));
+      throw new CoercingSerializeException(String.format("Unable to parse date string from '%s' type.", value.getClass()
+          .getName()));
     }
 
     try {

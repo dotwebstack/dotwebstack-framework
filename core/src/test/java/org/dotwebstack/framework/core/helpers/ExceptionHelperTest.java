@@ -9,8 +9,8 @@ class ExceptionHelperTest {
   @Test
   void joinArguments_returnsJoinedArray_forGivenArguments() {
     Exception cause = new IllegalArgumentException("Oops!");
-    Object[] result = ExceptionHelper.joinArguments(cause,new String[]{"foo","bar"});
-    assertEquals(3,result.length);
-    assertEquals(cause,result[2]);
+    Object[] result = ExceptionHelper.joinArguments(cause, new String[] {"foo", "bar"});
+    assertEquals(3, result.length);
+    assertEquals(cause, result[2]);
   }
 }

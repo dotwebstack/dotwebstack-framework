@@ -35,7 +35,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   private SubjectQueryBuilder(final QueryEnvironment environment, final JexlEngine jexlEngine) {
     super(environment, Queries.SELECT());
     this.jexlHelper = new JexlHelper(jexlEngine);
-    this.nodeShape = this.environment.getNodeShapeRegistry().get(this.environment.getObjectType());
+    this.nodeShape = this.environment.getNodeShapeRegistry()
+        .get(this.environment.getObjectType());
   }
 
   static SubjectQueryBuilder create(final QueryEnvironment environment, final JexlEngine jexlEngine) {
@@ -47,15 +48,16 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
     this.query.select(SUBJECT_VAR);
 
-    TriplePattern whereSubjectType = GraphPatterns.tp(SUBJECT_VAR, RDF.TYPE,
-        Rdf.iri(this.nodeShape.getTargetClass()));
+    TriplePattern whereSubjectType = GraphPatterns.tp(SUBJECT_VAR, RDF.TYPE, Rdf.iri(this.nodeShape.getTargetClass()));
     whereBuilder.put(whereSubjectType.getQueryString(), whereSubjectType);
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
     getOrderByFromContext(context, sparqlDirective).ifPresent(this::buildOrderBy);
 
-    whereBuilder.build().values().forEach(query::where);
+    whereBuilder.build()
+        .values()
+        .forEach(query::where);
 
     return this.query.getQueryString();
   }
@@ -64,25 +66,26 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     contexts.forEach(orderContext -> {
       query.orderBy(orderContext.getOrderable());
 
-      TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR,
-          orderContext.getPropertyShape().getPath().toPredicate(),
-          SparqlBuilder.var(orderContext.getField()));
+      TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR, orderContext.getPropertyShape()
+          .getPath()
+          .toPredicate(), SparqlBuilder.var(orderContext.getField()));
 
       whereBuilder.put(triplePattern.getQueryString(), triplePattern);
     });
   }
 
-  @SuppressWarnings({"unchecked","rawtypes"})
+  @SuppressWarnings({"unchecked", "rawtypes"})
   Optional<List<OrderContext>> getOrderByFromContext(MapContext context, GraphQLDirective sparqlDirective) {
-    Optional<List> orderByObject = jexlHelper.evaluateDirectiveArgument(
-        Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class);
+    Optional<List> orderByObject =
+        jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class);
 
     if (!orderByObject.isPresent()) {
       return Optional.empty();
     } else {
       List<Map<String, String>> orderByList = (List<Map<String, String>>) orderByObject.get();
 
-      return Optional.of(orderByList.stream().map(this::getOrderContext)
+      return Optional.of(orderByList.stream()
+          .map(this::getOrderContext)
           .collect(Collectors.toList()));
     }
   }
@@ -104,16 +107,15 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     // get the predicate property shape based on the order property field
     PropertyShape pred = this.nodeShape.getPropertyShape(field);
     if (pred == null) {
-      throw new IllegalArgumentException(
-          String.format("Not possible to order by field %s, it does not exist on %s.",
-              field, nodeShape.getIdentifier()));
+      throw new IllegalArgumentException(String.format("Not possible to order by field %s, it does not exist on %s.",
+          field, nodeShape.getIdentifier()));
     }
     return pred;
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {
-    Optional<Integer> limit = this.jexlHelper.evaluateDirectiveArgument(
-        Rdf4jDirectives.SPARQL_ARG_LIMIT, sparqlDirective, context, Integer.class);
+    Optional<Integer> limit = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT,
+        sparqlDirective, context, Integer.class);
     limit.ifPresent(i -> {
       if (i < 1) {
         throw new IllegalArgumentException("An error occured in the limit expression evaluation");
@@ -123,8 +125,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   Optional<Integer> getOffsetFromContext(MapContext context, GraphQLDirective sparqlDirective) {
-    Optional<Integer> offset = this.jexlHelper.evaluateDirectiveArgument(
-        Rdf4jDirectives.SPARQL_ARG_OFFSET, sparqlDirective, context, Integer.class);
+    Optional<Integer> offset = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET,
+        sparqlDirective, context, Integer.class);
 
     offset.ifPresent(i -> {
       if (i < 0) {

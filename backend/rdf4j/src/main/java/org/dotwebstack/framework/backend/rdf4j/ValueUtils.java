@@ -12,10 +12,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 public final class ValueUtils {
 
-  private ValueUtils() {
-    throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", ValueUtils.class));
-  }
+  private ValueUtils() {}
 
   /**
    * Convert value to Java type so built-in scalar types can handle them.
@@ -53,19 +50,19 @@ public final class ValueUtils {
 
   public static IRI findRequiredPropertyIri(Model model, Resource subject, IRI predicate) {
     return Models.getPropertyIRI(model, subject, predicate)
-        .orElseThrow(() -> new InvalidConfigurationException(
-            "Resource '{}' requires a '{}' IRI property.", subject, predicate));
+        .orElseThrow(
+            () -> new InvalidConfigurationException("Resource '{}' requires a '{}' IRI property.", subject, predicate));
   }
 
   public static Literal findRequiredPropertyLiteral(Model model, Resource subject, IRI predicate) {
     return Models.getPropertyLiteral(model, subject, predicate)
-        .orElseThrow(() -> new InvalidConfigurationException(
-            "Resource '{}' requires a '{}' literal property.", subject, predicate));
+        .orElseThrow(() -> new InvalidConfigurationException("Resource '{}' requires a '{}' literal property.", subject,
+            predicate));
   }
 
   public static Value findRequiredProperty(Model model, Resource subject, IRI predicate) {
     return Models.getProperty(model, subject, predicate)
-        .orElseThrow(() -> new InvalidConfigurationException(
-            "Resource '{}' requires a '{}' property.", subject, predicate));
+        .orElseThrow(
+            () -> new InvalidConfigurationException("Resource '{}' requires a '{}' property.", subject, predicate));
   }
 }

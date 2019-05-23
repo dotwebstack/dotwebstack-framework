@@ -76,8 +76,7 @@ class ValueUtilsTest {
   @Test
   void findRequiredPropertyIri_ReturnsIri_ForPresentValue() {
     // Arrange
-    Model model = new ModelBuilder()
-        .add(SUBJECT, RDF.TYPE, RDFS.CLASS)
+    Model model = new ModelBuilder().add(SUBJECT, RDF.TYPE, RDFS.CLASS)
         .build();
 
     // Act
@@ -93,15 +92,14 @@ class ValueUtilsTest {
     Model model = new ModelBuilder().build();
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () ->
-        ValueUtils.findRequiredPropertyIri(model, SUBJECT, RDF.TYPE));
+    assertThrows(InvalidConfigurationException.class,
+        () -> ValueUtils.findRequiredPropertyIri(model, SUBJECT, RDF.TYPE));
   }
 
   @Test
   void findRequiredPropertyLiteral_ReturnsLiteral_ForPresentValue() {
     // Arrange
-    Model model = new ModelBuilder()
-        .add(SUBJECT, RDFS.LABEL, LABEL)
+    Model model = new ModelBuilder().add(SUBJECT, RDFS.LABEL, LABEL)
         .build();
 
     // Act
@@ -117,8 +115,8 @@ class ValueUtilsTest {
     Model model = new ModelBuilder().build();
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () ->
-        ValueUtils.findRequiredPropertyLiteral(model, SUBJECT, RDFS.LABEL));
+    assertThrows(InvalidConfigurationException.class,
+        () -> ValueUtils.findRequiredPropertyLiteral(model, SUBJECT, RDFS.LABEL));
   }
 
 }

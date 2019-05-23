@@ -23,12 +23,10 @@ class ConfigFactoryImplTest {
   void create_CreatesRepositoryConfig_ForSparqlType() {
     // Arrange
     String endpointUrl = "http://foo";
-    Map<String, Object> args = ImmutableMap
-        .of(ConfigFactoryImpl.SPARQL_REPOSITORY_ARG_ENDPOINT_URL, endpointUrl);
+    Map<String, Object> args = ImmutableMap.of(ConfigFactoryImpl.SPARQL_REPOSITORY_ARG_ENDPOINT_URL, endpointUrl);
 
     // Act
-    RepositoryImplConfig result = configFactory
-        .create(ConfigFactoryImpl.SPARQL_REPOSITORY_TYPE, args);
+    RepositoryImplConfig result = configFactory.create(ConfigFactoryImpl.SPARQL_REPOSITORY_TYPE, args);
 
     // Assert
     assertThat(result, is(instanceOf(SPARQLRepositoryConfig.class)));

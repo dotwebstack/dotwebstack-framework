@@ -38,29 +38,25 @@ class DateCoercingTest {
   @Test
   void serialize_ThrowsException_ForInvalidDateString() {
     // Act / Assert
-    assertThrows(CoercingSerializeException.class, () ->
-        coercing.serialize("foo"));
+    assertThrows(CoercingSerializeException.class, () -> coercing.serialize("foo"));
   }
 
   @Test
   void serialize_ReturnsDate_ForOtherTypes() {
     // Act / Assert
-    assertThrows(CoercingSerializeException.class, () ->
-        coercing.serialize(123));
+    assertThrows(CoercingSerializeException.class, () -> coercing.serialize(123));
   }
 
   @Test
   void parseValue_ThrowsException() {
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () ->
-        coercing.parseValue(new Object()));
+    assertThrows(UnsupportedOperationException.class, () -> coercing.parseValue(new Object()));
   }
 
   @Test
   void parseLiteral_ThrowsException() {
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () ->
-        coercing.parseLiteral(new Object()));
+    assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(new Object()));
   }
 
 }

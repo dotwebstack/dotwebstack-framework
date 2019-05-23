@@ -22,8 +22,7 @@ public class AlternativePath implements PropertyPath {
 
   @Override
   public Set<Value> resolvePath(Model model, Resource subject, boolean inversed) {
-    return getChildren()
-        .stream()
+    return getChildren().stream()
         .map(child -> child.resolvePath(model, subject, inversed))
         .filter(set -> !set.isEmpty())
         .findFirst()
@@ -34,7 +33,8 @@ public class AlternativePath implements PropertyPath {
   public RdfPredicate toPredicate() {
     return () -> String.join("|", this.getChildren()
         .stream()
-        .map(child -> child.toPredicate().getQueryString())
+        .map(child -> child.toPredicate()
+            .getQueryString())
         .collect(Collectors.toList()));
   }
 

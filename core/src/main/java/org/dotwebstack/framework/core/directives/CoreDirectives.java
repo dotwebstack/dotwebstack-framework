@@ -4,7 +4,7 @@ public final class CoreDirectives {
 
   public static final String TRANSFORM_NAME = "transform";
 
-  public static final String TRANSFORM_ARG_EXPR =  "expr";
+  public static final String TRANSFORM_ARG_EXPR = "expr";
 
   public static final String CONSTRAINT_NAME = "constraint";
 

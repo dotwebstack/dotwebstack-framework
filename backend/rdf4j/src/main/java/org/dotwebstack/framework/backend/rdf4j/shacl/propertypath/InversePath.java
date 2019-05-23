@@ -23,6 +23,7 @@ public class InversePath implements PropertyPath {
 
   @Override
   public RdfPredicate toPredicate() {
-    return () -> "^(" + object.toPredicate().getQueryString() + ")";
+    return () -> "^(" + object.toPredicate()
+        .getQueryString() + ")";
   }
 }

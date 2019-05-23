@@ -29,8 +29,8 @@ class IriCoercing implements Coercing<IRI, IRI> {
     }
 
     if (!(value instanceof StringValue)) {
-      throw new CoercingParseLiteralException(
-          String.format("Unable to parse IRI from '%s' type.", value.getClass().getName()));
+      throw new CoercingParseLiteralException(String.format("Unable to parse IRI from '%s' type.", value.getClass()
+          .getName()));
     }
 
     String valueStr = ((StringValue) value).getValue();
@@ -38,8 +38,8 @@ class IriCoercing implements Coercing<IRI, IRI> {
     try {
       return VF.createIRI(valueStr);
     } catch (IllegalArgumentException e) {
-      throw new CoercingParseLiteralException(String
-          .format("Unable to parse IRI from string value '%s'.", valueStr), e);
+      throw new CoercingParseLiteralException(String.format("Unable to parse IRI from string value '%s'.", valueStr),
+          e);
     }
   }
 

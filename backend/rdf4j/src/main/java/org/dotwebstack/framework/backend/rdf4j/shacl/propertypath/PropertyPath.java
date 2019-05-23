@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
 import java.util.Set;
-
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;

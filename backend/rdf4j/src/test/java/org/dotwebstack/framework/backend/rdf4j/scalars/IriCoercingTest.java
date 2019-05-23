@@ -18,15 +18,13 @@ class IriCoercingTest {
   @Test
   void serialize_ThrowsException() {
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () ->
-        coercing.serialize(new Object()));
+    assertThrows(UnsupportedOperationException.class, () -> coercing.serialize(new Object()));
   }
 
   @Test
   void parseValue_ThrowsException() {
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () ->
-        coercing.parseValue(new Object()));
+    assertThrows(UnsupportedOperationException.class, () -> coercing.parseValue(new Object()));
   }
 
   @Test
@@ -41,8 +39,7 @@ class IriCoercingTest {
   @Test
   void parseLiteral_ReturnsIri_ForValidStringValue() {
     // Arrange
-    StringValue stringValue = StringValue
-        .newStringValue(Constants.BREWERY_SHAPE.stringValue())
+    StringValue stringValue = StringValue.newStringValue(Constants.BREWERY_SHAPE.stringValue())
         .build();
 
     // Act
@@ -55,20 +52,17 @@ class IriCoercingTest {
   @Test
   void parseValue_ThrowsException_ForInvalidStringValue() {
     // Arrange
-    StringValue stringValue = StringValue
-        .newStringValue("foo")
+    StringValue stringValue = StringValue.newStringValue("foo")
         .build();
 
     // Act / Assert
-    assertThrows(CoercingParseLiteralException.class, () ->
-        coercing.parseLiteral(stringValue));
+    assertThrows(CoercingParseLiteralException.class, () -> coercing.parseLiteral(stringValue));
   }
 
   @Test
   void parseValue_ThrowsException_ForInvalidType() {
     // Act / Assert
-    assertThrows(CoercingParseLiteralException.class, () ->
-        coercing.parseLiteral(new Object()));
+    assertThrows(CoercingParseLiteralException.class, () -> coercing.parseLiteral(new Object()));
   }
 
 }

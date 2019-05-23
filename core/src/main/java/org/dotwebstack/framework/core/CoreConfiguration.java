@@ -25,38 +25,32 @@ public class CoreConfiguration {
   private static final String FIXED_SCHEMA_NAME = "schema.graphqls";
 
   @Bean
-  public GraphQLSchema graphqlSchema(@NonNull ResourceLoader resourceLoader,
-                                     @NonNull CoreProperties coreProperties,
-                                     @NonNull Collection<GraphqlConfigurer> graphqlConfigurers)
-          throws IOException {
-    Reader reader = new InputStreamReader(resourceLoader.getResource(coreProperties
-            .getResourcePath().resolve(FIXED_SCHEMA_NAME).toString()).getInputStream());
+  public GraphQLSchema graphqlSchema(@NonNull ResourceLoader resourceLoader, @NonNull CoreProperties coreProperties,
+      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers) throws IOException {
+    Reader reader = new InputStreamReader(resourceLoader.getResource(coreProperties.getResourcePath()
+        .resolve(FIXED_SCHEMA_NAME)
+        .toString())
+        .getInputStream());
     TypeDefinitionRegistry typeDefinitionRegistry = new SchemaParser().parse(reader);
     graphqlConfigurers
-        .forEach(graphqlConfigurer -> graphqlConfigurer
-            .configureTypeDefinitionRegistry(typeDefinitionRegistry));
+        .forEach(graphqlConfigurer -> graphqlConfigurer.configureTypeDefinitionRegistry(typeDefinitionRegistry));
 
     RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
-    graphqlConfigurers.forEach(
-        graphqlConfigurer -> graphqlConfigurer.configureRuntimeWiring(runtimeWiringBuilder));
+    graphqlConfigurers.forEach(graphqlConfigurer -> graphqlConfigurer.configureRuntimeWiring(runtimeWiringBuilder));
 
-    return new SchemaGenerator()
-        .makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());
+    return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());
   }
 
   @Bean
   public GraphQL graphql(@NonNull GraphQLSchema graphqlSchema) {
-    return GraphQL
-        .newGraphQL(graphqlSchema)
+    return GraphQL.newGraphQL(graphqlSchema)
         .build();
   }
 
   @Bean
   public JexlEngine jexlBuilder() {
-    return new JexlBuilder()
-        .silent(false)
+    return new JexlBuilder().silent(false)
         .strict(true)
         .create();
   }
-
 }

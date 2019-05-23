@@ -16,14 +16,12 @@ class ObjectHelperTest {
 
   @Test
   void cast_throwsIllegalArgumentException_forWrongClassAndObject() {
-    assertThrows(IllegalArgumentException.class,() ->
-        ObjectHelper.cast(String.class, 1L));
+    assertThrows(IllegalArgumentException.class, () -> ObjectHelper.cast(String.class, 1L));
   }
 
   @Test
   void cast_throwsIllegalArgumentException_forWrongClassAndNullObject() {
-    assertThrows(IllegalArgumentException.class,() ->
-        ObjectHelper.cast(String.class, null));
+    assertThrows(IllegalArgumentException.class, () -> ObjectHelper.cast(String.class, null));
   }
 
   @Test

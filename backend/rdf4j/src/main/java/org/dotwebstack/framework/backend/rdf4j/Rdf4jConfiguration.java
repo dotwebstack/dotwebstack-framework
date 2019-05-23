@@ -53,21 +53,19 @@ class Rdf4jConfiguration {
   }
 
   @Bean
-  RepositoryManager repositoryManager(@NonNull CoreProperties coreProperties,
-                                      @NonNull Rdf4jProperties rdf4jProperties,
-                                      @NonNull ConfigFactory configFactory,
-                                      @NonNull ResourceLoader resourceLoader)
-      throws IOException {
+  RepositoryManager repositoryManager(@NonNull CoreProperties coreProperties, @NonNull Rdf4jProperties rdf4jProperties,
+      @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader) throws IOException {
     LOG.debug("Initializing repository manager");
 
-    File baseDir = Files.createTempDirectory(BASE_DIR_PREFIX).toFile();
+    File baseDir = Files.createTempDirectory(BASE_DIR_PREFIX)
+        .toFile();
     LocalRepositoryManager repositoryManager = new LocalRepositoryManager(baseDir);
     repositoryManager.init();
 
     // Add & populate local repository
     repositoryManager.addRepositoryConfig(createLocalRepositoryConfig());
     populateLocalRepository(repositoryManager.getRepository(LOCAL_REPOSITORY_ID), resourceLoader,
-            coreProperties.getResourcePath());
+        coreProperties.getResourcePath());
 
     // Add repositories from external config
     if (rdf4jProperties.getRepositories() != null) {
@@ -84,10 +82,12 @@ class Rdf4jConfiguration {
   @Bean
   NodeShapeRegistry nodeShapeRegistry(@NonNull RepositoryManager repositoryManager,
       @NonNull Rdf4jProperties rdf4jProperties) {
-    Model shapeModel = QueryResults.asModel(
-        repositoryManager.getRepository(LOCAL_REPOSITORY_ID).getConnection()
-            .getStatements(null, null, null, rdf4jProperties.getShape().getGraph()));
-    NodeShapeRegistry registry = new NodeShapeRegistry(rdf4jProperties.getShape().getPrefix());
+    Model shapeModel = QueryResults.asModel(repositoryManager.getRepository(LOCAL_REPOSITORY_ID)
+        .getConnection()
+        .getStatements(null, null, null, rdf4jProperties.getShape()
+            .getGraph()));
+    NodeShapeRegistry registry = new NodeShapeRegistry(rdf4jProperties.getShape()
+        .getPrefix());
 
     Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
         .stream()
@@ -97,14 +97,13 @@ class Rdf4jConfiguration {
     return registry;
   }
 
-  private static RepositoryConfig createRepositoryConfig(
-      Entry<String, RepositoryProperties> repositoryEntry, ConfigFactory configFactory) {
+  private static RepositoryConfig createRepositoryConfig(Entry<String, RepositoryProperties> repositoryEntry,
+      ConfigFactory configFactory) {
     String repositoryId = repositoryEntry.getKey();
     RepositoryProperties repository = repositoryEntry.getValue();
 
-    RepositoryImplConfig repositoryImplConfig = configFactory
-        .create(repository.getType(),
-            repository.getArgs() != null ? repository.getArgs() : ImmutableMap.of());
+    RepositoryImplConfig repositoryImplConfig = configFactory.create(repository.getType(),
+        repository.getArgs() != null ? repository.getArgs() : ImmutableMap.of());
     repositoryImplConfig.validate();
 
     return new RepositoryConfig(repositoryId, repositoryImplConfig);
@@ -115,33 +114,32 @@ class Rdf4jConfiguration {
     return new RepositoryConfig(LOCAL_REPOSITORY_ID, repositoryConfig);
   }
 
-  private static void populateLocalRepository(Repository repository,
-                                              ResourceLoader resourceLoader, URI resourcePath) {
+  private static void populateLocalRepository(Repository repository, ResourceLoader resourceLoader, URI resourcePath) {
     Resource[] resourceList;
 
     try {
-      resourceList = ResourcePatternUtils
-          .getResourcePatternResolver(resourceLoader)
-              .getResources(resourcePath.resolve(MODEL_PATH_PATTERN).toString());
+      resourceList = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+          .getResources(resourcePath.resolve(MODEL_PATH_PATTERN)
+              .toString());
     } catch (IOException e) {
       throw new UncheckedIOException("Error while loading local model.", e);
     }
 
-    @Cleanup RepositoryConnection con = repository.getConnection();
+    @Cleanup
+    RepositoryConnection con = repository.getConnection();
 
     Arrays.stream(resourceList)
         .filter(Resource::isReadable)
         .filter(resource -> resource.getFilename() != null)
         .forEach(modelResource -> {
-          String fileExtension = Arrays
-              .stream(modelResource.getFilename().split("\\."))
+          String fileExtension = Arrays.stream(modelResource.getFilename()
+              .split("\\."))
               .reduce("", (s1, s2) -> s2);
 
           RDFFormat format = FileFormats.getFormat(fileExtension);
 
           if (format != null) {
-            LOG.debug("Adding '{}' into '{}' repository",
-                modelResource.getFilename(), LOCAL_REPOSITORY_ID);
+            LOG.debug("Adding '{}' into '{}' repository", modelResource.getFilename(), LOCAL_REPOSITORY_ID);
 
             try {
               con.add(modelResource.getInputStream(), "", format);

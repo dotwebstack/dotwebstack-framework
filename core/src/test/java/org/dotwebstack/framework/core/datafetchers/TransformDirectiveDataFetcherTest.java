@@ -36,8 +36,7 @@ class TransformDirectiveDataFetcherTest {
 
   private TransformDirectiveDataFetcher transformDirectiveDataFetcher;
 
-  private final JexlEngine jexlEngine = new JexlBuilder()
-      .silent(false)
+  private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
       .strict(true)
       .create();
 

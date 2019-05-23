@@ -51,8 +51,7 @@ public class PropertyPathFactoryTest {
 
     // Assert
     assertTrue(propertyPath instanceof SequencePath);
-    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(SCHEMA_ADDRESS,
-        SCHEMA_POSTAL_CODE, RDF.NIL)));
+    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(SCHEMA_ADDRESS, SCHEMA_POSTAL_CODE, RDF.NIL)));
   }
 
   @Test
@@ -72,13 +71,12 @@ public class PropertyPathFactoryTest {
 
     // Assert sequence path
     assertTrue(propertyPath instanceof SequencePath);
-    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(BREWERY_BEERS_PATH, SCHEMA_NAME,
-        RDF.NIL)));
+    assertThat(resolveIris(propertyPath), equalTo(Arrays.asList(BREWERY_BEERS_PATH, SCHEMA_NAME, RDF.NIL)));
 
     // Assert inverse path
-    final PropertyPath first = ((SequencePath)propertyPath).getFirst();
+    final PropertyPath first = ((SequencePath) propertyPath).getFirst();
     assertTrue(first instanceof InversePath);
-    final PropertyPath object = ((InversePath)first).getObject();
+    final PropertyPath object = ((InversePath) first).getObject();
     assertTrue(object instanceof PredicatePath);
   }
 
@@ -113,9 +111,9 @@ public class PropertyPathFactoryTest {
     repo.init();
     String shapesPath = "config/model/shapes.trig";
     try (RepositoryConnection connection = repo.getConnection();
-         InputStream is =
-             PropertyPathFactoryTest.class.getClassLoader().getResourceAsStream(shapesPath);
-         Reader shaclRules = new InputStreamReader(is)) {
+        InputStream is = PropertyPathFactoryTest.class.getClassLoader()
+            .getResourceAsStream(shapesPath);
+        Reader shaclRules = new InputStreamReader(is)) {
 
       connection.begin();
       connection.add(shaclRules, "", RDFFormat.TRIG, RDF4J.SHACL_SHAPE_GRAPH);

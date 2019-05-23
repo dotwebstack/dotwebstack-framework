@@ -10,8 +10,7 @@ public class InvalidConfigurationException extends DotWebStackRuntimeException {
     super(message, arguments);
   }
 
-  public InvalidConfigurationException(
-      @NonNull String message, Throwable cause, Object... arguments) {
+  public InvalidConfigurationException(@NonNull String message, Throwable cause, Object... arguments) {
     super(message, cause, arguments);
   }
 }

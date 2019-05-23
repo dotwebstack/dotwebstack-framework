@@ -22,13 +22,15 @@ public class PredicatePath implements PropertyPath {
   public Set<Value> resolvePath(Model model, Resource subject, boolean inversed) {
     if (inversed) {
       Set<Value> set = new HashSet<>();
-      model.filter(null, iri, subject).forEach(st -> set.add(st.getSubject()));
+      model.filter(null, iri, subject)
+          .forEach(st -> set.add(st.getSubject()));
       return set;
     }
     return Models.getProperties(model, subject, this.iri);
   }
 
   public RdfPredicate toPredicate() {
-    return () -> Rdf.iri(getIri()).getQueryString();
+    return () -> Rdf.iri(getIri())
+        .getQueryString();
   }
 }
