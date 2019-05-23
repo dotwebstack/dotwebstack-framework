@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core;
 
-import static java.lang.String.format;
 
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
@@ -39,8 +38,6 @@ public class CoreConfiguration {
 
     RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
     graphqlConfigurers.forEach(graphqlConfigurer -> graphqlConfigurer.configureRuntimeWiring(runtimeWiringBuilder));
-
-    String s = format("bla %s", "check");
 
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());
   }

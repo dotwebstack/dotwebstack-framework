@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 
 import graphql.schema.GraphQLDirective;
 import java.util.Optional;
+import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
@@ -14,7 +15,7 @@ public class JexlHelper {
 
   private final JexlEngine engine;
 
-  public JexlHelper(JexlEngine engine) {
+  public JexlHelper(@NonNull JexlEngine engine) {
     this.engine = engine;
   }
 
