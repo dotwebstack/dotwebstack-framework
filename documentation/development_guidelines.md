@@ -4,10 +4,10 @@ This page describes the development guidelines that should be followed when cont
 # Code style
 The DotWebStack framework uses Java code conventions based on the Google Java Style Guide. Most conventions
 are enforced by the Checkstyle and Spotless plugins as described below. The conventions that are not supported
-by these tools should be 
+by these tools are described below should be applied manually.
 
 ## CheckStyle
-The project uses the [checkstyle](http://checkstyle.sourceforge.net/) during the validation stage, using
+The project uses the [checkstyle](http://checkstyle.sourceforge.net/) plugin during the validation stage, using
  the configuration `checkstyle.xml`to check most conventions.
 
 ## Spotless
