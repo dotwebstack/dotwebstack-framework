@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.util.Map;
+
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;

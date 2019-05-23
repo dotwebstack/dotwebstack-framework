@@ -24,7 +24,7 @@ public class TransformDirectiveDataFetcher extends DelegateDataFetcher {
 
   @Override
   public boolean supports(DataFetchingEnvironment environment) {
-    return environment.getField().getDirectives()
+    return environment.getFieldDefinition().getDirectives()
         .stream()
         .anyMatch(directive -> directive.getName().equals(CoreDirectives.TRANSFORM_NAME));
   }

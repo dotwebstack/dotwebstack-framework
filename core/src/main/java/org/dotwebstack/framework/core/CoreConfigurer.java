@@ -10,6 +10,7 @@ import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinitio
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.TypeName.newTypeName;
+import static graphql.schema.FieldCoordinates.coordinates;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -22,7 +23,6 @@ import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.TypeName;
-import graphql.schema.FieldCoordinates;
 import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.idl.RuntimeWiring.Builder;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -160,14 +160,10 @@ public class CoreConfigurer implements GraphqlConfigurer {
     this.typeDefinitionRegistry.types().values()
         .stream()
         .filter(type -> type instanceof ObjectTypeDefinition)
-//        .filter(type -> !type.getName().equals("Query"))
-        .forEach(type -> {
-          type.getName();
-          ((ObjectTypeDefinition) type).getFieldDefinitions()
-              .forEach(fieldDefinition ->
-                  builder.dataFetcher(FieldCoordinates.coordinates(type.getName(), fieldDefinition.getName()),
-                      dataFetcher));
-        });
+        .forEach(type -> ((ObjectTypeDefinition) type).getFieldDefinitions()
+            .forEach(fieldDefinition ->
+                builder.dataFetcher(coordinates(type.getName(), fieldDefinition.getName()),
+                    dataFetcher)));
 
     return builder.build();
   }
