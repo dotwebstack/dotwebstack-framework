@@ -136,6 +136,7 @@ class ValueFetcherTest {
 
   @Test
   void get_ReturnsQuerySolution_ForNestedObjectType() {
+    // Arrange
     GraphQLObjectType fieldType = GraphQLObjectType.newObject()
         .name("address")
         .field(newFieldDefinition()
@@ -143,7 +144,6 @@ class ValueFetcherTest {
             .type(GraphQLNonNull.nonNull(Scalars.GraphQLString)))
         .build();
 
-    // Arrange
     PropertyShape propertyShape = PropertyShape.builder()
         .name(BREWERY_ADDRESS_FIELD)
         .path(PredicatePath.builder().iri(BREWERY_ADDRESS_PATH).build())
@@ -170,12 +170,12 @@ class ValueFetcherTest {
 
   @Test
   void get_ReturnsConvertedLiteralList_ForScalarFieldList() {
+    // Arrange
     PropertyShape propertyShape = PropertyShape.builder()
         .name(BREWERY_OWNERS_FIELD)
         .path(PredicatePath.builder().iri(BREWERY_OWNERS_PATH).build())
         .build();
 
-    // Arrange
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry);
 
