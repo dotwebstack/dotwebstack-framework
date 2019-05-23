@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core;
 
-
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
