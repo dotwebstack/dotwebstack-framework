@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
@@ -31,7 +30,6 @@ import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 @Slf4j
-@RequiredArgsConstructor
 public final class QueryFetcher implements DataFetcher<Object> {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
@@ -45,6 +43,15 @@ public final class QueryFetcher implements DataFetcher<Object> {
   private final JexlEngine jexlEngine;
 
   private final ConstraintTraverser constraintTraverser;
+
+  public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
+      Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser) {
+    this.repositoryConnection = repositoryConnection;
+    this.nodeShapeRegistry = nodeShapeRegistry;
+    this.prefixMap = prefixMap;
+    this.jexlEngine = jexlEngine;
+    this.constraintTraverser = constraintTraverser;
+  }
 
   @Override
   public Object get(@NonNull DataFetchingEnvironment environment) {

@@ -5,18 +5,18 @@ import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 
 import graphql.schema.GraphQLDirective;
 import java.util.Optional;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 
-@RequiredArgsConstructor
 public class JexlHelper {
 
-  @NonNull
-  JexlEngine engine;
+  private final JexlEngine engine;
+
+  public JexlHelper(JexlEngine engine) {
+    this.engine = engine;
+  }
 
   public <T> Optional<T> evaluateExpression(String expressionString, JexlContext context, Class<T> clazz) {
     JexlExpression expression = this.engine.createExpression(expressionString);

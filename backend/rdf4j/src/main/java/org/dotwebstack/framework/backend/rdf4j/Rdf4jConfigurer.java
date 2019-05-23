@@ -10,7 +10,6 @@ import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.directives.SparqlDirectiveWiring;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
@@ -18,10 +17,13 @@ import org.dotwebstack.framework.core.GraphqlConfigurer;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class Rdf4jConfigurer implements GraphqlConfigurer {
 
   private final SparqlDirectiveWiring sparqlDirectiveWiring;
+
+  public Rdf4jConfigurer(SparqlDirectiveWiring sparqlDirectiveWiring) {
+    this.sparqlDirectiveWiring = sparqlDirectiveWiring;
+  }
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {

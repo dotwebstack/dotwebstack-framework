@@ -4,12 +4,10 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-import lombok.RequiredArgsConstructor;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
 
   @Override
