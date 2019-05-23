@@ -20,12 +20,12 @@ The [CoreDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/
 We are currently offering two abstract implementations of the CoreDataFetcher which can be used by anyone. When you write your own *CoreDataFetcher* and annotate it with a Spring *@Component* annotation it will be automatically registered.
 
 
-###SourceDataFetcher
+### SourceDataFetcher
  
 A [SourceDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/IHR2-2318/core/src/main/java/org/dotwebstack/framework/core/datafetchers/SourceDataFetcher.java) can be used to actually fetch data from *any* source.
 
 
-###DelegateDataFetcher
+### DelegateDataFetcher
 
 A [DelegateDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/IHR2-2318/core/src/main/java/org/dotwebstack/framework/core/datafetchers/DelegateDataFetcher.java) can act as a *decorator* for a *SourceDataFetcher* and gives you the capability to transform the result from a *SourceDataFetcher*
 
