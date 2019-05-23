@@ -15,10 +15,9 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
   private ConstraintTraverser constraintTraverser;
 
   @Override
-  public GraphQLArgument onArgument(
-          SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
+  public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     try {
-      constraintTraverser.onArguments(environment.getElement(),null);
+      constraintTraverser.onArguments(environment.getElement(), null);
     } catch (DirectiveValidationException exception) {
       throwConfigurationException(exception);
     }
@@ -27,7 +26,7 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
 
   @Override
   public GraphQLInputObjectField onInputObjectField(
-          SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
+      SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     try {
       constraintTraverser.onInputObjectField(environment.getElement(), null);
     } catch (DirectiveValidationException exception) {
@@ -37,8 +36,7 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
   }
 
   private void throwConfigurationException(Exception cause) {
-    throw new InvalidConfigurationException(
-            "Default value in constraint directive is violating constraint!",cause);
+    throw new InvalidConfigurationException("Default value in constraint directive is violating constraint!", cause);
   }
 
 }

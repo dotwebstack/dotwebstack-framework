@@ -9,6 +9,8 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 @AllArgsConstructor
 class OrderContext {
   private String field;
+
   private Orderable orderable;
+
   private PropertyShape propertyShape;
 }

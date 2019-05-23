@@ -13,8 +13,7 @@ public class CoreInputTypes {
   public static final String SORT_FIELD_FIELD;
 
   private CoreInputTypes() {
-    throw new IllegalStateException(
-            String.format("%s is not meant to be instantiated.", CoreDirectives.class));
+    throw new IllegalStateException(String.format("%s is not meant to be instantiated.", CoreDirectives.class));
   }
 
   static {

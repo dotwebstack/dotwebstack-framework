@@ -23,6 +23,7 @@ public class ZeroOrOnePath implements PropertyPath {
 
   @Override
   public RdfPredicate toPredicate() {
-    return () -> "(" + object.toPredicate().getQueryString() + ")?";
+    return () -> "(" + object.toPredicate()
+        .getQueryString() + ")?";
   }
 }

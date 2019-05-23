@@ -38,14 +38,15 @@ class GraphqlIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors().isEmpty(), is(equalTo(true)));
+    assertThat(result.getErrors()
+        .isEmpty(), is(equalTo(true)));
     Map<String, Object> data = result.getData();
 
-    assertThat(data, IsMapContaining.hasEntry(BREWERY_FIELD,
-            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1,
-                            BREWERY_NAME_FIELD,BREWERY_NAME_EXAMPLE_1,
-                            BREWERY_FOUNDED_FIELD,BREWERY_FOUNDED_EXAMPLE_1,
-                            BREWERY_FOUNDED_AT_YEAR_FIELD,BREWERY_FOUNDED_AT_YEAR_EXAMPLE_1)));
+    assertThat(data,
+        IsMapContaining.hasEntry(BREWERY_FIELD,
+            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1, BREWERY_NAME_FIELD,
+                BREWERY_NAME_EXAMPLE_1, BREWERY_FOUNDED_FIELD, BREWERY_FOUNDED_EXAMPLE_1, BREWERY_FOUNDED_AT_YEAR_FIELD,
+                BREWERY_FOUNDED_AT_YEAR_EXAMPLE_1)));
   }
 
 }

@@ -15,8 +15,9 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
     }
 
     if (!(value instanceof String)) {
-      throw new CoercingSerializeException(String
-          .format("Unable to parse date-time string from '%s' type.", value.getClass().getName()));
+      throw new CoercingSerializeException(
+          String.format("Unable to parse date-time string from '%s' type.", value.getClass()
+              .getName()));
     }
 
     try {

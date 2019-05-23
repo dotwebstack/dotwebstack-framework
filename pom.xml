@@ -290,6 +290,37 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <version>1.23.0</version>
+          <configuration>
+            <java>
+              <eclipse>
+                <file>${maven.multiModuleProjectDirectory}/eclipse-java-style-dws.xml</file>
+              </eclipse>
+              <removeUnusedImports />
+              <endWithNewline />
+              <importOrder>
+                <file>${maven.multiModuleProjectDirectory}/dws.importorder</file>
+              </importOrder>
+              <trimTrailingWhitespace />
+              <indent>
+                <spaces>true</spaces>
+                <spacesPerTab>2</spacesPerTab>
+              </indent>
+            </java>
+          </configuration>
+          <executions>
+            <execution>
+              <id>spotless-check</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -312,6 +343,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

@@ -2,12 +2,10 @@ package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -21,11 +19,10 @@ import org.eclipse.rdf4j.sail.memory.model.MemStatementList;
 
 public class PropertyPathFactory {
 
-  private PropertyPathFactory() {
-  }
+  private PropertyPathFactory() {}
 
-  private static final ImmutableMap.Builder<IRI, Function<List<PropertyPath>, PropertyPath>>
-      BUILDER = new ImmutableMap.Builder<>();
+  private static final ImmutableMap.Builder<IRI, Function<List<PropertyPath>, PropertyPath>> BUILDER =
+      new ImmutableMap.Builder<>();
 
   static {
     BUILDER.put(RDF.FIRST, PropertyPathFactory::sequencePath);
@@ -43,16 +40,20 @@ public class PropertyPathFactory {
 
     if (value instanceof MemBNode) {
       MemBNode blankNode = (MemBNode) value;
-      IRI iri = blankNode.getSubjectStatementList().get(0).getPredicate();
+      IRI iri = blankNode.getSubjectStatementList()
+          .get(0)
+          .getPredicate();
 
-      List<PropertyPath> childs = memStatements(blankNode.getSubjectStatementList())
-          .stream()
+      List<PropertyPath> childs = memStatements(blankNode.getSubjectStatementList()).stream()
           .map(child -> create(model, child.getSubject(), child.getPredicate()))
           .collect(Collectors.toList());
 
-      return MAP.get(iri).apply(childs);
+      return MAP.get(iri)
+          .apply(childs);
     }
-    return PredicatePath.builder().iri((IRI) value).build();
+    return PredicatePath.builder()
+        .iri((IRI) value)
+        .build();
   }
 
   private static List<MemStatement> memStatements(MemStatementList memStatementList) {

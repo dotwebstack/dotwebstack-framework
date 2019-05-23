@@ -31,8 +31,10 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
-    TypeName optionalString = TypeName.newTypeName(Scalars.GraphQLString.getName()).build();
-    NonNullType requiredString = NonNullType.newNonNullType(optionalString).build();
+    TypeName optionalString = TypeName.newTypeName(Scalars.GraphQLString.getName())
+        .build();
+    NonNullType requiredString = NonNullType.newNonNullType(optionalString)
+        .build();
 
     registry.add(DirectiveDefinition.newDirectiveDefinition()
         .name(Rdf4jDirectives.SPARQL_NAME)
@@ -67,8 +69,7 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureRuntimeWiring(@NonNull RuntimeWiring.Builder builder) {
-    builder
-        .codeRegistry(registerValueFetchers())
+    builder.codeRegistry(registerValueFetchers())
         .scalar(Rdf4jScalars.IRI)
         .directive(Rdf4jDirectives.SPARQL_NAME, sparqlDirectiveWiring);
   }
@@ -78,13 +79,13 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
 
     nodeShapeRegistry.all()
         .forEach(nodeShape -> {
-          String typeName = nodeShape.getIdentifier().getLocalName();
+          String typeName = nodeShape.getIdentifier()
+              .getLocalName();
 
           nodeShape.getPropertyShapes()
               .values()
-              .forEach(propertyShape -> builder
-                  .dataFetcher(FieldCoordinates.coordinates(typeName, propertyShape.getName()),
-                      new ValueFetcher(propertyShape)));
+              .forEach(propertyShape -> builder.dataFetcher(
+                  FieldCoordinates.coordinates(typeName, propertyShape.getName()), new ValueFetcher(propertyShape)));
         });
 
     return builder.build();

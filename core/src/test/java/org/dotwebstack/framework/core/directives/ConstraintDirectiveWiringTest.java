@@ -47,7 +47,7 @@ class ConstraintDirectiveWiringTest {
 
     constraintDirectiveWiring.onArgument(argumentEnvironment);
 
-    verify(constraintTraverser).onArguments(argument,null);
+    verify(constraintTraverser).onArguments(argument, null);
   }
 
   @Test
@@ -55,8 +55,8 @@ class ConstraintDirectiveWiringTest {
 
     when(argumentEnvironment.getElement()).thenThrow(new DirectiveValidationException("boom!"));
 
-    Assertions.assertThrows(InvalidConfigurationException.class, () ->
-        constraintDirectiveWiring.onArgument(argumentEnvironment));
+    Assertions.assertThrows(InvalidConfigurationException.class,
+        () -> constraintDirectiveWiring.onArgument(argumentEnvironment));
   }
 
   @Test
@@ -70,16 +70,15 @@ class ConstraintDirectiveWiringTest {
 
     constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment);
 
-    verify(constraintTraverser).onInputObjectField(field,null);
+    verify(constraintTraverser).onInputObjectField(field, null);
   }
 
 
   @Test
   void onInputObjectField_throwsException_forGivenArgument() {
-    when(inputObjectFieldEnvironment.getElement())
-        .thenThrow(new DirectiveValidationException("boom!"));
+    when(inputObjectFieldEnvironment.getElement()).thenThrow(new DirectiveValidationException("boom!"));
 
-    Assertions.assertThrows(InvalidConfigurationException.class, () ->
-            constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment));
+    Assertions.assertThrows(InvalidConfigurationException.class,
+        () -> constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment));
   }
 }

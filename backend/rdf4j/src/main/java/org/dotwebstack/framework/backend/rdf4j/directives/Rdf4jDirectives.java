@@ -15,8 +15,7 @@ public final class Rdf4jDirectives {
   public static final String SPARQL_ARG_ORDER_BY;
 
   private Rdf4jDirectives() {
-    throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", Rdf4jDirectives.class));
+    throw new IllegalStateException(String.format("%s is not meant to be instantiated.", Rdf4jDirectives.class));
   }
 
   static {

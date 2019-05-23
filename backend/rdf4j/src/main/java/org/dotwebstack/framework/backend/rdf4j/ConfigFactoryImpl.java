@@ -27,7 +27,8 @@ final class ConfigFactoryImpl implements ConfigFactory {
 
   @Override
   public RepositoryImplConfig create(@NonNull String type, @NonNull Map<String, Object> args) {
-    return creators.get(type).create(args);
+    return creators.get(type)
+        .create(args);
   }
 
   @Override

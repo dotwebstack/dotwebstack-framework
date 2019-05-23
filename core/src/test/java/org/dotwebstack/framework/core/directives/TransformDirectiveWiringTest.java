@@ -65,13 +65,11 @@ class TransformDirectiveWiringTest {
   @Captor
   private ArgumentCaptor<DataFetcher<Object>> dataFetcherCaptor;
 
-  private final JexlEngine jexlEngine = new JexlBuilder()
-      .silent(false)
+  private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
       .strict(true)
       .create();
 
-  private final TransformDirectiveWiring transformDirectiveWiring = new TransformDirectiveWiring(
-      jexlEngine);
+  private final TransformDirectiveWiring transformDirectiveWiring = new TransformDirectiveWiring(jexlEngine);
 
   @BeforeEach
   void setUp() {
@@ -92,10 +90,9 @@ class TransformDirectiveWiringTest {
 
     // Assert
     assertThat(result, is(sameInstance(fieldDefinition)));
-    verify(codeRegistry)
-        .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
-    assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
-        is(equalTo(FIELD_VALUE_1.length())));
+    verify(codeRegistry).dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
+    assertThat(dataFetcherCaptor.getValue()
+        .get(dataFetchingEnvironment), is(equalTo(FIELD_VALUE_1.length())));
   }
 
   @Test
@@ -113,9 +110,9 @@ class TransformDirectiveWiringTest {
 
     // Assert
     assertThat(result, is(sameInstance(fieldDefinition)));
-    verify(codeRegistry)
-        .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
-    assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment), is(nullValue()));
+    verify(codeRegistry).dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
+    assertThat(dataFetcherCaptor.getValue()
+        .get(dataFetchingEnvironment), is(nullValue()));
   }
 
   @Test
@@ -132,10 +129,9 @@ class TransformDirectiveWiringTest {
 
     // Assert
     assertThat(result, is(sameInstance(fieldDefinition)));
-    verify(codeRegistry)
-        .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
-    assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
-        is(equalTo(FIELD_VALUE_1.length())));
+    verify(codeRegistry).dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
+    assertThat(dataFetcherCaptor.getValue()
+        .get(dataFetchingEnvironment), is(equalTo(FIELD_VALUE_1.length())));
   }
 
   @Test
@@ -152,10 +148,9 @@ class TransformDirectiveWiringTest {
 
     // Assert
     assertThat(result, is(sameInstance(fieldDefinition)));
-    verify(codeRegistry)
-        .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
-    assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
-        is(equalTo(ImmutableList.of(FIELD_VALUE_1.length(), FIELD_VALUE_2.length()))));
+    verify(codeRegistry).dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
+    assertThat(dataFetcherCaptor.getValue()
+        .get(dataFetchingEnvironment), is(equalTo(ImmutableList.of(FIELD_VALUE_1.length(), FIELD_VALUE_2.length()))));
   }
 
   @Test
@@ -163,8 +158,7 @@ class TransformDirectiveWiringTest {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
         .name(FIELD_NAME)
-        .type(GraphQLNonNull.nonNull(GraphQLList.list(
-            GraphQLNonNull.nonNull(Scalars.GraphQLString))))
+        .type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLNonNull.nonNull(Scalars.GraphQLString))))
         .build();
     prepareEnvironment(fieldDefinition, ImmutableList.of(FIELD_VALUE_1, FIELD_VALUE_2));
 
@@ -173,10 +167,9 @@ class TransformDirectiveWiringTest {
 
     // Assert
     assertThat(result, is(sameInstance(fieldDefinition)));
-    verify(codeRegistry)
-        .dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
-    assertThat(dataFetcherCaptor.getValue().get(dataFetchingEnvironment),
-        is(equalTo(ImmutableList.of(FIELD_VALUE_1.length(), FIELD_VALUE_2.length()))));
+    verify(codeRegistry).dataFetcher(eq(parentType), eq(fieldDefinition), dataFetcherCaptor.capture());
+    assertThat(dataFetcherCaptor.getValue()
+        .get(dataFetchingEnvironment), is(equalTo(ImmutableList.of(FIELD_VALUE_1.length(), FIELD_VALUE_2.length()))));
   }
 
   @Test
@@ -184,17 +177,16 @@ class TransformDirectiveWiringTest {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
         .name(FIELD_NAME)
-        .type(GraphQLObjectType.newObject().name(FIELD_NAME))
+        .type(GraphQLObjectType.newObject()
+            .name(FIELD_NAME))
         .build();
     when(environment.getElement()).thenReturn(fieldDefinition);
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () ->
-        transformDirectiveWiring.onField(environment));
+    assertThrows(InvalidConfigurationException.class, () -> transformDirectiveWiring.onField(environment));
   }
 
-  private void prepareEnvironment(GraphQLFieldDefinition fieldDefinition, Object value)
-      throws Exception {
+  private void prepareEnvironment(GraphQLFieldDefinition fieldDefinition, Object value) throws Exception {
     when(environment.getElement()).thenReturn(fieldDefinition);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(dataFetcher.get(dataFetchingEnvironment)).thenReturn(value);

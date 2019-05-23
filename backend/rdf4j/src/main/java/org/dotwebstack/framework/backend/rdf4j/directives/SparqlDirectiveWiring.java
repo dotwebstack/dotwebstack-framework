@@ -34,41 +34,36 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private ConstraintTraverser constraintTraverser;
 
-  public SparqlDirectiveWiring(
-      RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
-      Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine,
-      ConstraintTraverser constraintTraverser) {
+  public SparqlDirectiveWiring(RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
+      Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
-    this.prefixMap = rdf4jProperties.getPrefixes() != null
-        ? HashBiMap.create(rdf4jProperties.getPrefixes()).inverse() : ImmutableMap.of();
+    this.prefixMap = rdf4jProperties.getPrefixes() != null ? HashBiMap.create(rdf4jProperties.getPrefixes())
+        .inverse() : ImmutableMap.of();
     this.jexlEngine = jexlEngine;
     this.constraintTraverser = constraintTraverser;
   }
 
   @Override
-  public GraphQLFieldDefinition onField(
-      @NonNull SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
+  public GraphQLFieldDefinition onField(@NonNull SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
     GraphQLType outputType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
     if (!(outputType instanceof GraphQLObjectType)) {
-      throw new UnsupportedOperationException(
-          "Field types other than object fields are not yet supported.");
+      throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
     }
 
-    String repositoryId = DirectiveUtils
-        .getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, environment.getDirective(),
-            String.class);
+    String repositoryId =
+        DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, environment.getDirective(), String.class);
 
     if (!repositoryManager.hasRepositoryConfig(repositoryId)) {
-      throw new InvalidConfigurationException("Repository '{}' was never configured.",
-              repositoryId);
+      throw new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId);
     }
 
-    RepositoryConnection connection = repositoryManager.getRepository(repositoryId).getConnection();
-    QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap,
-            jexlEngine, constraintTraverser);
+    RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
+        .getConnection();
+    QueryFetcher queryFetcher =
+        new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine, constraintTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);

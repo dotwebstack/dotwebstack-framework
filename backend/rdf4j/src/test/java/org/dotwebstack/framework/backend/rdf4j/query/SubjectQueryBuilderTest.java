@@ -35,10 +35,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class SubjectQueryBuilderTest {
 
-  private final JexlEngine jexlEngine = new JexlBuilder()
-            .silent(false)
-            .strict(true)
-            .create();
+  private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
+      .strict(true)
+      .create();
 
   @Mock
   private QueryEnvironment environmentMock = mock(QueryEnvironment.class);
@@ -61,68 +60,59 @@ class SubjectQueryBuilderTest {
   void setUp() {
     when(this.environmentMock.getNodeShapeRegistry()).thenReturn(this.registryMock);
     when(this.environmentMock.getObjectType()).thenReturn(this.objectTypeMock);
-    when(this.environmentMock.getNodeShapeRegistry().get(any(GraphQLObjectType.class)))
-            .thenReturn(this.nodeShapeMock);
+    when(this.environmentMock.getNodeShapeRegistry()
+        .get(any(GraphQLObjectType.class))).thenReturn(this.nodeShapeMock);
     this.subjectQueryBuilder = SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine);
   }
 
   private GraphQLDirective getValidPagingDirective() {
-    return GraphQLDirective
-            .newDirective()
-            .name("sparql")
-            .argument(GraphQLArgument
-                    .newArgument()
-                    .name(Rdf4jDirectives.SPARQL_ARG_OFFSET)
-                    .type(Scalars.GraphQLString)
-                    .value("(page - 1) * pageSize")
-                    .build())
-            .argument(GraphQLArgument
-                    .newArgument()
-                    .name(Rdf4jDirectives.SPARQL_ARG_LIMIT)
-                    .type(Scalars.GraphQLString)
-                    .value("pageSize")
-                    .build())
-            .build();
+    return GraphQLDirective.newDirective()
+        .name("sparql")
+        .argument(GraphQLArgument.newArgument()
+            .name(Rdf4jDirectives.SPARQL_ARG_OFFSET)
+            .type(Scalars.GraphQLString)
+            .value("(page - 1) * pageSize")
+            .build())
+        .argument(GraphQLArgument.newArgument()
+            .name(Rdf4jDirectives.SPARQL_ARG_LIMIT)
+            .type(Scalars.GraphQLString)
+            .value("pageSize")
+            .build())
+        .build();
   }
 
   private GraphQLDirective getValidSortDirective() {
-    return GraphQLDirective
-            .newDirective()
-            .name("sparql")
-            .argument(GraphQLArgument
-                    .newArgument()
-                    .name(Rdf4jDirectives.SPARQL_ARG_ORDER_BY)
-                    .type(Scalars.GraphQLString)
-                    .value("sort")
-                    .build())
-            .build();
+    return GraphQLDirective.newDirective()
+        .name("sparql")
+        .argument(GraphQLArgument.newArgument()
+            .name(Rdf4jDirectives.SPARQL_ARG_ORDER_BY)
+            .type(Scalars.GraphQLString)
+            .value("sort")
+            .build())
+        .build();
   }
 
   private GraphQLDirective getInvalidPagingDirective() {
-    return GraphQLDirective
-            .newDirective()
-            .name("sparql")
-            .argument(GraphQLArgument
-                    .newArgument()
-                    .name(Rdf4jDirectives.SPARQL_ARG_OFFSET)
-                    .type(Scalars.GraphQLString)
-                    .value("this is an invalid expression")
-                    .build())
-            .argument(GraphQLArgument
-                    .newArgument()
-                    .name(Rdf4jDirectives.SPARQL_ARG_LIMIT)
-                    .type(Scalars.GraphQLString)
-                    .value("this is an invalid expression")
-                    .build())
-            .build();
+    return GraphQLDirective.newDirective()
+        .name("sparql")
+        .argument(GraphQLArgument.newArgument()
+            .name(Rdf4jDirectives.SPARQL_ARG_OFFSET)
+            .type(Scalars.GraphQLString)
+            .value("this is an invalid expression")
+            .build())
+        .argument(GraphQLArgument.newArgument()
+            .name(Rdf4jDirectives.SPARQL_ARG_LIMIT)
+            .type(Scalars.GraphQLString)
+            .value("this is an invalid expression")
+            .build())
+        .build();
   }
 
   @Test
   void test_pagingParameters_whenNoExpressionsSet() {
-    GraphQLDirective emptySparqlDirective = GraphQLDirective
-            .newDirective()
-            .name("sparql")
-            .build();
+    GraphQLDirective emptySparqlDirective = GraphQLDirective.newDirective()
+        .name("sparql")
+        .build();
 
     Map<String, Object> arguments = new HashMap<>();
     arguments.put("page", 1);
@@ -130,9 +120,9 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
     assertThat(this.subjectQueryBuilder.getLimitFromContext(context, emptySparqlDirective),
-            is(equalTo(Optional.empty())));
+        is(equalTo(Optional.empty())));
     assertThat(this.subjectQueryBuilder.getOffsetFromContext(context, emptySparqlDirective),
-            is(equalTo(Optional.empty())));
+        is(equalTo(Optional.empty())));
   }
 
   @Test
@@ -142,10 +132,10 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    assertThrows(org.apache.commons.jexl3.JexlException.Variable.class, () ->
-            this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
-    assertThrows(org.apache.commons.jexl3.JexlException.Variable.class, () ->
-            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+    assertThrows(org.apache.commons.jexl3.JexlException.Variable.class,
+        () -> this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
+    assertThrows(org.apache.commons.jexl3.JexlException.Variable.class,
+        () -> this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -158,9 +148,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
-            is(equalTo(Optional.of(12))));
+        is(equalTo(Optional.of(12))));
     assertThat(this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective),
-            is(equalTo(Optional.of(48))));
+        is(equalTo(Optional.of(48))));
   }
 
   @Test
@@ -173,9 +163,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
-            is(equalTo(Optional.of(12))));
-    assertThrows(IllegalArgumentException.class, () ->
-            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+        is(equalTo(Optional.of(12))));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -188,9 +178,9 @@ class SubjectQueryBuilderTest {
     MapContext context = new MapContext(arguments);
 
     assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
-            is(equalTo(Optional.of(12))));
-    assertThrows(IllegalArgumentException.class, () ->
-            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+        is(equalTo(Optional.of(12))));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -202,10 +192,10 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    assertThrows(IllegalArgumentException.class, () ->
-            this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
-    assertThrows(IllegalArgumentException.class, () ->
-            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -217,10 +207,10 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    assertThrows(IllegalArgumentException.class, () ->
-            this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
-    assertThrows(IllegalArgumentException.class, () ->
-            this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -233,10 +223,10 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
-    assertThrows(org.apache.commons.jexl3.JexlException.Parsing.class, () ->
-            this.subjectQueryBuilder.getLimitFromContext(context, invalidSparqlDirective));
-    assertThrows(org.apache.commons.jexl3.JexlException.Parsing.class, () ->
-            this.subjectQueryBuilder.getOffsetFromContext(context, invalidSparqlDirective));
+    assertThrows(org.apache.commons.jexl3.JexlException.Parsing.class,
+        () -> this.subjectQueryBuilder.getLimitFromContext(context, invalidSparqlDirective));
+    assertThrows(org.apache.commons.jexl3.JexlException.Parsing.class,
+        () -> this.subjectQueryBuilder.getOffsetFromContext(context, invalidSparqlDirective));
   }
 
   @Test
@@ -246,19 +236,17 @@ class SubjectQueryBuilderTest {
     GraphQLDirective validSparqlDirective = getValidSortDirective();
 
     Map<String, Object> arguments = new HashMap<>();
-    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier",
-            "order", "DESC")));
+    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier", "order", "DESC")));
 
     MapContext context = new MapContext(arguments);
-    Optional<List<OrderContext>> optional = this.subjectQueryBuilder.getOrderByFromContext(context,
-            validSparqlDirective);
+    Optional<List<OrderContext>> optional =
+        this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective);
 
     assertThat(optional.isPresent(), is(true));
 
-    optional.ifPresent(orderContexts ->
-        assertThat(orderContexts.get(0).getOrderable().getQueryString(),
-              is(equalTo("DESC( ?identifier )")))
-    );
+    optional.ifPresent(orderContexts -> assertThat(orderContexts.get(0)
+        .getOrderable()
+        .getQueryString(), is(equalTo("DESC( ?identifier )"))));
   }
 
   @Test
@@ -267,8 +255,8 @@ class SubjectQueryBuilderTest {
     Map<String, Object> arguments = new HashMap<>();
 
     MapContext context = new MapContext(arguments);
-    assertThrows(JexlException.Variable.class, () ->
-            this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
+    assertThrows(JexlException.Variable.class,
+        () -> this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
   }
 
   @Test
@@ -278,11 +266,10 @@ class SubjectQueryBuilderTest {
     GraphQLDirective validSparqlDirective = getValidSortDirective();
 
     Map<String, Object> arguments = new HashMap<>();
-    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier",
-            "order", "DESC")));
+    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier", "order", "DESC")));
 
     MapContext context = new MapContext(arguments);
-    assertThrows(IllegalArgumentException.class, () ->
-            this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
   }
 }

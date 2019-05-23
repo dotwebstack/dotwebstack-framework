@@ -26,28 +26,24 @@ public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
   private final JexlEngine jexlEngine;
 
   @Override
-  public GraphQLFieldDefinition onField(
-      SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
+  public GraphQLFieldDefinition onField(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
     GraphQLFieldsContainer parentType = environment.getFieldsContainer();
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
 
     if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(fieldDefinition.getType()))) {
-      throw new InvalidConfigurationException(
-          "Directive @transform can only be used with (a list of) scalar fields.");
+      throw new InvalidConfigurationException("Directive @transform can only be used with (a list of) scalar fields.");
     }
 
-    boolean isListType = GraphQLTypeUtil.isList(
-        GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
+    boolean isListType = GraphQLTypeUtil.isList(GraphQLTypeUtil.unwrapNonNull(fieldDefinition.getType()));
 
-    JexlExpression expression = jexlEngine.createExpression(DirectiveUtils
-        .getArgument(CoreDirectives.TRANSFORM_ARG_EXPR, environment.getDirective(), String.class));
+    JexlExpression expression = jexlEngine.createExpression(
+        DirectiveUtils.getArgument(CoreDirectives.TRANSFORM_ARG_EXPR, environment.getDirective(), String.class));
 
-    DataFetcher<?> delegateDataFetcher = environment
-        .getCodeRegistry()
+    DataFetcher<?> delegateDataFetcher = environment.getCodeRegistry()
         .getDataFetcher(parentType, fieldDefinition);
 
-    DataFetcher<?> wrappedDataFetcher = DataFetcherFactories
-        .wrapDataFetcher(delegateDataFetcher, (delegateEnv, value) -> {
+    DataFetcher<?> wrappedDataFetcher =
+        DataFetcherFactories.wrapDataFetcher(delegateDataFetcher, (delegateEnv, value) -> {
           if (value == null) {
             return null;
           }
@@ -68,8 +64,8 @@ public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
   }
 
   private static JexlContext createContext(DataFetchingEnvironment environment, Object value) {
-    return new MapContext(ImmutableMap.of(
-        environment.getFieldDefinition().getName(), value));
+    return new MapContext(ImmutableMap.of(environment.getFieldDefinition()
+        .getName(), value));
   }
 
 }

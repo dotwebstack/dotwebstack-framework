@@ -58,25 +58,27 @@ class ConstraintTraverserTest {
 
     GraphQLArgument inputArgument = GraphQLArgument.newArgument()
         .name("input")
-        .type(GraphQLInputObjectType.newInputObject().name("input")
-            .field(GraphQLInputObjectField
-                .newInputObjectField()
+        .type(GraphQLInputObjectType.newInputObject()
+            .name("input")
+            .field(GraphQLInputObjectField.newInputObjectField()
                 .name("field")
                 .type(GraphQLString)
                 .defaultValue(1)
-                .withDirective(directive)).build())
+                .withDirective(directive))
+            .build())
         .build();
 
-    GraphQLFieldDefinition fieldDefinition =
-        GraphQLFieldDefinition.newFieldDefinition().name("query")
-            .type(GraphQLNonNull.nonNull(GraphQLString))
-            .argument(argument).argument(inputArgument)
-            .build();
+    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name("query")
+        .type(GraphQLNonNull.nonNull(GraphQLString))
+        .argument(argument)
+        .argument(inputArgument)
+        .build();
 
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
 
     constraintTraverser.traverse(dataFetchingEnvironment);
 
-    verify(constraintValidator).validate(directiveArgument,"field",1);
+    verify(constraintValidator).validate(directiveArgument, "field", 1);
   }
 }

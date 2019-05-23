@@ -23,8 +23,7 @@ public final class Constants {
   }
 
   private Constants() {
-    throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", Constants.class));
+    throw new IllegalStateException(String.format("%s is not meant to be instantiated.", Constants.class));
   }
 
   // Repository
@@ -51,7 +50,8 @@ public final class Constants {
 
   public static final IRI BREWERY_CLASS = VF.createIRI("https://github.com/dotwebstack/beer/def#Building");
 
-  public static final IRI BREWERY_EXAMPLE_1 = VF.createIRI("https://github.com/dotwebstack/beer/identifier/brewery/123");
+  public static final IRI BREWERY_EXAMPLE_1 =
+      VF.createIRI("https://github.com/dotwebstack/beer/identifier/brewery/123");
 
   // Brewery.id
 
@@ -93,8 +93,8 @@ public final class Constants {
 
   public static final IRI BREWERY_FOUNDED_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_FOUNDED_TYPE));
 
-  public static final Literal BREWERY_FOUNDED_EXAMPLE_1 = VF
-      .createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
+  public static final Literal BREWERY_FOUNDED_EXAMPLE_1 =
+      VF.createLiteral(datatypeFactory.newXMLGregorianCalendar("2018-05-30T09:30:10+02:00"));
 
   // Brewery.postalCode
 
@@ -144,11 +144,11 @@ public final class Constants {
 
   public static final IRI BEER_BEERTYPE_SHAPE = VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_TYPE);
 
-  public static final IRI BEER_BEERTYPE_ZERO_OR_MORE_SHAPE = VF.createIRI(SHAPE_PREFIX
-      + BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE);
+  public static final IRI BEER_BEERTYPE_ZERO_OR_MORE_SHAPE =
+      VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE);
 
-  public static final IRI BEER_BEERTYPE_ZERO_OR_ONE_SHAPE = VF.createIRI(SHAPE_PREFIX
-      + BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE);
+  public static final IRI BEER_BEERTYPE_ZERO_OR_ONE_SHAPE =
+      VF.createIRI(SHAPE_PREFIX + BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE);
 
   public static final BNode BEERTYPE_EXAMPLE_1 = VF.createBNode();
 
@@ -158,7 +158,7 @@ public final class Constants {
 
   public static final String BEERTYPE_EXAMPLE_2_NAME = "Beertype2";
 
-  //Schema
+  // Schema
 
   public static final IRI SCHEMA_ADDRESS = VF.createIRI(SCHEMA_PREFIX + "address");
 

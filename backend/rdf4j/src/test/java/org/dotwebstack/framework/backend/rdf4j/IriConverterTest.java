@@ -31,8 +31,7 @@ class IriConverterTest {
     String input = "foo";
 
     // Act / Assert
-    assertThrows(IllegalArgumentException.class, () ->
-        iriConverter.convert(input));
+    assertThrows(IllegalArgumentException.class, () -> iriConverter.convert(input));
   }
 
 }

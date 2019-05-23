@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,10 +44,13 @@ public class SequencePath implements PropertyPath {
   public RdfPredicate toPredicate() {
     return () -> {
       StringBuilder sb = new StringBuilder();
-      sb.append(first.toPredicate().getQueryString());
+      sb.append(first.toPredicate()
+          .getQueryString());
 
       if (!(PropertyPathHelper.isNil(rest))) {
-        sb.append("/").append(rest.toPredicate().getQueryString());
+        sb.append("/")
+            .append(rest.toPredicate()
+                .getQueryString());
       }
 
       return sb.toString();

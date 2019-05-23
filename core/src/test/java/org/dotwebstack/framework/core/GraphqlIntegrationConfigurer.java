@@ -16,9 +16,8 @@ class GraphqlIntegrationConfigurer implements GraphqlConfigurer {
     // Register data fetcher for test data
     builder.codeRegistry(GraphQLCodeRegistry.newCodeRegistry()
         .dataFetcher(FieldCoordinates.coordinates("Query", Constants.BREWERY_FIELD),
-            (DataFetcher<Object>) dataFetchingEnvironment -> ImmutableMap.of(
-                Constants.BREWERY_IDENTIFIER_FIELD, Constants.BREWERY_IDENTIFIER_EXAMPLE_1,
-                Constants.BREWERY_NAME_FIELD, Constants.BREWERY_NAME_EXAMPLE_1,
+            (DataFetcher<Object>) dataFetchingEnvironment -> ImmutableMap.of(Constants.BREWERY_IDENTIFIER_FIELD,
+                Constants.BREWERY_IDENTIFIER_EXAMPLE_1, Constants.BREWERY_NAME_FIELD, Constants.BREWERY_NAME_EXAMPLE_1,
                 Constants.BREWERY_FOUNDED_FIELD, Constants.BREWERY_FOUNDED_EXAMPLE_1,
                 Constants.BREWERY_FOUNDED_AT_YEAR_FIELD, Constants.BREWERY_FOUNDED_EXAMPLE_1)));
   }

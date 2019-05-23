@@ -10,8 +10,7 @@ final class FileFormats {
       ImmutableMap.of("trig", RDFFormat.TRIG, "nq", RDFFormat.NQUADS);
 
   private FileFormats() {
-    throw new IllegalStateException(
-        String.format("%s is not meant to be instantiated.", FileFormats.class));
+    throw new IllegalStateException(String.format("%s is not meant to be instantiated.", FileFormats.class));
   }
 
   static RDFFormat getFormat(@NonNull String extension) {

@@ -33,27 +33,30 @@ public final class ValueFetcher implements DataFetcher<Object> {
     }
 
     if (GraphQLTypeUtil.isScalar(fieldType) || fieldType instanceof GraphQLObjectType) {
-      return resolve(source).findFirst().orElse(null);
+      return resolve(source).findFirst()
+          .orElse(null);
     }
 
     throw unsupportedOperationException("Field type '{}' not supported.", fieldType);
   }
 
   private Stream<Object> resolve(QuerySolution source) {
-    return propertyShape.getPath().resolvePath(source.getModel(), source.getSubject(), false)
+    return propertyShape.getPath()
+        .resolvePath(source.getModel(), source.getSubject(), false)
         .stream()
-        .map(value -> convert(source.getModel(),value));
+        .map(value -> convert(source.getModel(), value));
   }
 
   private Object convert(@NonNull Model model, @NonNull Value value) {
     if (value instanceof Resource) {
-      return new QuerySolution(model,(Resource) value);
+      return new QuerySolution(model, (Resource) value);
     }
 
     if (value instanceof Literal) {
       return ValueUtils.convertValue(value);
     }
 
-    throw unsupportedOperationException("Value of type '{}' is not supported!",value.getClass().getSimpleName());
+    throw unsupportedOperationException("Value of type '{}' is not supported!", value.getClass()
+        .getSimpleName());
   }
 }

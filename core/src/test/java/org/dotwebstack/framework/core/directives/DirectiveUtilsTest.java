@@ -75,8 +75,7 @@ class DirectiveUtilsTest {
         .build();
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () ->
-        DirectiveUtils.getArgument("foo", directive, String.class));
+    assertThrows(InvalidConfigurationException.class, () -> DirectiveUtils.getArgument("foo", directive, String.class));
   }
 
 }

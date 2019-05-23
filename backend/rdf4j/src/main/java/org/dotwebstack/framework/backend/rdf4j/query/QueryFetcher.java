@@ -54,8 +54,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(outputType);
 
     if (!(rawType instanceof GraphQLObjectType)) {
-      throw new UnsupportedOperationException(
-          "Field types other than object fields are not yet supported.");
+      throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
     }
 
     constraintTraverser.traverse(environment);
@@ -68,8 +67,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .build();
 
     // Find shapes matching request
-    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective,
-        environment.getArguments(), repositoryConnection);
+    List<IRI> subjects =
+        fetchSubjects(queryEnvironment, sparqlDirective, environment.getArguments(), repositoryConnection);
 
     // Fetch graph for given subjects
     Model model = fetchGraph(queryEnvironment, subjects, repositoryConnection);
@@ -85,8 +84,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
       Map<String, Object> arguments, RepositoryConnection con) {
-    String subjectTemplate = DirectiveUtils
-        .getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
+    String subjectTemplate =
+        DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 
     if (subjectTemplate != null) {
       StringSubstitutor substitutor = new StringSubstitutor(arguments);
@@ -95,14 +94,12 @@ public final class QueryFetcher implements DataFetcher<Object> {
       return ImmutableList.of(subject);
     }
 
-    String subjectQuery = SubjectQueryBuilder
-        .create(environment, jexlEngine)
+    String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine)
         .getQueryString(arguments, sparqlDirective);
 
     LOG.debug("Executing query for subjects:\n{}", subjectQuery);
 
-    TupleQueryResult queryResult = con
-        .prepareTupleQuery(subjectQuery)
+    TupleQueryResult queryResult = con.prepareTupleQuery(subjectQuery)
         .evaluate();
 
     return QueryResults.asList(queryResult)
@@ -111,20 +108,17 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .collect(Collectors.toList());
   }
 
-  private Model fetchGraph(QueryEnvironment environment, List<IRI> subjects,
-      RepositoryConnection con) {
+  private Model fetchGraph(QueryEnvironment environment, List<IRI> subjects, RepositoryConnection con) {
     if (subjects.isEmpty()) {
       return new TreeModel();
     }
 
-    String graphQuery = GraphQueryBuilder
-        .create(environment, subjects)
+    String graphQuery = GraphQueryBuilder.create(environment, subjects)
         .getQueryString();
 
     LOG.debug("Executing query for graph:\n{}", graphQuery);
 
-    GraphQueryResult queryResult = con
-        .prepareGraphQuery(graphQuery)
+    GraphQueryResult queryResult = con.prepareGraphQuery(graphQuery)
         .evaluate();
 
     return QueryResults.asModel(queryResult);
