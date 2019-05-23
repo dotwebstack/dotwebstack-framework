@@ -10,8 +10,6 @@ public final class Rdf4jScalars {
       .coercing(new IriCoercing())
       .build();
 
-  private Rdf4jScalars() {
-    throw new IllegalStateException(String.format("%s is not meant to be instantiated.", Rdf4jScalars.class));
-  }
+  private Rdf4jScalars() {}
 
 }

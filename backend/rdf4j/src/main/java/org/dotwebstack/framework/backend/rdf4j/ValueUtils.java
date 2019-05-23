@@ -12,9 +12,7 @@ import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
 
 public final class ValueUtils {
 
-  private ValueUtils() {
-    throw new IllegalStateException(String.format("%s is not meant to be instantiated.", ValueUtils.class));
-  }
+  private ValueUtils() {}
 
   /**
    * Convert value to Java type so built-in scalar types can handle them.

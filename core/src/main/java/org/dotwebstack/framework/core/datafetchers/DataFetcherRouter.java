@@ -21,25 +21,26 @@ public class DataFetcherRouter implements DataFetcher<Object> {
 
   @Override
   public Object get(DataFetchingEnvironment environment) throws Exception {
-    CoreDataFetcher<Object> sourceDataFetcher = findSupportedDataFetcher(environment, DataFetcherType.SOURCE)
-        .orElseThrow(() -> ExceptionHelper.illegalArgumentException(
-            "No source data fetcher is available for the given environment"));
+    CoreDataFetcher<Object> sourceDataFetcher =
+        findSupportedDataFetcher(environment, DataFetcherType.SOURCE).orElseThrow(() -> ExceptionHelper
+            .illegalArgumentException("No source data fetcher is available for the given environment"));
 
-    Optional<CoreDataFetcher<Object>> delegateDataFetcher = findSupportedDataFetcher(environment,
-        DataFetcherType.DELEGATE);
+    Optional<CoreDataFetcher<Object>> delegateDataFetcher =
+        findSupportedDataFetcher(environment, DataFetcherType.DELEGATE);
 
     if (delegateDataFetcher.isPresent()) {
-      DataFetchingEnvironment newEnvironment = newDataFetchingEnvironment(environment)
-          .localContext((Supplier) () -> sourceDataFetcher)
-          .build();
-      return delegateDataFetcher.get().get(newEnvironment);
+      DataFetchingEnvironment newEnvironment =
+          newDataFetchingEnvironment(environment).localContext((Supplier) () -> sourceDataFetcher)
+              .build();
+      return delegateDataFetcher.get()
+          .get(newEnvironment);
     }
 
     return sourceDataFetcher.get(environment);
   }
 
-  private Optional<CoreDataFetcher<Object>> findSupportedDataFetcher(
-      DataFetchingEnvironment environment, DataFetcherType type) {
+  private Optional<CoreDataFetcher<Object>> findSupportedDataFetcher(DataFetchingEnvironment environment,
+      DataFetcherType type) {
     return dataFetchers.stream()
         .filter(dataFetcher -> type.equals(dataFetcher.getType()))
         .filter(dataFetcher -> dataFetcher.supports(environment))

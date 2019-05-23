@@ -24,9 +24,11 @@ public class TransformDirectiveDataFetcher extends DelegateDataFetcher {
 
   @Override
   public boolean supports(DataFetchingEnvironment environment) {
-    return environment.getFieldDefinition().getDirectives()
+    return environment.getFieldDefinition()
+        .getDirectives()
         .stream()
-        .anyMatch(directive -> directive.getName().equals(CoreDirectives.TRANSFORM_NAME));
+        .anyMatch(directive -> directive.getName()
+            .equals(CoreDirectives.TRANSFORM_NAME));
   }
 
   @Override
@@ -53,12 +55,14 @@ public class TransformDirectiveDataFetcher extends DelegateDataFetcher {
   }
 
   private static JexlContext createContext(DataFetchingEnvironment environment, Object value) {
-    return new MapContext(ImmutableMap.of(
-        environment.getFieldDefinition().getName(), value));
+    return new MapContext(ImmutableMap.of(environment.getFieldDefinition()
+        .getName(), value));
   }
 
   private JexlExpression getJexlExpression(GraphQLFieldDefinition fieldDefinition) {
     return jexlEngine.createExpression(fieldDefinition.getDirective(CoreDirectives.TRANSFORM_NAME)
-        .getArgument(CoreDirectives.TRANSFORM_ARG_EXPR).getValue().toString());
+        .getArgument(CoreDirectives.TRANSFORM_ARG_EXPR)
+        .getValue()
+        .toString());
   }
 }

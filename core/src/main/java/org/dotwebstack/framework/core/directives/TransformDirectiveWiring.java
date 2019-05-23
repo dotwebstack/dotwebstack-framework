@@ -13,13 +13,11 @@ import org.springframework.stereotype.Component;
 public final class TransformDirectiveWiring implements SchemaDirectiveWiring {
 
   @Override
-  public GraphQLFieldDefinition onField(
-      SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
+  public GraphQLFieldDefinition onField(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> environment) {
     GraphQLFieldDefinition fieldDefinition = environment.getElement();
 
     if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(fieldDefinition.getType()))) {
-      throw new InvalidConfigurationException(
-          "Directive @transform can only be used with (a list of) scalar fields.");
+      throw new InvalidConfigurationException("Directive @transform can only be used with (a list of) scalar fields.");
     }
 
     return fieldDefinition;

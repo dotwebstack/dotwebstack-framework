@@ -4,9 +4,7 @@ import java.time.ZonedDateTime;
 
 public final class Constants {
 
-  private Constants() {
-    throw new IllegalStateException(String.format("%s is not meant to be instantiated.", Constants.class));
-  }
+  private Constants() {}
 
   // Query
 

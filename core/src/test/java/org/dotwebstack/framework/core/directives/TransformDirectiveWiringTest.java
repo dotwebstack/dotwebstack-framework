@@ -78,8 +78,8 @@ class TransformDirectiveWiringTest {
   @Test
   void onField_WrapsExistingFetcher_ForNonNullListScalarFieldWithValue() {
     // Arrange
-    GraphQLFieldDefinition fieldDefinition = getFieldDefinition(GraphQLNonNull.nonNull(GraphQLList.list(
-            GraphQLNonNull.nonNull(Scalars.GraphQLString))));
+    GraphQLFieldDefinition fieldDefinition =
+        getFieldDefinition(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLNonNull.nonNull(Scalars.GraphQLString))));
     prepareEnvironment(fieldDefinition);
 
     // Act
@@ -92,15 +92,13 @@ class TransformDirectiveWiringTest {
   @Test
   void onField_ThrowsException_ForNonScalarField() {
     // Arrange
-    GraphQLFieldDefinition fieldDefinition = getFieldDefinition(GraphQLObjectType
-        .newObject()
+    GraphQLFieldDefinition fieldDefinition = getFieldDefinition(GraphQLObjectType.newObject()
         .name(FIELD_NAME)
         .build());
     when(environment.getElement()).thenReturn(fieldDefinition);
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () ->
-        transformDirectiveWiring.onField(environment));
+    assertThrows(InvalidConfigurationException.class, () -> transformDirectiveWiring.onField(environment));
   }
 
   private void prepareEnvironment(GraphQLFieldDefinition fieldDefinition) {
