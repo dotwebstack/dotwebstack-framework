@@ -28,7 +28,7 @@ Alternatively, the Eclipse formatter file can be imported after installing the E
 ### Eclipse
 Eclipse can be configured to use the included formatter and import order file.
 1. Import the Eclipse formatter `eclipse-java-style-dws.xml` in Window-->Preferences-->Java-->Code Style-->Formatter-->Import.
-2. Import the Eclipse formatter `dws.importorder` in Window-->Preferences-->Java-->Code Style-->Organize Imports-->Import.
+2. Import the Eclipse import order `dws.importorder` in Window-->Preferences-->Java-->Code Style-->Organize Imports-->Import.
 3. Enable auto formatting and import organizing on save in Window-->Preferences-->Java-->Editor-->Save Actions.
 
 ## Additional conventions
