@@ -56,8 +56,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
   private TypeDefinitionRegistry typeDefinitionRegistry;
 
   public CoreConfigurer(final TransformDirectiveWiring transformDirectiveWiring,
-                        final ConstraintDirectiveWiring constraintDirectiveWiring,
-                        final DataFetcherRouter dataFetcher) {
+      final ConstraintDirectiveWiring constraintDirectiveWiring, final DataFetcherRouter dataFetcher) {
     this.transformDirectiveWiring = transformDirectiveWiring;
     this.constraintDirectiveWiring = constraintDirectiveWiring;
     this.dataFetcher = dataFetcher;

@@ -11,6 +11,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.junit.jupiter.api.Test;
@@ -31,10 +32,7 @@ class TransformDirectiveWiringTest {
   @Test
   void onField_WrapsExistingFetcher_ForScalarFieldWithValue() {
     // Arrange
-    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name(FIELD_NAME)
-        .type(Scalars.GraphQLString)
-        .build();
+    GraphQLFieldDefinition fieldDefinition = getFieldDefinition(Scalars.GraphQLString);
     prepareEnvironment(fieldDefinition);
 
     // Act
@@ -44,13 +42,17 @@ class TransformDirectiveWiringTest {
     assertThat(result, is(sameInstance(fieldDefinition)));
   }
 
+  private GraphQLFieldDefinition getFieldDefinition(GraphQLOutputType type) {
+    return GraphQLFieldDefinition.newFieldDefinition()
+        .name(FIELD_NAME)
+        .type(type)
+        .build();
+  }
+
   @Test
   void onField_WrapsExistingFetcher_ForNonNullScalarFieldWithValue() {
     // Arrange
-    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name(FIELD_NAME)
-        .type(GraphQLNonNull.nonNull(Scalars.GraphQLString))
-        .build();
+    GraphQLFieldDefinition fieldDefinition = getFieldDefinition(GraphQLNonNull.nonNull(Scalars.GraphQLString));
     prepareEnvironment(fieldDefinition);
 
     // Act
@@ -63,10 +65,7 @@ class TransformDirectiveWiringTest {
   @Test
   void onField_WrapsExistingFetcher_ForListScalarFieldWithValue() {
     // Arrange
-    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name(FIELD_NAME)
-        .type(GraphQLList.list(Scalars.GraphQLString))
-        .build();
+    GraphQLFieldDefinition fieldDefinition = getFieldDefinition(GraphQLList.list(Scalars.GraphQLString));
     prepareEnvironment(fieldDefinition);
 
     // Act
@@ -79,11 +78,8 @@ class TransformDirectiveWiringTest {
   @Test
   void onField_WrapsExistingFetcher_ForNonNullListScalarFieldWithValue() {
     // Arrange
-    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name(FIELD_NAME)
-        .type(GraphQLNonNull.nonNull(GraphQLList.list(
-            GraphQLNonNull.nonNull(Scalars.GraphQLString))))
-        .build();
+    GraphQLFieldDefinition fieldDefinition = getFieldDefinition(GraphQLNonNull.nonNull(GraphQLList.list(
+            GraphQLNonNull.nonNull(Scalars.GraphQLString))));
     prepareEnvironment(fieldDefinition);
 
     // Act
@@ -96,10 +92,10 @@ class TransformDirectiveWiringTest {
   @Test
   void onField_ThrowsException_ForNonScalarField() {
     // Arrange
-    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+    GraphQLFieldDefinition fieldDefinition = getFieldDefinition(GraphQLObjectType
+        .newObject()
         .name(FIELD_NAME)
-        .type(GraphQLObjectType.newObject().name(FIELD_NAME))
-        .build();
+        .build());
     when(environment.getElement()).thenReturn(fieldDefinition);
 
     // Act / Assert
