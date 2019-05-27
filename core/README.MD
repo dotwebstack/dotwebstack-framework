@@ -29,3 +29,48 @@ A [SourceDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/
 
 A [DelegateDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/IHR2-2318/core/src/main/java/org/dotwebstack/framework/core/datafetchers/DelegateDataFetcher.java) can act as a *decorator* for a *SourceDataFetcher* and gives you the capability to transform the result from a *SourceDataFetcher*
 
+
+## Argument Constraints
+
+It is possible to add a cosntraint to an argument on any level by preceding the argument with the `@constraint` directive. 
+These constaints can be used to restrict the input from the user and also to be able give hints as to why certain arguments 
+are invalid. You can currently use one of the following constraints: `Min`, `Max`, `OneOf` and `OneOfInt`
+
+### Min
+
+```graphql
+ breweries(page: Int = 1 @constraint(min: 1)): [Brewery!]!
+```
+
+With the `min` constraint you can force the argument to have a minimum value. In case of the example
+it means that the page provided by the user has to be at least 1. 
+
+### Max
+
+```graphql
+ breweries(pageSize: Int = 10 @constraint(max: 100])): [Brewery!]!
+```
+
+With the `max` constraint you can force the argument to have a maximum value. In case of the example
+it means that the pageSize provided by the user can be no higher than 100. 
+
+### OneOf
+
+```graphql
+ breweries(country: String @constraint(oneOf: ["BE","DE", "EN", "NL"])): [Brewery!]!
+```
+
+With the `oneOf` constraint you can restrict an argument to match any string within a given selection 
+of strings, but none of the strings that are not in this selection. So in this case the user is allowed to 
+provide an argument with the value of "BE", "DE", "EN", "NL" only. 
+
+
+### OneOfInt
+
+```graphql
+ breweries(pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50])): [Brewery!]!
+```
+
+With the `oneOfInt` constraint you can restrict an argument to be any integer within a given selection 
+of integers, but none of the integers that are not in this selection. So in this case is allowed to 
+provide an argument with a value of 10, 20 or 50 only. 
