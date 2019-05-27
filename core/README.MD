@@ -111,7 +111,7 @@ provide an argument with a value of 10, 20 or 50 only.
 
 ## 1.4 Transform Directive
 The transform directive allows the user to transform a scalar field based on a given 
-[jexl]('http://commons.apache.org/proper/commons-jexl/') expression. This directive takes the 
+[jexl](http://commons.apache.org/proper/commons-jexl/) expression. This directive takes the 
 argument `expr` that contains the jexl expression to transform the original to the desired value:
 
 ```graphql
