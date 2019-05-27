@@ -1,6 +1,6 @@
-# core
+# 1. Core
 
-## Data Fetchers
+## 1.1 Data Fetchers
 
 To facilitate an extensible way of data fetching the *core* module relies internally on a [CoreDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/IHR2-2318/core/src/main/java/org/dotwebstack/framework/core/datafetchers/CoreDataFetcher.java) interface. 
 This interface extends the GraphQL [DataFetcher](https://github.com/graphql-java/graphql-java/blob/master/src/main/java/graphql/schema/DataFetcher.java) interface. 
@@ -20,23 +20,23 @@ The [CoreDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/
 We are currently offering two abstract implementations of the CoreDataFetcher which can be used by anyone. When you write your own *CoreDataFetcher* and annotate it with a Spring *@Component* annotation it will be automatically registered.
 
 
-### SourceDataFetcher
+### 1.1.1 SourceDataFetcher
  
 A [SourceDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/IHR2-2318/core/src/main/java/org/dotwebstack/framework/core/datafetchers/SourceDataFetcher.java) can be used to actually fetch data from *any* source.
 
 
-### DelegateDataFetcher
+### 1.1.2 DelegateDataFetcher
 
 A [DelegateDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/IHR2-2318/core/src/main/java/org/dotwebstack/framework/core/datafetchers/DelegateDataFetcher.java) can act as a *decorator* for a *SourceDataFetcher* and gives you the capability to transform the result from a *SourceDataFetcher*
 
 
-## Argument Constraints
+## 1.2 Argument Constraints
 
 It is possible to add a cosntraint to an argument on any level by preceding the argument with the `@constraint` directive. 
 These constaints can be used to restrict the input from the user and also to be able give hints as to why certain arguments 
 are invalid. You can currently use one of the following constraints: `Min`, `Max`, `OneOf` and `OneOfInt`
 
-### Min
+### 1.2.1 Min
 
 ```graphql
  breweries(page: Int = 1 @constraint(min: 1)): [Brewery!]!
@@ -45,7 +45,7 @@ are invalid. You can currently use one of the following constraints: `Min`, `Max
 With the `min` constraint you can force the argument to have a minimum value. In case of the example
 it means that the page provided by the user has to be at least 1. 
 
-### Max
+### 1.2.2 Max
 
 ```graphql
  breweries(pageSize: Int = 10 @constraint(max: 100])): [Brewery!]!
@@ -54,7 +54,7 @@ it means that the page provided by the user has to be at least 1.
 With the `max` constraint you can force the argument to have a maximum value. In case of the example
 it means that the pageSize provided by the user can be no higher than 100. 
 
-### OneOf
+### 1.2.3 OneOf
 
 ```graphql
  breweries(country: String @constraint(oneOf: ["BE","DE", "EN", "NL"])): [Brewery!]!
@@ -65,7 +65,7 @@ of strings, but none of the strings that are not in this selection. So in this c
 provide an argument with the value of "BE", "DE", "EN", "NL" only. 
 
 
-### OneOfInt
+### 1.2.4 OneOfInt
 
 ```graphql
  breweries(pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50])): [Brewery!]!
@@ -74,3 +74,16 @@ provide an argument with the value of "BE", "DE", "EN", "NL" only.
 With the `oneOfInt` constraint you can restrict an argument to be any integer within a given selection 
 of integers, but none of the integers that are not in this selection. So in this case is allowed to 
 provide an argument with a value of 10, 20 or 50 only. 
+
+## 1.3 Transform Directive
+The transform directive allows the user to transform a scalar field based on a given jexl expression. 
+This directive takes one argument `expr` that contains the jexl expression to transform the original
+ to the desired value:
+
+```graphql
+type Brewery {
+  status: String! @transform(expr: "statusIri.getLocalName()")
+}
+```
+
+In the given example the `status` is retrieved from a `statusIri`.  
