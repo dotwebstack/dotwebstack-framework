@@ -18,9 +18,9 @@ services, including URI dereferencing, RESTful API’s, and much more.
 * Naming consistency: `iri` vs `uri`
 * Single or multiple repository connections?
 
-## Setup
-To setup a project with DotWebStack you need to create a new Spring project and add dependencies to one or more of the 
-DotWebStack frontends, one or more of the DotWebStack backends and spring-boot-starter-webflux. In maven this would look
+## Getting started
+To get started with DotWebStack, create a new Spring project and add dependencies to one or more of the 
+frontend modules, one or more of the backend modules and spring-boot-starter-webflux. In maven this would look
 something like this:
 
 ```xml
@@ -53,28 +53,12 @@ public class ExampleApplication {
 }
 ```
 
-In the `resource` folder of your project there should be a properties file (`application.yml`), and a `config` folder.
+In the `resource` folder, there should be a properties file (`application.yml`) and a `config` folder.
 The config folder contains a GraphQL schema file (`schema.graphqls`) and adapter files for the specific frontend and 
-backend. The frontend adapter files contain the rules to get from a frontend request to the GraphQL core and back from 
-the GraphQL core to a frontend response. The backend adapter files are defined in a folder called `model` and contain 
-the rules to generate a backend specific query from GraphQL and read a GraphQL result from the query response. See the 
-specific frontend and backend modules to find out how to configure them.
-
-## Release
-
-To release a new version, run the following statement and follow instructions:
-
-```
-mvn release:prepare
-```
-
-Travis CI will now pick up the new tag and deploy the artifacts to the Central repository.
-
-Clean up afterwards:
-
-```
-mvn release:clean
-```
+backend. The frontend adapter files contain the mapping rules to get from a frontend request to the GraphQL core and 
+back from the GraphQL core to a frontend response. The backend adapter files are defined in a folder called `model` and 
+contain the rules to generate a backend specific query from GraphQL and read a GraphQL result from the query response. 
+See the specific frontend and backend modules to find out how to configure them.
 
 ## Links
 
