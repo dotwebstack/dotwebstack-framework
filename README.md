@@ -56,9 +56,9 @@ public class ExampleApplication {
 In the `resource` folder of your project there should be a properties file (`application.yml`), and a `config` folder.
 The config folder contains a GraphQL schema file (`schema.graphqls`) and adapter files for the specific frontend and 
 backend. The frontend adapter files contain the rules to get from a frontend request to the GraphQL core and back from 
-the GraphQL core to a frontend response. The backend adapter files contain the rules to generate a backend specific 
-query from GraphQL and read a GraphQL result from the query response. See the specific frontend and backend modules
-to find out how to configure them.
+the GraphQL core to a frontend response. The backend adapter files are defined in a folder called `model` and contain 
+the rules to generate a backend specific query from GraphQL and read a GraphQL result from the query response. See the 
+specific frontend and backend modules to find out how to configure them.
 
 ## Release
 

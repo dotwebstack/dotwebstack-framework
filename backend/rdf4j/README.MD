@@ -1,6 +1,7 @@
 # 1. Backend-Rdf4j
 
 ## 1.1 Setup
+
 The following snippet from an `application.yml` file shows the configuration properties for an Rdf4j backend:
 
 ```yml
@@ -93,13 +94,13 @@ it will result in the following response:
 
 ```json
 {
-    "data": {
-        "breweries": [
-            {
-                "identifier": "1"
-            }
-        ]
-    }
+  "data": {
+    "breweries": [
+      {
+        "identifier": "1"
+      }
+    ]
+  }
 }
 ```
 
@@ -119,9 +120,19 @@ The Rdf4j backend supports GraphQL field selections on any level within a graph.
 }
 ```
 
-## 1.3 Page parameters
+## 1.3 Paging parameters
+
+Within the `@sparql` directive it is possible to declare a `limit` and an `offset` parameter. Arguments for both of 
+these parameters are treated as [jexl](http://commons.apache.org/proper/commons-jexl/) expressions. The results of 
+both expressions need to be an integer and it is validated that `limit > 1` and `offset > 0`. The resulting values
+of these parameters are used as paging parameters in the resulting sparql query.  
+
 ## 1.4 Sorting
 
+Within the `@sparql` directive it is possible to declare an `orderBy` parameter. The argument of this parameter needs to 
+be one or any array of objects containing a `field` and an `order` parameter. The `field` parameter needs to be
+a string and the `order` parameter is an `enum` and needs to be either `ASC` or `DESC`. The resulting values of these 
+parameters are in the order by clause in the resulting sparql query.  
 
 ## 1.5 Property paths
 
