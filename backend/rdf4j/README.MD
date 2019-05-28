@@ -120,21 +120,26 @@ The Rdf4j backend supports GraphQL field selections on any level within a graph.
 }
 ```
 
-## 1.3 Paging parameters
+## 1.3 Sparql directive
+
+The Rdf4j backend introduces the `@sparql` directive, this directive is added to a query in the `schema` file. It allows 
+you to specify and assign paging and sort parameters and the specific query to a repository.
+
+## 1.4 Paging parameters
 
 Within the `@sparql` directive it is possible to declare a `limit` and an `offset` parameter. Arguments for both of 
 these parameters are treated as [jexl](http://commons.apache.org/proper/commons-jexl/) expressions. The results of 
 both expressions need to be an integer and it is validated that `limit > 1` and `offset > 0`. The resulting values
 of these parameters are used as paging parameters in the resulting sparql query.  
 
-## 1.4 Sorting
+## 1.5 Sorting
 
 Within the `@sparql` directive it is possible to declare an `orderBy` parameter. The argument of this parameter needs to 
 be one or any array of objects containing a `field` and an `order` parameter. The `field` parameter needs to be
 a string and the `order` parameter is an `enum` and needs to be either `ASC` or `DESC`. The resulting values of these 
 parameters are in the order by clause in the resulting sparql query.  
 
-## 1.5 Property paths
+## 1.6 Property paths
 
 [W3C SHACL specification](https://www.w3.org/TR/shacl/#property-paths)
 
@@ -142,7 +147,7 @@ While it's possible to query object fields directly, SHACL property paths allows
 For our RDF4J backend we have built support for the paths described in this document. We will discuss the possibilities 
 in the following paragraphs. 
 
-### 1.5.1 Predicate paths
+### 1.6.1 Predicate paths
 The *predicate path* is the simplest of the paths. These are the building blocks for each property path. It describes one predicate 
 to retrieve and object from the current subject. 
  
@@ -172,7 +177,7 @@ beer:shapes {
 }
 ``` 
 
-### 1.5.2 Alternative paths
+### 1.6.2 Alternative paths
 The *alternative path* describes the option get either the object from this predicate `OR` the object from that predicate.
 You can chain as many paths as you like, and you can use both predicate paths and any of the other path constructions. 
    
@@ -201,7 +206,7 @@ beer:shapes {
 ``` 
 
    
-### 1.5.3 Sequence paths
+### 1.6.3 Sequence paths
 The *sequence path* describes the possibility to chain multiple predicates. You can use this to access the properties of 
 underlying objects. For example when you are not interested in the parent per se, but more in his or her name you can use:
 
@@ -239,7 +244,7 @@ Again, this is the simple example. You can also use any of the other property pa
 ([sh:alternativePath (ex:father ex:mother)] ex:firstname)
 ```
 
-### 1.5.4 Inverse paths
+### 1.6.4 Inverse paths
 The *inverse path* traverses the predicate in the opposite direction. This can be useful when you only have an explicit relation
 in one direction, but not the other. So in our previous examples that would mean that we have a relation from a child to a parent,
  but not from a parent to a child. In that case you can use the following inverse path to obtain the name of the child:
@@ -272,7 +277,7 @@ beer:shapes {
 In the previous example a couple of constructions are used. Again it is possible to use the other paths within an inverse path
 as well.  
 
-### 1.5.5 OneOrMore path
+### 1.6.5 OneOrMore path
 The *one or more* path finds a connection between subjects and objects using the predicate, and matching the pattern one or more times.
 For example, finding the names of all people a person knows either directly, or through another person using the `ex:knows` predicate:
 
@@ -301,7 +306,7 @@ beer:shapes {
 }
 ```
 
-### 1.5.6 ZeroOrMore path
+### 1.6.6 ZeroOrMore path
 The *zero or more* path works in the same way as the 'one or more' path and allows paths of
 length 0.
 
@@ -330,7 +335,7 @@ beer:shapes {
 }
 ```
 
-### 1.5.7 ZeroOrOne path
+### 1.6.7 ZeroOrOne path
 The *zero or one* path works in the same way as the 'zero or more' path, but allows paths of
 length 0 or 1.
 
