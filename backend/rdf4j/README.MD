@@ -17,12 +17,12 @@ dotwebstack:
 ```
 
 `dotwebstack.Rdf4j` is reserved by the Rdf4j backend as its properties location. The `shape.graph` property is used to 
-point to the graph that is used within the `shapes.trig` file. The `shape.prefix` property is used to point to the prefix
-of the shapesfile. This prefix is ignored when mapping GraphQL types from the `schema` to the node shapes in the
+point to the graph that is used within the `shapes` file. The `shape.prefix` property is used to point to the prefix
+of the shapesfile. This prefix is ignored when mapping GraphQL types from `schema.graphqls` to the node shapes in the
 `shapes` file. Within the `prefixes` property you can define a list of general prefixes that is added to the 
 [QueryEnvironment](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/backend/Rdf4j/src/main/java/org/dotwebstack/framework/backend/Rdf4j/query/QueryEnvironment.java). 
 
-Besides the configuration in the `application.yml` you need to add a `schema` file that defines the GraphQL schema. 
+Besides the configuration in the `application.yml` you need to add a `schema.graphqls` file that defines the GraphQL schema. 
 The following example shows the GraphQL description for the Brewery type and a query description to retrieve all the 
 breweries from the database:
 
@@ -38,7 +38,7 @@ type Brewery {
 
 Now you need to write a configuration to translate your GraphQL types to an Rdf4j (`sparql`) query. The Rdf4j backend
 uses a `shapes` file to define the mapping between the core GraphQL and the Rdf4j compatible backend. An example of 
-this mapping can be seen in the following `shapes.trig` file, that contains a subset of brewery example:
+this mapping can be seen in the following `shapes` file, that contains a subset of brewery example:
 
 ```shacl
 @prefix sh: <http://www.w3.org/ns/shacl#> .
@@ -67,9 +67,10 @@ this mapping can be seen in the following `shapes.trig` file, that contains a su
 First of all, notice that the named graph in the shapes file `https://github.com/dotwebstack/beer/shapes` is the one 
 that is referred to by the `shape.graph` property in the snippet from `application.yml`. Also notice that the uri from 
 the `beer_sh:` prefix is the one that is referred to by the `shape.prefix` property in the `application.yml`. A GraphQL 
-type from `schema` is matched on a `node shape` in the `shapes` file after stripping the prefix from the name 
-of the node shape. This means that the `Brewery` from the `schema` file is mapped on the `beer_sh:Brewery` 
-node shape. Fields from `schema` file are mapped on property shapes from the `shapes` file.
+type from `schema.graphqls` is matched on a `node shape` in the `shapes` file after stripping the prefix from the name 
+of the node shape. This means that the `Brewery` from the `schema.graphqls` file is mapped on the `beer_sh:Brewery` 
+node shape. Fields from `schema.graphqls` file are mapped on property shapes from the 'shapes' file based on the 
+'sh:name' property.
 
 With these configuration files DotWebStack is now able to generate the Rdf4j query to retrieve the identifier from the
 Brewery from the data. In case of this example an in memory database is used that is created with the following data:
@@ -122,22 +123,22 @@ The Rdf4j backend supports GraphQL field selections on any level within a graph.
 
 ## 1.3 Sparql directive
 
-The Rdf4j backend introduces the `@sparql` directive, this directive is added to a query in the `schema` file. It allows 
+The Rdf4j backend introduces the `@sparql` directive which can be added to a query in the `schema.graphqls` file. It allows 
 you to specify and assign paging and sort parameters and the specific query to a repository.
 
 ## 1.4 Paging parameters
 
 Within the `@sparql` directive it is possible to declare a `limit` and an `offset` parameter. Arguments for both of 
-these parameters are treated as [jexl](http://commons.apache.org/proper/commons-jexl/) expressions. The results of 
-both expressions need to be an integer and it is validated that `limit > 1` and `offset > 0`. The resulting values
-of these parameters are used as paging parameters in the resulting sparql query.  
+these parameters are treated as [jexl](http://commons.apache.org/proper/commons-jexl/) expressions and should evaluate 
+to an integer. The resulting limit should be greater than 1 and the resulting offset should be greater than 0. The 
+resulting values of these parameters are used as paging parameters in the resulting sparql query.  
 
 ## 1.5 Sorting
 
 Within the `@sparql` directive it is possible to declare an `orderBy` parameter. The argument of this parameter needs to 
 be one or any array of objects containing a `field` and an `order` parameter. The `field` parameter needs to be
 a string and the `order` parameter is an `enum` and needs to be either `ASC` or `DESC`. The resulting values of these 
-parameters are in the order by clause in the resulting sparql query.  
+parameters are used in the `order by` clause in the resulting sparql query.  
 
 ## 1.6 Property paths
 

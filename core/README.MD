@@ -16,12 +16,13 @@ public interface CoreDataFetcher<T> extends DataFetcher<T> {
 
 The [CoreDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/CoreDataFetcher.java) interface offers the capability to evaluate the support for a given [DataFetchingEnvironment](https://github.com/graphql-java/graphql-java/blob/master/src/main/java/graphql/schema/DataFetchingEnvironment.java) with the *supports* method.
 
-We are currently offering two abstract implementations of the [CoreDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/CoreDataFetcher.java) which can be used by anyone. When you write your own [CoreDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/CoreDataFetcher.java) and annotate it with a Spring *@Component* annotation it will be automatically registered.
-
+DotWebStack provides two abstract implementations of the [CoreDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/CoreDataFetcher.java) . Custom datafetchers can be added by implementing the [CoreDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/CoreDataFetcher.java) 
+interface, these implementations are annotated with a Spring *@Component* annotation, so they will be automatically 
+registered.
 
 ### 1.1.1 SourceDataFetcher
 
-A [SourceDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/SourceDataFetcher.java) can be used to actually fetch data from *any* source.
+A [SourceDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/SourceDataFetcher.java) can be used to fetch data from *any* source.
 
 
 ### 1.1.2 DelegateDataFetcher
@@ -31,8 +32,7 @@ A [DelegateDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blo
 
 ## 1.2 Scalar Types
 Dotwebstack offers support for the *Date* and *DateTime* scalars besides the scalar types that have built-in support 
-from GraphQL *(Int, Float, String, Boolean, ID)*. Dotwebstack also offers support to write your own scalar in a
-pluggable way. To create your own Scalar Type you need to do the following:
+from GraphQL *(Int, Float, String, Boolean, ID)*. It is also possible to create a custom Scalar Type:
 
 - Create the new scalar
 ```java
@@ -67,8 +67,8 @@ class DateCoercing implements Coercing<LocalDate, LocalDate> {
 ## 1.3 Argument Constraints
 
 It is possible to add a constraint to an argument on any level by preceding the argument with the `@constraint` directive. 
-These constraints can be used to restrict the input from the user and also to be able give hints as to why certain arguments 
-are invalid. You can currently use one of the following constraints: `min`, `max`, `oneOf` and `oneOfInt`
+These constraints can be used to restrict the input from the user and provide hints as to why certain arguments 
+are invalid. The following constraints are currently provided: `min`, `max`, `oneOf` and `oneOfInt`
 
 ### 1.3.1 Min
 
@@ -94,10 +94,8 @@ it means that the pageSize provided by the user can be no higher than 100.
  breweries(country: String @constraint(oneOf: ["BE","DE", "EN", "NL"])): [Brewery!]!
 ```
 
-With the `oneOf` constraint you can restrict an argument to match any string within a given selection 
-of strings, but none of the strings that are not in this selection. So in this case the user is allowed to 
-provide an argument with the value of "BE", "DE", "EN", "NL" only. 
-
+With the `oneOf` constraint an argument can be restricted to match any string within the provided list. So in this case
+the user is allowed to provide an argument with the value of "BE", "DE", "EN", "NL" only. 
 
 ### 1.3.4 OneOfInt
 
@@ -105,9 +103,8 @@ provide an argument with the value of "BE", "DE", "EN", "NL" only.
  breweries(pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50])): [Brewery!]!
 ```
 
-With the `oneOfInt` constraint you can restrict an argument to be any integer within a given selection 
-of integers, but none of the integers that are not in this selection. So in this case is allowed to 
-provide an argument with a value of 10, 20 or 50 only. 
+With the `oneOfInt` constraint an argument can be restricted to match any integer within the provided list. So in this 
+case is allowed to provide an argument with a value of 10, 20 or 50 only. 
 
 ## 1.4 Transform Directive
 The transform directive allows the user to transform a scalar field based on a given 
