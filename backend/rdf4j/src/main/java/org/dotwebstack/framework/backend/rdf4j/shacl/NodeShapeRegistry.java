@@ -31,6 +31,10 @@ public class NodeShapeRegistry {
     return nodeShapes.get(identifier);
   }
 
+  public NodeShape get(String objectName) {
+    return get(VF.createIRI(shapePrefix, objectName));
+  }
+
   public NodeShape get(GraphQLObjectType objectType) {
     return get(VF.createIRI(shapePrefix, objectType.getName()));
   }
