@@ -31,7 +31,7 @@ import org.dotwebstack.framework.core.datafetchers.DataFetcherRouter;
 import org.dotwebstack.framework.core.directives.ConstraintDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
-import org.dotwebstack.framework.core.input.CoreInputTypes;
+import org.dotwebstack.framework.core.input.CoreTypes;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.springframework.stereotype.Component;
 
@@ -45,7 +45,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
   private static final NonNullType requiredString = newNonNullType(optionalString).build();
 
   private static final NonNullType requiredSortEnum = NonNullType
-      .newNonNullType(TypeName.newTypeName(CoreInputTypes.SORT_ORDER)
+      .newNonNullType(TypeName.newTypeName(CoreTypes.SORT_ORDER)
           .build())
       .build();
 
@@ -76,18 +76,18 @@ public class CoreConfigurer implements GraphqlConfigurer {
   }
 
   private InputObjectTypeDefinition createSortInputObjectDefinition() {
-    return newInputObjectDefinition().name(CoreInputTypes.SORT_FIELD)
-        .inputValueDefinition(newInputValueDefinition().name(CoreInputTypes.SORT_FIELD_FIELD)
+    return newInputObjectDefinition().name(CoreTypes.SORT_FIELD)
+        .inputValueDefinition(newInputValueDefinition().name(CoreTypes.SORT_FIELD_FIELD)
             .type(requiredString)
             .build())
-        .inputValueDefinition(newInputValueDefinition().name(CoreInputTypes.SORT_FIELD_ORDER)
+        .inputValueDefinition(newInputValueDefinition().name(CoreTypes.SORT_FIELD_ORDER)
             .type(requiredSortEnum)
             .build())
         .build();
   }
 
   private EnumTypeDefinition createSortEnumDefinition() {
-    return newEnumTypeDefinition().name(CoreInputTypes.SORT_ORDER)
+    return newEnumTypeDefinition().name(CoreTypes.SORT_ORDER)
         .enumValueDefinition(newEnumValueDefinition().name("ASC")
             .build())
         .enumValueDefinition(newEnumValueDefinition().name("DESC")

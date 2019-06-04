@@ -3,16 +3,18 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
-import lombok.AllArgsConstructor;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor
 public class SparqlFilterValidator {
 
   private final NodeShapeRegistry nodeShapeRegistry;
+
+  public SparqlFilterValidator(NodeShapeRegistry nodeShapeRegistry) {
+    this.nodeShapeRegistry = nodeShapeRegistry;
+  }
 
   void validate(GraphQLDirectiveContainer container, String typeName) {
     GraphQLDirective directive = container.getDirective(Rdf4jDirectives.SPARQL_FILTER_NAME);
@@ -27,7 +29,7 @@ public class SparqlFilterValidator {
 
     if (expr.getValue() != null && operator.getValue() != null) {
       throw new DirectiveValidationException(
-          "Found both an expression and an operator on spaql filter directive on " + "field '{}'", fieldName);
+          "Found both an expression and an operator argument on sparql filter directive on " + "field '{}'", fieldName);
     }
   }
 

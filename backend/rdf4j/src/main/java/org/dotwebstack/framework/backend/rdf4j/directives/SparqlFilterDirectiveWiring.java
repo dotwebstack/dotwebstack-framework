@@ -17,20 +17,24 @@ import graphql.schema.GraphqlElementParentTree;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.input.CoreTypes;
 import org.springframework.stereotype.Component;
 
 @Component
-@AllArgsConstructor
 public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
 
   private SparqlFilterValidator validator;
 
+  public SparqlFilterDirectiveWiring(SparqlFilterValidator validator) {
+    this.validator = validator;
+  }
+
   @Override
-  public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
+  public GraphQLArgument onArgument(@NonNull SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     try {
       environment.getElementParentTree()
           .getParentInfo()
@@ -41,7 +45,7 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
 
             if (!grandParentInfo.getElement()
                 .getName()
-                .equals("Query")) {
+                .equals(CoreTypes.QUERY_KEYWORD)) {
               throw ExceptionHelper.illegalArgumentException("'{}' can only be used as an argument for a Query!",
                   environment.getElement());
             }
@@ -58,7 +62,7 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
 
   @Override
   public GraphQLInputObjectField onInputObjectField(
-      SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
+      @NonNull SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     try {
       TypeDefinitionRegistry registry = environment.getRegistry();
 
@@ -84,13 +88,16 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
         .forEach(item -> registry.getType(item)
             .ifPresent(compareType -> {
               if (compareType instanceof ObjectTypeDefinition) {
-                if (item.equals("Query")) {
+                if (item.equals(CoreTypes.QUERY_KEYWORD)) {
                   processQuery(container, registry, baseType, (ObjectTypeDefinition) compareType);
                 } else {
                   processObjectType(container, registry, baseType, compareType);
                 }
               } else if (compareType instanceof InputObjectTypeDefinition) {
                 processInputObjectType(container, registry, baseType, compareType);
+              } else {
+                throw new DirectiveValidationException(
+                    "@sparqlFilter cannot be used on things other then ObjectTypes and InputObjectTypes!");
               }
             }));
   }
@@ -99,7 +106,7 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
       TypeDefinition<?> baseType, TypeDefinition<?> compareType) {
     ((InputObjectTypeDefinition) compareType).getInputValueDefinitions()
         .stream()
-        .filter(inputField -> registry.getType(getBaseType(inputField.getType()))
+        .filter(inputValue -> registry.getType(getBaseType(inputValue.getType()))
             .map(definition -> definition.equals(baseType))
             .orElse(false))
         .findAny()

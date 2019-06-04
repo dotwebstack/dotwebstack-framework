@@ -25,7 +25,7 @@ type Query {
       offset: "(input.page - 1) * input.pageSize"
     )
 
-  breweries_sort_input(input: PageQueryInput): [Brewery!]!
+  breweries_sort_input(input: SortQueryInput): [Brewery!]!
     @sparql(
       repository: "local",
       orderBy: "input.sort"
