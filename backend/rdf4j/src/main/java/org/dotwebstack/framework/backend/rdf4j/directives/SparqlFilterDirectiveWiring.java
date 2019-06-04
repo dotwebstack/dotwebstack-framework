@@ -65,7 +65,7 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
       environment.getElementParentTree()
           .getParentInfo()
           .ifPresent(parentInfo -> {
-            TypeDefinition typeDefinition = registry.types()
+            TypeDefinition<?> typeDefinition = registry.types()
                 .get(parentInfo.getElement()
                     .getName());
             traverse(environment.getElement(), typeDefinition, registry);
@@ -77,49 +77,49 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
     return environment.getElement();
   }
 
-  private void traverse(GraphQLDirectiveContainer container, TypeDefinition parentType,
+  private void traverse(GraphQLDirectiveContainer container, TypeDefinition<?> baseType,
       TypeDefinitionRegistry registry) {
     registry.types()
         .keySet()
         .forEach(item -> registry.getType(item)
-            .ifPresent(type -> {
-              if (type instanceof ObjectTypeDefinition) {
+            .ifPresent(compareType -> {
+              if (compareType instanceof ObjectTypeDefinition) {
                 if (item.equals("Query")) {
-                  processQuery(container, parentType, registry, (ObjectTypeDefinition) type);
+                  processQuery(container, registry, baseType, (ObjectTypeDefinition) compareType);
                 } else {
-                  processObjectType(container, parentType, registry, type);
+                  processObjectType(container, registry, baseType, compareType);
                 }
-              } else if (type instanceof InputObjectTypeDefinition) {
-                processInputObjectType(container, parentType, registry, type);
+              } else if (compareType instanceof InputObjectTypeDefinition) {
+                processInputObjectType(container, registry, baseType, compareType);
               }
             }));
   }
 
-  private void processInputObjectType(GraphQLDirectiveContainer container, TypeDefinition parentType,
-      TypeDefinitionRegistry registry, TypeDefinition type) {
-    ((InputObjectTypeDefinition) type).getInputValueDefinitions()
+  private void processInputObjectType(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
+      TypeDefinition<?> baseType, TypeDefinition<?> compareType) {
+    ((InputObjectTypeDefinition) compareType).getInputValueDefinitions()
+        .stream()
+        .filter(inputField -> registry.getType(getBaseType(inputField.getType()))
+            .map(definition -> definition.equals(baseType))
+            .orElse(false))
+        .findAny()
+        .ifPresent(definition -> traverse(container, compareType, registry));
+  }
+
+  private void processObjectType(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
+      TypeDefinition<?> parentType, TypeDefinition<?> compareType) {
+    ((ObjectTypeDefinition) compareType).getFieldDefinitions()
         .stream()
         .filter(inputField -> registry.getType(getBaseType(inputField.getType()))
             .map(definition -> definition.equals(parentType))
             .orElse(false))
         .findAny()
-        .ifPresent(definition -> traverse(container, type, registry));
+        .ifPresent(inputValueDefinition -> traverse(container, compareType, registry));
   }
 
-  private void processObjectType(GraphQLDirectiveContainer container, TypeDefinition parentType,
-      TypeDefinitionRegistry registry, TypeDefinition type) {
-    ((ObjectTypeDefinition) type).getFieldDefinitions()
-        .stream()
-        .filter(inputField -> registry.getType(getBaseType(inputField.getType()))
-            .map(definition -> definition.equals(parentType))
-            .orElse(false))
-        .findAny()
-        .ifPresent(inputValueDefinition -> traverse(container, type, registry));
-  }
-
-  private void processQuery(GraphQLDirectiveContainer container, TypeDefinition parentType,
-      TypeDefinitionRegistry registry, ObjectTypeDefinition type) {
-    type.getFieldDefinitions()
+  private void processQuery(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
+      TypeDefinition<?> parentType, ObjectTypeDefinition compareType) {
+    compareType.getFieldDefinitions()
         .stream()
         .filter(inputField -> inputField.getInputValueDefinitions()
             .stream()
@@ -129,9 +129,9 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
         .forEach(inputField -> validator.validate(container, ((TypeName) getBaseType(inputField.getType())).getName()));
   }
 
-  private Type getBaseType(Type type) {
+  private Type<?> getBaseType(Type<?> type) {
     if (type instanceof ListType) {
-      return getBaseType((Type) ((ListType) type).getChildren()
+      return getBaseType((Type) type.getChildren()
           .get(0));
     }
     if (type instanceof NonNullType) {
