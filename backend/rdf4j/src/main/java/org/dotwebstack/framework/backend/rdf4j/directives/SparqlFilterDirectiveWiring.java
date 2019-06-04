@@ -95,9 +95,6 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
                 }
               } else if (compareType instanceof InputObjectTypeDefinition) {
                 processInputObjectType(container, registry, baseType, compareType);
-              } else {
-                throw new DirectiveValidationException(
-                    "@sparqlFilter cannot be used on things other then ObjectTypes and InputObjectTypes!");
               }
             }));
   }

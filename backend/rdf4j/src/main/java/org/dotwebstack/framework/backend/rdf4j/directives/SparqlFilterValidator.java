@@ -38,7 +38,6 @@ public class SparqlFilterValidator {
     if (argument.getValue() != null) {
       switch (argument.getName()) {
         case Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR:
-          checkExpr(argument, name);
           break;
         case Rdf4jDirectives.SPARQL_FILTER_ARG_FIELD:
           checkField(argument, name, typeName);
@@ -50,10 +49,6 @@ public class SparqlFilterValidator {
           throw new DirectiveValidationException("Unsupported filter argument with name '{}'", argument.getName());
       }
     }
-  }
-
-  private boolean checkExpr(GraphQLArgument argument, String name) {
-    return true;
   }
 
   private void checkField(GraphQLArgument argument, String name, String typeName) {
