@@ -1,26 +1,125 @@
 package org.dotwebstack.framework.backend.rdf4j.directives;
 
+import graphql.language.InputObjectTypeDefinition;
+import graphql.language.ListType;
+import graphql.language.NonNullType;
+import graphql.language.ObjectTypeDefinition;
+import graphql.language.Type;
+import graphql.language.TypeDefinition;
+import graphql.language.TypeName;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
-import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInputObjectField;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.GraphqlElementParentTree;
+import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.input.CoreTypes;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class SparqlFilterValidator {
 
-  private final NodeShapeRegistry nodeShapeRegistry;
+  void validateArgumentEnvironment(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
+    environment.getElementParentTree()
+        .getParentInfo()
+        .ifPresent(parentInfo -> {
+          GraphqlElementParentTree grandParentInfo = parentInfo.getParentInfo()
+              .orElseThrow(() -> ExceptionHelper.illegalArgumentException("Did not find a parent type for `{}`",
+                  environment.getElement()));
 
-  public SparqlFilterValidator(NodeShapeRegistry nodeShapeRegistry) {
-    this.nodeShapeRegistry = nodeShapeRegistry;
+          if (!grandParentInfo.getElement()
+              .getName()
+              .equals(CoreTypes.QUERY_KEYWORD)) {
+            throw ExceptionHelper.illegalArgumentException("'{}' can only be used as an argument for a Query!",
+                environment.getElement());
+          }
+
+          GraphQLObjectType type = (GraphQLObjectType) GraphQLTypeUtil
+              .unwrapAll(((GraphQLFieldDefinition) parentInfo.getElement()).getType());
+          this.validate(environment.getElement(), environment.getRegistry(), type.getName());
+        });
   }
 
-  void validate(GraphQLDirectiveContainer container, String typeName) {
+  void validateInputObjectFieldEnvironment(SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
+    TypeDefinitionRegistry registry = environment.getRegistry();
+
+    environment.getElementParentTree()
+        .getParentInfo()
+        .ifPresent(parentInfo -> {
+          TypeDefinition<?> typeDefinition = registry.types()
+              .get(parentInfo.getElement()
+                  .getName());
+          traverse(environment.getElement(), typeDefinition, registry);
+        });
+
+  }
+
+  private void traverse(GraphQLDirectiveContainer container, TypeDefinition<?> baseType,
+                        TypeDefinitionRegistry registry) {
+    registry.types()
+        .keySet()
+        .forEach(item -> registry.getType(item)
+            .ifPresent(compareType -> {
+              if (compareType instanceof ObjectTypeDefinition) {
+                if (item.equals(CoreTypes.QUERY_KEYWORD)) {
+                  processQuery(container, registry, baseType, (ObjectTypeDefinition) compareType);
+                } else {
+                  processObjectType(container, registry, baseType, compareType);
+                }
+              } else if (compareType instanceof InputObjectTypeDefinition) {
+                processInputObjectType(container, registry, baseType, compareType);
+              }
+            }));
+  }
+
+  private void processInputObjectType(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
+                                      TypeDefinition<?> baseType, TypeDefinition<?> compareType) {
+    ((InputObjectTypeDefinition) compareType).getInputValueDefinitions()
+        .stream()
+        .filter(inputValue -> registry.getType(getBaseType(inputValue.getType()))
+            .map(definition -> definition.equals(baseType))
+            .orElse(false))
+        .findAny()
+        .ifPresent(definition -> traverse(container, compareType, registry));
+  }
+
+  private void processObjectType(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
+                                 TypeDefinition<?> parentType, TypeDefinition<?> compareType) {
+    ((ObjectTypeDefinition) compareType).getFieldDefinitions()
+        .stream()
+        .filter(inputField -> registry.getType(getBaseType(inputField.getType()))
+            .map(definition -> definition.equals(parentType))
+            .orElse(false))
+        .findAny()
+        .ifPresent(inputValueDefinition -> traverse(container, compareType, registry));
+  }
+
+  private void processQuery(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
+                            TypeDefinition<?> parentType, ObjectTypeDefinition compareType) {
+    compareType.getFieldDefinitions()
+        .stream()
+        .filter(inputField -> inputField.getInputValueDefinitions()
+            .stream()
+            .anyMatch(inputValueDefinition -> registry.getType(getBaseType(inputValueDefinition.getType()))
+                .map(definition -> definition.equals(parentType))
+                .orElse(false)))
+        .forEach(inputField -> validate(container, registry, ((TypeName) getBaseType(inputField.getType())).getName()));
+  }
+
+  private void validate(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry, String typeName) {
     GraphQLDirective directive = container.getDirective(Rdf4jDirectives.SPARQL_FILTER_NAME);
     this.validateDirective(directive, directive.getName());
     directive.getArguments()
-        .forEach(directiveArgument -> this.validateArgument(directiveArgument, directive.getName(), typeName));
+        .forEach(
+            directiveArgument -> this.validateArgument(directiveArgument, registry, directive.getName(), typeName));
   }
 
   private void validateDirective(GraphQLDirective directive, String fieldName) {
@@ -34,13 +133,14 @@ public class SparqlFilterValidator {
   }
 
 
-  private void validateArgument(GraphQLArgument argument, String name, String typeName) {
+  private void validateArgument(
+      GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
     if (argument.getValue() != null) {
       switch (argument.getName()) {
         case Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR:
           break;
         case Rdf4jDirectives.SPARQL_FILTER_ARG_FIELD:
-          checkField(argument, name, typeName);
+          checkField(argument, registry, name, typeName);
           break;
         case Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR:
           checkOperator(argument, name);
@@ -51,9 +151,12 @@ public class SparqlFilterValidator {
     }
   }
 
-  private void checkField(GraphQLArgument argument, String name, String typeName) {
-    if (nodeShapeRegistry.get(typeName)
-        .getPropertyShape((String) argument.getValue()) == null) {
+  private void checkField(
+      GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
+    Optional<TypeDefinition> optional = registry.getType(typeName);
+    if (!optional.isPresent() || ((ObjectTypeDefinition) optional.get()).getFieldDefinitions()
+        .stream()
+        .noneMatch(fieldDefinition -> fieldDefinition.getName().equals(argument.getValue()))) {
       throw new DirectiveValidationException(
           "SparqlFilter 'field' [{}] on field '{}' is invalid. It does not exist on type '{}'", argument.getValue(),
           name, typeName);
@@ -69,6 +172,17 @@ public class SparqlFilterValidator {
               + " '>='",
           argument.getValue(), name);
     }
+  }
+
+  private Type<?> getBaseType(Type<?> type) {
+    if (type instanceof ListType) {
+      return getBaseType((Type) type.getChildren()
+          .get(0));
+    }
+    if (type instanceof NonNullType) {
+      return getBaseType(((NonNullType) type).getType());
+    }
+    return type;
   }
 
 }
