@@ -122,16 +122,15 @@ public class SparqlFilterValidator {
             directiveArgument -> this.validateArgument(directiveArgument, registry, directive.getName(), typeName));
   }
 
-  private void validateDirective(GraphQLDirective directive, String fieldName) {
+  void validateDirective(GraphQLDirective directive, String fieldName) {
     GraphQLArgument expr = directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR);
     GraphQLArgument operator = directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR);
 
     if (expr.getValue() != null && operator.getValue() != null) {
       throw new DirectiveValidationException(
-          "Found both an expression and an operator argument on sparql filter directive on " + "field '{}'", fieldName);
+          "Found both an expression and an operator argument on sparql filter directive on field '{}'", fieldName);
     }
   }
-
 
   private void validateArgument(
       GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
@@ -151,7 +150,7 @@ public class SparqlFilterValidator {
     }
   }
 
-  private void checkField(
+  void checkField(
       GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
     Optional<TypeDefinition> optional = registry.getType(typeName);
     if (!optional.isPresent() || ((ObjectTypeDefinition) optional.get()).getFieldDefinitions()
@@ -163,10 +162,10 @@ public class SparqlFilterValidator {
     }
   }
 
-  private void checkOperator(GraphQLArgument argument, String name) {
-    if (!argument.getValue()
+  void checkOperator(GraphQLArgument argument, String name) {
+    if (argument.getValue() != null && !argument.getValue()
         .toString()
-        .matches("^(=|!=|<|<=|>|>=)$")) {
+        .matches("^(=|!=|<|<=|>|>=)$") ) {
       throw new DirectiveValidationException(
           "SparqlFilter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>',"
               + " '>='",
