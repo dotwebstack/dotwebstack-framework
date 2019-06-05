@@ -36,16 +36,15 @@ class SparqlFilterValidatorTest {
   @Test
   void validate_sparqlFilter_validField() {
     // Arrange
-    when(registry.getType("Brewery"))
-      .thenReturn(Optional.of(typeDefinition));
+    when(registry.getType("Brewery")).thenReturn(Optional.of(typeDefinition));
     when(typeDefinition.getFieldDefinitions())
-      .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
+        .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
 
     GraphQLArgument argument = GraphQLArgument.newArgument()
-      .name("field")
-      .value("founded")
-      .type(Scalars.GraphQLString)
-      .build();
+        .name("field")
+        .value("founded")
+        .type(Scalars.GraphQLString)
+        .build();
 
     // Act
     validator.checkField(argument, registry, "founded", "Brewery");
@@ -59,31 +58,29 @@ class SparqlFilterValidatorTest {
   @Test
   void validate_sparqlFilter_invalidField() {
     // Arrange
-    when(registry.getType("Brewery"))
-      .thenReturn(Optional.of(typeDefinition));
+    when(registry.getType("Brewery")).thenReturn(Optional.of(typeDefinition));
     when(typeDefinition.getFieldDefinitions())
-      .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
+        .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
 
     GraphQLArgument argument = GraphQLArgument.newArgument()
-      .name("field")
-      .value("foundedFake")
-      .type(Scalars.GraphQLString)
-      .build();
+        .name("field")
+        .value("foundedFake")
+        .type(Scalars.GraphQLString)
+        .build();
 
     // Act && Assert that exception is thrown
-    assertThrows(DirectiveValidationException.class, () ->
-      validator.checkField(argument, registry, "founded", "Brewery")
-    );
+    assertThrows(DirectiveValidationException.class,
+        () -> validator.checkField(argument, registry, "founded", "Brewery"));
   }
 
   @Test
   void validate_sparqlFilter_validOperator() {
     // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
-      .name("operator")
-      .value("=")
-      .type(Scalars.GraphQLString)
-      .build();
+        .name("operator")
+        .value("=")
+        .type(Scalars.GraphQLString)
+        .build();
 
     // Act
     validator.checkOperator(argument, "founded");
@@ -98,24 +95,22 @@ class SparqlFilterValidatorTest {
   void validate_sparqlFilter_invalidOperator() {
     // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
-      .name("operator")
-      .value("?")
-      .type(Scalars.GraphQLString)
-      .build();
+        .name("operator")
+        .value("?")
+        .type(Scalars.GraphQLString)
+        .build();
 
     // Act && Assert that exception is thrown
-    assertThrows(DirectiveValidationException.class, () ->
-      validator.checkOperator(argument, "operator")
-    );
+    assertThrows(DirectiveValidationException.class, () -> validator.checkOperator(argument, "operator"));
   }
 
   @Test
   void validate_sparqlFilter_noOperator() {
     // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
-      .name("operator")
-      .type(Scalars.GraphQLString)
-      .build();
+        .name("operator")
+        .type(Scalars.GraphQLString)
+        .build();
 
     // Act
     validator.checkOperator(argument, "operator");
@@ -129,23 +124,23 @@ class SparqlFilterValidatorTest {
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
   void validate_directive() {
-    //Arrange
+    // Arrange
     GraphQLArgument expression = GraphQLArgument.newArgument()
-      .name(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)
-      .type(Scalars.GraphQLString)
-      .value("test")
-      .build();
+        .name(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)
+        .type(Scalars.GraphQLString)
+        .value("test")
+        .build();
 
     GraphQLArgument operator = GraphQLArgument.newArgument()
-      .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
-      .type(Scalars.GraphQLString)
-      .value(null)
-      .build();
+        .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
+        .type(Scalars.GraphQLString)
+        .value(null)
+        .build();
 
     when(directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)).thenReturn(expression);
     when(directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)).thenReturn(operator);
 
-    //Act
+    // Act
     validator.validateDirective(directive, "brewery");
 
     // The purpose of the "Assert true" below, is to make sure this test is regarded as a valid test.
@@ -157,44 +152,42 @@ class SparqlFilterValidatorTest {
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
   void fail_when_both_operator_and_expr_are_provided() {
-    //Arrange
+    // Arrange
     GraphQLArgument expression = GraphQLArgument.newArgument()
-      .name(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)
-      .type(Scalars.GraphQLString)
-      .value("test")
-      .build();
+        .name(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)
+        .type(Scalars.GraphQLString)
+        .value("test")
+        .build();
 
     GraphQLArgument operator = GraphQLArgument.newArgument()
-      .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
-      .type(Scalars.GraphQLString)
-      .value("test")
-      .build();
+        .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
+        .type(Scalars.GraphQLString)
+        .value("test")
+        .build();
 
     when(directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)).thenReturn(expression);
     when(directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)).thenReturn(operator);
 
     // Act && Assert that exception is thrown
-    assertThrows(DirectiveValidationException.class, () ->
-      validator.validateDirective(directive, "brewery")
-    );
+    assertThrows(DirectiveValidationException.class, () -> validator.validateDirective(directive, "brewery"));
 
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
   void pass_when_no_operator_and_expr_are_provided() {
-    //Arrange
+    // Arrange
     GraphQLArgument expression = GraphQLArgument.newArgument()
-      .name(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)
-      .type(Scalars.GraphQLString)
-      .value(null)
-      .build();
+        .name(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)
+        .type(Scalars.GraphQLString)
+        .value(null)
+        .build();
 
     GraphQLArgument operator = GraphQLArgument.newArgument()
-      .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
-      .type(Scalars.GraphQLString)
-      .value(null)
-      .build();
+        .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
+        .type(Scalars.GraphQLString)
+        .value(null)
+        .build();
 
     when(directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)).thenReturn(expression);
     when(directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)).thenReturn(operator);

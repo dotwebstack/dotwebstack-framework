@@ -1,23 +1,33 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLDirectiveContainer;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.helpers.SparqlFilterHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.JexlHelper;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
+import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
@@ -30,7 +40,23 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   private final NodeShape nodeShape;
 
-  private final ImmutableMap.Builder<String, TriplePattern> whereBuilder = ImmutableMap.builder();
+  private final ImmutableMap.Builder<String, GraphPattern> whereBuilder = ImmutableMap.builder();
+
+  private static final ImmutableMap.Builder<String, BiFunction<String, String, Expression>> BUILDER =
+      new ImmutableMap.Builder<>();
+
+  static {
+    BUILDER.put("=",
+        (subject, object) -> Expressions.equals(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
+    BUILDER.put("!=",
+        (subject, object) -> Expressions.notEquals(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
+    BUILDER.put("<", (subject, object) -> Expressions.lt(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
+    BUILDER.put("<=", (subject, object) -> Expressions.lte(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
+    BUILDER.put(">", (subject, object) -> Expressions.gt(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
+    BUILDER.put(">=", (subject, object) -> Expressions.gte(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
+  }
+
+  private static final ImmutableMap<String, BiFunction<String, String, Expression>> MAP = BUILDER.build();
 
   private SubjectQueryBuilder(final QueryEnvironment environment, final JexlEngine jexlEngine) {
     super(environment, Queries.SELECT());
@@ -43,7 +69,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     return new SubjectQueryBuilder(environment, jexlEngine);
   }
 
-  String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective) {
+  String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective,
+      Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping) {
     final MapContext context = new MapContext(arguments);
 
     this.query.select(SUBJECT_VAR);
@@ -54,10 +81,18 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
     getOrderByFromContext(context, sparqlDirective).ifPresent(this::buildOrderBy);
+    Map<String, Expression<?>> filters = getSparqlFilters(sparqlFilterMapping);
 
     whereBuilder.build()
         .values()
-        .forEach(query::where);
+        .forEach(whereStatement -> {
+          String key = whereStatement.getQueryString()
+              .split(" ")[2];
+          if (filters.containsKey(key)) {
+            whereStatement = whereStatement.filter(filters.get(key));
+          }
+          query.where(whereStatement);
+        });
 
     return this.query.getQueryString();
   }
@@ -134,5 +169,70 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       }
     });
     return offset;
+  }
+
+  private Map<String, Expression<?>> getSparqlFilters(Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping) {
+    Map<String, Expression<?>> expressionMap = new HashMap<>();
+    sparqlFilterMapping.forEach((container, value) -> {
+      GraphQLDirective directive = container.getDirective(Rdf4jDirectives.SPARQL_FILTER_NAME);
+      String field = (String) directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_FIELD)
+          .getValue();
+      Variable fieldVar = SparqlBuilder.var(field);
+      String operator = (String) directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
+          .getValue();
+      String expr = (String) directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)
+          .getValue();
+      Expression<?> expression = null;
+
+      if (expr == null) {
+        expression = getExpressionFromOperator(field, operator, (String) value);
+      }
+
+      if (whereBuilder.build()
+          .values()
+          .stream()
+          .noneMatch(statement -> statement.getQueryString()
+              .split(" ")[2].equals(fieldVar.getQueryString()))) {
+        GraphPattern pattern = GraphPatterns.tp(SUBJECT_VAR, nodeShape.getPropertyShape(field)
+            .getPath()
+            .toPredicate(), fieldVar);
+        whereBuilder.put(pattern.getQueryString(), pattern);
+      }
+
+      addExpression(expression, fieldVar, expressionMap);
+    });
+
+    return expressionMap;
+  }
+
+  private void addExpression(Expression<?> expression, Variable fieldVar, Map<String, Expression<?>> expressionMap) {
+    List<Expression<?>> expressions = new ArrayList<>();
+    Expression<?> addedExpression;
+
+    if (expressionMap.containsKey(fieldVar.getQueryString())) {
+      expressions.add(expressionMap.get(fieldVar.getQueryString()));
+      expressions.add(expression);
+      addedExpression = Expressions.and(Iterables.toArray((expressions), Expression.class));
+    } else {
+      addedExpression = expression;
+    }
+
+    expressionMap.put(fieldVar.getQueryString(), addedExpression);
+  }
+
+  private Expression<?> getExpressionFromOperator(String field, String operator, String value) {
+    BiFunction<String, String, Expression> function;
+    if (operator == null) {
+      function = MAP.get(SparqlFilterHelper.DEFAILT_OPERATOR);
+    } else {
+      function = MAP.get(operator);
+    }
+
+    if (function == null) {
+      throw ExceptionHelper.unsupportedOperationException("Invalid operator '{}' in sparqlFilter directive for '{}'",
+          operator, field);
+    }
+
+    return function.apply(field, value);
   }
 }

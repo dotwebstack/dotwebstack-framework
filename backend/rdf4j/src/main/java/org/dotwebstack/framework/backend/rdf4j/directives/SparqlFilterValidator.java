@@ -17,12 +17,11 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphqlElementParentTree;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.Optional;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.input.CoreTypes;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 public class SparqlFilterValidator {
@@ -63,7 +62,7 @@ public class SparqlFilterValidator {
   }
 
   private void traverse(GraphQLDirectiveContainer container, TypeDefinition<?> baseType,
-                        TypeDefinitionRegistry registry) {
+      TypeDefinitionRegistry registry) {
     registry.types()
         .keySet()
         .forEach(item -> registry.getType(item)
@@ -81,7 +80,7 @@ public class SparqlFilterValidator {
   }
 
   private void processInputObjectType(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
-                                      TypeDefinition<?> baseType, TypeDefinition<?> compareType) {
+      TypeDefinition<?> baseType, TypeDefinition<?> compareType) {
     ((InputObjectTypeDefinition) compareType).getInputValueDefinitions()
         .stream()
         .filter(inputValue -> registry.getType(getBaseType(inputValue.getType()))
@@ -92,7 +91,7 @@ public class SparqlFilterValidator {
   }
 
   private void processObjectType(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
-                                 TypeDefinition<?> parentType, TypeDefinition<?> compareType) {
+      TypeDefinition<?> parentType, TypeDefinition<?> compareType) {
     ((ObjectTypeDefinition) compareType).getFieldDefinitions()
         .stream()
         .filter(inputField -> registry.getType(getBaseType(inputField.getType()))
@@ -103,7 +102,7 @@ public class SparqlFilterValidator {
   }
 
   private void processQuery(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
-                            TypeDefinition<?> parentType, ObjectTypeDefinition compareType) {
+      TypeDefinition<?> parentType, ObjectTypeDefinition compareType) {
     compareType.getFieldDefinitions()
         .stream()
         .filter(inputField -> inputField.getInputValueDefinitions()
@@ -132,8 +131,8 @@ public class SparqlFilterValidator {
     }
   }
 
-  private void validateArgument(
-      GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
+  private void validateArgument(GraphQLArgument argument, TypeDefinitionRegistry registry, String name,
+      String typeName) {
     if (argument.getValue() != null) {
       switch (argument.getName()) {
         case Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR:
@@ -150,12 +149,12 @@ public class SparqlFilterValidator {
     }
   }
 
-  void checkField(
-      GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
+  void checkField(GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
     Optional<TypeDefinition> optional = registry.getType(typeName);
     if (!optional.isPresent() || ((ObjectTypeDefinition) optional.get()).getFieldDefinitions()
         .stream()
-        .noneMatch(fieldDefinition -> fieldDefinition.getName().equals(argument.getValue()))) {
+        .noneMatch(fieldDefinition -> fieldDefinition.getName()
+            .equals(argument.getValue()))) {
       throw new DirectiveValidationException(
           "SparqlFilter 'field' [{}] on field '{}' is invalid. It does not exist on type '{}'", argument.getValue(),
           name, typeName);
@@ -165,7 +164,7 @@ public class SparqlFilterValidator {
   void checkOperator(GraphQLArgument argument, String name) {
     if (argument.getValue() != null && !argument.getValue()
         .toString()
-        .matches("^(=|!=|<|<=|>|>=)$") ) {
+        .matches("^(=|!=|<|<=|>|>=)$")) {
       throw new DirectiveValidationException(
           "SparqlFilter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>',"
               + " '>='",
