@@ -150,8 +150,9 @@ public class SparqlFilterValidator {
   }
 
   void checkField(GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
-    Optional<TypeDefinition> optional = registry.getType(typeName);
-    if (!optional.isPresent() || ((ObjectTypeDefinition) optional.get()).getFieldDefinitions()
+    Optional<ObjectTypeDefinition> optional = registry.getType(typeName, ObjectTypeDefinition.class);
+    if (!optional.isPresent() || optional.get()
+        .getFieldDefinitions()
         .stream()
         .noneMatch(fieldDefinition -> fieldDefinition.getName()
             .equals(argument.getValue()))) {

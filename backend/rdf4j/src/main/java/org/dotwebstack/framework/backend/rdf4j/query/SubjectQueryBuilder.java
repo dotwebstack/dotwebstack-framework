@@ -42,21 +42,19 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   private final ImmutableMap.Builder<String, GraphPattern> whereBuilder = ImmutableMap.builder();
 
-  private static final ImmutableMap.Builder<String, BiFunction<String, String, Expression>> BUILDER =
+  private static final ImmutableMap.Builder<String, BiFunction<String, String, Expression<?>>> BUILDER =
       new ImmutableMap.Builder<>();
 
   static {
-    BUILDER.put("=",
-        (subject, object) -> Expressions.equals(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
-    BUILDER.put("!=",
-        (subject, object) -> Expressions.notEquals(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
-    BUILDER.put("<", (subject, object) -> Expressions.lt(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
-    BUILDER.put("<=", (subject, object) -> Expressions.lte(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
-    BUILDER.put(">", (subject, object) -> Expressions.gt(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
-    BUILDER.put(">=", (subject, object) -> Expressions.gte(SparqlBuilder.var(subject), Rdf.literalOf((String) object)));
+    BUILDER.put("=", (subject, object) -> Expressions.equals(SparqlBuilder.var(subject), Rdf.literalOf(object)));
+    BUILDER.put("!=", (subject, object) -> Expressions.notEquals(SparqlBuilder.var(subject), Rdf.literalOf(object)));
+    BUILDER.put("<", (subject, object) -> Expressions.lt(SparqlBuilder.var(subject), Rdf.literalOf(object)));
+    BUILDER.put("<=", (subject, object) -> Expressions.lte(SparqlBuilder.var(subject), Rdf.literalOf(object)));
+    BUILDER.put(">", (subject, object) -> Expressions.gt(SparqlBuilder.var(subject), Rdf.literalOf(object)));
+    BUILDER.put(">=", (subject, object) -> Expressions.gte(SparqlBuilder.var(subject), Rdf.literalOf(object)));
   }
 
-  private static final ImmutableMap<String, BiFunction<String, String, Expression>> MAP = BUILDER.build();
+  private static final ImmutableMap<String, BiFunction<String, String, Expression<?>>> MAP = BUILDER.build();
 
   private SubjectQueryBuilder(final QueryEnvironment environment, final JexlEngine jexlEngine) {
     super(environment, Queries.SELECT());
@@ -180,13 +178,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       Variable fieldVar = SparqlBuilder.var(field);
       String operator = (String) directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
           .getValue();
-      String expr = (String) directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)
-          .getValue();
-      Expression<?> expression = null;
-
-      if (expr == null) {
-        expression = getExpressionFromOperator(field, operator, (String) value);
-      }
+      Expression<?> expression = getExpressionFromOperator(field, operator, (String) value);
 
       if (whereBuilder.build()
           .values()
@@ -221,12 +213,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   private Expression<?> getExpressionFromOperator(String field, String operator, String value) {
-    BiFunction<String, String, Expression> function;
-    if (operator == null) {
-      function = MAP.get(SparqlFilterHelper.DEFAILT_OPERATOR);
-    } else {
-      function = MAP.get(operator);
-    }
+    BiFunction<String, String, Expression<?>> function =
+        MAP.get(operator != null ? operator : SparqlFilterHelper.DEFAULT_OPERATOR);
 
     if (function == null) {
       throw ExceptionHelper.unsupportedOperationException("Invalid operator '{}' in sparqlFilter directive for '{}'",

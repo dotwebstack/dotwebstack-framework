@@ -36,7 +36,7 @@ class SparqlFilterValidatorTest {
   @Test
   void validate_sparqlFilter_validField() {
     // Arrange
-    when(registry.getType("Brewery")).thenReturn(Optional.of(typeDefinition));
+    when(registry.getType("Brewery", ObjectTypeDefinition.class)).thenReturn(Optional.of(typeDefinition));
     when(typeDefinition.getFieldDefinitions())
         .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
 
@@ -58,7 +58,7 @@ class SparqlFilterValidatorTest {
   @Test
   void validate_sparqlFilter_invalidField() {
     // Arrange
-    when(registry.getType("Brewery")).thenReturn(Optional.of(typeDefinition));
+    when(registry.getType("Brewery", ObjectTypeDefinition.class)).thenReturn(Optional.of(typeDefinition));
     when(typeDefinition.getFieldDefinitions())
         .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
 
