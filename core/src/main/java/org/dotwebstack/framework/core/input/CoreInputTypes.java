@@ -11,8 +11,6 @@ public class CoreTypes {
 
   public static final String SORT_FIELD_FIELD = "field";
 
-  public static final String QUERY_KEYWORD = "Query";
-
   private CoreTypes() {}
 
 }
