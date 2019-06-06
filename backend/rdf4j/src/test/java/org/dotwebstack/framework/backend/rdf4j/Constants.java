@@ -40,6 +40,8 @@ public final class Constants {
 
   public static final String BREWERY_FIELD = "brewery";
 
+  public static final String BREWERIES_FIELD = "breweries";
+
   // Building
 
   public static final String BREWERY_TYPE = "Brewery";

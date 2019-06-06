@@ -5,10 +5,11 @@ schema {
 type Query {
   brewery(identifier: ID!): Brewery!
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
-  breweries: [Brewery!]!
+  breweries(name: String @sparqlFilter(field: "name"), sinceAfter: String @sparqlFilter(field: "founded", operator: ">")): [Brewery!]!
     @sparql(repository: "local")
   beer(identifier: ID!): Beer!
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/beer/${identifier}")
+
 }
 
 type Brewery {
