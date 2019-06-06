@@ -14,7 +14,7 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
 
   private final SparqlFilterValidator validator;
 
-  public SparqlFilterDirectiveWiring(SparqlFilterValidator validator) {
+  public SparqlFilterDirectiveWiring(@NonNull SparqlFilterValidator validator) {
     this.validator = validator;
   }
 

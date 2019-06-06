@@ -3,7 +3,10 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
+import graphql.language.ListType;
+import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
+import graphql.language.Type;
 import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironment;
@@ -22,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.dotwebstack.framework.backend.rdf4j.helpers.SparqlFilterDirectiveHelper;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -44,7 +46,7 @@ public class SparqlFilterDirectiveTraverser {
   private List<GraphQLDirectiveContainer> getInputObjectFieldsFromArgument(GraphQLArgument argument) {
     if (argument.getType() instanceof GraphQLInputObjectType) {
       return getInputObjectFieldsFromObjectType((GraphQLInputObjectType) argument.getType());
-    } else if ((GraphQLTypeUtil.unwrapNonNull(argument.getType()) instanceof GraphQLScalarType)) {
+    } else if ((GraphQLTypeUtil.unwrapAll(argument.getType()) instanceof GraphQLScalarType)) {
       return Collections.singletonList(argument);
     }
 
@@ -98,11 +100,10 @@ public class SparqlFilterDirectiveTraverser {
         .stream()
         .filter(inputField -> inputField.getInputValueDefinitions()
             .stream()
-            .anyMatch(inputValueDefinition -> registry
-                .getType(SparqlFilterDirectiveHelper.getBaseType(inputValueDefinition.getType()))
+            .anyMatch(inputValueDefinition -> registry.getType(getBaseType(inputValueDefinition.getType()))
                 .map(definition -> definition.equals(parentType))
                 .orElse(false)))
-        .map(inputField -> ((TypeName) SparqlFilterDirectiveHelper.getBaseType(inputField.getType())).getName())
+        .map(inputField -> ((TypeName) getBaseType(inputField.getType())).getName())
         .collect(Collectors.toList());
   }
 
@@ -112,7 +113,7 @@ public class SparqlFilterDirectiveTraverser {
     Optional<InputValueDefinition> inputValueDefinition =
         ((InputObjectTypeDefinition) compareType).getInputValueDefinitions()
             .stream()
-            .filter(inputValue -> registry.getType(SparqlFilterDirectiveHelper.getBaseType(inputValue.getType()))
+            .filter(inputValue -> registry.getType(getBaseType(inputValue.getType()))
                 .map(definition -> definition.equals(baseType))
                 .orElse(false))
             .findAny();
@@ -127,7 +128,7 @@ public class SparqlFilterDirectiveTraverser {
       TypeDefinition<?> compareType) {
     Optional<FieldDefinition> inputValueDefinition = ((ObjectTypeDefinition) compareType).getFieldDefinitions()
         .stream()
-        .filter(inputField -> registry.getType(SparqlFilterDirectiveHelper.getBaseType(inputField.getType()))
+        .filter(inputField -> registry.getType(getBaseType(inputField.getType()))
             .map(definition -> definition.equals(parentType))
             .orElse(false))
         .findAny();
@@ -136,5 +137,16 @@ public class SparqlFilterDirectiveTraverser {
       return getReturnTypes(compareType, registry);
     }
     return Collections.emptyList();
+  }
+
+  private Type<?> getBaseType(Type<?> type) {
+    if (type instanceof ListType) {
+      return getBaseType((Type) type.getChildren()
+          .get(0));
+    }
+    if (type instanceof NonNullType) {
+      return getBaseType(((NonNullType) type).getType());
+    }
+    return type;
   }
 }

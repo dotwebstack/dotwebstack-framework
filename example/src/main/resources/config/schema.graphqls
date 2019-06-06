@@ -10,8 +10,9 @@ type Query {
 
   breweries(sort: [SortField!] = [{ field: "name", order: ASC }],
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
-            notName: String @sparqlFilter(field: "name", operator: "!="),
-            name: String @sparqlFilter(field: "name")): [Brewery!]!
+            sinceAfter: String @sparqlFilter(field: "founded", operator: ">"),
+            sinceBefore: String @sparqlFilter(field: "founded", operator: "<")
+            name: [String] @sparqlFilter(field: "name")): [Brewery!]!
     @sparql(
       repository: "local",
       limit: "pageSize",

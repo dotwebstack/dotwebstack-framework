@@ -20,6 +20,10 @@ public enum SparqlFilterOperator {
         .orElse(null);
   }
 
+  public static SparqlFilterOperator getDefault() {
+    return SparqlFilterOperator.EQ;
+  }
+
   @Override
   public String toString() {
     return this.value;

@@ -12,6 +12,7 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Optional;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ public class SparqlFilterValidator {
 
   private final SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser;
 
-  public SparqlFilterValidator(SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser) {
+  public SparqlFilterValidator(@NonNull SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser) {
     this.sparqlFilterDirectiveTraverser = sparqlFilterDirectiveTraverser;
   }
 
