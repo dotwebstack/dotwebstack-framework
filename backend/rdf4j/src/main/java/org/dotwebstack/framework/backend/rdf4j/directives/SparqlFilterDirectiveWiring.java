@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
 
-  private SparqlFilterValidator validator;
+  private final SparqlFilterValidator validator;
 
   public SparqlFilterDirectiveWiring(SparqlFilterValidator validator) {
     this.validator = validator;

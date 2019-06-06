@@ -4,11 +4,11 @@ import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.Type;
 
-public class SparqlFilterHelper {
+public class SparqlFilterDirectiveHelper {
 
   public static final String DEFAULT_OPERATOR = "=";
 
-  static Type<?> getBaseType(Type<?> type) {
+  public static Type<?> getBaseType(Type<?> type) {
     if (type instanceof ListType) {
       return getBaseType((Type) type.getChildren()
           .get(0));

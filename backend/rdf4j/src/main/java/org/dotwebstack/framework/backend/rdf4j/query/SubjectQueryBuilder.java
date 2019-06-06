@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
-import org.dotwebstack.framework.backend.rdf4j.helpers.SparqlFilterHelper;
+import org.dotwebstack.framework.backend.rdf4j.helpers.SparqlFilterDirectiveHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
@@ -214,7 +214,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   private Expression<?> getExpressionFromOperator(String field, String operator, String value) {
     BiFunction<String, String, Expression<?>> function =
-        MAP.get(operator != null ? operator : SparqlFilterHelper.DEFAULT_OPERATOR);
+        MAP.get(operator != null ? operator : SparqlFilterDirectiveHelper.DEFAULT_OPERATOR);
 
     if (function == null) {
       throw ExceptionHelper.unsupportedOperationException("Invalid operator '{}' in sparqlFilter directive for '{}'",

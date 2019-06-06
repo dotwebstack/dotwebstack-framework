@@ -1,16 +1,22 @@
 package org.dotwebstack.framework.core.input;
 
 
-public class CoreTypes {
+public class CoreInputTypes {
 
-  public static final String SORT_FIELD = "SortField";
+  public static final String SORT_FIELD;
 
-  public static final String SORT_ORDER = "SortOrder";
+  public static final String SORT_ORDER;
 
-  public static final String SORT_FIELD_ORDER = "order";
+  public static final String SORT_FIELD_ORDER;
 
-  public static final String SORT_FIELD_FIELD = "field";
+  public static final String SORT_FIELD_FIELD;
 
-  private CoreTypes() {}
+  private CoreInputTypes() {}
 
+  static {
+    SORT_FIELD = "SortField";
+    SORT_ORDER = "SortOrder";
+    SORT_FIELD_FIELD = "field";
+    SORT_FIELD_ORDER = "order";
+  }
 }

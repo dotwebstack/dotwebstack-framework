@@ -22,7 +22,7 @@ import org.mockito.quality.Strictness;
 @ExtendWith(MockitoExtension.class)
 class SparqlFilterValidatorTest {
 
-  private static SparqlFilterValidator validator = new SparqlFilterValidator();
+  private static SparqlFilterValidator validator = new SparqlFilterValidator(new SparqlFilterDirectiveTraverser());
 
   @Mock
   private ObjectTypeDefinition typeDefinition;
