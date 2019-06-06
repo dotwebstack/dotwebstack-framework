@@ -16,8 +16,6 @@ public final class Rdf4jDirectives {
 
   public static final String SPARQL_FILTER_NAME = "sparqlFilter";
 
-  public static final String SPARQL_FILTER_ARG_EXPR = "expr";
-
   public static final String SPARQL_FILTER_ARG_FIELD = "field";
 
   public static final String SPARQL_FILTER_ARG_OPERATOR = "operator";

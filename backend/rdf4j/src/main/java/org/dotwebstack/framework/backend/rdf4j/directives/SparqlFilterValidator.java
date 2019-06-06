@@ -57,28 +57,15 @@ public class SparqlFilterValidator {
 
   private void validate(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry, String typeName) {
     GraphQLDirective directive = container.getDirective(Rdf4jDirectives.SPARQL_FILTER_NAME);
-    this.validateDirective(directive, directive.getName());
     directive.getArguments()
         .forEach(
             directiveArgument -> this.validateArgument(directiveArgument, registry, directive.getName(), typeName));
-  }
-
-  void validateDirective(GraphQLDirective directive, String fieldName) {
-    GraphQLArgument expr = directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR);
-    GraphQLArgument operator = directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR);
-
-    if (expr.getValue() != null && operator.getValue() != null) {
-      throw new DirectiveValidationException(
-          "Found both an expression and an operator argument on sparql filter directive on field '{}'", fieldName);
-    }
   }
 
   private void validateArgument(GraphQLArgument argument, TypeDefinitionRegistry registry, String name,
       String typeName) {
     if (argument.getValue() != null) {
       switch (argument.getName()) {
-        case Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR:
-          break;
         case Rdf4jDirectives.SPARQL_FILTER_ARG_FIELD:
           checkField(argument, registry, name, typeName);
           break;

@@ -364,3 +364,34 @@ beer:shapes {
  .
 }
 ```
+
+## 1.7 Sparql filter directive
+It is possible to filter results by adding a *sparlFilter* directive to one of your GraphQL queries. 
+You can do this adding the `@sparqlFilter` keyword to an argument on your GraphQL Query: 
+
+```graphql
+type Query {
+  breweries(filterName: String @sparqlFilter(field: "name", operand: "=")): [Brewery!]!
+}
+```
+
+The `@sparqlFilter` directive takes two arguments, the `field` and the `operator` argument. With the `field` argument
+you can assign the filter to a field of the return type. So in this case the filter is assigned to the name field of
+the `Brewery`. In order for the filter to work, the field needs to exist on the return type. Assigning the field `test`,
+which is a field that does not exist on the Brewery type, results in an error. The `operator` argument is used to create
+a filter condition between the field and the value provided by the user. The following operators are currently supported: 
+`=`, `!=`, `<`, `<=`, `>`, `>=`. It is possible to omit the `operator` argument, in that case the default value (`=`) is
+chosen.
+
+It is also possible to add a filter to a nested input object, such as:
+```graphql
+type Query {
+  breweries(filter: Filter): [Brewery!]!
+}
+
+input Filter {
+  filterName: String @sparqlFilter(field: "name", operand: "=")
+}
+```
+
+There is currently no restriction in how deep you nest the `@sparqlFilter`. 

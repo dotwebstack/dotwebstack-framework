@@ -80,10 +80,6 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
             .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
             .type(optionalString)
             .build())
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Rdf4jDirectives.SPARQL_FILTER_ARG_EXPR)
-            .type(optionalString)
-            .build())
         .directiveLocations(ImmutableList.of(
             newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
                 .build(),

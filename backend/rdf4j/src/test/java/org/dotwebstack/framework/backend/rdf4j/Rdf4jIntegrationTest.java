@@ -14,7 +14,6 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_EXA
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -22,13 +21,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
-import java.lang.reflect.Array;
 import java.time.ZonedDateTime;
 import java.util.Map;
-import org.checkerframework.checker.units.qual.A;
 import org.dotwebstack.framework.test.TestApplication;
-import org.hamcrest.collection.IsArray;
-import org.hamcrest.collection.IsArrayContaining;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +93,7 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
-  void graphQL_returns_executionResult_with_breweryList(){
+  void graphQL_returns_executionResult_with_breweryList() {
     // Arrange
     String query = "{ breweries(name: \"Brouwerij 1923\") { identifier, name }}";
 
@@ -106,18 +101,16 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors().isEmpty(), is(true));
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
     Map<String, Object> data = result.getData();
 
-    assertThat(data,
-      IsMapContaining.hasEntry(BREWERIES_FIELD,
-        ImmutableList.of(
-          ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD,
-          BREWERY_NAME_EXAMPLE_1.stringValue()))));
+    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD, ImmutableList.of(
+        ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()))));
   }
 
   @Test
-  void graphQL_returns_executionResult_with_breweryList_notName(){
+  void graphQL_returns_executionResult_with_breweryList_notName() {
     // Arrange
     String query = "{ breweries(sinceAfter: \"2018-05-29T09:30:10+02:00\") { identifier, name }}";
 
@@ -125,14 +118,11 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    assertThat(result.getErrors().isEmpty(), is(true));
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
     Map<String, Object> data = result.getData();
 
-    assertThat(data,
-      IsMapContaining.hasEntry(BREWERIES_FIELD,
-        ImmutableList.of(
-          ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD,
-            BREWERY_NAME_EXAMPLE_1.stringValue())
-        )));
+    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD, ImmutableList.of(
+        ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()))));
   }
 }
