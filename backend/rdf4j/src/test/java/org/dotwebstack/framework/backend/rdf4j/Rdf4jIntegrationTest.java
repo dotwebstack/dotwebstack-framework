@@ -130,7 +130,8 @@ class Rdf4jIntegrationTest {
   void graphqlQuery_ReturnsMap_ForQueryWithTwoFiltersOnDateTimeField() {
     // Arrange
     String query =
-        "{ breweries(foundedAfter: \"1990-01-01T00:00:00+02:00\", foundedBefore: \"2011-01-01T00:00:00+02:00\") { identifier, name }}";
+        "{ breweries(foundedAfter: \"1990-01-01T00:00:00+02:00\", foundedBefore: \"2011-01-01T00:00:00+02:00\") "
+            + "{ identifier, name }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -150,8 +151,9 @@ class Rdf4jIntegrationTest {
   @Test
   void graphqlQuery_ReturnsMap_ForQueryWithFilterWithListInNestedInputObjects() {
     // Arrange
-    String query =
-        "{ breweriesWithInputObject(input: { nestedInput: { nestedNestedInput: {name: [\"Heineken Nederland\", \"Brouwerij De Leckere\"] }, foundedAfter: \"1800-01-01T00:00:00+02:00\"}}) { identifier, name }}";
+    String query = "{ breweriesWithInputObject(input: {nestedInput: {nestedNestedInput: {"
+        + "name: [\"Heineken Nederland\", \"Brouwerij De Leckere\"]},"
+        + "foundedAfter: \"1800-01-01T00:00:00+02:00\"}}) { identifier, name }}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
