@@ -366,8 +366,8 @@ beer:shapes {
 ```
 
 ## 1.7 Sparql filter directive
-It is possible to filter results by adding a *sparlFilter* directive to one of your GraphQL queries. 
-You can do this adding the `@sparqlFilter` keyword to an argument on your GraphQL Query: 
+It is possible to filter results by setting a *sparlFilter* directive on a GraphQL query. 
+You can do this by adding the `@sparqlFilter` keyword to an argument on a GraphQL Query. For example: 
 
 ```graphql
 type Query {
@@ -375,14 +375,15 @@ type Query {
 }
 ```
 
-The `@sparqlFilter` directive takes two arguments, the `field` and the `operator` argument. With the `field` argument
-the filter is applied to the `name` property of the `Brwery`. If the directive is assigned to an unexisting field, 
-an error is thrown. The `operator` argument is used to create a filter condition between the field and the value provided
- by the user. The following operators are currently supported: `=`, `!=`, `<`, `<=`, `>`, `>=`. It is possible 
- to omit the `operator` argument, in that case the default value (`=`) is chosen.
+The `@sparqlFilter` directive takes two arguments, the `field` and the `operator` argument. The `field` argument
+sets the field to which the filter is applied, in the example above this is the `name` property of the `Brewery`. 
+If the directive is assigned to a nonexistent field, an exception will be thrown at compile time. The `operator` 
+argument is used to describe the filter condition that is used to set the relation between the field and the value provided
+by the user. The following operators are currently supported: `=`, `!=`, `<`, `<=`, `>`, `>=`. It is possible 
+to omit the `operator` argument, in that case the default value (`=`) will be used.
 
-It is also possible to add a filter to a nested input object, like you can see in the example below. While the example
-shows a nesting of one layer, there is currently no restriction in how deep you nest your `@sparqlFilter` directives. 
+It is also possible to add a filter to a nested input object, as illustrated in the example below. While the example
+shows a nesting of only one layer, there is currently no restriction in how deep you can nest your `@sparqlFilter` directives. 
 ```graphql
 type Query {
   breweries(filter: Filter): [Brewery!]!
@@ -393,9 +394,9 @@ input Filter {
 }
 ```
 
-It is possible to combine multiple filters on the same field, like you can see in the example below. Combining these 
-filters results in a combined filter, joined together with the `AND` keyword. So the resulting queries will provided
-you with the `Breweries` founded between the `foundedFrom` and `foundedTo` arguments.
+It is possible to combine multiple filters on the same field, as illustrated in the example below. Combining these 
+filters results in a combined filter, joined together with the `AND` keyword. The resulting query will return the 
+`Breweries` founded between the `foundedFrom` and `foundedTo` arguments.
 
 ```graphql
 type Query {
@@ -408,9 +409,9 @@ Another possibility is to use an array type on a filter argument, as can be seen
 
 ```graphql
 type Query {
-  breweries(filterNames: [String] @sparqlFilter(field: "name", operator: "=")): [Brewery!]!
+  breweries(nameIn: [String] @sparqlFilter(field: "name", operator: "=")): [Brewery!]!
 }
 ``` 
 
-The names that are provided in the `filterNames` argument are used in a combined `OR` filter, so the resulting query will
+The names that are provided in the `nameIn` argument are used in a filter where the arguments are combined with `OR`'s; the resulting query will
 return all the breweries that match one of the provided names.   
