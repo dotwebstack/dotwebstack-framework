@@ -29,6 +29,7 @@ public class PredicatePath implements PropertyPath {
     return Models.getProperties(model, subject, this.iri);
   }
 
+  @Override
   public RdfPredicate toPredicate() {
     return () -> Rdf.iri(getIri())
         .getQueryString();

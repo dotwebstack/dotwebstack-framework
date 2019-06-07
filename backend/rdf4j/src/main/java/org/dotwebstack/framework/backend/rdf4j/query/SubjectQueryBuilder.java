@@ -178,7 +178,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   @SuppressWarnings("unchecked")
-  private Map<String, Expression<?>> getSparqlFilters(Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping) {
+  Map<String, Expression<?>> getSparqlFilters(Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping) {
     Map<String, Expression<?>> expressionMap = new HashMap<>();
     sparqlFilterMapping.forEach((container, value) -> {
       GraphQLDirective directive = container.getDirective(Rdf4jDirectives.SPARQL_FILTER_NAME);

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
+
 import graphql.Scalars;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
@@ -34,7 +35,7 @@ class SparqlFilterValidatorTest {
     // Arrange
     when(registry.getType("Brewery", ObjectTypeDefinition.class)).thenReturn(Optional.of(typeDefinition));
     when(typeDefinition.getFieldDefinitions())
-    .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
+        .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
 
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name("field")
@@ -51,7 +52,7 @@ class SparqlFilterValidatorTest {
     // Arrange
     when(registry.getType("Brewery", ObjectTypeDefinition.class)).thenReturn(Optional.of(typeDefinition));
     when(typeDefinition.getFieldDefinitions())
-    .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
+        .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
 
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name("field")

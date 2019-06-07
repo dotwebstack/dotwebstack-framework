@@ -28,38 +28,38 @@ public class SparqlFilterValidator {
 
   void validateArgumentEnvironment(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     environment.getElementParentTree()
-    .getParentInfo()
-    .ifPresent(parentInfo -> {
-      if (((GraphQLFieldDefinition) parentInfo.getElement()).getDirective(Rdf4jDirectives.SPARQL_NAME) == null) {
-        throw ExceptionHelper.illegalArgumentException("'{}' can only be used as an argument for a Query!",
-            environment.getElement());
-      }
+        .getParentInfo()
+        .ifPresent(parentInfo -> {
+          if (((GraphQLFieldDefinition) parentInfo.getElement()).getDirective(Rdf4jDirectives.SPARQL_NAME) == null) {
+            throw ExceptionHelper.illegalArgumentException("'{}' can only be used as an argument for a Query!",
+                environment.getElement());
+          }
 
-      GraphQLObjectType type = (GraphQLObjectType) GraphQLTypeUtil
-          .unwrapAll(((GraphQLFieldDefinition) parentInfo.getElement()).getType());
-      this.validate(environment.getElement(), environment.getRegistry(), type.getName());
-    });
+          GraphQLObjectType type = (GraphQLObjectType) GraphQLTypeUtil
+              .unwrapAll(((GraphQLFieldDefinition) parentInfo.getElement()).getType());
+          this.validate(environment.getElement(), environment.getRegistry(), type.getName());
+        });
   }
 
   void validateInputObjectFieldEnvironment(SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     TypeDefinitionRegistry registry = environment.getRegistry();
 
     environment.getElementParentTree()
-    .getParentInfo()
-    .ifPresent(parentInfo -> {
-      TypeDefinition<?> typeDefinition = registry.types()
-          .get(parentInfo.getElement()
-              .getName());
-      sparqlFilterDirectiveTraverser.getReturnTypes(typeDefinition, registry)
-      .forEach(typeName -> validate(environment.getElement(), registry, typeName));
-    });
+        .getParentInfo()
+        .ifPresent(parentInfo -> {
+          TypeDefinition<?> typeDefinition = registry.types()
+              .get(parentInfo.getElement()
+                  .getName());
+          sparqlFilterDirectiveTraverser.getReturnTypes(typeDefinition, registry)
+              .forEach(typeName -> validate(environment.getElement(), registry, typeName));
+        });
   }
 
   private void validate(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry, String typeName) {
     GraphQLDirective directive = container.getDirective(Rdf4jDirectives.SPARQL_FILTER_NAME);
     directive.getArguments()
-    .forEach(
-        directiveArgument -> this.validateArgument(directiveArgument, registry, directive.getName(), typeName));
+        .forEach(
+            directiveArgument -> this.validateArgument(directiveArgument, registry, directive.getName(), typeName));
   }
 
   private void validateArgument(GraphQLArgument argument, TypeDefinitionRegistry registry, String name,
@@ -93,11 +93,12 @@ public class SparqlFilterValidator {
 
   void checkOperator(GraphQLArgument argument, String name) {
     if (argument.getValue() != null && SparqlFilterOperator.getByValue(argument.getValue()
-        .toString()).isEmpty()) {
+        .toString())
+        .isEmpty()) {
       throw new DirectiveValidationException(
           "SparqlFilter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>',"
               + " '>='",
-              argument.getValue(), name);
+          argument.getValue(), name);
     }
   }
 }
