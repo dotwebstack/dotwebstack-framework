@@ -23,24 +23,43 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class SparqlFilterDirectiveTraverser {
 
   public Map<GraphQLDirectiveContainer, Object> getDirectiveContainers(DataFetchingEnvironment dataFetchingEnvironment,
       String directiveName) {
     GraphQLFieldDefinition fieldDefinition = dataFetchingEnvironment.getFieldDefinition();
+    Map<String, Object> arguments = dataFetchingEnvironment.getArguments();
+    Map<String, Object> flattenedArguments = new HashMap<>();
+    arguments.entrySet()
+        .forEach(entry -> flatten(flattenedArguments, entry));
+
     return fieldDefinition.getArguments()
         .stream()
         .flatMap(argument -> getInputObjectFieldsFromArgument(argument).stream())
         .filter(directiveContainer -> directiveContainer.getDirective(directiveName) != null)
         .map(directiveContainer -> new AbstractMap.SimpleEntry<>(directiveContainer,
-            dataFetchingEnvironment.getArgument(directiveContainer.getName())))
+            flattenedArguments.get(directiveContainer.getName())))
         .filter(entry -> entry.getValue() != null)
         .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void flatten(Map<String, Object> flattenedArguments, Entry<String, Object> entry) {
+    if (entry.getValue() instanceof List || entry.getValue() instanceof String) {
+      flattenedArguments.put(entry.getKey(), entry.getValue());
+    }
+    if (entry.getValue() instanceof Map) {
+      ((Map<String, Object>) entry.getValue()).entrySet()
+          .forEach(innerEntry -> flatten(flattenedArguments, innerEntry));
+    }
   }
 
   private List<GraphQLDirectiveContainer> getInputObjectFieldsFromArgument(GraphQLArgument argument) {
@@ -65,7 +84,7 @@ public class SparqlFilterDirectiveTraverser {
     // Process fields on inputObjectType
     directiveContainers.addAll(inputObjectType.getFields()
         .stream()
-        .filter(field -> field.getType() instanceof GraphQLScalarType)
+        .filter(field -> GraphQLTypeUtil.unwrapAll(field.getType()) instanceof GraphQLScalarType)
         .collect(Collectors.toList()));
 
     return directiveContainers;

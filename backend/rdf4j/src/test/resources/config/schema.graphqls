@@ -5,11 +5,40 @@ schema {
 type Query {
   brewery(identifier: ID!): Brewery!
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
-  breweries(name: String @sparqlFilter(field: "name"),
-            sinceAfter: String @sparqlFilter(field: "founded", operator: ">")): [Brewery!]!
+
+  breweries(
+    name: String 
+      @sparqlFilter(field: "name"),
+    foundedAfter: String 
+      @sparqlFilter(field: "founded", operator: ">"),
+    foundedBefore: String 
+      @sparqlFilter(field: "founded", operator: "<")
+  ): [Brewery!]!
     @sparql(repository: "local")
+
+  breweriesWithInputObject(
+    input: QueryParameters
+  ) : [Brewery!]!
+    @sparql(repository: "local")
+
   beer(identifier: ID!): Beer!
     @sparql(repository: "local", subject: "https://github.com/dotwebstack/beer/id/beer/${identifier}")
+
+}
+
+input QueryParameters {
+  nestedInput: NestedInput
+}
+
+input NestedInput {
+  nestedNestedInput: NestedNestedInput
+  foundedAfter: String 
+    @sparqlFilter(field: "founded", operator: ">")
+}
+
+input NestedNestedInput {
+  name: [String] 
+    @sparqlFilter(field: "name", operator: "=")
 
 }
 
