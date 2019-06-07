@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.directives;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
-
 import graphql.Scalars;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
@@ -13,6 +13,8 @@ import java.util.Optional;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -28,11 +30,11 @@ class SparqlFilterValidatorTest {
   private TypeDefinitionRegistry registry;
 
   @Test
-  void validate_sparqlFilter_validField() {
+  void checkField_DoesNotThrowException_ForValidField() {
     // Arrange
     when(registry.getType("Brewery", ObjectTypeDefinition.class)).thenReturn(Optional.of(typeDefinition));
     when(typeDefinition.getFieldDefinitions())
-        .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
+    .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
 
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name("field")
@@ -40,25 +42,20 @@ class SparqlFilterValidatorTest {
         .type(Scalars.GraphQLString)
         .build();
 
-    // Act
-    validator.checkField(argument, registry, "founded", "Brewery");
-
-    // The purpose of the "Assert true" below, is to make sure this test is regarded as a valid test.
-    // There is no output to assert, so when "assert true" is reached, it means the preceding code
-    // didn't throw any Exceptions.
-    assert true;
+    // Act & Assert
+    assertDoesNotThrow(() -> validator.checkField(argument, registry, "founded", "Brewery"));
   }
 
   @Test
-  void validate_sparqlFilter_invalidField() {
+  void checkField_ThrowsException_ForInvalidField() {
     // Arrange
     when(registry.getType("Brewery", ObjectTypeDefinition.class)).thenReturn(Optional.of(typeDefinition));
     when(typeDefinition.getFieldDefinitions())
-        .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
+    .thenReturn(Collections.singletonList(new FieldDefinition("founded", null)));
 
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name("field")
-        .value("foundedFake")
+        .value("foo")
         .type(Scalars.GraphQLString)
         .build();
 
@@ -67,26 +64,22 @@ class SparqlFilterValidatorTest {
         () -> validator.checkField(argument, registry, "founded", "Brewery"));
   }
 
-  @Test
-  void validate_sparqlFilter_validOperator() {
+  @ParameterizedTest
+  @ValueSource(strings = {"=", "!=", "<", "<=", ">", ">="})
+  void checkOperator_DoesNotThrowException_ForValidOperator(String operatorValue) {
     // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name("operator")
-        .value("=")
+        .value(operatorValue)
         .type(Scalars.GraphQLString)
         .build();
 
     // Act
-    validator.checkOperator(argument, "founded");
-
-    // The purpose of the "Assert true" below, is to make sure this test is regarded as a valid test.
-    // There is no output to assert, so when "assert true" is reached, it means the preceding code
-    // didn't throw any Exceptions.
-    assert true;
+    assertDoesNotThrow(() -> validator.checkOperator(argument, "founded"));
   }
 
   @Test
-  void validate_sparqlFilter_invalidOperator() {
+  void checkOperator_ThrowsException_ForInvalidOperator() {
     // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name("operator")
@@ -99,7 +92,7 @@ class SparqlFilterValidatorTest {
   }
 
   @Test
-  void validate_sparqlFilter_noOperator() {
+  void checkOperator_DoesNotThrowException_ForMissingOperatorValue() {
     // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name("operator")
@@ -107,11 +100,6 @@ class SparqlFilterValidatorTest {
         .build();
 
     // Act
-    validator.checkOperator(argument, "operator");
-
-    // The purpose of the "Assert true" below, is to make sure this test is regarded as a valid test.
-    // There is no output to assert, so when "assert true" is reached, it means the preceding code
-    // didn't throw any Exceptions.
-    assert true;
+    assertDoesNotThrow(() -> validator.checkOperator(argument, "operator"));
   }
 }

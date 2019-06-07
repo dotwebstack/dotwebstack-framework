@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.directives;
 
+import java.util.Arrays;
+import java.util.Optional;
 import lombok.Getter;
 
 public enum SparqlFilterOperator {
@@ -11,6 +13,13 @@ public enum SparqlFilterOperator {
 
   SparqlFilterOperator(String value) {
     this.value = value;
+  }
+
+  public static Optional<SparqlFilterOperator> getByValue(String stringValue) {
+    return Arrays.stream(values())
+        .filter(value -> value.toString()
+            .equals(stringValue))
+        .findFirst();
   }
 
   public static SparqlFilterOperator getDefault() {
