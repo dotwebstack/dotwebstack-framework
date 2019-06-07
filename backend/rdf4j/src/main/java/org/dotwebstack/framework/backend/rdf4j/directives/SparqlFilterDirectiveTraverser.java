@@ -80,7 +80,7 @@ public class SparqlFilterDirectiveTraverser {
             .ifPresent(compareType -> {
               if (compareType instanceof ObjectTypeDefinition) {
                 if (compareType.getDirective(Rdf4jDirectives.SPARQL_NAME) != null) {
-                  // These our query objects
+                  // These are our query objects
                   typeNames.addAll(processQuery(registry, baseType, (ObjectTypeDefinition) compareType));
                 } else {
                   // Regular input object types
@@ -141,7 +141,7 @@ public class SparqlFilterDirectiveTraverser {
 
   private Type<?> getBaseType(Type<?> type) {
     if (type instanceof ListType) {
-      return getBaseType((Type) type.getChildren()
+      return getBaseType((Type<?>) type.getChildren()
           .get(0));
     }
     if (type instanceof NonNullType) {

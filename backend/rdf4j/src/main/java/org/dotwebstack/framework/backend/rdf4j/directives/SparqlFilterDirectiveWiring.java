@@ -40,6 +40,6 @@ public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
   }
 
   private void throwConfigurationException(Exception cause) {
-    throw new InvalidConfigurationException("Default value in constraint directive is violating constraint!", cause);
+    throw new InvalidConfigurationException("A sparqlFilter directive has been configured incorrectly.", cause);
   }
 }

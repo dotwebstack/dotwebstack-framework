@@ -92,12 +92,16 @@ public class SparqlFilterValidator {
   }
 
   void checkOperator(GraphQLArgument argument, String name) {
-    if (argument.getValue() != null && SparqlFilterOperator.getByValue(argument.getValue()
-        .toString()) == null) {
-      throw new DirectiveValidationException(
-          "SparqlFilter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>',"
-              + " '>='",
-          argument.getValue(), name);
+    if (argument.getValue() != null) {
+      try {
+        SparqlFilterOperator.valueOf(argument.getValue()
+            .toString());
+      } catch (IllegalArgumentException ex) {
+        throw new DirectiveValidationException(
+            "SparqlFilter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>',"
+                + " '>='",
+            argument.getValue(), name);
+      }
     }
   }
 }

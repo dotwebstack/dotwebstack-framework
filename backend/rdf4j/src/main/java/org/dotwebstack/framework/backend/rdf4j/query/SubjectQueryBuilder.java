@@ -1,5 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.EQ;
+import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.GT;
+import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.GTE;
+import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.LT;
+import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.LTE;
+import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.NE;
+
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
@@ -43,12 +50,12 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       new ImmutableMap.Builder<>();
 
   static {
-    BUILDER.put("=", (subject, operand) -> Expressions.equals(SparqlBuilder.var(subject), operand));
-    BUILDER.put("!=", (subject, operand) -> Expressions.notEquals(SparqlBuilder.var(subject), operand));
-    BUILDER.put("<", (subject, operand) -> Expressions.lt(SparqlBuilder.var(subject), operand));
-    BUILDER.put("<=", (subject, operand) -> Expressions.lte(SparqlBuilder.var(subject), operand));
-    BUILDER.put(">", (subject, operand) -> Expressions.gt(SparqlBuilder.var(subject), operand));
-    BUILDER.put(">=", (subject, operand) -> Expressions.gte(SparqlBuilder.var(subject), operand));
+    BUILDER.put(EQ.getValue(), (subject, operand) -> Expressions.equals(SparqlBuilder.var(subject), operand));
+    BUILDER.put(NE.getValue(), (subject, operand) -> Expressions.notEquals(SparqlBuilder.var(subject), operand));
+    BUILDER.put(LT.getValue(), (subject, operand) -> Expressions.lt(SparqlBuilder.var(subject), operand));
+    BUILDER.put(LTE.getValue(), (subject, operand) -> Expressions.lte(SparqlBuilder.var(subject), operand));
+    BUILDER.put(GT.getValue(), (subject, operand) -> Expressions.gt(SparqlBuilder.var(subject), operand));
+    BUILDER.put(GTE.getValue(), (subject, operand) -> Expressions.gte(SparqlBuilder.var(subject), operand));
   }
 
   private static final ImmutableMap<String, BiFunction<String, Operand, Expression<?>>> MAP = BUILDER.build();
@@ -87,10 +94,10 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     whereBuilder.build()
         .values()
         .forEach(whereStatement -> {
-          String key = whereStatement.getQueryString()
+          String object = whereStatement.getQueryString()
               .split(" ")[2];
-          if (filters.containsKey(key)) {
-            whereStatement = whereStatement.filter(filters.get(key));
+          if (filters.containsKey(object)) {
+            whereStatement = whereStatement.filter(filters.get(object));
           }
           query.where(whereStatement);
         });
@@ -118,7 +125,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     if (!orderByObject.isPresent()) {
       return Optional.empty();
     } else {
-      List<Map<String, String>> orderByList = (List<Map<String, String>>) orderByObject.get();
+      List<Map<String, String>> orderByList = orderByObject.get();
 
       return Optional.of(orderByList.stream()
           .map(this::getOrderContext)
