@@ -92,9 +92,9 @@ public class SparqlFilterValidator {
   }
 
   void checkOperator(GraphQLArgument argument, String name) {
-    if (argument.getValue() != null && SparqlFilterOperator.getByValue(argument.getValue()
+    if (argument.getValue() != null && !SparqlFilterOperator.getByValue(argument.getValue()
         .toString())
-        .isEmpty()) {
+        .isPresent()) {
       throw new DirectiveValidationException(
           "SparqlFilter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>',"
               + " '>='",
