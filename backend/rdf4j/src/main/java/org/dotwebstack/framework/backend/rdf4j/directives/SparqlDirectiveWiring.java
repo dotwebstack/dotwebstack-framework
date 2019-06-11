@@ -34,14 +34,18 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private ConstraintTraverser constraintTraverser;
 
+  private SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser;
+
   public SparqlDirectiveWiring(RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
-      Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser) {
+      Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
+      SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null ? HashBiMap.create(rdf4jProperties.getPrefixes())
         .inverse() : ImmutableMap.of();
     this.jexlEngine = jexlEngine;
     this.constraintTraverser = constraintTraverser;
+    this.sparqlFilterDirectiveTraverser = sparqlFilterDirectiveTraverser;
   }
 
   @Override
@@ -62,8 +66,8 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
         .getConnection();
-    QueryFetcher queryFetcher =
-        new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine, constraintTraverser);
+    QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
+        constraintTraverser, sparqlFilterDirectiveTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);

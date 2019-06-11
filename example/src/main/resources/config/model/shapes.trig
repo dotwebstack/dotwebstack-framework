@@ -43,7 +43,8 @@
     sh:path [sh:alternativePath ( schema:name beer_def:label ) ] ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:nodeKind sh:IRI
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
   .
 
   beer_sh:Brewery_owners a sh:PropertyShape ;

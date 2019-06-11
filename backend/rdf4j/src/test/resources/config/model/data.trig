@@ -24,14 +24,26 @@ _:b1 schema:addressLocality "Moordrecht" ;
 
 beer_brewery:456 a beer_def:Brewery ;
   beer_def:identifier "456" ;
-  schema:name "Brouwerij Het 58e Genot i.o."^^xsd:dateTime ;
+  schema:name "Brouwerij Het 58e Genot i.o."^^xsd:string ;
   beer_def:founded "2010-05-10T09:30:10+02:00"^^xsd:dateTime
 .
 
 beer_brewery:789 a beer_def:Brewery ;
   beer_def:identifier "789" ;
-  beer_def:label "Alfa Brouwerij"^^xsd:dateTime ;
-  beer_def:founded "2010-05-10T09:30:10+02:00"^^xsd:dateTime
+  beer_def:label "Alfa Brouwerij"^^xsd:string ;
+  beer_def:founded "1870-01-01T00:00:0+02:00"^^xsd:dateTime
+.
+
+beer_brewery:1 a beer_def:Brewery ;
+  beer_def:identifier "1" ;
+  schema:name "Heineken Nederland"^^xsd:string ;
+  beer_def:founded "1864-02-15T12:00:00+02:00"^^xsd:dateTime
+.
+
+beer_brewery:2 a beer_def:Brewery ;
+  beer_def:identifier "2" ;
+  schema:name "Brouwerij De Leckere"^^xsd:string ;
+  beer_def:founded "1997-01-01T00:00:00+02:00"^^xsd:dateTime
 .
 
 beer_id:6 a beer_def:Beer ;

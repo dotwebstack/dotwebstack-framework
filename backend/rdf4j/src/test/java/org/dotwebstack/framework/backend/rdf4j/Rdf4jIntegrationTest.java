@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.rdf4j;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPES_RAW_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERIES_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_EXAMPLE_1;
@@ -91,4 +92,80 @@ class Rdf4jIntegrationTest {
                 ImmutableMap.of("postalCode", "2841 XB"))));
   }
 
+  @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithFilterWithoutOperatorOnStringField() {
+    // Arrange
+    String query = "{ breweries(name: \"Brouwerij 1923\") { identifier, name }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD, ImmutableList.of(
+        ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithFilterOnDateTimeField() {
+    // Arrange
+    String query = "{ breweries(foundedAfter: \"2018-05-29T09:30:10+02:00\") { identifier, name }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD, ImmutableList.of(
+        ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithTwoFiltersOnDateTimeField() {
+    // Arrange
+    String query =
+        "{ breweries(foundedAfter: \"1990-01-01T00:00:00+02:00\", foundedBefore: \"2011-01-01T00:00:00+02:00\") "
+            + "{ identifier, name }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456", BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2", BREWERY_NAME_FIELD, "Brouwerij De Leckere"))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithFilterWithListInNestedInputObjects() {
+    // Arrange
+    String query = "{ breweriesWithInputObject(input: {nestedInput: {nestedNestedInput: {"
+        + "name: [\"Heineken Nederland\", \"Brouwerij De Leckere\"]},"
+        + "foundedAfter: \"1800-01-01T00:00:00+02:00\"}}) { identifier, name }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry("breweriesWithInputObject",
+            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1", BREWERY_NAME_FIELD, "Heineken Nederland"),
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2", BREWERY_NAME_FIELD, "Brouwerij De Leckere"))));
+  }
 }
