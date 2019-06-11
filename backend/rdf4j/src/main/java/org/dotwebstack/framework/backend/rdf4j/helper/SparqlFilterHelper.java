@@ -9,6 +9,8 @@ import java.util.Map;
 
 public class SparqlFilterHelper {
 
+  private SparqlFilterHelper() {}
+
   @SuppressWarnings("unchecked")
   public static Map<String, Object> flatten(Map.Entry<String, Object> entry) {
     if (entry.getValue() instanceof Map) {
