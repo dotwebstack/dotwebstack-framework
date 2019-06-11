@@ -33,8 +33,8 @@ public class SparqlFilterDirectiveTraverser {
   public Map<GraphQLDirectiveContainer, Object> getDirectiveContainers(DataFetchingEnvironment dataFetchingEnvironment,
       String directiveName) {
     GraphQLFieldDefinition fieldDefinition = dataFetchingEnvironment.getFieldDefinition();
-    Map<String, Object> arguments = dataFetchingEnvironment.getArguments();
-    Map<String, Object> flattenedArguments = arguments.entrySet()
+    Map<String, Object> flattenedArguments = dataFetchingEnvironment.getArguments()
+        .entrySet()
         .stream()
         .flatMap(entry -> SparqlFilterHelper.flatten(entry)
             .entrySet()
