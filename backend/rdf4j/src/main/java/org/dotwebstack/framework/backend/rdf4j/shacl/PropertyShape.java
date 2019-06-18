@@ -22,6 +22,8 @@ public final class PropertyShape {
 
   private final IRI nodeKind;
 
+  private final IRI node;
+
   private final IRI datatype;
 
 }

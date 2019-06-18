@@ -18,6 +18,18 @@
       beer_sh:Brewery_beers ,
       beer_sh:Brewery_url ,
       beer_sh:Brewery_address ;
+    sh:or (
+      [
+        sh:name "example" ;
+        sh:path ( beer_def:example ) ;
+        sh:node beer_sh:Example ;
+      ]
+      [
+        sh:name "other" ;
+        sh:path ( beer_def:example ) ;
+        sh:node beer_sh:Other ;
+      ]
+    ) ;
   .
 
  beer_sh:Brewery_postalCode a sh:PropertyShape ;
@@ -139,7 +151,6 @@
    sh:minCount 1 ;
    sh:maxCount 1 ;
    sh:nodeKind sh:IRI ;
-   sh:node beer_sh:Address
  .
 
  beer_sh:Address a sh:NodeShape ;
@@ -163,6 +174,39 @@
   beer_sh:Address_streetAddress a sh:PropertyShape ;
     sh:name "streetAddress" ;
     sh:path schema:streetAddress ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+  beer_sh:Example a sh:NodeShape ;
+    sh:targetClass beer_def:Example ;
+    sh:property
+      beer_sh:Example_name ;
+    sh:nodeKind sh:IRI ;
+  .
+
+  beer_sh:Example_name a sh:PropertyShape ;
+    sh:name "exampleName" ;
+    sh:path schema:name ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
+
+  beer_sh:Other a sh:NodeShape ;
+    sh:targetClass beer_def:Other ;
+    sh:property
+      beer_sh:Other_name ;
+    sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Other_name a sh:PropertyShape ;
+    sh:name "otherName" ;
+    sh:path schema:name ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;

@@ -1,8 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -14,7 +18,11 @@ import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.util.Models;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
+import org.eclipse.rdf4j.sail.memory.model.MemBNode;
+import org.eclipse.rdf4j.sail.memory.model.MemResource;
+import org.eclipse.rdf4j.sail.memory.model.MemStatement;
 
 @Builder
 @Getter
@@ -45,31 +53,76 @@ public final class NodeShape {
   }
 
   private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel, Resource nodeShape) {
-    return Models.getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
+    Map<String, PropertyShape> orShapes = Models.getPropertyResources(shapeModel, nodeShape, SHACL.OR)
         .stream()
-        .map(shape -> {
-          IRI nodeKind = ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
-
-          PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder()
-              .identifier(shape)
-              .name(ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME)
-                  .stringValue())
-              .path(PropertyPathFactory.create(shapeModel, shape, SHACL.PATH))
-              .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
-                  .map(Literal::intValue)
-                  .orElse(0))
-              .maxCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MAX_COUNT)
-                  .map(Literal::intValue)
-                  .orElse(Integer.MAX_VALUE))
-              .nodeKind(nodeKind);
-
-          if (nodeKind.equals(SHACL.LITERAL)) {
-            builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.DATATYPE));
-          }
-
-          return builder.build();
-        })
+        .map(or -> unwrapOrStatements(shapeModel, or))
+        .flatMap(List::stream)
+        .map(statement -> buildPropertyShape(shapeModel, statement.getSubject()))
         .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
+
+    Map<String, PropertyShape> propertyShapes = Models.getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
+        .stream()
+        .map(shape -> buildPropertyShape(shapeModel, shape))
+        .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
+
+    return Stream.concat(orShapes.entrySet().stream(), propertyShapes.entrySet().stream())
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape) {
+    PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder();
+
+    builder
+        .path(PropertyPathFactory.create(shapeModel, shape, SHACL.PATH))
+        .name(ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME).stringValue());
+
+    if (ValueUtils.isPropertyIriPresent(shapeModel, shape, SHACL.NODE)) {
+      IRI nodeIri = ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.NODE);
+
+      builder.node(nodeIri);
+
+      shape = nodeIri;
+      shapeModel = shapeModel.filter(nodeIri, RDF.TYPE, SHACL.NODE_SHAPE);
+    }
+
+    if (ValueUtils.isPropertyIriPresent(shapeModel, shape, SHACL.NODE_KIND_PROP)) {
+      IRI nodeKind = ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
+
+      builder.nodeKind(nodeKind);
+
+      if (nodeKind.equals(SHACL.LITERAL)) {
+        builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.DATATYPE));
+      }
+    }
+
+    builder
+        .identifier(shape)
+        .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
+            .map(Literal::intValue)
+            .orElse(0))
+        .maxCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MAX_COUNT)
+            .map(Literal::intValue)
+            .orElse(Integer.MAX_VALUE));
+
+    return builder.build();
+  }
+
+  private static List<MemStatement> unwrapOrStatements(Model shapeModel, Resource shape) {
+    List<MemStatement> shapes = new ArrayList<>();
+
+    shapeModel.filter(shape, RDF.FIRST, null)
+        .stream()
+        .map(statement -> ((MemBNode) statement.getObject()).getSubjectStatementList().get(0))
+        .findFirst().ifPresent(shapes::add);
+
+    shapeModel.filter(shape, RDF.REST, null)
+        .stream()
+        .map(statement -> ((MemResource) statement.getObject()))
+        .filter(resource -> (resource instanceof MemBNode))
+        .map(resource -> resource.getSubjectStatementList().get(0))
+        .findFirst().ifPresent(rest -> shapes.addAll(unwrapOrStatements(shapeModel, rest.getSubject())));
+
+    return shapes;
   }
 
 }

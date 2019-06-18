@@ -56,7 +56,17 @@ type Brewery {
   address: Address!
   postalCode: String!
   beers: [String]
-  ingredients: [String]
+  ingredients: [String],
+  example: Example,
+  other: Other
+}
+
+type Example {
+  exampleName: String
+}
+
+type Other {
+  otherName: String
 }
 
 type Address {
