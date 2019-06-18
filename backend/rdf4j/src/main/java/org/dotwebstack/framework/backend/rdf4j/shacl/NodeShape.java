@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -65,42 +64,46 @@ public final class NodeShape {
         .map(shape -> buildPropertyShape(shapeModel, shape))
         .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
 
-    return Stream.concat(orShapes.entrySet().stream(), propertyShapes.entrySet().stream())
+    return Stream.concat(orShapes.entrySet()
+        .stream(),
+        propertyShapes.entrySet()
+            .stream())
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape) {
     PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder();
+    Model usedModel = shapeModel;
+    Resource usedShape = shape;
 
-    builder
-        .path(PropertyPathFactory.create(shapeModel, shape, SHACL.PATH))
-        .name(ValueUtils.findRequiredPropertyLiteral(shapeModel, shape, SHACL.NAME).stringValue());
+    builder.path(PropertyPathFactory.create(usedModel, usedShape, SHACL.PATH))
+        .name(ValueUtils.findRequiredPropertyLiteral(usedModel, usedShape, SHACL.NAME)
+            .stringValue());
 
-    if (ValueUtils.isPropertyIriPresent(shapeModel, shape, SHACL.NODE)) {
-      IRI nodeIri = ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.NODE);
+    if (ValueUtils.isPropertyIriPresent(usedModel, usedShape, SHACL.NODE)) {
+      IRI nodeIri = ValueUtils.findRequiredPropertyIri(usedModel, usedShape, SHACL.NODE);
 
       builder.node(nodeIri);
 
-      shape = nodeIri;
-      shapeModel = shapeModel.filter(nodeIri, RDF.TYPE, SHACL.NODE_SHAPE);
+      usedShape = nodeIri;
+      usedModel = shapeModel.filter(nodeIri, RDF.TYPE, SHACL.NODE_SHAPE);
     }
 
-    if (ValueUtils.isPropertyIriPresent(shapeModel, shape, SHACL.NODE_KIND_PROP)) {
-      IRI nodeKind = ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.NODE_KIND_PROP);
+    if (ValueUtils.isPropertyIriPresent(usedModel, usedShape, SHACL.NODE_KIND_PROP)) {
+      IRI nodeKind = ValueUtils.findRequiredPropertyIri(usedModel, usedShape, SHACL.NODE_KIND_PROP);
 
       builder.nodeKind(nodeKind);
 
       if (nodeKind.equals(SHACL.LITERAL)) {
-        builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, shape, SHACL.DATATYPE));
+        builder.datatype(ValueUtils.findRequiredPropertyIri(usedModel, usedShape, SHACL.DATATYPE));
       }
     }
 
-    builder
-        .identifier(shape)
-        .minCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MIN_COUNT)
+    builder.identifier(usedShape)
+        .minCount(Models.getPropertyLiteral(usedModel, usedShape, SHACL.MIN_COUNT)
             .map(Literal::intValue)
             .orElse(0))
-        .maxCount(Models.getPropertyLiteral(shapeModel, shape, SHACL.MAX_COUNT)
+        .maxCount(Models.getPropertyLiteral(usedModel, usedShape, SHACL.MAX_COUNT)
             .map(Literal::intValue)
             .orElse(Integer.MAX_VALUE));
 
@@ -112,15 +115,19 @@ public final class NodeShape {
 
     shapeModel.filter(shape, RDF.FIRST, null)
         .stream()
-        .map(statement -> ((MemBNode) statement.getObject()).getSubjectStatementList().get(0))
-        .findFirst().ifPresent(shapes::add);
+        .map(statement -> ((MemBNode) statement.getObject()).getSubjectStatementList()
+            .get(0))
+        .findFirst()
+        .ifPresent(shapes::add);
 
     shapeModel.filter(shape, RDF.REST, null)
         .stream()
         .map(statement -> ((MemResource) statement.getObject()))
         .filter(resource -> (resource instanceof MemBNode))
-        .map(resource -> resource.getSubjectStatementList().get(0))
-        .findFirst().ifPresent(rest -> shapes.addAll(unwrapOrStatements(shapeModel, rest.getSubject())));
+        .map(resource -> resource.getSubjectStatementList()
+            .get(0))
+        .findFirst()
+        .ifPresent(rest -> shapes.addAll(unwrapOrStatements(shapeModel, rest.getSubject())));
 
     return shapes;
   }

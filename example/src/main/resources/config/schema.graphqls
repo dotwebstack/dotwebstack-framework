@@ -62,11 +62,11 @@ type Brewery {
 }
 
 type Example {
-  exampleName: String
+  name: String
 }
 
 type Other {
-  otherName: String
+  name: String
 }
 
 type Address {

@@ -188,7 +188,7 @@
   .
 
   beer_sh:Example_name a sh:PropertyShape ;
-    sh:name "exampleName" ;
+    sh:name "name" ;
     sh:path schema:name ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
@@ -205,7 +205,7 @@
   .
 
   beer_sh:Other_name a sh:PropertyShape ;
-    sh:name "otherName" ;
+    sh:name "name" ;
     sh:path schema:name ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
