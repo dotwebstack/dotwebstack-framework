@@ -92,38 +92,38 @@ public class NodeShapeFactory {
 
   private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape) {
     PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder();
-    Model usedModel = shapeModel;
     Resource usedShape = shape;
 
-    builder.path(PropertyPathFactory.create(usedModel, usedShape, SHACL.PATH))
-        .name(ValueUtils.findRequiredPropertyLiteral(usedModel, usedShape, SHACL.NAME)
+    builder.path(PropertyPathFactory.create(shapeModel, usedShape, SHACL.PATH))
+        .name(ValueUtils.findRequiredPropertyLiteral(shapeModel, usedShape, SHACL.NAME)
             .stringValue());
 
-    if (ValueUtils.isPropertyIriPresent(usedModel, usedShape, SHACL.NODE)) {
+    if (ValueUtils.isPropertyIriPresent(shapeModel, usedShape, SHACL.NODE)) {
       /*
        * if a sh:node is present, it means a reference exist to another NodeShape. For that reason the
        * focus is shifted so the properties of that NodeShape are resolved within this property shape
        */
-      IRI nodeIri = ValueUtils.findRequiredPropertyIri(usedModel, usedShape, SHACL.NODE);
-      builder.node(nodeIri);
+      IRI nodeIri = ValueUtils.findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE);
+      IRI targetClass = ValueUtils.findRequiredPropertyIri(shapeModel, nodeIri, SHACL.TARGET_CLASS);
+      builder.node(targetClass);
+
       usedShape = nodeIri;
-      usedModel = shapeModel.filter(nodeIri, RDF.TYPE, SHACL.NODE_SHAPE);
     }
 
-    if (ValueUtils.isPropertyIriPresent(usedModel, usedShape, SHACL.NODE_KIND_PROP)) {
-      IRI nodeKind = ValueUtils.findRequiredPropertyIri(usedModel, usedShape, SHACL.NODE_KIND_PROP);
+    if (ValueUtils.isPropertyIriPresent(shapeModel, usedShape, SHACL.NODE_KIND_PROP)) {
+      IRI nodeKind = ValueUtils.findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE_KIND_PROP);
       builder.nodeKind(nodeKind);
 
       if (nodeKind.equals(SHACL.LITERAL)) {
-        builder.datatype(ValueUtils.findRequiredPropertyIri(usedModel, usedShape, SHACL.DATATYPE));
+        builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, usedShape, SHACL.DATATYPE));
       }
     }
 
     builder.identifier(usedShape)
-        .minCount(Models.getPropertyLiteral(usedModel, usedShape, SHACL.MIN_COUNT)
+        .minCount(Models.getPropertyLiteral(shapeModel, usedShape, SHACL.MIN_COUNT)
             .map(Literal::intValue)
             .orElse(0))
-        .maxCount(Models.getPropertyLiteral(usedModel, usedShape, SHACL.MAX_COUNT)
+        .maxCount(Models.getPropertyLiteral(shapeModel, usedShape, SHACL.MAX_COUNT)
             .map(Literal::intValue)
             .orElse(Integer.MAX_VALUE));
 

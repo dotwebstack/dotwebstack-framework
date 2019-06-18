@@ -58,6 +58,9 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     result.add(GraphPatterns.tp(subject, propertyShape.getPath()
         .toPredicate(), variable));
+    if (propertyShape.getNode() != null) {
+      result.add(GraphPatterns.tp(variable, RDF.TYPE, propertyShape.getNode()));
+    }
 
     if (!GraphQLTypeUtil.isLeaf(fieldType)) {
       GraphQLType innerType = getInnerType(fieldType);
