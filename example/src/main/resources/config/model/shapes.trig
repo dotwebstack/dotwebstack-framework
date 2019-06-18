@@ -196,7 +196,6 @@
     sh:datatype xsd:string
   .
 
-
   beer_sh:Other a sh:NodeShape ;
     sh:targetClass beer_def:Other ;
     sh:property

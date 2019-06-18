@@ -12,7 +12,7 @@ import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
-import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.CoreProperties;
 import org.eclipse.rdf4j.model.Model;
@@ -91,7 +91,7 @@ class Rdf4jConfiguration {
 
     Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
         .stream()
-        .map(subject -> NodeShape.fromShapeModel(shapeModel, subject))
+        .map(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject))
         .forEach(shape -> registry.register(shape.getIdentifier(), shape));
 
     return registry;

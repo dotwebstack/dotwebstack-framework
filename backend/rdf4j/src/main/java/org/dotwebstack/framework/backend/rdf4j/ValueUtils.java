@@ -74,4 +74,13 @@ public final class ValueUtils {
         .orElseThrow(
             () -> new InvalidConfigurationException("Resource '{}' requires a '{}' property.", subject, predicate));
   }
+
+  public static boolean isPropertyPresent(Model model, Resource subject, IRI predicate) {
+    try {
+      findRequiredProperty(model, subject, predicate);
+      return true;
+    } catch (InvalidConfigurationException e) {
+      return false;
+    }
+  }
 }
