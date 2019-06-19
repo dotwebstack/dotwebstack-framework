@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 public class ConstraintValidator {
 
   void validate(GraphQLArgument argument, String name, Object value) {
-
     if (argument.getValue() != null) {
       switch (argument.getName()) {
         case CONSTRAINT_ARG_MIN:
@@ -29,11 +28,19 @@ public class ConstraintValidator {
           checkOneOf(name, castToList(argument.getValue()), value);
           break;
         case CONSTRAINT_ARG_PATTERN:
-
+          checkPattern(name, argument.getValue()
+              .toString(), value.toString());
           break;
         default:
           throw new DirectiveValidationException("Unsupported constraint argument with name '{}'", argument.getName());
       }
+    }
+  }
+
+  private void checkPattern(String name, String constraint, String value) {
+    if (!value.matches(constraint)) {
+      throw new DirectiveValidationException("Constraint 'regexPattern' [{}] violated on '{}' with value '{}'",
+          constraint, name, value);
     }
   }
 

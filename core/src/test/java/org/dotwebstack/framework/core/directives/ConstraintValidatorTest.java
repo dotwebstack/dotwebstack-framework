@@ -73,6 +73,17 @@ class ConstraintValidatorTest {
         () -> validator.validate(oneOfIntArgument(Arrays.asList(1, 2)), "name", 3));
   }
 
+  @Test
+  void validate_returnsNull_regexPatternArgument() {
+    validator.validate(stringArgument("^NL\\.IMRO\\.\\d+"), "regex", "NL.IMRO.5521");
+  }
+
+  @Test
+  void validate_throwsException_regexPatternArgument() {
+    assertThrows(DirectiveValidationException.class,
+        () -> validator.validate(stringArgument("^NL\\.IMRO\\.\\d+"), "regex", "DEU.IMRO.5521"));
+  }
+
   private GraphQLArgument minArgument(Object value) {
     return GraphQLArgument.newArgument()
         .name(CoreDirectives.CONSTRAINT_ARG_MIN)
@@ -102,6 +113,14 @@ class ConstraintValidatorTest {
         .name(CoreDirectives.CONSTRAINT_ARG_ONEOF_INT)
         .type(GraphQLList.list(GraphQLInt))
         .value(values)
+        .build();
+  }
+
+  private GraphQLArgument stringArgument(String value) {
+    return GraphQLArgument.newArgument()
+        .name(CoreDirectives.CONSTRAINT_ARG_PATTERN)
+        .type(GraphQLString)
+        .value(value)
         .build();
   }
 }
