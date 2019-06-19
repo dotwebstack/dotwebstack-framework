@@ -37,7 +37,7 @@ public class NodeShapeFactory {
   private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel, Resource nodeShape) {
     /*
      * The sh:or can occur on multiple levels, either as a direct child of a nodeshape or as a child of
-     * an sh:property here the direct childs of type sh:or on a nodeshape are processed
+     * an sh:property. Here the direct childs of type sh:or on a nodeshape are processed
      */
     Map<String, PropertyShape> orShapes = getOrPropertyShapes(shapeModel, nodeShape).stream()
         .map(shape -> buildPropertyShape(shapeModel, shape))
@@ -70,10 +70,9 @@ public class NodeShapeFactory {
         .map(or -> unwrapOrStatements(shapeModel, or).stream()
             .peek(resource ->
             /*
-             * All the individual childs under an sh:or stament are enriched with the shared values on the same
-             * level as the sh:or. Obviously the sh:or is excluded from this enrichment. This enrichments are
-             * added to the model as well, so when the model is processed in another location, the same sort of
-             * deductions do not have to be made.
+             * All the individual childs under an sh:or statement are enriched with the shared values on the
+             * same level as the sh:or. The sh:or is excluded from this enrichment. These enrichments are added
+             * to the model for later reuse.
              */
             shapeModel.filter(nodeShape, null, null)
                 .stream()
@@ -104,8 +103,7 @@ public class NodeShapeFactory {
        * focus is shifted so the properties of that NodeShape are resolved within this property shape
        */
       IRI nodeIri = ValueUtils.findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE);
-      IRI targetClass = ValueUtils.findRequiredPropertyIri(shapeModel, nodeIri, SHACL.TARGET_CLASS);
-      builder.node(targetClass);
+      builder.node(createShapeFromModel(shapeModel, nodeIri));
 
       usedShape = nodeIri;
     }

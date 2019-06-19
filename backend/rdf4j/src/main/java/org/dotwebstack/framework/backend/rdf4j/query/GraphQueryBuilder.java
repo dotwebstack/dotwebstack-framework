@@ -75,7 +75,8 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     if (propertyShape.getNode() != null) {
       List<TriplePattern> triples = additionals.getOrDefault(variable.getQueryString(), new ArrayList<>());
-      TriplePattern additional = GraphPatterns.tp(variable, RDF.TYPE, propertyShape.getNode());
+      TriplePattern additional = GraphPatterns.tp(variable, RDF.TYPE, propertyShape.getNode()
+          .getTargetClass());
       triples.add(additional);
       additionals.put(variable.getQueryString(), triples);
       nonOptionals.add(additional);

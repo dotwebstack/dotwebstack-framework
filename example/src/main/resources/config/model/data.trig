@@ -4,10 +4,9 @@
 @prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
 @prefix brewery_id: <https://github.com/dotwebstack/beer/id/brewery/> .
 @prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
-@prefix example_id: <https://github.com/dotwebstack/beer/id/example/> .
-@prefix other_id: <https://github.com/dotwebstack/beer/id/other/> .
-@prefix beer_type_id: <https://github.com/dotwebstack/beer/id/beertype/> .
 @prefix ingredient_id: <https://github.com/dotwebstack/beer/id/ingredient/> .
+@prefix supplement_id: <https://github.com/dotwebstack/beer/id/supplement/> .
+@prefix beer_type_id: <https://github.com/dotwebstack/beer/id/beertype/> .
 
 {
   brewery_id:1 a beer_def:Brewery ;
@@ -22,9 +21,7 @@
     schema:email "bier@brouwerij1923.nl" ;
     schema:taxID "61195251" ;
     schema:telephone "06-10816700" ;
-    schema:url <http://www.brouwerij1923.nl> ;
-    beer_def:example example_id:1 ;
-    beer_def:example other_id:1
+    schema:url <http://www.brouwerij1923.nl>
   .
 
   _:b1 schema:addressLocality "Moordrecht" ;
@@ -131,7 +128,10 @@
     beer_def:identifier "1";
     beer_def:brewery brewery_id:3 ;
     schema:name "Alfa Edel Pils" ;
-    beer_def:BeerType beer_type_id:1
+    beer_def:BeerType beer_type_id:1 ;
+    beer_def:ingredient ingredient_id:1 ;
+    beer_def:ingredient ingredient_id:2 ;
+    beer_def:ingredient supplement_id:1
   .
 
   beer_id:2 a beer_def:Beer ;
@@ -151,11 +151,15 @@
     schema:name "Ale"
   .
 
-  example_id:1 a beer_def:Example ;
-    schema:name "Example 1"
+  supplement_id:1 a beer_def:Supplement ;
+    schema:name "Gist"
   .
 
-  other_id:1 a beer_def:Other ;
-    schema:name "Other 1"
+  ingredient_id:1 a beer_def:Ingredient ;
+    schema:name "Hop"
+  .
+
+  ingredient_id:2 a beer_def:Ingredient ;
+    schema:name "Gerst"
   .
 }

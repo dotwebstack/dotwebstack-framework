@@ -46,31 +46,11 @@ public final class ValueFetcher extends SourceDataFetcher {
     }
 
     if (GraphQLTypeUtil.isScalar(fieldType) || fieldType instanceof GraphQLObjectType) {
-      return resolve(propertyShape, source).filter(result -> {
-        if (propertyShape.getNode() != null) {
-          return resultIsOfType((QuerySolution) result, propertyShape.getNode());
-        }
-        return true;
-      })
-          .findFirst()
+      return resolve(propertyShape, source).findFirst()
           .orElse(null);
     }
 
     throw unsupportedOperationException("Field type '{}' not supported.", fieldType);
-  }
-
-  private boolean resultIsOfType(QuerySolution result, IRI type) {
-    MemStatementList subjectStatements = ((MemIRI) result.getSubject()).getSubjectStatementList();
-    for (int i = 0; i < subjectStatements.size(); i++) {
-      MemStatement statement = subjectStatements.get(0);
-      if (statement.getPredicate()
-          .equals(RDF.TYPE)
-          && statement.getObject()
-              .equals(type)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private PropertyShape getPropertyShape(DataFetchingEnvironment environment) {
@@ -89,7 +69,28 @@ public final class ValueFetcher extends SourceDataFetcher {
     return propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject(), false)
         .stream()
-        .map(value -> convert(source.getModel(), value));
+        .map(value -> convert(source.getModel(), value))
+        .filter(result -> {
+          if (propertyShape.getNode() != null) {
+            return resultIsOfType((QuerySolution) result, propertyShape.getNode()
+                .getTargetClass());
+          }
+          return true;
+        });
+  }
+
+  private boolean resultIsOfType(QuerySolution result, IRI type) {
+    MemStatementList subjectStatements = ((MemIRI) result.getSubject()).getSubjectStatementList();
+    for (int i = 0; i < subjectStatements.size(); i++) {
+      MemStatement statement = subjectStatements.get(0);
+      if (statement.getPredicate()
+          .equals(RDF.TYPE)
+          && statement.getObject()
+              .equals(type)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private Object convert(@NonNull Model model, @NonNull Value value) {

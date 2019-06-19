@@ -17,19 +17,7 @@
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
       beer_sh:Brewery_url ,
-      beer_sh:Brewery_address ;
-    sh:or (
-      [
-        sh:name "example" ;
-        sh:path ( beer_def:example ) ;
-        sh:node beer_sh:Example ;
-      ]
-      [
-        sh:name "other" ;
-        sh:path ( beer_def:example ) ;
-        sh:node beer_sh:Other ;
-      ]
-    ) ;
+      beer_sh:Brewery_address
   .
 
  beer_sh:Brewery_postalCode a sh:PropertyShape ;
@@ -108,7 +96,19 @@
       beer_sh:Beer_identifier ,
       beer_sh:Beer_name ,
       beer_sh:Beer_brewery,
-      beer_sh:Beer_beerTypes
+      beer_sh:Beer_beerTypes ;
+    sh:or (
+      [
+        sh:name "ingredients" ;
+        sh:path ( beer_def:ingredient ) ;
+        sh:node beer_sh:Ingredient ;
+      ]
+      [
+        sh:name "supplements" ;
+        sh:path ( beer_def:ingredient ) ;
+        sh:node beer_sh:Supplement ;
+      ]
+    ) ;
  .
 
  beer_sh:Beer_identifier a sh:PropertyShape ;
@@ -180,14 +180,14 @@
     sh:datatype xsd:string
   .
 
-  beer_sh:Example a sh:NodeShape ;
-    sh:targetClass beer_def:Example ;
+  beer_sh:Ingredient a sh:NodeShape ;
+    sh:targetClass beer_def:Ingredient ;
     sh:property
-      beer_sh:Example_name ;
+      beer_sh:Ingredient_name ;
     sh:nodeKind sh:IRI ;
   .
 
-  beer_sh:Example_name a sh:PropertyShape ;
+  beer_sh:Ingredient_name a sh:PropertyShape ;
     sh:name "name" ;
     sh:path schema:name ;
     sh:minCount 1 ;
@@ -196,14 +196,14 @@
     sh:datatype xsd:string
   .
 
-  beer_sh:Other a sh:NodeShape ;
-    sh:targetClass beer_def:Other ;
+  beer_sh:Supplement a sh:NodeShape ;
+    sh:targetClass beer_def:Supplement ;
     sh:property
-      beer_sh:Other_name ;
+      beer_sh:Supplement_name ;
     sh:nodeKind sh:IRI
   .
 
-  beer_sh:Other_name a sh:PropertyShape ;
+  beer_sh:Supplement_name a sh:PropertyShape ;
     sh:name "name" ;
     sh:path schema:name ;
     sh:minCount 1 ;

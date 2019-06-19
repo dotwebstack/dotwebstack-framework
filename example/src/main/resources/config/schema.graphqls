@@ -14,22 +14,22 @@ type Query {
             sinceBefore: String @sparqlFilter(field: "founded", operator: "<")
             name: [String] @sparqlFilter(field: "name")): [Brewery!]!
     @sparql(
-      repository: "local",
-      limit: "pageSize",
-      offset: "(page - 1) * pageSize",
+      repository: "local"
+      limit: "pageSize"
+      offset: "(page - 1) * pageSize"
       orderBy: "sort"
     )
 
   breweries_paging_input(input: PageQueryInput): [Brewery!]!
     @sparql(
-      repository: "local",
-      limit: "input.pageSize",
+      repository: "local"
+      limit: "input.pageSize"
       offset: "(input.page - 1) * input.pageSize"
     )
 
   breweries_sort_input(input: SortQueryInput): [Brewery!]!
     @sparql(
-      repository: "local",
+      repository: "local"
       orderBy: "input.sort"
     )
 
@@ -56,17 +56,7 @@ type Brewery {
   address: Address!
   postalCode: String!
   beers: [String]
-  ingredients: [String],
-  example: Example,
-  other: Other
-}
-
-type Example {
-  name: String
-}
-
-type Other {
-  name: String
+  ingredients: [String]
 }
 
 type Address {
@@ -79,6 +69,16 @@ type Beer {
   name: String!
   brewery: String!
   beerTypes: [String]!
+  ingredients: [Ingredient!]
+  supplements: [Supplement!]
+}
+
+type Ingredient {
+  name: String
+}
+
+type Supplement {
+  name: String
 }
 
 input SortQueryInput {
