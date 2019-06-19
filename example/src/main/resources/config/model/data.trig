@@ -22,7 +22,9 @@
     schema:email "bier@brouwerij1923.nl" ;
     schema:taxID "61195251" ;
     schema:telephone "06-10816700" ;
-    schema:url <http://www.brouwerij1923.nl>
+    schema:url <http://www.brouwerij1923.nl> ;
+    beer_def:example example_id:1 ;
+    beer_def:example other_id:1
   .
 
   _:b1 schema:addressLocality "Moordrecht" ;
@@ -129,9 +131,7 @@
     beer_def:identifier "1";
     beer_def:brewery brewery_id:3 ;
     schema:name "Alfa Edel Pils" ;
-    beer_def:beertype beer_type_id:1 ;
-    beer_def:example example_id:1 ;
-    beer_def:example other_id:1
+    beer_def:beertype beer_type_id:1
   .
 
   beer_id:2 a beer_def:Beer ;

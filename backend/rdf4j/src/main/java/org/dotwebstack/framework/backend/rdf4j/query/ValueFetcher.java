@@ -14,10 +14,15 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.sail.memory.model.MemIRI;
+import org.eclipse.rdf4j.sail.memory.model.MemStatement;
+import org.eclipse.rdf4j.sail.memory.model.MemStatementList;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -41,11 +46,31 @@ public final class ValueFetcher extends SourceDataFetcher {
     }
 
     if (GraphQLTypeUtil.isScalar(fieldType) || fieldType instanceof GraphQLObjectType) {
-      return resolve(propertyShape, source).findFirst()
+      return resolve(propertyShape, source).filter(result -> {
+        if (propertyShape.getNode() != null) {
+          return resultIsOfType((QuerySolution) result, propertyShape.getNode());
+        }
+        return true;
+      })
+          .findFirst()
           .orElse(null);
     }
 
     throw unsupportedOperationException("Field type '{}' not supported.", fieldType);
+  }
+
+  private boolean resultIsOfType(QuerySolution result, IRI type) {
+    MemStatementList subjectStatements = ((MemIRI) result.getSubject()).getSubjectStatementList();
+    for (int i = 0; i < subjectStatements.size(); i++) {
+      MemStatement statement = subjectStatements.get(0);
+      if (statement.getPredicate()
+          .equals(RDF.TYPE)
+          && statement.getObject()
+              .equals(type)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private PropertyShape getPropertyShape(DataFetchingEnvironment environment) {
