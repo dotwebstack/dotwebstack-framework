@@ -150,7 +150,7 @@
    sh:path schema:address ;
    sh:minCount 1 ;
    sh:maxCount 1 ;
-   sh:nodeKind sh:IRI ;
+   sh:nodeKind sh:IRI
  .
 
  beer_sh:Address a sh:NodeShape ;

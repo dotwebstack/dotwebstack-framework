@@ -137,7 +137,7 @@ beer:shapes {
 
   beer_sh:BeerType a sh:NodeShape ;
     sh:name "beerTypeRaw" ;
-    sh:targetClass beer_def:beertype ;
+    sh:targetClass beer_def:BeerType ;
     sh:property
       beer_sh:BeerType_name ;
     sh:nodeKind sh:IRI
@@ -181,8 +181,7 @@ beer:shapes {
     sh:path schema:address ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:nodeKind sh:IRI ;
-    sh:node beer_sh:Address
+    sh:nodeKind sh:IRI
   .
 
   beer_sh:Address a sh:NodeShape ;

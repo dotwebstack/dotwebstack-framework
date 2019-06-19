@@ -131,7 +131,7 @@
     beer_def:identifier "1";
     beer_def:brewery brewery_id:3 ;
     schema:name "Alfa Edel Pils" ;
-    beer_def:beertype beer_type_id:1
+    beer_def:BeerType beer_type_id:1
   .
 
   beer_id:2 a beer_def:Beer ;
