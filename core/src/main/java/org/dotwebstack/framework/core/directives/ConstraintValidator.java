@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAIN
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_MIN;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF_INT;
+import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_PATTERN;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 
 import graphql.schema.GraphQLArgument;
@@ -26,6 +27,9 @@ public class ConstraintValidator {
         case CONSTRAINT_ARG_ONEOF:
         case CONSTRAINT_ARG_ONEOF_INT:
           checkOneOf(name, castToList(argument.getValue()), value);
+          break;
+        case CONSTRAINT_ARG_PATTERN:
+
           break;
         default:
           throw new DirectiveValidationException("Unsupported constraint argument with name '{}'", argument.getName());

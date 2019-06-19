@@ -118,6 +118,9 @@ public class CoreConfigurer implements GraphqlConfigurer {
                 .build(),
             newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_ONEOF_INT)
                 .type(new ListType(new TypeName(GraphQLInt.getName())))
+                .build(),
+            newInputValueDefinition().name(CoreDirectives.CONSTRAINT_ARG_PATTERN)
+                .type(new TypeName(GraphQLString.getName()))
                 .build()))
         .directiveLocations(ImmutableList.of(
             newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
