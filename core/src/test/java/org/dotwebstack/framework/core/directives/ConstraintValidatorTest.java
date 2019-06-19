@@ -75,13 +75,13 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_returnsNull_regexPatternArgument() {
-    validator.validate(stringArgument("^NL\\.IMRO\\.\\d+"), "regex", "NL.IMRO.5521");
+    validator.validate(stringArgument("^NL\\.IMRO\\.\\d+"), "regexPattern", "NL.IMRO.5521");
   }
 
   @Test
   void validate_throwsException_regexPatternArgument() {
     assertThrows(DirectiveValidationException.class,
-        () -> validator.validate(stringArgument("^NL\\.IMRO\\.\\d+"), "regex", "DEU.IMRO.5521"));
+        () -> validator.validate(stringArgument("^NL\\.IMRO\\.\\d+"), "regexPattern", "DEU.IMRO.5521"));
   }
 
   private GraphQLArgument minArgument(Object value) {

@@ -28,7 +28,7 @@ public class ConstraintValidator {
           checkOneOf(name, castToList(argument.getValue()), value);
           break;
         case CONSTRAINT_ARG_PATTERN:
-          checkPattern(name, argument.getValue()
+          checkRegexPattern(name, argument.getValue()
               .toString(), value.toString());
           break;
         default:
@@ -37,7 +37,7 @@ public class ConstraintValidator {
     }
   }
 
-  private void checkPattern(String name, String constraint, String value) {
+  private void checkRegexPattern(String name, String constraint, String value) {
     if (!value.matches(constraint)) {
       throw new DirectiveValidationException("Constraint 'regexPattern' [{}] violated on '{}' with value '{}'",
           constraint, name, value);
