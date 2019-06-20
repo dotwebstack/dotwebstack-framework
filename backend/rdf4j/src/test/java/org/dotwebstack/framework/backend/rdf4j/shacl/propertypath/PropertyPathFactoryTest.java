@@ -106,7 +106,7 @@ public class PropertyPathFactoryTest {
     }
   }
 
-  private static Model loadShapeModel() throws IOException {
+  public static Model loadShapeModel() throws IOException {
     Repository repo = new SailRepository(new MemoryStore());
     repo.init();
     String shapesPath = "config/model/shapes.trig";
