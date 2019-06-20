@@ -75,7 +75,7 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_returnsNull_patternArgument() {
-    validator.validate(stringArgument("^[a-z][0-9]$"), "pattern", "a4");
+    validator.validate(stringArgument("^[a-z][0-9][A-Z]$"), "pattern", "a4P");
   }
 
   @Test
