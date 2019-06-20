@@ -3,7 +3,7 @@ schema {
 }
 
 type Query {
-  brewery(identifier: ID!): Brewery
+  brewery(identifier: ID! @constraint(pattern: "[0-9]+")): Brewery
     @sparql(
       repository: "local",
       subject: "https://github.com/dotwebstack/beer/id/brewery/${identifier}")
