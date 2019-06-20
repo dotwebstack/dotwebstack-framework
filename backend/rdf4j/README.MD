@@ -439,9 +439,8 @@ type Beer {
 }
 ```
 
-Retrieving just the supplements or just the ingredients from a dataset, is in this case not possible with only the `sh:path`.
-The `sh:or` construct is utilized to overcome this problem. It is possible to define multiple property shapes under the 
-`sh:or`, that can each point to a different node shape:
+In this case it is impossible to retrieve just the supplements or the ingredients using `sh:path`. The `sh:or` construct 
+can be used to address this issue by defining multiple property shapes that can each point to a different node shape:
 
 ```shacl
 sh:property [
@@ -459,5 +458,5 @@ sh:property [
 ]
 ``` 
 
-This construct makes it possible to have two property shapes based on the same `sh:path`. Each pointing to a different 
-node shape. Because the naming for both of them is different it is possible to point to each one individually from `schema.graphqls`.
+This construct makes it possible to have two property shapes with the same `sh:path` and each pointing to different node shape. 
+Because the naming for both of them is different it is possible to point to each one individually from `schema.graphqls`.
