@@ -68,7 +68,7 @@ class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
 It is possible to add a constraint to an argument on any level by preceding the argument with the `@constraint` directive. 
 These constraints can be used to restrict the input from the user and provide hints as to why certain arguments 
-are invalid. The following constraints are currently provided: `min`, `max`, `oneOf`, `oneOfInt` and `regexPattern`. 
+are invalid. The following constraints are currently provided: `min`, `max`, `oneOf`, `oneOfInt` and `pattern`. 
 
 ### 1.3.1 Min
 
@@ -106,7 +106,7 @@ the user is allowed to provide an argument with the value of "BE", "DE", "EN", "
 With the `oneOfInt` constraint an argument can be restricted to match any integer within the provided list. So in this 
 case is allowed to provide an argument with a value of 10, 20 or 50 only. 
 
-### 1.3.5 Regex Pattern
+### 1.3.5 Pattern
 
 ```graphql
  name: [String] @constraint(pattern: "^[1-9][0-9]*$") : [Brewery!]!
