@@ -97,18 +97,19 @@
       beer_sh:Beer_name ,
       beer_sh:Beer_brewery,
       beer_sh:Beer_beerTypes ;
-    sh:or (
-      [
-        sh:name "ingredients" ;
-        sh:path ( beer_def:ingredient ) ;
-        sh:node beer_sh:Ingredient ;
-      ]
-      [
-        sh:name "supplements" ;
-        sh:path ( beer_def:ingredient ) ;
-        sh:node beer_sh:Supplement ;
-      ]
-    ) ;
+    sh:property [
+      sh:path ( beer_def:ingredient ) ;
+      sh:or (
+        [
+          sh:name "ingredients" ;
+          sh:node beer_sh:Ingredient ;
+        ]
+        [
+          sh:name "supplements" ;
+          sh:node beer_sh:Supplement ;
+        ]
+      )
+    ]
  .
 
  beer_sh:Beer_identifier a sh:PropertyShape ;

@@ -415,3 +415,49 @@ type Query {
 
 The names that are provided in the `nameIn` argument are used in a filter where the arguments are combined with `OR`'s; the resulting query will
 return all the breweries that match one of the provided names.   
+
+## 1.8 sh:or 
+It is possible to have objects of multiple classes connected to the same subject with the same predicate. 
+A `beer` can have both `ingredients` and `supplements` as objects of the `ingredient` predicate:
+
+```trig
+  beer_id:1 a beer_def:Beer ;
+    beer_def:ingredient ingredient_id:1 ;
+    beer_def:ingredient ingredient_id:2 ;
+    beer_def:ingredient supplement_id:1
+  .
+```
+
+While the type of the object is different (`supplement` versus `ingredient`), the relation used to map the object is in 
+both cases the same. This poses a problem, because while the mapping in sparql and rdf usually depends on the predicate,
+in GraphQL it depends on the type of the object:
+
+```graphql
+type Beer {
+  ingredients: [Ingredient!]
+  supplements: [Supplement!]
+}
+```
+
+Retrieving just the supplements or just the ingredients from a dataset, is in this case not possible with only the `sh:path`.
+The `sh:or` construct is utilized to overcome this problem. It is possible to define multiple property shapes under the 
+`sh:or`, that can each point to a different node shape:
+
+```shacl
+sh:property [
+  sh:path ( beer_def:ingredient ) ;
+  sh:or (
+    [
+      sh:name "ingredients" ;
+      sh:node beer_sh:Ingredient ;
+    ]
+    [
+      sh:name "supplements" ;
+      sh:node beer_sh:Supplement ;
+    ]
+  )
+]
+``` 
+
+This construct makes it possible to have two property shapes based on the same `sh:path`. Each pointing to a different 
+node shape. Because the naming for both of them is different it is possible to point to each one individually from `schema.graphqls`.
