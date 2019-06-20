@@ -16,6 +16,7 @@ public final class CoreDirectives {
 
   public static final String CONSTRAINT_ARG_ONEOF_INT = "oneOfInt";
 
+  public static final String CONSTRAINT_ARG_PATTERN = "pattern";
 
   private CoreDirectives() {}
 }

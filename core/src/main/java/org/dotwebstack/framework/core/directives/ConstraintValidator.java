@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAIN
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_MIN;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF_INT;
+import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_PATTERN;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 
 import graphql.schema.GraphQLArgument;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 public class ConstraintValidator {
 
   void validate(GraphQLArgument argument, String name, Object value) {
-
     if (argument.getValue() != null) {
       switch (argument.getName()) {
         case CONSTRAINT_ARG_MIN:
@@ -27,9 +27,22 @@ public class ConstraintValidator {
         case CONSTRAINT_ARG_ONEOF_INT:
           checkOneOf(name, castToList(argument.getValue()), value);
           break;
+        case CONSTRAINT_ARG_PATTERN:
+          if (value != null) {
+            checkPattern(name, argument.getValue()
+                .toString(), value.toString());
+          }
+          break;
         default:
           throw new DirectiveValidationException("Unsupported constraint argument with name '{}'", argument.getName());
       }
+    }
+  }
+
+  private void checkPattern(String name, String constraint, String value) {
+    if (!value.matches(constraint)) {
+      throw new DirectiveValidationException("Constraint 'pattern' [{}] violated on '{}' with value '{}'", constraint,
+          name, value);
     }
   }
 
