@@ -10,11 +10,13 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.model.IRI;
@@ -123,25 +125,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
         .collect(Collectors.toList()), Expression.class));
 
     List<GraphPattern> wherePatterns = triplePatterns.stream()
-        .map(triple -> {
-          if (additionals.containsKey(triple.getQueryString()
-              .split(" ")[2])) {
-            List<TriplePattern> triples = additionals.get(triple.getQueryString()
-                .split(" ")[2]);
-            return triple.optional()
-                .and(triples.stream()
-                    .map(additionalTriple -> {
-                      if (!nonOptionals.contains(additionalTriple)) {
-                        return additionalTriple.optional();
-                      }
-                      return additionalTriple;
-                    })
-                    .collect(Collectors.toList())
-                    .toArray(new GraphPattern[triples.size()]))
-                .optional();
-          }
-          return triple.optional();
-        })
+        .map(triple -> getGraphPattern(triple))
         .collect(Collectors.toList());
 
     // Fetch type statement to discover if subject exists (e.g. in case of only nullable fields)
@@ -158,5 +142,25 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
             .and(Iterables.toArray(wherePatterns, GraphPattern.class)));
 
     return query.getQueryString();
+  }
+
+  private GraphPattern getGraphPattern(TriplePattern triple) {
+    String tripleSubject = triple.getQueryString()
+        .split(" ")[2];
+    if (additionals.containsKey(tripleSubject)) {
+      List<TriplePattern> triples = additionals.get(tripleSubject);
+      return triple.optional()
+          .and(triples.stream()
+              .map(additionalTriple -> {
+                if (!nonOptionals.contains(additionalTriple)) {
+                  return additionalTriple.optional();
+                }
+                return additionalTriple;
+              })
+              .collect(Collectors.toList())
+              .toArray(new GraphPattern[triples.size()]))
+          .optional();
+    }
+    return triple.optional();
   }
 }
