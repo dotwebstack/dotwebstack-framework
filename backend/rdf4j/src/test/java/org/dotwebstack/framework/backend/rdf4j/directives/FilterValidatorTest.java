@@ -12,6 +12,8 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Collections;
 import java.util.Optional;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
+import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.directives.FilterValidator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,9 +22,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class SparqlFilterValidatorTest {
+class FilterValidatorTest {
 
-  private static SparqlFilterValidator validator = new SparqlFilterValidator(new SparqlFilterDirectiveTraverser());
+  private static FilterValidator validator = new FilterValidator(new FilterDirectiveTraverser());
 
   @Mock
   private ObjectTypeDefinition typeDefinition;

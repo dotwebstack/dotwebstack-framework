@@ -22,7 +22,7 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.MapContext;
-import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -123,14 +123,14 @@ class SubjectQueryBuilderTest {
 
   private GraphQLDirective getSparqlFilterDirectiveWithOperator() {
     return GraphQLDirective.newDirective()
-        .name(Rdf4jDirectives.SPARQL_FILTER_NAME)
+        .name(Rdf4jDirectives.FILTER_NAME)
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.SPARQL_FILTER_ARG_FIELD)
+            .name(Rdf4jDirectives.FILTER_ARG_FIELD)
             .type(Scalars.GraphQLString)
             .value("foo")
             .build())
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
+            .name(Rdf4jDirectives.FILTER_ARG_OPERATOR)
             .type(Scalars.GraphQLString)
             .value("<")
             .build())
@@ -139,14 +139,14 @@ class SubjectQueryBuilderTest {
 
   private GraphQLDirective getSparqlFilterDirectiveWithoutOperator() {
     return GraphQLDirective.newDirective()
-        .name(Rdf4jDirectives.SPARQL_FILTER_NAME)
+        .name(Rdf4jDirectives.FILTER_NAME)
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.SPARQL_FILTER_ARG_FIELD)
+            .name(Rdf4jDirectives.FILTER_ARG_FIELD)
             .type(Scalars.GraphQLString)
             .value("foo")
             .build())
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
+            .name(Rdf4jDirectives.FILTER_ARG_OPERATOR)
             .type(Scalars.GraphQLString)
             .build())
         .build();
@@ -154,14 +154,14 @@ class SubjectQueryBuilderTest {
 
   private GraphQLDirective getSparqlFilterDirectiveWithInvalidOperator() {
     return GraphQLDirective.newDirective()
-        .name(Rdf4jDirectives.SPARQL_FILTER_NAME)
+        .name(Rdf4jDirectives.FILTER_NAME)
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.SPARQL_FILTER_ARG_FIELD)
+            .name(Rdf4jDirectives.FILTER_ARG_FIELD)
             .type(Scalars.GraphQLString)
             .value("foo")
             .build())
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
+            .name(Rdf4jDirectives.FILTER_ARG_OPERATOR)
             .type(Scalars.GraphQLString)
             .value("&&")
             .build())

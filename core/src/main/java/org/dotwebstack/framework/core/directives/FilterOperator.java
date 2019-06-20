@@ -1,29 +1,29 @@
-package org.dotwebstack.framework.backend.rdf4j.directives;
+package org.dotwebstack.framework.core.directives;
 
 import java.util.Arrays;
 import java.util.Optional;
 import lombok.Getter;
 
-public enum SparqlFilterOperator {
+public enum FilterOperator {
 
   EQ("="), NE("!="), GT(">"), GTE(">="), LT("<"), LTE("<=");
 
   @Getter
   private String value;
 
-  SparqlFilterOperator(String value) {
+  FilterOperator(String value) {
     this.value = value;
   }
 
-  public static Optional<SparqlFilterOperator> getByValue(String stringValue) {
+  public static Optional<FilterOperator> getByValue(String stringValue) {
     return Arrays.stream(values())
         .filter(value -> value.toString()
             .equals(stringValue))
         .findFirst();
   }
 
-  public static SparqlFilterOperator getDefault() {
-    return SparqlFilterOperator.EQ;
+  public static FilterOperator getDefault() {
+    return FilterOperator.EQ;
   }
 
   @Override

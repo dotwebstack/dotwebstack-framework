@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.directives;
+package org.dotwebstack.framework.core.directives;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
@@ -6,15 +6,14 @@ import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SparqlFilterDirectiveWiring implements SchemaDirectiveWiring {
+public class FilterDirectiveWiring implements SchemaDirectiveWiring {
 
-  private final SparqlFilterValidator validator;
+  private final FilterValidator validator;
 
-  public SparqlFilterDirectiveWiring(@NonNull SparqlFilterValidator validator) {
+  public FilterDirectiveWiring(@NonNull FilterValidator validator) {
     this.validator = validator;
   }
 

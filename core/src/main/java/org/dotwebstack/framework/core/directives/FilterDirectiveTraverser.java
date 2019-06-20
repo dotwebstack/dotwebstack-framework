@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.directives;
+package org.dotwebstack.framework.core.directives;
 
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
@@ -23,12 +23,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.backend.rdf4j.helper.SparqlFilterHelper;
+import org.dotwebstack.framework.core.helpers.SparqlFilterHelper;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class SparqlFilterDirectiveTraverser {
+public class FilterDirectiveTraverser {
 
   public Map<GraphQLDirectiveContainer, Object> getDirectiveContainers(DataFetchingEnvironment dataFetchingEnvironment,
       String directiveName) {
@@ -87,7 +87,7 @@ public class SparqlFilterDirectiveTraverser {
         .forEach(item -> registry.getType(item)
             .ifPresent(compareType -> {
               if (compareType instanceof ObjectTypeDefinition) {
-                if (compareType.getDirective(Rdf4jDirectives.SPARQL_NAME) != null) {
+                if (compareType.getDirective(CoreDirectives.FILTER_NAME) != null) {
                   // These are our query objects
                   typeNames.addAll(processQuery(registry, baseType, (ObjectTypeDefinition) compareType));
                 } else {

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.helper;
+package org.dotwebstack.framework.core.helpers;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.language.ListType;

@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.directives;
+package org.dotwebstack.framework.core.directives;
 
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeDefinition;
@@ -13,24 +13,23 @@ import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Optional;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SparqlFilterValidator {
+public class FilterValidator {
 
-  private final SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser;
+  private final FilterDirectiveTraverser filterDirectiveTraverser;
 
-  public SparqlFilterValidator(@NonNull SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser) {
-    this.sparqlFilterDirectiveTraverser = sparqlFilterDirectiveTraverser;
+  public FilterValidator(@NonNull FilterDirectiveTraverser filterDirectiveTraverser) {
+    this.filterDirectiveTraverser = filterDirectiveTraverser;
   }
 
   void validateArgumentEnvironment(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     environment.getElementParentTree()
         .getParentInfo()
         .ifPresent(parentInfo -> {
-          if (((GraphQLFieldDefinition) parentInfo.getElement()).getDirective(Rdf4jDirectives.SPARQL_NAME) == null) {
+          if (((GraphQLFieldDefinition) parentInfo.getElement()).getDirective(CoreDirectives.FILTER_NAME) == null) {
             throw ExceptionHelper.illegalArgumentException("'{}' can only be used as an argument for a Query!",
                 environment.getElement());
           }
@@ -50,13 +49,13 @@ public class SparqlFilterValidator {
           TypeDefinition<?> typeDefinition = registry.types()
               .get(parentInfo.getElement()
                   .getName());
-          sparqlFilterDirectiveTraverser.getReturnTypes(typeDefinition, registry)
+          filterDirectiveTraverser.getReturnTypes(typeDefinition, registry)
               .forEach(typeName -> validate(environment.getElement(), registry, typeName));
         });
   }
 
   private void validate(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry, String typeName) {
-    GraphQLDirective directive = container.getDirective(Rdf4jDirectives.SPARQL_FILTER_NAME);
+    GraphQLDirective directive = container.getDirective(CoreDirectives.FILTER_NAME);
     directive.getArguments()
         .forEach(
             directiveArgument -> this.validateArgument(directiveArgument, registry, directive.getName(), typeName));
@@ -66,10 +65,10 @@ public class SparqlFilterValidator {
       String typeName) {
     if (argument.getValue() != null) {
       switch (argument.getName()) {
-        case Rdf4jDirectives.SPARQL_FILTER_ARG_FIELD:
+        case CoreDirectives.FILTER_ARG_FIELD:
           checkField(argument, registry, name, typeName);
           break;
-        case Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR:
+        case CoreDirectives.FILTER_ARG_OPERATOR:
           checkOperator(argument, name);
           break;
         default:
@@ -78,7 +77,7 @@ public class SparqlFilterValidator {
     }
   }
 
-  void checkField(GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
+  public void checkField(GraphQLArgument argument, TypeDefinitionRegistry registry, String name, String typeName) {
     Optional<ObjectTypeDefinition> optional = registry.getType(typeName, ObjectTypeDefinition.class);
     if (!optional.isPresent() || optional.get()
         .getFieldDefinitions()
@@ -91,8 +90,8 @@ public class SparqlFilterValidator {
     }
   }
 
-  void checkOperator(GraphQLArgument argument, String name) {
-    if (argument.getValue() != null && !SparqlFilterOperator.getByValue(argument.getValue()
+  public void checkOperator(GraphQLArgument argument, String name) {
+    if (argument.getValue() != null && !FilterOperator.getByValue(argument.getValue()
         .toString())
         .isPresent()) {
       throw new DirectiveValidationException(

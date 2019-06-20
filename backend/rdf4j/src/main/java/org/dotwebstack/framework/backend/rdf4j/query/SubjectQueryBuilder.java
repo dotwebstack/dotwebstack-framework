@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.EQ;
-import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.GT;
-import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.GTE;
-import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.LT;
-import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.LTE;
-import static org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator.NE;
+import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
+import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
+import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
+import static org.dotwebstack.framework.core.directives.FilterOperator.LT;
+import static org.dotwebstack.framework.core.directives.FilterOperator.LTE;
+import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLDirective;
@@ -19,11 +19,12 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.directives.FilterJoinType;
-import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
-import org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterOperator;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.JexlHelper;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
@@ -181,11 +182,11 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   Map<String, Expression<?>> getSparqlFilters(Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping) {
     Map<String, Expression<?>> expressionMap = new HashMap<>();
     sparqlFilterMapping.forEach((container, value) -> {
-      GraphQLDirective directive = container.getDirective(Rdf4jDirectives.SPARQL_FILTER_NAME);
-      String field = (String) directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_FIELD)
+      GraphQLDirective directive = container.getDirective(CoreDirectives.FILTER_NAME);
+      String field = (String) directive.getArgument(CoreDirectives.FILTER_ARG_FIELD)
           .getValue();
       Variable fieldVar = SparqlBuilder.var(field);
-      String operator = (String) directive.getArgument(Rdf4jDirectives.SPARQL_FILTER_ARG_OPERATOR)
+      String operator = (String) directive.getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
           .getValue();
 
       FilterJoinType joinType;
@@ -233,7 +234,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   private Expression<?> getExpressionFromOperator(String field, String operator, Object value) {
     BiFunction<String, Operand, Expression<?>> function = MAP.get(operator != null ? operator
-        : SparqlFilterOperator.getDefault()
+        : FilterOperator.getDefault()
             .toString());
 
     if (function == null) {
