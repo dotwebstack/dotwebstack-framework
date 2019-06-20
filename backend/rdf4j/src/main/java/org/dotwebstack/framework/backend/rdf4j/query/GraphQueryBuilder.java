@@ -33,7 +33,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
   private final List<IRI> subjects;
 
-  private Map<String, List<TriplePattern>> additionals = new HashMap<>();
+  private Map<String, List<TriplePattern>> nestedTriples = new HashMap<>();
 
   private List<TriplePattern> nonOptionals = new ArrayList<>();
 
@@ -68,17 +68,17 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     if ("?x0".equals(subject.getQueryString())) {
       result.add(triple);
     } else {
-      List<TriplePattern> triples = additionals.getOrDefault(subject.getQueryString(), new ArrayList<>());
+      List<TriplePattern> triples = nestedTriples.getOrDefault(subject.getQueryString(), new ArrayList<>());
       triples.add(triple);
-      additionals.put(subject.getQueryString(), triples);
+      nestedTriples.put(subject.getQueryString(), triples);
     }
 
     if (propertyShape.getNode() != null) {
-      List<TriplePattern> triples = additionals.getOrDefault(variable.getQueryString(), new ArrayList<>());
+      List<TriplePattern> triples = nestedTriples.getOrDefault(variable.getQueryString(), new ArrayList<>());
       TriplePattern additional = GraphPatterns.tp(variable, RDF.TYPE, propertyShape.getNode()
           .getTargetClass());
       triples.add(additional);
-      additionals.put(variable.getQueryString(), triples);
+      nestedTriples.put(variable.getQueryString(), triples);
       nonOptionals.add(additional);
     }
 
@@ -129,7 +129,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     // Fetch type statement to discover if subject exists (e.g. in case of only nullable fields)
     TriplePattern typePattern = GraphPatterns.tp(subjectVar, RDF.TYPE, nodeShape.getTargetClass());
 
-    triplePatterns.addAll(additionals.values()
+    triplePatterns.addAll(nestedTriples.values()
         .stream()
         .flatMap(List::stream)
         .collect(Collectors.toList()));
@@ -145,8 +145,8 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
   private GraphPattern getGraphPattern(TriplePattern triple) {
     String tripleSubject = triple.getQueryString()
         .split(" ")[2];
-    if (additionals.containsKey(tripleSubject)) {
-      List<TriplePattern> triples = additionals.get(tripleSubject);
+    if (nestedTriples.containsKey(tripleSubject)) {
+      List<TriplePattern> triples = nestedTriples.get(tripleSubject);
       return triple.optional()
           .and(triples.stream()
               .map(additionalTriple -> {
