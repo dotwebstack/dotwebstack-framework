@@ -82,7 +82,7 @@ public final class ValueFetcher extends SourceDataFetcher {
   private boolean resultIsOfType(QuerySolution result, IRI type) {
     MemStatementList subjectStatements = ((MemIRI) result.getSubject()).getSubjectStatementList();
     for (int i = 0; i < subjectStatements.size(); i++) {
-      MemStatement statement = subjectStatements.get(0);
+      MemStatement statement = subjectStatements.get(i);
       if (statement.getPredicate()
           .equals(RDF.TYPE)
           && statement.getObject()

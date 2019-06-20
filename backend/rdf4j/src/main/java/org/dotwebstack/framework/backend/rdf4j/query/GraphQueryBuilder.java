@@ -130,11 +130,11 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
                 .split(" ")[2]);
             return triple.optional()
                 .and(triples.stream()
-                    .map(additionalTripple -> {
-                      if (!nonOptionals.contains(additionalTripple)) {
-                        return additionalTripple.optional();
+                    .map(additionalTriple -> {
+                      if (!nonOptionals.contains(additionalTriple)) {
+                        return additionalTriple.optional();
                       }
-                      return additionalTripple;
+                      return additionalTriple;
                     })
                     .collect(Collectors.toList())
                     .toArray(new GraphPattern[triples.size()]))
