@@ -5,7 +5,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 
 @Getter
-final class QuerySolution {
+public final class QuerySolution {
 
   private final Model model;
 

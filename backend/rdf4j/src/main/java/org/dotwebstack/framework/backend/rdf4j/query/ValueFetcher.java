@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
+import org.dotwebstack.framework.backend.rdf4j.helper.QuerySolutionHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
@@ -20,9 +21,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.sail.memory.model.MemIRI;
-import org.eclipse.rdf4j.sail.memory.model.MemStatement;
-import org.eclipse.rdf4j.sail.memory.model.MemStatementList;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -79,18 +77,13 @@ public final class ValueFetcher extends SourceDataFetcher {
         });
   }
 
-  private boolean resultIsOfType(QuerySolution result, IRI type) {
-    MemStatementList subjectStatements = ((MemIRI) result.getSubject()).getSubjectStatementList();
-    for (int i = 0; i < subjectStatements.size(); i++) {
-      MemStatement statement = subjectStatements.get(i);
-      if (statement.getPredicate()
-          .equals(RDF.TYPE)
-          && statement.getObject()
-              .equals(type)) {
-        return true;
-      }
-    }
-    return false;
+  private boolean resultIsOfType(@NonNull QuerySolution result, @NonNull IRI type) {
+    return QuerySolutionHelper.getSubjectStatements(result)
+        .stream()
+        .anyMatch(statement -> statement.getPredicate()
+            .equals(RDF.TYPE)
+            && statement.getObject()
+                .equals(type));
   }
 
   private Object convert(@NonNull Model model, @NonNull Value value) {
