@@ -10,14 +10,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
+import org.dotwebstack.framework.backend.rdf4j.helper.QuerySolutionHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -64,7 +67,23 @@ public final class ValueFetcher extends SourceDataFetcher {
     return propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject(), false)
         .stream()
-        .map(value -> convert(source.getModel(), value));
+        .map(value -> convert(source.getModel(), value))
+        .filter(result -> {
+          if (propertyShape.getNode() != null) {
+            return resultIsOfType((QuerySolution) result, propertyShape.getNode()
+                .getTargetClass());
+          }
+          return true;
+        });
+  }
+
+  private boolean resultIsOfType(@NonNull QuerySolution result, @NonNull IRI type) {
+    return QuerySolutionHelper.getSubjectStatements(result)
+        .stream()
+        .anyMatch(statement -> statement.getPredicate()
+            .equals(RDF.TYPE)
+            && statement.getObject()
+                .equals(type));
   }
 
   private Object convert(@NonNull Model model, @NonNull Value value) {

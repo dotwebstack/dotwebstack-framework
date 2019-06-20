@@ -1,7 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
+import static org.dotwebstack.framework.backend.rdf4j.helper.MemStatementListHelper.listOf;
+
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -14,8 +15,6 @@ import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sail.memory.model.MemBNode;
-import org.eclipse.rdf4j.sail.memory.model.MemStatement;
-import org.eclipse.rdf4j.sail.memory.model.MemStatementList;
 
 public class PropertyPathFactory {
 
@@ -44,7 +43,7 @@ public class PropertyPathFactory {
           .get(0)
           .getPredicate();
 
-      List<PropertyPath> childs = memStatements(blankNode.getSubjectStatementList()).stream()
+      List<PropertyPath> childs = listOf(blankNode.getSubjectStatementList()).stream()
           .map(child -> create(model, child.getSubject(), child.getPredicate()))
           .collect(Collectors.toList());
 
@@ -54,16 +53,6 @@ public class PropertyPathFactory {
     return PredicatePath.builder()
         .iri((IRI) value)
         .build();
-  }
-
-  private static List<MemStatement> memStatements(MemStatementList memStatementList) {
-    List<MemStatement> result = Lists.newArrayList(memStatementList.get(0));
-
-    if (memStatementList.size() > 1) {
-      result.add(memStatementList.get(1));
-    }
-
-    return result;
   }
 
   private static PropertyPath sequencePath(List<PropertyPath> propertyPaths) {

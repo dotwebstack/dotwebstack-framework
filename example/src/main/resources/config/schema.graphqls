@@ -14,23 +14,28 @@ type Query {
             sinceBefore: String @sparqlFilter(field: "founded", operator: "<")
             name: [String] @sparqlFilter(field: "name")): [Brewery!]!
     @sparql(
-      repository: "local",
-      limit: "pageSize",
-      offset: "(page - 1) * pageSize",
+      repository: "local"
+      limit: "pageSize"
+      offset: "(page - 1) * pageSize"
       orderBy: "sort"
     )
 
   breweries_paging_input(input: PageQueryInput): [Brewery!]!
     @sparql(
-      repository: "local",
-      limit: "input.pageSize",
+      repository: "local"
+      limit: "input.pageSize"
       offset: "(input.page - 1) * input.pageSize"
     )
 
   breweries_sort_input(input: SortQueryInput): [Brewery!]!
     @sparql(
-      repository: "local",
+      repository: "local"
       orderBy: "input.sort"
+    )
+
+  breweries_filter_input(input: FilterQueryInput): [Brewery!]!
+    @sparql(
+      repository: "local"
     )
 
   beers(sort: [SortField!] =[{field: "name", order: ASC}]): [Beer!]!
@@ -64,6 +69,16 @@ type Beer {
   name: String!
   brewery: String!
   beerTypes: [String]!
+  ingredients: [Ingredient!]
+  supplements: [Supplement!]
+}
+
+type Ingredient {
+  name: String
+}
+
+type Supplement {
+  name: String
 }
 
 input SortQueryInput {
@@ -75,10 +90,10 @@ input PageQueryInput {
   pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50])
 }
 
-input BreweryCollectionInput {
+input FilterQueryInput {
   page: Int = 1
-  sinceBefore: Date
+  sinceBefore: String
     @sparqlFilter(field: "founded", operator: "<=")
-  sinceAfter: Date
+  sinceAfter: String
     @sparqlFilter(field: "founded", operator: ">=")
 }
