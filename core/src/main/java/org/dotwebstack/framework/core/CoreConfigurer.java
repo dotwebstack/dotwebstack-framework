@@ -97,9 +97,12 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   private DirectiveDefinition createTransformDefinition() {
     return newDirectiveDefinition().name(CoreDirectives.TRANSFORM_NAME)
-        .inputValueDefinition(newInputValueDefinition().name(CoreDirectives.TRANSFORM_ARG_EXPR)
+        .inputValueDefinitions(Lists.newArrayList(newInputValueDefinition().name(CoreDirectives.TRANSFORM_ARG_EXPR)
             .type(requiredString)
-            .build())
+            .build(),
+            newInputValueDefinition().name(CoreDirectives.TRANSFORM_ARG_TYPE)
+                .type(optionalString)
+                .build()))
         .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
             .build())
         .build();
