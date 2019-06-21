@@ -16,8 +16,8 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.scalars.CoreCoercing;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -71,7 +71,7 @@ public final class ValueFetcher extends SourceDataFetcher {
     return propertyShape.getPath()
         .resolvePath(source.getModel(), source.getSubject(), false)
         .stream()
-        .map(value -> convert(source.getModel(), value))
+        .map(value -> convert(source.getModel(), propertyShape, value))
         .filter(result -> {
           if (propertyShape.getNode() != null) {
             return resultIsOfType((QuerySolution) result, propertyShape.getNode()
@@ -90,25 +90,20 @@ public final class ValueFetcher extends SourceDataFetcher {
                 .equals(type));
   }
 
-  private Object convert(@NonNull Model model, @NonNull Value value) {
-    if (value instanceof Literal || value instanceof IRI) {
-      CoreCoercing<?> compatibleCoercing = coercers.stream()
-          .filter(coercing -> coercing.isCompatible(value.getClass()
-              .getSimpleName()))
-          .findFirst()
-          .orElseThrow(() -> ExceptionHelper
-              .unsupportedOperationException("Did not find a suitable Coercing for type '{}'", value.getClass()
-                  .getSimpleName()));
-
-      return compatibleCoercing.serialize(value);
-    }
-
-    if (value instanceof Resource) {
+  private Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {
+    if (propertyShape.getNode() != null || BNode.class.isAssignableFrom(value.getClass())) {
       return new QuerySolution(model, (Resource) value);
     }
 
-    throw unsupportedOperationException("Value of type '{}' is not supported!", value.getClass()
-        .getSimpleName());
+    CoreCoercing<?> compatibleCoercing = coercers.stream()
+        .filter(coercing -> coercing.isCompatible(value.getClass()
+            .getSimpleName()))
+        .findFirst()
+        .orElseThrow(() -> ExceptionHelper
+            .unsupportedOperationException("Did not find a suitable Coercing for type '{}'", value.getClass()
+                .getSimpleName()));
+
+    return compatibleCoercing.serialize(value);
   }
 
   @Override

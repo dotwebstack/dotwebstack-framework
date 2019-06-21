@@ -18,7 +18,7 @@ class IriCoercingTest {
   @Test
   void serialize_ThrowsException() {
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () -> coercing.serialize(new Object()));
+    assertThrows(CoercingParseLiteralException.class, () -> coercing.serialize(new Object()));
   }
 
   @Test

@@ -10,7 +10,7 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-class IriCoercing implements CoreCoercing<IRI> {
+public class IriCoercing implements CoreCoercing<IRI> {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 

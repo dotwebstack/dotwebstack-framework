@@ -65,6 +65,7 @@ import graphql.schema.GraphQLObjectType;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import org.dotwebstack.framework.backend.rdf4j.scalars.IriCoercing;
 import org.dotwebstack.framework.backend.rdf4j.scalars.LiteralCoercing;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
@@ -114,7 +115,7 @@ class ValueFetcherTest {
         .name(BREWERY_IDENTIFIER_FIELD)
         .build());
     when(nodeShapeRegistry.get((GraphQLObjectType) any())).thenReturn(nodeShape);
-    this.coercers = Arrays.asList(new CoreCoercing<?>[] {new LiteralCoercing()});
+    this.coercers = Arrays.asList(new CoreCoercing<?>[] {new LiteralCoercing(), new IriCoercing()});
   }
 
   @Test
