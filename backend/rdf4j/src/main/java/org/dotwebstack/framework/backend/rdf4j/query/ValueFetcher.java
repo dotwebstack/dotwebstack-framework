@@ -6,15 +6,16 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
-import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.dotwebstack.framework.backend.rdf4j.helper.QuerySolutionHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.scalars.CoreCoercing;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
@@ -28,8 +29,11 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
-  public ValueFetcher(final NodeShapeRegistry nodeShapeRegistry) {
+  private final List<CoreCoercing<?>> coercers;
+
+  public ValueFetcher(final NodeShapeRegistry nodeShapeRegistry, List<CoreCoercing<?>> coercers) {
     this.nodeShapeRegistry = nodeShapeRegistry;
+    this.coercers = coercers;
   }
 
   @Override
@@ -87,12 +91,20 @@ public final class ValueFetcher extends SourceDataFetcher {
   }
 
   private Object convert(@NonNull Model model, @NonNull Value value) {
-    if (value instanceof Resource) {
-      return new QuerySolution(model, (Resource) value);
+    if (value instanceof Literal || value instanceof IRI) {
+      CoreCoercing<?> compatibleCoercing = coercers.stream()
+          .filter(coercing -> coercing.isCompatible(value.getClass()
+              .getSimpleName()))
+          .findFirst()
+          .orElseThrow(() -> ExceptionHelper
+              .unsupportedOperationException("Did not find a suitable Coercing for type '{}'", value.getClass()
+                  .getSimpleName()));
+
+      return compatibleCoercing.serialize(value);
     }
 
-    if (value instanceof Literal) {
-      return ValueUtils.convertValue(value);
+    if (value instanceof Resource) {
+      return new QuerySolution(model, (Resource) value);
     }
 
     throw unsupportedOperationException("Value of type '{}' is not supported!", value.getClass()

@@ -1,18 +1,44 @@
 package org.dotwebstack.framework.core.scalars;
 
+import graphql.schema.CoercingSerializeException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-class LocalDateCoercing extends BaseCoercing<LocalDate> {
+public class DateCoercing implements CoreCoercing<LocalDate> {
 
-  LocalDateCoercing() {
-    super(LocalDate.class);
+  @Override
+  public LocalDate serialize(@NonNull Object value) {
+    if (value instanceof LocalDate) {
+      return (LocalDate) value;
+    }
+
+    if (!(value instanceof String)) {
+      throw new CoercingSerializeException(String.format("Unable to parse date string from '%s' type.", value.getClass()
+          .getName()));
+    }
+
+    try {
+      return LocalDate.parse((String) value);
+    } catch (DateTimeParseException e) {
+      throw new CoercingSerializeException("Parsing date string failed.", e);
+    }
   }
 
   @Override
-  public LocalDate parse(@NonNull String value) {
-    return LocalDate.parse(value);
+  public LocalDate parseValue(@NonNull Object value) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public LocalDate parseLiteral(@NonNull Object value) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean isCompatible(@NonNull String className) {
+    return className.equals(LocalDate.class.getSimpleName());
   }
 }

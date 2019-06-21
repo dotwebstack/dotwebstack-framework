@@ -5,12 +5,15 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.scalars.CoreCoercing;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,8 +21,11 @@ public class TransformDirectiveDataFetcher extends DelegateDataFetcher {
 
   private final JexlEngine jexlEngine;
 
-  public TransformDirectiveDataFetcher(final JexlEngine jexlEngine) {
+  private final List<CoreCoercing<?>> coercers;
+
+  public TransformDirectiveDataFetcher(final JexlEngine jexlEngine, final List<CoreCoercing<?>> coercers) {
     this.jexlEngine = jexlEngine;
+    this.coercers = coercers;
   }
 
   @Override
@@ -43,6 +49,8 @@ public class TransformDirectiveDataFetcher extends DelegateDataFetcher {
       return null;
     }
 
+    Object parsedValue = parseValue(fieldDefinition, value);
+
     JexlExpression expression = getJexlExpression(fieldDefinition);
 
     if (isListType) {
@@ -51,7 +59,26 @@ public class TransformDirectiveDataFetcher extends DelegateDataFetcher {
           .collect(Collectors.toList());
     }
 
-    return expression.evaluate(createContext(environment, value));
+    return expression.evaluate(createContext(environment, parsedValue));
+  }
+
+  private Object parseValue(GraphQLFieldDefinition fieldDefinition, Object value) {
+    String transformType = (String) fieldDefinition.getDirective(CoreDirectives.TRANSFORM_NAME)
+        .getArgument(CoreDirectives.TRANSFORM_ARG_TYPE)
+        .getValue();
+
+    // when type is null, it is implied that it is string, in those cases we do not coerce the value
+    if (transformType != null && !transformType.equals("String")) {
+      CoreCoercing<?> compatibleCoercing = coercers.stream()
+          .filter(coercing -> coercing.isCompatible(transformType))
+          .findFirst()
+          .orElseThrow(() -> ExceptionHelper
+              .unsupportedOperationException("Did not find a suitable Coercing for type '{}'", transformType));
+
+      return compatibleCoercing.serialize(value);
+    }
+
+    return value;
   }
 
   private static JexlContext createContext(DataFetchingEnvironment environment, Object value) {

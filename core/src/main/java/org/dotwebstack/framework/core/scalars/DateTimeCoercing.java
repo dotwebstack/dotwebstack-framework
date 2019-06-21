@@ -1,12 +1,13 @@
 package org.dotwebstack.framework.core.scalars;
 
-import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
-class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
+@Component
+class DateTimeCoercing implements CoreCoercing<ZonedDateTime> {
 
   @Override
   public ZonedDateTime serialize(@NonNull Object value) {
@@ -37,4 +38,8 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
     throw new UnsupportedOperationException();
   }
 
+  @Override
+  public boolean isCompatible(@NonNull String className) {
+    return className.equals(ZonedDateTime.class.getSimpleName());
+  }
 }
