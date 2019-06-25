@@ -7,15 +7,17 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.converters.DefaultConverter;
 import org.dotwebstack.framework.backend.rdf4j.helper.QuerySolutionHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
-import org.dotwebstack.framework.core.scalars.CoreCoercing;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -29,11 +31,11 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
-  private final List<CoreCoercing<?>> coercings;
+  private final List<CoreConverter<?>> converters;
 
-  public ValueFetcher(final NodeShapeRegistry nodeShapeRegistry, List<CoreCoercing<?>> coercings) {
+  public ValueFetcher(final NodeShapeRegistry nodeShapeRegistry, List<CoreConverter<?>> converters) {
     this.nodeShapeRegistry = nodeShapeRegistry;
-    this.coercings = coercings;
+    this.converters = converters;
   }
 
   @Override
@@ -74,14 +76,16 @@ public final class ValueFetcher extends SourceDataFetcher {
         .map(value -> convert(source.getModel(), propertyShape, value))
         .filter(result -> {
           if (propertyShape.getNode() != null) {
-            return resultIsOfType((QuerySolution) result, propertyShape.getNode()
+            // in case we have strong typing (sh:node), remove the types from the result that do not conform
+            // typing
+            resultIsOfType(source.getSubject(), (QuerySolution) result, propertyShape.getNode()
                 .getTargetClass());
           }
           return true;
         });
   }
 
-  private boolean resultIsOfType(@NonNull QuerySolution result, @NonNull IRI type) {
+  private boolean resultIsOfType(Resource subject, QuerySolution result, IRI type) {
     return QuerySolutionHelper.getSubjectStatements(result)
         .stream()
         .anyMatch(statement -> statement.getPredicate()
@@ -95,15 +99,16 @@ public final class ValueFetcher extends SourceDataFetcher {
       return new QuerySolution(model, (Resource) value);
     }
 
-    CoreCoercing<?> compatibleCoercing = coercings.stream()
-        .filter(coercing -> coercing.isCompatible(value.getClass()
-            .getSimpleName()))
-        .findFirst()
-        .orElseThrow(() -> ExceptionHelper
-            .unsupportedOperationException("Did not find a suitable Coercing for type '{}'", value.getClass()
-                .getSimpleName()));
+    Optional<CoreConverter<?>> compatibleConverter = converters.stream()
+        .filter(converter -> converter.supports(value))
+        .findFirst();
 
-    return compatibleCoercing.serialize(value);
+    if (compatibleConverter.isPresent()) {
+      return compatibleConverter.get()
+          .convert(value);
+    }
+
+    return DefaultConverter.convert(value);
   }
 
   @Override

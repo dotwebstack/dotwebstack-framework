@@ -49,11 +49,11 @@ type Brewery {
   identifier: ID!
   name: String!
   founded: String!
-    @transform(expr: "founded.getYear()" type: "ZonedDateTime")
+    @transform(expr: "founded.getYear()")
   openinghours: String
   owners: [String]
   url: String!
-    @transform(expr: "url.getLocalName()" type:"IRI")
+    @transform(expr: "url.getLocalName()")
   address: Address!
   postalCode: String!
   beers: [String]

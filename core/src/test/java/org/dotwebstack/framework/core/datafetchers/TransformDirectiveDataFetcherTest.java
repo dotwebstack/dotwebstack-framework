@@ -9,14 +9,11 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
-import java.util.Arrays;
-import java.util.List;
+import java.time.LocalDate;
 import java.util.function.Supplier;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
-import org.dotwebstack.framework.core.scalars.CoreCoercing;
-import org.dotwebstack.framework.core.scalars.DateCoercing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,7 +33,7 @@ class TransformDirectiveDataFetcherTest {
 
   private static final String DATE_NAME = "date";
 
-  private static final String DATE_VALUE = "1993-08-05";
+  private static final LocalDate DATE_VALUE = LocalDate.parse("1993-08-05");
 
   private static final String DATE_EXPR = "date.getYear()";
 
@@ -55,11 +52,9 @@ class TransformDirectiveDataFetcherTest {
       .strict(true)
       .create();
 
-  private final List<CoreCoercing<?>> coercings = Arrays.asList(new CoreCoercing<?>[] {new DateCoercing()});
-
   @BeforeEach
   void setUp() {
-    transformDirectiveDataFetcher = new TransformDirectiveDataFetcher(jexlEngine, coercings);
+    transformDirectiveDataFetcher = new TransformDirectiveDataFetcher(jexlEngine);
   }
 
   @Test

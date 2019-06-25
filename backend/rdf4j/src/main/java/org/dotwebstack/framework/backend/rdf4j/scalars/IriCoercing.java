@@ -1,22 +1,20 @@
 package org.dotwebstack.framework.backend.rdf4j.scalars;
 
 import graphql.language.StringValue;
+import graphql.schema.Coercing;
 import graphql.schema.CoercingParseLiteralException;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.scalars.CoreCoercing;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.springframework.stereotype.Component;
 
-@Component
-public class IriCoercing implements CoreCoercing<IRI> {
+public class IriCoercing implements Coercing<IRI, IRI> {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   @Override
   public IRI serialize(@NonNull Object value) {
-    return parseLiteral(value);
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -43,10 +41,5 @@ public class IriCoercing implements CoreCoercing<IRI> {
       throw new CoercingParseLiteralException(String.format("Unable to parse IRI from string value '%s'.", valueStr),
           e);
     }
-  }
-
-  @Override
-  public boolean isCompatible(@NonNull String className) {
-    return className.contains(IRI.class.getSimpleName());
   }
 }

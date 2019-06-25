@@ -156,7 +156,7 @@
 
  beer_sh:Address a sh:NodeShape ;
    sh:name "address" ;
-   sh:targetClass beer_def:Address  ;
+   sh:targetClass beer_def:Address ;
    sh:property
      beer_sh:Address_postalcode,
      beer_sh:Address_streetAddress ;
