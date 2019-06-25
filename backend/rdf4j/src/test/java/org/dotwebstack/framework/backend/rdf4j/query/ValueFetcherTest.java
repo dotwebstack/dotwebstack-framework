@@ -99,7 +99,7 @@ class ValueFetcherTest {
   @Mock
   private NodeShape nodeShape;
 
-  private List<CoreCoercing<?>> coercers;
+  private List<CoreCoercing<?>> coercings;
 
   @BeforeAll
   static void setup() throws IOException {
@@ -115,7 +115,7 @@ class ValueFetcherTest {
         .name(BREWERY_IDENTIFIER_FIELD)
         .build());
     when(nodeShapeRegistry.get((GraphQLObjectType) any())).thenReturn(nodeShape);
-    this.coercers = Arrays.asList(new CoreCoercing<?>[] {new LiteralCoercing(), new IriCoercing()});
+    this.coercings = Arrays.asList(new CoreCoercing<?>[] {new LiteralCoercing(), new IriCoercing()});
   }
 
   @Test
@@ -129,7 +129,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_IDENTIFIER_PATH, BREWERY_IDENTIFIER_EXAMPLE_1)
         .build();
@@ -162,7 +162,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_ADDRESS_PATH, BREWERY_ADDRESS_EXAMPLE_1)
         .add(BREWERY_ADDRESS_EXAMPLE_1, ADDRESS_POSTALCODE_PATH, ADDRESS_POSTALCODE_EXAMPLE_1)
@@ -189,7 +189,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH, BREWERY_OWNERS_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH, BREWERY_OWNERS_EXAMPLE_2)
@@ -225,7 +225,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_ADDRESS_PATH, BREWERY_ADDRESS_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, BREWERY_ADDRESS_PATH, BREWERY_ADDRESS_EXAMPLE_2)
@@ -258,7 +258,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH, BREWERY_OWNERS_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, BREWERY_OWNERS_PATH, BREWERY_OWNERS_EXAMPLE_2)
@@ -286,7 +286,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
         .build();
@@ -311,7 +311,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new TreeModel();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
@@ -334,7 +334,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, SCHEMA_ADDRESS, BREWERY_ADDRESS_EXAMPLE_1)
         .add(BREWERY_ADDRESS_EXAMPLE_1, SCHEMA_POSTAL_CODE, POSTAL_CODE_1)
@@ -359,7 +359,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BEER_EXAMPLE_1, BREWERY_BEERS_PATH, BREWERY_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, SCHEMA_NAME, BREWERY_NAME_EXAMPLE_1)
@@ -387,7 +387,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model1 = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_LABEL, BREWERY_NAME_EXAMPLE_1)
         .build();
@@ -425,7 +425,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
         .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
@@ -452,7 +452,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
         .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
@@ -479,7 +479,7 @@ class ValueFetcherTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
-    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercers);
+    ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, coercings);
 
     Model model = new ModelBuilder().add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
         .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)

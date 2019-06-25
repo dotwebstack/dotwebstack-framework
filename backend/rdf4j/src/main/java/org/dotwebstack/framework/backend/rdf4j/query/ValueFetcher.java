@@ -29,11 +29,11 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
-  private final List<CoreCoercing<?>> coercers;
+  private final List<CoreCoercing<?>> coercings;
 
-  public ValueFetcher(final NodeShapeRegistry nodeShapeRegistry, List<CoreCoercing<?>> coercers) {
+  public ValueFetcher(final NodeShapeRegistry nodeShapeRegistry, List<CoreCoercing<?>> coercings) {
     this.nodeShapeRegistry = nodeShapeRegistry;
-    this.coercers = coercers;
+    this.coercings = coercings;
   }
 
   @Override
@@ -95,7 +95,7 @@ public final class ValueFetcher extends SourceDataFetcher {
       return new QuerySolution(model, (Resource) value);
     }
 
-    CoreCoercing<?> compatibleCoercing = coercers.stream()
+    CoreCoercing<?> compatibleCoercing = coercings.stream()
         .filter(coercing -> coercing.isCompatible(value.getClass()
             .getSimpleName()))
         .findFirst()

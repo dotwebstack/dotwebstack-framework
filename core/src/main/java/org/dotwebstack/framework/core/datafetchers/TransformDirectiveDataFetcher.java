@@ -21,11 +21,11 @@ public class TransformDirectiveDataFetcher extends DelegateDataFetcher {
 
   private final JexlEngine jexlEngine;
 
-  private final List<CoreCoercing<?>> coercers;
+  private final List<CoreCoercing<?>> coercings;
 
-  public TransformDirectiveDataFetcher(final JexlEngine jexlEngine, final List<CoreCoercing<?>> coercers) {
+  public TransformDirectiveDataFetcher(final JexlEngine jexlEngine, final List<CoreCoercing<?>> coercings) {
     this.jexlEngine = jexlEngine;
-    this.coercers = coercers;
+    this.coercings = coercings;
   }
 
   @Override
@@ -69,7 +69,7 @@ public class TransformDirectiveDataFetcher extends DelegateDataFetcher {
 
     // when type is null, it is implied that it is string, in those cases we do not coerce the value
     if (transformType != null && !transformType.equals("String")) {
-      CoreCoercing<?> compatibleCoercing = coercers.stream()
+      CoreCoercing<?> compatibleCoercing = coercings.stream()
           .filter(coercing -> coercing.isCompatible(transformType))
           .findFirst()
           .orElseThrow(() -> ExceptionHelper

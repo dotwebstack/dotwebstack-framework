@@ -117,12 +117,14 @@ to provide an argument which has to be greater than 0.
 
 ## 1.4 Transform Directive
 The transform directive allows the user to transform a scalar field based on a given 
-[jexl](http://commons.apache.org/proper/commons-jexl/) expression. This directive takes the 
-argument `expr` that contains the jexl expression to transform the original to the desired value:
+[jexl](http://commons.apache.org/proper/commons-jexl/) expression. This directive takes two arguments, it needs an 
+`expr` argument, that contains the jexl expression to transform the original to the desired value. The user can also 
+provide an optional variable `type`. With type the user can specify the input type for the transform directive. In case 
+the input type for the @transform expreession is String, the user does not need to provide a type:
 
 ```graphql
 type Brewery {
-  status: String! @transform(expr: "statusIri.getLocalName()")
+  status: String! @transform(expr: "statusIri.getLocalName()" type: "IRI")
 }
 ```
 
