@@ -18,6 +18,8 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.validation.ArgumentValidator;
+import org.dotwebstack.framework.core.validation.SortFieldValidator;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.springframework.stereotype.Component;
@@ -67,8 +69,12 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
         .getConnection();
+
+    SortFieldValidator inputValueValidator = new SortFieldValidator(environment.getRegistry());
+
+    ArgumentValidator inputValueTraverser = new ArgumentValidator(inputValueValidator);
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
-        constraintTraverser, filterDirectiveTraverser);
+        constraintTraverser, filterDirectiveTraverser, inputValueTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);

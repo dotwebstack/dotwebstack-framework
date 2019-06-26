@@ -22,6 +22,7 @@ import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.validation.ArgumentValidator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -49,15 +50,18 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final FilterDirectiveTraverser filterDirectiveTraverser;
 
+  private ArgumentValidator argumentValidator;
+
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
       Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
-      FilterDirectiveTraverser filterDirectiveTraverser) {
+                      FilterDirectiveTraverser filterDirectiveTraverser, ArgumentValidator inputValueTraverser) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
     this.constraintTraverser = constraintTraverser;
     this.filterDirectiveTraverser = filterDirectiveTraverser;
+    this.argumentValidator = inputValueTraverser;
   }
 
   @Override
@@ -73,6 +77,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
     }
 
+    argumentValidator.validateArguments(environment);
     constraintTraverser.traverse(environment);
 
     QueryEnvironment queryEnvironment = QueryEnvironment.builder()

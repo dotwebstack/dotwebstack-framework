@@ -11,6 +11,8 @@ import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +25,14 @@ import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.JexlHelper;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
@@ -110,12 +114,15 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   private void buildOrderBy(List<OrderContext> contexts) {
     contexts.forEach(orderContext -> {
       query.orderBy(orderContext.getOrderable());
-
-      TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR, orderContext.getPropertyShape()
-          .getPath()
-          .toPredicate(), SparqlBuilder.var(orderContext.getField()));
-
-      whereBuilder.put(triplePattern.getQueryString(), triplePattern);
+      Variable subject = SUBJECT_VAR;
+      for (OrderContext.OrderContextElement element : orderContext.getElements()) {
+        Variable objectVar = SparqlBuilder.var(element.getField());
+        TriplePattern pattern = GraphPatterns.tp(subject, element.getPropertyShape()
+            .getPath()
+            .toPredicate(), objectVar);
+        whereBuilder.put(pattern.getQueryString(), pattern);
+        subject = objectVar;
+      }
     });
   }
 
@@ -139,16 +146,33 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     String field = orderMap.get("field");
     String order = orderMap.get("order");
 
-    Variable var = SparqlBuilder.var(field);
-    PropertyShape propertyShape = getPropertyShapeForField(field);
+    List<String> fields = Arrays.asList(field.split("\\."));
+    List<OrderContext.OrderContextElement> elements = new ArrayList<>();
+    NodeShape ns = this.nodeShape;
+    for (String f : fields) {
+      PropertyShape propertyShape = getPropertyShapeForField(ns, f);
+      elements.add(new OrderContext.OrderContextElement(f, propertyShape));
+      IRI iri = ((PredicatePath) propertyShape.getPath()).getIri();
+      Optional<NodeShape> ons = this.environment.getNodeShapeRegistry()
+          .all()
+          .stream()
+          .filter(nss -> nss.getTargetClass()
+              .equals(iri))
+          .findFirst();
+      if (ons.isPresent()) {
+        ns = ons.get();
+      }
+    }
+    String orderByField = fields.get(fields.size() - 1);
+    Variable var = SparqlBuilder.var(orderByField);
 
     Orderable orderable = order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
-    return new OrderContext(field, orderable, propertyShape);
+    return new OrderContext(elements, orderable);
   }
 
-  private PropertyShape getPropertyShapeForField(String field) {
+  private PropertyShape getPropertyShapeForField(NodeShape nodeShape, String field) {
     // get the predicate property shape based on the order property field
-    PropertyShape pred = this.nodeShape.getPropertyShape(field);
+    PropertyShape pred = nodeShape.getPropertyShape(field);
     if (pred == null) {
       throw new IllegalArgumentException(String.format("Not possible to order by field %s, it does not exist on %s.",
           field, nodeShape.getIdentifier()));
