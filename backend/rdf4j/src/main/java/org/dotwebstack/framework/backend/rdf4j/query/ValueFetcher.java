@@ -47,14 +47,12 @@ public final class ValueFetcher extends SourceDataFetcher {
     PropertyShape propertyShape = getPropertyShape(environment);
 
     if (GraphQLTypeUtil.isList(fieldType)) {
-      return resolve(propertyShape, source)
-          .map(value -> convert(source.getModel(), propertyShape, value))
+      return resolve(propertyShape, source).map(value -> convert(source.getModel(), propertyShape, value))
           .collect(Collectors.toList());
     }
 
     if (GraphQLTypeUtil.isScalar(fieldType) || fieldType instanceof GraphQLObjectType) {
-      return resolve(propertyShape, source)
-          .map(value -> convert(source.getModel(), propertyShape, value))
+      return resolve(propertyShape, source).map(value -> convert(source.getModel(), propertyShape, value))
           .findFirst()
           .orElse(null);
     }
