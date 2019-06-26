@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jDirectives;
-import org.dotwebstack.framework.backend.rdf4j.directives.FilterJoinType;
+import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;

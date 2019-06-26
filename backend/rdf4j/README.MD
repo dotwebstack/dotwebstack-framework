@@ -367,15 +367,15 @@ beer:shapes {
 
 ## 1.7 Sparql filter directive
 It is possible to filter results by setting a *sparlFilter* directive on a GraphQL query. 
-You can do this by adding the `@Filter` keyword to an argument on a GraphQL Query. For example: 
+You can do this by adding the `@filter` keyword to an argument on a GraphQL Query. For example: 
 
 ```graphql
 type Query {
-  breweries(filterName: String @Filter(field: "name", operator: "=")): [Brewery!]!
+  breweries(filterName: String @filter(field: "name", operator: "=")): [Brewery!]!
 }
 ```
 
-The `@Filter` directive takes two arguments, the `field` and the `operator` argument. The `field` argument
+The `@filter` directive takes two arguments, the `field` and the `operator` argument. The `field` argument
 sets the field to which the filter is applied, in the example above this is the `name` property of the `Brewery`. 
 If the directive is assigned to a nonexistent field, an exception will be thrown at compile time. The `operator` 
 argument is used to describe the filter condition that is used to set the relation between the field and the value provided
@@ -383,14 +383,14 @@ by the user. The following operators are currently supported: `=`, `!=`, `<`, `<
 to omit the `operator` argument, in that case the default value (`=`) will be used.
 
 It is also possible to add a filter to a nested input object, as illustrated in the example below. While the example
-shows a nesting of only one layer, there is currently no restriction in how deep you can nest your `@Filter` directives. 
+shows a nesting of only one layer, there is currently no restriction in how deep you can nest your `@filter` directives. 
 ```graphql
 type Query {
   breweries(filter: Filter): [Brewery!]!
 }
 
 input Filter {
-  filterName: String @Filter(field: "name", operator: "=")
+  filterName: String @filter(field: "name", operator: "=")
 }
 ```
 
@@ -400,8 +400,8 @@ filters results in a combined filter, joined together with the `AND` keyword. Th
 
 ```graphql
 type Query {
-  breweries(foundedFrom: String @Filter(field: "founded", operator: ">"),
-            foundedTo: String @Filter(field: "founded", operator: "<")): [Brewery!]!
+  breweries(foundedFrom: String @filter(field: "founded", operator: ">"),
+            foundedTo: String @filter(field: "founded", operator: "<")): [Brewery!]!
 }
 ```
 
@@ -409,7 +409,7 @@ Another possibility is to use an array type on a filter argument, as can be seen
 
 ```graphql
 type Query {
-  breweries(nameIn: [String] @Filter(field: "name", operator: "=")): [Brewery!]!
+  breweries(nameIn: [String] @filter(field: "name", operator: "=")): [Brewery!]!
 }
 ``` 
 

@@ -22,9 +22,10 @@ import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 @Component
-public class DirectiveWiring implements SchemaDirectiveWiring {
+public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private final RepositoryManager repositoryManager;
 
@@ -38,7 +39,7 @@ public class DirectiveWiring implements SchemaDirectiveWiring {
 
   private FilterDirectiveTraverser filterDirectiveTraverser;
 
-  public DirectiveWiring(RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
+  public SparqlDirectiveWiring(RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
       Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
       FilterDirectiveTraverser filterDirectiveTraverser) {
     this.repositoryManager = repositoryManager;

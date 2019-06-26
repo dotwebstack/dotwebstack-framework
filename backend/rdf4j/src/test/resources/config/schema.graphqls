@@ -8,11 +8,11 @@ type Query {
 
   breweries(
     name: String 
-      @Filter(field: "name"),
+      @filter(field: "name"),
     foundedAfter: String 
-      @Filter(field: "founded", operator: ">"),
+      @filter(field: "founded", operator: ">"),
     foundedBefore: String 
-      @Filter(field: "founded", operator: "<")
+      @filter(field: "founded", operator: "<")
   ): [Brewery!]!
     @sparql(repository: "local")
 
@@ -33,12 +33,12 @@ input QueryParameters {
 input NestedInput {
   nestedNestedInput: NestedNestedInput
   foundedAfter: String 
-    @Filter(field: "founded", operator: ">")
+    @filter(field: "founded", operator: ">")
 }
 
 input NestedNestedInput {
   name: [String] 
-    @Filter(field: "name", operator: "=")
+    @filter(field: "name", operator: "=")
 
 }
 

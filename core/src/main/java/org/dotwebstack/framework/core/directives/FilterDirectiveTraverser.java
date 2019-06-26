@@ -108,10 +108,9 @@ public class FilterDirectiveTraverser {
         .stream()
         .filter(inputField -> inputField.getInputValueDefinitions()
             .stream()
-            .anyMatch(
-                inputValueDefinition -> registry.getType(FilterHelper.getBaseType(inputValueDefinition.getType()))
-                    .map(definition -> definition.equals(parentType))
-                    .orElse(false)))
+            .anyMatch(inputValueDefinition -> registry.getType(FilterHelper.getBaseType(inputValueDefinition.getType()))
+                .map(definition -> definition.equals(parentType))
+                .orElse(false)))
         .map(inputField -> ((TypeName) FilterHelper.getBaseType(inputField.getType())).getName())
         .collect(Collectors.toList());
   }

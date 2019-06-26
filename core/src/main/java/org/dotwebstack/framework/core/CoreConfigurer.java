@@ -82,23 +82,23 @@ public class CoreConfigurer implements GraphqlConfigurer {
     typeDefinitionRegistry.add(createFilterDefinition());
   }
 
-  private DirectiveDefinition createFilterDefinition(){
+  private DirectiveDefinition createFilterDefinition() {
     return DirectiveDefinition.newDirectiveDefinition()
-      .name(CoreDirectives.FILTER_NAME)
-      .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-        .name(CoreDirectives.FILTER_ARG_FIELD)
-        .type(requiredString)
-        .build())
-      .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-        .name(CoreDirectives.FILTER_ARG_OPERATOR)
-        .type(optionalString)
-        .build())
-      .directiveLocations(ImmutableList.of(
-        newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
-          .build(),
-        newDirectiveLocation().name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
-          .build()))
-      .build();
+        .name(CoreDirectives.FILTER_NAME)
+        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
+            .name(CoreDirectives.FILTER_ARG_FIELD)
+            .type(requiredString)
+            .build())
+        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
+            .name(CoreDirectives.FILTER_ARG_OPERATOR)
+            .type(optionalString)
+            .build())
+        .directiveLocations(ImmutableList.of(
+            newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
+                .build(),
+            newDirectiveLocation().name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
+                .build()))
+        .build();
   }
 
   private InputObjectTypeDefinition createSortInputObjectDefinition() {

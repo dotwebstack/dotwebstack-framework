@@ -83,8 +83,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .build();
 
     // Find shapes matching request
-    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, filterMapping,
-        environment.getArguments(), repositoryConnection);
+    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, filterMapping, environment.getArguments(),
+        repositoryConnection);
 
     // Fetch graph for given subjects
     Model model = fetchGraph(queryEnvironment, subjects, repositoryConnection);
@@ -99,8 +99,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   }
 
   private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
-      Map<GraphQLDirectiveContainer, Object> filterMapping, Map<String, Object> arguments,
-      RepositoryConnection con) {
+      Map<GraphQLDirectiveContainer, Object> filterMapping, Map<String, Object> arguments, RepositoryConnection con) {
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 

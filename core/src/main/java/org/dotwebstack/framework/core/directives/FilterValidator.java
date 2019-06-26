@@ -85,8 +85,8 @@ public class FilterValidator {
         .noneMatch(fieldDefinition -> fieldDefinition.getName()
             .equals(argument.getValue()))) {
       throw new DirectiveValidationException(
-          "Filter 'field' [{}] on field '{}' is invalid. It does not exist on type '{}'", argument.getValue(),
-          name, typeName);
+          "Filter 'field' [{}] on field '{}' is invalid. It does not exist on type '{}'", argument.getValue(), name,
+          typeName);
     }
   }
 
@@ -95,8 +95,7 @@ public class FilterValidator {
         .toString())
         .isPresent()) {
       throw new DirectiveValidationException(
-          "Filter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>',"
-              + " '>='",
+          "Filter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>'," + " '>='",
           argument.getValue(), name);
     }
   }
