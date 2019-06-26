@@ -115,8 +115,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     contexts.forEach(orderContext -> {
       query.orderBy(orderContext.getOrderable());
       Variable subject = SUBJECT_VAR;
-      for (OrderContext.OrderContextElement element : orderContext.getElements()) {
-        Variable objectVar = SparqlBuilder.var(element.getField());
+      for (OrderContext.Field element : orderContext.getFields()) {
+        Variable objectVar = SparqlBuilder.var(element.getFieldName());
         TriplePattern pattern = GraphPatterns.tp(subject, element.getPropertyShape()
             .getPath()
             .toPredicate(), objectVar);
@@ -143,16 +143,16 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   private OrderContext getOrderContext(Map<String, String> orderMap) {
-    String field = orderMap.get("field");
+    String fieldName = orderMap.get("field");
     String order = orderMap.get("order");
 
-    List<String> fields = Arrays.asList(field.split("\\."));
-    List<OrderContext.OrderContextElement> elements = new ArrayList<>();
-    NodeShape ns = this.nodeShape;
-    for (String f : fields) {
-      PropertyShape propertyShape = getPropertyShapeForField(ns, f);
-      elements.add(new OrderContext.OrderContextElement(f, propertyShape));
-      IRI iri = ((PredicatePath) propertyShape.getPath()).getIri();
+    List<String> fields = Arrays.asList(fieldName.split("\\."));
+    List<OrderContext.Field> elements = new ArrayList<>();
+    NodeShape currentNodeShape = this.nodeShape;
+    for (String field : fields) {
+      PropertyShape propertyShape = getPropertyShapeForField(currentNodeShape, field);
+      elements.add(new OrderContext.Field(field, propertyShape));
+      IRI iri = resolvePath(propertyShape);
       Optional<NodeShape> ons = this.environment.getNodeShapeRegistry()
           .all()
           .stream()
@@ -160,22 +160,25 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
               .equals(iri))
           .findFirst();
       if (ons.isPresent()) {
-        ns = ons.get();
+        currentNodeShape = ons.get();
       }
     }
-    String orderByField = fields.get(fields.size() - 1);
-    Variable var = SparqlBuilder.var(orderByField);
-
+    Variable var = SparqlBuilder.var(fields.get(fields.size() - 1));
     Orderable orderable = order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
     return new OrderContext(elements, orderable);
   }
 
+  private IRI resolvePath(PropertyShape propertyShape) {
+    return propertyShape.getPath()
+        .resolvePathIri(false);
+  }
+
   private PropertyShape getPropertyShapeForField(NodeShape nodeShape, String field) {
-    // get the predicate property shape based on the order property field
+    // get the predicate property shape based on the order property fieldName
     PropertyShape pred = nodeShape.getPropertyShape(field);
     if (pred == null) {
-      throw new IllegalArgumentException(String.format("Not possible to order by field %s, it does not exist on %s.",
-          field, nodeShape.getIdentifier()));
+      throw new IllegalArgumentException(String
+          .format("Not possible to order by fieldName %s, it does not exist on %s.", field, nodeShape.getIdentifier()));
     }
     return pred;
   }

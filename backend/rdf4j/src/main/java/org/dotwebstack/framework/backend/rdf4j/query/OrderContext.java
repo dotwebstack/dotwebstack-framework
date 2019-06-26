@@ -9,15 +9,15 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 @Data
 @AllArgsConstructor
 class OrderContext {
-  private List<OrderContextElement> elements;
+  private List<Field> fields;
 
   private Orderable orderable;
 
 
   @Data
   @AllArgsConstructor
-  public static class OrderContextElement {
-    private String field;
+  public static class Field {
+    private String fieldName;
 
     private PropertyShape propertyShape;
   }

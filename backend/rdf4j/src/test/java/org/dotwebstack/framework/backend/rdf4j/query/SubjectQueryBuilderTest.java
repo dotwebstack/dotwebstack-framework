@@ -28,6 +28,8 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPath;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -59,6 +61,12 @@ class SubjectQueryBuilderTest {
 
   @Mock
   private GraphQLObjectType objectTypeMock;
+
+  @Mock
+  private PropertyPath propertyPathMock;
+
+  @Mock
+  private IRI iriMock;
 
   private SubjectQueryBuilder subjectQueryBuilder;
 
@@ -308,6 +316,8 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_sortCondition_withValidOrderByExpressions() {
+    when(this.propertyPathMock.resolvePathIri(false)).thenReturn(iriMock);
+    when(this.propertyShapeMock.getPath()).thenReturn(this.propertyPathMock);
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
 
     GraphQLDirective validSparqlDirective = getValidSortDirective();

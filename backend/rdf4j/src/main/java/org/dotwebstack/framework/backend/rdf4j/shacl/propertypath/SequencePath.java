@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -30,6 +31,12 @@ public class SequencePath implements PropertyPath {
         .map(value -> resolveRest(model, value, inversed))
         .flatMap(Set::stream)
         .collect(Collectors.toSet());
+  }
+
+  @Override
+  public IRI resolvePathIri(boolean inversed) {
+    PropertyPath usedPath = (inversed && !PropertyPathHelper.isNil(rest)) ? this.rest : this.first;
+    return usedPath.resolvePathIri(inversed);
   }
 
   private Set<Value> resolveRest(Model model, Value value, boolean inversed) {

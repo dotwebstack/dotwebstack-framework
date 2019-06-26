@@ -75,6 +75,7 @@ public class ArgumentValidator {
     if (!(sortArgument instanceof List)) {
       throw ExceptionHelper.illegalArgumentException("Sort argument '{}' should be a list.", sortArgument);
     }
+    @SuppressWarnings("unchecked")
     Optional<Map<String, String>> map = ((List<?>) sortArgument).stream()
         .filter(argument -> argument instanceof Map)
         .map(argument -> ((Map<String, String>) argument))
