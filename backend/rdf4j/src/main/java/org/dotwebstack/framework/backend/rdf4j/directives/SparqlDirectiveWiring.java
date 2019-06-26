@@ -22,7 +22,6 @@ import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 
 @Component
 public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
