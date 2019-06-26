@@ -1,19 +1,20 @@
 package org.dotwebstack.framework.backend.rdf4j.converters;
 
+import lombok.NonNull;
 import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.eclipse.rdf4j.model.IRI;
 import org.springframework.stereotype.Component;
 
 @Component
-public class Rdf4JIriConverter implements CoreConverter<IRI> {
+public class IritoIriConverter implements CoreConverter<IRI> {
 
   @Override
-  public boolean supports(Object value) {
+  public boolean supports(@NonNull Object value) {
     return IRI.class.isAssignableFrom(value.getClass());
   }
 
   @Override
-  public IRI convert(Object iri) {
+  public IRI convert(@NonNull Object iri) {
     return (IRI) iri;
   }
 }

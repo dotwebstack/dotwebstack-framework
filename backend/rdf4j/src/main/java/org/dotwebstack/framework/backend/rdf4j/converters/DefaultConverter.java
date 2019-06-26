@@ -1,10 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.converters;
 
-import org.eclipse.rdf4j.model.Literal;
+import lombok.NonNull;
+import org.eclipse.rdf4j.model.Value;
 
 public class DefaultConverter {
 
-  public static String convert(Object value) {
-    return ((Literal) value).stringValue();
+  public static String convert(@NonNull Value value) {
+    return value.stringValue();
   }
 }

@@ -94,7 +94,7 @@ public final class ValueFetcher extends SourceDataFetcher {
                 .equals(type));
   }
 
-  private Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {
+  public Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {
     if (propertyShape.getNode() != null || BNode.class.isAssignableFrom(value.getClass())) {
       return new QuerySolution(model, (Resource) value);
     }

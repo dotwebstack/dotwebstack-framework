@@ -56,6 +56,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import graphql.Scalars;
 import graphql.language.Field;
 import graphql.schema.DataFetchingEnvironment;
@@ -114,7 +115,7 @@ class ValueFetcherTest {
         .name(BREWERY_IDENTIFIER_FIELD)
         .build());
     when(nodeShapeRegistry.get((GraphQLObjectType) any())).thenReturn(nodeShape);
-    this.converters = Arrays.asList(new CoreConverter<?>[] {new DateConverter()});
+    this.converters = ImmutableList.of(new DateConverter());
   }
 
   @Test

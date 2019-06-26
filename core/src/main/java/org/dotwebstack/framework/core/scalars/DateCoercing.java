@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.scalars;
 
+import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -7,7 +8,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DateCoercing implements CoreCoercing<LocalDate> {
+public class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
   @Override
   public LocalDate serialize(@NonNull Object value) {
@@ -37,8 +38,4 @@ public class DateCoercing implements CoreCoercing<LocalDate> {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public boolean isCompatible(@NonNull String className) {
-    return className.equals(LocalDate.class.getSimpleName());
-  }
 }
