@@ -34,10 +34,19 @@ public class SequencePath implements PropertyPath {
 
   private Set<Value> resolveRest(Model model, Value value, boolean inversed) {
     PropertyPath usedPath = inversed ? this.first : this.rest;
-    if (!PropertyPathHelper.isNil(rest) && value instanceof BNode) {
+
+    // this is the last iteration, the rest is nonsense, return current value
+    if (PropertyPathHelper.isNil(this.rest)) {
+      return Collections.singleton(value);
+    }
+
+    // not the latest in the tree, dive one level deeper
+    if (value instanceof BNode) {
       return usedPath.resolvePath(model, (Resource) value, inversed);
     }
-    return Collections.singleton(value);
+
+    // Intermediate result has to be a blank node
+    return Collections.emptySet();
   }
 
   @Override

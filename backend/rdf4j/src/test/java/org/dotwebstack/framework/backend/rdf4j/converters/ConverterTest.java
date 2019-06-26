@@ -25,7 +25,7 @@ class ConverterTest {
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
   private List<CoreConverter<?>> converters = ImmutableList.of(new BooleanConverter(), new DateConverter(),
-      new DateTimeConverter(), new IritoIriConverter(), new LongConverter());
+      new DateTimeConverter(), new IriConverter(), new LongConverter());
 
   @Test
   void convert_booleanLiteral_toBoolean() {
@@ -81,8 +81,8 @@ class ConverterTest {
     CoreConverter<?> converter = getConverter(iri);
 
     // Assert
-    assertThat(converter, instanceOf(IritoIriConverter.class));
-    assertThat(((IritoIriConverter) converter).convert(iri), is(iri));
+    assertThat(converter, instanceOf(IriConverter.class));
+    assertThat(((IriConverter) converter).convert(iri), is(iri));
   }
 
   private CoreConverter<?> getConverter(Value value) {

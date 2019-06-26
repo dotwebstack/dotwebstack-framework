@@ -2,8 +2,10 @@ package org.dotwebstack.framework.core.datafetchers;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetchingEnvironment;
+import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.core.Constants;
+import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,5 +30,11 @@ public class IntegrationTestDataFetcher extends SourceDataFetcher {
     }
 
     return new Object();
+  }
+
+  @Override
+  public List<CoreConverter<?>> getConverters() {
+    // this does not make sense for the test class
+    return null;
   }
 }

@@ -6,7 +6,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.springframework.stereotype.Component;
 
 @Component
-public class IritoIriConverter implements CoreConverter<IRI> {
+public class IriConverter implements CoreConverter<IRI> {
 
   @Override
   public boolean supports(@NonNull Object value) {
