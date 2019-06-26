@@ -7,9 +7,9 @@ import graphql.language.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SparqlFilterHelper {
+public class FilterHelper {
 
-  private SparqlFilterHelper() {}
+  private FilterHelper() {}
 
   @SuppressWarnings("unchecked")
   public static Map<String, Object> flatten(Map.Entry<String, Object> entry) {

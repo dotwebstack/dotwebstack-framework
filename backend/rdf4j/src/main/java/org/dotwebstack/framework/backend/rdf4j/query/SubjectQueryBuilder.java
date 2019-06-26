@@ -79,7 +79,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective,
-      Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping) {
+      Map<GraphQLDirectiveContainer, Object> FilterMapping) {
     final MapContext context = new MapContext(arguments);
 
     this.query.select(SUBJECT_VAR);
@@ -90,7 +90,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
     getOrderByFromContext(context, sparqlDirective).ifPresent(this::buildOrderBy);
-    Map<String, Expression<?>> filters = getSparqlFilters(sparqlFilterMapping);
+    Map<String, Expression<?>> filters = getFilters(FilterMapping);
 
     whereBuilder.build()
         .values()
@@ -179,9 +179,9 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   @SuppressWarnings("unchecked")
-  Map<String, Expression<?>> getSparqlFilters(Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping) {
+  Map<String, Expression<?>> getFilters(Map<GraphQLDirectiveContainer, Object> filterMapping) {
     Map<String, Expression<?>> expressionMap = new HashMap<>();
-    sparqlFilterMapping.forEach((container, value) -> {
+    filterMapping.forEach((container, value) -> {
       GraphQLDirective directive = container.getDirective(CoreDirectives.FILTER_NAME);
       String field = (String) directive.getArgument(CoreDirectives.FILTER_ARG_FIELD)
           .getValue();
@@ -238,7 +238,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
             .toString());
 
     if (function == null) {
-      throw ExceptionHelper.unsupportedOperationException("Invalid operator '{}' in sparqlFilter directive for '{}'",
+      throw ExceptionHelper.unsupportedOperationException("Invalid operator '{}' in Filter directive for '{}'",
           operator, field);
     }
 

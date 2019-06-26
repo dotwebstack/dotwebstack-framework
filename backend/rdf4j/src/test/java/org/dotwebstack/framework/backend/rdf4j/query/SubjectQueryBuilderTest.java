@@ -27,6 +27,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -97,71 +98,71 @@ class SubjectQueryBuilderTest {
         .build();
   }
 
-  private GraphQLDirectiveContainer getValidSparqlFilterContainerWithOperator() {
+  private GraphQLDirectiveContainer getValidFilterContainerWithOperator() {
     return GraphQLArgument.newArgument()
         .name("filter")
         .type(Scalars.GraphQLString)
-        .withDirective(getSparqlFilterDirectiveWithOperator())
+        .withDirective(getFilterDirectiveWithOperator())
         .build();
   }
 
-  private GraphQLDirectiveContainer getValidSparqlFilterContainerWithoutOperator() {
+  private GraphQLDirectiveContainer getValidFilterContainerWithoutOperator() {
     return GraphQLArgument.newArgument()
         .name("filter")
         .type(Scalars.GraphQLString)
-        .withDirective(getSparqlFilterDirectiveWithoutOperator())
+        .withDirective(getFilterDirectiveWithoutOperator())
         .build();
   }
 
-  private GraphQLDirectiveContainer getSparqlFilterContainerWithInvalidOperator() {
+  private GraphQLDirectiveContainer getFilterContainerWithInvalidOperator() {
     return GraphQLArgument.newArgument()
         .name("filter")
         .type(Scalars.GraphQLString)
-        .withDirective(getSparqlFilterDirectiveWithInvalidOperator())
+        .withDirective(getFilterDirectiveWithInvalidOperator())
         .build();
   }
 
-  private GraphQLDirective getSparqlFilterDirectiveWithOperator() {
+  private GraphQLDirective getFilterDirectiveWithOperator() {
     return GraphQLDirective.newDirective()
-        .name(Rdf4jDirectives.FILTER_NAME)
+        .name(CoreDirectives.FILTER_NAME)
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.FILTER_ARG_FIELD)
+            .name(CoreDirectives.FILTER_ARG_FIELD)
             .type(Scalars.GraphQLString)
             .value("foo")
             .build())
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.FILTER_ARG_OPERATOR)
+            .name(CoreDirectives.FILTER_ARG_OPERATOR)
             .type(Scalars.GraphQLString)
             .value("<")
             .build())
         .build();
   }
 
-  private GraphQLDirective getSparqlFilterDirectiveWithoutOperator() {
+  private GraphQLDirective getFilterDirectiveWithoutOperator() {
     return GraphQLDirective.newDirective()
-        .name(Rdf4jDirectives.FILTER_NAME)
+        .name(CoreDirectives.FILTER_NAME)
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.FILTER_ARG_FIELD)
+            .name(CoreDirectives.FILTER_ARG_FIELD)
             .type(Scalars.GraphQLString)
             .value("foo")
             .build())
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.FILTER_ARG_OPERATOR)
+            .name(CoreDirectives.FILTER_ARG_OPERATOR)
             .type(Scalars.GraphQLString)
             .build())
         .build();
   }
 
-  private GraphQLDirective getSparqlFilterDirectiveWithInvalidOperator() {
+  private GraphQLDirective getFilterDirectiveWithInvalidOperator() {
     return GraphQLDirective.newDirective()
-        .name(Rdf4jDirectives.FILTER_NAME)
+        .name(CoreDirectives.FILTER_NAME)
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.FILTER_ARG_FIELD)
+            .name(CoreDirectives.FILTER_ARG_FIELD)
             .type(Scalars.GraphQLString)
             .value("foo")
             .build())
         .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.FILTER_ARG_OPERATOR)
+            .name(CoreDirectives.FILTER_ARG_OPERATOR)
             .type(Scalars.GraphQLString)
             .value("&&")
             .build())
@@ -350,7 +351,7 @@ class SubjectQueryBuilderTest {
   }
 
   @Test
-  void test_sparqlFilter_withValidFilterWithSingleValue() {
+  void test_filter_withValidFilterWithSingleValue() {
     // Arrange
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
     when(this.propertyShapeMock.getNodeKind()).thenReturn(SHACL.LITERAL);
@@ -359,11 +360,11 @@ class SubjectQueryBuilderTest {
         .iri(RDF.TYPE)
         .build());
 
-    GraphQLDirectiveContainer container = getValidSparqlFilterContainerWithOperator();
+    GraphQLDirectiveContainer container = getValidFilterContainerWithOperator();
     String value = "not a list";
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getSparqlFilters(ImmutableMap.of(container, value));
+    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -373,7 +374,7 @@ class SubjectQueryBuilderTest {
   }
 
   @Test
-  void test_sparqlFilter_withValidFilterWithoutOperatorWithSingleValue() {
+  void test_filter_withValidFilterWithoutOperatorWithSingleValue() {
     // Arrange
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
     when(this.propertyShapeMock.getNodeKind()).thenReturn(SHACL.LITERAL);
@@ -382,11 +383,11 @@ class SubjectQueryBuilderTest {
         .iri(RDF.TYPE)
         .build());
 
-    GraphQLDirectiveContainer container = getValidSparqlFilterContainerWithoutOperator();
+    GraphQLDirectiveContainer container = getValidFilterContainerWithoutOperator();
     String value = "not a list";
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getSparqlFilters(ImmutableMap.of(container, value));
+    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -396,18 +397,18 @@ class SubjectQueryBuilderTest {
   }
 
   @Test
-  void test_sparqlFilter_withFilterWithInvalidOperatorWithSingleValue() {
+  void test_filter_withFilterWithInvalidOperatorWithSingleValue() {
     // Arrange
-    GraphQLDirectiveContainer container = getSparqlFilterContainerWithInvalidOperator();
+    GraphQLDirectiveContainer container = getFilterContainerWithInvalidOperator();
     String value = "not a list";
 
     // Act & Assert
     assertThrows(UnsupportedOperationException.class,
-        () -> this.subjectQueryBuilder.getSparqlFilters(ImmutableMap.of(container, value)));
+        () -> this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value)));
   }
 
   @Test
-  void test_sparqlFilter_withValidFilterWithList() {
+  void test_filter_withValidFilterWithList() {
     // Arrange
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
     when(this.propertyShapeMock.getNodeKind()).thenReturn(SHACL.LITERAL);
@@ -416,11 +417,11 @@ class SubjectQueryBuilderTest {
         .iri(RDF.TYPE)
         .build());
 
-    GraphQLDirectiveContainer container = getValidSparqlFilterContainerWithOperator();
+    GraphQLDirectiveContainer container = getValidFilterContainerWithOperator();
     List<String> value = ImmutableList.of("a", "b");
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getSparqlFilters(ImmutableMap.of(container, value));
+    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -431,7 +432,7 @@ class SubjectQueryBuilderTest {
   }
 
   @Test
-  void test_sparqlFilter_withValidFilterOnIriFieldWithSingleValue() {
+  void test_filter_withValidFilterOnIriFieldWithSingleValue() {
     // Arrange
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
     when(this.propertyShapeMock.getNodeKind()).thenReturn(SHACL.IRI);
@@ -439,11 +440,11 @@ class SubjectQueryBuilderTest {
         .iri(RDF.TYPE)
         .build());
 
-    GraphQLDirectiveContainer container = getValidSparqlFilterContainerWithOperator();
+    GraphQLDirectiveContainer container = getValidFilterContainerWithOperator();
     String value = "iri";
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getSparqlFilters(ImmutableMap.of(container, value));
+    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));

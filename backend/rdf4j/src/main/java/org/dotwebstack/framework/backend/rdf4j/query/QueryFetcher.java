@@ -64,7 +64,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   public Object get(@NonNull DataFetchingEnvironment environment) {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
-    Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping =
+    Map<GraphQLDirectiveContainer, Object> filterMapping =
         filterDirectiveTraverser.getDirectiveContainers(environment, CoreDirectives.FILTER_NAME);
     GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
     GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(outputType);
@@ -83,7 +83,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .build();
 
     // Find shapes matching request
-    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, sparqlFilterMapping,
+    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, filterMapping,
         environment.getArguments(), repositoryConnection);
 
     // Fetch graph for given subjects
@@ -99,7 +99,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   }
 
   private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
-      Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping, Map<String, Object> arguments,
+      Map<GraphQLDirectiveContainer, Object> filterMapping, Map<String, Object> arguments,
       RepositoryConnection con) {
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
@@ -112,7 +112,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     }
 
     String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine)
-        .getQueryString(arguments, sparqlDirective, sparqlFilterMapping);
+        .getQueryString(arguments, sparqlDirective, filterMapping);
 
     LOG.debug("Executing query for subjects:\n{}", subjectQuery);
 

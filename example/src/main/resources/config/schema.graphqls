@@ -10,9 +10,9 @@ type Query {
 
   breweries(sort: [SortField!] = [{ field: "name", order: ASC }],
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
-            sinceAfter: String @sparqlFilter(field: "founded", operator: ">"),
-            sinceBefore: String @sparqlFilter(field: "founded", operator: "<")
-            name: [String] @sparqlFilter(field: "name")): [Brewery!]!
+            sinceAfter: String @filter(field: "founded", operator: ">"),
+            sinceBefore: String @filter(field: "founded", operator: "<")
+            name: [String] @filter(field: "name")): [Brewery!]!
     @sparql(
       repository: "local"
       limit: "pageSize"
@@ -93,7 +93,7 @@ input PageQueryInput {
 input FilterQueryInput {
   page: Int = 1
   sinceBefore: String
-    @sparqlFilter(field: "founded", operator: "<=")
+    @filter(field: "founded", operator: "<=")
   sinceAfter: String
-    @sparqlFilter(field: "founded", operator: ">=")
+    @filter(field: "founded", operator: ">=")
 }

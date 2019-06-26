@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.helpers.SparqlFilterHelper;
+import org.dotwebstack.framework.core.helpers.FilterHelper;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -36,7 +36,7 @@ public class FilterDirectiveTraverser {
     Map<String, Object> flattenedArguments = dataFetchingEnvironment.getArguments()
         .entrySet()
         .stream()
-        .flatMap(entry -> SparqlFilterHelper.flatten(entry)
+        .flatMap(entry -> FilterHelper.flatten(entry)
             .entrySet()
             .stream())
         .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
@@ -109,10 +109,10 @@ public class FilterDirectiveTraverser {
         .filter(inputField -> inputField.getInputValueDefinitions()
             .stream()
             .anyMatch(
-                inputValueDefinition -> registry.getType(SparqlFilterHelper.getBaseType(inputValueDefinition.getType()))
+                inputValueDefinition -> registry.getType(FilterHelper.getBaseType(inputValueDefinition.getType()))
                     .map(definition -> definition.equals(parentType))
                     .orElse(false)))
-        .map(inputField -> ((TypeName) SparqlFilterHelper.getBaseType(inputField.getType())).getName())
+        .map(inputField -> ((TypeName) FilterHelper.getBaseType(inputField.getType())).getName())
         .collect(Collectors.toList());
   }
 
@@ -122,7 +122,7 @@ public class FilterDirectiveTraverser {
     Optional<InputValueDefinition> inputValueDefinition =
         ((InputObjectTypeDefinition) compareType).getInputValueDefinitions()
             .stream()
-            .filter(inputValue -> registry.getType(SparqlFilterHelper.getBaseType(inputValue.getType()))
+            .filter(inputValue -> registry.getType(FilterHelper.getBaseType(inputValue.getType()))
                 .map(definition -> definition.equals(baseType))
                 .orElse(false))
             .findAny();
@@ -137,7 +137,7 @@ public class FilterDirectiveTraverser {
       TypeDefinition<?> compareType) {
     Optional<FieldDefinition> inputValueDefinition = ((ObjectTypeDefinition) compareType).getFieldDefinitions()
         .stream()
-        .filter(inputField -> registry.getType(SparqlFilterHelper.getBaseType(inputField.getType()))
+        .filter(inputField -> registry.getType(FilterHelper.getBaseType(inputField.getType()))
             .map(definition -> definition.equals(parentType))
             .orElse(false))
         .findAny();
