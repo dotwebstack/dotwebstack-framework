@@ -87,7 +87,7 @@ public class CoreConfigurer implements GraphqlConfigurer {
         .name(CoreDirectives.FILTER_NAME)
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
             .name(CoreDirectives.FILTER_ARG_FIELD)
-            .type(requiredString)
+            .type(optionalString)
             .build())
         .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
             .name(CoreDirectives.FILTER_ARG_OPERATOR)

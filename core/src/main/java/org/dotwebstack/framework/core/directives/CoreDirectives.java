@@ -18,7 +18,7 @@ public final class CoreDirectives {
 
   public static final String CONSTRAINT_ARG_PATTERN = "pattern";
 
-  public static final String FILTER_NAME = "Filter";
+  public static final String FILTER_NAME = "filter";
 
   public static final String FILTER_ARG_FIELD = "field";
 

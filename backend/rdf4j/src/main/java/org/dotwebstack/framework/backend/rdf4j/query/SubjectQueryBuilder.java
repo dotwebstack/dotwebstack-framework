@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.core.directives.FilterOperator.LTE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
 
 import com.google.common.collect.ImmutableMap;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
 import java.util.Collections;
@@ -183,8 +184,11 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     Map<String, Expression<?>> expressionMap = new HashMap<>();
     filterMapping.forEach((container, value) -> {
       GraphQLDirective directive = container.getDirective(CoreDirectives.FILTER_NAME);
-      String field = (String) directive.getArgument(CoreDirectives.FILTER_ARG_FIELD)
-          .getValue();
+
+      GraphQLArgument fieldArgument = directive.getArgument(CoreDirectives.FILTER_ARG_FIELD);
+      String field = fieldArgument.getValue() != null
+        ? (String) fieldArgument.getValue() : container.getName();
+
       Variable fieldVar = SparqlBuilder.var(field);
       String operator = (String) directive.getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
           .getValue();
