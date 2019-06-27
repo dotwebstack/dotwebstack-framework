@@ -14,7 +14,6 @@ public final class Rdf4jDirectives {
 
   public static final String SPARQL_ARG_ORDER_BY = "orderBy";
 
-  private Rdf4jDirectives() {
-  }
+  private Rdf4jDirectives() {}
 
 }
