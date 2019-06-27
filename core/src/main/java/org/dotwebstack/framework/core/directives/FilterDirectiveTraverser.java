@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.directives;
 
-import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ObjectTypeDefinition;
@@ -87,13 +86,7 @@ public class FilterDirectiveTraverser {
         .forEach(item -> registry.getType(item)
             .ifPresent(compareType -> {
               if (compareType instanceof ObjectTypeDefinition) {
-                if (compareType.getDirective(CoreDirectives.FILTER_NAME) != null) {
-                  // These are our query objects
-                  typeNames.addAll(processQuery(registry, baseType, (ObjectTypeDefinition) compareType));
-                } else {
-                  // Regular input object types
-                  typeNames.addAll(processObjectType(registry, baseType, compareType));
-                }
+                typeNames.addAll(processQuery(registry, baseType, (ObjectTypeDefinition) compareType));
               } else if (compareType instanceof InputObjectTypeDefinition) {
                 typeNames.addAll(processInputObjectType(registry, baseType, compareType));
               }
@@ -131,21 +124,4 @@ public class FilterDirectiveTraverser {
     }
     return Collections.emptyList();
   }
-
-  private List<String> processObjectType(TypeDefinitionRegistry registry, TypeDefinition<?> parentType,
-      TypeDefinition<?> compareType) {
-    Optional<FieldDefinition> inputValueDefinition = ((ObjectTypeDefinition) compareType).getFieldDefinitions()
-        .stream()
-        .filter(inputField -> registry.getType(FilterHelper.getBaseType(inputField.getType()))
-            .map(definition -> definition.equals(parentType))
-            .orElse(false))
-        .findAny();
-
-    if (inputValueDefinition.isPresent()) {
-      return getReturnTypes(compareType, registry);
-    }
-    return Collections.emptyList();
-  }
-
-
 }

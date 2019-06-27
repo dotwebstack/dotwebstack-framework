@@ -13,7 +13,6 @@ import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Optional;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,11 +28,6 @@ public class FilterValidator {
     environment.getElementParentTree()
         .getParentInfo()
         .ifPresent(parentInfo -> {
-//          if (((GraphQLFieldDefinition) parentInfo.getElement()).getDirective(CoreDirectives.FILTER_NAME) == null) {
-//            throw ExceptionHelper.illegalArgumentException("'{}' can only be used as an argument for a Query!",
-//                environment.getElement());
-//          }
-
           GraphQLObjectType type = (GraphQLObjectType) GraphQLTypeUtil
               .unwrapAll(((GraphQLFieldDefinition) parentInfo.getElement()).getType());
           this.validate(environment.getElement(), environment.getRegistry(), type.getName());
@@ -63,24 +57,25 @@ public class FilterValidator {
 
   private void validateArgument(GraphQLArgument argument, TypeDefinitionRegistry registry, String name,
       String typeName) {
-      switch (argument.getName()) {
-        case CoreDirectives.FILTER_ARG_FIELD:
-          checkField(argument, registry, name, typeName);
-          break;
-        case CoreDirectives.FILTER_ARG_OPERATOR:
-          if (argument.getValue() != null) {
-            checkOperator(argument, name);
-          }
-          break;
-        default:
-          throw new DirectiveValidationException("Unsupported filter argument with name '{}'",
-            argument.getName());
-      }
+    switch (argument.getName()) {
+      case CoreDirectives.FILTER_ARG_FIELD:
+        checkField(argument, registry, name, typeName);
+        break;
+      case CoreDirectives.FILTER_ARG_OPERATOR:
+        if (argument.getValue() != null) {
+          checkOperator(argument, name);
+        }
+        break;
+      default:
+        throw new DirectiveValidationException("Unsupported filter argument with name '{}'", argument.getName());
+    }
   }
 
-  public void checkField(GraphQLArgument argument, TypeDefinitionRegistry registry, String queryArgumentName, String typeName) {
+  void checkField(GraphQLArgument argument, TypeDefinitionRegistry registry, String queryArgumentName,
+      String typeName) {
     Optional<ObjectTypeDefinition> optional = registry.getType(typeName, ObjectTypeDefinition.class);
-    String fieldName = (argument.getValue() != null) ? argument.getValue().toString() : queryArgumentName;
+    String fieldName = (argument.getValue() != null) ? argument.getValue()
+        .toString() : queryArgumentName;
     if (!optional.isPresent() || optional.get()
         .getFieldDefinitions()
         .stream()
@@ -88,12 +83,12 @@ public class FilterValidator {
             .equals(fieldName))) {
 
       throw new DirectiveValidationException(
-          "Filter 'field' [{}] on field '{}' is invalid. It does not exist on type '{}'", argument.getValue(), queryArgumentName,
-          typeName);
+          "Filter 'field' [{}] on field '{}' is invalid. It does not exist on type '{}'", argument.getValue(),
+          queryArgumentName, typeName);
     }
   }
 
-  public void checkOperator(GraphQLArgument argument, String name) {
+  void checkOperator(GraphQLArgument argument, String name) {
     if (argument.getValue() != null && !FilterOperator.getByValue(argument.getValue()
         .toString())
         .isPresent()) {

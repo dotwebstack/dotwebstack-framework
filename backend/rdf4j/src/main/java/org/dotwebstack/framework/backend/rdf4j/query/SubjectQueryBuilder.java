@@ -80,7 +80,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective,
-      Map<GraphQLDirectiveContainer, Object> FilterMapping) {
+      Map<GraphQLDirectiveContainer, Object> filterMapping) {
     final MapContext context = new MapContext(arguments);
 
     this.query.select(SUBJECT_VAR);
@@ -91,7 +91,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
     getOrderByFromContext(context, sparqlDirective).ifPresent(this::buildOrderBy);
-    Map<String, Expression<?>> filters = getFilters(FilterMapping);
+    Map<String, Expression<?>> filters = getFilters(filterMapping);
 
     whereBuilder.build()
         .values()
@@ -186,8 +186,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       GraphQLDirective directive = container.getDirective(CoreDirectives.FILTER_NAME);
 
       GraphQLArgument fieldArgument = directive.getArgument(CoreDirectives.FILTER_ARG_FIELD);
-      String field = fieldArgument.getValue() != null
-        ? (String) fieldArgument.getValue() : container.getName();
+      String field = fieldArgument.getValue() != null ? (String) fieldArgument.getValue() : container.getName();
 
       Variable fieldVar = SparqlBuilder.var(field);
       String operator = (String) directive.getArgument(CoreDirectives.FILTER_ARG_OPERATOR)

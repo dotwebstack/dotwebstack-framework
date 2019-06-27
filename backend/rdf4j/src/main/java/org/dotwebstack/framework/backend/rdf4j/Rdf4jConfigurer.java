@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
-
 import graphql.Scalars;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;

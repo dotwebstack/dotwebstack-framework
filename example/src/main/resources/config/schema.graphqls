@@ -27,6 +27,13 @@ type Query {
       offset: "(input.page - 1) * input.pageSize"
     )
 
+  breweries_filter_input(input: BreweryCollectionInput): [Brewery!]!
+   @sparql(
+     repository: "local",
+     limit: "input.pageSize",
+     offset: "(input.page - 1) * input.pageSize"
+   )
+
   breweries_sort_input(input: SortQueryInput): [Brewery!]!
     @sparql(
       repository: "local"
