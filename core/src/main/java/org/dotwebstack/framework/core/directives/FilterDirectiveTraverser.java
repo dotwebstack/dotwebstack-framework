@@ -1,6 +1,5 @@
-package org.dotwebstack.framework.backend.rdf4j.directives;
+package org.dotwebstack.framework.core.directives;
 
-import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ObjectTypeDefinition;
@@ -23,12 +22,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.backend.rdf4j.helper.SparqlFilterHelper;
+import org.dotwebstack.framework.core.helpers.FilterHelper;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class SparqlFilterDirectiveTraverser {
+public class FilterDirectiveTraverser {
 
   public Map<GraphQLDirectiveContainer, Object> getDirectiveContainers(DataFetchingEnvironment dataFetchingEnvironment,
       String directiveName) {
@@ -36,7 +35,7 @@ public class SparqlFilterDirectiveTraverser {
     Map<String, Object> flattenedArguments = dataFetchingEnvironment.getArguments()
         .entrySet()
         .stream()
-        .flatMap(entry -> SparqlFilterHelper.flatten(entry)
+        .flatMap(entry -> FilterHelper.flatten(entry)
             .entrySet()
             .stream())
         .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
@@ -87,13 +86,7 @@ public class SparqlFilterDirectiveTraverser {
         .forEach(item -> registry.getType(item)
             .ifPresent(compareType -> {
               if (compareType instanceof ObjectTypeDefinition) {
-                if (compareType.getDirective(Rdf4jDirectives.SPARQL_NAME) != null) {
-                  // These are our query objects
-                  typeNames.addAll(processQuery(registry, baseType, (ObjectTypeDefinition) compareType));
-                } else {
-                  // Regular input object types
-                  typeNames.addAll(processObjectType(registry, baseType, compareType));
-                }
+                typeNames.addAll(processQuery(registry, baseType, (ObjectTypeDefinition) compareType));
               } else if (compareType instanceof InputObjectTypeDefinition) {
                 typeNames.addAll(processInputObjectType(registry, baseType, compareType));
               }
@@ -108,11 +101,10 @@ public class SparqlFilterDirectiveTraverser {
         .stream()
         .filter(inputField -> inputField.getInputValueDefinitions()
             .stream()
-            .anyMatch(
-                inputValueDefinition -> registry.getType(SparqlFilterHelper.getBaseType(inputValueDefinition.getType()))
-                    .map(definition -> definition.equals(parentType))
-                    .orElse(false)))
-        .map(inputField -> ((TypeName) SparqlFilterHelper.getBaseType(inputField.getType())).getName())
+            .anyMatch(inputValueDefinition -> registry.getType(FilterHelper.getBaseType(inputValueDefinition.getType()))
+                .map(definition -> definition.equals(parentType))
+                .orElse(false)))
+        .map(inputField -> ((TypeName) FilterHelper.getBaseType(inputField.getType())).getName())
         .collect(Collectors.toList());
   }
 
@@ -122,7 +114,7 @@ public class SparqlFilterDirectiveTraverser {
     Optional<InputValueDefinition> inputValueDefinition =
         ((InputObjectTypeDefinition) compareType).getInputValueDefinitions()
             .stream()
-            .filter(inputValue -> registry.getType(SparqlFilterHelper.getBaseType(inputValue.getType()))
+            .filter(inputValue -> registry.getType(FilterHelper.getBaseType(inputValue.getType()))
                 .map(definition -> definition.equals(baseType))
                 .orElse(false))
             .findAny();
@@ -132,21 +124,4 @@ public class SparqlFilterDirectiveTraverser {
     }
     return Collections.emptyList();
   }
-
-  private List<String> processObjectType(TypeDefinitionRegistry registry, TypeDefinition<?> parentType,
-      TypeDefinition<?> compareType) {
-    Optional<FieldDefinition> inputValueDefinition = ((ObjectTypeDefinition) compareType).getFieldDefinitions()
-        .stream()
-        .filter(inputField -> registry.getType(SparqlFilterHelper.getBaseType(inputField.getType()))
-            .map(definition -> definition.equals(parentType))
-            .orElse(false))
-        .findAny();
-
-    if (inputValueDefinition.isPresent()) {
-      return getReturnTypes(compareType, registry);
-    }
-    return Collections.emptyList();
-  }
-
-
 }
