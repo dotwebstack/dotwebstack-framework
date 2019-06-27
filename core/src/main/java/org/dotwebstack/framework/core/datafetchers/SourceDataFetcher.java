@@ -4,7 +4,7 @@ import org.dotwebstack.framework.core.converters.CoreConverterRouter;
 
 public abstract class SourceDataFetcher implements CoreDataFetcher<Object> {
 
-  public CoreConverterRouter converterRouter;
+  protected final CoreConverterRouter converterRouter;
 
   public SourceDataFetcher(CoreConverterRouter converterRouter) {
     this.converterRouter = converterRouter;

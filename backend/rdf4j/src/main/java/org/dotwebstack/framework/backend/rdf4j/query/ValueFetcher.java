@@ -95,7 +95,7 @@ public final class ValueFetcher extends SourceDataFetcher {
       return new QuerySolution(model, (Resource) value);
     }
 
-    return converterRouter.convert(value);
+    return this.converterRouter.convert(value);
   }
 
   @Override
