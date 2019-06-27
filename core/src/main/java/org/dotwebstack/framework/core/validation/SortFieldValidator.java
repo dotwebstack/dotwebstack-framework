@@ -22,8 +22,8 @@ public class SortFieldValidator implements SchemaDirectiveWiring {
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
-  public void validateSortFieldValue(String typeName, String sortFieldvalue) {
-    List<String> fieldPath = Arrays.asList(sortFieldvalue.split("\\."));
+  public void validateSortFieldValue(String typeName, String sortFieldValue) {
+    List<String> fieldPath = Arrays.asList(sortFieldValue.split("\\."));
 
     String currentType = typeName;
     for (String field : fieldPath) {

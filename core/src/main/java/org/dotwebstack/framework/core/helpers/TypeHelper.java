@@ -8,6 +8,7 @@ import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 
@@ -46,6 +47,8 @@ public class TypeHelper {
     } else if (type instanceof GraphQLNonNull) {
       return getTypeName(((GraphQLNonNull) type).getWrappedType());
     } else if (type instanceof GraphQLObjectType) {
+      return type.getName();
+    } else if (type instanceof GraphQLScalarType) {
       return type.getName();
     } else {
       throw new InvalidConfigurationException("unsupported type: " + type.getClass());
