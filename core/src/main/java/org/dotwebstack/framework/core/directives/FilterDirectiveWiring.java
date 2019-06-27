@@ -39,6 +39,6 @@ public class FilterDirectiveWiring implements SchemaDirectiveWiring {
   }
 
   private void throwConfigurationException(Exception cause) {
-    throw new InvalidConfigurationException("A Filter directive has been configured incorrectly.", cause);
+    throw new InvalidConfigurationException("A filter directive has been configured incorrectly.", cause);
   }
 }

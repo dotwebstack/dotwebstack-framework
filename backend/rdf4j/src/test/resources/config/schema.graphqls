@@ -8,7 +8,7 @@ type Query {
 
   breweries(
     name: String 
-      @filter(field: "name"),
+      @filter,
     foundedAfter: String 
       @filter(field: "founded", operator: ">"),
     foundedBefore: String 

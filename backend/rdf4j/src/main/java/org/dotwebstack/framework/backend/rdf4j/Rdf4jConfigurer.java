@@ -10,6 +10,7 @@ import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.directives.SparqlDirectiveWiring;
 import org.dotwebstack.framework.backend.rdf4j.scalars.Rdf4jScalars;
 import org.dotwebstack.framework.core.GraphqlConfigurer;

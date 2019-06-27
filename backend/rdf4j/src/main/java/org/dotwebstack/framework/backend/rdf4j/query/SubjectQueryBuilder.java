@@ -20,7 +20,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
-import org.dotwebstack.framework.backend.rdf4j.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
@@ -241,7 +241,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
             .toString());
 
     if (function == null) {
-      throw ExceptionHelper.unsupportedOperationException("Invalid operator '{}' in Filter directive for '{}'",
+      throw ExceptionHelper.unsupportedOperationException("Invalid operator '{}' in filter directive for '{}'",
           operator, field);
     }
 

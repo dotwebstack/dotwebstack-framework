@@ -11,7 +11,6 @@ import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import java.util.Map;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
-import org.dotwebstack.framework.backend.rdf4j.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
