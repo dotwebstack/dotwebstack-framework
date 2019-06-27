@@ -153,18 +153,18 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       PropertyShape propertyShape = getPropertyShapeForField(currentNodeShape, field);
       elements.add(new OrderContext.Field(field, propertyShape));
       IRI iri = resolvePath(propertyShape);
-      Optional<NodeShape> ons = this.environment.getNodeShapeRegistry()
+      Optional<NodeShape> fieldNodeShape = this.environment.getNodeShapeRegistry()
           .all()
           .stream()
-          .filter(nss -> nss.getTargetClass()
+          .filter(nodeShape -> nodeShape.getTargetClass()
               .equals(iri))
           .findFirst();
-      if (ons.isPresent()) {
-        currentNodeShape = ons.get();
+      if (fieldNodeShape.isPresent()) {
+        currentNodeShape = fieldNodeShape.get();
       }
     }
-    Variable var = SparqlBuilder.var(fields.get(fields.size() - 1));
-    Orderable orderable = order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
+    Variable orderVar = SparqlBuilder.var(fields.get(fields.size() - 1));
+    Orderable orderable = order.equalsIgnoreCase("desc") ? orderVar.desc() : orderVar.asc();
     return new OrderContext(elements, orderable);
   }
 

@@ -12,12 +12,14 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectType;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
@@ -46,7 +48,7 @@ public class ArgumentValidator {
   }
 
   private void onArgument(GraphQLFieldDefinition fieldDefinition, GraphQLArgument argument,
-      Map<String, Object> arguments) {
+                          Map<String, Object> arguments) {
     if (isSortField(argument)) {
       List<String> sortFieldValues = getSortFieldValues(arguments.get(argument.getName()));
       validateSortFieldArgument((ArrayValue) argument.getValue(), fieldDefinition, sortFieldValues);
@@ -54,7 +56,7 @@ public class ArgumentValidator {
   }
 
   private void onInputObjectType(GraphQLFieldDefinition fieldDefinition, GraphQLArgument argument,
-      GraphQLInputObjectType graphQlInputObjectType, Map<String, Object> arguments) {
+                                 GraphQLInputObjectType graphQlInputObjectType, Map<String, Object> arguments) {
     graphQlInputObjectType.getDefinition()
         .getInputValueDefinitions()
         .stream()
@@ -64,20 +66,28 @@ public class ArgumentValidator {
 
   @SuppressWarnings("unchecked")
   private void validateSortInputValueDefinition(GraphQLFieldDefinition fieldDefinition, GraphQLArgument argument,
-      InputValueDefinition inputValueDefinition, Map<String, Object> arguments) {
-    Map<String, Object> ivdArguments = (Map<String, Object>) arguments.get(argument.getName());
-    Object sortFieldArgument = ivdArguments != null ? ivdArguments.get(inputValueDefinition.getName()) : null;
+                                                InputValueDefinition inputValueDefinition, Map<String, Object> arguments) {
+    Map<String, Object> sortArguments = (Map<String, Object>) arguments.get(argument.getName());
+    Object sortFieldArgument = sortArguments != null ? sortArguments.get(inputValueDefinition.getName()) : null;
     validateSortFieldArgument((ArrayValue) inputValueDefinition.getDefaultValue(), fieldDefinition,
         getSortFieldValues(sortFieldArgument));
   }
 
-  private void validateSortFieldArgument(ArrayValue arrayValue, GraphQLFieldDefinition fieldDefinition,
-      List<String> sortFieldValues) {
+  private void validateSortFieldArgument(ArrayValue sortFieldArguments, GraphQLFieldDefinition fieldDefinition,
+                                         List<String> sortFieldValues) {
     if (!sortFieldValues.isEmpty()) {
       sortFieldValues.forEach(sortFieldValue -> this.sortFieldValidator
           .validateSortFieldValue(getTypeName(fieldDefinition.getType()), sortFieldValue));
-    } else {
-      Optional<ObjectField> field = arrayValue.getValues()
+    }
+  //todo:remove?
+    Optional<GraphQLArgument> sortFieldArgument = fieldDefinition.getArguments()
+        .stream()
+        .filter(a -> containsSortFieldField(a))
+        .findFirst();
+    if (sortFieldArgument.isPresent() && sortFieldArgument.get()
+        .getValue() instanceof ArrayValue) {
+      Optional<ObjectField> field = ((ArrayValue) (sortFieldArgument.get()
+          .getDefaultValue())).getValues()
           .stream()
           .filter(value -> value instanceof ObjectValue)
           .map(value -> ((ObjectValue) value).getObjectFields())
@@ -85,13 +95,15 @@ public class ArgumentValidator {
           .filter(objectField -> objectField.getName()
               .equals(CoreInputTypes.SORT_FIELD_FIELD))
           .findFirst();
-
       ObjectField objectField =
           field.orElseThrow(() -> ExceptionHelper.illegalArgumentException("Field '{}' not found for sort field '{}'",
               CoreInputTypes.SORT_FIELD_FIELD, field.get()
                   .getName()));
+      String sortFieldValue = objectField.getValue()
+          .toString();
+
       this.sortFieldValidator.validateSortFieldValue(getTypeName(fieldDefinition.getType()),
-          getStringValue(objectField.getValue()));
+          sortFieldValue);
     }
   }
 
