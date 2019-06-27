@@ -29,8 +29,22 @@ A [SourceDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/
 
 A [DelegateDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/DelegateDataFetcher.java) can act as a *decorator* for a [SourceDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/SourceDataFetcher.java) and gives you the capability to transform the result from a [SourceDataFetcher](https://github.com/dotwebstack/dotwebstack-framework/blob/v0.2/core/src/main/java/org/dotwebstack/framework/core/datafetchers/SourceDataFetcher.java)
 
+## 1.2 Converters
+With lots of different backends, it means there are lots of different possible data types that need to be supported. The
+responsibility of converting these backend specific values to a format that the GraphQL middle layer understands is 
+with each backend. But a general construct of how to do this is provided in core. A CoreConverterRouter is added to the
+SourceDataFetcher. A specific implementation of this type of DataFetcher can have a specific implementation of 
+the CoreConverterRouter:  
 
-## 1.2 Scalar Types
+```java
+public interface CoreConverterRouter {
+
+  Object convert(Object object);
+
+}
+```
+
+## 1.3 Scalar Types
 Dotwebstack offers support for the *Date* and *DateTime* scalars besides the scalar types that have built-in support 
 from GraphQL *(Int, Float, String, Boolean, ID)*. It is also possible to create a custom Scalar Type:
 
@@ -64,13 +78,13 @@ class DateCoercing implements Coercing<LocalDate, LocalDate> {
   builder.scalar(CoreScalars.DATE)
 ```
 
-## 1.3 Argument Constraints
+## 1.4 Argument Constraints
 
 It is possible to add a constraint to an argument on any level by preceding the argument with the `@constraint` directive. 
 These constraints can be used to restrict the input from the user and provide hints as to why certain arguments 
 are invalid. The following constraints are currently provided: `min`, `max`, `oneOf`, `oneOfInt` and `pattern`. 
 
-### 1.3.1 Min
+### 1.4.1 Min
 
 ```graphql
  breweries(page: Int = 1 @constraint(min: 1)): [Brewery!]!
@@ -79,7 +93,7 @@ are invalid. The following constraints are currently provided: `min`, `max`, `on
 With the `min` constraint you can force the argument to have a minimum value. In case of the example
 it means that the page provided by the user has to be at least 1. 
 
-### 1.3.2 Max
+### 1.4.2 Max
 
 ```graphql
  breweries(pageSize: Int = 10 @constraint(max: 100)): [Brewery!]!
@@ -88,7 +102,7 @@ it means that the page provided by the user has to be at least 1.
 With the `max` constraint you can force the argument to have a maximum value. In case of the example
 it means that the pageSize provided by the user can be no higher than 100. 
 
-### 1.3.3 OneOf
+### 1.4.3 OneOf
 
 ```graphql
  breweries(country: String @constraint(oneOf: ["BE","DE", "EN", "NL"])): [Brewery!]!
@@ -97,7 +111,7 @@ it means that the pageSize provided by the user can be no higher than 100.
 With the `oneOf` constraint an argument can be restricted to match any string within the provided list. So in this case
 the user is allowed to provide an argument with the value of "BE", "DE", "EN", "NL" only. 
 
-### 1.3.4 OneOfInt
+### 1.4.4 OneOfInt
 
 ```graphql
  breweries(pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50])): [Brewery!]!
@@ -106,7 +120,7 @@ the user is allowed to provide an argument with the value of "BE", "DE", "EN", "
 With the `oneOfInt` constraint an argument can be restricted to match any integer within the provided list. So in this 
 case is allowed to provide an argument with a value of 10, 20 or 50 only. 
 
-### 1.3.5 Pattern
+### 1.4.5 Pattern
 
 ```graphql
  name: [String] @constraint(pattern: "^[1-9][0-9]*$") : [Brewery!]!
@@ -115,16 +129,14 @@ case is allowed to provide an argument with a value of 10, 20 or 50 only.
 With the `pattern` constraint an argument can be restricted to match the provided regex-pattern. So in this case it is only allowed 
 to provide an argument which has to be greater than 0. 
 
-## 1.4 Transform Directive
+## 1.5 Transform Directive
 The transform directive allows the user to transform a scalar field based on a given 
-[jexl](http://commons.apache.org/proper/commons-jexl/) expression. This directive takes two arguments, it needs an 
-`expr` argument, that contains the jexl expression to transform the original to the desired value. The user can also 
-provide an optional variable `type`. With type the user can specify the input type for the transform directive. In case 
-the input type for the @transform expreession is String, the user does not need to provide a type:
+[jexl](http://commons.apache.org/proper/commons-jexl/) expression. This directive takes the 
+argument `expr` that contains the jexl expression to transform the original to the desired value:
 
 ```graphql
 type Brewery {
-  status: String! @transform(expr: "statusIri.getLocalName()" type: "IRI")
+  status: String! @transform(expr: "statusIri.getLocalName()")
 }
 ```
 
