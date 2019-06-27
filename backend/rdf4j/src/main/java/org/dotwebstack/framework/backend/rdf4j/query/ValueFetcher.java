@@ -7,15 +7,12 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
-import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
-import org.dotwebstack.framework.backend.rdf4j.converters.DefaultConverter;
+import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.eclipse.rdf4j.model.BNode;
@@ -32,11 +29,9 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
-  private final List<CoreConverter<?>> converters;
-
-  public ValueFetcher(final NodeShapeRegistry nodeShapeRegistry, List<CoreConverter<?>> converters) {
+  public ValueFetcher(final NodeShapeRegistry nodeShapeRegistry, Rdf4jConverterRouter router) {
+    super(router);
     this.nodeShapeRegistry = nodeShapeRegistry;
-    this.converters = converters;
   }
 
   @Override
@@ -100,18 +95,11 @@ public final class ValueFetcher extends SourceDataFetcher {
       return new QuerySolution(model, (Resource) value);
     }
 
-    Optional<CoreConverter<?>> compatibleConverter = getConverter(value);
-    return compatibleConverter.isPresent() ? compatibleConverter.get()
-        .convert(value) : DefaultConverter.convert(value);
+    return converterRouter.convert(value);
   }
 
   @Override
   public boolean supports(DataFetchingEnvironment environment) {
     return (environment.getSource() instanceof QuerySolution);
-  }
-
-  @Override
-  public List<CoreConverter<?>> getConverters() {
-    return converters;
   }
 }
