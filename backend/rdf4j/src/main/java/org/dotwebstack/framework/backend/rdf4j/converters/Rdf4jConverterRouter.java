@@ -10,20 +10,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class Rdf4jConverterRouter implements CoreConverterRouter {
 
-  private final List<CoreConverter<?>> converters;
+  private final List<CoreConverter<Value, ?>> converters;
 
-  public Rdf4jConverterRouter(List<CoreConverter<?>> converters) {
+  public Rdf4jConverterRouter(List<CoreConverter<Value, ?>> converters) {
     this.converters = converters;
   }
 
   @Override
   public Object convert(Object object) {
-    Optional<CoreConverter<?>> compatibleConverter = converters.stream()
-        .filter(converter -> converter.supports(object))
+    Optional<CoreConverter<Value, ?>> compatibleConverter = converters.stream()
+        .filter(converter -> converter.supports((Value) object))
         .findFirst();
 
     return compatibleConverter.isPresent() ? compatibleConverter.get()
-        .convert(object) : DefaultConverter.convert((Value) object);
+        .convert((Value) object) : DefaultConverter.convert((Value) object);
   }
 
 }

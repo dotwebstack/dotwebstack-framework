@@ -24,7 +24,7 @@ class ConverterTest {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
-  private List<CoreConverter<?>> converters = ImmutableList.of(new BooleanConverter(), new DateConverter(),
+  private List<CoreConverter<Value, ?>> converters = ImmutableList.of(new BooleanConverter(), new DateConverter(),
       new DateTimeConverter(), new IriConverter(), new LongConverter());
 
   @Test
@@ -33,7 +33,7 @@ class ConverterTest {
     BooleanLiteral boolLiteral = BooleanLiteral.TRUE;
 
     // Act
-    CoreConverter<?> converter = getConverter(boolLiteral);
+    CoreConverter<Value, ?> converter = getConverter(boolLiteral);
 
     // Assert
     assertThat(converter, instanceOf(BooleanConverter.class));
@@ -48,7 +48,7 @@ class ConverterTest {
     CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
 
     // Act
-    CoreConverter<?> converter = getConverter(calenderLiteral);
+    CoreConverter<Value, ?> converter = getConverter(calenderLiteral);
 
     // Assert
     assertThat(converter, instanceOf(DateConverter.class));
@@ -64,7 +64,7 @@ class ConverterTest {
     CalendarMemLiteral calenderLiteral = new CalendarMemLiteral(null, calender);
 
     // Act
-    CoreConverter<?> converter = getConverter(calenderLiteral);
+    CoreConverter<Value, ?> converter = getConverter(calenderLiteral);
 
     // Assert
     assertThat(converter, instanceOf(DateTimeConverter.class));
@@ -78,14 +78,14 @@ class ConverterTest {
     IRI iri = VF.createIRI("http://www.brewery.com");
 
     // Act
-    CoreConverter<?> converter = getConverter(iri);
+    CoreConverter<Value, ?> converter = getConverter(iri);
 
     // Assert
     assertThat(converter, instanceOf(IriConverter.class));
     assertThat(((IriConverter) converter).convert(iri), is(iri));
   }
 
-  private CoreConverter<?> getConverter(Value value) {
+  private CoreConverter<Value, ?> getConverter(Value value) {
     return converters.stream()
         .filter(converter -> converter.supports(value))
         .findFirst()

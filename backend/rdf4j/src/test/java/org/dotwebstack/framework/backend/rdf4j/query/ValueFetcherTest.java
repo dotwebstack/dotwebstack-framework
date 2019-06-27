@@ -78,6 +78,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFa
 import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.hamcrest.CoreMatchers;
@@ -100,7 +101,7 @@ class ValueFetcherTest {
   @Mock
   private NodeShape nodeShape;
 
-  private List<CoreConverter<?>> converters;
+  private List<CoreConverter<Value, ?>> converters;
 
   private Rdf4jConverterRouter converterRouter;
 

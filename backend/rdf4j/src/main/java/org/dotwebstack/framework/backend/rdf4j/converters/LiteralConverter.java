@@ -3,11 +3,12 @@ package org.dotwebstack.framework.backend.rdf4j.converters;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Value;
 
-public abstract class LiteralConverter<O> implements CoreConverter<O> {
+public abstract class LiteralConverter<O> implements CoreConverter<Value, O> {
 
   @Override
-  public boolean supports(@NonNull Object value) {
+  public boolean supports(@NonNull Value value) {
     if (!(value instanceof Literal)) {
       return false;
     }
@@ -16,7 +17,7 @@ public abstract class LiteralConverter<O> implements CoreConverter<O> {
   }
 
   @Override
-  public O convert(@NonNull Object value) {
+  public O convert(@NonNull Value value) {
     return convertLiteral((Literal) value);
   }
 
