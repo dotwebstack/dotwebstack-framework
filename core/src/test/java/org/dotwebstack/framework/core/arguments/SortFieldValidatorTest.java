@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import graphql.language.FieldDefinition;
+import graphql.language.ListType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -47,6 +48,8 @@ class SortFieldValidatorTest {
   private TypeName type1 = new TypeName(TYPE_DEF_2);
 
   private TypeName type2 = new TypeName("somevalue");
+
+  private ListType listType = new ListType(type1);
 
   private SortFieldValidator sortFieldValidator;
 
@@ -103,10 +106,26 @@ class SortFieldValidatorTest {
   public void validate_error_withUnknownType() {
     try {
       // Act
+      sortFieldValidator.validateSortFieldValue("UNKNOWN", FIELD_NAME_1);
     } catch (InvalidConfigurationException e) {
       // Assert
       assertTrue(e.getMessage()
           .contains("not found"));
+    }
+  }
+
+  @Test
+  @MockitoSettings(strictness = Strictness.LENIENT)
+  public void validate_error_withFieldListType() {
+    try {
+      // Arrange
+      when(fieldDefinition1.getType()).thenReturn(listType);
+      // Act
+      sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1);
+    } catch (InvalidConfigurationException e) {
+      // Assert
+      assertTrue(e.getMessage()
+          .contains("is a List"));
     }
   }
 }
