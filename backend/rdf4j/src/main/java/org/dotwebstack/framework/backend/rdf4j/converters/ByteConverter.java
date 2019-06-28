@@ -10,7 +10,7 @@ public class ByteConverter extends LiteralConverter<Byte> {
 
   @Override
   public boolean supportsLiteral(@NonNull Literal literal) {
-    return XMLSchema.BOOLEAN.equals(literal.getDatatype());
+    return XMLSchema.BYTE.equals(literal.getDatatype());
   }
 
   @Override
