@@ -20,6 +20,12 @@ type Query {
       orderBy: "sort"
     )
 
+  breweries_sort_nested(sort: [SortField!] = [{ field: "address.postalCode", order: ASC }]):[Brewery!]
+   @sparql(
+      repository: "local"
+      orderBy: "sort"
+   )
+
   breweries_paging_input(input: PageQueryInput): [Brewery!]!
     @sparql(
       repository: "local"
