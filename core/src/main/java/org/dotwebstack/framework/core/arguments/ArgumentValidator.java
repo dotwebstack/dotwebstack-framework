@@ -49,7 +49,7 @@ public class ArgumentValidator extends ArgumentTraverser {
 
   private void validateSortFieldList(GraphQLType fieldDefinitionType, Object value, GraphQLInputType type) {
     if (!(value instanceof List)) {
-      ExceptionHelper.illegalArgumentException("Sort field type '{}' should be a List.", type);
+      throw ExceptionHelper.illegalArgumentException("Sort field type '{}' should be a List.", type);
     }
     List<?> valueList = (List) value;
     valueList.stream()
@@ -59,7 +59,7 @@ public class ArgumentValidator extends ArgumentTraverser {
   private void validateSortField(GraphQLType fieldDefinitionType, Object value) {
     Optional<String> sortFieldValue = getSortFieldValue(value);
     if (!sortFieldValue.isPresent()) {
-      ExceptionHelper.illegalArgumentException("Sort field '{}' should contain '{}' field value.",
+      throw ExceptionHelper.illegalArgumentException("Sort field '{}' should contain '{}' field value.",
           fieldDefinitionType.getName(), CoreInputTypes.SORT_FIELD_FIELD);
     }
     this.sortFieldValidator.validateSortFieldValue(getTypeName(fieldDefinitionType), sortFieldValue.get());
