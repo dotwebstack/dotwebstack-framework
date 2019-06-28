@@ -18,6 +18,7 @@ import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.InputObjectTypeDefinition;
+import graphql.language.InputValueDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
@@ -30,6 +31,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.datafetchers.DataFetcherRouter;
 import org.dotwebstack.framework.core.directives.ConstraintDirectiveWiring;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.FilterDirectiveWiring;
 import org.dotwebstack.framework.core.directives.TransformDirectiveWiring;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
@@ -57,11 +59,15 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   private TypeDefinitionRegistry typeDefinitionRegistry;
 
+  private final FilterDirectiveWiring filterDirectiveWiring;
+
   public CoreConfigurer(final TransformDirectiveWiring transformDirectiveWiring,
-      final ConstraintDirectiveWiring constraintDirectiveWiring, final DataFetcherRouter dataFetcher) {
+      final ConstraintDirectiveWiring constraintDirectiveWiring, final DataFetcherRouter dataFetcher,
+      FilterDirectiveWiring filterDirectiveWiring) {
     this.transformDirectiveWiring = transformDirectiveWiring;
     this.constraintDirectiveWiring = constraintDirectiveWiring;
     this.dataFetcher = dataFetcher;
+    this.filterDirectiveWiring = filterDirectiveWiring;
   }
 
   @Override
@@ -73,6 +79,26 @@ public class CoreConfigurer implements GraphqlConfigurer {
     typeDefinitionRegistry.add(createSortInputObjectDefinition());
     typeDefinitionRegistry.add(createTransformDefinition());
     typeDefinitionRegistry.add(createConstraintDefinition());
+    typeDefinitionRegistry.add(createFilterDefinition());
+  }
+
+  private DirectiveDefinition createFilterDefinition() {
+    return DirectiveDefinition.newDirectiveDefinition()
+        .name(CoreDirectives.FILTER_NAME)
+        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
+            .name(CoreDirectives.FILTER_ARG_FIELD)
+            .type(optionalString)
+            .build())
+        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
+            .name(CoreDirectives.FILTER_ARG_OPERATOR)
+            .type(optionalString)
+            .build())
+        .directiveLocations(ImmutableList.of(
+            newDirectiveLocation().name(Introspection.DirectiveLocation.ARGUMENT_DEFINITION.name())
+                .build(),
+            newDirectiveLocation().name(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION.name())
+                .build()))
+        .build();
   }
 
   private InputObjectTypeDefinition createSortInputObjectDefinition() {
@@ -139,7 +165,8 @@ public class CoreConfigurer implements GraphqlConfigurer {
         .scalar(CoreScalars.DATE)
         .scalar(CoreScalars.DATETIME)
         .directive(CoreDirectives.TRANSFORM_NAME, transformDirectiveWiring)
-        .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring);
+        .directive(CoreDirectives.CONSTRAINT_NAME, constraintDirectiveWiring)
+        .directive(CoreDirectives.FILTER_NAME, filterDirectiveWiring);
   }
 
   private GraphQLCodeRegistry registerDataFetchers() {

@@ -17,10 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
-import org.dotwebstack.framework.backend.rdf4j.directives.SparqlFilterDirectiveTraverser;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.ConstraintTraverser;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -46,25 +47,25 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final ConstraintTraverser constraintTraverser;
 
-  private final SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser;
+  private final FilterDirectiveTraverser filterDirectiveTraverser;
 
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
       Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
-      SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser) {
+      FilterDirectiveTraverser filterDirectiveTraverser) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
     this.constraintTraverser = constraintTraverser;
-    this.sparqlFilterDirectiveTraverser = sparqlFilterDirectiveTraverser;
+    this.filterDirectiveTraverser = filterDirectiveTraverser;
   }
 
   @Override
   public Object get(@NonNull DataFetchingEnvironment environment) {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
-    Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping =
-        sparqlFilterDirectiveTraverser.getDirectiveContainers(environment, Rdf4jDirectives.SPARQL_FILTER_NAME);
+    Map<GraphQLDirectiveContainer, Object> filterMapping =
+        filterDirectiveTraverser.getDirectiveContainers(environment, CoreDirectives.FILTER_NAME);
     GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
     GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(outputType);
 
@@ -82,8 +83,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .build();
 
     // Find shapes matching request
-    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, sparqlFilterMapping,
-        environment.getArguments(), repositoryConnection);
+    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, filterMapping, environment.getArguments(),
+        repositoryConnection);
 
     // Fetch graph for given subjects
     Model model = fetchGraph(queryEnvironment, subjects, repositoryConnection);
@@ -98,8 +99,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   }
 
   private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
-      Map<GraphQLDirectiveContainer, Object> sparqlFilterMapping, Map<String, Object> arguments,
-      RepositoryConnection con) {
+      Map<GraphQLDirectiveContainer, Object> filterMapping, Map<String, Object> arguments, RepositoryConnection con) {
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 
@@ -111,7 +111,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     }
 
     String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine)
-        .getQueryString(arguments, sparqlDirective, sparqlFilterMapping);
+        .getQueryString(arguments, sparqlDirective, filterMapping);
 
     LOG.debug("Executing query for subjects:\n{}", subjectQuery);
 

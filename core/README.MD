@@ -141,3 +141,13 @@ type Brewery {
 ```
 
 In the given example the `status` is retrieved from a `statusIri`.  
+
+## 1.6 Filter Directive
+The filter directive (@filter) allows the user to apply a filter on a field. The field-argument is optional and has a default value consisting of the name of the field where the directive is applied on. So when @filter is used without parameters, the name of the field and the default operator (=) will be used.  
+
+```schema.graphQls
+  page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
+  founded: String @filter(),
+  sinceBefore: String @filter(field: "founded", operator: "<")
+  name: [String] @filter(field: "name")): [Brewery!]!
+```

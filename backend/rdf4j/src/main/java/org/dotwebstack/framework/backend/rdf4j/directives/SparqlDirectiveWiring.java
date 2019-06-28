@@ -17,6 +17,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
+import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.springframework.stereotype.Component;
@@ -34,18 +35,18 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private ConstraintTraverser constraintTraverser;
 
-  private SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser;
+  private FilterDirectiveTraverser filterDirectiveTraverser;
 
   public SparqlDirectiveWiring(RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
       Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
-      SparqlFilterDirectiveTraverser sparqlFilterDirectiveTraverser) {
+      FilterDirectiveTraverser filterDirectiveTraverser) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null ? HashBiMap.create(rdf4jProperties.getPrefixes())
         .inverse() : ImmutableMap.of();
     this.jexlEngine = jexlEngine;
     this.constraintTraverser = constraintTraverser;
-    this.sparqlFilterDirectiveTraverser = sparqlFilterDirectiveTraverser;
+    this.filterDirectiveTraverser = filterDirectiveTraverser;
   }
 
   @Override
@@ -67,7 +68,7 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
         .getConnection();
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
-        constraintTraverser, sparqlFilterDirectiveTraverser);
+        constraintTraverser, filterDirectiveTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
