@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.arguments;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -73,7 +74,7 @@ class SortFieldValidatorTest {
 
   @Test
   public void validate_success_withOneField() {
-    // Act and assert
+    // Act / assert
     sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1);
   }
 
@@ -90,42 +91,40 @@ class SortFieldValidatorTest {
 
   @Test
   public void validate_error_withUnknownField() {
-    try {
-      // Act
-      sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1 + ".UNKNOWN");
-    } catch (InvalidConfigurationException e) {
-      // Assert
-      System.out.println(e.getMessage());
-      assertTrue(e.getMessage()
-          .contains("has no Field"));
-    }
+    // Act
+
+    InvalidConfigurationException e = assertThrows(InvalidConfigurationException.class,
+        () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1 + ".UNKNOWN"));
+
+    // Assert
+    assertTrue(e.getMessage()
+        .contains("has no Field"));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
   public void validate_error_withUnknownType() {
-    try {
-      // Act
-      sortFieldValidator.validateSortFieldValue("UNKNOWN", FIELD_NAME_1);
-    } catch (InvalidConfigurationException e) {
-      // Assert
-      assertTrue(e.getMessage()
-          .contains("not found"));
-    }
+    // Act
+    InvalidConfigurationException e = assertThrows(InvalidConfigurationException.class,
+        () -> sortFieldValidator.validateSortFieldValue("UNKNOWN", FIELD_NAME_1));
+
+    // Assert
+    assertTrue(e.getMessage()
+        .contains("not found"));
   }
 
   @Test
   @MockitoSettings(strictness = Strictness.LENIENT)
   public void validate_error_withFieldListType() {
-    try {
-      // Arrange
-      when(fieldDefinition1.getType()).thenReturn(listType);
-      // Act
-      sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1);
-    } catch (InvalidConfigurationException e) {
-      // Assert
-      assertTrue(e.getMessage()
-          .contains("is a List"));
-    }
+    // Arrange
+    when(fieldDefinition1.getType()).thenReturn(listType);
+
+    // Act
+    InvalidConfigurationException e = assertThrows(InvalidConfigurationException.class,
+        () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1));
+
+    // Assert
+    assertTrue(e.getMessage()
+        .contains("is a List"));
   }
 }

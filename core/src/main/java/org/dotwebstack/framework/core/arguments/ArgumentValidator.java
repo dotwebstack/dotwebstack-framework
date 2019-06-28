@@ -22,7 +22,6 @@ public class ArgumentValidator extends ArgumentTraverser {
     this.sortFieldValidator = inputValueValidator;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   protected void onArgument(GraphQLType fieldDefinitionType, GraphQLArgument argument, Object value) {
     GraphQLInputType type = argument.getType();
@@ -66,7 +65,6 @@ public class ArgumentValidator extends ArgumentTraverser {
     this.sortFieldValidator.validateSortFieldValue(getTypeName(fieldDefinitionType), sortFieldValue.get());
   }
 
-  @SuppressWarnings("unchecked")
   private Optional<String> getSortFieldValue(Object sortArgument) {
     if (sortArgument == null) {
       return Optional.empty();

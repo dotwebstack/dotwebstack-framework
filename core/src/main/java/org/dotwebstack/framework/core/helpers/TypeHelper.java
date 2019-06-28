@@ -10,7 +10,6 @@ import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLType;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 
 public class TypeHelper {
   private TypeHelper() {}
@@ -23,7 +22,7 @@ public class TypeHelper {
     } else if (type instanceof TypeName) {
       return false;
     } else {
-      throw new InvalidConfigurationException("unsupported type: " + type.getClass());
+      throw ExceptionHelper.illegalArgumentException("unsupported type: '{}'", type.getClass());
     }
   }
 
@@ -35,7 +34,7 @@ public class TypeHelper {
     } else if (type instanceof TypeName) {
       return ((TypeName) type).getName();
     } else {
-      throw new InvalidConfigurationException("unsupported type: " + type.getClass());
+      throw ExceptionHelper.illegalArgumentException("unsupported type: '{}'", type.getClass());
     }
   }
 
@@ -51,7 +50,7 @@ public class TypeHelper {
     } else if (type instanceof GraphQLScalarType) {
       return type.getName();
     } else {
-      throw new InvalidConfigurationException("unsupported type: " + type.getClass());
+      throw ExceptionHelper.illegalArgumentException("unsupported type: '{}'", type.getClass());
     }
   }
 }
