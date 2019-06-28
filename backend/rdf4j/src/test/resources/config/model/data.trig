@@ -8,19 +8,22 @@
 @prefix brewery_id: <https://github.com/dotwebstack/beer/id/brewery/> .
 @prefix beer_type_id: <https://github.com/dotwebstack/beer/id/beertype/> .
 @prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
+@prefix address_id: <https://github.com/dotwebstack/beer/id/address/> .
 
 beer_brewery:123 a beer_def:Brewery ;
   beer_def:identifier "123" ;
   schema:name "Brouwerij 1923"^^xsd:string ;
-  schema:address _:b1 ;
+  schema:address address_id:1 ;
   beer_def:founded "2018-05-30T09:30:10+02:00"^^xsd:dateTime
 .
 
-_:b1 schema:addressLocality "Moordrecht" ;
+address_id:1 a beer_def:Address ;
+  schema:addressLocality "Moordrecht" ;
   schema:latitude "51.98776545" ;
   schema:longitude "4.67090183" ;
   schema:postalCode "2841 XB" ;
-  schema:streetAddress "Burgemeester Brandtstraat 23" .
+  schema:streetAddress "Burgemeester Brandtstraat 23"
+.
 
 beer_brewery:456 a beer_def:Brewery ;
   beer_def:identifier "456" ;

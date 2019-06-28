@@ -151,16 +151,15 @@
    sh:path schema:address ;
    sh:minCount 1 ;
    sh:maxCount 1 ;
-   sh:nodeKind sh:IRI
+   sh:node beer_sh:Address ;
  .
 
  beer_sh:Address a sh:NodeShape ;
    sh:name "address" ;
-   sh:targetClass schema:address ;
+   sh:targetClass beer_def:Address ;
    sh:property
      beer_sh:Address_postalcode,
-     beer_sh:Address_streetAddress;
-   sh:nodeKind sh:IRI
+     beer_sh:Address_streetAddress ;
  .
 
   beer_sh:Address_postalcode a sh:PropertyShape ;

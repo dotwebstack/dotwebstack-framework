@@ -55,7 +55,8 @@ type Query {
 type Brewery {
   identifier: ID!
   name: String!
-  founded: String!
+  founded: Int!
+    @transform(expr: "founded.getYear()")
   openinghours: String
   owners: [String]
   url: String!
@@ -63,7 +64,6 @@ type Brewery {
   address: Address!
   postalCode: String!
   beers: [String]
-  ingredients: [String]
 }
 
 type Address {

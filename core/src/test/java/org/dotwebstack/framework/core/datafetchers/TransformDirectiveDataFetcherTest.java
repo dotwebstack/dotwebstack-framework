@@ -9,6 +9,7 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLFieldDefinition;
+import java.time.LocalDate;
 import java.util.function.Supplier;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
@@ -22,11 +23,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TransformDirectiveDataFetcherTest {
 
-  private static final String FIELD_NAME = "foo";
+  private static final String LENGTH_NAME = "foo";
 
-  private static final String FIELD_VALUE_1 = "bar";
+  private static final String LENGTH_VALUE = "bar";
 
-  private static final String TRANSFORM_EXPR = "foo.length()";
+  private static final String LENGTH_EXPR = "foo.length()";
+
+  private static final String LENGTH_TYPE = "String";
+
+  private static final String DATE_NAME = "date";
+
+  private static final LocalDate DATE_VALUE = LocalDate.parse("1993-08-05");
+
+  private static final String DATE_EXPR = "date.getYear()";
+
+  private static final String DATE_TYPE = "LocalDate";
 
   @Mock
   private DataFetchingEnvironment dataFetchingEnvironment;
@@ -34,6 +45,7 @@ class TransformDirectiveDataFetcherTest {
   @Mock
   private IntegrationTestDataFetcher sourceDataFetcher;
 
+  @Mock
   private TransformDirectiveDataFetcher transformDirectiveDataFetcher;
 
   private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
@@ -46,22 +58,26 @@ class TransformDirectiveDataFetcherTest {
   }
 
   @Test
-  void onField_WrapsTransformDirectiveDataFetcher_ForScalarFieldWithValue() throws Exception {
+  void onField_WrapsTransformDirectiveDataFetcher_ForIntegerFieldWithValue() throws Exception {
     // Arrange
     GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name(FIELD_NAME)
+        .name(LENGTH_NAME)
         .type(Scalars.GraphQLString)
         .withDirective(GraphQLDirective.newDirective()
             .name(CoreDirectives.TRANSFORM_NAME)
             .argument(GraphQLArgument.newArgument()
                 .name(CoreDirectives.TRANSFORM_ARG_EXPR)
                 .type(Scalars.GraphQLString)
-                .value(TRANSFORM_EXPR))
+                .value(LENGTH_EXPR))
+            .argument(GraphQLArgument.newArgument()
+                .name(CoreDirectives.TRANSFORM_ARG_TYPE)
+                .type(Scalars.GraphQLString)
+                .value(LENGTH_TYPE))
             .build())
         .build();
 
     when(dataFetchingEnvironment.getLocalContext()).thenReturn((Supplier) () -> sourceDataFetcher);
-    when(sourceDataFetcher.get(dataFetchingEnvironment)).thenReturn(FIELD_VALUE_1);
+    when(sourceDataFetcher.get(dataFetchingEnvironment)).thenReturn(LENGTH_VALUE);
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
 
     // Act
@@ -69,5 +85,35 @@ class TransformDirectiveDataFetcherTest {
 
     // Assert
     assertThat(result, equalTo(3));
+  }
+
+  @Test
+  void onField_WrapsTransformDirectiveDataFetcher_ForDateFieldWithValue() throws Exception {
+    // Arrange
+    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
+        .name(DATE_NAME)
+        .type(Scalars.GraphQLString)
+        .withDirective(GraphQLDirective.newDirective()
+            .name(CoreDirectives.TRANSFORM_NAME)
+            .argument(GraphQLArgument.newArgument()
+                .name(CoreDirectives.TRANSFORM_ARG_EXPR)
+                .type(Scalars.GraphQLString)
+                .value(DATE_EXPR))
+            .argument(GraphQLArgument.newArgument()
+                .name(CoreDirectives.TRANSFORM_ARG_TYPE)
+                .type(Scalars.GraphQLString)
+                .value(DATE_TYPE))
+            .build())
+        .build();
+
+    when(dataFetchingEnvironment.getLocalContext()).thenReturn((Supplier) () -> sourceDataFetcher);
+    when(sourceDataFetcher.get(dataFetchingEnvironment)).thenReturn(DATE_VALUE);
+    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
+
+    // Act
+    Object result = transformDirectiveDataFetcher.get(dataFetchingEnvironment);
+
+    // Assert
+    assertThat(result, equalTo(1993));
   }
 }

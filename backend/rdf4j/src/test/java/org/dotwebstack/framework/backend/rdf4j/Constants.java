@@ -182,6 +182,10 @@ public final class Constants {
 
   // Address.postalCode
 
+  public static final String POSTALCODE_TYPE = "Address_PostalCode";
+
+  public static final IRI POSTALCODE_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(POSTALCODE_TYPE));
+
   public static final IRI ADDRESS_POSTALCODE_PATH = VF.createIRI("http://schema.org/postalCode");
 
   public static final String ADDRESS_POSTALCODE_EXAMPLE_1 = "1234 AC";

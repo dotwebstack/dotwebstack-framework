@@ -5,7 +5,9 @@ import graphql.schema.CoercingSerializeException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
+@Component
 class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
 
   @Override
@@ -36,5 +38,4 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
   public ZonedDateTime parseLiteral(@NonNull Object value) {
     throw new UnsupportedOperationException();
   }
-
 }

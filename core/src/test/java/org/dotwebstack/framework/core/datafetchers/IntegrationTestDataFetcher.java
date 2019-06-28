@@ -14,6 +14,10 @@ public class IntegrationTestDataFetcher extends SourceDataFetcher {
       Constants.BREWERY_FOUNDED_FIELD, Constants.BREWERY_FOUNDED_EXAMPLE_1, Constants.BREWERY_FOUNDED_AT_YEAR_FIELD,
       Constants.BREWERY_FOUNDED_EXAMPLE_1);
 
+  public IntegrationTestDataFetcher() {
+    super(null);
+  }
+
   @Override
   public boolean supports(DataFetchingEnvironment environment) {
     return true;

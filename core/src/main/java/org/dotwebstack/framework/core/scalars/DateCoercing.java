@@ -5,8 +5,10 @@ import graphql.schema.CoercingSerializeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
-class DateCoercing implements Coercing<LocalDate, LocalDate> {
+@Component
+public class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
   @Override
   public LocalDate serialize(@NonNull Object value) {

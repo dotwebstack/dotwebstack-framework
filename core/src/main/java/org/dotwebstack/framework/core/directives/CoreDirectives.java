@@ -6,6 +6,8 @@ public final class CoreDirectives {
 
   public static final String TRANSFORM_ARG_EXPR = "expr";
 
+  public static final String TRANSFORM_ARG_TYPE = "type";
+
   public static final String CONSTRAINT_NAME = "constraint";
 
   public static final String CONSTRAINT_ARG_MIN = "min";

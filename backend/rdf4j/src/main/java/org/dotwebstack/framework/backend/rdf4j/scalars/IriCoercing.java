@@ -8,7 +8,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
-class IriCoercing implements Coercing<IRI, IRI> {
+public class IriCoercing implements Coercing<IRI, IRI> {
 
   private static final ValueFactory VF = SimpleValueFactory.getInstance();
 
@@ -42,5 +42,4 @@ class IriCoercing implements Coercing<IRI, IRI> {
           e);
     }
   }
-
 }

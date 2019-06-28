@@ -9,9 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.eclipse.rdf4j.model.IRI;
 import org.junit.jupiter.api.Test;
 
-class IriConverterTest {
+class Rdf4jIriConverterTest {
 
-  private final IriConverter iriConverter = new IriConverter();
+  private final Rdf4jIriConverter rdf4jIriConverter = new Rdf4jIriConverter();
 
   @Test
   void convert_ConvertsToIri_ForValidString() {
@@ -19,7 +19,7 @@ class IriConverterTest {
     String input = BREWERY_CLASS.stringValue();
 
     // Act
-    IRI result = iriConverter.convert(input);
+    IRI result = rdf4jIriConverter.convert(input);
 
     // Assert
     assertThat(result, is(equalTo(BREWERY_CLASS)));
@@ -31,7 +31,7 @@ class IriConverterTest {
     String input = "foo";
 
     // Act / Assert
-    assertThrows(IllegalArgumentException.class, () -> iriConverter.convert(input));
+    assertThrows(IllegalArgumentException.class, () -> rdf4jIriConverter.convert(input));
   }
 
 }
