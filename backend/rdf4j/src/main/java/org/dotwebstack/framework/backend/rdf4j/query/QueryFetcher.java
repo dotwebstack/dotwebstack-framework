@@ -54,14 +54,14 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
       Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
-                      FilterDirectiveTraverser filterDirectiveTraverser, ArgumentValidator inputValueTraverser) {
+                      FilterDirectiveTraverser filterDirectiveTraverser, ArgumentValidator argumentValidator) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
     this.constraintTraverser = constraintTraverser;
     this.filterDirectiveTraverser = filterDirectiveTraverser;
-    this.argumentValidator = inputValueTraverser;
+    this.argumentValidator = argumentValidator;
   }
 
   @Override
