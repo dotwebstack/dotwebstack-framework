@@ -337,6 +337,28 @@ class SubjectQueryBuilderTest {
   }
 
   @Test
+  void test_sortCondition_withValidOrderByExpressions_withNestedFields() {
+    when(this.propertyPathMock.resolvePathIri(false)).thenReturn(iriMock);
+    when(this.propertyShapeMock.getPath()).thenReturn(this.propertyPathMock);
+    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
+
+    GraphQLDirective validSparqlDirective = getValidSortDirective();
+
+    Map<String, Object> arguments = new HashMap<>();
+    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "address.postalCode", "order", "DESC")));
+
+    MapContext context = new MapContext(arguments);
+    Optional<List<OrderContext>> optional =
+        this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective);
+
+    assertThat(optional.isPresent(), is(true));
+
+    optional.ifPresent(orderContexts -> assertThat(orderContexts.get(0)
+        .getOrderable()
+        .getQueryString(), is(equalTo("DESC( ?postalCode )"))));
+  }
+
+  @Test
   void test_sortCondition_withoutSortProperty() {
     GraphQLDirective validSparqlDirective = getValidSortDirective();
     Map<String, Object> arguments = new HashMap<>();

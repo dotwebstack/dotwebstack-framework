@@ -152,7 +152,9 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     for (String field : fields) {
       PropertyShape propertyShape = getPropertyShapeForField(currentNodeShape, field);
       elements.add(new OrderContext.Field(field, propertyShape));
-      IRI iri = resolvePath(propertyShape);
+      IRI iri = propertyShape.getPath()
+          .resolvePathIri(false);
+      // Find the next NodeShape by searching for the targetClass matching the IRI
       Optional<NodeShape> fieldNodeShape = this.environment.getNodeShapeRegistry()
           .all()
           .stream()
@@ -163,14 +165,10 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         currentNodeShape = fieldNodeShape.get();
       }
     }
+    // The order variable is the last field in the path.
     Variable orderVar = SparqlBuilder.var(fields.get(fields.size() - 1));
     Orderable orderable = order.equalsIgnoreCase("desc") ? orderVar.desc() : orderVar.asc();
     return new OrderContext(elements, orderable);
-  }
-
-  private IRI resolvePath(PropertyShape propertyShape) {
-    return propertyShape.getPath()
-        .resolvePathIri(false);
   }
 
   private PropertyShape getPropertyShapeForField(NodeShape nodeShape, String field) {

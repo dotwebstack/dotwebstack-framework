@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.validation;
+package org.dotwebstack.framework.core.arguments;
 
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.hasListType;
