@@ -136,9 +136,20 @@ resulting values of these parameters are used as paging parameters in the result
 ## 1.5 Sorting
 
 Within the `@sparql` directive it is possible to declare an `orderBy` parameter. The argument of this parameter needs to 
-be one or any array of objects containing a `field` and an `order` parameter. The `field` parameter needs to be
-a string and the `order` parameter is an `enum` and needs to be either `ASC` or `DESC`. The resulting values of these 
-parameters are used in the `order by` clause in the resulting sparql query.  
+be one or any array of objects containing a `field` and an `order` parameter:
+* `field`: The field to sort by, this can also be a path of fields with '.' as separator. The field(s)
+should be present in the query output type.
+* `order`: An `enum` representing the sort order with values `ASC` for ascending and `DESC` for descending.
+
+The resulting values of these parameters are used in the `order by` clause in the resulting sparql query. 
+
+For example, the following query will sort by `MyOutputType.field1.field2`:
+```graphql
+myQuery(sort: [SortField!] = [{ field: "field1.field2", order: ASC }]):[MyOutputType!]
+```
+ 
+ The `field` parameter needs to be
+a string and the `order` parameter is an `enum` and needs to be either `ASC` or `DESC`.  
 
 ## 1.6 Property paths
 
