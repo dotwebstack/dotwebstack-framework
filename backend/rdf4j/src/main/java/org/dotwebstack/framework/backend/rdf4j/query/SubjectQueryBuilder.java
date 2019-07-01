@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang3.ArrayUtils;
@@ -112,15 +113,24 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   private void buildOrderBy(List<OrderContext> contexts) {
     contexts.forEach(orderContext -> {
       query.orderBy(orderContext.getOrderable());
-      Variable subject = SUBJECT_VAR;
-      for (OrderContext.Field element : orderContext.getFields()) {
-        Variable objectVar = SparqlBuilder.var(element.getFieldName());
-        TriplePattern pattern = GraphPatterns.tp(subject, element.getPropertyShape()
-            .getPath()
-            .toPredicate(), objectVar);
-        whereBuilder.put(pattern.getQueryString(), pattern);
-        subject = objectVar;
-      }
+
+      IntStream.range(0, orderContext.getFields()
+          .size())
+          .forEachOrdered(integer -> {
+            OrderContext.Field field = orderContext.getFields()
+                .get(integer);
+            OrderContext.Field previous = integer == 0 ? null
+                : orderContext.getFields()
+                    .get(integer - 1);
+
+            Variable subject = previous == null ? SUBJECT_VAR : SparqlBuilder.var(previous.getFieldName());
+            Variable object = SparqlBuilder.var(field.getFieldName());
+
+            TriplePattern pattern = GraphPatterns.tp(subject, field.getPropertyShape()
+                .getPath()
+                .toPredicate(), object);
+            whereBuilder.put(pattern.getQueryString(), pattern);
+          });
     });
   }
 
@@ -145,16 +155,16 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     String order = orderMap.get("order");
 
     String[] fields = fieldName.split("\\.");
-    List<OrderContext.Field> elements = getContextField(fields, nodeShape);
+    List<OrderContext.Field> elements = getContextField(new StringBuilder(), fields, nodeShape);
 
     // The order variable is the last field in the path.
-    Variable orderVar = SparqlBuilder.var(fields[fields.length - 1]);
+    Variable orderVar = SparqlBuilder.var(elements.get(elements.size() - 1)
+        .getFieldName());
     Orderable orderable = order.equalsIgnoreCase("desc") ? orderVar.desc() : orderVar.asc();
     return new OrderContext(elements, orderable);
   }
 
-  private List<OrderContext.Field> getContextField(String[] fields, NodeShape nodeShape) {
-    ArrayList<OrderContext.Field> elements = new ArrayList<>();
+  private List<OrderContext.Field> getContextField(StringBuilder pathBuilder, String[] fields, NodeShape nodeShape) {
     String field = fields[0];
     PropertyShape propertyShape = nodeShape.getPropertyShape(field);
 
@@ -163,9 +173,15 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
           .format("Not possible to order by fieldName %s, it does not exist on %s.", field, nodeShape.getIdentifier()));
     }
 
-    elements.add(new OrderContext.Field(field, propertyShape));
+    if (!"".equals(pathBuilder.toString())) {
+      pathBuilder.append("_");
+    }
+    pathBuilder.append(field);
+
+    ArrayList<OrderContext.Field> elements = new ArrayList<>();
+    elements.add(new OrderContext.Field(pathBuilder.toString(), propertyShape));
     if (fields.length > 1) {
-      elements.addAll(getContextField(ArrayUtils.remove(fields, 0), propertyShape.getNode()));
+      elements.addAll(getContextField(pathBuilder, ArrayUtils.remove(fields, 0), propertyShape.getNode()));
     }
 
     return elements;

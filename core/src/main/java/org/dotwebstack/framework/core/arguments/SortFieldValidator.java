@@ -62,8 +62,7 @@ public class SortFieldValidator {
       throw ExceptionHelper.illegalArgumentException("Sort field type '{}' should be a List.", type);
     }
     List<?> valueList = (List) value;
-    valueList.stream()
-        .forEach(sortFieldValue -> validateSortField(fieldDefinitionType, sortFieldValue));
+    valueList.forEach(sortFieldValue -> validateSortField(fieldDefinitionType, sortFieldValue));
   }
 
   private void validateSortField(GraphQLType fieldDefinitionType, Object value) {
@@ -95,7 +94,6 @@ public class SortFieldValidator {
     Map<String, Object> arguments = dataFetchingEnvironment.getArguments();
 
     fieldDefinition.getArguments()
-        .stream()
         .forEach(argument -> {
           Object value = arguments.get(argument.getName());
           if (argument.getType() instanceof GraphQLInputObjectType) {

@@ -93,11 +93,11 @@ class SortFieldValidatorTest {
   public void validate_error_withUnknownField() {
     // Act
 
-    InvalidConfigurationException e = assertThrows(InvalidConfigurationException.class,
+    InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
         () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1 + ".UNKNOWN"));
 
     // Assert
-    assertTrue(e.getMessage()
+    assertTrue(thrown.getMessage()
         .contains("has no Field"));
   }
 
@@ -105,11 +105,11 @@ class SortFieldValidatorTest {
   @MockitoSettings(strictness = Strictness.LENIENT)
   public void validate_error_withUnknownType() {
     // Act
-    InvalidConfigurationException e = assertThrows(InvalidConfigurationException.class,
+    InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
         () -> sortFieldValidator.validateSortFieldValue("UNKNOWN", FIELD_NAME_1));
 
     // Assert
-    assertTrue(e.getMessage()
+    assertTrue(thrown.getMessage()
         .contains("not found"));
   }
 
@@ -120,11 +120,11 @@ class SortFieldValidatorTest {
     when(fieldDefinition1.getType()).thenReturn(listType);
 
     // Act
-    InvalidConfigurationException e = assertThrows(InvalidConfigurationException.class,
+    InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
         () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1));
 
     // Assert
-    assertTrue(e.getMessage()
+    assertTrue(thrown.getMessage()
         .contains("is a List"));
   }
 }

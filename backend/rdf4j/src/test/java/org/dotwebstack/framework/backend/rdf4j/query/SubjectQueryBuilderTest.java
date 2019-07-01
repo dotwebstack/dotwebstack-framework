@@ -376,7 +376,7 @@ class SubjectQueryBuilderTest {
 
     optional.ifPresent(orderContexts -> assertThat(orderContexts.get(0)
         .getOrderable()
-        .getQueryString(), is(equalTo("DESC( ?postalCode )"))));
+        .getQueryString(), is(equalTo("DESC( ?address_postalCode )"))));
   }
 
   @Test

@@ -137,8 +137,8 @@ resulting values of these parameters are used as paging parameters in the result
 
 Within the `@sparql` directive it is possible to declare an `orderBy` parameter. The argument of this parameter needs to 
 be one or any array of objects containing a `field` and an `order` parameter:
-* `field`: A String that containts the field to sort by, this can also be a path of fields with '.' as separator. The field(s)
-should be present in the query output type.
+* `field`: A `string` that contains the field to sort by, this can also be a path of fields with '.' as separator. The field(s)
+should be present in the query output type and may only refer to unmodified scalar types.
 * `order`: An `enum` representing the sort order with values `ASC` for ascending and `DESC` for descending.
 
 The resulting values of these parameters are used in the `order by` clause in the resulting sparql query. 
