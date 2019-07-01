@@ -64,7 +64,7 @@ type Brewery {
     @transform(expr: "url.getLocalName()")
   address: Address!
   postalCode: String!
-  beers: [String]
+  beers(name: String @filter): [Beer!]!
 }
 
 type Address {

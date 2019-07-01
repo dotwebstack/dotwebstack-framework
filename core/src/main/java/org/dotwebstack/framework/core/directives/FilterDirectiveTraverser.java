@@ -10,6 +10,7 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -29,9 +30,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class FilterDirectiveTraverser {
 
-  public Map<GraphQLDirectiveContainer, Object> getDirectiveContainers(DataFetchingEnvironment dataFetchingEnvironment,
-      String directiveName) {
+  public Map<GraphQLDirectiveContainer, Object> getInputObjectDirectiveContainers(
+      DataFetchingEnvironment dataFetchingEnvironment, String directiveName) {
     GraphQLFieldDefinition fieldDefinition = dataFetchingEnvironment.getFieldDefinition();
+
+    getObjectDirectiveContainers((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType()));
+
     Map<String, Object> flattenedArguments = dataFetchingEnvironment.getArguments()
         .entrySet()
         .stream()
@@ -48,6 +52,16 @@ public class FilterDirectiveTraverser {
             flattenedArguments.get(directiveContainer.getName())))
         .filter(entry -> entry.getValue() != null)
         .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
+  }
+
+  private Map<GraphQLDirectiveContainer, Object> getObjectDirectiveContainers(GraphQLObjectType graphQLObjectType) {
+    // 1. get the filters from current field
+    graphQLObjectType.getFieldDefinitions()
+        .stream()
+        .filter(fieldDefinition -> fieldDefinition.getDirective(CoreDirectives.FILTER_NAME) != null)
+        .collect(Collectors.toList());
+
+    // 2. get the object types to repeat the process
   }
 
   private List<GraphQLDirectiveContainer> getInputObjectFieldsFromArgument(GraphQLArgument argument) {
