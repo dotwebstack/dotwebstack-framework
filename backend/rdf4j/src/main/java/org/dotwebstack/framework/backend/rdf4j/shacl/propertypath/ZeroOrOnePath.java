@@ -4,7 +4,6 @@ import java.util.Set;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -20,11 +19,6 @@ public class ZeroOrOnePath implements PropertyPath {
   @Override
   public Set<Value> resolvePath(Model model, Resource subject, boolean inversed) {
     return object.resolvePath(model, subject, inversed);
-  }
-
-  @Override
-  public IRI resolvePathIri(boolean inversed) {
-    return object.resolvePathIri(inversed);
   }
 
   @Override

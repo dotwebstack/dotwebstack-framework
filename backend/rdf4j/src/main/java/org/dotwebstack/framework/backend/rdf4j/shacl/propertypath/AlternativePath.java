@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
@@ -28,11 +27,6 @@ public class AlternativePath implements PropertyPath {
         .filter(set -> !set.isEmpty())
         .findFirst()
         .orElse(Collections.emptySet());
-  }
-
-  @Override
-  public IRI resolvePathIri(boolean inversed) {
-    return object.resolvePathIri(inversed);
   }
 
   @Override

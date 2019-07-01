@@ -18,7 +18,7 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.core.arguments.ArgumentValidator;
+import org.dotwebstack.framework.core.arguments.SortFieldValidator;
 import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
@@ -50,18 +50,18 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final FilterDirectiveTraverser filterDirectiveTraverser;
 
-  private ArgumentValidator argumentValidator;
+  private SortFieldValidator sortFieldValidator;
 
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
       Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
-      FilterDirectiveTraverser filterDirectiveTraverser, ArgumentValidator argumentValidator) {
+      FilterDirectiveTraverser filterDirectiveTraverser, SortFieldValidator sortFieldValidator) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
     this.constraintTraverser = constraintTraverser;
     this.filterDirectiveTraverser = filterDirectiveTraverser;
-    this.argumentValidator = argumentValidator;
+    this.sortFieldValidator = sortFieldValidator;
   }
 
   @Override
@@ -73,7 +73,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
     }
 
-    argumentValidator.traverse(environment);
+    sortFieldValidator.traverse(environment);
     constraintTraverser.traverse(environment);
 
     QueryEnvironment queryEnvironment = QueryEnvironment.builder()

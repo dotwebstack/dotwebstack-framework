@@ -27,9 +27,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
-import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -57,16 +55,16 @@ class SubjectQueryBuilderTest {
   private NodeShape nodeShapeMock;
 
   @Mock
+  private NodeShape addressNodeShapeMock;
+
+  @Mock
   private PropertyShape propertyShapeMock;
 
   @Mock
+  private PropertyShape postcodePropertyShapeMock;
+
+  @Mock
   private GraphQLObjectType objectTypeMock;
-
-  @Mock
-  private PropertyPath propertyPathMock;
-
-  @Mock
-  private IRI iriMock;
 
   private SubjectQueryBuilder subjectQueryBuilder;
 
@@ -334,8 +332,6 @@ class SubjectQueryBuilderTest {
   @Test
   void test_sortCondition_withValidOrderByExpressions() {
     // Arrange
-    when(this.propertyPathMock.resolvePathIri(false)).thenReturn(iriMock);
-    when(this.propertyShapeMock.getPath()).thenReturn(this.propertyPathMock);
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
 
     GraphQLDirective validSparqlDirective = getValidSortDirective();
@@ -360,9 +356,9 @@ class SubjectQueryBuilderTest {
   @Test
   void test_sortCondition_withValidOrderByExpressions_withNestedFields() {
     // Arrange
-    when(this.propertyPathMock.resolvePathIri(false)).thenReturn(iriMock);
-    when(this.propertyShapeMock.getPath()).thenReturn(this.propertyPathMock);
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
+    when(propertyShapeMock.getNode()).thenReturn(addressNodeShapeMock);
+    when(this.addressNodeShapeMock.getPropertyShape(any(String.class))).thenReturn(postcodePropertyShapeMock);
 
     GraphQLDirective validSparqlDirective = getValidSortDirective();
 
