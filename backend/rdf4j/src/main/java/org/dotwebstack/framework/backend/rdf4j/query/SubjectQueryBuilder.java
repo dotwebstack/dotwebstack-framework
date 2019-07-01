@@ -188,7 +188,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
     offsetOptional.ifPresent(offset -> {
       if (offset < 0) {
-        throw new IllegalArgumentException("An error occured in the offset expression evaluation");
+        throw ExceptionHelper.illegalArgumentException("An error occured in the offset expression evaluation");
       }
     });
     return offsetOptional;
