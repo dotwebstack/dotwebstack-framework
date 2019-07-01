@@ -159,7 +159,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     PropertyShape propertyShape = nodeShape.getPropertyShape(field);
 
     if (propertyShape == null) {
-      throw new IllegalArgumentException(String
+      throw ExceptionHelper.illegalArgumentException(String
           .format("Not possible to order by fieldName %s, it does not exist on %s.", field, nodeShape.getIdentifier()));
     }
 
@@ -176,7 +176,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         sparqlDirective, context, Integer.class);
     limitOptional.ifPresent(limit -> {
       if (limit < 1) {
-        throw new IllegalArgumentException("An error occured in the limit expression evaluation");
+        throw ExceptionHelper.illegalArgumentException("An error occured in the limit expression evaluation");
       }
     });
     return limitOptional;
