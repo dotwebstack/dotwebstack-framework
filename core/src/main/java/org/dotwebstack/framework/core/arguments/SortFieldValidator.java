@@ -156,7 +156,7 @@ public class SortFieldValidator {
       }
 
       if (fields.length > 1) {
-        validateSortFieldValue(getTypeName(matchedType), field,  typeDef.getName(),
+        validateSortFieldValue(getTypeName(matchedType), field, typeDef.getName(),
             String.join(".", ArrayUtils.removeElement(fields, field)));
       }
     } else {
