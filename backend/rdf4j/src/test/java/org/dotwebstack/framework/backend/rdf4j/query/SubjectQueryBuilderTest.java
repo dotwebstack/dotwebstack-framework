@@ -55,7 +55,13 @@ class SubjectQueryBuilderTest {
   private NodeShape nodeShapeMock;
 
   @Mock
+  private NodeShape addressNodeShapeMock;
+
+  @Mock
   private PropertyShape propertyShapeMock;
+
+  @Mock
+  private PropertyShape postcodePropertyShapeMock;
 
   @Mock
   private GraphQLObjectType objectTypeMock;
@@ -187,6 +193,7 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_pagingParameters_whenNoExpressionsSet() {
+    // Arrange
     GraphQLDirective emptySparqlDirective = GraphQLDirective.newDirective()
         .name("sparql")
         .build();
@@ -196,6 +203,8 @@ class SubjectQueryBuilderTest {
     arguments.put("pageSize", 12);
 
     MapContext context = new MapContext(arguments);
+
+    // Act / Assert
     assertThat(this.subjectQueryBuilder.getLimitFromContext(context, emptySparqlDirective),
         is(equalTo(Optional.empty())));
     assertThat(this.subjectQueryBuilder.getOffsetFromContext(context, emptySparqlDirective),
@@ -204,11 +213,13 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_pagingParameters_whenNoValuesSet() {
+    // Arrange
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
 
     MapContext context = new MapContext(arguments);
 
+    // Act / Assert
     assertThrows(org.apache.commons.jexl3.JexlException.Variable.class,
         () -> this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
     assertThrows(org.apache.commons.jexl3.JexlException.Variable.class,
@@ -217,6 +228,7 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_pagingParameters_withValidPageAndPageSize() {
+    // Arrange
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
     arguments.put("page", 5);
@@ -224,6 +236,7 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
+    // Act / Assert
     assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
         is(equalTo(Optional.of(12))));
     assertThat(this.subjectQueryBuilder.getOffsetFromContext(context, validSparqlDirective),
@@ -232,6 +245,7 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_pagingParameters_withInvalidPage() {
+    // Arrange
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
     arguments.put("page", -1);
@@ -239,6 +253,7 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
+    // Act / Assert
     assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
         is(equalTo(Optional.of(12))));
     assertThrows(IllegalArgumentException.class,
@@ -247,6 +262,7 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_pagingParameters_withInvalidPageType() {
+    // Arrange
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
     arguments.put("page", "test");
@@ -254,6 +270,7 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
+    // Act / Assert
     assertThat(this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective),
         is(equalTo(Optional.of(12))));
     assertThrows(IllegalArgumentException.class,
@@ -262,6 +279,7 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_pagingParameters_withInvalidPageSize() {
+    // Arrange
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
     arguments.put("page", 13);
@@ -269,6 +287,7 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
+    // Act / Assert
     assertThrows(IllegalArgumentException.class,
         () -> this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
     assertThrows(IllegalArgumentException.class,
@@ -277,6 +296,7 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_pagingParameters_withInvalidPageSizeType() {
+    // Arrange
     GraphQLDirective validSparqlDirective = getValidPagingDirective();
     Map<String, Object> arguments = new HashMap<>();
     arguments.put("page", 13);
@@ -284,6 +304,7 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
+    // Act / Assert
     assertThrows(IllegalArgumentException.class,
         () -> this.subjectQueryBuilder.getLimitFromContext(context, validSparqlDirective));
     assertThrows(IllegalArgumentException.class,
@@ -292,6 +313,7 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_pagingParameters_withInvalidLimitAndOffsetExpressions() {
+    // Arrange
     GraphQLDirective invalidSparqlDirective = getInvalidPagingDirective();
 
     Map<String, Object> arguments = new HashMap<>();
@@ -300,6 +322,7 @@ class SubjectQueryBuilderTest {
 
     MapContext context = new MapContext(arguments);
 
+    // Act / Assert
     assertThrows(org.apache.commons.jexl3.JexlException.Parsing.class,
         () -> this.subjectQueryBuilder.getLimitFromContext(context, invalidSparqlDirective));
     assertThrows(org.apache.commons.jexl3.JexlException.Parsing.class,
@@ -308,6 +331,7 @@ class SubjectQueryBuilderTest {
 
   @Test
   void test_sortCondition_withValidOrderByExpressions() {
+    // Arrange
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
 
     GraphQLDirective validSparqlDirective = getValidSortDirective();
@@ -316,9 +340,12 @@ class SubjectQueryBuilderTest {
     arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier", "order", "DESC")));
 
     MapContext context = new MapContext(arguments);
+
+    // Act
     Optional<List<OrderContext>> optional =
         this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective);
 
+    // Assert
     assertThat(optional.isPresent(), is(true));
 
     optional.ifPresent(orderContexts -> assertThat(orderContexts.get(0)
@@ -327,17 +354,47 @@ class SubjectQueryBuilderTest {
   }
 
   @Test
+  void test_sortCondition_withValidOrderByExpressions_withNestedFields() {
+    // Arrange
+    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
+    when(propertyShapeMock.getNode()).thenReturn(addressNodeShapeMock);
+    when(this.addressNodeShapeMock.getPropertyShape(any(String.class))).thenReturn(postcodePropertyShapeMock);
+
+    GraphQLDirective validSparqlDirective = getValidSortDirective();
+
+    Map<String, Object> arguments = new HashMap<>();
+    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "address.postalCode", "order", "DESC")));
+
+    MapContext context = new MapContext(arguments);
+
+    // Act
+    Optional<List<OrderContext>> optional =
+        this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective);
+
+    // Assert
+    assertThat(optional.isPresent(), is(true));
+
+    optional.ifPresent(orderContexts -> assertThat(orderContexts.get(0)
+        .getOrderable()
+        .getQueryString(), is(equalTo("DESC( ?address_postalCode )"))));
+  }
+
+  @Test
   void test_sortCondition_withoutSortProperty() {
+    // Arrange
     GraphQLDirective validSparqlDirective = getValidSortDirective();
     Map<String, Object> arguments = new HashMap<>();
 
     MapContext context = new MapContext(arguments);
+
+    // Act / Assert
     assertThrows(JexlException.Variable.class,
         () -> this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
   }
 
   @Test
   void test_sortingProperty_whenSortPropertyNotExistsOnNodeshape() {
+    // Arrange
     when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(null);
 
     GraphQLDirective validSparqlDirective = getValidSortDirective();
@@ -346,6 +403,8 @@ class SubjectQueryBuilderTest {
     arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier", "order", "DESC")));
 
     MapContext context = new MapContext(arguments);
+
+    // Act / Assert
     assertThrows(IllegalArgumentException.class,
         () -> this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
   }

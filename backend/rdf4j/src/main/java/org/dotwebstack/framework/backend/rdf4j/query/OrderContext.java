@@ -1,16 +1,30 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import lombok.AllArgsConstructor;
+import java.util.List;
 import lombok.Data;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 
 @Data
-@AllArgsConstructor
 class OrderContext {
-  private String field;
+  private List<Field> fields;
 
   private Orderable orderable;
 
-  private PropertyShape propertyShape;
+  public OrderContext(List<Field> fields, Orderable orderable) {
+    this.fields = fields;
+    this.orderable = orderable;
+  }
+
+  @Data
+  public static class Field {
+    private String fieldName;
+
+    private PropertyShape propertyShape;
+
+    public Field(String fieldName, PropertyShape propertyShape) {
+      this.fieldName = fieldName;
+      this.propertyShape = propertyShape;
+    }
+  }
 }

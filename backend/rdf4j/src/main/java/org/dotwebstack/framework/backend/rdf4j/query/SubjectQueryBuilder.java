@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
+import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -110,13 +112,23 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   private void buildOrderBy(List<OrderContext> contexts) {
     contexts.forEach(orderContext -> {
       query.orderBy(orderContext.getOrderable());
-
-      TriplePattern triplePattern = GraphPatterns.tp(SUBJECT_VAR, orderContext.getPropertyShape()
-          .getPath()
-          .toPredicate(), SparqlBuilder.var(orderContext.getField()));
-
-      whereBuilder.put(triplePattern.getQueryString(), triplePattern);
+      addOrderByTriple(SUBJECT_VAR, orderContext.getFields());
     });
+  }
+
+  private void addOrderByTriple(Variable subject, List<OrderContext.Field> fields) {
+    OrderContext.Field field = fields.get(0);
+    Variable object = SparqlBuilder.var(field.getFieldName());
+
+    TriplePattern pattern = GraphPatterns.tp(subject, field.getPropertyShape()
+        .getPath()
+        .toPredicate(), object);
+    whereBuilder.put(pattern.getQueryString(), pattern);
+
+    fields.remove(0);
+    if (!fields.isEmpty()) {
+      addOrderByTriple(object, fields);
+    }
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
@@ -136,47 +148,64 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   private OrderContext getOrderContext(Map<String, String> orderMap) {
-    String field = orderMap.get("field");
+    String fieldName = orderMap.get("field");
     String order = orderMap.get("order");
 
-    Variable var = SparqlBuilder.var(field);
-    PropertyShape propertyShape = getPropertyShapeForField(field);
+    String[] fields = fieldName.split("\\.");
+    List<OrderContext.Field> elements = getContextField(new StringBuilder(), fields, nodeShape);
 
-    Orderable orderable = order.equalsIgnoreCase("desc") ? var.desc() : var.asc();
-    return new OrderContext(field, orderable, propertyShape);
+    // The order variable is the last field in the path.
+    Variable orderVar = SparqlBuilder.var(elements.get(elements.size() - 1)
+        .getFieldName());
+    Orderable orderable = order.equalsIgnoreCase("desc") ? orderVar.desc() : orderVar.asc();
+    return new OrderContext(elements, orderable);
   }
 
-  private PropertyShape getPropertyShapeForField(String field) {
-    // get the predicate property shape based on the order property field
-    PropertyShape pred = this.nodeShape.getPropertyShape(field);
-    if (pred == null) {
-      throw new IllegalArgumentException(String.format("Not possible to order by field %s, it does not exist on %s.",
-          field, nodeShape.getIdentifier()));
+  private List<OrderContext.Field> getContextField(StringBuilder pathBuilder, String[] fields, NodeShape nodeShape) {
+    String field = fields[0];
+    PropertyShape propertyShape = nodeShape.getPropertyShape(field);
+
+    if (propertyShape == null) {
+      throw ExceptionHelper.illegalArgumentException(String
+          .format("Not possible to order by fieldName %s, it does not exist on %s.", field, nodeShape.getIdentifier()));
     }
-    return pred;
+
+    if (!pathBuilder.toString()
+        .isEmpty()) {
+      pathBuilder.append("_");
+    }
+    pathBuilder.append(field);
+
+    ArrayList<OrderContext.Field> elements = new ArrayList<>();
+    elements.add(new OrderContext.Field(pathBuilder.toString(), propertyShape));
+    if (fields.length > 1) {
+      elements.addAll(getContextField(pathBuilder, ArrayUtils.remove(fields, 0), propertyShape.getNode()));
+    }
+
+    return elements;
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {
-    Optional<Integer> limit = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT,
+    Optional<Integer> limitOptional = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_LIMIT,
         sparqlDirective, context, Integer.class);
-    limit.ifPresent(i -> {
-      if (i < 1) {
-        throw new IllegalArgumentException("An error occured in the limit expression evaluation");
+    limitOptional.ifPresent(limit -> {
+      if (limit < 1) {
+        throw ExceptionHelper.illegalArgumentException("An error occured in the limit expression evaluation");
       }
     });
-    return limit;
+    return limitOptional;
   }
 
   Optional<Integer> getOffsetFromContext(MapContext context, GraphQLDirective sparqlDirective) {
-    Optional<Integer> offset = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET,
+    Optional<Integer> offsetOptional = this.jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_OFFSET,
         sparqlDirective, context, Integer.class);
 
-    offset.ifPresent(i -> {
-      if (i < 0) {
-        throw new IllegalArgumentException("An error occured in the offset expression evaluation");
+    offsetOptional.ifPresent(offset -> {
+      if (offset < 0) {
+        throw ExceptionHelper.illegalArgumentException("An error occured in the offset expression evaluation");
       }
     });
-    return offset;
+    return offsetOptional;
   }
 
   @SuppressWarnings("unchecked")

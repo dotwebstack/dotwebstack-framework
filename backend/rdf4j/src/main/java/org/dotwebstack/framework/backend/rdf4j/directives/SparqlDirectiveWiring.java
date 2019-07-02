@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.directives;
 
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
@@ -15,6 +16,7 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.arguments.SortFieldValidator;
 import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
@@ -67,13 +69,31 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
         .getConnection();
+
+    // startup time validation of default values for sort fields
+    SortFieldValidator sortFieldValidator = new SortFieldValidator(environment.getRegistry());
+    validateSortField(fieldDefinition, sortFieldValidator);
+
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
-        constraintTraverser, filterDirectiveTraverser);
+        constraintTraverser, filterDirectiveTraverser, sortFieldValidator);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
 
     return fieldDefinition;
+  }
+
+  private void validateSortField(GraphQLFieldDefinition fieldDefinition, SortFieldValidator sortFieldValidator) {
+    // the orderBy argument in the @sparl directive
+    GraphQLArgument orderByArgument = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME)
+        .getArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY);
+
+    // the argument in field definition to which the orderBy refers
+    GraphQLArgument sortArgument = fieldDefinition.getArgument((String) orderByArgument.getValue());
+
+    if (sortArgument != null && sortArgument.getDefaultValue() != null) {
+      sortFieldValidator.traverseArgument(fieldDefinition.getType(), sortArgument, sortArgument.getDefaultValue());
+    }
   }
 
 }

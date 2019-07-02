@@ -18,6 +18,7 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.arguments.SortFieldValidator;
 import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
@@ -49,23 +50,22 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final FilterDirectiveTraverser filterDirectiveTraverser;
 
+  private SortFieldValidator sortFieldValidator;
+
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
       Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
-      FilterDirectiveTraverser filterDirectiveTraverser) {
+      FilterDirectiveTraverser filterDirectiveTraverser, SortFieldValidator sortFieldValidator) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
     this.constraintTraverser = constraintTraverser;
     this.filterDirectiveTraverser = filterDirectiveTraverser;
+    this.sortFieldValidator = sortFieldValidator;
   }
 
   @Override
   public Object get(@NonNull DataFetchingEnvironment environment) {
-    GraphQLDirective sparqlDirective = environment.getFieldDefinition()
-        .getDirective(Rdf4jDirectives.SPARQL_NAME);
-    Map<GraphQLDirectiveContainer, Object> filterMapping =
-        filterDirectiveTraverser.getDirectiveContainers(environment, CoreDirectives.FILTER_NAME);
     GraphQLType outputType = GraphQLTypeUtil.unwrapNonNull(environment.getFieldType());
     GraphQLUnmodifiedType rawType = GraphQLTypeUtil.unwrapAll(outputType);
 
@@ -73,6 +73,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
     }
 
+    sortFieldValidator.traverse(environment);
     constraintTraverser.traverse(environment);
 
     QueryEnvironment queryEnvironment = QueryEnvironment.builder()
@@ -83,6 +84,10 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .build();
 
     // Find shapes matching request
+    GraphQLDirective sparqlDirective = environment.getFieldDefinition()
+        .getDirective(Rdf4jDirectives.SPARQL_NAME);
+    Map<GraphQLDirectiveContainer, Object> filterMapping =
+        filterDirectiveTraverser.getDirectiveContainers(environment, CoreDirectives.FILTER_NAME);
     List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, filterMapping, environment.getArguments(),
         repositoryConnection);
 

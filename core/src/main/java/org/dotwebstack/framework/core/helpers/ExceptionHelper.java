@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.helpers;
 
 import java.util.MissingFormatArgumentException;
 import org.dotwebstack.framework.core.DotWebStackRuntimeException;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 
 public class ExceptionHelper {
 
@@ -39,5 +40,9 @@ public class ExceptionHelper {
 
   public static UnsupportedOperationException unsupportedOperationException(String message, Object... arguments) {
     return new UnsupportedOperationException(formatMessage(message, arguments), findCause(arguments));
+  }
+
+  public static InvalidConfigurationException invalidConfigurationException(String message, Object... arguments) {
+    return new InvalidConfigurationException(formatMessage(message, arguments), findCause(arguments));
   }
 }
