@@ -75,7 +75,7 @@ class SortFieldValidatorTest {
   @Test
   public void validate_success_withOneField() {
     // Act / assert
-    sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1);
+    sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, null, null, FIELD_NAME_1);
   }
 
   @Test
@@ -86,7 +86,7 @@ class SortFieldValidatorTest {
     when(typeDefinition2.getFieldDefinitions()).thenReturn(Arrays.asList(fieldDefinition2));
 
     // Act / Assert
-    sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1 + "." + FIELD_NAME_2);
+    sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, null, null, FIELD_NAME_1 + "." + FIELD_NAME_2);
   }
 
   @Test
@@ -94,7 +94,7 @@ class SortFieldValidatorTest {
     // Act
 
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1 + ".UNKNOWN"));
+        () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, null, null, FIELD_NAME_1 + ".UNKNOWN"));
 
     // Assert
     assertTrue(thrown.getMessage()
@@ -106,7 +106,7 @@ class SortFieldValidatorTest {
   public void validate_error_withUnknownType() {
     // Act
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> sortFieldValidator.validateSortFieldValue("UNKNOWN", FIELD_NAME_1));
+        () -> sortFieldValidator.validateSortFieldValue("UNKNOWN", null, null, FIELD_NAME_1));
 
     // Assert
     assertTrue(thrown.getMessage()
@@ -121,7 +121,7 @@ class SortFieldValidatorTest {
 
     // Act
     InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
-        () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, FIELD_NAME_1));
+        () -> sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, null, null, FIELD_NAME_1));
 
     // Assert
     assertTrue(thrown.getMessage()

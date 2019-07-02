@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,16 +114,26 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     contexts.forEach(orderContext -> {
       query.orderBy(orderContext.getOrderable());
 
-      Variable subject = SUBJECT_VAR;
-      for (OrderContext.Field element : orderContext.getFields()) {
-        Variable objectVar = SparqlBuilder.var(element.getFieldName());
-        TriplePattern pattern = GraphPatterns.tp(subject, element.getPropertyShape()
-            .getPath()
-            .toPredicate(), objectVar);
-        whereBuilder.put(pattern.getQueryString(), pattern);
-        subject = objectVar;
-      }
+      orderContext.getFields()
+          .stream()
+          .map(field -> new AbstractMap.SimpleEntry<>(field, getSubject(orderContext, field)))
+          .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))
+          .forEach((field, subject) -> {
+            TriplePattern pattern = GraphPatterns.tp(subject, field.getPropertyShape()
+                .getPath()
+                .toPredicate(), SparqlBuilder.var(field.getFieldName()));
+            whereBuilder.put(pattern.getQueryString(), pattern);
+          });
     });
+  }
+
+  private Variable getSubject(OrderContext orderContext, OrderContext.Field field) {
+    int index = orderContext.getFields()
+        .indexOf(field);
+    return index == 0 ? SUBJECT_VAR
+        : SparqlBuilder.var(orderContext.getFields()
+            .get(index - 1)
+            .getFieldName());
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})

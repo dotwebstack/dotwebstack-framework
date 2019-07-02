@@ -18,11 +18,11 @@ import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLType;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.NonNull;
+import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 
@@ -71,7 +71,7 @@ public class SortFieldValidator {
       throw ExceptionHelper.illegalArgumentException("Sort field '{}' should contain '{}' field value.",
           fieldDefinitionType.getName(), CoreInputTypes.SORT_FIELD_FIELD);
     }
-    this.validateSortFieldValue(getTypeName(fieldDefinitionType), sortFieldValue.get());
+    this.validateSortFieldValue(getTypeName(fieldDefinitionType), null, null, sortFieldValue.get());
   }
 
   private Optional<String> getSortFieldValue(Object sortArgument) {
@@ -128,48 +128,41 @@ public class SortFieldValidator {
     }
   }
 
-  void validateSortFieldValue(String typeName, String sortFieldValue) {
-    List<String> fieldPath = Arrays.asList(sortFieldValue.split("\\."));
+  void validateSortFieldValue(String type, String parentField, String parentType, String fieldPath) {
+    String[] fields = fieldPath.split("\\.");
+    String field = fields[0];
+    TypeDefinition<?> typeDef = typeDefinitionRegistry.getType(type)
+        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Type '{}' not found in sort field path '{}'.",
+            type, fieldPath));
 
-    String currentType = typeName;
-    String parentField = "";
-    String parentType = "";
-    for (String field : fieldPath) {
-      @SuppressWarnings("rawtypes")
-      Optional<TypeDefinition> typeDef = typeDefinitionRegistry.getType(currentType);
-      if (!typeDef.isPresent()) {
-        throw ExceptionHelper.invalidConfigurationException("Type '{}' not found in sort field path '{}'.", currentType,
-            fieldPath);
+    if (typeDef instanceof ObjectTypeDefinition) {
+      Optional<FieldDefinition> matchedDefinition = ((ObjectTypeDefinition) typeDef).getFieldDefinitions()
+          .stream()
+          .filter(fieldDefinition -> fieldDefinition.getName()
+              .equals(field))
+          .findFirst();
+
+      if (!matchedDefinition.isPresent()) {
+        throw ExceptionHelper.invalidConfigurationException("Type '{}' has no Field '{}' for sort field path '{}'.",
+            type, field, fieldPath);
       }
 
-      if (typeDef.get() instanceof ObjectTypeDefinition) {
-        Optional<FieldDefinition> matchedDefinition = ((ObjectTypeDefinition) typeDef.get()).getFieldDefinitions()
-            .stream()
-            .filter(fieldDefinition -> fieldDefinition.getName()
-                .equals(field))
-            .findFirst();
-
-        if (!matchedDefinition.isPresent()) {
-          throw ExceptionHelper.invalidConfigurationException("Type '{}' has no Field '{}' for sort field path '{}'.",
-              currentType, field, fieldPath);
-        }
-
-        Type<?> type = matchedDefinition.get()
-            .getType();
-        if (hasListType(type)) {
-          throw ExceptionHelper.invalidConfigurationException(
-              "Type '{}' of Field '{}' used in sort field path '{}' is a List, which is not allowed for sorting.", type,
-              field, fieldPath);
-        }
-        parentField = field;
-        parentType = currentType;
-        currentType = getTypeName(type);
-      } else {
+      Type<?> matchedType = matchedDefinition.get()
+          .getType();
+      if (hasListType(matchedType)) {
         throw ExceptionHelper.invalidConfigurationException(
-            "Field '{}' on Type '{}' is required to be an object type (since it is not used as a leaf in the sort "
-                + "argument), but was of type '{}'.",
-            parentField, parentType, currentType);
+            "Type '{}' of Field '{}' used in sort field path '{}' is a List, which is not allowed for sorting.", type,
+            field, fieldPath);
       }
+
+      if (fields.length > 1) {
+        validateSortFieldValue(getTypeName(matchedType), field,  typeDef.getName(),
+            String.join(".", ArrayUtils.removeElement(fields, field)));
+      }
+    } else {
+      throw ExceptionHelper.invalidConfigurationException(
+          "Field '{}' on Type '{}' is required to be an object type, but was of type '{}'.", parentField, parentType,
+          type);
     }
   }
 }

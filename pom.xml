@@ -85,6 +85,11 @@
         <version>1.6</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.9</version>
+      </dependency>
+      <dependency>
         <groupId>org.zalando</groupId>
         <artifactId>problem-spring-webflux</artifactId>
         <version>0.24.0-RC.0</version>
