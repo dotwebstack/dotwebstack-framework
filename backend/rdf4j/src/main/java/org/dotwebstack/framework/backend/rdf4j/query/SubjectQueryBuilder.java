@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -113,27 +112,23 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   private void buildOrderBy(List<OrderContext> contexts) {
     contexts.forEach(orderContext -> {
       query.orderBy(orderContext.getOrderable());
-
-      orderContext.getFields()
-          .stream()
-          .map(field -> new AbstractMap.SimpleEntry<>(field, getSubject(orderContext, field)))
-          .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue))
-          .forEach((field, subject) -> {
-            TriplePattern pattern = GraphPatterns.tp(subject, field.getPropertyShape()
-                .getPath()
-                .toPredicate(), SparqlBuilder.var(field.getFieldName()));
-            whereBuilder.put(pattern.getQueryString(), pattern);
-          });
+      addOrderByTriple(SUBJECT_VAR, orderContext.getFields());
     });
   }
 
-  private Variable getSubject(OrderContext orderContext, OrderContext.Field field) {
-    int index = orderContext.getFields()
-        .indexOf(field);
-    return index == 0 ? SUBJECT_VAR
-        : SparqlBuilder.var(orderContext.getFields()
-            .get(index - 1)
-            .getFieldName());
+  private void addOrderByTriple(Variable subject, List<OrderContext.Field> fields) {
+    OrderContext.Field field = fields.get(0);
+    Variable object = SparqlBuilder.var(field.getFieldName());
+
+    TriplePattern pattern = GraphPatterns.tp(subject, field.getPropertyShape()
+        .getPath()
+        .toPredicate(), object);
+    whereBuilder.put(pattern.getQueryString(), pattern);
+
+    fields.remove(0);
+    if (!fields.isEmpty()) {
+      addOrderByTriple(object, fields);
+    }
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
