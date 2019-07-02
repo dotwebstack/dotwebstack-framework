@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang3.ArrayUtils;
@@ -114,23 +113,15 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     contexts.forEach(orderContext -> {
       query.orderBy(orderContext.getOrderable());
 
-      IntStream.range(0, orderContext.getFields()
-          .size())
-          .forEachOrdered(integer -> {
-            OrderContext.Field field = orderContext.getFields()
-                .get(integer);
-            OrderContext.Field previous = integer == 0 ? null
-                : orderContext.getFields()
-                    .get(integer - 1);
-
-            Variable subject = previous == null ? SUBJECT_VAR : SparqlBuilder.var(previous.getFieldName());
-            Variable object = SparqlBuilder.var(field.getFieldName());
-
-            TriplePattern pattern = GraphPatterns.tp(subject, field.getPropertyShape()
-                .getPath()
-                .toPredicate(), object);
-            whereBuilder.put(pattern.getQueryString(), pattern);
-          });
+      Variable subject = SUBJECT_VAR;
+      for (OrderContext.Field element : orderContext.getFields()) {
+        Variable objectVar = SparqlBuilder.var(element.getFieldName());
+        TriplePattern pattern = GraphPatterns.tp(subject, element.getPropertyShape()
+            .getPath()
+            .toPredicate(), objectVar);
+        whereBuilder.put(pattern.getQueryString(), pattern);
+        subject = objectVar;
+      }
     });
   }
 
