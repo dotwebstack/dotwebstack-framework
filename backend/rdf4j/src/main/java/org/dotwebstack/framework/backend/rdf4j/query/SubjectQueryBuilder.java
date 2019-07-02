@@ -170,7 +170,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
           .format("Not possible to order by fieldName %s, it does not exist on %s.", field, nodeShape.getIdentifier()));
     }
 
-    if (!pathBuilder.toString().isEmpty()) {
+    if (!pathBuilder.toString()
+        .isEmpty()) {
       pathBuilder.append("_");
     }
     pathBuilder.append(field);
