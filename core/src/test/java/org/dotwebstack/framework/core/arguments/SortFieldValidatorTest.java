@@ -13,6 +13,7 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Arrays;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

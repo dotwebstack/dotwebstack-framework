@@ -8,6 +8,7 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,11 +28,11 @@ class ConstraintDirectiveWiringTest {
   private SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> inputObjectFieldEnvironment;
 
   @Mock
-  private ConstraintTraverser constraintTraverser;
+  private ConstraintValidator constraintValidator;
 
   @BeforeEach
   void doBefore() {
-    constraintDirectiveWiring = new ConstraintDirectiveWiring(constraintTraverser);
+    constraintDirectiveWiring = new ConstraintDirectiveWiring(constraintValidator);
   }
 
   @Test
@@ -47,7 +48,7 @@ class ConstraintDirectiveWiringTest {
 
     constraintDirectiveWiring.onArgument(argumentEnvironment);
 
-    verify(constraintTraverser).onArguments(argument, null);
+    verify(constraintValidator).validateArgument(argument);
   }
 
   @Test
@@ -70,7 +71,7 @@ class ConstraintDirectiveWiringTest {
 
     constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment);
 
-    verify(constraintTraverser).onInputObjectField(field, null);
+    verify(constraintValidator).validateInputObjectField(field);
   }
 
 

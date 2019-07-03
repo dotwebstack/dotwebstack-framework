@@ -31,6 +31,8 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
+  private static final String ROOT_SUBJECT = "?x0";
+
   private final List<IRI> subjects;
 
   private Map<String, List<TriplePattern>> nestedTriples = new HashMap<>();
@@ -44,6 +46,38 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
   static GraphQueryBuilder create(QueryEnvironment environment, List<IRI> subjects) {
     return new GraphQueryBuilder(environment, subjects);
+  }
+
+  String getQueryString() {
+    Variable subjectVar = query.var();
+    NodeShape nodeShape = environment.getNodeShapeRegistry()
+        .get(environment.getObjectType());
+
+    List<TriplePattern> triplePatterns = getTriplePatterns(environment.getSelectionSet()
+        .getFields(), nodeShape, subjectVar);
+
+    Expression<?> filterExpr = Expressions.or(Iterables.toArray(subjects.stream()
+        .map(subject -> Expressions.equals(subjectVar, Rdf.iri(subject)))
+        .collect(Collectors.toList()), Expression.class));
+
+    List<GraphPattern> wherePatterns = triplePatterns.stream()
+        .map(this::getGraphPattern)
+        .collect(Collectors.toList());
+
+    // Fetch type statement to discover if subject exists (e.g. in case of only nullable fields)
+    TriplePattern typePattern = GraphPatterns.tp(subjectVar, RDF.TYPE, nodeShape.getTargetClass());
+
+    triplePatterns.addAll(nestedTriples.values()
+        .stream()
+        .flatMap(List::stream)
+        .collect(Collectors.toList()));
+
+    query.construct(typePattern)
+        .construct(Iterables.toArray(triplePatterns, TriplePattern.class))
+        .where(typePattern.filter(filterExpr)
+            .and(Iterables.toArray(wherePatterns, GraphPattern.class)));
+
+    return query.getQueryString();
   }
 
   private List<TriplePattern> getTriplePatterns(List<SelectedField> fields, NodeShape nodeShape, Variable subject) {
@@ -65,7 +99,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     TriplePattern triple = GraphPatterns.tp(subject, propertyShape.getPath()
         .toPredicate(), variable);
 
-    if ("?x0".equals(subject.getQueryString())) {
+    if (ROOT_SUBJECT.equals(subject.getQueryString())) {
       result.add(triple);
     } else {
       List<TriplePattern> triples = nestedTriples.getOrDefault(subject.getQueryString(), new ArrayList<>());
@@ -75,11 +109,11 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     if (propertyShape.getNode() != null) {
       List<TriplePattern> triples = nestedTriples.getOrDefault(variable.getQueryString(), new ArrayList<>());
-      TriplePattern additional = GraphPatterns.tp(variable, RDF.TYPE, propertyShape.getNode()
+      TriplePattern nonOptional = GraphPatterns.tp(variable, RDF.TYPE, propertyShape.getNode()
           .getTargetClass());
-      triples.add(additional);
+      triples.add(nonOptional);
       nestedTriples.put(variable.getQueryString(), triples);
-      nonOptionals.add(additional);
+      nonOptionals.add(nonOptional);
     }
 
     if (!GraphQLTypeUtil.isLeaf(fieldType)) {
@@ -110,43 +144,15 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     return type;
   }
 
-  String getQueryString() {
-    Variable subjectVar = query.var();
-    NodeShape nodeShape = environment.getNodeShapeRegistry()
-        .get(environment.getObjectType());
-
-    List<TriplePattern> triplePatterns = getTriplePatterns(environment.getSelectionSet()
-        .getFields(), nodeShape, subjectVar);
-
-    Expression<?> filterExpr = Expressions.or(Iterables.toArray(subjects.stream()
-        .map(subject -> Expressions.equals(subjectVar, Rdf.iri(subject)))
-        .collect(Collectors.toList()), Expression.class));
-
-    List<GraphPattern> wherePatterns = triplePatterns.stream()
-        .map(triple -> getGraphPattern(triple))
-        .collect(Collectors.toList());
-
-    // Fetch type statement to discover if subject exists (e.g. in case of only nullable fields)
-    TriplePattern typePattern = GraphPatterns.tp(subjectVar, RDF.TYPE, nodeShape.getTargetClass());
-
-    triplePatterns.addAll(nestedTriples.values()
-        .stream()
-        .flatMap(List::stream)
-        .collect(Collectors.toList()));
-
-    query.construct(typePattern)
-        .construct(Iterables.toArray(triplePatterns, TriplePattern.class))
-        .where(typePattern.filter(filterExpr)
-            .and(Iterables.toArray(wherePatterns, GraphPattern.class)));
-
-    return query.getQueryString();
-  }
-
   private GraphPattern getGraphPattern(TriplePattern triple) {
     String tripleSubject = triple.getQueryString()
         .split(" ")[2];
     if (nestedTriples.containsKey(tripleSubject)) {
-      List<TriplePattern> triples = nestedTriples.get(tripleSubject);
+      List<GraphPattern> triples = nestedTriples.get(tripleSubject)
+          .stream()
+          .map(this::getGraphPattern)
+          .collect(Collectors.toList());
+
       return triple.optional()
           .and(triples.stream()
               .map(additionalTriple -> {

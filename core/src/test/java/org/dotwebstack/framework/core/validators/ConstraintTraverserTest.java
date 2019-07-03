@@ -1,8 +1,8 @@
-package org.dotwebstack.framework.core.directives;
+package org.dotwebstack.framework.core.validators;
 
 import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLString;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.when;
 
 import graphql.schema.DataFetchingEnvironment;
@@ -12,7 +12,8 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLNonNull;
-import java.util.Collections;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.traversers.ConstraintTraverser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,23 +32,14 @@ class ConstraintTraverserTest {
   @Mock
   private GraphQLDirective directive;
 
-  private ConstraintTraverser constraintTraverser;
-
   @BeforeEach
   void doBefore() {
-    constraintTraverser = new ConstraintTraverser(constraintValidator);
+    constraintValidator = new ConstraintValidator(new ConstraintTraverser());
   }
 
   @Test
   void traverse() {
-    GraphQLArgument directiveArgument = GraphQLArgument.newArgument()
-        .name(CoreDirectives.CONSTRAINT_ARG_MAX)
-        .type(GraphQLInt)
-        .value(10)
-        .build();
-
     when(directive.getName()).thenReturn(CoreDirectives.CONSTRAINT_NAME);
-    when(directive.getArguments()).thenReturn(Collections.singletonList(directiveArgument));
 
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name("argfield")
@@ -77,8 +69,6 @@ class ConstraintTraverserTest {
 
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
 
-    constraintTraverser.traverse(dataFetchingEnvironment);
-
-    verify(constraintValidator).validate(directiveArgument, "field", 1);
+    assertDoesNotThrow(() -> constraintValidator.validateDataFetchingEnvironment(dataFetchingEnvironment));
   }
 }

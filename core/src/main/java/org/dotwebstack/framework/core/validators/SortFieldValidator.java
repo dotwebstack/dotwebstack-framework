@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.arguments;
+package org.dotwebstack.framework.core.validators;
 
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
@@ -128,7 +128,7 @@ public class SortFieldValidator {
     }
   }
 
-  void validateSortFieldValue(String type, String parentField, String parentType, String fieldPath) {
+  public void validateSortFieldValue(String type, String parentField, String parentType, String fieldPath) {
     String[] fields = fieldPath.split("\\.");
     String field = fields[0];
     TypeDefinition<?> typeDef = typeDefinitionRegistry.getType(type)

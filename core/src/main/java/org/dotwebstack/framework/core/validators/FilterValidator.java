@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.directives;
+package org.dotwebstack.framework.core.validators;
 
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeDefinition;
@@ -13,6 +13,10 @@ import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Optional;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.DirectiveValidationException;
+import org.dotwebstack.framework.core.directives.FilterOperator;
+import org.dotwebstack.framework.core.traversers.FilterDirectiveTraverser;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,17 +28,18 @@ public class FilterValidator {
     this.filterDirectiveTraverser = filterDirectiveTraverser;
   }
 
-  void validateArgumentEnvironment(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
+  public void validateArgumentEnvironment(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     environment.getElementParentTree()
         .getParentInfo()
         .ifPresent(parentInfo -> {
           GraphQLObjectType type = (GraphQLObjectType) GraphQLTypeUtil
               .unwrapAll(((GraphQLFieldDefinition) parentInfo.getElement()).getType());
-          this.validate(environment.getElement(), environment.getRegistry(), type.getName());
+          this.validateDirectiveContainer(environment.getElement(), environment.getRegistry(), type.getName());
         });
   }
 
-  void validateInputObjectFieldEnvironment(SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
+  public void validateInputObjectFieldEnvironment(
+      SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     TypeDefinitionRegistry registry = environment.getRegistry();
 
     environment.getElementParentTree()
@@ -43,12 +48,13 @@ public class FilterValidator {
           TypeDefinition<?> typeDefinition = registry.types()
               .get(parentInfo.getElement()
                   .getName());
-          filterDirectiveTraverser.getReturnTypes(typeDefinition, registry)
-              .forEach(typeName -> validate(environment.getElement(), registry, typeName));
+          filterDirectiveTraverser.getPathToQuery(typeDefinition, registry)
+              .forEach(typeName -> validateDirectiveContainer(environment.getElement(), registry, typeName));
         });
   }
 
-  private void validate(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry, String typeName) {
+  private void validateDirectiveContainer(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
+      String typeName) {
     GraphQLDirective directive = container.getDirective(CoreDirectives.FILTER_NAME);
     directive.getArguments()
         .forEach(

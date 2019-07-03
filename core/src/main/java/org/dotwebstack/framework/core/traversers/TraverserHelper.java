@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.helpers;
+package org.dotwebstack.framework.core.traversers;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.language.ListType;
@@ -7,21 +7,21 @@ import graphql.language.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FilterHelper {
+class TraverserHelper {
 
-  private FilterHelper() {}
+  private TraverserHelper() {}
 
-  public static Map<String, Object> flattenArguments(Map<String, Object> arguments) {
+  static Map<String, Object> flattenArguments(Map<String, Object> arguments) {
     return arguments.entrySet()
         .stream()
-        .flatMap(entry -> FilterHelper.flatten(entry)
+        .flatMap(entry -> TraverserHelper.flatten(entry)
             .entrySet()
             .stream())
         .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
   }
 
   @SuppressWarnings("unchecked")
-  public static Map<String, Object> flatten(Map.Entry<String, Object> entry) {
+  static Map<String, Object> flatten(Map.Entry<String, Object> entry) {
     if (entry.getValue() instanceof Map) {
       return ((Map<String, Object>) entry.getValue()).entrySet()
           .stream()
@@ -33,7 +33,7 @@ public class FilterHelper {
     return ImmutableMap.of(entry.getKey(), entry.getValue());
   }
 
-  public static Type<?> getBaseType(Type<?> type) {
+  static Type<?> getBaseType(Type<?> type) {
     if (type instanceof ListType) {
       return getBaseType((Type<?>) type.getChildren()
           .get(0));

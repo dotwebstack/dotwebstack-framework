@@ -18,11 +18,10 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.core.arguments.SortFieldValidator;
-import org.dotwebstack.framework.core.directives.ConstraintTraverser;
-import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
-import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.traversers.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.validators.ConstraintValidator;
+import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -46,20 +45,20 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final JexlEngine jexlEngine;
 
-  private final ConstraintTraverser constraintTraverser;
+  private final ConstraintValidator constraintValidator;
 
   private final FilterDirectiveTraverser filterDirectiveTraverser;
 
   private SortFieldValidator sortFieldValidator;
 
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
-      Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
+      Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintValidator constraintValidator,
       FilterDirectiveTraverser filterDirectiveTraverser, SortFieldValidator sortFieldValidator) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
-    this.constraintTraverser = constraintTraverser;
+    this.constraintValidator = constraintValidator;
     this.filterDirectiveTraverser = filterDirectiveTraverser;
     this.sortFieldValidator = sortFieldValidator;
   }
@@ -74,7 +73,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     }
 
     sortFieldValidator.traverse(environment);
-    constraintTraverser.traverse(environment);
+    constraintValidator.validateDataFetchingEnvironment(environment);
 
     QueryEnvironment queryEnvironment = QueryEnvironment.builder()
         .objectType((GraphQLObjectType) rawType)
@@ -86,10 +85,12 @@ public final class QueryFetcher implements DataFetcher<Object> {
     // Find shapes matching request
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
-    Map<GraphQLDirectiveContainer, Object> filterMapping =
+    Map<GraphQLDirectiveContainer, Object> inputObjectFilters =
         filterDirectiveTraverser.getInputObjectDirectiveContainers(environment);
-    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, filterMapping, environment.getArguments(),
-        repositoryConnection);
+    Map<GraphQLDirectiveContainer, Object> objectFilters =
+        filterDirectiveTraverser.getObjectDirectiveContainers(environment);
+    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, inputObjectFilters,
+        environment.getArguments(), repositoryConnection);
 
     // Fetch graph for given subjects
     Model model = fetchGraph(queryEnvironment, subjects, repositoryConnection);

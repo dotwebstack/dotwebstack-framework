@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.directives;
+package org.dotwebstack.framework.core.validators;
 
 import static graphql.Scalars.GraphQLString;
 import static graphql.language.TypeName.newTypeName;
@@ -14,6 +14,9 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.DirectiveValidationException;
+import org.dotwebstack.framework.core.traversers.FilterDirectiveTraverser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
