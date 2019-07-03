@@ -11,6 +11,15 @@ public class FilterHelper {
 
   private FilterHelper() {}
 
+  public static Map<String, Object> flattenArguments(Map<String, Object> arguments) {
+    return arguments.entrySet()
+        .stream()
+        .flatMap(entry -> FilterHelper.flatten(entry)
+            .entrySet()
+            .stream())
+        .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
+  }
+
   @SuppressWarnings("unchecked")
   public static Map<String, Object> flatten(Map.Entry<String, Object> entry) {
     if (entry.getValue() instanceof Map) {

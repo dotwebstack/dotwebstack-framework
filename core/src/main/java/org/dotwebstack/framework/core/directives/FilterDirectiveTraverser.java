@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.directives;
 
+import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ObjectTypeDefinition;
@@ -28,68 +29,26 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class FilterDirectiveTraverser {
+public class FilterDirectiveTraverser extends TraversingValidator {
 
   public Map<GraphQLDirectiveContainer, Object> getInputObjectDirectiveContainers(
-      DataFetchingEnvironment dataFetchingEnvironment, String directiveName) {
+      DataFetchingEnvironment dataFetchingEnvironment) {
     GraphQLFieldDefinition fieldDefinition = dataFetchingEnvironment.getFieldDefinition();
-
-    getObjectDirectiveContainers((GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType()));
-
-    Map<String, Object> flattenedArguments = dataFetchingEnvironment.getArguments()
-        .entrySet()
-        .stream()
-        .flatMap(entry -> FilterHelper.flatten(entry)
-            .entrySet()
-            .stream())
-        .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
+    Map<String, Object> flattenedArguments = FilterHelper.flattenArguments(dataFetchingEnvironment.getArguments());
 
     return fieldDefinition.getArguments()
         .stream()
         .flatMap(argument -> getInputObjectFieldsFromArgument(argument).stream())
-        .filter(directiveContainer -> directiveContainer.getDirective(directiveName) != null)
+        .filter(directiveContainer -> directiveContainer.getDirective(CoreDirectives.FILTER_NAME) != null)
         .map(directiveContainer -> new AbstractMap.SimpleEntry<>(directiveContainer,
             flattenedArguments.get(directiveContainer.getName())))
         .filter(entry -> entry.getValue() != null)
         .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
   }
 
-  private Map<GraphQLDirectiveContainer, Object> getObjectDirectiveContainers(GraphQLObjectType graphQLObjectType) {
-    // 1. get the filters from current field
-    graphQLObjectType.getFieldDefinitions()
-        .stream()
-        .filter(fieldDefinition -> fieldDefinition.getDirective(CoreDirectives.FILTER_NAME) != null)
-        .collect(Collectors.toList());
-
-    // 2. get the object types to repeat the process
-  }
-
-  private List<GraphQLDirectiveContainer> getInputObjectFieldsFromArgument(GraphQLArgument argument) {
-    if (argument.getType() instanceof GraphQLInputObjectType) {
-      return getInputObjectFieldsFromObjectType((GraphQLInputObjectType) argument.getType());
-    } else if ((GraphQLTypeUtil.unwrapAll(argument.getType()) instanceof GraphQLScalarType)) {
-      return Collections.singletonList(argument);
-    }
-
-    return Collections.emptyList();
-  }
-
-  private List<GraphQLDirectiveContainer> getInputObjectFieldsFromObjectType(GraphQLInputObjectType inputObjectType) {
-    List<GraphQLDirectiveContainer> directiveContainers = new ArrayList<>();
-    // Process nested inputObjectTypes
-    directiveContainers.addAll(inputObjectType.getFields()
-        .stream()
-        .filter(field -> field.getType() instanceof GraphQLInputObjectType)
-        .flatMap(field -> getInputObjectFieldsFromObjectType((GraphQLInputObjectType) field.getType()).stream())
-        .collect(Collectors.toList()));
-
-    // Process fields on inputObjectType
-    directiveContainers.addAll(inputObjectType.getFields()
-        .stream()
-        .filter(field -> GraphQLTypeUtil.unwrapAll(field.getType()) instanceof GraphQLScalarType)
-        .collect(Collectors.toList()));
-
-    return directiveContainers;
+  public Map<GraphQLDirectiveContainer, Object> getObjectDirectiveContainers(
+      DataFetchingEnvironment dataFetchingEnvironment) {
+    return getSelectionFieldArguments(dataFetchingEnvironment, CoreDirectives.FILTER_NAME);
   }
 
   List<String> getReturnTypes(TypeDefinition<?> baseType, TypeDefinitionRegistry registry) {
