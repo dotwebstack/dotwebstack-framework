@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
 
 public class SortFieldValidator {
@@ -70,8 +69,8 @@ public class SortFieldValidator {
   private void validateSortField(GraphQLType fieldDefinitionType, Object value) {
     Optional<String> sortFieldValue = getSortFieldValue(value);
     if (!sortFieldValue.isPresent()) {
-      throw illegalArgumentException("Sort field '{}' should contain '{}' field value.",
-          fieldDefinitionType.getName(), CoreInputTypes.SORT_FIELD_FIELD);
+      throw illegalArgumentException("Sort field '{}' should contain '{}' field value.", fieldDefinitionType.getName(),
+          CoreInputTypes.SORT_FIELD_FIELD);
     }
     this.validateSortFieldValue(getTypeName(fieldDefinitionType), null, null, sortFieldValue.get());
   }
@@ -134,8 +133,8 @@ public class SortFieldValidator {
     String[] fields = fieldPath.split("\\.");
     String field = fields[0];
     TypeDefinition<?> typeDef = typeDefinitionRegistry.getType(type)
-        .orElseThrow(() -> invalidConfigurationException("Type '{}' not found in sort field path '{}'.",
-            type, fieldPath));
+        .orElseThrow(
+            () -> invalidConfigurationException("Type '{}' not found in sort field path '{}'.", type, fieldPath));
 
     if (typeDef instanceof ObjectTypeDefinition) {
       Optional<FieldDefinition> matchedDefinition = ((ObjectTypeDefinition) typeDef).getFieldDefinitions()
@@ -145,8 +144,8 @@ public class SortFieldValidator {
           .findFirst();
 
       if (!matchedDefinition.isPresent()) {
-        throw invalidConfigurationException("Type '{}' has no Field '{}' for sort field path '{}'.",
-            type, field, fieldPath);
+        throw invalidConfigurationException("Type '{}' has no Field '{}' for sort field path '{}'.", type, field,
+            fieldPath);
       }
 
       Type<?> matchedType = matchedDefinition.get()

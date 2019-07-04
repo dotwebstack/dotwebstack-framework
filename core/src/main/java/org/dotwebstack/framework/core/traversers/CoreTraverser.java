@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.traversers;
 
+import static java.util.Collections.emptyList;
+
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ObjectTypeDefinition;
@@ -14,14 +16,15 @@ import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Component;
+
 
 @Component
 public class CoreTraverser {
@@ -68,20 +71,20 @@ public class CoreTraverser {
    * from a given input object type
    */
   public List<String> getPathToQuery(TypeDefinition<?> baseType, TypeDefinitionRegistry registry) {
-    List<String> typeNames = new ArrayList<>();
-
-    registry.types()
+    return registry.types()
         .keySet()
-        .forEach(item -> registry.getType(item)
-            .ifPresent(compareType -> {
-              if (compareType instanceof ObjectTypeDefinition) {
-                typeNames.addAll(traverseObjectType(registry, baseType, (ObjectTypeDefinition) compareType));
-              } else if (compareType instanceof InputObjectTypeDefinition) {
-                typeNames.addAll(traverseInputObjectType(registry, baseType, compareType));
-              }
-            }));
-
-    return typeNames;
+        .stream()
+        .map(registry::getType)
+        .map(Optional::get)
+        .flatMap(typeDefinition -> {
+          if (typeDefinition instanceof ObjectTypeDefinition) {
+            return traverseObjectType(registry, baseType, (ObjectTypeDefinition) typeDefinition).stream();
+          } else if (typeDefinition instanceof InputObjectTypeDefinition) {
+            return traverseInputObjectType(registry, baseType, typeDefinition).stream();
+          }
+          return Stream.empty();
+        })
+        .collect(Collectors.toList());
   }
 
 
@@ -96,7 +99,7 @@ public class CoreTraverser {
       return Collections.singletonList(argument);
     }
 
-    return Collections.emptyList();
+    return emptyList();
   }
 
   /*
@@ -104,22 +107,17 @@ public class CoreTraverser {
    * object type
    */
   private List<GraphQLDirectiveContainer> getInputObjectFieldsFromObjectType(GraphQLInputObjectType inputObjectType) {
-    List<GraphQLDirectiveContainer> directiveContainers = new ArrayList<>();
-
-    // Process nested inputObjectTypes
-    directiveContainers.addAll(inputObjectType.getFields()
+    return inputObjectType.getFields()
         .stream()
-        .filter(field -> field.getType() instanceof GraphQLInputObjectType)
-        .flatMap(field -> getInputObjectFieldsFromObjectType((GraphQLInputObjectType) field.getType()).stream())
-        .collect(Collectors.toList()));
-
-    // Process fields on inputObjectType
-    directiveContainers.addAll(inputObjectType.getFields()
-        .stream()
-        .filter(field -> GraphQLTypeUtil.unwrapAll(field.getType()) instanceof GraphQLScalarType)
-        .collect(Collectors.toList()));
-
-    return directiveContainers;
+        .flatMap(field -> {
+          if (field.getType() instanceof GraphQLInputObjectType) {
+            return getInputObjectFieldsFromObjectType((GraphQLInputObjectType) field.getType()).stream();
+          } else if (GraphQLTypeUtil.unwrapAll(field.getType()) instanceof GraphQLScalarType) {
+            return Stream.of(field);
+          }
+          return Stream.empty();
+        })
+        .collect(Collectors.toList());
   }
 
   /*
@@ -158,7 +156,7 @@ public class CoreTraverser {
     if (inputValueDefinition.isPresent()) {
       return getPathToQuery(parentType, registry);
     }
-    return Collections.emptyList();
+    return emptyList();
   }
 
 }

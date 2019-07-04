@@ -88,8 +88,8 @@ public class FilterValidator {
         .noneMatch(fieldDefinition -> fieldDefinition.getName()
             .equals(fieldName))) {
 
-      throw new DirectiveValidationException(
-          "Filter 'field' [{}] is invalid. It does not exist on type '{}'", fieldName, typeName);
+      throw new DirectiveValidationException("Filter 'field' [{}] is invalid. It does not exist on type '{}'",
+          fieldName, typeName);
     }
   }
 

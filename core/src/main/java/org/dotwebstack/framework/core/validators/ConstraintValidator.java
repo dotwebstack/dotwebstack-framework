@@ -30,8 +30,7 @@ public class ConstraintValidator {
 
   public void validateDataFetchingEnvironment(DataFetchingEnvironment dataFetchingEnvironment) {
     coreTraverser.getInputObjectDirectiveContainers(dataFetchingEnvironment, CoreDirectives.CONSTRAINT_NAME)
-        .entrySet()
-        .forEach(entry -> validate(entry.getKey(), entry.getValue()));
+        .forEach(this::validate);
 
     if (dataFetchingEnvironment.getSelectionSet() != null) {
       coreTraverser.getObjectTypes(dataFetchingEnvironment)

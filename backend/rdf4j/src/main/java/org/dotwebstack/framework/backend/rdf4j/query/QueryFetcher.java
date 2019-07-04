@@ -19,7 +19,7 @@ import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
-import org.dotwebstack.framework.core.traversers.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.eclipse.rdf4j.model.IRI;
@@ -47,19 +47,19 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final ConstraintValidator constraintValidator;
 
-  private final FilterDirectiveTraverser filterDirectiveTraverser;
+  private final CoreTraverser coreTraverser;
 
   private SortFieldValidator sortFieldValidator;
 
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
       Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintValidator constraintValidator,
-      FilterDirectiveTraverser filterDirectiveTraverser, SortFieldValidator sortFieldValidator) {
+      CoreTraverser coreTraverser, SortFieldValidator sortFieldValidator) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
     this.constraintValidator = constraintValidator;
-    this.filterDirectiveTraverser = filterDirectiveTraverser;
+    this.coreTraverser = coreTraverser;
     this.sortFieldValidator = sortFieldValidator;
   }
 
@@ -86,9 +86,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
     Map<GraphQLDirectiveContainer, Object> inputObjectFilters =
-        filterDirectiveTraverser.getInputObjectDirectiveContainers(environment);
-    Map<GraphQLDirectiveContainer, Object> objectFilters =
-        filterDirectiveTraverser.getObjectDirectiveContainers(environment);
+        coreTraverser.getInputObjectDirectiveContainers(environment, sparqlDirective.getName());
+
     List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, inputObjectFilters,
         environment.getArguments(), repositoryConnection);
 
