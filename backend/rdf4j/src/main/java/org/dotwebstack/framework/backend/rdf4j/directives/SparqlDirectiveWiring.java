@@ -17,7 +17,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
-import org.dotwebstack.framework.core.traversers.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -37,18 +37,18 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private ConstraintValidator constraintValidator;
 
-  private FilterDirectiveTraverser filterDirectiveTraverser;
+  private CoreTraverser coreTraverser;
 
   public SparqlDirectiveWiring(RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
       Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintValidator constraintValidator,
-      FilterDirectiveTraverser filterDirectiveTraverser) {
+      CoreTraverser coreTraverser) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null ? HashBiMap.create(rdf4jProperties.getPrefixes())
         .inverse() : ImmutableMap.of();
     this.jexlEngine = jexlEngine;
     this.constraintValidator = constraintValidator;
-    this.filterDirectiveTraverser = filterDirectiveTraverser;
+    this.coreTraverser = coreTraverser;
   }
 
   @Override
@@ -75,7 +75,7 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     validateSortField(fieldDefinition, sortFieldValidator);
 
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
-        constraintValidator, filterDirectiveTraverser, sortFieldValidator);
+        constraintValidator, coreTraverser, sortFieldValidator);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
