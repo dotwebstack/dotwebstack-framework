@@ -13,7 +13,7 @@ import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLNonNull;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
-import org.dotwebstack.framework.core.traversers.ConstraintTraverser;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +34,7 @@ class ConstraintTraverserTest {
 
   @BeforeEach
   void doBefore() {
-    constraintValidator = new ConstraintValidator(new ConstraintTraverser());
+    constraintValidator = new ConstraintValidator(new CoreTraverser());
   }
 
   @Test

@@ -16,25 +16,25 @@ import graphql.schema.GraphQLInputObjectField;
 import java.util.List;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
-import org.dotwebstack.framework.core.traversers.ConstraintTraverser;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ConstraintValidator {
 
-  private final ConstraintTraverser constraintTraverser;
+  private final CoreTraverser coreTraverser;
 
-  public ConstraintValidator(ConstraintTraverser constraintTraverser) {
-    this.constraintTraverser = constraintTraverser;
+  public ConstraintValidator(CoreTraverser coreTraverser) {
+    this.coreTraverser = coreTraverser;
   }
 
   public void validateDataFetchingEnvironment(DataFetchingEnvironment dataFetchingEnvironment) {
-    constraintTraverser.getInputObjectDirectiveContainers(dataFetchingEnvironment)
+    coreTraverser.getInputObjectDirectiveContainers(dataFetchingEnvironment, CoreDirectives.CONSTRAINT_NAME)
         .entrySet()
         .forEach(entry -> validate(entry.getKey(), entry.getValue()));
 
     if (dataFetchingEnvironment.getSelectionSet() != null) {
-      constraintTraverser.getObjectTypes(dataFetchingEnvironment)
+      coreTraverser.getObjectTypes(dataFetchingEnvironment)
           .entrySet()
           .stream()
           .filter(entry -> entry.getKey()
@@ -47,7 +47,7 @@ public class ConstraintValidator {
     validate(inputObjectField, inputObjectField.getDefaultValue());
   }
 
-  public void validate(GraphQLArgument argument, Object value) {
+  private void validate(GraphQLArgument argument, Object value) {
     validateArgument(argument, argument.getName(), ofNullable(value).orElse(argument.getDefaultValue()));
   }
 

@@ -16,16 +16,16 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.directives.FilterOperator;
-import org.dotwebstack.framework.core.traversers.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.springframework.stereotype.Component;
 
 @Component
 public class FilterValidator {
 
-  private final FilterDirectiveTraverser filterDirectiveTraverser;
+  private final CoreTraverser coreTraverser;
 
-  public FilterValidator(@NonNull FilterDirectiveTraverser filterDirectiveTraverser) {
-    this.filterDirectiveTraverser = filterDirectiveTraverser;
+  public FilterValidator(@NonNull CoreTraverser coreTraverser) {
+    this.coreTraverser = coreTraverser;
   }
 
   public void validateArgumentEnvironment(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
@@ -48,7 +48,7 @@ public class FilterValidator {
           TypeDefinition<?> typeDefinition = registry.types()
               .get(parentInfo.getElement()
                   .getName());
-          filterDirectiveTraverser.getPathToQuery(typeDefinition, registry)
+          coreTraverser.getPathToQuery(typeDefinition, registry)
               .forEach(typeName -> validateDirectiveContainer(environment.getElement(), registry, typeName));
         });
   }
@@ -89,8 +89,7 @@ public class FilterValidator {
             .equals(fieldName))) {
 
       throw new DirectiveValidationException(
-          "Filter 'field' [{}] on field '{}' is invalid. It does not exist on type '{}'", argument.getValue(),
-          queryArgumentName, typeName);
+          "Filter 'field' [{}] is invalid. It does not exist on type '{}'", fieldName, typeName);
     }
   }
 

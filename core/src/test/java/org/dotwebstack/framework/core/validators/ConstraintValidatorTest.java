@@ -10,12 +10,12 @@ import java.util.Arrays;
 import java.util.List;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
-import org.dotwebstack.framework.core.traversers.ConstraintTraverser;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.junit.jupiter.api.Test;
 
 class ConstraintValidatorTest {
 
-  private ConstraintValidator validator = new ConstraintValidator(new ConstraintTraverser());
+  private ConstraintValidator validator = new ConstraintValidator(new CoreTraverser());
 
   @Test
   void validate_throwsException_ForGivenUnknownArgument() {

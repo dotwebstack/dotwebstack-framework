@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
-import org.dotwebstack.framework.core.traversers.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class FilterValidatorTest {
 
-  private FilterValidator validator = new FilterValidator(new FilterDirectiveTraverser());
+  private FilterValidator validator = new FilterValidator(new CoreTraverser());
 
   @Mock
   private TypeDefinitionRegistry typeDefinitionRegistry;
