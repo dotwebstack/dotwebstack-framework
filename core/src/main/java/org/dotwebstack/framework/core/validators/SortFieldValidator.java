@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.validators;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.hasListType;
@@ -59,7 +61,7 @@ public class SortFieldValidator {
 
   private void validateSortFieldList(GraphQLType fieldDefinitionType, Object value, GraphQLInputType type) {
     if (!(value instanceof List)) {
-      throw ExceptionHelper.illegalArgumentException("Sort field type '{}' should be a List.", type);
+      throw illegalArgumentException("Sort field type '{}' should be a List.", type);
     }
     List<?> valueList = (List) value;
     valueList.forEach(sortFieldValue -> validateSortField(fieldDefinitionType, sortFieldValue));
@@ -68,7 +70,7 @@ public class SortFieldValidator {
   private void validateSortField(GraphQLType fieldDefinitionType, Object value) {
     Optional<String> sortFieldValue = getSortFieldValue(value);
     if (!sortFieldValue.isPresent()) {
-      throw ExceptionHelper.illegalArgumentException("Sort field '{}' should contain '{}' field value.",
+      throw illegalArgumentException("Sort field '{}' should contain '{}' field value.",
           fieldDefinitionType.getName(), CoreInputTypes.SORT_FIELD_FIELD);
     }
     this.validateSortFieldValue(getTypeName(fieldDefinitionType), null, null, sortFieldValue.get());
@@ -78,7 +80,7 @@ public class SortFieldValidator {
     if (sortArgument == null) {
       return Optional.empty();
     } else if (!(sortArgument instanceof Map)) {
-      throw ExceptionHelper.illegalArgumentException("Sort argument '{}' should be a map.", sortArgument);
+      throw illegalArgumentException("Sort argument '{}' should be a map.", sortArgument);
     } else {
       return Optional.of((String) ((Map) sortArgument).get(CoreInputTypes.SORT_FIELD_FIELD));
     }
@@ -132,7 +134,7 @@ public class SortFieldValidator {
     String[] fields = fieldPath.split("\\.");
     String field = fields[0];
     TypeDefinition<?> typeDef = typeDefinitionRegistry.getType(type)
-        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Type '{}' not found in sort field path '{}'.",
+        .orElseThrow(() -> invalidConfigurationException("Type '{}' not found in sort field path '{}'.",
             type, fieldPath));
 
     if (typeDef instanceof ObjectTypeDefinition) {
@@ -143,14 +145,14 @@ public class SortFieldValidator {
           .findFirst();
 
       if (!matchedDefinition.isPresent()) {
-        throw ExceptionHelper.invalidConfigurationException("Type '{}' has no Field '{}' for sort field path '{}'.",
+        throw invalidConfigurationException("Type '{}' has no Field '{}' for sort field path '{}'.",
             type, field, fieldPath);
       }
 
       Type<?> matchedType = matchedDefinition.get()
           .getType();
       if (hasListType(matchedType)) {
-        throw ExceptionHelper.invalidConfigurationException(
+        throw invalidConfigurationException(
             "Type '{}' of Field '{}' used in sort field path '{}' is a List, which is not allowed for sorting.", type,
             field, fieldPath);
       }
@@ -160,7 +162,7 @@ public class SortFieldValidator {
             String.join(".", ArrayUtils.removeElement(fields, field)));
       }
     } else {
-      throw ExceptionHelper.invalidConfigurationException(
+      throw invalidConfigurationException(
           "Field '{}' on Type '{}' is required to be an object type, but was of type '{}'.", parentField, parentType,
           type);
     }
