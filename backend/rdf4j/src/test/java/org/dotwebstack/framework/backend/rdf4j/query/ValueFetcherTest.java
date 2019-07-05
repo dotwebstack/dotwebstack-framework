@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCO
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_SHAPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPES_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_1_NAME;
@@ -18,13 +17,14 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_ZE
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_ZERO_OR_ONE_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_EXAMPLE_2;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_NAMES_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_NAME_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_PATH;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERNAMES_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_EXAMPLE_1;
@@ -357,9 +357,9 @@ class ValueFetcherTest {
   @Test
   void get_ReturnsString_ForInversePropertyPath() {
     // Arrange
-    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_BEERS_SHAPE);
+    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_BEERNAMES_SHAPE);
     PropertyShape propertyShape = PropertyShape.builder()
-        .name(BEERS_FIELD)
+        .name(BEER_NAMES_FIELD)
         .path(propertyPath)
         .build();
 

@@ -18,6 +18,7 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
@@ -85,11 +86,10 @@ public final class QueryFetcher implements DataFetcher<Object> {
     // Find shapes matching request
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
-    Map<GraphQLDirectiveContainer, Object> inputObjectFilters =
-        coreTraverser.getInputObjectDirectiveContainers(environment, sparqlDirective.getName());
-
-    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, inputObjectFilters,
-        environment.getArguments(), repositoryConnection);
+    Map<GraphQLDirectiveContainer, Object> selectFilters =
+        coreTraverser.getInputObjectDirectiveContainers(environment, CoreDirectives.FILTER_NAME);
+    List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, selectFilters, environment.getArguments(),
+        repositoryConnection);
 
     // Fetch graph for given subjects
     Model model = fetchGraph(queryEnvironment, subjects, repositoryConnection);
@@ -104,7 +104,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   }
 
   private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
-      Map<GraphQLDirectiveContainer, Object> filterMapping, Map<String, Object> arguments, RepositoryConnection con) {
+      Map<GraphQLDirectiveContainer, Object> selectFilters, Map<String, Object> arguments, RepositoryConnection con) {
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 
@@ -116,7 +116,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     }
 
     String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine)
-        .getQueryString(arguments, sparqlDirective, filterMapping);
+        .getQueryString(arguments, sparqlDirective, selectFilters);
 
     LOG.debug("Executing query for subjects:\n{}", subjectQuery);
 
@@ -144,5 +144,4 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
     return QueryResults.asModel(queryResult);
   }
-
 }

@@ -7,8 +7,8 @@ import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
-import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeUtil;
+import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Optional;
@@ -32,9 +32,12 @@ public class FilterValidator {
     environment.getElementParentTree()
         .getParentInfo()
         .ifPresent(parentInfo -> {
-          GraphQLObjectType type = (GraphQLObjectType) GraphQLTypeUtil
-              .unwrapAll(((GraphQLFieldDefinition) parentInfo.getElement()).getType());
-          this.validateDirectiveContainer(environment.getElement(), environment.getRegistry(), type.getName());
+          GraphQLUnmodifiedType type =
+              GraphQLTypeUtil.unwrapAll(((GraphQLFieldDefinition) parentInfo.getElement()).getType());
+
+          if (!GraphQLTypeUtil.isLeaf(type) || GraphQLTypeUtil.isList(type)) {
+            this.validateDirectiveContainer(environment.getElement(), environment.getRegistry(), type.getName());
+          }
         });
   }
 

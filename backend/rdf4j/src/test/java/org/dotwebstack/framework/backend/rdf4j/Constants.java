@@ -111,9 +111,15 @@ public final class Constants {
 
   public static final String BEERS_FIELD = "beers";
 
+  public static final String BEER_NAMES_FIELD = "beerNames";
+
   public static final String BREWERY_BEERS_TYPE = "Brewery_beers";
 
+  public static final String BREWERY_BEERNAMES_TYPE = "Brewery_beerNames";
+
   public static final IRI BREWERY_BEERS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERS_TYPE));
+
+  public static final IRI BREWERY_BEERNAMES_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERNAMES_TYPE));
 
   public static final IRI BREWERY_BEERS_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#brewery");
 
@@ -192,5 +198,9 @@ public final class Constants {
 
   public static final String ADDRESS_POSTALCODE_EXAMPLE_2 = "1234 BD";
 
+  // Beer.ingredient
 
+  public static final String INGREDIENTS_FIELD = "ingredients";
+
+  public static final String INGREDIENTS_NAME_FIELD = "name";
 }

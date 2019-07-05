@@ -77,11 +77,12 @@ type Beer {
   name: String!
   brewery: String!
   beerTypes: [String]!
-  ingredients(name: String @filter): [Ingredient!]
+  ingredients(name: [String] @filter, notName: String @filter(field: "name", operator: "!=")): [Ingredient!]
   supplements: [Supplement!]
 }
 
 type Ingredient {
+  identifier: ID!
   name: String
 }
 

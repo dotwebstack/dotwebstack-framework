@@ -1,26 +1,34 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
-
 import com.google.common.collect.Iterables;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.dotwebstack.framework.backend.rdf4j.expression.ExpressionContext;
+import org.dotwebstack.framework.backend.rdf4j.expression.ExpressionHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.FilterJoinType;
+import org.dotwebstack.framework.core.directives.FilterOperator;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
+import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
+import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.ConstructQuery;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
@@ -31,13 +39,15 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
-  private static final String ROOT_SUBJECT = "?x0";
+  private Variable rootSubject;
 
   private final List<IRI> subjects;
 
   private Map<String, List<TriplePattern>> nestedTriples = new HashMap<>();
 
-  private List<TriplePattern> nonOptionals = new ArrayList<>();
+  private List<GraphPattern> nonOptionals = new ArrayList<>();
+
+  private final List<ExpressionContext> filters = new ArrayList<>();
 
   private GraphQueryBuilder(QueryEnvironment environment, List<IRI> subjects) {
     super(environment, Queries.CONSTRUCT());
@@ -49,28 +59,28 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
   }
 
   String getQueryString() {
-    Variable subjectVar = query.var();
+    rootSubject = query.var();
     NodeShape nodeShape = environment.getNodeShapeRegistry()
         .get(environment.getObjectType());
 
     List<TriplePattern> triplePatterns = getTriplePatterns(environment.getSelectionSet()
-        .getFields(), nodeShape, subjectVar);
-
-    Expression<?> filterExpr = Expressions.or(Iterables.toArray(subjects.stream()
-        .map(subject -> Expressions.equals(subjectVar, Rdf.iri(subject)))
-        .collect(Collectors.toList()), Expression.class));
+        .getFields(), nodeShape, rootSubject);
 
     List<GraphPattern> wherePatterns = triplePatterns.stream()
         .map(this::getGraphPattern)
         .collect(Collectors.toList());
 
     // Fetch type statement to discover if subject exists (e.g. in case of only nullable fields)
-    TriplePattern typePattern = GraphPatterns.tp(subjectVar, RDF.TYPE, nodeShape.getTargetClass());
+    TriplePattern typePattern = GraphPatterns.tp(rootSubject, RDF.TYPE, nodeShape.getTargetClass());
 
     triplePatterns.addAll(nestedTriples.values()
         .stream()
         .flatMap(List::stream)
         .collect(Collectors.toList()));
+
+    Expression<?> filterExpr = Expressions.or(Iterables.toArray(subjects.stream()
+        .map(subject -> Expressions.equals(rootSubject, Rdf.iri(subject)))
+        .collect(Collectors.toList()), Expression.class));
 
     query.construct(typePattern)
         .construct(Iterables.toArray(triplePatterns, TriplePattern.class))
@@ -99,11 +109,56 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     TriplePattern triple = GraphPatterns.tp(subject, propertyShape.getPath()
         .toPredicate(), variable);
 
-    if (ROOT_SUBJECT.equals(subject.getQueryString())) {
+    if (rootSubject.getQueryString()
+        .equals(subject.getQueryString())) {
       result.add(triple);
     } else {
       List<TriplePattern> triples = nestedTriples.getOrDefault(subject.getQueryString(), new ArrayList<>());
       triples.add(triple);
+      if (GraphQLTypeUtil.isList(field.getFieldDefinition()
+          .getType()) && field.getArguments() != null) {
+        field.getFieldDefinition()
+            .getArguments()
+            .stream()
+            .filter(argument -> GraphQLTypeUtil.isList(field.getFieldDefinition()
+                .getType()) && argument.getDirective(CoreDirectives.FILTER_NAME) != null)
+            .forEach(argument -> {
+              String argumentName = !Objects.isNull(argument.getDirective(CoreDirectives.FILTER_NAME)
+                  .getArgument(CoreDirectives.FILTER_ARG_FIELD)
+                  .getValue()) ? (String) argument.getDirective(CoreDirectives.FILTER_NAME)
+                      .getArgument(CoreDirectives.FILTER_ARG_FIELD)
+                      .getValue() : argument.getName();
+
+              List<Object> filterArguments;
+              Object filterValue = field.getArguments()
+                  .get(argument.getName());
+              if (filterValue instanceof List) {
+                filterArguments = ObjectHelper.castToList(filterValue);
+              } else {
+                filterArguments = Collections.singletonList(filterValue);
+              }
+
+              List<Operand> operands = filterArguments.stream()
+                  .map(filterArgument -> ExpressionHelper.getOperand(nodeShape.getPropertyShape(field.getName())
+                      .getNode(), argumentName, filterArgument))
+                  .collect(Collectors.toList());
+
+              filters.add(ExpressionContext.builder()
+                  .operator(FilterOperator.getByValue((String) argument.getDirective(CoreDirectives.FILTER_NAME)
+                      .getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
+                      .getValue())
+                      .orElse(FilterOperator.EQ))
+                  .operands(operands)
+                  .joinType(FilterJoinType.AND)
+                  .parent(variable)
+                  .nodeShape(nodeShape.getPropertyShape(field.getName())
+                      .getNode())
+                  .propertyShape(nodeShape.getPropertyShape(field.getName())
+                      .getNode()
+                      .getPropertyShape(argumentName))
+                  .build());
+            });
+      }
       nestedTriples.put(subject.getQueryString(), triples);
     }
 
@@ -117,7 +172,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     }
 
     if (!GraphQLTypeUtil.isLeaf(fieldType)) {
-      GraphQLType innerType = getInnerType(fieldType);
+      GraphQLType innerType = GraphQLTypeUtil.unwrapAll(fieldType);
 
       if (innerType instanceof GraphQLObjectType) {
         NodeShape childShape = environment.getNodeShapeRegistry()
@@ -125,33 +180,71 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
         result.addAll(getTriplePatterns(field.getSelectionSet()
             .getFields(), childShape, variable));
       } else {
-        throw unsupportedOperationException("SPARQL triple pattern construction for type {} not supported!", innerType);
+        throw ExceptionHelper
+            .unsupportedOperationException("SPARQL triple pattern construction for type {} not supported!", innerType);
       }
     }
 
     return result;
   }
 
-  private GraphQLType getInnerType(GraphQLType type) {
-    if (type instanceof GraphQLNonNull) {
-      return getInnerType(GraphQLTypeUtil.unwrapNonNull(type));
-    }
+  private GraphPattern getGraphPattern(GraphPattern triple) {
+    String tripleObject = getObject(triple.getQueryString());
 
-    if (type instanceof GraphQLList) {
-      return getInnerType(((GraphQLList) type).getWrappedType());
-    }
-
-    return type;
-  }
-
-  private GraphPattern getGraphPattern(TriplePattern triple) {
-    String tripleSubject = triple.getQueryString()
-        .split(" ")[2];
-    if (nestedTriples.containsKey(tripleSubject)) {
-      List<GraphPattern> triples = nestedTriples.get(tripleSubject)
+    if (nestedTriples.containsKey(tripleObject)) {
+      List<GraphPattern> triples = nestedTriples.get(tripleObject)
           .stream()
           .map(this::getGraphPattern)
           .collect(Collectors.toList());
+
+      // add the triples for unselected filter fields
+      getTripleFiltersForUnselectedField(tripleObject, triples).forEach(filter -> {
+        Variable variable = query.var();
+
+        Expression<?> expression =
+            ExpressionHelper.buildExpressionFromOperands(null, variable, filter.getOperator(), filter.getOperands());
+
+        GraphPattern pattern = GraphPatterns.tp(filter.getParent(), filter.getPropertyShape()
+            .getPath()
+            .toPredicate(), variable)
+            .filter(expression);
+
+        nonOptionals.add(pattern);
+        triples.add(pattern);
+      });
+
+      filters.stream()
+          .filter(filter -> filter.getParent()
+              .getQueryString()
+              .equals(tripleObject))
+          .filter(filter -> triples.stream()
+              .map(statement -> stripQueryString(statement.getQueryString()))
+              .anyMatch(query -> filter.getPropertyShape()
+                  .getPath()
+                  .toPredicate()
+                  .getQueryString()
+                  .equals(getPredicate(query))))
+          .forEach(filter -> triples.stream()
+              .filter(statement -> {
+                String queryString = stripQueryString(statement.getQueryString());
+                return filter.getPropertyShape()
+                    .getPath()
+                    .toPredicate()
+                    .getQueryString()
+                    .equals(getPredicate(queryString));
+              })
+              .forEach(statement -> {
+                String queryString = stripQueryString(statement.getQueryString());
+                Variable variable = SparqlBuilder.var(getObject(queryString).replace("?", ""));
+
+                Expression<?> expression = ExpressionHelper.buildExpressionFromOperands(null, variable,
+                    filter.getOperator(), filter.getOperands());
+                if (!nonOptionals.contains(statement)) {
+                  nonOptionals.add(statement);
+                  statement.optional(false);
+                }
+                statement.filter(expression);
+              }));
 
       return triple.optional()
           .and(triples.stream()
@@ -165,6 +258,40 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
               .toArray(new GraphPattern[triples.size()]))
           .optional();
     }
-    return triple.optional();
+    return nonOptionals.contains(triple) ? triple : triple.optional();
+  }
+
+  private Stream<ExpressionContext> getTripleFiltersForUnselectedField(String tripleObject,
+      List<GraphPattern> triples) {
+    return filters.stream()
+        .filter(filter -> filter.getParent()
+            .getQueryString()
+            .equals(tripleObject))
+        .filter(filter -> triples.stream()
+            .map(statement -> stripQueryString(statement.getQueryString()))
+            .noneMatch(query -> filter.getPropertyShape()
+                .getPath()
+                .toPredicate()
+                .getQueryString()
+                .equals(getPredicate(query))));
+  }
+
+  private String stripQueryString(String queryString) {
+    return queryString
+        // strip the outer (optional etc) statements from the triple
+        .replaceAll("^.*\\{", "")
+        .replaceAll("}.*$", "")
+
+        // remove any trailing characters (. , ;) etc
+        .replaceAll("[\\.;,][ ]*$", "")
+        .trim();
+  }
+
+  private String getPredicate(String queryString) {
+    return queryString.split(" ")[1];
+  }
+
+  private String getObject(String queryString) {
+    return queryString.split(" ")[2];
   }
 }

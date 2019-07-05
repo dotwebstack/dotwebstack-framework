@@ -47,6 +47,8 @@ type Brewery {
   name: String!
   founded: DateTime!
   address: Address
+  beerNames: [String!]
+  beers: [Beer!]
 }
 
 type Address {
@@ -59,6 +61,11 @@ type Beer {
   brewery: String!
   beerTypes: [String]!
   beerTypesRaw: [BeerType!]
+  ingredients: [Ingredient!]
+}
+
+type Ingredient {
+  name: String
 }
 
 type BeerType {

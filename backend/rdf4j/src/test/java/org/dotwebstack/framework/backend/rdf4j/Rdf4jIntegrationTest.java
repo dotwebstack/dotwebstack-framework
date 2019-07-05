@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPES_RAW_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_IDENTIFIER_EXAMPLE_1;
@@ -12,6 +13,8 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFI
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -108,6 +111,25 @@ class Rdf4jIntegrationTest {
     assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD, ImmutableList.of(
         ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123", BREWERY_NAME_FIELD, BREWERY_NAME_EXAMPLE_1.stringValue()))));
   }
+
+  @Test
+  void graphqlQuery_ReturnsResult_forNestedQuery() {
+    // Arrange
+    String query = "{ breweries(name: \"Brouwerij 1923\"){ beers { ingredients { name }}}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(equalTo(true)));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(
+            ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"))))))));
+  }
+
 
   @Test
   void graphqlQuery_ReturnsMap_ForQueryWithFilterOnDateTimeField() {
