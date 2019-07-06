@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
@@ -46,7 +47,7 @@ public class ExpressionHelper {
         .orElse(FilterOperator.getDefault()), operand);
   }
 
-  public static Expression<?> getExpressionFromOperator(Variable subject, FilterOperator operator, Operand operand) {
+  static Expression<?> getExpressionFromOperator(Variable subject, FilterOperator operator, Operand operand) {
     BiFunction<Variable, Operand, Expression<?>> function = MAP.get(operator);
 
     if (function == null) {
@@ -57,24 +58,23 @@ public class ExpressionHelper {
     return function.apply(subject, operand);
   }
 
-  public static Expression<?> buildExpressionFromOperands(Expression<?> expression, Variable subject,
-      FilterOperator operator, List<Operand> operands) {
-    Expression<?> returnExpression;
-    Operand operand = operands.remove(0);
+  public static Expression<?> joinExpressions(FilterJoinType joinType, Expression<?> joinedExpression,
+      List<Expression<?>> expressions) {
+    Expression<?> current = expressions.remove(0);
+    Expression<?> usedExpression = null;
 
-    if (expression == null) {
-      returnExpression = ExpressionHelper.getExpressionFromOperator(subject, operator, operand);
+    if (Objects.isNull(joinedExpression)) {
+      usedExpression = current;
     } else {
-      Expression<?>[] expressions =
-          new Expression<?>[] {ExpressionHelper.getExpressionFromOperator(subject, operator, operand), expression};
-      returnExpression = Expressions.or(expressions);
+      Operand[] operands = new Expression<?>[] {current, joinedExpression};
+      usedExpression = FilterJoinType.AND.equals(joinType) ? Expressions.and(operands) : Expressions.or(operands);
     }
 
-    if (!operands.isEmpty()) {
-      return buildExpressionFromOperands(returnExpression, subject, operator, operands);
+    if (!expressions.isEmpty()) {
+      return joinExpressions(joinType, usedExpression, expressions);
     }
 
-    return returnExpression;
+    return usedExpression;
   }
 
   public static Operand getOperand(NodeShape nodeShape, String field, Object value) {

@@ -63,7 +63,7 @@ public class CoreTraverser {
             .stream()
             .map(argumentDefinition -> new AbstractMap.SimpleEntry<>(argumentDefinition, selectedField.getArguments()
                 .get(argumentDefinition.getName()))))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()), HashMap::putAll);
   }
 
   /*
