@@ -1,9 +1,6 @@
 package org.dotwebstack.framework.core.traversers;
 
 import com.google.common.collect.ImmutableMap;
-import graphql.language.ListType;
-import graphql.language.NonNullType;
-import graphql.language.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,16 +28,5 @@ class TraverserHelper {
               HashMap::putAll);
     }
     return ImmutableMap.of(entry.getKey(), entry.getValue());
-  }
-
-  static Type<?> getBaseType(Type<?> type) {
-    if (type instanceof ListType) {
-      return getBaseType((Type<?>) type.getChildren()
-          .get(0));
-    }
-    if (type instanceof NonNullType) {
-      return getBaseType(((NonNullType) type).getType());
-    }
-    return type;
   }
 }

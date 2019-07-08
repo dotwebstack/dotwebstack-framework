@@ -43,7 +43,7 @@ class FilterValidatorTest {
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
-    assertDoesNotThrow(() -> validator.checkField(fieldArgument("sinceBefore"), typeDefinitionRegistry, "", "Brewery"));
+    assertDoesNotThrow(() -> validator.checkField(typeDefinitionRegistry, "sinceBefore", "Brewery"));
   }
 
   @Test
@@ -55,7 +55,7 @@ class FilterValidatorTest {
 
     // Act & Assert
     assertThrows(DirectiveValidationException.class,
-        () -> validator.checkField(fieldArgument("page"), typeDefinitionRegistry, "", "Brewery"));
+        () -> validator.checkField(typeDefinitionRegistry, "page", "Brewery"));
   }
 
   @Test
@@ -66,7 +66,7 @@ class FilterValidatorTest {
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
-    assertDoesNotThrow(() -> validator.checkField(fieldArgument("founded"), typeDefinitionRegistry, "", "Brewery"));
+    assertDoesNotThrow(() -> validator.checkField(typeDefinitionRegistry, "founded", "Brewery"));
   }
 
   @Test
@@ -78,7 +78,7 @@ class FilterValidatorTest {
 
     // Act & Assert
     assertThrows(DirectiveValidationException.class,
-        () -> validator.checkField(fieldArgument(null), typeDefinitionRegistry, "sinceAfter", "Brewery"));
+        () -> validator.checkField(typeDefinitionRegistry, "sinceAfter", "Brewery"));
   }
 
   @ParameterizedTest

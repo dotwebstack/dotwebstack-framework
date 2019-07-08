@@ -29,7 +29,7 @@ class VerticeFactory {
   private VerticeFactory() {}
 
   static Vertice createVertice(OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> fields) {
-    Variable root = query.var();
+    Variable subject = query.var();
     List<Edge> edges = fields.stream()
         .filter(field -> !field.getQualifiedName()
             .contains("/"))
@@ -53,7 +53,7 @@ class VerticeFactory {
     addFilters(query, nodeShape, fields, edges);
 
     return Vertice.builder()
-        .subject(root)
+        .subject(subject)
         .edges(edges)
         .build();
   }
@@ -95,8 +95,8 @@ class VerticeFactory {
         .forEach(field -> field.getFieldDefinition()
             .getArguments()
             .stream()
-            .filter(argument -> GraphQLTypeUtil.isList(field.getFieldDefinition()
-                .getType()) && argument.getDirective(CoreDirectives.FILTER_NAME) != null)
+            .filter(argument -> // GraphQLTypeUtil.isList(field.getFieldDefinition().getType()) &&
+            argument.getDirective(CoreDirectives.FILTER_NAME) != null)
             .forEach(argument -> edges.stream()
                 .filter(edge -> edge.getPredicate()
                     .getQueryString()
@@ -104,14 +104,21 @@ class VerticeFactory {
                         .getPath()
                         .toPredicate()
                         .getQueryString()))
-                .filter(edge -> hasChildEdgeOfType(edge, nodeShape.getPropertyShape(field.getName())
-                    .getNode()))
+                .filter(edge -> {
+                  if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(field.getFieldDefinition()
+                      .getType()))) {
+                    return hasChildEdgeOfType(edge, nodeShape.getPropertyShape(field.getName())
+                        .getNode());
+                  }
+                  return true;
+                })
                 .forEach(edge -> {
                   Object filterValue = field.getArguments()
                       .get(argument.getName());
                   if (!Objects.isNull(filterValue)) {
                     NodeShape childShape = nodeShape.getPropertyShape(field.getName())
                         .getNode();
+
                     String argumentName = getArgumentName(argument);
                     PropertyShape propertyShape = childShape.getPropertyShape(argumentName);
 
@@ -123,28 +130,33 @@ class VerticeFactory {
 
                     // add filters to vertice
                     List<ExpressionContext> filters =
-                        getExpressionContexts(nodeShape, field, argument, filterValue, argumentName, match);
+                        getExpressionContexts(childShape, argument, filterValue, argumentName, match);
 
                     match.getObject()
                         .setFilters(filters);
                     match.setOptional(false);
-                    verticeEdges.remove(match);
-                    verticeEdges.add(match);
+                    if (verticeEdges != null) {
+                      verticeEdges.remove(match);
+                      verticeEdges.add(match);
+                    } else {
+                      vertice.setEdges(Collections.singletonList(match));
+                    }
                   }
                 })));
   }
 
   private static String getArgumentName(GraphQLArgument argument) {
     return !Objects.isNull(argument.getDirective(CoreDirectives.FILTER_NAME)
-                          .getArgument(CoreDirectives.FILTER_ARG_FIELD)
-                          .getValue()) ? (String) argument.getDirective(CoreDirectives.FILTER_NAME)
-                              .getArgument(CoreDirectives.FILTER_ARG_FIELD)
-                              .getValue() : argument.getName();
+        .getArgument(CoreDirectives.FILTER_ARG_FIELD)
+        .getValue()) ? (String) argument.getDirective(CoreDirectives.FILTER_NAME)
+            .getArgument(CoreDirectives.FILTER_ARG_FIELD)
+            .getValue() : argument.getName();
   }
 
   private static boolean hasChildEdgeOfType(Edge edge, NodeShape nodeShape) {
     List<Edge> childEdges = edge.getObject()
         .getEdges();
+
     return childEdges.stream()
         .anyMatch(childEdge -> ("<" + RDF.TYPE.stringValue() + ">").equals(childEdge.getPredicate()
             .getQueryString())
@@ -154,8 +166,8 @@ class VerticeFactory {
                     .getQueryString()));
   }
 
-  private static List<ExpressionContext> getExpressionContexts(NodeShape nodeShape, SelectedField field,
-      GraphQLArgument argument, Object filterValue, String argumentName, Edge match) {
+  private static List<ExpressionContext> getExpressionContexts(NodeShape nodeShape, GraphQLArgument argument,
+      Object filterValue, String argumentName, Edge match) {
     List<ExpressionContext> filters = Objects.isNull(match.getObject()
         .getFilters()) ? new ArrayList<>()
             : match.getObject()
@@ -169,8 +181,7 @@ class VerticeFactory {
     }
 
     List<Operand> operands = filterArguments.stream()
-        .map(filterArgument -> ExpressionHelper.getOperand(nodeShape.getPropertyShape(field.getName())
-            .getNode(), argumentName, filterArgument))
+        .map(filterArgument -> ExpressionHelper.getOperand(nodeShape, argumentName, filterArgument))
         .collect(Collectors.toList());
 
     filters.add(ExpressionContext.builder()
@@ -185,13 +196,17 @@ class VerticeFactory {
 
   private static Edge findOrCreateEdge(OuterQuery<?> query, PropertyShape propertyShape, Vertice vertice) {
     List<Edge> childEdges = vertice.getEdges();
-    Optional<Edge> optional = childEdges.stream()
-        .filter(childEdge -> childEdge.getPredicate()
-            .getQueryString()
-            .equals(propertyShape.getPath()
-                .toPredicate()
-                .getQueryString()))
-        .findFirst();
+
+    Optional<Edge> optional = Optional.empty();
+    if (!Objects.isNull(childEdges)) {
+      optional = childEdges.stream()
+          .filter(childEdge -> childEdge.getPredicate()
+              .getQueryString()
+              .equals(propertyShape.getPath()
+                  .toPredicate()
+                  .getQueryString()))
+          .findFirst();
+    }
 
     return optional.orElseGet(() -> createSimpleEdge(query.var(), null, propertyShape.getPath()
         .toPredicate(), false, false));

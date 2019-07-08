@@ -16,9 +16,9 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 @Builder
 public class ExpressionContext {
 
-  FilterOperator operator;
+  private FilterOperator operator;
 
-  List<Operand> operands;
+  private List<Operand> operands;
 
   public Expression<?> getExpression(Variable subject) {
     List<Expression<?>> expressions = operands.stream()

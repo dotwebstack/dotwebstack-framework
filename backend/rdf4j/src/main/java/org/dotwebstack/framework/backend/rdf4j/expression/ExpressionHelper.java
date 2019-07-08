@@ -61,7 +61,7 @@ public class ExpressionHelper {
   public static Expression<?> joinExpressions(FilterJoinType joinType, Expression<?> joinedExpression,
       List<Expression<?>> expressions) {
     Expression<?> current = expressions.remove(0);
-    Expression<?> usedExpression = null;
+    Expression<?> usedExpression;
 
     if (Objects.isNull(joinedExpression)) {
       usedExpression = current;

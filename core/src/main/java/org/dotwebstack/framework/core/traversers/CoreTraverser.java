@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.springframework.stereotype.Component;
 
 
@@ -130,11 +131,10 @@ public class CoreTraverser {
         .stream()
         .filter(inputField -> inputField.getInputValueDefinitions()
             .stream()
-            .anyMatch(
-                inputValueDefinition -> registry.getType(TraverserHelper.getBaseType(inputValueDefinition.getType()))
-                    .map(definition -> definition.equals(compareType))
-                    .orElse(false)))
-        .map(inputField -> ((TypeName) TraverserHelper.getBaseType(inputField.getType())).getName())
+            .anyMatch(inputValueDefinition -> registry.getType(TypeHelper.getBaseType(inputValueDefinition.getType()))
+                .map(definition -> definition.equals(compareType))
+                .orElse(false)))
+        .map(inputField -> ((TypeName) TypeHelper.getBaseType(inputField.getType())).getName())
         .collect(Collectors.toList());
   }
 
@@ -148,7 +148,7 @@ public class CoreTraverser {
     Optional<InputValueDefinition> inputValueDefinition =
         ((InputObjectTypeDefinition) parentType).getInputValueDefinitions()
             .stream()
-            .filter(inputValue -> registry.getType(TraverserHelper.getBaseType(inputValue.getType()))
+            .filter(inputValue -> registry.getType(TypeHelper.getBaseType(inputValue.getType()))
                 .map(definition -> definition.equals(compareType))
                 .orElse(false))
             .findAny();

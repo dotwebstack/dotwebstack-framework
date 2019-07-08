@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.core.validators;
 
+import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeDefinition;
+import graphql.language.TypeName;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
@@ -11,11 +13,11 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.directives.FilterOperator;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.springframework.stereotype.Component;
 
@@ -68,7 +70,9 @@ public class FilterValidator {
       String typeName) {
     switch (argument.getName()) {
       case CoreDirectives.FILTER_ARG_FIELD:
-        checkField(argument, registry, name, typeName);
+        String fieldPath = (argument.getValue() != null) ? argument.getValue()
+            .toString() : name;
+        checkField(registry, fieldPath, typeName);
         break;
       case CoreDirectives.FILTER_ARG_OPERATOR:
         if (argument.getValue() != null) {
@@ -80,20 +84,31 @@ public class FilterValidator {
     }
   }
 
-  void checkField(GraphQLArgument argument, TypeDefinitionRegistry registry, String queryArgumentName,
-      String typeName) {
-    Optional<ObjectTypeDefinition> optional = registry.getType(typeName, ObjectTypeDefinition.class);
-    String fieldName = (argument.getValue() != null) ? argument.getValue()
-        .toString() : queryArgumentName;
-    if (!optional.isPresent() || optional.get()
-        .getFieldDefinitions()
-        .stream()
-        .noneMatch(fieldDefinition -> fieldDefinition.getName()
-            .equals(fieldName))) {
+  void checkField(TypeDefinitionRegistry registry, String fieldPath, String typeName) {
+    ObjectTypeDefinition type = registry.getType(typeName, ObjectTypeDefinition.class)
+        .orElse(null);
 
-      throw new DirectiveValidationException("Filter 'field' [{}] is invalid. It does not exist on type '{}'",
-          fieldName, typeName);
+    String[] fields = fieldPath.split("\\.");
+    String fieldName = fields[0];
+
+    if (type != null) {
+      FieldDefinition definition = type.getFieldDefinitions()
+          .stream()
+          .filter(fieldDefinition -> fieldDefinition.getName()
+              .equals(fieldName))
+          .findFirst()
+          .orElse(null);
+
+      if (definition != null) {
+        if (fields.length > 1) {
+          TypeName fieldType = (TypeName) TypeHelper.getBaseType(definition.getType());
+          checkField(registry, fieldPath.substring(fieldPath.indexOf(".") + 1), fieldType.getName());
+        }
+        return;
+      }
     }
+    throw new DirectiveValidationException("Filter 'field' [{}] is invalid. It does not exist on type '{}'", fieldName,
+        typeName);
   }
 
   void checkOperator(GraphQLArgument argument, String name) {

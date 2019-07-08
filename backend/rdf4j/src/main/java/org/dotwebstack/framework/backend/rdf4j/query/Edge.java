@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.dotwebstack.framework.backend.rdf4j.expression.ExpressionContext;
 import org.dotwebstack.framework.backend.rdf4j.expression.ExpressionHelper;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
@@ -20,7 +21,7 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 @Getter
 @Setter
 @Builder
-public class Edge {
+class Edge {
 
   private RdfPredicate predicate;
 
@@ -30,7 +31,7 @@ public class Edge {
 
   private boolean isVisible;
 
-  public List<TriplePattern> getConstructPatterns(Variable subject) {
+  List<TriplePattern> getConstructPatterns(Variable subject) {
     List<TriplePattern> triplePatterns = new ArrayList<>();
 
     if (isVisible) {
@@ -53,10 +54,9 @@ public class Edge {
         : GraphPatterns.tp(subject, predicate, object.getIri())
             .optional(isOptional);
 
-    if (!Objects.isNull(object.getFilters()) && !object.getFilters()
-        .isEmpty()) {
-      List<Expression<?>> expressions = object.getFilters()
-          .stream()
+    List<ExpressionContext> expressionContexts = object.getFilters();
+    if (!Objects.isNull(expressionContexts) && !expressionContexts.isEmpty()) {
+      List<Expression<?>> expressions = expressionContexts.stream()
           .map(filter -> filter.getExpression(object.getSubject()))
           .collect(Collectors.toList());
       Expression<?> expression = ExpressionHelper.joinExpressions(FilterJoinType.AND, null, expressions);

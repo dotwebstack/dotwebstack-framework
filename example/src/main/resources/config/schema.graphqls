@@ -64,7 +64,7 @@ type Brewery {
     @transform(expr: "url.getLocalName()")
   address: Address!
   postalCode: String!
-  beers: [Beer!]
+  beers(supplement: String @filter(field: "supplements.name")): [Beer!]
 }
 
 type Address {
@@ -77,7 +77,7 @@ type Beer {
   name: String!
   brewery: String!
   beerTypes: [String]!
-  ingredients(name: [String] @filter, notName: [String] @filter(field: "name", operator: "!=")): [Ingredient!]
+  ingredients(name: [String] @filter): [Ingredient!]
   supplements: [Supplement!]
 }
 
