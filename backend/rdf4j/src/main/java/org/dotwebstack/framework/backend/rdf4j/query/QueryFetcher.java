@@ -4,13 +4,13 @@ import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +20,7 @@ import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
+import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.eclipse.rdf4j.model.IRI;
@@ -72,8 +73,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
       throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
     }
 
-    sortFieldValidator.traverse(environment);
-    constraintValidator.validateDataFetchingEnvironment(environment);
+    sortFieldValidator.validate(environment);
+    constraintValidator.validate(environment);
 
     QueryEnvironment queryEnvironment = QueryEnvironment.builder()
         .objectType((GraphQLObjectType) rawType)
@@ -85,8 +86,10 @@ public final class QueryFetcher implements DataFetcher<Object> {
     // Find shapes matching request
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
-    Map<GraphQLDirectiveContainer, Object> inputObjectFilters =
-        coreTraverser.getInputObjectDirectiveContainers(environment, sparqlDirective.getName());
+
+    List<DirectiveArgumentTuple> inputObjectFilters =
+        coreTraverser.getInputObjectDirectiveContainers(environment,
+            directiveContainer -> Objects.nonNull(directiveContainer.getDirective(sparqlDirective.getName())));
 
     List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, inputObjectFilters,
         environment.getArguments(), repositoryConnection);
@@ -103,8 +106,11 @@ public final class QueryFetcher implements DataFetcher<Object> {
     return model.isEmpty() ? null : new QuerySolution(model, subjects.get(0));
   }
 
-  private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
-      Map<GraphQLDirectiveContainer, Object> filterMapping, Map<String, Object> arguments, RepositoryConnection con) {
+  private List<IRI> fetchSubjects(QueryEnvironment environment,
+                                  GraphQLDirective sparqlDirective,
+                                  List<DirectiveArgumentTuple> filterMapping,
+                                  Map<String, Object> arguments,
+                                  RepositoryConnection con) {
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 

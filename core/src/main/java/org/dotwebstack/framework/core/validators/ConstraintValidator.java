@@ -1,22 +1,23 @@
 package org.dotwebstack.framework.core.validators;
 
-import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_MAX;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_MIN;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF_INT;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_PATTERN;
+import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_NAME;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLDirectiveContainer;
-import graphql.schema.GraphQLInputObjectField;
+
 import java.util.List;
-import org.dotwebstack.framework.core.directives.CoreDirectives;
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
+import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,39 +29,20 @@ public class ConstraintValidator {
     this.coreTraverser = coreTraverser;
   }
 
-  public void validateDataFetchingEnvironment(DataFetchingEnvironment dataFetchingEnvironment) {
-    coreTraverser.getInputObjectDirectiveContainers(dataFetchingEnvironment, CoreDirectives.CONSTRAINT_NAME)
+  public void validate(DataFetchingEnvironment dataFetchingEnvironment) {
+    coreTraverser.getArguments(dataFetchingEnvironment,
+        directiveContainer -> Objects.nonNull(directiveContainer.getDirective(CONSTRAINT_NAME)))
         .forEach(this::validate);
-
-    if (dataFetchingEnvironment.getSelectionSet() != null) {
-      coreTraverser.getObjectTypes(dataFetchingEnvironment)
-          .entrySet()
-          .stream()
-          .filter(entry -> entry.getKey()
-              .getDirective(CoreDirectives.FILTER_NAME) != null)
-          .forEach(entry -> validate(entry.getKey(), entry.getValue()));
-    }
   }
 
-  public void validateInputObjectField(GraphQLInputObjectField inputObjectField) {
-    validate(inputObjectField, inputObjectField.getDefaultValue());
+  public void validate(DirectiveArgumentTuple directiveArgumentTuple) {
+    Stream.of(directiveArgumentTuple)
+        .map(container -> directiveArgumentTuple.getArgument().getDirective(CONSTRAINT_NAME))
+        .flatMap(directive -> directive.getArguments().stream())
+        .forEach(argument -> validate(argument,directiveArgumentTuple.getArgument().getName(),directiveArgumentTuple.getValue()));
   }
 
-  private void validate(GraphQLArgument argument, Object value) {
-    validateArgument(argument, argument.getName(), ofNullable(value).orElse(argument.getDefaultValue()));
-  }
-
-  private void validate(GraphQLDirectiveContainer directiveContainer, Object value) {
-    ofNullable(directiveContainer.getDirective(CoreDirectives.CONSTRAINT_NAME)).map(GraphQLDirective::getArguments)
-        .ifPresent(directiveArguments -> directiveArguments
-            .forEach(directiveArgument -> validateArgument(directiveArgument, directiveContainer.getName(), value)));
-  }
-
-  public void validateArgument(GraphQLArgument argument) {
-    validate(argument, argument.getDefaultValue());
-  }
-
-  void validateArgument(GraphQLArgument argument, String name, Object value) {
+  void validate(GraphQLArgument argument, String name, Object value) {
     if (argument.getValue() != null) {
       switch (argument.getName()) {
         case CONSTRAINT_ARG_MIN:

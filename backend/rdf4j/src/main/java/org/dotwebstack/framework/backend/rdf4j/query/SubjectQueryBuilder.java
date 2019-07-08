@@ -31,6 +31,7 @@ import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.JexlHelper;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
+import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
@@ -82,7 +83,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective,
-      Map<GraphQLDirectiveContainer, Object> filterMapping) {
+      List<DirectiveArgumentTuple> filterMapping) {
     final MapContext context = new MapContext(arguments);
 
     this.query.select(SUBJECT_VAR);
@@ -209,13 +210,14 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   @SuppressWarnings("unchecked")
-  Map<String, Expression<?>> getFilters(Map<GraphQLDirectiveContainer, Object> filterMapping) {
+  Map<String, Expression<?>> getFilters(List<DirectiveArgumentTuple> filterMapping) {
     Map<String, Expression<?>> expressionMap = new HashMap<>();
-    filterMapping.forEach((container, value) -> {
-      GraphQLDirective directive = container.getDirective(CoreDirectives.FILTER_NAME);
+
+    filterMapping.forEach(tuple -> {
+      GraphQLDirective directive = tuple.getArgument().getDirective(CoreDirectives.FILTER_NAME);
 
       GraphQLArgument fieldArgument = directive.getArgument(CoreDirectives.FILTER_ARG_FIELD);
-      String field = fieldArgument.getValue() != null ? (String) fieldArgument.getValue() : container.getName();
+      String field = fieldArgument.getValue() != null ? (String) fieldArgument.getValue() : tuple.getArgument().getName();
 
       Variable fieldVar = SparqlBuilder.var(field);
       String operator = (String) directive.getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
@@ -223,11 +225,11 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
       FilterJoinType joinType;
       List<Object> list;
-      if (value instanceof List) {
-        list = ObjectHelper.cast(List.class, value);
+      if (tuple.getValue() instanceof List) {
+        list = ObjectHelper.cast(List.class, tuple.getValue());
         joinType = FilterJoinType.OR;
       } else {
-        list = Collections.singletonList(value);
+        list = Collections.singletonList(tuple.getValue());
         joinType = FilterJoinType.AND;
       }
 

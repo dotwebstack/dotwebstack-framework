@@ -2,20 +2,19 @@ package org.dotwebstack.framework.core.validators;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.hasListType;
 
-import com.google.common.collect.ImmutableMap;
 import graphql.language.FieldDefinition;
+import graphql.language.InputValueDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.Type;
 import graphql.language.TypeDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLInputObjectField;
-import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLInputType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLType;
@@ -26,36 +25,51 @@ import java.util.Optional;
 import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.input.CoreInputTypes;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 
 public class SortFieldValidator {
 
+  private final CoreTraverser coreTraverser;
   private final TypeDefinitionRegistry typeDefinitionRegistry;
 
-  public SortFieldValidator(@NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
+  public SortFieldValidator(@NonNull CoreTraverser coreTraverser,
+                            @NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
+    this.coreTraverser = coreTraverser;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
-  private void validateArgument(GraphQLType fieldDefinitionType, GraphQLArgument argument, Object value) {
-    GraphQLInputType type = argument.getType();
-    if (isSortField(argument)) {
-      if (type instanceof GraphQLList) {
-        validateSortFieldList(fieldDefinitionType, value, type);
+  public void validate(@NonNull DataFetchingEnvironment dataFetchingEnvironment) {
+    coreTraverser.getArguments(dataFetchingEnvironment,(directiveContainer) -> Boolean.TRUE)
+        .forEach(tuple -> validate(tuple.getArgument(),tuple.getValue()));
+  }
+
+  private void validate(GraphQLDirectiveContainer directiveContainer, Object value) {
+    if (isSortField(getInputValueDefinition(directiveContainer))) {
+      GraphQLInputType inputType = getInputType(directiveContainer);
+      if (inputType instanceof GraphQLList) {
+        validateSortFieldList(null, value, inputType);
       } else {
-        validateSortField(fieldDefinitionType, value);
+        validateSortField(null, value);
       }
     }
   }
 
-  private void validateInputObjectField(GraphQLType fieldDefinitionType, GraphQLInputObjectField inputObjectField,
-      Object value) {
-    GraphQLInputType type = inputObjectField.getType();
-    if (CoreInputTypes.SORT_FIELD.equals(getTypeName(inputObjectField.getType()))) {
-      if (type instanceof GraphQLList) {
-        validateSortFieldList(fieldDefinitionType, value, type);
-      } else {
-        validateSortField(fieldDefinitionType, value);
-      }
+  private InputValueDefinition getInputValueDefinition(GraphQLDirectiveContainer directiveContainer) {
+    if (directiveContainer instanceof GraphQLArgument) {
+      return ((GraphQLArgument) directiveContainer).getDefinition();
+    } else if (directiveContainer instanceof GraphQLInputObjectField) {
+      return ((GraphQLInputObjectField) directiveContainer).getDefinition();
     }
+    throw unsupportedOperationException("Unable to get inputValueDefinition for class {}",directiveContainer.getClass().getSimpleName());
+  }
+
+  private GraphQLInputType getInputType(GraphQLDirectiveContainer directiveContainer) {
+    if (directiveContainer instanceof GraphQLArgument) {
+      return ((GraphQLArgument) directiveContainer).getType();
+    } else if (directiveContainer instanceof GraphQLInputObjectField) {
+      return ((GraphQLInputObjectField) directiveContainer).getType();
+    }
+    throw unsupportedOperationException("Unable to get inputType for class {}",directiveContainer.getClass().getSimpleName());
   }
 
   private void validateSortFieldList(GraphQLType fieldDefinitionType, Object value, GraphQLInputType type) {
@@ -85,48 +99,8 @@ public class SortFieldValidator {
     }
   }
 
-  private boolean isSortField(GraphQLArgument argument) {
-    return CoreInputTypes.SORT_FIELD.equals(getTypeName(argument.getDefinition()
-        .getType()));
-  }
-
-  public void traverse(@NonNull DataFetchingEnvironment dataFetchingEnvironment) {
-    GraphQLFieldDefinition fieldDefinition = dataFetchingEnvironment.getFieldDefinition();
-    Map<String, Object> arguments = dataFetchingEnvironment.getArguments();
-
-    fieldDefinition.getArguments()
-        .forEach(argument -> {
-          Object value = arguments.get(argument.getName());
-          if (argument.getType() instanceof GraphQLInputObjectType) {
-            traverseInputObjectType(fieldDefinition.getType(), (GraphQLInputObjectType) argument.getType(),
-                value != null ? castToMap(value) : ImmutableMap.of());
-          } else {
-            traverseArgument(fieldDefinition.getType(), argument, value);
-          }
-        });
-  }
-
-  public void traverseArgument(GraphQLType fieldDefinitionType, GraphQLArgument argument, Object value) {
-    validateArgument(fieldDefinitionType, argument, value);
-    if (argument.getType() instanceof GraphQLInputObjectType) {
-      traverseInputObjectType(fieldDefinitionType, (GraphQLInputObjectType) argument.getType(),
-          value != null ? castToMap(value) : ImmutableMap.of());
-    }
-  }
-
-  private void traverseInputObjectType(GraphQLType fieldDefinitionType, GraphQLInputObjectType graphQlInputObjectType,
-      Map<String, Object> value) {
-    graphQlInputObjectType.getFields()
-        .forEach(fd -> traverseInputObjectField(fieldDefinitionType, fd, value.get(fd.getName())));
-  }
-
-  private void traverseInputObjectField(GraphQLType fieldDefinitionType, GraphQLInputObjectField inputObjectField,
-      Object value) {
-    validateInputObjectField(fieldDefinitionType, inputObjectField, value);
-    if (inputObjectField.getType() instanceof GraphQLInputObjectType) {
-      traverseInputObjectType(fieldDefinitionType, (GraphQLInputObjectType) inputObjectField.getType(),
-          value != null ? castToMap(value) : ImmutableMap.of());
-    }
+  private boolean isSortField(InputValueDefinition inputValueDefinition) {
+    return CoreInputTypes.SORT_FIELD.equals(getTypeName(inputValueDefinition.getType()));
   }
 
   public void validateSortFieldValue(String type, String parentField, String parentType, String fieldPath) {

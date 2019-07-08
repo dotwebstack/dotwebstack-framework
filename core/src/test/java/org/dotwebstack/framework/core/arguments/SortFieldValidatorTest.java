@@ -13,6 +13,7 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Arrays;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +71,7 @@ class SortFieldValidatorTest {
         return Optional.empty();
       }
     });
-    sortFieldValidator = new SortFieldValidator(registry);
+    sortFieldValidator = new SortFieldValidator(new CoreTraverser(),registry);
   }
 
   @Test

@@ -69,6 +69,6 @@ class ConstraintTraverserTest {
 
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
 
-    assertDoesNotThrow(() -> constraintValidator.validateDataFetchingEnvironment(dataFetchingEnvironment));
+    assertDoesNotThrow(() -> constraintValidator.validate(dataFetchingEnvironment));
   }
 }

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,6 +15,7 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLObjectType;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -423,7 +426,8 @@ class SubjectQueryBuilderTest {
     String value = "not a list";
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value));
+    Map<String, Expression<?>> result =
+        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -446,7 +450,7 @@ class SubjectQueryBuilderTest {
     String value = "not a list";
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value));
+    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -463,7 +467,7 @@ class SubjectQueryBuilderTest {
 
     // Act & Assert
     assertThrows(UnsupportedOperationException.class,
-        () -> this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value)));
+        () -> this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value))));
   }
 
   @Test
@@ -480,7 +484,7 @@ class SubjectQueryBuilderTest {
     List<String> value = ImmutableList.of("a", "b");
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value));
+    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -503,7 +507,7 @@ class SubjectQueryBuilderTest {
     String value = "iri";
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(ImmutableMap.of(container, value));
+    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));

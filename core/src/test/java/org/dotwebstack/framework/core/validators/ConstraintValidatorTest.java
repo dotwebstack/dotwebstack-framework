@@ -19,7 +19,7 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_throwsException_ForGivenUnknownArgument() {
-    assertThrows(DirectiveValidationException.class, () -> validator.validateArgument(GraphQLArgument.newArgument()
+    assertThrows(DirectiveValidationException.class, () -> validator.validate(GraphQLArgument.newArgument()
         .name("unknownArg")
         .value(1L)
         .type(GraphQLInt)
@@ -28,7 +28,7 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_returnsNull_ForGivenNullArgument() {
-    validator.validateArgument(GraphQLArgument.newArgument()
+    validator.validate(GraphQLArgument.newArgument()
         .name(CoreDirectives.CONSTRAINT_ARG_MIN)
         .type(GraphQLInt)
         .build(), "name", 1);
@@ -36,55 +36,55 @@ class ConstraintValidatorTest {
 
   @Test
   void validate_returnsNull_ForGivenMinArgument() {
-    validator.validateArgument(minArgument(1), "name", 1);
+    validator.validate(minArgument(1), "name", 1);
   }
 
   @Test
   void validate_throwsException_ForInvalidMinArgument() {
-    assertThrows(DirectiveValidationException.class, () -> validator.validateArgument(minArgument(2), "name", 1));
+    assertThrows(DirectiveValidationException.class, () -> validator.validate(minArgument(2), "name", 1));
   }
 
   @Test
   void validate_returnsNull_ForGivenMaxArgument() {
-    validator.validateArgument(maxArgument(20), "name", 20);
+    validator.validate(maxArgument(20), "name", 20);
   }
 
   @Test
   void validate_throwsException_ForInvalidMaxArgument() {
-    assertThrows(DirectiveValidationException.class, () -> validator.validateArgument(maxArgument(21), "name", 22));
+    assertThrows(DirectiveValidationException.class, () -> validator.validate(maxArgument(21), "name", 22));
   }
 
   @Test
   void validate_returnsNull_ForGivenOneOfArgument() {
-    validator.validateArgument(oneOfArgument(Arrays.asList("foo", "bar")), "name", "foo");
+    validator.validate(oneOfArgument(Arrays.asList("foo", "bar")), "name", "foo");
   }
 
   @Test
   void validate_throwsException_ForOneOfArgument() {
     assertThrows(DirectiveValidationException.class,
-        () -> validator.validateArgument(oneOfArgument(Arrays.asList("foo", "bar")), "name", "boom!"));
+        () -> validator.validate(oneOfArgument(Arrays.asList("foo", "bar")), "name", "boom!"));
   }
 
   @Test
   void validate_returnsNull_ForGivenOneOfIntArgument() {
-    validator.validateArgument(oneOfIntArgument(Arrays.asList(1, 2)), "name", 2);
+    validator.validate(oneOfIntArgument(Arrays.asList(1, 2)), "name", 2);
   }
 
   @Test
   void validate_throwsException_ForOneOfIntArgument() {
     assertThrows(DirectiveValidationException.class,
-        () -> validator.validateArgument(oneOfIntArgument(Arrays.asList(1, 2)), "name", 3));
+        () -> validator.validate(oneOfIntArgument(Arrays.asList(1, 2)), "name", 3));
   }
 
   @Test
   void validate_returnsNull_patternArgument() {
-    validator.validateArgument(stringArgument("^[a-z][0-9][A-Z]$"), "pattern", "a4P");
+    validator.validate(stringArgument("^[a-z][0-9][A-Z]$"), "pattern", "a4P");
   }
 
   @Test
   void validate_throwsException_patternArgument() {
     assertThrows(DirectiveValidationException.class,
-        () -> validator.validateArgument(stringArgument("^[a-z][0-9]$"), "pattern", "Alfa Brouwerij"));
+        () -> validator.validate(stringArgument("^[a-z][0-9]$"), "pattern", "Alfa Brouwerij"));
   }
 
   private GraphQLArgument minArgument(Object value) {

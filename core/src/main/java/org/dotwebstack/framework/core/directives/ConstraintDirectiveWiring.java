@@ -6,6 +6,7 @@ import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import lombok.AllArgsConstructor;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,7 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
   public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     try {
       GraphQLArgument argument = environment.getElement();
-      constraintValidator.validateArgument(argument);
+      constraintValidator.validate(new DirectiveArgumentTuple(argument,argument.getDefaultValue()));
     } catch (DirectiveValidationException exception) {
       throwConfigurationException(exception);
     }
@@ -30,7 +31,8 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
   public GraphQLInputObjectField onInputObjectField(
       SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     try {
-      constraintValidator.validateInputObjectField(environment.getElement());
+      GraphQLInputObjectField inputObjectField = environment.getElement();
+      constraintValidator.validate(new DirectiveArgumentTuple(inputObjectField,inputObjectField.getDefaultValue()));
     } catch (DirectiveValidationException exception) {
       throwConfigurationException(exception);
     }
