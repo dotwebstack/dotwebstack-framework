@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class DirectiveArgumentTuple {
   private GraphQLDirectiveContainer argument;
+
   private Object value;
 
   public DirectiveArgumentTuple(GraphQLDirectiveContainer directiveContainer, Object value) {

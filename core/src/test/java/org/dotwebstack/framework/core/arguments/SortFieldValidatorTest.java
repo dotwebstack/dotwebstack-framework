@@ -71,7 +71,7 @@ class SortFieldValidatorTest {
         return Optional.empty();
       }
     });
-    sortFieldValidator = new SortFieldValidator(new CoreTraverser(),registry);
+    sortFieldValidator = new SortFieldValidator(new CoreTraverser(), registry);
   }
 
   @Test

@@ -49,7 +49,7 @@ class ConstraintDirectiveWiringTest {
 
     constraintDirectiveWiring.onArgument(argumentEnvironment);
 
-    verify(constraintValidator).validate(new DirectiveArgumentTuple(argument,argument.getDefaultValue()));
+    verify(constraintValidator).validate(new DirectiveArgumentTuple(argument, argument.getDefaultValue()));
   }
 
   @Test
@@ -72,7 +72,7 @@ class ConstraintDirectiveWiringTest {
 
     constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment);
 
-    verify(constraintValidator).validate(new DirectiveArgumentTuple(field,field.getDefaultValue()));
+    verify(constraintValidator).validate(new DirectiveArgumentTuple(field, field.getDefaultValue()));
   }
 
 

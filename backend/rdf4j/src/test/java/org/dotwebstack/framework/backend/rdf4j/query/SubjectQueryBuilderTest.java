@@ -15,7 +15,6 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLObjectType;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -427,7 +426,7 @@ class SubjectQueryBuilderTest {
 
     // Act
     Map<String, Expression<?>> result =
-        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value)));
+        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -450,7 +449,8 @@ class SubjectQueryBuilderTest {
     String value = "not a list";
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value)));
+    Map<String, Expression<?>> result =
+        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -467,7 +467,7 @@ class SubjectQueryBuilderTest {
 
     // Act & Assert
     assertThrows(UnsupportedOperationException.class,
-        () -> this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value))));
+        () -> this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value))));
   }
 
   @Test
@@ -484,7 +484,8 @@ class SubjectQueryBuilderTest {
     List<String> value = ImmutableList.of("a", "b");
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value)));
+    Map<String, Expression<?>> result =
+        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -507,7 +508,8 @@ class SubjectQueryBuilderTest {
     String value = "iri";
 
     // Act
-    Map<String, Expression<?>> result = this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container,value)));
+    Map<String, Expression<?>> result =
+        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));

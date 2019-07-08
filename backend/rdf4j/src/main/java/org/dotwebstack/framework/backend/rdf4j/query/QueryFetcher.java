@@ -18,7 +18,6 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
@@ -88,9 +87,9 @@ public final class QueryFetcher implements DataFetcher<Object> {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 
-    List<DirectiveArgumentTuple> inputObjectFilters =
-        coreTraverser.getInputObjectDirectiveContainers(environment,
-            directiveContainer -> Objects.nonNull(directiveContainer.getDirective(sparqlDirective.getName())));
+    List<DirectiveArgumentTuple> inputObjectFilters = coreTraverser.getInputObjectDirectiveContainers(environment,
+        (directiveContainer, arguments) -> arguments.containsKey(directiveContainer.getName())
+            && Objects.nonNull(arguments.get(directiveContainer.getName())));
 
     List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, inputObjectFilters,
         environment.getArguments(), repositoryConnection);
@@ -107,11 +106,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
     return model.isEmpty() ? null : new QuerySolution(model, subjects.get(0));
   }
 
-  private List<IRI> fetchSubjects(QueryEnvironment environment,
-                                  GraphQLDirective sparqlDirective,
-                                  List<DirectiveArgumentTuple> filterMapping,
-                                  Map<String, Object> arguments,
-                                  RepositoryConnection con) {
+  private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
+      List<DirectiveArgumentTuple> filterMapping, Map<String, Object> arguments, RepositoryConnection con) {
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 

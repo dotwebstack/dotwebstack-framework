@@ -30,26 +30,28 @@ import org.dotwebstack.framework.core.traversers.CoreTraverser;
 public class SortFieldValidator {
 
   private final CoreTraverser coreTraverser;
+
   private final TypeDefinitionRegistry typeDefinitionRegistry;
 
   public SortFieldValidator(@NonNull CoreTraverser coreTraverser,
-                            @NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
+      @NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
     this.coreTraverser = coreTraverser;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
   public void validate(@NonNull DataFetchingEnvironment dataFetchingEnvironment) {
-    coreTraverser.getArguments(dataFetchingEnvironment,(directiveContainer) -> Boolean.TRUE)
-        .forEach(tuple -> validate(tuple.getArgument(),tuple.getValue()));
+    coreTraverser.getArguments(dataFetchingEnvironment, (container, arguments) -> Boolean.TRUE)
+        .forEach(
+            tuple -> validate(dataFetchingEnvironment.getFieldDefinition(), tuple.getArgument(), tuple.getValue()));
   }
 
-  private void validate(GraphQLDirectiveContainer directiveContainer, Object value) {
+  public void validate(GraphQLType fieldDefinitionType, GraphQLDirectiveContainer directiveContainer, Object value) {
     if (isSortField(getInputValueDefinition(directiveContainer))) {
       GraphQLInputType inputType = getInputType(directiveContainer);
       if (inputType instanceof GraphQLList) {
-        validateSortFieldList(null, value, inputType);
+        validateSortFieldList(fieldDefinitionType, value, inputType);
       } else {
-        validateSortField(null, value);
+        validateSortField(fieldDefinitionType, value);
       }
     }
   }
@@ -60,7 +62,8 @@ public class SortFieldValidator {
     } else if (directiveContainer instanceof GraphQLInputObjectField) {
       return ((GraphQLInputObjectField) directiveContainer).getDefinition();
     }
-    throw unsupportedOperationException("Unable to get inputValueDefinition for class {}",directiveContainer.getClass().getSimpleName());
+    throw unsupportedOperationException("Unable to get inputValueDefinition for class {}", directiveContainer.getClass()
+        .getSimpleName());
   }
 
   private GraphQLInputType getInputType(GraphQLDirectiveContainer directiveContainer) {
@@ -69,7 +72,8 @@ public class SortFieldValidator {
     } else if (directiveContainer instanceof GraphQLInputObjectField) {
       return ((GraphQLInputObjectField) directiveContainer).getType();
     }
-    throw unsupportedOperationException("Unable to get inputType for class {}",directiveContainer.getClass().getSimpleName());
+    throw unsupportedOperationException("Unable to get inputType for class {}", directiveContainer.getClass()
+        .getSimpleName());
   }
 
   private void validateSortFieldList(GraphQLType fieldDefinitionType, Object value, GraphQLInputType type) {

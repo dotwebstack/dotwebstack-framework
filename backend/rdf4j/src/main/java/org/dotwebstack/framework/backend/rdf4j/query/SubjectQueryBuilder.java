@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLDirectiveContainer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -191,10 +190,13 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     Map<String, Expression<?>> expressionMap = new HashMap<>();
 
     filterMapping.forEach(tuple -> {
-      GraphQLDirective directive = tuple.getArgument().getDirective(CoreDirectives.FILTER_NAME);
+      GraphQLDirective directive = tuple.getArgument()
+          .getDirective(CoreDirectives.FILTER_NAME);
 
       GraphQLArgument fieldArgument = directive.getArgument(CoreDirectives.FILTER_ARG_FIELD);
-      String field = fieldArgument.getValue() != null ? (String) fieldArgument.getValue() : tuple.getArgument().getName();
+      String field = fieldArgument.getValue() != null ? (String) fieldArgument.getValue()
+          : tuple.getArgument()
+              .getName();
 
       Variable fieldVar = SparqlBuilder.var(field);
       String operator = (String) directive.getArgument(CoreDirectives.FILTER_ARG_OPERATOR)

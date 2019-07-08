@@ -70,10 +70,10 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
         .getConnection();
 
-//    // startup time validation of default values for sort fields
-    SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser,environment.getRegistry());
-//    sortFieldValidator.validate(environment);
-//    validateSortField(fieldDefinition, sortFieldValidator);
+    // // startup time validation of default values for sort fields
+    SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
+
+    validateSortField(fieldDefinition, sortFieldValidator);
 
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
         constraintValidator, coreTraverser, sortFieldValidator);
@@ -84,17 +84,17 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     return fieldDefinition;
   }
 
-//  private void validateSortField(GraphQLFieldDefinition fieldDefinition, SortFieldValidator sortFieldValidator) {
-//    // the orderBy argument in the @sparl directive
-//    GraphQLArgument orderByArgument = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME)
-//        .getArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY);
-//
-//    // the argument in field definition to which the orderBy refers
-//    GraphQLArgument sortArgument = fieldDefinition.getArgument((String) orderByArgument.getValue());
-//
-//    if (sortArgument != null && sortArgument.getDefaultValue() != null) {
-//      sortFieldValidator.traverseArgument(fieldDefinition.getType(), sortArgument, sortArgument.getDefaultValue());
-//    }
-//  }
+  private void validateSortField(GraphQLFieldDefinition fieldDefinition, SortFieldValidator sortFieldValidator) {
+    // the orderBy argument in the @sparl directive
+    GraphQLArgument orderByArgument = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME)
+        .getArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY);
+
+    // the argument in field definition to which the orderBy refers
+    GraphQLArgument sortArgument = fieldDefinition.getArgument((String) orderByArgument.getValue());
+
+    if (sortArgument != null && sortArgument.getDefaultValue() != null) {
+      sortFieldValidator.validate(fieldDefinition.getType(), sortArgument, sortArgument.getDefaultValue());
+    }
+  }
 
 }

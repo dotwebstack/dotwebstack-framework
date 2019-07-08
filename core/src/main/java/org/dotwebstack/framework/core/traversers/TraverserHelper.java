@@ -22,7 +22,8 @@ class TraverserHelper {
     if (entry.getValue() instanceof Map) {
       return ((Map<String, Object>) entry.getValue()).entrySet()
           .stream()
-          .flatMap(innerEntry -> flatten(innerEntry).entrySet().stream())
+          .flatMap(innerEntry -> flatten(innerEntry).entrySet()
+              .stream())
           .collect(HashMap::new, (map, innerEntry) -> map.put(innerEntry.getKey(), innerEntry.getValue()),
               HashMap::putAll);
     }
