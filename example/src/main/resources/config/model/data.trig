@@ -157,10 +157,12 @@
   .
 
   ingredient_id:1 a beer_def:Ingredient ;
+    beer_def:identifier "1" ;
     schema:name "Hop"
   .
 
   ingredient_id:2 a beer_def:Ingredient ;
+    beer_def:identifier "2" ;
     schema:name "Gerst"
   .
 }

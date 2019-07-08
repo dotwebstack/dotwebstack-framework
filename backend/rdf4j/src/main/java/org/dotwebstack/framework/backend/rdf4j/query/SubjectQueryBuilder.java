@@ -1,12 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
-import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
-import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
-import static org.dotwebstack.framework.core.directives.FilterOperator.LT;
-import static org.dotwebstack.framework.core.directives.FilterOperator.LTE;
-import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
-
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
@@ -17,23 +10,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.expression.ExpressionHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
-import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.JexlHelper;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
@@ -50,20 +41,6 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
   private static final Variable SUBJECT_VAR = SparqlBuilder.var("s");
-
-  private static final ImmutableMap.Builder<String, BiFunction<String, Operand, Expression<?>>> BUILDER =
-      new ImmutableMap.Builder<>();
-
-  static {
-    BUILDER.put(EQ.getValue(), (subject, operand) -> Expressions.equals(SparqlBuilder.var(subject), operand));
-    BUILDER.put(NE.getValue(), (subject, operand) -> Expressions.notEquals(SparqlBuilder.var(subject), operand));
-    BUILDER.put(LT.getValue(), (subject, operand) -> Expressions.lt(SparqlBuilder.var(subject), operand));
-    BUILDER.put(LTE.getValue(), (subject, operand) -> Expressions.lte(SparqlBuilder.var(subject), operand));
-    BUILDER.put(GT.getValue(), (subject, operand) -> Expressions.gt(SparqlBuilder.var(subject), operand));
-    BUILDER.put(GTE.getValue(), (subject, operand) -> Expressions.gte(SparqlBuilder.var(subject), operand));
-  }
-
-  private static final ImmutableMap<String, BiFunction<String, Operand, Expression<?>>> MAP = BUILDER.build();
 
   private final JexlHelper jexlHelper;
 
@@ -234,7 +211,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
       }
 
       list.forEach(item -> {
-        Expression<?> expression = getExpressionFromOperator(field, operator, item);
+        Expression<?> expression = ExpressionHelper.getExpressionFromOperator(field, operator,
+            ExpressionHelper.getOperand(nodeShape, field, item));
 
         if (whereBuilder.build()
             .values()
@@ -264,27 +242,5 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     } else {
       expressionMap.put(fieldVar.getQueryString(), expression);
     }
-  }
-
-  private Expression<?> getExpressionFromOperator(String field, String operator, Object value) {
-    BiFunction<String, Operand, Expression<?>> function = MAP.get(operator != null ? operator
-        : FilterOperator.getDefault()
-            .toString());
-
-    if (function == null) {
-      throw ExceptionHelper.unsupportedOperationException("Invalid operator '{}' in filter directive for '{}'",
-          operator, field);
-    }
-
-    String string = ObjectHelper.cast(String.class, value);
-
-    if (nodeShape.getPropertyShape(field)
-        .getNodeKind()
-        .equals(SHACL.IRI)) {
-      return function.apply(field, Rdf.iri(string));
-    }
-
-    return function.apply(field, Rdf.literalOfType(string, nodeShape.getPropertyShape(field)
-        .getDatatype()));
   }
 }

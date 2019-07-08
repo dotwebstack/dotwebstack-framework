@@ -5,7 +5,7 @@
 @prefix beer_def: <https://github.com/dotwebstack/beer/def#> .
 @prefix beer_sh: <https://github.com/dotwebstack/beer/shapes#> .
 
-beer:shapes {
+<https://github.com/dotwebstack/beer/shapes> {
   beer_sh:Brewery a sh:NodeShape ;
     sh:targetClass beer_def:Brewery ;
     sh:property
@@ -16,6 +16,7 @@ beer:shapes {
       beer_sh:Brewery_openinghours ,
       beer_sh:Brewery_postalCode ,
       beer_sh:Brewery_beers ,
+      beer_sh:Brewery_beerNames ,
       beer_sh:Brewery_url ;
     sh:or (
       [
@@ -89,11 +90,18 @@ beer:shapes {
     sh:path schema:url ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:nodeKind sh:IRI
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
   .
 
   beer_sh:Brewery_beers a sh:PropertyShape ;
     sh:name "beers" ;
+    sh:path [ sh:inversePath beer_def:brewery ] ;
+    sh:node beer_sh:Beer
+  .
+
+  beer_sh:Brewery_beerNames a sh:PropertyShape ;
+    sh:name "beerNames" ;
     sh:path ( [ sh:inversePath beer_def:brewery ] schema:name ) ;
     sh:minCount 0 ;
     sh:nodeKind sh:Literal ;
@@ -111,16 +119,17 @@ beer:shapes {
       beer_sh:Beer_beerTypesZeroOrOne,
       beer_sh:Beer_beerTypesRaw ;
     sh:property [
-     sh:path ( beer_def:ingredient ) ;
-     sh:or (
-      [
-        sh:name "ingredients" ;
-        sh:node beer_sh:Ingredient ;
-      ]
-      [
-        sh:name "supplements" ;
-        sh:node beer_sh:Supplement ;
-      ])
+      sh:path ( beer_def:ingredient ) ;
+      sh:or (
+        [
+          sh:name "ingredients" ;
+          sh:node beer_sh:Ingredient ;
+        ]
+        [
+          sh:name "supplements" ;
+          sh:node beer_sh:Supplement ;
+        ]
+      )
     ]
   .
 
@@ -147,15 +156,15 @@ beer:shapes {
     sh:path beer_def:brewery ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
-    sh:node beer_sh:Brewery
+    sh:nodeKind sh:IRI
   .
 
   beer_sh:Beer_beerTypesRaw a sh:PropertyShape ;
-      sh:name "beerTypesRaw" ;
-      sh:path beer_def:beertype ;
-      sh:minCount 0 ;
-      sh:node beer_sh:BeerType
-    .
+    sh:name "beerTypesRaw" ;
+    sh:path beer_def:beertype ;
+    sh:minCount 0 ;
+    sh:node beer_sh:BeerType
+  .
 
   beer_sh:BeerType a sh:NodeShape ;
     sh:name "beerTypeRaw" ;
@@ -164,13 +173,13 @@ beer:shapes {
       beer_sh:BeerType_name ;
   .
 
- beer_sh:BeerType_name a sh:PropertyShape ;
+  beer_sh:BeerType_name a sh:PropertyShape ;
     sh:name "name" ;
     sh:path schema:name ;
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string ;
+    sh:datatype xsd:string
   .
 
   beer_sh:Beer_beerTypes a sh:PropertyShape ;
@@ -182,32 +191,35 @@ beer:shapes {
   .
 
   beer_sh:Beer_beerTypesZeroOrMore a sh:PropertyShape ;
-      sh:name "beerTypesZeroOrMore" ;
-      sh:path ( [ sh:zeroOrMorePath beer_def:beertype ] schema:name );
-      sh:minCount 0 ;
-      sh:nodeKind sh:Literal ;
-      sh:datatype xsd:string ;
+    sh:name "beerTypesZeroOrMore" ;
+    sh:path ( [ sh:zeroOrMorePath beer_def:beertype ] schema:name );
+    sh:minCount 0 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
   .
 
   beer_sh:Beer_beerTypesZeroOrOne a sh:PropertyShape ;
-      sh:name "beerTypesZeroOrOne" ;
-      sh:path ( [ sh:zeroOrOnePath beer_def:beertype ] schema:name );
-      sh:minCount 0 ;
-      sh:nodeKind sh:Literal ;
-      sh:datatype xsd:string ;
+    sh:name "beerTypesZeroOrOne" ;
+    sh:path ( [ sh:zeroOrOnePath beer_def:beertype ] schema:name );
+    sh:minCount 0 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string ;
   .
 
   beer_sh:Brewery_address a sh:PropertyShape ;
     sh:name "address" ;
     sh:path schema:address ;
-    sh:node beer_sh:Address
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:node beer_sh:Address ;
   .
 
   beer_sh:Address a sh:NodeShape ;
     sh:name "address" ;
     sh:targetClass beer_def:Address ;
     sh:property
-      beer_sh:Address_postalcode
+      beer_sh:Address_postalcode,
+      beer_sh:Address_streetAddress
   .
 
   beer_sh:Address_postalcode a sh:PropertyShape ;
@@ -216,36 +228,47 @@ beer:shapes {
     sh:minCount 1 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string ;
+    sh:datatype xsd:string
   .
 
-    beer_sh:Ingredient a sh:NodeShape ;
-      sh:targetClass beer_def:Ingredient ;
-      sh:property
-        beer_sh:Ingredient_name
-    .
+  beer_sh:Address_streetAddress a sh:PropertyShape ;
+    sh:name "streetAddress" ;
+    sh:path schema:streetAddress ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
 
-    beer_sh:Ingredient_name a sh:PropertyShape ;
-      sh:name "name" ;
-      sh:path schema:name ;
-      sh:minCount 1 ;
-      sh:maxCount 1 ;
-      sh:nodeKind sh:Literal ;
-      sh:datatype xsd:string
-    .
+  beer_sh:Ingredient a sh:NodeShape ;
+    sh:targetClass beer_def:Ingredient ;
+    sh:property
+      beer_sh:Ingredient_name ;
+    sh:nodeKind sh:IRI ;
+  .
 
-    beer_sh:Supplement a sh:NodeShape ;
-      sh:targetClass beer_def:Supplement ;
-      sh:property
-        beer_sh:Supplement_name
-    .
+  beer_sh:Ingredient_name a sh:PropertyShape ;
+    sh:name "name" ;
+    sh:path schema:name ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
 
-    beer_sh:Supplement_name a sh:PropertyShape ;
-      sh:name "name" ;
-      sh:path schema:name ;
-      sh:minCount 1 ;
-      sh:maxCount 1 ;
-      sh:nodeKind sh:Literal ;
-      sh:datatype xsd:string
-    .
+  beer_sh:Supplement a sh:NodeShape ;
+    sh:targetClass beer_def:Supplement ;
+    sh:property
+      beer_sh:Supplement_name ;
+    sh:nodeKind sh:IRI
+  .
+
+  beer_sh:Supplement_name a sh:PropertyShape ;
+    sh:name "name" ;
+    sh:path schema:name ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
 }
