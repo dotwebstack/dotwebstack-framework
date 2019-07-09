@@ -19,7 +19,7 @@ import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConstraintValidator {
+public class ConstraintValidator implements QueryValidator {
 
   private final CoreTraverser coreTraverser;
 

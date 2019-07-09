@@ -9,6 +9,8 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
+
+import java.util.Arrays;
 import java.util.Map;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
@@ -67,8 +69,7 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
       throw new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId);
     }
 
-    RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
-        .getConnection();
+    RepositoryConnection connection = repositoryManager.getRepository(repositoryId).getConnection();
 
     // // startup time validation of default values for sort fields
     SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
@@ -76,7 +77,7 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     validateSortField(fieldDefinition, sortFieldValidator);
 
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
-        constraintValidator, coreTraverser, sortFieldValidator);
+        Arrays.asList(constraintValidator,sortFieldValidator), coreTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);

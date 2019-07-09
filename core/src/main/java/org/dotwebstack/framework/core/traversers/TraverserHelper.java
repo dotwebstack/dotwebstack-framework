@@ -18,7 +18,7 @@ class TraverserHelper {
   }
 
   @SuppressWarnings("unchecked")
-  static Map<String, Object> flatten(Map.Entry<String, Object> entry) {
+  private static Map<String, Object> flatten(Map.Entry<String, Object> entry) {
     if (entry.getValue() instanceof Map) {
       return ((Map<String, Object>) entry.getValue()).entrySet()
           .stream()

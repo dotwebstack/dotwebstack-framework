@@ -22,14 +22,21 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.springframework.stereotype.Component;
-
 
 @Component
 public class CoreTraverser {
 
-  public List<DirectiveArgumentTuple> getArguments(DataFetchingEnvironment environment, TraverserFilter filter) {
+  /**
+   * Get a list of arguments tuples matching the given {@link TraverserFilter}
+   * @param environment a GraphQL {@link DataFetchingEnvironment}
+   * @param filter Filter criteria
+   * @return list of {@link DirectiveArgumentTuple}
+   */
+  public List<DirectiveArgumentTuple> getArguments(@NonNull DataFetchingEnvironment environment, @NonNull TraverserFilter filter) {
     GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
     Map<String, Object> flattenedArguments = TraverserHelper.flattenArguments(environment.getArguments());
 

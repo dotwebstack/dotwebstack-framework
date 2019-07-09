@@ -24,6 +24,7 @@ import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
+import org.dotwebstack.framework.core.validators.QueryValidator;
 import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -48,22 +49,19 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final JexlEngine jexlEngine;
 
-  private final ConstraintValidator constraintValidator;
-
   private final CoreTraverser coreTraverser;
 
-  private SortFieldValidator sortFieldValidator;
+  private final List<QueryValidator> validators;
 
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
-      Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintValidator constraintValidator,
-      CoreTraverser coreTraverser, SortFieldValidator sortFieldValidator) {
+      Map<String, String> prefixMap, JexlEngine jexlEngine, List<QueryValidator> validators,
+      CoreTraverser coreTraverser) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
-    this.constraintValidator = constraintValidator;
     this.coreTraverser = coreTraverser;
-    this.sortFieldValidator = sortFieldValidator;
+    this.validators = validators;
   }
 
   @Override
@@ -75,8 +73,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
     }
 
-    sortFieldValidator.validate(environment);
-    constraintValidator.validate(environment);
+    validators.forEach(validator -> validator.validate(environment));
 
     QueryEnvironment queryEnvironment = QueryEnvironment.builder()
         .objectType((GraphQLObjectType) rawType)
