@@ -1,23 +1,22 @@
 package org.dotwebstack.framework.core.traversers;
 
-import graphql.schema.GraphQLDirectiveContainer;
-import java.util.Map;
 import java.util.Objects;
 
 public interface TraverserFilter {
 
-  boolean apply(GraphQLDirectiveContainer container, Map<String, Object> arguments);
+  boolean apply(DirectiveContainerTuple tuple);
 
   static TraverserFilter directiveFilter(String directiveName) {
-    return (container, arguments) -> Objects.nonNull(container.getDirective(directiveName));
+    return tuple -> Objects.nonNull(tuple.getContainer()
+        .getDirective(directiveName));
   }
 
   static TraverserFilter directiveWithValueFilter(String directiveName) {
-    return (container, arguments) -> Objects.nonNull(container.getDirective(directiveName))
-        && arguments.containsKey(container.getName());
+    return tuple -> Objects.nonNull(tuple.getContainer()
+        .getDirective(directiveName)) && Objects.nonNull(tuple.getValue());
   }
 
   static TraverserFilter noFilter() {
-    return (container, arguments) -> Boolean.TRUE;
+    return tuple -> Boolean.TRUE;
   }
 }

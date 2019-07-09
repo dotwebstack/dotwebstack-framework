@@ -5,48 +5,44 @@ import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiv
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.noFilter;
 
-import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import org.junit.jupiter.api.Test;
-import java.util.HashMap;
 
 class TraverserFilterTest {
 
   @Test
   void directiveFilter_returns_true() {
-    assertThat(directiveFilter("directive").apply(testArgument("directive"),ImmutableMap.of())).isTrue();
+    assertThat(directiveFilter("directive").apply(testTuple("directive", null))).isTrue();
   }
 
   @Test
   void directiveFilter_returns_false() {
-    assertThat(directiveFilter("directive").apply(testArgument("directive2"),ImmutableMap.of())).isFalse();
+    assertThat(directiveFilter("directive").apply(testTuple("directive2", null))).isFalse();
   }
 
   @Test
   void directiveFilterWithValue_return_true() {
-    assertThat(directiveWithValueFilter("directive").apply(testArgument("directive"),
-        ImmutableMap.of("arg","value"))).isTrue();
+    assertThat(directiveWithValueFilter("directive").apply(testTuple("directive", "value"))).isTrue();
   }
 
   @Test
   void directiveFilterWithValue_return_false() {
-    assertThat(directiveWithValueFilter("directive").apply(testArgument("directive"), ImmutableMap.of())).isFalse();
+    assertThat(directiveWithValueFilter("directive").apply(testTuple("directive", null))).isFalse();
   }
 
   @Test
   void noFilter_returns_true() {
-    assertThat(noFilter().apply(testArgument("directive2"),new HashMap<>())).isTrue();
+    assertThat(noFilter().apply(null)).isTrue();
   }
 
-  private GraphQLArgument testArgument(String directiveName) {
-    return GraphQLArgument.newArgument()
+  private DirectiveContainerTuple testTuple(String directiveName, Object value) {
+    return new DirectiveContainerTuple(GraphQLArgument.newArgument()
         .name("arg")
-        .withDirective(
-            GraphQLDirective.newDirective()
-                .name(directiveName))
+        .withDirective(GraphQLDirective.newDirective()
+            .name(directiveName))
         .type(Scalars.GraphQLString)
-        .build();
+        .build(), value);
   }
 }

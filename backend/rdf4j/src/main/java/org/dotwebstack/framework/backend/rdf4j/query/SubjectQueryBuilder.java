@@ -22,7 +22,7 @@ import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.JexlHelper;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
-import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
@@ -59,7 +59,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   String getQueryString(final Map<String, Object> arguments, final GraphQLDirective sparqlDirective,
-      List<DirectiveArgumentTuple> filterMapping) {
+      List<DirectiveContainerTuple> filterMapping) {
     final MapContext context = new MapContext(arguments);
 
     this.query.select(SUBJECT_VAR);
@@ -186,16 +186,16 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
   }
 
   @SuppressWarnings("unchecked")
-  Map<String, Expression<?>> getFilters(List<DirectiveArgumentTuple> filterMapping) {
+  Map<String, Expression<?>> getFilters(List<DirectiveContainerTuple> filterMapping) {
     Map<String, Expression<?>> expressionMap = new HashMap<>();
 
     filterMapping.forEach(tuple -> {
-      GraphQLDirective directive = tuple.getArgument()
+      GraphQLDirective directive = tuple.getContainer()
           .getDirective(CoreDirectives.FILTER_NAME);
 
       GraphQLArgument fieldArgument = directive.getArgument(CoreDirectives.FILTER_ARG_FIELD);
       String field = fieldArgument.getValue() != null ? (String) fieldArgument.getValue()
-          : tuple.getArgument()
+          : tuple.getContainer()
               .getName();
 
       Variable fieldVar = SparqlBuilder.var(field);

@@ -9,7 +9,6 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-
 import java.util.Arrays;
 import java.util.Map;
 import lombok.NonNull;
@@ -69,7 +68,8 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
       throw new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId);
     }
 
-    RepositoryConnection connection = repositoryManager.getRepository(repositoryId).getConnection();
+    RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
+        .getConnection();
 
     // // startup time validation of default values for sort fields
     SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
@@ -77,7 +77,7 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     validateSortField(fieldDefinition, sortFieldValidator);
 
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
-        Arrays.asList(constraintValidator,sortFieldValidator), coreTraverser);
+        Arrays.asList(constraintValidator, sortFieldValidator), coreTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
@@ -86,11 +86,11 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
   }
 
   private void validateSortField(GraphQLFieldDefinition fieldDefinition, SortFieldValidator sortFieldValidator) {
-    // the orderBy argument in the @sparl directive
+    // the orderBy container in the @sparl directive
     GraphQLArgument orderByArgument = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME)
         .getArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY);
 
-    // the argument in field definition to which the orderBy refers
+    // the container in field definition to which the orderBy refers
     GraphQLArgument sortArgument = fieldDefinition.getArgument((String) orderByArgument.getValue());
 
     if (sortArgument != null && sortArgument.getDefaultValue() != null) {

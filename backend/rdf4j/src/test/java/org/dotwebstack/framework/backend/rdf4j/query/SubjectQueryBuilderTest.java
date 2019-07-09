@@ -29,7 +29,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
-import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
@@ -426,7 +426,7 @@ class SubjectQueryBuilderTest {
 
     // Act
     Map<String, Expression<?>> result =
-        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value)));
+        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -450,7 +450,7 @@ class SubjectQueryBuilderTest {
 
     // Act
     Map<String, Expression<?>> result =
-        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value)));
+        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -467,7 +467,7 @@ class SubjectQueryBuilderTest {
 
     // Act & Assert
     assertThrows(UnsupportedOperationException.class,
-        () -> this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value))));
+        () -> this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value))));
   }
 
   @Test
@@ -485,7 +485,7 @@ class SubjectQueryBuilderTest {
 
     // Act
     Map<String, Expression<?>> result =
-        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value)));
+        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));
@@ -509,7 +509,7 @@ class SubjectQueryBuilderTest {
 
     // Act
     Map<String, Expression<?>> result =
-        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveArgumentTuple(container, value)));
+        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value)));
 
     // Assert
     assertThat(result.size(), is(equalTo(1)));

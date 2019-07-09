@@ -80,7 +80,7 @@ public class FilterValidator {
         }
         break;
       default:
-        throw new DirectiveValidationException("Unsupported filter argument with name '{}'", argument.getName());
+        throw new DirectiveValidationException("Unsupported filter container with name '{}'", argument.getName());
     }
   }
 

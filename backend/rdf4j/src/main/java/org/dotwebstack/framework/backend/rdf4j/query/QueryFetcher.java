@@ -22,10 +22,8 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
-import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
-import org.dotwebstack.framework.core.validators.ConstraintValidator;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.dotwebstack.framework.core.validators.QueryValidator;
-import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -86,8 +84,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 
-    List<DirectiveArgumentTuple> inputObjectFilters =
-        coreTraverser.getArguments(environment, directiveWithValueFilter(CoreDirectives.FILTER_NAME));
+    List<DirectiveContainerTuple> inputObjectFilters =
+        coreTraverser.getTuples(environment, directiveWithValueFilter(CoreDirectives.FILTER_NAME));
 
     List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, inputObjectFilters,
         environment.getArguments(), repositoryConnection);
@@ -105,7 +103,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   }
 
   private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
-      List<DirectiveArgumentTuple> filterMapping, Map<String, Object> arguments, RepositoryConnection con) {
+      List<DirectiveContainerTuple> filterMapping, Map<String, Object> arguments, RepositoryConnection con) {
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 

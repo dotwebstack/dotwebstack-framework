@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
-import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,18 +28,18 @@ public class ConstraintValidator implements QueryValidator {
   }
 
   public void validate(DataFetchingEnvironment dataFetchingEnvironment) {
-    coreTraverser.getArguments(dataFetchingEnvironment, directiveFilter(CONSTRAINT_NAME))
+    coreTraverser.getTuples(dataFetchingEnvironment, directiveFilter(CONSTRAINT_NAME))
         .forEach(this::validate);
   }
 
-  public void validate(DirectiveArgumentTuple directiveArgumentTuple) {
-    Stream.of(directiveArgumentTuple)
-        .map(container -> directiveArgumentTuple.getArgument()
+  public void validate(DirectiveContainerTuple directiveContainerTuple) {
+    Stream.of(directiveContainerTuple)
+        .map(container -> directiveContainerTuple.getContainer()
             .getDirective(CONSTRAINT_NAME))
         .flatMap(directive -> directive.getArguments()
             .stream())
-        .forEach(argument -> validate(argument, directiveArgumentTuple.getArgument()
-            .getName(), directiveArgumentTuple.getValue()));
+        .forEach(argument -> validate(argument, directiveContainerTuple.getContainer()
+            .getName(), directiveContainerTuple.getValue()));
   }
 
   void validate(GraphQLArgument argument, String name, Object value) {
@@ -62,7 +62,7 @@ public class ConstraintValidator implements QueryValidator {
           }
           break;
         default:
-          throw new DirectiveValidationException("Unsupported constraint argument with name '{}'", argument.getName());
+          throw new DirectiveValidationException("Unsupported constraint container with name '{}'", argument.getName());
       }
     }
   }

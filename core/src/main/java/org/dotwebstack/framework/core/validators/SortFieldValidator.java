@@ -41,9 +41,9 @@ public class SortFieldValidator implements QueryValidator {
   }
 
   public void validate(@NonNull DataFetchingEnvironment dataFetchingEnvironment) {
-    coreTraverser.getArguments(dataFetchingEnvironment, noFilter())
+    coreTraverser.getTuples(dataFetchingEnvironment, noFilter())
         .forEach(
-            tuple -> validate(dataFetchingEnvironment.getFieldDefinition(), tuple.getArgument(), tuple.getValue()));
+            tuple -> validate(dataFetchingEnvironment.getFieldDefinition(), tuple.getContainer(), tuple.getValue()));
   }
 
   public void validate(GraphQLType fieldDefinitionType, GraphQLDirectiveContainer directiveContainer, Object value) {
@@ -98,7 +98,7 @@ public class SortFieldValidator implements QueryValidator {
     if (sortArgument == null) {
       return Optional.empty();
     } else if (!(sortArgument instanceof Map)) {
-      throw illegalArgumentException("Sort argument '{}' should be a map.", sortArgument);
+      throw illegalArgumentException("Sort container '{}' should be a map.", sortArgument);
     } else {
       return Optional.of((String) ((Map) sortArgument).get(CoreInputTypes.SORT_FIELD_FIELD));
     }
