@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
@@ -31,10 +30,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class CoreTraverser {
 
-  public List<DirectiveArgumentTuple> getArguments(DataFetchingEnvironment environment,
-      BiFunction<GraphQLDirectiveContainer, Map<String, Object>, Boolean> filter) {
+  public List<DirectiveArgumentTuple> getArguments(DataFetchingEnvironment environment, TraverserFilter filter) {
     List<DirectiveArgumentTuple> result = new ArrayList<>();
-    result.addAll(getDirectArguments(environment));
+    result.addAll(getDirectArguments(environment, filter));
     result.addAll(getInputObjectDirectiveContainers(environment, filter));
     return result;
   }
@@ -44,7 +42,7 @@ public class CoreTraverser {
    * to input object types
    */
   public List<DirectiveArgumentTuple> getInputObjectDirectiveContainers(DataFetchingEnvironment dataFetchingEnvironment,
-      BiFunction<GraphQLDirectiveContainer, Map<String, Object>, Boolean> filter) {
+      TraverserFilter filter) {
     GraphQLFieldDefinition fieldDefinition = dataFetchingEnvironment.getFieldDefinition();
     Map<String, Object> flattenedArguments = TraverserHelper.flattenArguments(dataFetchingEnvironment.getArguments());
 
@@ -62,7 +60,7 @@ public class CoreTraverser {
    * return a map containing the object types that can be reached top down from a given environment
    * together with the argument for this object type, provided by the user.
    */
-  private List<DirectiveArgumentTuple> getDirectArguments(DataFetchingEnvironment environment) {
+  private List<DirectiveArgumentTuple> getDirectArguments(DataFetchingEnvironment environment, TraverserFilter filter) {
     return Optional.ofNullable(environment.getSelectionSet())
         .map(selectionSet -> selectionSet.getFields()
             .stream()
@@ -72,7 +70,8 @@ public class CoreTraverser {
                 .getArguments()
                 .stream()
                 .map(argumentDefinition -> new DirectiveArgumentTuple(argumentDefinition, selectedField.getArguments()
-                    .get(argumentDefinition.getName()))))
+                    .get(argumentDefinition.getName())))
+                .filter(tuple -> filter.apply(tuple.getArgument(), selectedField.getArguments())))
             .collect(Collectors.toList()))
         .orElse(emptyList());
   }

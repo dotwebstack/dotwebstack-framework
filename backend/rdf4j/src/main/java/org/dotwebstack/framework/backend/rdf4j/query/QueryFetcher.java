@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
+
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -10,7 +12,6 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,7 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.traversers.DirectiveArgumentTuple;
@@ -88,8 +90,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 
     List<DirectiveArgumentTuple> inputObjectFilters = coreTraverser.getInputObjectDirectiveContainers(environment,
-        (directiveContainer, arguments) -> arguments.containsKey(directiveContainer.getName())
-            && Objects.nonNull(arguments.get(directiveContainer.getName())));
+        directiveWithValueFilter(CoreDirectives.FILTER_NAME));
 
     List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, inputObjectFilters,
         environment.getArguments(), repositoryConnection);

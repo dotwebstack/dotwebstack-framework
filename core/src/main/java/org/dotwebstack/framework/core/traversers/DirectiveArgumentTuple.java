@@ -10,7 +10,7 @@ public class DirectiveArgumentTuple {
 
   private Object value;
 
-  public DirectiveArgumentTuple(@NonNull GraphQLDirectiveContainer directiveContainer, @NonNull Object value) {
+  public DirectiveArgumentTuple(@NonNull GraphQLDirectiveContainer directiveContainer, Object value) {
     this.argument = directiveContainer;
     this.value = value;
   }

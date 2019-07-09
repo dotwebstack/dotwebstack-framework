@@ -7,11 +7,11 @@ import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAIN
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_PATTERN;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_NAME;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
+import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveFilter;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
@@ -28,9 +28,7 @@ public class ConstraintValidator {
   }
 
   public void validate(DataFetchingEnvironment dataFetchingEnvironment) {
-    coreTraverser
-        .getArguments(dataFetchingEnvironment,
-            (container, arguments) -> Objects.nonNull(container.getDirective(CONSTRAINT_NAME)))
+    coreTraverser.getArguments(dataFetchingEnvironment, directiveFilter(CONSTRAINT_NAME))
         .forEach(this::validate);
   }
 

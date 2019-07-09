@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.hasListType;
+import static org.dotwebstack.framework.core.traversers.TraverserFilter.noFilter;
 
 import graphql.language.FieldDefinition;
 import graphql.language.InputValueDefinition;
@@ -40,7 +41,7 @@ public class SortFieldValidator {
   }
 
   public void validate(@NonNull DataFetchingEnvironment dataFetchingEnvironment) {
-    coreTraverser.getArguments(dataFetchingEnvironment, (container, arguments) -> Boolean.TRUE)
+    coreTraverser.getArguments(dataFetchingEnvironment, noFilter())
         .forEach(
             tuple -> validate(dataFetchingEnvironment.getFieldDefinition(), tuple.getArgument(), tuple.getValue()));
   }
