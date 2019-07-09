@@ -89,8 +89,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
 
-    List<DirectiveArgumentTuple> inputObjectFilters = coreTraverser.getInputObjectDirectiveContainers(environment,
-        directiveWithValueFilter(CoreDirectives.FILTER_NAME));
+    List<DirectiveArgumentTuple> inputObjectFilters =
+        coreTraverser.getArguments(environment, directiveWithValueFilter(CoreDirectives.FILTER_NAME));
 
     List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, inputObjectFilters,
         environment.getArguments(), repositoryConnection);

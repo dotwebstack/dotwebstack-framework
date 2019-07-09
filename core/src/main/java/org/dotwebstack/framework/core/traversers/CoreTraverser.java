@@ -15,7 +15,6 @@ import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -31,20 +30,8 @@ import org.springframework.stereotype.Component;
 public class CoreTraverser {
 
   public List<DirectiveArgumentTuple> getArguments(DataFetchingEnvironment environment, TraverserFilter filter) {
-    List<DirectiveArgumentTuple> result = new ArrayList<>();
-    result.addAll(getDirectArguments(environment, filter));
-    result.addAll(getInputObjectDirectiveContainers(environment, filter));
-    return result;
-  }
-
-  /*
-   * Return the directive containers in a given environment for the given directive that are attached
-   * to input object types
-   */
-  public List<DirectiveArgumentTuple> getInputObjectDirectiveContainers(DataFetchingEnvironment dataFetchingEnvironment,
-      TraverserFilter filter) {
-    GraphQLFieldDefinition fieldDefinition = dataFetchingEnvironment.getFieldDefinition();
-    Map<String, Object> flattenedArguments = TraverserHelper.flattenArguments(dataFetchingEnvironment.getArguments());
+    GraphQLFieldDefinition fieldDefinition = environment.getFieldDefinition();
+    Map<String, Object> flattenedArguments = TraverserHelper.flattenArguments(environment.getArguments());
 
     return fieldDefinition.getArguments()
         .stream()
@@ -54,26 +41,6 @@ public class CoreTraverser {
         .map(directiveContainer -> new DirectiveArgumentTuple(directiveContainer,
             flattenedArguments.get(directiveContainer.getName())))
         .collect(Collectors.toList());
-  }
-
-  /*
-   * return a map containing the object types that can be reached top down from a given environment
-   * together with the argument for this object type, provided by the user.
-   */
-  private List<DirectiveArgumentTuple> getDirectArguments(DataFetchingEnvironment environment, TraverserFilter filter) {
-    return Optional.ofNullable(environment.getSelectionSet())
-        .map(selectionSet -> selectionSet.getFields()
-            .stream()
-            .filter(selectedField -> selectedField.getArguments()
-                .size() > 0)
-            .flatMap(selectedField -> selectedField.getFieldDefinition()
-                .getArguments()
-                .stream()
-                .map(argumentDefinition -> new DirectiveArgumentTuple(argumentDefinition, selectedField.getArguments()
-                    .get(argumentDefinition.getName())))
-                .filter(tuple -> filter.apply(tuple.getArgument(), selectedField.getArguments())))
-            .collect(Collectors.toList()))
-        .orElse(emptyList());
   }
 
   /*
