@@ -425,9 +425,9 @@ The names that are provided in the `nameIn` argument are used in a filter where 
 return all the breweries that match one of the provided names. 
 
 ### 1.7.1 Nested filters
-In the examples in the previous paragraph the filtering was done on the root level of the query. The filters where 
-applied to direct fields of a brewery and they only had effect on the breweries that where returned. It is possible 
-though to query on and filter indirect properties of the root. 
+In the examples in the previous paragraph the filtering was done on the root level of the query. The filters were 
+applied to direct fields of a brewery and they only had effect on the breweries that were returned. It is possible 
+though to query on and filter indirect properties of the root element. 
 
 ```graphql
 type Query {
@@ -447,8 +447,8 @@ The example above shows a way to filter the breweries on the existence of the gi
 have a beer with the given name, will not be returned in the result set. Note the dotted notation that is used to point 
 to the name of a beer. This dotted notation makes it possible to point a filter to an indirect property.  
 
-It is also possible to filter a subset of the resultset. If you want the only have the beers with a certain name in 
-your resultset, for example. The set of breweries itself is not filtered, but only the set of beers under each brewery:
+It is also possible to filter a subset of the result set. For example, if you only want to have the beers with a certain 
+name in your result set. The set of breweries itself is not filtered, only the set of beers under each brewery:
 
 ```graphql
 type Query {
