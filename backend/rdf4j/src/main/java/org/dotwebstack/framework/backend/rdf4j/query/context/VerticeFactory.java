@@ -42,18 +42,16 @@ public class VerticeFactory {
       GraphQLDirectiveContainer container = filter.getContainer();
       String fieldName = VerticeFactoryHelper.getFieldName(container);
       String[] fieldPath = fieldName.split("\\.");
-      String[] startPath = VerticeFactoryHelper.getFieldName(container)
-          .split("\\.");
       NodeShape childShape = VerticeFactoryHelper.getNextNodeShape(nodeShape, fieldPath);
 
       if (nodeShape.equals(childShape)) {
-        addFilterToVertice(vertice, container, query, nodeShape, filter.getValue(), fieldPath, startPath);
+        addFilterToVertice(vertice, container, query, nodeShape, filter.getValue(), fieldPath);
       } else {
         Edge edge = createSimpleEdge(query.var(), null, nodeShape.getPropertyShape(fieldPath[0])
             .getPath()
             .toPredicate(), false, false);
         fieldPath = ArrayUtils.remove(fieldPath, 0);
-        addFilterToVertice(edge.getObject(), container, query, childShape, filter.getValue(), fieldPath, fieldPath);
+        addFilterToVertice(edge.getObject(), container, query, childShape, filter.getValue(), fieldPath);
         vertice.getEdges()
             .add(edge);
       }
@@ -61,8 +59,8 @@ public class VerticeFactory {
 
     makeEdgesUnique(vertice.getEdges());
 
-    orderByOptional.ifPresent(orderBy -> orderBy
-        .forEach(entity -> addOrderContexts(vertice, query, (Map<String, String>) entity, nodeShape)));
+    orderByOptional.ifPresent(
+        orderBy -> orderBy.forEach(entity -> addOrderables(vertice, query, (Map<String, String>) entity, nodeShape)));
 
     return vertice;
   }
@@ -178,13 +176,13 @@ public class VerticeFactory {
           .split("\\.");
 
       addFilterToVertice(vertice, argument, query, VerticeFactoryHelper.getNextNodeShape(nodeShape, fieldPath),
-          filterValue, startPath, startPath);
+          filterValue, startPath);
     }
   }
 
   private static void addFilterToVertice(Vertice vertice, GraphQLDirectiveContainer container, OuterQuery<?> query,
-      NodeShape nodeShape, Object filterValue, String[] fieldPath, String[] startPath) {
-    Edge match = findOrCreatePath(vertice, query, nodeShape, startPath);
+      NodeShape nodeShape, Object filterValue, String[] fieldPath) {
+    Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPath);
 
     List<Filter> filters = Objects.nonNull(match.getObject()
         .getFilters()) ? match.getObject()
@@ -291,7 +289,7 @@ public class VerticeFactory {
     });
   }
 
-  private static void addOrderContexts(Vertice vertice, OuterQuery<?> query, Map<String, String> orderMap,
+  private static void addOrderables(Vertice vertice, OuterQuery<?> query, Map<String, String> orderMap,
       NodeShape nodeShape) {
     String fieldName = orderMap.get("field");
     String order = orderMap.get("order");
@@ -306,12 +304,20 @@ public class VerticeFactory {
       match = findOrCreatePath(vertice, query, nodeShape, fieldPaths);
       subject = VerticeFactoryHelper.getSubjectForField(match, nodeShape, fieldPaths);
     } else {
-      match = findOrCreatePath(vertice, query, childShape, ArrayUtils.remove(fieldPaths, 0));
-      subject = VerticeFactoryHelper.getSubjectForField(match, childShape, ArrayUtils.remove(fieldPaths, 0));
+      Edge edge = createSimpleEdge(query.var(), null, nodeShape.getPropertyShape(fieldPaths[0])
+          .getPath()
+          .toPredicate(), false, false);
+      fieldPaths = ArrayUtils.remove(fieldPaths, 0);
+
+      vertice.getEdges()
+          .add(edge);
+
+      match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths);
+      subject = VerticeFactoryHelper.getSubjectForField(match, childShape, fieldPaths);
     }
 
     List<Orderable> orderables = Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
-    orderables.add(order.equalsIgnoreCase("desc") ? subject.desc() : subject.asc());
+    orderables.add((Objects.isNull(order) || order.equalsIgnoreCase("desc")) ? subject.desc() : subject.asc());
     vertice.setOrderables(orderables);
   }
 }

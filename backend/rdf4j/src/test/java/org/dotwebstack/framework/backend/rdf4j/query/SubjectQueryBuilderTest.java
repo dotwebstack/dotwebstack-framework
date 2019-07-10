@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLObjectType;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,8 +20,6 @@ import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,15 +41,6 @@ class SubjectQueryBuilderTest {
 
   @Mock
   private NodeShape nodeShapeMock;
-
-  @Mock
-  private NodeShape addressNodeShapeMock;
-
-  @Mock
-  private PropertyShape propertyShapeMock;
-
-  @Mock
-  private PropertyShape postcodePropertyShapeMock;
 
   @Mock
   private GraphQLObjectType objectTypeMock;
@@ -80,88 +68,6 @@ class SubjectQueryBuilderTest {
             .name(Rdf4jDirectives.SPARQL_ARG_LIMIT)
             .type(Scalars.GraphQLString)
             .value("pageSize")
-            .build())
-        .build();
-  }
-
-  private GraphQLDirective getValidSortDirective() {
-    return GraphQLDirective.newDirective()
-        .name("sparql")
-        .argument(GraphQLArgument.newArgument()
-            .name(Rdf4jDirectives.SPARQL_ARG_ORDER_BY)
-            .type(Scalars.GraphQLString)
-            .value("sort")
-            .build())
-        .build();
-  }
-
-  private GraphQLDirectiveContainer getValidFilterContainerWithOperator() {
-    return GraphQLArgument.newArgument()
-        .name("filter")
-        .type(Scalars.GraphQLString)
-        .withDirective(getFilterDirectiveWithOperator())
-        .build();
-  }
-
-  private GraphQLDirectiveContainer getValidFilterContainerWithoutOperator() {
-    return GraphQLArgument.newArgument()
-        .name("filter")
-        .type(Scalars.GraphQLString)
-        .withDirective(getFilterDirectiveWithoutOperator())
-        .build();
-  }
-
-  private GraphQLDirectiveContainer getFilterContainerWithInvalidOperator() {
-    return GraphQLArgument.newArgument()
-        .name("filter")
-        .type(Scalars.GraphQLString)
-        .withDirective(getFilterDirectiveWithInvalidOperator())
-        .build();
-  }
-
-  private GraphQLDirective getFilterDirectiveWithOperator() {
-    return GraphQLDirective.newDirective()
-        .name(CoreDirectives.FILTER_NAME)
-        .argument(GraphQLArgument.newArgument()
-            .name(CoreDirectives.FILTER_ARG_FIELD)
-            .type(Scalars.GraphQLString)
-            .value("foo")
-            .build())
-        .argument(GraphQLArgument.newArgument()
-            .name(CoreDirectives.FILTER_ARG_OPERATOR)
-            .type(Scalars.GraphQLString)
-            .value("<")
-            .build())
-        .build();
-  }
-
-  private GraphQLDirective getFilterDirectiveWithoutOperator() {
-    return GraphQLDirective.newDirective()
-        .name(CoreDirectives.FILTER_NAME)
-        .argument(GraphQLArgument.newArgument()
-            .name(CoreDirectives.FILTER_ARG_FIELD)
-            .type(Scalars.GraphQLString)
-            .value("foo")
-            .build())
-        .argument(GraphQLArgument.newArgument()
-            .name(CoreDirectives.FILTER_ARG_OPERATOR)
-            .type(Scalars.GraphQLString)
-            .build())
-        .build();
-  }
-
-  private GraphQLDirective getFilterDirectiveWithInvalidOperator() {
-    return GraphQLDirective.newDirective()
-        .name(CoreDirectives.FILTER_NAME)
-        .argument(GraphQLArgument.newArgument()
-            .name(CoreDirectives.FILTER_ARG_FIELD)
-            .type(Scalars.GraphQLString)
-            .value("foo")
-            .build())
-        .argument(GraphQLArgument.newArgument()
-            .name(CoreDirectives.FILTER_ARG_OPERATOR)
-            .type(Scalars.GraphQLString)
-            .value("&&")
             .build())
         .build();
   }
