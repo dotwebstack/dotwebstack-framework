@@ -43,8 +43,8 @@ class VerticeFactoryHelper {
         .getEdges();
 
     return childEdges.stream()
-        .anyMatch(childEdge -> ("<" + RDF.TYPE.stringValue() + ">").equals(childEdge.getPredicate()
-            .getQueryString()) && ("<" + type.stringValue() + ">").equals(
+        .anyMatch(childEdge -> (stringify(RDF.TYPE)).equals(childEdge.getPredicate()
+            .getQueryString()) && (stringify(type)).equals(
                 childEdge.getObject()
                     .getIri()
                     .getQueryString()));
@@ -81,5 +81,9 @@ class VerticeFactoryHelper {
                 .getSubject()));
 
     return getSubjectForField(next, propertyShape.getNode(), ArrayUtils.remove(fieldPaths, 0));
+  }
+
+  public static String stringify(IRI iri) {
+    return "<" + iri.stringValue() + ">";
   }
 }

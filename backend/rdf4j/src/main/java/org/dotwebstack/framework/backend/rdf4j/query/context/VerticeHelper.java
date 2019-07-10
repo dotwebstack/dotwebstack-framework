@@ -17,15 +17,11 @@ public class VerticeHelper {
   private VerticeHelper() {}
 
   public static List<TriplePattern> getConstructPatterns(Vertice vertice) {
-    if (Objects.nonNull(vertice.getEdges()) && !vertice.getEdges()
-        .isEmpty()) {
-      return vertice.getEdges()
-          .stream()
-          .flatMap(edge -> getConstructPatterns(edge, vertice.getSubject()).stream())
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-    }
-    return Collections.emptyList();
+    return vertice.getEdges()
+        .stream()
+        .flatMap(edge -> getConstructPatterns(edge, vertice.getSubject()).stream())
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   private static List<TriplePattern> getConstructPatterns(Edge edge, Variable subject) {
@@ -49,14 +45,12 @@ public class VerticeHelper {
 
   public static List<GraphPattern> getWherePatterns(Vertice vertice) {
     List<GraphPattern> patterns = new ArrayList<>();
-    if (Objects.nonNull(vertice.getEdges()) && !vertice.getEdges()
-        .isEmpty()) {
-      patterns.addAll(vertice.getEdges()
+
+    patterns.addAll(vertice.getEdges()
           .stream()
           .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
           .filter(Objects::nonNull)
           .collect(Collectors.toList()));
-    }
 
     return patterns;
   }
@@ -71,14 +65,12 @@ public class VerticeHelper {
                 .getIri())
                 .optional(edge.isOptional());
 
-    List<Filter> filters = edge.getObject()
-        .getFilters();
-    if (Objects.nonNull(filters) && !filters.isEmpty()) {
-      List<Expression<?>> expressions = filters.stream()
-          .map(filter -> filter.getExpression(edge.getObject()
+    if (!edge.getObject().getFilters().isEmpty()) {
+      Expression<?> expression = FilterHelper.joinExpressions(FilterJoinType.AND, null, edge.getObject()
+          .getFilters().stream()
+          .map(filter -> filter.toExpression(edge.getObject()
               .getSubject()))
-          .collect(Collectors.toList());
-      Expression<?> expression = FilterHelper.joinExpressions(FilterJoinType.AND, null, expressions);
+          .collect(Collectors.toList()));
       graphPattern = graphPattern.filter(expression);
     }
 

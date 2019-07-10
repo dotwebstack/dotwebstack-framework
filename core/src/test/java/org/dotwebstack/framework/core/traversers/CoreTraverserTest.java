@@ -42,7 +42,7 @@ class CoreTraverserTest {
 
   @Test
   void getTuples_returnsList_ForScalarArgument() {
-
+    // Arrange
     GraphQLArgument argument = newArgument().name("identifier")
         .type(GraphQLNonNull.nonNull(Scalars.GraphQLID))
         .build();
@@ -56,13 +56,17 @@ class CoreTraverserTest {
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(dataFetchingEnvironment.getArguments()).thenReturn(ImmutableMap.of("identifier", 1));
 
+    // Act & Assert
     assertThat(coreTraverser.getTuples(dataFetchingEnvironment, TraverserFilter.noFilter()))
-        .contains(new DirectiveContainerTuple(argument, 1));
+        .contains(DirectiveContainerTuple.builder()
+            .container(argument)
+            .value(1)
+            .build());
   }
 
   @Test
   void getTuples_returnsList_ForInputObjectField() {
-
+    // Arrange
     GraphQLInputObjectField field = newInputObjectField().name("identifier")
         .type(GraphQLNonNull.nonNull(Scalars.GraphQLID))
         .build();
@@ -82,12 +86,17 @@ class CoreTraverserTest {
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(dataFetchingEnvironment.getArguments()).thenReturn(ImmutableMap.of("input", ImmutableMap.of("identifier", 1)));
 
+    // Act & Assert
     assertThat(coreTraverser.getTuples(dataFetchingEnvironment, TraverserFilter.noFilter()))
-        .contains(new DirectiveContainerTuple(field, 1));
+        .contains(DirectiveContainerTuple.builder()
+            .container(field)
+            .value(1)
+            .build());
   }
 
   @Test
   void getRootResultTypeNames_returnsList_ForArgument() {
+    // Arrange
     TypeName breweryTypeName = TypeName.newTypeName("Brewery")
         .build();
 
@@ -124,6 +133,7 @@ class CoreTraverserTest {
             .build())
         .build());
 
+    // Act & Assert
     assertThat(coreTraverser.getRootResultTypeNames(typeDefinitionRegistry.types()
         .get("Input"))).contains(breweryTypeName);
   }

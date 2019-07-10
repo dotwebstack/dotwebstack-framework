@@ -52,14 +52,13 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     Vertice root = VerticeFactory.createSubjectVertice(SUBJECT_VAR, query, nodeShape, filterMapping, orderByObject);
 
     query.select(root.getSubject())
-        .where(Iterables.toArray(VerticeHelper.getWherePatterns(root), GraphPattern.class));
+        .where(VerticeHelper.getWherePatterns(root).toArray(new GraphPattern[] {}));
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
-    if (Objects.nonNull(root.getOrderables())) {
-      root.getOrderables()
+    root.getOrderables()
           .forEach(query::orderBy);
-    }
+
     return this.query.getQueryString();
   }
 

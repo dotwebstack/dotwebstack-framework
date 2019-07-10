@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Builder;
@@ -18,9 +19,10 @@ public class Filter {
 
   private FilterOperator operator;
 
-  private List<Operand> operands;
+  @Builder.Default
+  private List<Operand> operands = new ArrayList<>();
 
-  public Expression<?> getExpression(Variable subject) {
+  public Expression<?> toExpression(Variable subject) {
     List<Expression<?>> expressions = operands.stream()
         .map(operand -> FilterHelper.getExpressionFromOperator(subject, operator, operand))
         .collect(Collectors.toList());

@@ -29,13 +29,15 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
+import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.stringify;
+
 public class VerticeFactory {
 
   private VerticeFactory() {}
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   public static Vertice createSubjectVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
-      List<DirectiveContainerTuple> filterMapping, Optional<List> orderByOptional) {
+      List<DirectiveContainerTuple> filterMapping, Optional<List> optionalOrderByList) {
     Vertice vertice = createVertice(subject, query, nodeShape, Collections.emptyList());
 
     filterMapping.forEach(filter -> {
@@ -59,8 +61,8 @@ public class VerticeFactory {
 
     makeEdgesUnique(vertice.getEdges());
 
-    orderByOptional.ifPresent(
-        orderBy -> orderBy.forEach(entity -> addOrderables(vertice, query, (Map<String, String>) entity, nodeShape)));
+    optionalOrderByList.ifPresent(orderByList ->
+        orderByList.forEach(orderBy -> addOrderables(vertice, query, (Map<String, String>) orderBy, nodeShape)));
 
     return vertice;
   }
@@ -85,7 +87,7 @@ public class VerticeFactory {
     makeEdgesUnique(edges);
 
     edges.add(createSimpleEdge(null, Rdf.iri(nodeShape.getTargetClass()
-        .stringValue()), () -> "<" + RDF.TYPE + ">", false, true));
+        .stringValue()), () -> stringify(RDF.TYPE), false, true));
 
     getArgumentFieldMapping(nodeShape, fields)
         .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)
@@ -130,7 +132,7 @@ public class VerticeFactory {
         .build();
   }
 
-  private static HashMap<GraphQLArgument, SelectedField> getArgumentFieldMapping(NodeShape nodeShape,
+  private static Map<GraphQLArgument, SelectedField> getArgumentFieldMapping(NodeShape nodeShape,
       List<SelectedField> fields) {
     return fields.stream()
         .filter(field -> !field.getQualifiedName()
@@ -256,9 +258,7 @@ public class VerticeFactory {
     return optional.orElseGet(() -> {
       Edge edge = createSimpleEdge(query.var(), null, propertyShape.getPath()
           .toPredicate(), false, false);
-      List<Edge> edges = Objects.nonNull(vertice.getEdges()) ? vertice.getEdges() : new ArrayList<>();
-      edges.add(edge);
-      vertice.setEdges(edges);
+      vertice.getEdges().add(edge);
       return edge;
     });
   }
@@ -271,16 +271,16 @@ public class VerticeFactory {
   private static void makeEdgesUnique(List<Edge> edges) {
     List<Edge> uniqueEdges = new ArrayList<>();
     edges.forEach(edge -> {
-      Optional<Edge> optional = uniqueEdges.stream()
+      Edge duplicate = uniqueEdges.stream()
           .filter(uniqueEdge -> uniqueEdge.getPredicate()
               .equals(edge.getPredicate()))
-          .findFirst();
+          .findFirst()
+          .orElse(null);
 
-      if (optional.isPresent()) {
+      if (Objects.nonNull(duplicate)) {
         List<Edge> childEdges = edge.getObject()
             .getEdges();
-        optional.get()
-            .getObject()
+        duplicate.getObject()
             .getEdges()
             .addAll(childEdges);
       } else {

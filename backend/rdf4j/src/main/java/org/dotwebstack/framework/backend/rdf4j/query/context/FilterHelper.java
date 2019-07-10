@@ -26,26 +26,17 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 public class FilterHelper {
 
-  private static final ImmutableMap.Builder<FilterOperator, BiFunction<Variable, Operand, Expression<?>>> BUILDER =
-      new ImmutableMap.Builder<>();
-
-  static {
-    BUILDER.put(EQ, Expressions::equals);
-    BUILDER.put(NE, Expressions::notEquals);
-    BUILDER.put(LT, Expressions::lt);
-    BUILDER.put(LTE, Expressions::lte);
-    BUILDER.put(GT, Expressions::gt);
-    BUILDER.put(GTE, Expressions::gte);
-  }
-
-  private static final ImmutableMap<FilterOperator, BiFunction<Variable, Operand, Expression<?>>> MAP = BUILDER.build();
+  private static final ImmutableMap<FilterOperator, BiFunction<Variable, Operand, Expression<?>>> MAP = ImmutableMap
+      .<FilterOperator, BiFunction<Variable, Operand, Expression<?>>>builder()
+      .put(EQ, Expressions::equals)
+      .put(NE, Expressions::notEquals)
+      .put(LT, Expressions::lt)
+      .put(LTE, Expressions::lte)
+      .put(GT, Expressions::gt)
+      .put(GTE, Expressions::gte)
+      .build();
 
   private FilterHelper() {}
-
-  public static Expression<?> getExpressionFromOperator(String fieldName, String operator, Operand operand) {
-    return getExpressionFromOperator(SparqlBuilder.var(fieldName), FilterOperator.getByValue(operator)
-        .orElse(FilterOperator.getDefault()), operand);
-  }
 
   static Expression<?> getExpressionFromOperator(Variable subject, FilterOperator operator, Operand operand) {
     BiFunction<Variable, Operand, Expression<?>> function = MAP.get(operator);

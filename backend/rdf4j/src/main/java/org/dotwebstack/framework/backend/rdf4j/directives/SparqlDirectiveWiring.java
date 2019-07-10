@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.directives;
 
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
@@ -9,7 +10,6 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
-import java.util.Arrays;
 import java.util.Map;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
@@ -71,13 +71,13 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
         .getConnection();
 
-    // // startup time validation of default values for sort fields
+    // startup time validation of default values for sort fields
     SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
 
     validateSortField(fieldDefinition, sortFieldValidator);
 
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
-        Arrays.asList(constraintValidator, sortFieldValidator), coreTraverser);
+        ImmutableList.of(constraintValidator, sortFieldValidator), coreTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);

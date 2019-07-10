@@ -20,7 +20,10 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
   public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     try {
       GraphQLArgument argument = environment.getElement();
-      constraintValidator.validate(new DirectiveContainerTuple(argument, argument.getDefaultValue()));
+      constraintValidator.validate(DirectiveContainerTuple.builder()
+          .container(argument)
+          .value(argument.getDefaultValue())
+          .build());
     } catch (DirectiveValidationException exception) {
       throwConfigurationException(exception);
     }
@@ -32,7 +35,10 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
       SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     try {
       GraphQLInputObjectField inputObjectField = environment.getElement();
-      constraintValidator.validate(new DirectiveContainerTuple(inputObjectField, inputObjectField.getDefaultValue()));
+      constraintValidator.validate(DirectiveContainerTuple.builder()
+          .container(inputObjectField)
+          .value(inputObjectField.getDefaultValue())
+          .build());
     } catch (DirectiveValidationException exception) {
       throwConfigurationException(exception);
     }

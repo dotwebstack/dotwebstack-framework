@@ -60,14 +60,16 @@ public class CoreTraverser {
         .collect(Collectors.toList());
   }
 
-
   private List<DirectiveContainerTuple> getInputObjectFieldsFromArgument(GraphQLArgument container,
       Map<String, Object> arguments) {
     if (container.getType() instanceof GraphQLInputObjectType) {
       return getInputObjectFieldsFromObjectType((GraphQLInputObjectType) container.getType(),
           nestedMap(arguments, container.getName()));
     } else if ((GraphQLTypeUtil.unwrapAll(container.getType()) instanceof GraphQLScalarType)) {
-      return singletonList(new DirectiveContainerTuple(container, arguments.getOrDefault(container.getName(), null)));
+      return singletonList(DirectiveContainerTuple.builder()
+          .container(container)
+          .value(arguments.getOrDefault(container.getName(), null))
+          .build());
     }
 
     return emptyList();
@@ -86,7 +88,10 @@ public class CoreTraverser {
             return getInputObjectFieldsFromObjectType((GraphQLInputObjectType) field.getType(),
                 nestedMap(arguments, field.getName())).stream();
           } else if (GraphQLTypeUtil.unwrapAll(field.getType()) instanceof GraphQLScalarType) {
-            return Stream.of(new DirectiveContainerTuple(field, arguments.getOrDefault(field.getName(), null)));
+            return Stream.of(DirectiveContainerTuple.builder()
+                .container(field)
+                .value(arguments.getOrDefault(field.getName(), null))
+                .build());
           }
           return Stream.empty();
         })

@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
@@ -40,13 +39,16 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     TriplePattern typePattern = GraphPatterns.tp(root.getSubject(), RDF.TYPE, nodeShape.getTargetClass());
 
-    Expression<?> filterExpr = Expressions.or(Iterables.toArray(subjects.stream()
+    Expression<?> filterExpr = Expressions.or(subjects.stream()
         .map(subject -> Expressions.equals(root.getSubject(), Rdf.iri(subject)))
-        .collect(Collectors.toList()), Expression.class));
+        .collect(Collectors.toList())
+        .toArray(new Expression[] {}));
 
-    query.construct(Iterables.toArray(VerticeHelper.getConstructPatterns(root), TriplePattern.class))
+    query.construct(VerticeHelper.getConstructPatterns(root)
+        .toArray(new TriplePattern[] {}))
         .where(typePattern.filter(filterExpr)
-            .and(Iterables.toArray(VerticeHelper.getWherePatterns(root), GraphPattern.class)));
+            .and(VerticeHelper.getWherePatterns(root)
+                .toArray(new GraphPattern[] {})));
 
     return query.getQueryString();
   }

@@ -23,12 +23,12 @@ class TraverserFilterTest {
   }
 
   @Test
-  void directiveFilterWithValue_return_true() {
+  void directiveFilterWithValue_returns_true() {
     assertThat(directiveWithValueFilter("directive").apply(testTuple("directive", "value"))).isTrue();
   }
 
   @Test
-  void directiveFilterWithValue_return_false() {
+  void directiveFilterWithValue_returns_false() {
     assertThat(directiveWithValueFilter("directive").apply(testTuple("directive", null))).isFalse();
   }
 
@@ -38,11 +38,14 @@ class TraverserFilterTest {
   }
 
   private DirectiveContainerTuple testTuple(String directiveName, Object value) {
-    return new DirectiveContainerTuple(GraphQLArgument.newArgument()
-        .name("arg")
-        .withDirective(GraphQLDirective.newDirective()
-            .name(directiveName))
-        .type(Scalars.GraphQLString)
-        .build(), value);
+    return DirectiveContainerTuple.builder()
+        .container(GraphQLArgument.newArgument()
+            .name("arg")
+            .withDirective(GraphQLDirective.newDirective()
+                .name(directiveName))
+            .type(Scalars.GraphQLString)
+            .build())
+        .value(value)
+        .build();
   }
 }

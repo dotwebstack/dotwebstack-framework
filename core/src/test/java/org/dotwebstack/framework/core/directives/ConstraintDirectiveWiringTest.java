@@ -38,7 +38,7 @@ class ConstraintDirectiveWiringTest {
 
   @Test
   void onArgument_returnsNull_forGivenArgument() {
-
+    // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name(CoreDirectives.CONSTRAINT_ARG_MIN)
         .type(Scalars.GraphQLInt)
@@ -47,22 +47,29 @@ class ConstraintDirectiveWiringTest {
 
     when(argumentEnvironment.getElement()).thenReturn(argument);
 
+    // Act
     constraintDirectiveWiring.onArgument(argumentEnvironment);
 
-    verify(constraintValidator).validate(new DirectiveContainerTuple(argument, argument.getDefaultValue()));
+    // Assert
+    verify(constraintValidator).validate(DirectiveContainerTuple.builder()
+        .container(argument)
+        .value(argument.getDefaultValue())
+        .build());
   }
 
   @Test
   void onArgument_throwsException_forGivenArgument() {
-
+    // Act
     when(argumentEnvironment.getElement()).thenThrow(new DirectiveValidationException("boom!"));
 
+    // Assert
     Assertions.assertThrows(InvalidConfigurationException.class,
         () -> constraintDirectiveWiring.onArgument(argumentEnvironment));
   }
 
   @Test
   void onInputObjectField_returnsNull_forGivenArgument() {
+    // Arrange
     GraphQLInputObjectField field = GraphQLInputObjectField.newInputObjectField()
         .name("input")
         .type(Scalars.GraphQLInt)
@@ -70,16 +77,23 @@ class ConstraintDirectiveWiringTest {
 
     when(inputObjectFieldEnvironment.getElement()).thenReturn(field);
 
+    // Act
     constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment);
 
-    verify(constraintValidator).validate(new DirectiveContainerTuple(field, field.getDefaultValue()));
+    // Assert
+    verify(constraintValidator).validate(DirectiveContainerTuple.builder()
+        .container(field)
+        .value(field.getDefaultValue())
+        .build());
   }
 
 
   @Test
   void onInputObjectField_throwsException_forGivenArgument() {
+    // Act
     when(inputObjectFieldEnvironment.getElement()).thenThrow(new DirectiveValidationException("boom!"));
 
+    // Assert
     Assertions.assertThrows(InvalidConfigurationException.class,
         () -> constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment));
   }

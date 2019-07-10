@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,9 +18,12 @@ public class Vertice {
 
   private Iri iri;
 
-  private List<Edge> edges;
+  @Builder.Default
+  private List<Edge> edges = new ArrayList<>();
 
-  private List<Filter> filters;
+  @Builder.Default
+  private List<Filter> filters = new ArrayList<>();
 
-  private List<Orderable> orderables;
+  @Builder.Default
+  private List<Orderable> orderables = new ArrayList<>();
 }
