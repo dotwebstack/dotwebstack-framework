@@ -51,7 +51,7 @@ type Brewery {
   founded: DateTime!
   address: Address
   beerNames: [String!]
-  beers: [Beer!]
+  beers(ingredient: [String!] @filter(field: "ingredients.name")): [Beer!]
   url: String
 }
 

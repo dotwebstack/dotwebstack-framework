@@ -108,7 +108,6 @@ abstract class AbstractVerticeFactory {
 
     match.getObject()
         .setFilters(filters);
-    match.setOptional(false);
   }
 
   /*
@@ -142,6 +141,7 @@ abstract class AbstractVerticeFactory {
    */
   private Edge findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, String[] fieldPaths) {
     Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(fieldPaths[0]), vertice);
+    match.setOptional(false);
 
     if (fieldPaths.length == 1) {
       return match;

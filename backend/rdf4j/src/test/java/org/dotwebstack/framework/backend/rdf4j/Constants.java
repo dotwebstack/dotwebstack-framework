@@ -133,6 +133,8 @@ public final class Constants {
 
   public static final String BEER_FIELD = "beer";
 
+  public static final String BEER_NAME_FIELD = "name";
+
 
   // Beer.beertypes
 
@@ -203,4 +205,10 @@ public final class Constants {
   public static final String INGREDIENTS_FIELD = "ingredients";
 
   public static final String INGREDIENTS_NAME_FIELD = "name";
+
+  // Beer.supplement
+
+  public static final String SUPPLEMENTS_FIELD = "supplements";
+
+  public static final String SUPPLEMENTS_NAME_FIELD = "name";
 }

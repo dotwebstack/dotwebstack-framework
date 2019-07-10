@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPES_RAW_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_IDENTIFIER_EXAMPLE_1;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERIES_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FIELD;
@@ -367,5 +368,32 @@ class Rdf4jIntegrationTest {
     assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD,
         ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList
             .of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
+  }
+
+  /*
+   * Supplement is a list under a Beer, the path in the query to beers was optional, as was the path
+   * from beers to supplements. When the filter was applied, the filter was ignored, since it was
+   * optional. For that reason the whole path to the filter is made non optional. This test will test
+   * for this specific use case.
+   */
+  @Test
+  void graphqlQuery_ReturnsMap_WithNonOptionalFields() {
+    // Arrange
+    String query = "{breweries(name: \"Alfa Brouwerij\"){name, beers(ingredient: \"Hop\"){name, ingredients{ name }}}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
+                ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
+                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"))))))));
   }
 }
