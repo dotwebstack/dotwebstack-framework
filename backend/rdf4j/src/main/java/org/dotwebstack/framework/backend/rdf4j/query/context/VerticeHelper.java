@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.joinExpressions;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +70,7 @@ public class VerticeHelper {
     if (!edge.getObject()
         .getFilters()
         .isEmpty()) {
-      Expression<?> expression = FilterHelper.joinExpressions(FilterJoinType.AND, null, edge.getObject()
+      Expression<?> expression = joinExpressions(FilterJoinType.AND, null, edge.getObject()
           .getFilters()
           .stream()
           .map(filter -> filter.toExpression(edge.getObject()

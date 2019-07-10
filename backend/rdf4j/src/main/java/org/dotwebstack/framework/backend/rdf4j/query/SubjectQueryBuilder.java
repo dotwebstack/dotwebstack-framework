@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import graphql.schema.GraphQLDirective;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +14,6 @@ import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.JexlHelper;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
@@ -68,7 +69,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         sparqlDirective, context, Integer.class);
     limitOptional.ifPresent(limit -> {
       if (limit < 1) {
-        throw ExceptionHelper.illegalArgumentException("An error occured in the limit expression evaluation");
+        throw illegalArgumentException("An error occured in the limit expression evaluation");
       }
     });
     return limitOptional;
@@ -80,7 +81,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
 
     offsetOptional.ifPresent(offset -> {
       if (offset < 0) {
-        throw ExceptionHelper.illegalArgumentException("An error occured in the offset expression evaluation");
+        throw illegalArgumentException("An error occured in the offset expression evaluation");
       }
     });
     return offsetOptional;

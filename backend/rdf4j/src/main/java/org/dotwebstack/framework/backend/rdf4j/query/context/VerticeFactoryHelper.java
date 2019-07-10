@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import graphql.schema.GraphQLDirectiveContainer;
 import java.util.List;
 import java.util.Objects;
@@ -7,7 +9,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
@@ -26,8 +27,8 @@ class VerticeFactoryHelper {
     if (Objects.isNull(childShape)) {
       if (fieldPaths.length > 1) {
         // this means that we have found a scalar field -> we cannot go any level deeper anymore
-        throw ExceptionHelper.illegalArgumentException("Cannot get child shape '{}' from '{}'",
-            String.join(".", fieldPaths), nodeShape.getIdentifier()
+        throw illegalArgumentException("Cannot get child shape '{}' from '{}'", String.join(".", fieldPaths),
+            nodeShape.getIdentifier()
                 .stringValue());
       }
       return nodeShape;
@@ -74,8 +75,8 @@ class VerticeFactoryHelper {
             .equals(propertyShape.getPath()
                 .toPredicate()))
         .findFirst()
-        .orElseThrow(() -> ExceptionHelper.illegalArgumentException(
-            "Did not find a predicate with name '{}' for edge '{}'", propertyShape.getPath()
+        .orElseThrow(() -> illegalArgumentException("Did not find a predicate with name '{}' for edge '{}'",
+            propertyShape.getPath()
                 .toPredicate(),
             match.getObject()
                 .getSubject()));

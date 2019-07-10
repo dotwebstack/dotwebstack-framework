@@ -104,7 +104,7 @@ public class FilterValidator {
       if (definition != null) {
         if (fields.length > 1) {
           TypeName fieldType = (TypeName) TypeHelper.getBaseType(definition.getType());
-          checkField(fieldPath.substring(fieldPath.indexOf(".") + 1), fieldType);
+          checkField(fieldPath.substring(fieldPath.indexOf('.') + 1), fieldType);
         }
         return;
       }

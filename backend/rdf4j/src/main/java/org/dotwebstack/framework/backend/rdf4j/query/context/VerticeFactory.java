@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getFieldName;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getSubjectForField;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.stringify;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
@@ -42,9 +46,9 @@ public class VerticeFactory {
 
     filterMapping.forEach(filter -> {
       GraphQLDirectiveContainer container = filter.getContainer();
-      String fieldName = VerticeFactoryHelper.getFieldName(container);
+      String fieldName = getFieldName(container);
       String[] fieldPath = fieldName.split("\\.");
-      NodeShape childShape = VerticeFactoryHelper.getNextNodeShape(nodeShape, fieldPath);
+      NodeShape childShape = getNextNodeShape(nodeShape, fieldPath);
 
       if (nodeShape.equals(childShape)) {
         addFilterToVertice(vertice, container, query, nodeShape, filter.getValue(), fieldPath);
@@ -157,7 +161,7 @@ public class VerticeFactory {
         .filter(edge -> {
           if (!GraphQLTypeUtil.isScalar(GraphQLTypeUtil.unwrapAll(field.getFieldDefinition()
               .getType()))) {
-            return VerticeFactoryHelper.hasChildEdgeOfType(edge, nodeShape.getPropertyShape(field.getName())
+            return hasChildEdgeOfType(edge, nodeShape.getPropertyShape(field.getName())
                 .getNode()
                 .getTargetClass());
           }
@@ -171,13 +175,11 @@ public class VerticeFactory {
     Object filterValue = field.getArguments()
         .get(argument.getName());
     if (Objects.nonNull(filterValue)) {
-      String[] startPath = VerticeFactoryHelper.getFieldName(argument)
-          .split("\\.");
+      String[] startPath = getFieldName(argument).split("\\.");
       String[] fieldPath = field.getName()
           .split("\\.");
 
-      addFilterToVertice(vertice, argument, query, VerticeFactoryHelper.getNextNodeShape(nodeShape, fieldPath),
-          filterValue, startPath);
+      addFilterToVertice(vertice, argument, query, getNextNodeShape(nodeShape, fieldPath), filterValue, startPath);
     }
   }
 
@@ -232,7 +234,7 @@ public class VerticeFactory {
       return match;
     }
 
-    NodeShape childShape = VerticeFactoryHelper.getNextNodeShape(nodeShape, fieldPaths);
+    NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
     return findOrCreatePath(match.getObject(), query, childShape, ArrayUtils.remove(fieldPaths, 0));
   }
 
@@ -297,14 +299,14 @@ public class VerticeFactory {
         .toString();
 
     String[] fieldPaths = fieldName.split("\\.");
-    NodeShape childShape = VerticeFactoryHelper.getNextNodeShape(nodeShape, fieldPaths);
+    NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
 
     // add missing edges
     Edge match;
     Variable subject;
     if (nodeShape.equals(childShape)) {
       match = findOrCreatePath(vertice, query, nodeShape, fieldPaths);
-      subject = VerticeFactoryHelper.getSubjectForField(match, nodeShape, fieldPaths);
+      subject = getSubjectForField(match, nodeShape, fieldPaths);
     } else {
       Edge edge = createSimpleEdge(query.var(), null, nodeShape.getPropertyShape(fieldPaths[0])
           .getPath()
@@ -315,7 +317,7 @@ public class VerticeFactory {
           .add(edge);
 
       match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths);
-      subject = VerticeFactoryHelper.getSubjectForField(match, childShape, fieldPaths);
+      subject = getSubjectForField(match, childShape, fieldPaths);
     }
 
     List<Orderable> orderables = Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();

@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LTE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
@@ -14,7 +15,6 @@ import java.util.function.BiFunction;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.directives.FilterOperator;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
@@ -41,8 +41,7 @@ public class FilterHelper {
     BiFunction<Variable, Operand, Expression<?>> function = MAP.get(operator);
 
     if (function == null) {
-      throw ExceptionHelper.unsupportedOperationException("Invalid operator '{}' in filter directive for '{}'",
-          operator, subject);
+      throw unsupportedOperationException("Invalid operator '{}' in filter directive for '{}'", operator, subject);
     }
 
     return function.apply(subject, operand);
@@ -71,8 +70,8 @@ public class FilterHelper {
     String string = ObjectHelper.cast(String.class, value);
 
     if (Objects.isNull(nodeShape.getPropertyShape(field))) {
-      throw ExceptionHelper.unsupportedOperationException("Property shape for '{}' does not exist on node shape '{}'",
-          field, nodeShape);
+      throw unsupportedOperationException("Property shape for '{}' does not exist on node shape '{}'", field,
+          nodeShape);
     }
 
     if (nodeShape.getPropertyShape(field)
