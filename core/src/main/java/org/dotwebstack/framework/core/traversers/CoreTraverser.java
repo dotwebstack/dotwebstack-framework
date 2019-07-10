@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.traversers;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.dotwebstack.framework.core.helpers.MapHelper.nestedMap;
 
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
@@ -15,7 +16,6 @@ import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,15 +71,6 @@ public class CoreTraverser {
     }
 
     return emptyList();
-  }
-
-  @SuppressWarnings("unchecked")
-  private Map<String, Object> nestedMap(Map<String, Object> arguments, String name) {
-    Map<String, Object> result = new HashMap<>();
-    if (arguments.containsKey(name) && arguments.get(name) instanceof Map) {
-      result.putAll((Map<String, Object>) arguments.get(name));
-    }
-    return result;
   }
 
   /*
