@@ -37,9 +37,11 @@ public class FilterValidator {
         .ifPresent(parentInfo -> {
           GraphQLUnmodifiedType type =
               GraphQLTypeUtil.unwrapAll(((GraphQLFieldDefinition) parentInfo.getElement()).getType());
+          TypeName typeName = TypeName.newTypeName(type.getName())
+              .build();
 
           if (!GraphQLTypeUtil.isLeaf(type) || GraphQLTypeUtil.isList(type)) {
-            this.validateDirectiveContainer(environment.getElement(), environment.getRegistry(), type.getName());
+            this.validateDirectiveContainer(environment.getElement(), environment.getRegistry(), typeName);
           }
         });
   }
@@ -60,7 +62,7 @@ public class FilterValidator {
   }
 
   private void validateDirectiveContainer(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
-      String typeName) {
+      TypeName typeName) {
     GraphQLDirective directive = container.getDirective(CoreDirectives.FILTER_NAME);
     directive.getArguments()
         .forEach(
@@ -68,7 +70,7 @@ public class FilterValidator {
   }
 
   private void validateArgument(GraphQLArgument argument, TypeDefinitionRegistry registry, String name,
-      String typeName) {
+      TypeName typeName) {
     switch (argument.getName()) {
       case CoreDirectives.FILTER_ARG_FIELD:
         String fieldPath = (argument.getValue() != null) ? argument.getValue()
@@ -85,7 +87,7 @@ public class FilterValidator {
     }
   }
 
-  void checkField(TypeDefinitionRegistry registry, String fieldPath, String typeName) {
+  void checkField(TypeDefinitionRegistry registry, String fieldPath, TypeName typeName) {
     ObjectTypeDefinition type = registry.getType(typeName, ObjectTypeDefinition.class)
         .orElse(null);
 
@@ -103,7 +105,7 @@ public class FilterValidator {
       if (definition != null) {
         if (fields.length > 1) {
           TypeName fieldType = (TypeName) TypeHelper.getBaseType(definition.getType());
-          checkField(registry, fieldPath.substring(fieldPath.indexOf(".") + 1), fieldType.getName());
+          checkField(registry, fieldPath.substring(fieldPath.indexOf(".") + 1), fieldType);
         }
         return;
       }

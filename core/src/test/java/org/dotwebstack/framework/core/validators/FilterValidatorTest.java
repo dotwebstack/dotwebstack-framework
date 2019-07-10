@@ -9,12 +9,12 @@ import static org.mockito.Mockito.when;
 import graphql.Scalars;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
+import graphql.language.TypeName;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.junit.jupiter.api.Test;
@@ -32,53 +32,54 @@ class FilterValidatorTest {
   @Mock
   private TypeDefinitionRegistry typeDefinitionRegistry;
 
-  @Mock
-  private ObjectTypeDefinition typeDefinition;
-
   @Test
   void validate_ExistingValue_optionalFieldArgument() {
     // Assign
     ObjectTypeDefinition objectTypeDefinition = createBreweryDefinition();
-    when(typeDefinitionRegistry.getType("Brewery", ObjectTypeDefinition.class))
+    TypeName typeName = typeName("Brewery");
+    when(typeDefinitionRegistry.getType(typeName, ObjectTypeDefinition.class))
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
-    assertDoesNotThrow(() -> validator.checkField(typeDefinitionRegistry, "sinceBefore", "Brewery"));
+    assertDoesNotThrow(() -> validator.checkField(typeDefinitionRegistry, "sinceBefore", typeName));
   }
 
   @Test
   void validate_nonExistingValue_optionalFieldArgument() {
     // Assign
     ObjectTypeDefinition objectTypeDefinition = createBreweryDefinition();
-    when(typeDefinitionRegistry.getType("Brewery", ObjectTypeDefinition.class))
+    TypeName typeName = typeName("Brewery");
+    when(typeDefinitionRegistry.getType(typeName, ObjectTypeDefinition.class))
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
     assertThrows(DirectiveValidationException.class,
-        () -> validator.checkField(typeDefinitionRegistry, "page", "Brewery"));
+        () -> validator.checkField(typeDefinitionRegistry, "page", typeName));
   }
 
   @Test
   void validate_NoValues_optionalFieldArgument() {
     // Assign
     ObjectTypeDefinition objectTypeDefinition = createBreweryDefinition();
-    when(typeDefinitionRegistry.getType("Brewery", ObjectTypeDefinition.class))
+    TypeName typeName = typeName("Brewery");
+    when(typeDefinitionRegistry.getType(typeName, ObjectTypeDefinition.class))
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
-    assertDoesNotThrow(() -> validator.checkField(typeDefinitionRegistry, "founded", "Brewery"));
+    assertDoesNotThrow(() -> validator.checkField(typeDefinitionRegistry, "founded", typeName));
   }
 
   @Test
   void validate_noValueNonexistingQueryArgumentName_optionalFieldArgument() {
     // Assign
     ObjectTypeDefinition objectTypeDefinition = createBreweryDefinition();
-    when(typeDefinitionRegistry.getType("Brewery", ObjectTypeDefinition.class))
+    TypeName typeName = typeName("Brewery");
+    when(typeDefinitionRegistry.getType(typeName, ObjectTypeDefinition.class))
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
     assertThrows(DirectiveValidationException.class,
-        () -> validator.checkField(typeDefinitionRegistry, "sinceAfter", "Brewery"));
+        () -> validator.checkField(typeDefinitionRegistry, "sinceAfter", typeName));
   }
 
   @ParameterizedTest
@@ -120,13 +121,8 @@ class FilterValidatorTest {
     assertDoesNotThrow(() -> validator.checkOperator(argument, "operator"));
   }
 
-
-  // For testpurposes a graphQl schema is being build below
-  private GraphQLArgument fieldArgument(String fieldName) {
-    return GraphQLArgument.newArgument()
-        .name(CoreDirectives.FILTER_ARG_FIELD)
-        .type(GraphQLString)
-        .value(fieldName)
+  private TypeName typeName(String typeName) {
+    return TypeName.newTypeName(typeName)
         .build();
   }
 

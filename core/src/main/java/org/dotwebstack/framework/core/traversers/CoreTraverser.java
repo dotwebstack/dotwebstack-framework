@@ -39,7 +39,7 @@ public class CoreTraverser {
         .collect(Collectors.toList());
   }
 
-  public List<String> getPathToQuery(@NonNull TypeDefinition<?> baseType, @NonNull TypeDefinitionRegistry registry) {
+  public List<TypeName> getPathToQuery(@NonNull TypeDefinition<?> baseType, @NonNull TypeDefinitionRegistry registry) {
     return registry.types()
         .keySet()
         .stream()
@@ -102,7 +102,7 @@ public class CoreTraverser {
    * return the list containing the input object types from the given parent type that match the
    * compare type
    */
-  private List<String> traverseObjectType(TypeDefinitionRegistry registry, TypeDefinition<?> compareType,
+  private List<TypeName> traverseObjectType(TypeDefinitionRegistry registry, TypeDefinition<?> compareType,
       ObjectTypeDefinition parentType) {
     return parentType.getFieldDefinitions()
         .stream()
@@ -111,7 +111,7 @@ public class CoreTraverser {
             .anyMatch(inputValueDefinition -> registry.getType(TypeHelper.getBaseType(inputValueDefinition.getType()))
                 .map(definition -> definition.equals(compareType))
                 .orElse(false)))
-        .map(inputField -> ((TypeName) TypeHelper.getBaseType(inputField.getType())).getName())
+        .map(inputField -> ((TypeName) TypeHelper.getBaseType(inputField.getType())))
         .collect(Collectors.toList());
   }
 
@@ -119,7 +119,7 @@ public class CoreTraverser {
    * return the list containing the input object types from the given parent type (recursive) that
    * match the compare type
    */
-  private List<String> traverseInputObjectType(TypeDefinitionRegistry registry, TypeDefinition<?> compareType,
+  private List<TypeName> traverseInputObjectType(TypeDefinitionRegistry registry, TypeDefinition<?> compareType,
       TypeDefinition<?> parentType) {
     Optional<InputValueDefinition> inputValueDefinition =
         ((InputObjectTypeDefinition) parentType).getInputValueDefinitions()
