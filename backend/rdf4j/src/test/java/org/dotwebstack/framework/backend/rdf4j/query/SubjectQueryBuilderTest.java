@@ -18,6 +18,7 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +54,8 @@ class SubjectQueryBuilderTest {
     when(this.environmentMock.getObjectType()).thenReturn(this.objectTypeMock);
     when(this.environmentMock.getNodeShapeRegistry()
         .get(any(GraphQLObjectType.class))).thenReturn(this.nodeShapeMock);
-    this.subjectQueryBuilder = SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine);
+    this.subjectQueryBuilder =
+        SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine, new SelectVerticeFactory());
   }
 
   private GraphQLDirective getValidPagingDirective() {

@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
+import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
@@ -114,7 +116,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       return ImmutableList.of(subject);
     }
 
-    String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine)
+    String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine, new SelectVerticeFactory())
         .getQueryString(arguments, sparqlDirective, filterMapping);
 
     LOG.debug("Executing query for subjects:\n{}", subjectQuery);
@@ -133,7 +135,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       return new TreeModel();
     }
 
-    String graphQuery = GraphQueryBuilder.create(environment, subjects)
+    String graphQuery = GraphQueryBuilder.create(environment, subjects, new ConstructVerticeFactory())
         .getQueryString();
 
     LOG.debug("Executing query for graph:\n{}", graphQuery);

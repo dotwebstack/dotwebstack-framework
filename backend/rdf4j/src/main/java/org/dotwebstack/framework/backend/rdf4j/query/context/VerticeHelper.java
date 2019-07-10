@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.joinExpressions;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -82,6 +82,6 @@ public class VerticeHelper {
     List<GraphPattern> childPatterns = getWherePatterns(edge.getObject());
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
-    return Collections.singletonList(graphPattern);
+    return singletonList(graphPattern);
   }
 }

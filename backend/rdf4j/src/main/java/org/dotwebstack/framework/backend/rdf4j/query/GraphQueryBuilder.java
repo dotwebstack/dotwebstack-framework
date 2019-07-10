@@ -2,8 +2,9 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
-import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.eclipse.rdf4j.model.IRI;
@@ -21,20 +22,25 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
   private final List<IRI> subjects;
 
-  private GraphQueryBuilder(QueryEnvironment environment, List<IRI> subjects) {
+  private final ConstructVerticeFactory constructVerticeFactory;
+
+  private GraphQueryBuilder(@NonNull QueryEnvironment environment, @NonNull List<IRI> subjects,
+      @NonNull ConstructVerticeFactory constructVerticeFactory) {
     super(environment, Queries.CONSTRUCT());
     this.subjects = subjects;
+    this.constructVerticeFactory = constructVerticeFactory;
   }
 
-  static GraphQueryBuilder create(QueryEnvironment environment, List<IRI> subjects) {
-    return new GraphQueryBuilder(environment, subjects);
+  static GraphQueryBuilder create(QueryEnvironment environment, List<IRI> subjects,
+      @NonNull ConstructVerticeFactory constructVerticeFactory) {
+    return new GraphQueryBuilder(environment, subjects, constructVerticeFactory);
   }
 
   String getQueryString() {
     NodeShape nodeShape = environment.getNodeShapeRegistry()
         .get(environment.getObjectType());
 
-    Vertice root = VerticeFactory.createVertice(query.var(), query, nodeShape, environment.getSelectionSet()
+    Vertice root = constructVerticeFactory.createVertice(query.var(), query, nodeShape, environment.getSelectionSet()
         .getFields());
 
     TriplePattern typePattern = GraphPatterns.tp(root.getSubject(), RDF.TYPE, nodeShape.getTargetClass());
