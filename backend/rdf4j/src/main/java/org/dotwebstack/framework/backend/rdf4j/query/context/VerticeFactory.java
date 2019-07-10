@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.stringify;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirectiveContainer;
@@ -35,9 +36,8 @@ public class VerticeFactory {
 
   private VerticeFactory() {}
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
   public static Vertice createSubjectVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
-      List<DirectiveContainerTuple> filterMapping, Optional<List> optionalOrderByList) {
+      List<DirectiveContainerTuple> filterMapping, List<Object> orderByList) {
     Vertice vertice = createVertice(subject, query, nodeShape, Collections.emptyList());
 
     filterMapping.forEach(filter -> {
@@ -61,8 +61,7 @@ public class VerticeFactory {
 
     makeEdgesUnique(vertice.getEdges());
 
-    optionalOrderByList.ifPresent(orderByList -> orderByList
-        .forEach(orderBy -> addOrderables(vertice, query, (Map<String, String>) orderBy, nodeShape)));
+    orderByList.forEach(orderBy -> addOrderables(vertice, query, castToMap(orderBy), nodeShape));
 
     return vertice;
   }
@@ -290,10 +289,12 @@ public class VerticeFactory {
     });
   }
 
-  private static void addOrderables(Vertice vertice, OuterQuery<?> query, Map<String, String> orderMap,
+  private static void addOrderables(Vertice vertice, OuterQuery<?> query, Map<String, Object> orderMap,
       NodeShape nodeShape) {
-    String fieldName = orderMap.get("field");
-    String order = orderMap.get("order");
+    String fieldName = orderMap.get("field")
+        .toString();
+    String order = orderMap.get("order")
+        .toString();
 
     String[] fieldPaths = fieldName.split("\\.");
     NodeShape childShape = VerticeFactoryHelper.getNextNodeShape(nodeShape, fieldPaths);

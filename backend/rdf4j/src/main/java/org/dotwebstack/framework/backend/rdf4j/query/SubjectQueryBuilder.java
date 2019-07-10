@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import graphql.schema.GraphQLDirective;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,8 +45,9 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     final MapContext context = new MapContext(arguments);
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    Optional<List> orderByObject =
-        jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class);
+    List<Object> orderByObject =
+        jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class)
+            .orElse(new ArrayList());
 
     Vertice root = VerticeFactory.createSubjectVertice(SUBJECT_VAR, query, nodeShape, filterMapping, orderByObject);
 
