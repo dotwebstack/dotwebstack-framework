@@ -113,9 +113,9 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
-  void graphqlQuery_ReturnsResult_forNestedQuery() {
+  void graphqlQuery_ReturnsResult_forQueryWithNesting() {
     // Arrange
-    String query = "{ breweries(name: \"Brouwerij 1923\"){ beers { ingredients { name }}}}";
+    String query = "{ breweries(name: \"Alfa Brouwerij\"){ beers { ingredients { name }}}}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
@@ -126,8 +126,12 @@ class Rdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry(BREWERIES_FIELD, ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(
-            ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"))))))));
+        IsMapContaining.hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(BEERS_FIELD,
+                ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD,
+                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Sinasappel"))))))));
   }
 
 
@@ -165,9 +169,8 @@ class Rdf4jIntegrationTest {
 
     assertThat(data,
         IsMapContaining.hasEntry(BREWERIES_FIELD,
-            ImmutableList.of(
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456", BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
-                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2", BREWERY_NAME_FIELD, "Brouwerij De Leckere"))));
+            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2", BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456", BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."))));
   }
 
   @Test
@@ -189,5 +192,180 @@ class Rdf4jIntegrationTest {
         IsMapContaining.hasEntry("breweriesWithInputObject",
             ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1", BREWERY_NAME_FIELD, "Heineken Nederland"),
                 ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2", BREWERY_NAME_FIELD, "Brouwerij De Leckere"))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithDefaultSorting() {
+    // Arrange
+    String query = "{ breweries{ name }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry("breweries",
+            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij"),
+                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij 1923"),
+                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
+                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
+                ImmutableMap.of(BREWERY_NAME_FIELD, "Heineken Nederland"))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithIdentifierAscSorting() {
+    // Arrange
+    String query = "{ breweries(sort: [{field: \"identifier\", order: ASC }]){ identifier }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry("breweries",
+            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1"),
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2"),
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithIdentifierNoSortingValue() {
+    // Arrange
+    String query = "{ breweries(sort: [{field: \"identifier\" }]){ identifier }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .size(), is(1));
+    assertThat(result.getErrors()
+        .get(0)
+        .getMessage(),
+        is("Validation error of type WrongType: argument 'sort[0]' with value "
+            + "'ArrayValue{values=[ObjectValue{objectFields=[ObjectField{name='field', "
+            + "value=StringValue{value='identifier'}}]}]}' is missing required fields '[order]' @ 'breweries'"));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithNameDescSorting() {
+    // Arrange
+    String query = "{ breweries(sort: [{field: \"name\", order: DESC}]){ name }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry("breweries",
+            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Heineken Nederland"),
+                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij Het 58e Genot i.o."),
+                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij De Leckere"),
+                ImmutableMap.of(BREWERY_NAME_FIELD, "Brouwerij 1923"),
+                ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij"))));
+
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithNameNestedSorting() {
+    // Arrange
+    String query = "{ breweries(sort: [{field: \"address.postalCode\", order: DESC}]){ identifier }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry("breweries", ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"),
+            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithNameMultipleSorting() {
+    // Arrange
+    String query = "{ breweries(sort: [{field: \"address.postalCode\", order: DESC}, {field: \"name\", order: ASC}]){"
+        + " identifier }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry("breweries", ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"),
+            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithUnexistingSortField() {
+    // Arrange
+    String query = "{ breweries(sort: [{field: \"unexisting\", order: DESC}]){ identifier }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .size(), is(1));
+    assertThat(result.getErrors()
+        .get(0)
+        .getMessage(),
+        is("Exception while fetching data (/breweries) : No property shape found for name 'unexisting'"));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForSortQueryWithUnexistingSortOrder() {
+    // Arrange
+    String query = "{ breweries(sort: [{field: \"unexisting\", order: unexisting}]){ identifier }}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .size(), is(1));
+    assertThat(result.getErrors()
+        .get(0)
+        .getMessage(),
+        is("Validation error of type WrongType: argument 'sort[0].order' with value "
+            + "'EnumValue{name='unexisting'}' is not a valid 'SortOrder' @ 'breweries'"));
+    Map<String, Object> data = result.getData();
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_ForQueryWithNestedFilter() {
+    // Arrange
+    String query = "{ breweries(name: \"Alfa Brouwerij\"){ beers { ingredients(name: [\"Hop\", \"Gerst\"]){ name }}}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD,
+        ImmutableList.of(ImmutableMap.of(BEERS_FIELD, ImmutableList.of(ImmutableMap.of(INGREDIENTS_FIELD, ImmutableList
+            .of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"), ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst"))))))));
   }
 }

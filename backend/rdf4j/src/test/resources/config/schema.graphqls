@@ -9,12 +9,15 @@ type Query {
   breweries(
     name: String 
       @filter,
+    url: String
+      @filter,
     foundedAfter: String 
       @filter(field: "founded", operator: ">"),
     foundedBefore: String 
-      @filter(field: "founded", operator: "<")
+      @filter(field: "founded", operator: "<"),
+    sort: [SortField!] = [{ field: "name", order: ASC }]
   ): [Brewery!]!
-    @sparql(repository: "local")
+    @sparql(repository: "local", orderBy: "sort")
 
   breweriesWithInputObject(
     input: QueryParameters
@@ -49,6 +52,7 @@ type Brewery {
   address: Address
   beerNames: [String!]
   beers: [Beer!]
+  url: String
 }
 
 type Address {
@@ -61,7 +65,7 @@ type Beer {
   brewery: String!
   beerTypes: [String]!
   beerTypesRaw: [BeerType!]
-  ingredients: [Ingredient!]
+  ingredients(name: [String!] @filter): [Ingredient!]
 }
 
 type Ingredient {

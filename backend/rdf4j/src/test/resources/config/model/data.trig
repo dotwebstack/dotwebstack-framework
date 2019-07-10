@@ -29,13 +29,31 @@ address_id:1 a beer_def:Address ;
 beer_brewery:456 a beer_def:Brewery ;
   beer_def:identifier "456" ;
   schema:name "Brouwerij Het 58e Genot i.o."^^xsd:string ;
+  schema:address address_id:2 ;
   beer_def:founded "2010-05-10T09:30:10+02:00"^^xsd:dateTime
+.
+
+address_id:2 a beer_def:Address ;
+  schema:addressLocality "Zundert" ;
+  schema:latitude "51.46376967" ;
+  schema:longitude "4.60958924" ;
+  schema:postalCode "4881 AZ" ;
+  schema:streetAddress "Achtaalseweg 137A"
 .
 
 beer_brewery:789 a beer_def:Brewery ;
   beer_def:identifier "789" ;
   beer_def:label "Alfa Brouwerij"^^xsd:string ;
+  schema:address address_id:3 ;
   beer_def:founded "1870-01-01T00:00:0+02:00"^^xsd:dateTime
+.
+
+address_id:3 a beer_def:Address ;
+  schema:addressLocality "Zundert" ;
+  schema:latitude "52.46376967" ;
+  schema:longitude "6.60958924" ;
+  schema:postalCode "4881 AZ" ;
+  schema:streetAddress "Achtaalseweg 137A"
 .
 
 beer_brewery:1 a beer_def:Brewery ;
@@ -52,15 +70,26 @@ beer_brewery:2 a beer_def:Brewery ;
 
 beer_id:6 a beer_def:Beer ;
   beer_def:identifier "1";
-  beer_def:brewery brewery_id:123;
+  beer_def:brewery brewery_id:789;
   schema:name "Alfa Edel Pils";
   beer_def:ingredient ingredient_id:1 ;
+  beer_def:ingredient ingredient_id:2 ;
+  beer_def:ingredient ingredient_id:3 ;
   beer_def:beertype beer_type_id:1, beer_type_id:2
 .
 
 ingredient_id:1 a beer_def:Ingredient ;
   schema:name "Hop"
 .
+
+ingredient_id:2 a beer_def:Ingredient ;
+  schema:name "Gerst"
+.
+
+ingredient_id:3 a beer_def:Ingredient ;
+  schema:name "Sinasappel"
+.
+
 
 beer_type_id:1 a beer_def:BeerType ;
   beer_def:identifier "1" ;
