@@ -12,6 +12,7 @@ import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiv
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
@@ -43,7 +44,7 @@ public class ConstraintValidator implements QueryValidator {
   }
 
   void validate(GraphQLArgument argument, String name, Object value) {
-    if (argument.getValue() != null) {
+    if (Objects.nonNull(argument.getValue())) {
       switch (argument.getName()) {
         case CONSTRAINT_ARG_MIN:
           checkMin(name, (Integer) argument.getValue(), (Integer) value);
@@ -56,7 +57,7 @@ public class ConstraintValidator implements QueryValidator {
           checkOneOf(name, castToList(argument.getValue()), value);
           break;
         case CONSTRAINT_ARG_PATTERN:
-          if (value != null) {
+          if (Objects.nonNull(value)) {
             checkPattern(name, argument.getValue()
                 .toString(), value.toString());
           }

@@ -13,6 +13,7 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.util.Objects;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
@@ -91,7 +92,7 @@ public class FilterValidator {
     String[] fields = fieldPath.split("\\.");
     String fieldName = fields[0];
 
-    if (type != null) {
+    if (Objects.nonNull(type)) {
       FieldDefinition definition = type.getFieldDefinitions()
           .stream()
           .filter(fieldDefinition -> fieldDefinition.getName()
@@ -107,7 +108,7 @@ public class FilterValidator {
         return;
       }
     }
-    throw new DirectiveValidationException("Filter 'field' [{}] is invalid. It does not exist on type '{}'", fieldName,
+    throw new DirectiveValidationException("Filter field '{}' is invalid. It does not exist on type '{}'", fieldName,
         typeName);
   }
 

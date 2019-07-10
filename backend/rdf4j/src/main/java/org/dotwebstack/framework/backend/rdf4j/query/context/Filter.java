@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.expression;
+package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,7 +14,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 @Getter
 @Setter
 @Builder
-public class ExpressionContext {
+public class Filter {
 
   private FilterOperator operator;
 
@@ -22,8 +22,8 @@ public class ExpressionContext {
 
   public Expression<?> getExpression(Variable subject) {
     List<Expression<?>> expressions = operands.stream()
-        .map(operand -> ExpressionHelper.getExpressionFromOperator(subject, operator, operand))
+        .map(operand -> FilterHelper.getExpressionFromOperator(subject, operator, operand))
         .collect(Collectors.toList());
-    return ExpressionHelper.joinExpressions(FilterJoinType.OR, null, expressions);
+    return FilterHelper.joinExpressions(FilterJoinType.OR, null, expressions);
   }
 }

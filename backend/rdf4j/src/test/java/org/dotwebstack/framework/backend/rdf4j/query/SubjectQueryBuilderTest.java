@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -8,32 +7,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLObjectType;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlException;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
-import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
-import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.SHACL;
-import org.eclipse.rdf4j.model.vocabulary.XMLSchema;
-import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -329,192 +318,5 @@ class SubjectQueryBuilderTest {
         () -> this.subjectQueryBuilder.getLimitFromContext(context, invalidSparqlDirective));
     assertThrows(org.apache.commons.jexl3.JexlException.Parsing.class,
         () -> this.subjectQueryBuilder.getOffsetFromContext(context, invalidSparqlDirective));
-  }
-
-  @Test
-  void test_sortCondition_withValidOrderByExpressions() {
-    // Arrange
-    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
-
-    GraphQLDirective validSparqlDirective = getValidSortDirective();
-
-    Map<String, Object> arguments = new HashMap<>();
-    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier", "order", "DESC")));
-
-    MapContext context = new MapContext(arguments);
-
-    // Act
-    Optional<List<OrderContext>> optional =
-        this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective);
-
-    // Assert
-    assertThat(optional.isPresent(), is(true));
-
-    optional.ifPresent(orderContexts -> assertThat(orderContexts.get(0)
-        .getOrderable()
-        .getQueryString(), is(equalTo("DESC( ?identifier )"))));
-  }
-
-  @Test
-  void test_sortCondition_withValidOrderByExpressions_withNestedFields() {
-    // Arrange
-    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
-    when(propertyShapeMock.getNode()).thenReturn(addressNodeShapeMock);
-    when(this.addressNodeShapeMock.getPropertyShape(any(String.class))).thenReturn(postcodePropertyShapeMock);
-
-    GraphQLDirective validSparqlDirective = getValidSortDirective();
-
-    Map<String, Object> arguments = new HashMap<>();
-    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "address.postalCode", "order", "DESC")));
-
-    MapContext context = new MapContext(arguments);
-
-    // Act
-    Optional<List<OrderContext>> optional =
-        this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective);
-
-    // Assert
-    assertThat(optional.isPresent(), is(true));
-
-    optional.ifPresent(orderContexts -> assertThat(orderContexts.get(0)
-        .getOrderable()
-        .getQueryString(), is(equalTo("DESC( ?address_postalCode )"))));
-  }
-
-  @Test
-  void test_sortCondition_withoutSortProperty() {
-    // Arrange
-    GraphQLDirective validSparqlDirective = getValidSortDirective();
-    Map<String, Object> arguments = new HashMap<>();
-
-    MapContext context = new MapContext(arguments);
-
-    // Act / Assert
-    assertThrows(JexlException.Variable.class,
-        () -> this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
-  }
-
-  @Test
-  void test_sortingProperty_whenSortPropertyNotExistsOnNodeshape() {
-    // Arrange
-    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(null);
-
-    GraphQLDirective validSparqlDirective = getValidSortDirective();
-
-    Map<String, Object> arguments = new HashMap<>();
-    arguments.put("sort", ImmutableList.of(ImmutableMap.of("field", "identifier", "order", "DESC")));
-
-    MapContext context = new MapContext(arguments);
-
-    // Act / Assert
-    assertThrows(IllegalArgumentException.class,
-        () -> this.subjectQueryBuilder.getOrderByFromContext(context, validSparqlDirective));
-  }
-
-  @Test
-  void test_filter_withValidFilterWithSingleValue() {
-    // Arrange
-    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
-    when(this.propertyShapeMock.getNodeKind()).thenReturn(SHACL.LITERAL);
-    when(this.propertyShapeMock.getDatatype()).thenReturn(XMLSchema.STRING);
-    when(this.propertyShapeMock.getPath()).thenReturn(PredicatePath.builder()
-        .iri(RDF.TYPE)
-        .build());
-
-    GraphQLDirectiveContainer container = getValidFilterContainerWithOperator();
-    String value = "not a list";
-
-    // Act
-    Map<String, Expression<?>> result =
-        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value)));
-
-    // Assert
-    assertThat(result.size(), is(equalTo(1)));
-    assertThat(result.containsKey("?foo"), is(true));
-    assertThat(result.get("?foo")
-        .getQueryString(), is("?foo < \"not a list\"^^<http://www.w3.org/2001/XMLSchema#string>"));
-  }
-
-  @Test
-  void test_filter_withValidFilterWithoutOperatorWithSingleValue() {
-    // Arrange
-    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
-    when(this.propertyShapeMock.getNodeKind()).thenReturn(SHACL.LITERAL);
-    when(this.propertyShapeMock.getDatatype()).thenReturn(XMLSchema.STRING);
-    when(this.propertyShapeMock.getPath()).thenReturn(PredicatePath.builder()
-        .iri(RDF.TYPE)
-        .build());
-
-    GraphQLDirectiveContainer container = getValidFilterContainerWithoutOperator();
-    String value = "not a list";
-
-    // Act
-    Map<String, Expression<?>> result =
-        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value)));
-
-    // Assert
-    assertThat(result.size(), is(equalTo(1)));
-    assertThat(result.containsKey("?foo"), is(true));
-    assertThat(result.get("?foo")
-        .getQueryString(), is("?foo = \"not a list\"^^<http://www.w3.org/2001/XMLSchema#string>"));
-  }
-
-  @Test
-  void test_filter_withFilterWithInvalidOperatorWithSingleValue() {
-    // Arrange
-    GraphQLDirectiveContainer container = getFilterContainerWithInvalidOperator();
-    String value = "not a list";
-
-    // Act & Assert
-    assertThrows(UnsupportedOperationException.class,
-        () -> this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value))));
-  }
-
-  @Test
-  void test_filter_withValidFilterWithList() {
-    // Arrange
-    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
-    when(this.propertyShapeMock.getNodeKind()).thenReturn(SHACL.LITERAL);
-    when(this.propertyShapeMock.getDatatype()).thenReturn(XMLSchema.STRING);
-    when(this.propertyShapeMock.getPath()).thenReturn(PredicatePath.builder()
-        .iri(RDF.TYPE)
-        .build());
-
-    GraphQLDirectiveContainer container = getValidFilterContainerWithOperator();
-    List<String> value = ImmutableList.of("a", "b");
-
-    // Act
-    Map<String, Expression<?>> result =
-        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value)));
-
-    // Assert
-    assertThat(result.size(), is(equalTo(1)));
-    assertThat(result.containsKey("?foo"), is(true));
-    assertThat(result.get("?foo")
-        .getQueryString(),
-        is("?foo < \"a\"^^<http://www.w3.org/2001/XMLSchema#string> || ?foo < \"b\"^^<http://www.w3.org/2001/XMLSchema#string>"));
-  }
-
-  @Test
-  void test_filter_withValidFilterOnIriFieldWithSingleValue() {
-    // Arrange
-    when(this.nodeShapeMock.getPropertyShape(any(String.class))).thenReturn(propertyShapeMock);
-    when(this.propertyShapeMock.getNodeKind()).thenReturn(SHACL.IRI);
-    when(this.propertyShapeMock.getPath()).thenReturn(PredicatePath.builder()
-        .iri(RDF.TYPE)
-        .build());
-
-    GraphQLDirectiveContainer container = getValidFilterContainerWithOperator();
-    String value = "iri";
-
-    // Act
-    Map<String, Expression<?>> result =
-        this.subjectQueryBuilder.getFilters(singletonList(new DirectiveContainerTuple(container, value)));
-
-    // Assert
-    assertThat(result.size(), is(equalTo(1)));
-    assertThat(result.containsKey("?foo"), is(true));
-    assertThat(result.get("?foo")
-        .getQueryString(), is("?foo < <iri>"));
   }
 }

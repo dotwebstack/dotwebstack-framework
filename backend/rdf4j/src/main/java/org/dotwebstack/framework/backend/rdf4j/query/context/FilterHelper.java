@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.backend.rdf4j.expression;
+package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
@@ -24,7 +24,7 @@ import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
-public class ExpressionHelper {
+public class FilterHelper {
 
   private static final ImmutableMap.Builder<FilterOperator, BiFunction<Variable, Operand, Expression<?>>> BUILDER =
       new ImmutableMap.Builder<>();
@@ -40,7 +40,7 @@ public class ExpressionHelper {
 
   private static final ImmutableMap<FilterOperator, BiFunction<Variable, Operand, Expression<?>>> MAP = BUILDER.build();
 
-  private ExpressionHelper() {}
+  private FilterHelper() {}
 
   public static Expression<?> getExpressionFromOperator(String fieldName, String operator, Operand operand) {
     return getExpressionFromOperator(SparqlBuilder.var(fieldName), FilterOperator.getByValue(operator)
