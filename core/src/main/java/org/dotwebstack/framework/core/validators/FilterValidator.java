@@ -27,8 +27,11 @@ public class FilterValidator {
 
   private final CoreTraverser coreTraverser;
 
-  public FilterValidator(@NonNull CoreTraverser coreTraverser) {
+  private final TypeDefinitionRegistry typeDefinitionRegistry;
+
+  public FilterValidator(@NonNull CoreTraverser coreTraverser, @NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
     this.coreTraverser = coreTraverser;
+    this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
   public void validateArgumentEnvironment(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
@@ -41,41 +44,37 @@ public class FilterValidator {
               .build();
 
           if (!GraphQLTypeUtil.isLeaf(type) || GraphQLTypeUtil.isList(type)) {
-            this.validateDirectiveContainer(environment.getElement(), environment.getRegistry(), typeName);
+            this.validateDirectiveContainer(environment.getElement(), typeName);
           }
         });
   }
 
   public void validateInputObjectFieldEnvironment(
       SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
-    TypeDefinitionRegistry registry = environment.getRegistry();
 
     environment.getElementParentTree()
         .getParentInfo()
         .ifPresent(parentInfo -> {
-          TypeDefinition<?> typeDefinition = registry.types()
+          TypeDefinition<?> typeDefinition = typeDefinitionRegistry.types()
               .get(parentInfo.getElement()
                   .getName());
-          coreTraverser.getPathToQuery(typeDefinition, registry)
-              .forEach(typeName -> validateDirectiveContainer(environment.getElement(), registry, typeName));
+          coreTraverser.getRootResultTypeNames(typeDefinition)
+              .forEach(typeName -> validateDirectiveContainer(environment.getElement(), typeName));
         });
   }
 
-  private void validateDirectiveContainer(GraphQLDirectiveContainer container, TypeDefinitionRegistry registry,
-      TypeName typeName) {
+  private void validateDirectiveContainer(GraphQLDirectiveContainer container, TypeName typeName) {
     GraphQLDirective directive = container.getDirective(CoreDirectives.FILTER_NAME);
     directive.getArguments()
-        .forEach(
-            directiveArgument -> this.validateArgument(directiveArgument, registry, container.getName(), typeName));
+        .forEach(directiveArgument -> this.validateArgument(directiveArgument, container.getName(), typeName));
   }
 
-  private void validateArgument(GraphQLArgument argument, TypeDefinitionRegistry registry, String name,
-      TypeName typeName) {
+  private void validateArgument(GraphQLArgument argument, String name, TypeName typeName) {
     switch (argument.getName()) {
       case CoreDirectives.FILTER_ARG_FIELD:
         String fieldPath = (argument.getValue() != null) ? argument.getValue()
             .toString() : name;
-        checkField(registry, fieldPath, typeName);
+        checkField(fieldPath, typeName);
         break;
       case CoreDirectives.FILTER_ARG_OPERATOR:
         if (argument.getValue() != null) {
@@ -87,8 +86,8 @@ public class FilterValidator {
     }
   }
 
-  void checkField(TypeDefinitionRegistry registry, String fieldPath, TypeName typeName) {
-    ObjectTypeDefinition type = registry.getType(typeName, ObjectTypeDefinition.class)
+  void checkField(String fieldPath, TypeName typeName) {
+    ObjectTypeDefinition type = typeDefinitionRegistry.getType(typeName, ObjectTypeDefinition.class)
         .orElse(null);
 
     String[] fields = fieldPath.split("\\.");
@@ -105,7 +104,7 @@ public class FilterValidator {
       if (definition != null) {
         if (fields.length > 1) {
           TypeName fieldType = (TypeName) TypeHelper.getBaseType(definition.getType());
-          checkField(registry, fieldPath.substring(fieldPath.indexOf(".") + 1), fieldType);
+          checkField(fieldPath.substring(fieldPath.indexOf(".") + 1), fieldType);
         }
         return;
       }

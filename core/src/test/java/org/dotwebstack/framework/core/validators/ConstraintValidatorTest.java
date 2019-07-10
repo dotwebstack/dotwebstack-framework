@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLList;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Arrays;
 import java.util.List;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Test;
 
 class ConstraintValidatorTest {
 
-  private ConstraintValidator validator = new ConstraintValidator(new CoreTraverser());
+  private ConstraintValidator validator = new ConstraintValidator(new CoreTraverser(new TypeDefinitionRegistry()));
 
   @Test
   void validate_throwsException_ForGivenUnknownArgument() {

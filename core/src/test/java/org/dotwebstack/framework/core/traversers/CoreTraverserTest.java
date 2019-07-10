@@ -12,6 +12,7 @@ import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,7 +24,7 @@ class CoreTraverserTest {
   @Mock
   private DataFetchingEnvironment dataFetchingEnvironment;
 
-  private CoreTraverser coreTraverser = new CoreTraverser();
+  private CoreTraverser coreTraverser = new CoreTraverser(new TypeDefinitionRegistry());
 
   @Test
   void getTuples_returnsList_ForScalarArgument() {

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,10 +28,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class FilterValidatorTest {
 
-  private FilterValidator validator = new FilterValidator(new CoreTraverser());
-
   @Mock
   private TypeDefinitionRegistry typeDefinitionRegistry;
+
+  private FilterValidator validator;
+
+  @BeforeEach
+  void doBefore() {
+    validator = new FilterValidator(new CoreTraverser(typeDefinitionRegistry), typeDefinitionRegistry);
+  }
 
   @Test
   void validate_ExistingValue_optionalFieldArgument() {
@@ -41,7 +47,7 @@ class FilterValidatorTest {
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
-    assertDoesNotThrow(() -> validator.checkField(typeDefinitionRegistry, "sinceBefore", typeName));
+    assertDoesNotThrow(() -> validator.checkField("sinceBefore", typeName));
   }
 
   @Test
@@ -53,8 +59,7 @@ class FilterValidatorTest {
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
-    assertThrows(DirectiveValidationException.class,
-        () -> validator.checkField(typeDefinitionRegistry, "page", typeName));
+    assertThrows(DirectiveValidationException.class, () -> validator.checkField("page", typeName));
   }
 
   @Test
@@ -66,7 +71,7 @@ class FilterValidatorTest {
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
-    assertDoesNotThrow(() -> validator.checkField(typeDefinitionRegistry, "founded", typeName));
+    assertDoesNotThrow(() -> validator.checkField("founded", typeName));
   }
 
   @Test
@@ -78,8 +83,7 @@ class FilterValidatorTest {
         .thenReturn(Optional.of(objectTypeDefinition));
 
     // Act & Assert
-    assertThrows(DirectiveValidationException.class,
-        () -> validator.checkField(typeDefinitionRegistry, "sinceAfter", typeName));
+    assertThrows(DirectiveValidationException.class, () -> validator.checkField("sinceAfter", typeName));
   }
 
   @ParameterizedTest
