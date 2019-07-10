@@ -1,10 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import com.google.common.collect.Iterables;
 import graphql.schema.GraphQLDirective;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
@@ -52,12 +50,13 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
     Vertice root = VerticeFactory.createSubjectVertice(SUBJECT_VAR, query, nodeShape, filterMapping, orderByObject);
 
     query.select(root.getSubject())
-        .where(VerticeHelper.getWherePatterns(root).toArray(new GraphPattern[] {}));
+        .where(VerticeHelper.getWherePatterns(root)
+            .toArray(new GraphPattern[] {}));
 
     getLimitFromContext(context, sparqlDirective).ifPresent(query::limit);
     getOffsetFromContext(context, sparqlDirective).ifPresent(query::offset);
     root.getOrderables()
-          .forEach(query::orderBy);
+        .forEach(query::orderBy);
 
     return this.query.getQueryString();
   }

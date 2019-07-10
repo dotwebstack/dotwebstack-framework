@@ -2,7 +2,7 @@ package org.dotwebstack.framework.core.traversers;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.dotwebstack.framework.core.helpers.MapHelper.nestedMap;
+import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
@@ -64,7 +64,7 @@ public class CoreTraverser {
       Map<String, Object> arguments) {
     if (container.getType() instanceof GraphQLInputObjectType) {
       return getInputObjectFieldsFromObjectType((GraphQLInputObjectType) container.getType(),
-          nestedMap(arguments, container.getName()));
+          getNestedMap(arguments, container.getName()));
     } else if ((GraphQLTypeUtil.unwrapAll(container.getType()) instanceof GraphQLScalarType)) {
       return singletonList(DirectiveContainerTuple.builder()
           .container(container)
@@ -86,7 +86,7 @@ public class CoreTraverser {
         .flatMap(field -> {
           if (field.getType() instanceof GraphQLInputObjectType) {
             return getInputObjectFieldsFromObjectType((GraphQLInputObjectType) field.getType(),
-                nestedMap(arguments, field.getName())).stream();
+                getNestedMap(arguments, field.getName())).stream();
           } else if (GraphQLTypeUtil.unwrapAll(field.getType()) instanceof GraphQLScalarType) {
             return Stream.of(DirectiveContainerTuple.builder()
                 .container(field)

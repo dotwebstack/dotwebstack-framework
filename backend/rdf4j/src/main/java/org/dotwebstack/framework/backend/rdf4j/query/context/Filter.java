@@ -4,16 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 
-@Getter
-@Setter
+@Data
 @Builder
 public class Filter {
 

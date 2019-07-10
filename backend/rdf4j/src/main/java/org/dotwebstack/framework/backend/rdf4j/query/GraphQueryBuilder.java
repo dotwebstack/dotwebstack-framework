@@ -42,7 +42,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     Expression<?> filterExpr = Expressions.or(subjects.stream()
         .map(subject -> Expressions.equals(root.getSubject(), Rdf.iri(subject)))
         .collect(Collectors.toList())
-        .toArray(new Expression[] {}));
+        .toArray(new Expression<?>[] {}));
 
     query.construct(VerticeHelper.getConstructPatterns(root)
         .toArray(new TriplePattern[] {}))

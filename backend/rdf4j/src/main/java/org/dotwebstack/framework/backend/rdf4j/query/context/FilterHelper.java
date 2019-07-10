@@ -20,21 +20,20 @@ import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
-import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 
 public class FilterHelper {
 
-  private static final ImmutableMap<FilterOperator, BiFunction<Variable, Operand, Expression<?>>> MAP = ImmutableMap
-      .<FilterOperator, BiFunction<Variable, Operand, Expression<?>>>builder()
-      .put(EQ, Expressions::equals)
-      .put(NE, Expressions::notEquals)
-      .put(LT, Expressions::lt)
-      .put(LTE, Expressions::lte)
-      .put(GT, Expressions::gt)
-      .put(GTE, Expressions::gte)
-      .build();
+  private static final ImmutableMap<FilterOperator, BiFunction<Variable, Operand, Expression<?>>> MAP =
+      ImmutableMap.<FilterOperator, BiFunction<Variable, Operand, Expression<?>>>builder()
+          .put(EQ, Expressions::equals)
+          .put(NE, Expressions::notEquals)
+          .put(LT, Expressions::lt)
+          .put(LTE, Expressions::lte)
+          .put(GT, Expressions::gt)
+          .put(GTE, Expressions::gte)
+          .build();
 
   private FilterHelper() {}
 

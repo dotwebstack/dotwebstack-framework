@@ -2,11 +2,9 @@ package org.dotwebstack.framework.core.traversers;
 
 import graphql.schema.GraphQLDirectiveContainer;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 @Builder
 public class DirectiveContainerTuple {
 

@@ -1,12 +1,10 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
-@Getter
-@Setter
+@Data
 @Builder
 class Edge {
 

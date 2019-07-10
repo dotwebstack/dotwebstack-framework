@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class MapHelper {
 
-  public static Map<String, Object> nestedMap(Map<String, Object> arguments, String name) {
+  public static Map<String, Object> getNestedMap(Map<String, Object> arguments, String name) {
     if (arguments.containsKey(name) && arguments.get(name) instanceof Map) {
       return castToMap(arguments.get(name));
     }

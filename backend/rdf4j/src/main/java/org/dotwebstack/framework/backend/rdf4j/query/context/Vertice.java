@@ -3,14 +3,12 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 
-@Getter
-@Setter
+@Data
 @Builder
 public class Vertice {
 

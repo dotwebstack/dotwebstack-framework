@@ -47,10 +47,10 @@ public class VerticeHelper {
     List<GraphPattern> patterns = new ArrayList<>();
 
     patterns.addAll(vertice.getEdges()
-          .stream()
-          .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList()));
+        .stream()
+        .flatMap(edge -> getWherePatterns(edge, vertice.getSubject()).stream())
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList()));
 
     return patterns;
   }
@@ -65,9 +65,12 @@ public class VerticeHelper {
                 .getIri())
                 .optional(edge.isOptional());
 
-    if (!edge.getObject().getFilters().isEmpty()) {
+    if (!edge.getObject()
+        .getFilters()
+        .isEmpty()) {
       Expression<?> expression = FilterHelper.joinExpressions(FilterJoinType.AND, null, edge.getObject()
-          .getFilters().stream()
+          .getFilters()
+          .stream()
           .map(filter -> filter.toExpression(edge.getObject()
               .getSubject()))
           .collect(Collectors.toList()));

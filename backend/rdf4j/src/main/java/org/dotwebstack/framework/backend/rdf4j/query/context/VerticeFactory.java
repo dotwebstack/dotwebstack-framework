@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.stringify;
+
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLTypeUtil;
@@ -28,8 +30,6 @@ import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
-
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.stringify;
 
 public class VerticeFactory {
 
@@ -61,8 +61,8 @@ public class VerticeFactory {
 
     makeEdgesUnique(vertice.getEdges());
 
-    optionalOrderByList.ifPresent(orderByList ->
-        orderByList.forEach(orderBy -> addOrderables(vertice, query, (Map<String, String>) orderBy, nodeShape)));
+    optionalOrderByList.ifPresent(orderByList -> orderByList
+        .forEach(orderBy -> addOrderables(vertice, query, (Map<String, String>) orderBy, nodeShape)));
 
     return vertice;
   }
@@ -258,7 +258,8 @@ public class VerticeFactory {
     return optional.orElseGet(() -> {
       Edge edge = createSimpleEdge(query.var(), null, propertyShape.getPath()
           .toPredicate(), false, false);
-      vertice.getEdges().add(edge);
+      vertice.getEdges()
+          .add(edge);
       return edge;
     });
   }
