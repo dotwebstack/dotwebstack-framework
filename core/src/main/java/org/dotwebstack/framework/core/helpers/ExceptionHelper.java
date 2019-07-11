@@ -12,7 +12,7 @@ public class ExceptionHelper {
     try {
       return message != null ? String.format(message.replaceAll("\\{\\}", "%s"), arguments) : "";
     } catch (MissingFormatArgumentException exception) {
-      throw new DotWebStackRuntimeException("Missing argument for exception with message '{}'", message);
+      throw new DotWebStackRuntimeException("Missing container for exception with message '{}'", message);
     }
   }
 

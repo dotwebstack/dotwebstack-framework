@@ -6,6 +6,7 @@ import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.validators.FilterValidator;
 import org.springframework.stereotype.Component;
 
 @Component

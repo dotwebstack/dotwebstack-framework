@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import graphql.language.FieldDefinition;
 import graphql.language.ListType;
 import graphql.language.ObjectTypeDefinition;
@@ -13,6 +14,8 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Arrays;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
+import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,7 +72,7 @@ class SortFieldValidatorTest {
         return Optional.empty();
       }
     });
-    sortFieldValidator = new SortFieldValidator(registry);
+    sortFieldValidator = new SortFieldValidator(new CoreTraverser(new TypeDefinitionRegistry()), registry);
   }
 
   @Test
@@ -83,7 +86,7 @@ class SortFieldValidatorTest {
     // Arrange
     when(fieldDefinition2.getName()).thenReturn(FIELD_NAME_2);
     when(fieldDefinition2.getType()).thenReturn(type2);
-    when(typeDefinition2.getFieldDefinitions()).thenReturn(Arrays.asList(fieldDefinition2));
+    when(typeDefinition2.getFieldDefinitions()).thenReturn(ImmutableList.of(fieldDefinition2));
 
     // Act / Assert
     sortFieldValidator.validateSortFieldValue(TYPE_DEF_1, null, null, FIELD_NAME_1 + "." + FIELD_NAME_2);

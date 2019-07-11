@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.directives;
+package org.dotwebstack.framework.core.validators;
 
 import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLString;
@@ -6,13 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLList;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Arrays;
 import java.util.List;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
+import org.dotwebstack.framework.core.directives.DirectiveValidationException;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.junit.jupiter.api.Test;
 
 class ConstraintValidatorTest {
 
-  private ConstraintValidator validator = new ConstraintValidator();
+  private ConstraintValidator validator = new ConstraintValidator(new CoreTraverser(new TypeDefinitionRegistry()));
 
   @Test
   void validate_throwsException_ForGivenUnknownArgument() {

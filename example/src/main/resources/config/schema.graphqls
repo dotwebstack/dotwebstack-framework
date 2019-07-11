@@ -12,7 +12,8 @@ type Query {
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
             sinceAfter: String @filter(field: "founded", operator: ">"),
             sinceBefore: String @filter(field: "founded", operator: "<")
-            name: [String] @filter(field: "name")): [Brewery!]!
+            name: [String] @filter(field: "name"),
+            beerName: String @filter(field: "beers.name")): [Brewery!]!
     @sparql(
       repository: "local"
       limit: "pageSize"
@@ -62,9 +63,9 @@ type Brewery {
   owners: [String]
   url: String!
     @transform(expr: "url.getLocalName()")
-  address: Address!
+  address: Address
   postalCode: String!
-  beers: [String]
+  beers(ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
 }
 
 type Address {
@@ -77,11 +78,12 @@ type Beer {
   name: String!
   brewery: String!
   beerTypes: [String]!
-  ingredients: [Ingredient!]
+  ingredients(name: [String] @filter): [Ingredient!]
   supplements: [Supplement!]
 }
 
 type Ingredient {
+  identifier: ID!
   name: String
 }
 

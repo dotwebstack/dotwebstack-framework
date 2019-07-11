@@ -8,6 +8,8 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
+import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,16 +29,16 @@ class ConstraintDirectiveWiringTest {
   private SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> inputObjectFieldEnvironment;
 
   @Mock
-  private ConstraintTraverser constraintTraverser;
+  private ConstraintValidator constraintValidator;
 
   @BeforeEach
   void doBefore() {
-    constraintDirectiveWiring = new ConstraintDirectiveWiring(constraintTraverser);
+    constraintDirectiveWiring = new ConstraintDirectiveWiring(constraintValidator);
   }
 
   @Test
   void onArgument_returnsNull_forGivenArgument() {
-
+    // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name(CoreDirectives.CONSTRAINT_ARG_MIN)
         .type(Scalars.GraphQLInt)
@@ -45,22 +47,29 @@ class ConstraintDirectiveWiringTest {
 
     when(argumentEnvironment.getElement()).thenReturn(argument);
 
+    // Act
     constraintDirectiveWiring.onArgument(argumentEnvironment);
 
-    verify(constraintTraverser).onArguments(argument, null);
+    // Assert
+    verify(constraintValidator).validate(DirectiveContainerTuple.builder()
+        .container(argument)
+        .value(argument.getDefaultValue())
+        .build());
   }
 
   @Test
   void onArgument_throwsException_forGivenArgument() {
-
+    // Act
     when(argumentEnvironment.getElement()).thenThrow(new DirectiveValidationException("boom!"));
 
+    // Assert
     Assertions.assertThrows(InvalidConfigurationException.class,
         () -> constraintDirectiveWiring.onArgument(argumentEnvironment));
   }
 
   @Test
   void onInputObjectField_returnsNull_forGivenArgument() {
+    // Arrange
     GraphQLInputObjectField field = GraphQLInputObjectField.newInputObjectField()
         .name("input")
         .type(Scalars.GraphQLInt)
@@ -68,16 +77,23 @@ class ConstraintDirectiveWiringTest {
 
     when(inputObjectFieldEnvironment.getElement()).thenReturn(field);
 
+    // Act
     constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment);
 
-    verify(constraintTraverser).onInputObjectField(field, null);
+    // Assert
+    verify(constraintValidator).validate(DirectiveContainerTuple.builder()
+        .container(field)
+        .value(field.getDefaultValue())
+        .build());
   }
 
 
   @Test
   void onInputObjectField_throwsException_forGivenArgument() {
+    // Act
     when(inputObjectFieldEnvironment.getElement()).thenThrow(new DirectiveValidationException("boom!"));
 
+    // Assert
     Assertions.assertThrows(InvalidConfigurationException.class,
         () -> constraintDirectiveWiring.onInputObjectField(inputObjectFieldEnvironment));
   }

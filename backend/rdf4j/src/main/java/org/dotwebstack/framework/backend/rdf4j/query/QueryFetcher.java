@@ -1,10 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveWithValueFilter;
+
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
@@ -17,12 +18,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.text.StringSubstitutor;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
+import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.core.arguments.SortFieldValidator;
-import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
-import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
+import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
+import org.dotwebstack.framework.core.validators.QueryValidator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.ValueFactory;
@@ -46,22 +49,19 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final JexlEngine jexlEngine;
 
-  private final ConstraintTraverser constraintTraverser;
+  private final CoreTraverser coreTraverser;
 
-  private final FilterDirectiveTraverser filterDirectiveTraverser;
-
-  private SortFieldValidator sortFieldValidator;
+  private final List<QueryValidator> validators;
 
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
-      Map<String, String> prefixMap, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
-      FilterDirectiveTraverser filterDirectiveTraverser, SortFieldValidator sortFieldValidator) {
+      Map<String, String> prefixMap, JexlEngine jexlEngine, List<QueryValidator> validators,
+      CoreTraverser coreTraverser) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
-    this.constraintTraverser = constraintTraverser;
-    this.filterDirectiveTraverser = filterDirectiveTraverser;
-    this.sortFieldValidator = sortFieldValidator;
+    this.coreTraverser = coreTraverser;
+    this.validators = validators;
   }
 
   @Override
@@ -73,8 +73,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       throw new UnsupportedOperationException("Field types other than object fields are not yet supported.");
     }
 
-    sortFieldValidator.traverse(environment);
-    constraintTraverser.traverse(environment);
+    validators.forEach(validator -> validator.validate(environment));
 
     QueryEnvironment queryEnvironment = QueryEnvironment.builder()
         .objectType((GraphQLObjectType) rawType)
@@ -86,8 +85,10 @@ public final class QueryFetcher implements DataFetcher<Object> {
     // Find shapes matching request
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
         .getDirective(Rdf4jDirectives.SPARQL_NAME);
-    Map<GraphQLDirectiveContainer, Object> filterMapping =
-        filterDirectiveTraverser.getDirectiveContainers(environment, CoreDirectives.FILTER_NAME);
+
+    List<DirectiveContainerTuple> filterMapping =
+        coreTraverser.getTuples(environment, directiveWithValueFilter(CoreDirectives.FILTER_NAME));
+
     List<IRI> subjects = fetchSubjects(queryEnvironment, sparqlDirective, filterMapping, environment.getArguments(),
         repositoryConnection);
 
@@ -104,7 +105,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
   }
 
   private List<IRI> fetchSubjects(QueryEnvironment environment, GraphQLDirective sparqlDirective,
-      Map<GraphQLDirectiveContainer, Object> filterMapping, Map<String, Object> arguments, RepositoryConnection con) {
+      List<DirectiveContainerTuple> filterMapping, Map<String, Object> arguments, RepositoryConnection con) {
     String subjectTemplate =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_SUBJECT, sparqlDirective, String.class);
 
@@ -115,7 +116,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       return ImmutableList.of(subject);
     }
 
-    String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine)
+    String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine, new SelectVerticeFactory())
         .getQueryString(arguments, sparqlDirective, filterMapping);
 
     LOG.debug("Executing query for subjects:\n{}", subjectQuery);
@@ -134,7 +135,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       return new TreeModel();
     }
 
-    String graphQuery = GraphQueryBuilder.create(environment, subjects)
+    String graphQuery = GraphQueryBuilder.create(environment, subjects, new ConstructVerticeFactory())
         .getQueryString();
 
     LOG.debug("Executing query for graph:\n{}", graphQuery);
@@ -144,5 +145,4 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
     return QueryResults.asModel(queryResult);
   }
-
 }

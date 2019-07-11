@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.directives;
 
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
@@ -16,10 +17,10 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.arguments.SortFieldValidator;
-import org.dotwebstack.framework.core.directives.ConstraintTraverser;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
-import org.dotwebstack.framework.core.directives.FilterDirectiveTraverser;
+import org.dotwebstack.framework.core.traversers.CoreTraverser;
+import org.dotwebstack.framework.core.validators.ConstraintValidator;
+import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.springframework.stereotype.Component;
@@ -35,20 +36,20 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private final JexlEngine jexlEngine;
 
-  private ConstraintTraverser constraintTraverser;
+  private ConstraintValidator constraintValidator;
 
-  private FilterDirectiveTraverser filterDirectiveTraverser;
+  private CoreTraverser coreTraverser;
 
   public SparqlDirectiveWiring(RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
-      Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintTraverser constraintTraverser,
-      FilterDirectiveTraverser filterDirectiveTraverser) {
+      Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintValidator constraintValidator,
+      CoreTraverser coreTraverser) {
     this.repositoryManager = repositoryManager;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null ? HashBiMap.create(rdf4jProperties.getPrefixes())
         .inverse() : ImmutableMap.of();
     this.jexlEngine = jexlEngine;
-    this.constraintTraverser = constraintTraverser;
-    this.filterDirectiveTraverser = filterDirectiveTraverser;
+    this.constraintValidator = constraintValidator;
+    this.coreTraverser = coreTraverser;
   }
 
   @Override
@@ -71,11 +72,12 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
         .getConnection();
 
     // startup time validation of default values for sort fields
-    SortFieldValidator sortFieldValidator = new SortFieldValidator(environment.getRegistry());
+    SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
+
     validateSortField(fieldDefinition, sortFieldValidator);
 
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
-        constraintTraverser, filterDirectiveTraverser, sortFieldValidator);
+        ImmutableList.of(constraintValidator, sortFieldValidator), coreTraverser);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
@@ -84,15 +86,15 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
   }
 
   private void validateSortField(GraphQLFieldDefinition fieldDefinition, SortFieldValidator sortFieldValidator) {
-    // the orderBy argument in the @sparl directive
+    // the orderBy container in the @sparl directive
     GraphQLArgument orderByArgument = fieldDefinition.getDirective(Rdf4jDirectives.SPARQL_NAME)
         .getArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY);
 
-    // the argument in field definition to which the orderBy refers
+    // the container in field definition to which the orderBy refers
     GraphQLArgument sortArgument = fieldDefinition.getArgument((String) orderByArgument.getValue());
 
     if (sortArgument != null && sortArgument.getDefaultValue() != null) {
-      sortFieldValidator.traverseArgument(fieldDefinition.getType(), sortArgument, sortArgument.getDefaultValue());
+      sortFieldValidator.validate(fieldDefinition.getType(), sortArgument, sortArgument.getDefaultValue());
     }
   }
 

@@ -10,7 +10,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 
 @Builder
 @Getter
-class QueryEnvironment {
+public class QueryEnvironment {
 
   private final GraphQLObjectType objectType;
 

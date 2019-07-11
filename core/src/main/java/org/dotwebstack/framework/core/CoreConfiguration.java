@@ -25,20 +25,27 @@ public class CoreConfiguration {
   private static final String FIXED_SCHEMA_NAME = "schema.graphqls";
 
   @Bean
-  public GraphQLSchema graphqlSchema(@NonNull ResourceLoader resourceLoader, @NonNull CoreProperties coreProperties,
-      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers) throws IOException {
-    Reader reader = new InputStreamReader(resourceLoader.getResource(coreProperties.getResourcePath()
-        .resolve(FIXED_SCHEMA_NAME)
-        .toString())
-        .getInputStream());
-    TypeDefinitionRegistry typeDefinitionRegistry = new SchemaParser().parse(reader);
-    graphqlConfigurers
-        .forEach(graphqlConfigurer -> graphqlConfigurer.configureTypeDefinitionRegistry(typeDefinitionRegistry));
+  public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
+      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers) {
 
     RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
     graphqlConfigurers.forEach(graphqlConfigurer -> graphqlConfigurer.configureRuntimeWiring(runtimeWiringBuilder));
 
+    graphqlConfigurers
+        .forEach(graphqlConfigurer -> graphqlConfigurer.configureTypeDefinitionRegistry(typeDefinitionRegistry));
+
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());
+  }
+
+  @Bean
+  public TypeDefinitionRegistry typeDefinitionRegistry(@NonNull ResourceLoader resourceLoader,
+      @NonNull CoreProperties coreProperties) throws IOException {
+    Reader reader = new InputStreamReader(resourceLoader.getResource(coreProperties.getResourcePath()
+        .resolve(FIXED_SCHEMA_NAME)
+        .toString())
+        .getInputStream());
+
+    return new SchemaParser().parse(reader);
   }
 
   @Bean

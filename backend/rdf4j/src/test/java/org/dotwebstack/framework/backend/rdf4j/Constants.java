@@ -36,7 +36,18 @@ public final class Constants {
 
   public static final String SCHEMA_PREFIX = "http://schema.org/";
 
+  public static final String XSD_PREFIX = "http://www.w3.org/2001/XMLSchema#";
+
+  public static final String SHACL_PREFIX = "http://www.w3.org/ns/shacl#";
+
+  public static final String BEER_DEF = "https://github.com/dotwebstack/beer/def#";
+
+  public static final IRI BEER_3 = VF.createIRI(BEER_DEF.concat("3"));
   // Query
+
+  public static final IRI XSD_STRING = VF.createIRI(XSD_PREFIX.concat("string"));
+
+  public static final IRI SHACL_LITERAL = VF.createIRI(SHACL_PREFIX.concat("Literal"));
 
   public static final String BREWERY_FIELD = "brewery";
 
@@ -47,6 +58,8 @@ public final class Constants {
   public static final String BREWERY_TYPE = "Brewery";
 
   public static final IRI BREWERY_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_TYPE));
+
+  public static final IRI BREWERY_TARGET_CLASS = VF.createIRI(BEER_DEF.concat("Brewery"));
 
   public static final IRI BREWERY_CLASS = VF.createIRI("https://github.com/dotwebstack/beer/def#Building");
 
@@ -111,9 +124,15 @@ public final class Constants {
 
   public static final String BEERS_FIELD = "beers";
 
+  public static final String BEER_NAMES_FIELD = "beerNames";
+
   public static final String BREWERY_BEERS_TYPE = "Brewery_beers";
 
+  public static final String BREWERY_BEERNAMES_TYPE = "Brewery_beerNames";
+
   public static final IRI BREWERY_BEERS_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERS_TYPE));
+
+  public static final IRI BREWERY_BEERNAMES_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_BEERNAMES_TYPE));
 
   public static final IRI BREWERY_BEERS_PATH = VF.createIRI("https://github.com/dotwebstack/beer/def#brewery");
 
@@ -126,6 +145,8 @@ public final class Constants {
   public static final String BEER_NAME_EXAMPLE_1 = "Beer 1";
 
   public static final String BEER_FIELD = "beer";
+
+  public static final String BEER_NAME_FIELD = "name";
 
 
   // Beer.beertypes
@@ -192,5 +213,15 @@ public final class Constants {
 
   public static final String ADDRESS_POSTALCODE_EXAMPLE_2 = "1234 BD";
 
+  // Beer.ingredient
 
+  public static final String INGREDIENTS_FIELD = "ingredients";
+
+  public static final String INGREDIENTS_NAME_FIELD = "name";
+
+  // Beer.supplement
+
+  public static final String SUPPLEMENTS_FIELD = "supplements";
+
+  public static final String SUPPLEMENTS_NAME_FIELD = "name";
 }

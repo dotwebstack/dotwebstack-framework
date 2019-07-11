@@ -57,22 +57,22 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   private final DataFetcherRouter dataFetcher;
 
-  private TypeDefinitionRegistry typeDefinitionRegistry;
+  private final TypeDefinitionRegistry typeDefinitionRegistry;
 
   private final FilterDirectiveWiring filterDirectiveWiring;
 
   public CoreConfigurer(final TransformDirectiveWiring transformDirectiveWiring,
       final ConstraintDirectiveWiring constraintDirectiveWiring, final DataFetcherRouter dataFetcher,
-      FilterDirectiveWiring filterDirectiveWiring) {
+      FilterDirectiveWiring filterDirectiveWiring, TypeDefinitionRegistry typeDefinitionRegistry) {
     this.transformDirectiveWiring = transformDirectiveWiring;
     this.constraintDirectiveWiring = constraintDirectiveWiring;
     this.dataFetcher = dataFetcher;
     this.filterDirectiveWiring = filterDirectiveWiring;
+    this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
   @Override
-  public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
-    this.typeDefinitionRegistry = typeDefinitionRegistry;
+  public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry registry) {
     typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
     typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     typeDefinitionRegistry.add(createSortEnumDefinition());

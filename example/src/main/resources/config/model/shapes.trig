@@ -84,10 +84,8 @@
 
   beer_sh:Brewery_beers a sh:PropertyShape ;
     sh:name "beers" ;
-    sh:path ( [ sh:inversePath beer_def:brewery ] schema:name ) ;
-    sh:minCount 0 ;
-    sh:nodeKind sh:Literal ;
-    sh:datatype xsd:string
+    sh:path [ sh:inversePath beer_def:brewery ] ;
+    sh:node beer_sh:Beer
   .
 
   beer_sh:Beer a sh:NodeShape ;
@@ -183,7 +181,8 @@
   beer_sh:Ingredient a sh:NodeShape ;
     sh:targetClass beer_def:Ingredient ;
     sh:property
-      beer_sh:Ingredient_name ;
+      beer_sh:Ingredient_name ,
+      beer_sh:Ingredient_identifier ;
     sh:nodeKind sh:IRI ;
   .
 
@@ -195,6 +194,16 @@
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
   .
+
+  beer_sh:Ingredient_identifier a sh:PropertyShape ;
+    sh:name "identifier" ;
+    sh:path beer_def:identifier ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype xsd:string
+  .
+
 
   beer_sh:Supplement a sh:NodeShape ;
     sh:targetClass beer_def:Supplement ;

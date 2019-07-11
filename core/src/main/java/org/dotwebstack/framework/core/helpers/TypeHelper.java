@@ -26,6 +26,17 @@ public class TypeHelper {
     }
   }
 
+  public static Type<?> getBaseType(Type<?> type) {
+    if (type instanceof ListType) {
+      return getBaseType((Type<?>) type.getChildren()
+          .get(0));
+    }
+    if (type instanceof NonNullType) {
+      return getBaseType(((NonNullType) type).getType());
+    }
+    return type;
+  }
+
   public static String getTypeName(Type<?> type) {
     if (type instanceof NonNullType) {
       return getTypeName(((NonNullType) type).getType());

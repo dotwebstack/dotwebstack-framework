@@ -63,7 +63,6 @@
     beer_def:openinghours "Alle dagen van de week op aanvraag (12.30-16.00 uur)" ;
     beer_def:owners "Harry Meens" ;
     schema:state "Limburg" ;
-    schema:address address_id:4 ;
     schema:name "Alfa Brouwerij" ;
     schema:taxID "14034012" ;
     schema:telephone "046-4432888" ;
@@ -157,10 +156,12 @@
   .
 
   ingredient_id:1 a beer_def:Ingredient ;
+    beer_def:identifier "1" ;
     schema:name "Hop"
   .
 
   ingredient_id:2 a beer_def:Ingredient ;
+    beer_def:identifier "2" ;
     schema:name "Gerst"
   .
 }

@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl.propertypath;
 
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERNAMES_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_POSTAL_CODE_SHAPE;
@@ -67,7 +67,7 @@ public class PropertyPathFactoryTest {
   @Test
   void createPropertyPath_ReturnsInversePathInsideSequencePath() {
     // Act
-    final PropertyPath propertyPath = createPropertyPath(BREWERY_BEERS_SHAPE);
+    final PropertyPath propertyPath = createPropertyPath(BREWERY_BEERNAMES_SHAPE);
 
     // Assert sequence path
     assertTrue(propertyPath instanceof SequencePath);
