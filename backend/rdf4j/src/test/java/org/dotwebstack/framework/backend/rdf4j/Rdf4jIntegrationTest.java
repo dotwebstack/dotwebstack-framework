@@ -295,8 +295,10 @@ class Rdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry("breweries", ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"),
-            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"))));
+        IsMapContaining.hasEntry("breweries",
+            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"),
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"),
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2"))));
   }
 
   @Test
@@ -314,8 +316,10 @@ class Rdf4jIntegrationTest {
     Map<String, Object> data = result.getData();
 
     assertThat(data,
-        IsMapContaining.hasEntry("breweries", ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"),
-            ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"))));
+        IsMapContaining.hasEntry("breweries",
+            ImmutableList.of(ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "789"),
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "456"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "123"),
+                ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "2"), ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, "1"))));
   }
 
   @Test

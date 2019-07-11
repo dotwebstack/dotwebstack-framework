@@ -373,7 +373,7 @@ beer:shapes {
 }
 ```
 
-## 1.7 filter directive
+## 1.7 Filter directive
 It is possible to filter results by setting a *filter* directive on a GraphQL query. 
 You can do this by adding the `@filter` keyword to an argument on a GraphQL Query. For example: 
 
@@ -426,8 +426,8 @@ return all the breweries that match one of the provided names.
 
 ### 1.7.1 Nested filters
 In the examples in the previous paragraph the filtering was done on the root level of the query. The filters were 
-applied to direct fields of a brewery and they only had effect on the breweries that were returned. It is possible 
-though to query on and filter indirect properties of the root element. 
+applied to direct fields of a brewery and they only had effect on the breweries that were returned. It is, however, 
+also possible to query on and filter indirect properties of the root element. 
 
 ```graphql
 type Query {

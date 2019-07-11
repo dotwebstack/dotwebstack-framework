@@ -25,7 +25,7 @@ public class CoreConfiguration {
   private static final String FIXED_SCHEMA_NAME = "schema.graphqls";
 
   @Bean
-  public GraphQLSchema graphqlSchema(TypeDefinitionRegistry typeDefinitionRegistry,
+  public GraphQLSchema graphqlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers) {
 
     RuntimeWiring.Builder runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();

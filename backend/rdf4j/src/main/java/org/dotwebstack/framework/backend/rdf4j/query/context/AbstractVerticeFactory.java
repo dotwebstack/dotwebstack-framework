@@ -98,7 +98,7 @@ abstract class AbstractVerticeFactory {
 
   void addFilterToVertice(Vertice vertice, GraphQLDirectiveContainer container, OuterQuery<?> query,
       NodeShape nodeShape, Object filterValue, String[] fieldPath) {
-    Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPath);
+    Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPath, true);
 
     List<Filter> filters = Objects.nonNull(match.getObject()
         .getFilters()) ? match.getObject()
@@ -139,23 +139,26 @@ abstract class AbstractVerticeFactory {
    * Find the path to apply the filter on. In case no or a only partial path is found, create the part
    * of the path that does not yet exist
    */
-  private Edge findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, String[] fieldPaths) {
-    Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(fieldPaths[0]), vertice);
-    match.setOptional(false);
+  private Edge findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, String[] fieldPaths,
+      boolean required) {
+    Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(fieldPaths[0]), vertice, required);
+    if (required) {
+      match.setOptional(false);
+    }
 
     if (fieldPaths.length == 1) {
       return match;
     }
 
     NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
-    return findOrCreatePath(match.getObject(), query, childShape, ArrayUtils.remove(fieldPaths, 0));
+    return findOrCreatePath(match.getObject(), query, childShape, ArrayUtils.remove(fieldPaths, 0), required);
   }
 
   /*
    * Find the edge belonging to the given propertyshape. In case no propertyshape is found, create a
    * new one
    */
-  private Edge findOrCreateEdge(OuterQuery<?> query, PropertyShape propertyShape, Vertice vertice) {
+  private Edge findOrCreateEdge(OuterQuery<?> query, PropertyShape propertyShape, Vertice vertice, boolean required) {
     List<Edge> childEdges = vertice.getEdges();
 
     Optional<Edge> optional = Optional.empty();
@@ -174,7 +177,7 @@ abstract class AbstractVerticeFactory {
 
     return optional.orElseGet(() -> {
       Edge edge = createSimpleEdge(query.var(), null, propertyShape.getPath()
-          .toPredicate(), false, false);
+          .toPredicate(), required, false);
       vertice.getEdges()
           .add(edge);
       return edge;
@@ -220,18 +223,18 @@ abstract class AbstractVerticeFactory {
     Edge match;
     Variable subject;
     if (nodeShape.equals(childShape)) {
-      match = findOrCreatePath(vertice, query, nodeShape, fieldPaths);
+      match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false);
       subject = getSubjectForField(match, nodeShape, fieldPaths);
     } else {
       Edge edge = createSimpleEdge(query.var(), null, nodeShape.getPropertyShape(fieldPaths[0])
           .getPath()
-          .toPredicate(), false, false);
+          .toPredicate(), true, false);
       fieldPaths = ArrayUtils.remove(fieldPaths, 0);
 
       vertice.getEdges()
           .add(edge);
 
-      match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths);
+      match = findOrCreatePath(edge.getObject(), query, childShape, fieldPaths, false);
       subject = getSubjectForField(match, childShape, fieldPaths);
     }
 

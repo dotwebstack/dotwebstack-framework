@@ -30,7 +30,8 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     return vertice;
   }
 
-  Vertice createVertice(final Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<SelectedField> fields) {
+  private Vertice createVertice(final Variable subject, OuterQuery<?> query, NodeShape nodeShape,
+      List<SelectedField> fields) {
     List<Edge> edges = fields.stream()
         .filter(field -> !field.getQualifiedName()
             .contains("/"))
