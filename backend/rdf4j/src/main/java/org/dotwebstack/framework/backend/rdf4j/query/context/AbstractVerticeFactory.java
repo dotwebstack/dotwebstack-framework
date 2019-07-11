@@ -166,6 +166,9 @@ abstract class AbstractVerticeFactory {
               .equals(propertyShape.getPath()
                   .toPredicate()
                   .getQueryString()))
+          .filter(childEdge -> Objects.isNull(propertyShape.getNode()) || hasChildEdgeOfType(childEdge,
+              propertyShape.getNode()
+                  .getTargetClass()))
           .findFirst();
     }
 

@@ -17,6 +17,8 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIE
 import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.SUPPLEMENTS_NAME_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -385,7 +387,6 @@ class Rdf4jIntegrationTest {
     ExecutionResult result = graphQL.execute(query);
 
     // Assert
-    // Assert
     assertThat(result.getErrors()
         .isEmpty(), is(true));
     Map<String, Object> data = result.getData();
@@ -395,5 +396,28 @@ class Rdf4jIntegrationTest {
             ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
                 ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
                     ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"))))))));
+  }
+
+  @Test
+  void graphqlQuery_ReturnsMap_WithFiltersOnShOrField() {
+    // Arrange
+    String query = "{breweries(name: \"Alfa Brouwerij\"){name, beers(ingredient: [\"Hop\", \"Gerst\"], supplement: "
+        + "\"Gist\"){name, ingredients{ name }, supplements{ name }}}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data,
+        IsMapContaining.hasEntry(BREWERIES_FIELD,
+            ImmutableList.of(ImmutableMap.of(BREWERY_NAME_FIELD, "Alfa Brouwerij", BEERS_FIELD,
+                ImmutableList.of(ImmutableMap.of(BEER_NAME_FIELD, "Alfa Edel Pils", INGREDIENTS_FIELD,
+                    ImmutableList.of(ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Hop"),
+                        ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst")),
+                    SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
   }
 }

@@ -9,6 +9,7 @@
 @prefix beer_type_id: <https://github.com/dotwebstack/beer/id/beertype/> .
 @prefix beer_id: <https://github.com/dotwebstack/beer/id/beer/> .
 @prefix ingredient_id: <https://github.com/dotwebstack/beer/id/ingredient/> .
+@prefix supplement_id: <https://github.com/dotwebstack/beer/id/supplement/> .
 @prefix address_id: <https://github.com/dotwebstack/beer/id/address/> .
 
 beer_brewery:123 a beer_def:Brewery ;
@@ -75,6 +76,7 @@ beer_id:6 a beer_def:Beer ;
   beer_def:ingredient ingredient_id:1 ;
   beer_def:ingredient ingredient_id:2 ;
   beer_def:ingredient ingredient_id:3 ;
+  beer_def:ingredient supplement_id:1 ;
   beer_def:beertype beer_type_id:1, beer_type_id:2
 .
 
@@ -88,6 +90,10 @@ ingredient_id:2 a beer_def:Ingredient ;
 
 ingredient_id:3 a beer_def:Ingredient ;
   schema:name "Sinasappel"
+.
+
+supplement_id:1 a beer_def:Supplement ;
+  schema:name "Gist"
 .
 
 

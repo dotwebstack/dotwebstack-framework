@@ -14,6 +14,7 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
 
+
 public class VerticeHelper {
 
   private VerticeHelper() {}
@@ -73,8 +74,9 @@ public class VerticeHelper {
       Expression<?> expression = joinExpressions(FilterJoinType.AND, null, edge.getObject()
           .getFilters()
           .stream()
-          .map(filter -> filter.toExpression(edge.getObject()
-              .getSubject()))
+          .map(filter -> getFilterExpression(filter, Objects.nonNull(edge.getObject()
+              .getSubject()) ? edge.getObject()
+                  .getSubject() : subject))
           .collect(Collectors.toList()));
       graphPattern = graphPattern.filter(expression);
     }
@@ -83,5 +85,13 @@ public class VerticeHelper {
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
     return singletonList(graphPattern);
+  }
+
+  private static Expression<?> getFilterExpression(Filter filter, Variable subject) {
+    List<Expression<?>> expressions = filter.getOperands()
+        .stream()
+        .map(operand -> FilterHelper.getExpressionFromOperator(subject, filter.getOperator(), operand))
+        .collect(Collectors.toList());
+    return FilterHelper.joinExpressions(FilterJoinType.OR, null, expressions);
   }
 }

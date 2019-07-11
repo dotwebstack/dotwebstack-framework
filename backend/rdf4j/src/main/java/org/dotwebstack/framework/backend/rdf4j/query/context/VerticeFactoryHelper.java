@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirectiveContainer;
-import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -40,15 +39,21 @@ class VerticeFactoryHelper {
    * Find out if given edge contains a child edge is of given type.
    */
   static boolean hasChildEdgeOfType(Edge edge, IRI type) {
-    List<Edge> childEdges = edge.getObject()
-        .getEdges();
+    return edge.getObject()
+        .getEdges()
+        .stream()
+        .anyMatch(childEdge -> isOfType(childEdge, type));
+  }
 
-    return childEdges.stream()
-        .anyMatch(childEdge -> (stringify(RDF.TYPE)).equals(childEdge.getPredicate()
-            .getQueryString()) && (stringify(type)).equals(
-                childEdge.getObject()
-                    .getIri()
-                    .getQueryString()));
+  /*
+   * Find out of given edge, is of given type
+   */
+  static boolean isOfType(Edge edge, IRI type) {
+    return (stringify(RDF.TYPE)).equals(edge.getPredicate()
+        .getQueryString()) && (stringify(type)).equals(
+            edge.getObject()
+                .getIri()
+                .getQueryString());
   }
 
   static String getFieldName(GraphQLDirectiveContainer container) {

@@ -36,7 +36,18 @@ public final class Constants {
 
   public static final String SCHEMA_PREFIX = "http://schema.org/";
 
+  public static final String XSD_PREFIX = "http://www.w3.org/2001/XMLSchema#";
+
+  public static final String SHACL_PREFIX = "http://www.w3.org/ns/shacl#";
+
+  public static final String BEER_DEF = "https://github.com/dotwebstack/beer/def#";
+
+  public static final IRI BEER_3 = VF.createIRI(BEER_DEF.concat("3"));
   // Query
+
+  public static final IRI XSD_STRING = VF.createIRI(XSD_PREFIX.concat("string"));
+
+  public static final IRI SHACL_LITERAL = VF.createIRI(SHACL_PREFIX.concat("Literal"));
 
   public static final String BREWERY_FIELD = "brewery";
 
@@ -47,6 +58,8 @@ public final class Constants {
   public static final String BREWERY_TYPE = "Brewery";
 
   public static final IRI BREWERY_SHAPE = VF.createIRI(SHAPE_PREFIX.concat(BREWERY_TYPE));
+
+  public static final IRI BREWERY_TARGET_CLASS = VF.createIRI(BEER_DEF.concat("Brewery"));
 
   public static final IRI BREWERY_CLASS = VF.createIRI("https://github.com/dotwebstack/beer/def#Building");
 

@@ -51,7 +51,7 @@ type Brewery {
   founded: DateTime!
   address: Address
   beerNames: [String!]
-  beers(ingredient: [String!] @filter(field: "ingredients.name")): [Beer!]
+  beers(ingredient: [String!] @filter(field: "ingredients.name"), supplement: [String!] @filter(field: "supplements.name")): [Beer!]
   url: String
 }
 
@@ -66,9 +66,14 @@ type Beer {
   beerTypes: [String]!
   beerTypesRaw: [BeerType!]
   ingredients(name: [String!] @filter): [Ingredient!]
+  supplements(name: [String!] @filter): [Supplement!]
 }
 
 type Ingredient {
+  name: String
+}
+
+type Supplement {
   name: String
 }
 
