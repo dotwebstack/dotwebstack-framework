@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  title: API
+  version: "1"
+paths:
+  /endpoint:
+    delete:
+      summary: Test POST endpoint
+      responses:
+        "200":
+          description: OK
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SampleObject"
+components:
+  schemas:
+    SampleObject:
+      type: object
+      required:
+        - someproperty
+      properties:
+        someproperty:
+          type: string
