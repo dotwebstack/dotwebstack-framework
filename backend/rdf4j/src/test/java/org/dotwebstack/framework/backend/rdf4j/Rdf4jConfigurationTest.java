@@ -26,6 +26,7 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryPropert
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.ShapeProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.CoreProperties;
+import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryResolver;
 import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
@@ -177,8 +178,8 @@ class Rdf4jConfigurationTest {
         rdf4jConfiguration.repositoryResolver(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Assert
-    // Repository repository= result.getRepository(CUSTOM_REPOSITORY_ID);
-    // assertThat(repository.getID(), is(equalTo(CUSTOM_REPOSITORY_ID)));
+    Repository repository = result.getRepository(CUSTOM_REPOSITORY_ID);
+    assertThat(repository.toString(), is("http://example/sparql"));
   }
 
   @Test
