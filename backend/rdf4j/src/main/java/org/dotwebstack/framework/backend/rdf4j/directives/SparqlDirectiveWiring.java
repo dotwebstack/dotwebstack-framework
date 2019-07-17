@@ -10,6 +10,7 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
+import java.util.List;
 import java.util.Map;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
@@ -22,13 +23,13 @@ import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.dotwebstack.framework.core.validators.SortFieldValidator;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.manager.RepositoryManager;
+import org.eclipse.rdf4j.repository.RepositoryResolver;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
-  private final RepositoryManager repositoryManager;
+  private final List<RepositoryResolver> repositoryResolvers;
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
@@ -40,10 +41,10 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private CoreTraverser coreTraverser;
 
-  public SparqlDirectiveWiring(RepositoryManager repositoryManager, NodeShapeRegistry nodeShapeRegistry,
+  public SparqlDirectiveWiring(List<RepositoryResolver> repositoryResolvers, NodeShapeRegistry nodeShapeRegistry,
       Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintValidator constraintValidator,
       CoreTraverser coreTraverser) {
-    this.repositoryManager = repositoryManager;
+    this.repositoryResolvers = repositoryResolvers;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null ? HashBiMap.create(rdf4jProperties.getPrefixes())
         .inverse() : ImmutableMap.of();
@@ -64,11 +65,12 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     String repositoryId =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, environment.getDirective(), String.class);
 
-    if (!repositoryManager.hasRepositoryConfig(repositoryId)) {
-      throw new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId);
-    }
+    RepositoryResolver repositoryResolver = repositoryResolvers.stream()
+        .filter(resolver -> resolver.getRepository(repositoryId) != null)
+        .findFirst()
+        .orElseThrow(() -> new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId));
 
-    RepositoryConnection connection = repositoryManager.getRepository(repositoryId)
+    RepositoryConnection connection = repositoryResolver.getRepository(repositoryId)
         .getConnection();
 
     // startup time validation of default values for sort fields

@@ -7,7 +7,9 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,7 @@ import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryResolver;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
 import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
@@ -48,18 +51,19 @@ class Rdf4jConfiguration {
   private static final String MODEL_PATH_PATTERN = "model/**";
 
   @Bean
-  ConfigFactory configFactory() {
+  public ConfigFactory configFactory() {
     return new ConfigFactoryImpl();
   }
 
   @Bean
-  RepositoryManager repositoryManager(@NonNull CoreProperties coreProperties, @NonNull Rdf4jProperties rdf4jProperties,
-      @NonNull ConfigFactory configFactory, @NonNull ResourceLoader resourceLoader) throws IOException {
+  RepositoryResolver repositoryResolver(@NonNull CoreProperties coreProperties,
+      @NonNull Rdf4jProperties rdf4jProperties, @NonNull ConfigFactory configFactory,
+      @NonNull ResourceLoader resourceLoader) throws IOException {
     LOG.debug("Initializing repository manager");
 
     File baseDir = Files.createTempDirectory(BASE_DIR_PREFIX)
         .toFile();
-    LocalRepositoryManager repositoryManager = new LocalRepositoryManager(baseDir);
+    RepositoryManager repositoryManager = new LocalRepositoryManager(baseDir);
     repositoryManager.init();
 
     // Add & populate local repository
@@ -72,7 +76,7 @@ class Rdf4jConfiguration {
       rdf4jProperties.getRepositories()
           .entrySet()
           .stream()
-          .map(p -> createRepositoryConfig(p, configFactory))
+          .map(respositoryProperty -> createRepositoryConfig(respositoryProperty, configFactory))
           .forEach(repositoryManager::addRepositoryConfig);
     }
 
@@ -80,21 +84,29 @@ class Rdf4jConfiguration {
   }
 
   @Bean
-  NodeShapeRegistry nodeShapeRegistry(@NonNull RepositoryManager repositoryManager,
+  NodeShapeRegistry nodeShapeRegistry(@NonNull List<RepositoryResolver> repositoryResolvers,
       @NonNull Rdf4jProperties rdf4jProperties) {
-    Model shapeModel = QueryResults.asModel(repositoryManager.getRepository(LOCAL_REPOSITORY_ID)
-        .getConnection()
-        .getStatements(null, null, null, rdf4jProperties.getShape()
-            .getGraph()));
-    NodeShapeRegistry registry = new NodeShapeRegistry(rdf4jProperties.getShape()
-        .getPrefix());
+    Optional<RepositoryResolver> optional = repositoryResolvers.stream()
+        .filter(repositoryResolver -> repositoryResolver.getRepository(LOCAL_REPOSITORY_ID) != null)
+        .findFirst();
 
-    Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
-        .stream()
-        .map(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject))
-        .forEach(shape -> registry.register(shape.getIdentifier(), shape));
+    if (optional.isPresent()) {
+      RepositoryResolver repositoryResolver = optional.get();
+      Model shapeModel = QueryResults.asModel(repositoryResolver.getRepository(LOCAL_REPOSITORY_ID)
+          .getConnection()
+          .getStatements(null, null, null, rdf4jProperties.getShape()
+              .getGraph()));
+      NodeShapeRegistry registry = new NodeShapeRegistry(rdf4jProperties.getShape()
+          .getPrefix());
 
-    return registry;
+      Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
+          .stream()
+          .map(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject))
+          .forEach(shape -> registry.register(shape.getIdentifier(), shape));
+
+      return registry;
+    }
+    return null;
   }
 
   private static RepositoryConfig createRepositoryConfig(Entry<String, RepositoryProperties> repositoryEntry,
