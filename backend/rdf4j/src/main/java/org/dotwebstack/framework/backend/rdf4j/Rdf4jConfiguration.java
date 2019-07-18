@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
@@ -86,12 +88,12 @@ class Rdf4jConfiguration {
   @Bean
   NodeShapeRegistry nodeShapeRegistry(@NonNull List<RepositoryResolver> repositoryResolvers,
       @NonNull Rdf4jProperties rdf4jProperties) {
-    Optional<RepositoryResolver> optional = repositoryResolvers.stream()
+    Optional<RepositoryResolver> optionalResolver = repositoryResolvers.stream()
         .filter(repositoryResolver -> repositoryResolver.getRepository(LOCAL_REPOSITORY_ID) != null)
         .findFirst();
 
-    if (optional.isPresent()) {
-      RepositoryResolver repositoryResolver = optional.get();
+    if (optionalResolver.isPresent()) {
+      RepositoryResolver repositoryResolver = optionalResolver.get();
       Model shapeModel = QueryResults.asModel(repositoryResolver.getRepository(LOCAL_REPOSITORY_ID)
           .getConnection()
           .getStatements(null, null, null, rdf4jProperties.getShape()
@@ -106,7 +108,8 @@ class Rdf4jConfiguration {
 
       return registry;
     }
-    return null;
+    throw illegalArgumentException(
+        "It is not possible to add a node shapre registry to a not existing local repository");
   }
 
   private static RepositoryConfig createRepositoryConfig(Entry<String, RepositoryProperties> repositoryEntry,
