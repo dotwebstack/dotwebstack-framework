@@ -31,7 +31,7 @@ public class PredicatePath implements PropertyPath {
 
   @Override
   public RdfPredicate toPredicate() {
-    return () -> Rdf.iri(getIri())
+    return () -> Rdf.iri(getIri().stringValue())
         .getQueryString();
   }
 }

@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_POSTAL_C
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_ADDRESS;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_POSTAL_CODE;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.SHACH_SHAPE_GRAPH;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,7 +25,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.query.QueryResults;
 import org.eclipse.rdf4j.repository.Repository;
@@ -108,7 +108,7 @@ public class PropertyPathFactoryTest {
 
   public static Model loadShapeModel() throws IOException {
     Repository repo = new SailRepository(new MemoryStore());
-    repo.init();
+    repo.initialize();
     String shapesPath = "config/model/shapes.trig";
     try (RepositoryConnection connection = repo.getConnection();
         InputStream is = PropertyPathFactoryTest.class.getClassLoader()
@@ -116,11 +116,11 @@ public class PropertyPathFactoryTest {
         Reader shaclRules = new InputStreamReader(is)) {
 
       connection.begin();
-      connection.add(shaclRules, "", RDFFormat.TRIG, RDF4J.SHACL_SHAPE_GRAPH);
+      connection.add(shaclRules, "", RDFFormat.TRIG, SHACH_SHAPE_GRAPH);
       connection.commit();
     }
 
     return QueryResults.asModel(repo.getConnection()
-        .getStatements(null, null, null, RDF4J.SHACL_SHAPE_GRAPH));
+        .getStatements(null, null, null, SHACH_SHAPE_GRAPH));
   }
 }

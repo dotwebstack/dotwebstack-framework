@@ -80,7 +80,8 @@ public class FilterHelper {
       return Rdf.iri(string);
     }
 
-    return Rdf.literalOfType(string, nodeShape.getPropertyShape(field)
-        .getDatatype());
+    return Rdf.literalOfType(string, Rdf.iri(nodeShape.getPropertyShape(field)
+        .getDatatype()
+        .stringValue()));
   }
 }
