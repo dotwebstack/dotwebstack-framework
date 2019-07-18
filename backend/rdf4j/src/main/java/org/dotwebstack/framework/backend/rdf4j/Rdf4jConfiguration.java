@@ -109,7 +109,7 @@ class Rdf4jConfiguration {
       return registry;
     }
     throw illegalArgumentException(
-        "It is not possible to add a node shapre registry to a not existing local repository");
+        "It is not possible to add a node shape registry to a not existing local repository");
   }
 
   private static RepositoryConfig createRepositoryConfig(Entry<String, RepositoryProperties> repositoryEntry,
