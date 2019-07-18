@@ -77,7 +77,7 @@ class Rdf4jConfiguration {
       rdf4jProperties.getRepositories()
           .entrySet()
           .stream()
-          .map(respositoryProperty -> createRepositoryConfig(respositoryProperty, configFactory))
+          .map(repositoryProperty -> createRepositoryConfig(repositoryProperty, configFactory))
           .forEach(repositoryManager::addRepositoryConfig);
     }
 
