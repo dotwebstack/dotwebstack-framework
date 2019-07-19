@@ -15,6 +15,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,9 +26,9 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryPropert
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.ShapeProperties;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.CoreProperties;
+import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.config.RepositoryConfig;
-import org.eclipse.rdf4j.repository.manager.RepositoryManager;
+import org.eclipse.rdf4j.repository.RepositoryResolver;
 import org.eclipse.rdf4j.repository.sparql.config.SPARQLRepositoryConfig;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,8 +81,8 @@ class Rdf4jConfigurationTest {
     when(resourceLoader.getResources(anyString())).thenReturn(new Resource[0]);
 
     // Act
-    RepositoryManager result =
-        rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader);
+    RepositoryResolver result =
+        rdf4jConfiguration.repositoryResolver(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Assert
     @Cleanup
@@ -110,8 +111,8 @@ class Rdf4jConfigurationTest {
         .thenReturn(new Resource[] {rdfResource, nonRdfResource, folderResource});
 
     // Act
-    RepositoryManager result =
-        rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader);
+    RepositoryResolver result =
+        rdf4jConfiguration.repositoryResolver(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Assert
     @Cleanup
@@ -132,7 +133,7 @@ class Rdf4jConfigurationTest {
 
     // Act / Assert
     assertThrows(RDFParseException.class,
-        () -> rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader));
+        () -> rdf4jConfiguration.repositoryResolver(coreProperties, rdf4jProperties, configFactory, resourceLoader));
   }
 
   @Test
@@ -146,7 +147,7 @@ class Rdf4jConfigurationTest {
 
     // Act / Assert
     assertThrows(UncheckedIOException.class,
-        () -> rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader));
+        () -> rdf4jConfiguration.repositoryResolver(coreProperties, rdf4jProperties, configFactory, resourceLoader));
   }
 
   @Test
@@ -156,7 +157,7 @@ class Rdf4jConfigurationTest {
 
     // Act / Assert
     assertThrows(UncheckedIOException.class,
-        () -> rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader));
+        () -> rdf4jConfiguration.repositoryResolver(coreProperties, rdf4jProperties, configFactory, resourceLoader));
   }
 
   @Test
@@ -173,23 +174,24 @@ class Rdf4jConfigurationTest {
         .thenReturn(new SPARQLRepositoryConfig((String) repositoryArgs.get(SPARQL_REPOSITORY_ARG_ENDPOINT_URL)));
 
     // Act
-    RepositoryManager result =
-        rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader);
+    RepositoryResolver result =
+        rdf4jConfiguration.repositoryResolver(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Assert
-    RepositoryConfig repositoryConfig = result.getRepositoryConfig(CUSTOM_REPOSITORY_ID);
-    assertThat(repositoryConfig.getID(), is(equalTo(CUSTOM_REPOSITORY_ID)));
+    Repository repository = result.getRepository(CUSTOM_REPOSITORY_ID);
+    assertThat(repository.toString(), is("http://example/sparql"));
   }
 
   @Test
   void nodeShapeRegistry_ReturnsRegistry_ForNoShapes() throws IOException {
     // Arrange
     when(resourceLoader.getResources(anyString())).thenReturn(new Resource[0]);
-    RepositoryManager repositoryManager =
-        rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader);
+    RepositoryResolver repositoryResolver =
+        rdf4jConfiguration.repositoryResolver(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Act
-    NodeShapeRegistry nodeShapeRegistry = rdf4jConfiguration.nodeShapeRegistry(repositoryManager, rdf4jProperties);
+    NodeShapeRegistry nodeShapeRegistry =
+        rdf4jConfiguration.nodeShapeRegistry(ImmutableList.of(repositoryResolver), rdf4jProperties);
 
     // Assert
     assertThat(nodeShapeRegistry.all()
@@ -201,11 +203,12 @@ class Rdf4jConfigurationTest {
     // Arrange
     when(resourceLoader.getResources(anyString()))
         .thenReturn(new Resource[] {new ClassPathResource("config/model/shapes.trig")});
-    RepositoryManager repositoryManager =
-        rdf4jConfiguration.repositoryManager(coreProperties, rdf4jProperties, configFactory, resourceLoader);
+    RepositoryResolver repositoryManager =
+        rdf4jConfiguration.repositoryResolver(coreProperties, rdf4jProperties, configFactory, resourceLoader);
 
     // Act
-    NodeShapeRegistry nodeShapeRegistry = rdf4jConfiguration.nodeShapeRegistry(repositoryManager, rdf4jProperties);
+    NodeShapeRegistry nodeShapeRegistry =
+        rdf4jConfiguration.nodeShapeRegistry(ImmutableList.of(repositoryManager), rdf4jProperties);
 
     // Assert
     assertThat(nodeShapeRegistry.get(Constants.BREWERY_SHAPE), is(notNullValue()));

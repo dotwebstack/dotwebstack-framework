@@ -84,7 +84,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .add(Filter.builder()
             .operator(FilterOperator.EQ)
             .operands(filterSubjects.stream()
-                .map(Rdf::iri)
+                .map(filterSubject -> Rdf.iri(filterSubject.stringValue()))
                 .collect(Collectors.toList()))
             .build());
   }
