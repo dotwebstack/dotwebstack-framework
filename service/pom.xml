@@ -14,7 +14,7 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>http</module>
+    <module>openapi</module>
     <module>graphql</module>
   </modules>
 
