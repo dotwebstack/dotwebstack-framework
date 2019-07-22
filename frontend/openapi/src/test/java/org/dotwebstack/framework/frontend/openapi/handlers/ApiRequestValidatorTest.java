@@ -44,12 +44,14 @@ public class ApiRequestValidatorTest {
   @Mock
   private RequestParameterExtractor requestParameterExtractorMock;
 
+  private PathItem deletePath = new PathItem();
   private PathItem getPath = new PathItem();
   private PathItem postPath = new PathItem();
   private PathItem putPath = new PathItem();
 
   @Before
   public void before() {
+    deletePath.setDelete(new Operation());
     getPath.setGet(new Operation());
     postPath.setPost(new Operation());
     putPath.setPut(new Operation());
@@ -85,6 +87,14 @@ public class ApiRequestValidatorTest {
   private void mockMethod(ContainerRequestContext ctx, String method) {
     when(ctx.getMethod()).thenReturn(method);
   }
+
+  private ContainerRequestContext mockDelete(String body) throws URISyntaxException {
+    ContainerRequestContext ctx = mockCtx();
+    mockMethod(ctx, HttpMethod.DELETE);
+
+    return ctx;
+  }
+
 
   private ContainerRequestContext mockGet() throws URISyntaxException {
     ContainerRequestContext ctx = mockCtx();
@@ -234,5 +244,30 @@ public class ApiRequestValidatorTest {
         getClass().getResourceAsStream(getClass().getSimpleName() + "-" + spec),
         Charset.forName("UTF-8"));
     return new OpenAPIV3Parser().readContents(oasSpecContent).getOpenAPI();
+  }
+
+  @Test
+  public void validate_DoesNotFail_ForValidDeleteRequest() throws URISyntaxException, IOException {
+    // Arrange
+    OpenAPI openApi = createOpenApi("delete-request.yml");
+
+    String body = "{ \"someproperty\": \"one\" }";
+    ContainerRequestContext mockDelete = mockDelete(body);
+    ApiOperation apiOperation = OpenApiSpecUtils.extractApiOperations(openApi, "/endpoint",
+        deletePath).iterator().next();
+
+    RequestParameters requestParameters = new RequestParameters();
+    when(requestParameterExtractorMock.extract(apiOperation, mockDelete)).thenReturn(
+        requestParameters);
+
+    RequestValidator validator = OpenApiSpecUtils.createValidator(openApi);
+    ApiRequestValidator requestValidator =
+        new ApiRequestValidator(validator, requestParameterExtractorMock);
+
+    // Act
+    RequestParameters result = requestValidator.validate(apiOperation, mockDelete);
+
+    // Assert
+    assertThat(result, sameInstance(requestParameters));
   }
 }

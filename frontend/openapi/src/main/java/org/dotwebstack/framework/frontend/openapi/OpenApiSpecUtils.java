@@ -57,6 +57,10 @@ public final class OpenApiSpecUtils {
       realMethods.add(Method.PUT);
     }
 
+    if (pathItem.getDelete() != null) {
+      realMethods.add(Method.DELETE);
+    }
+
     Set<ApiOperation> apiOperations = new HashSet<>();
     realMethods.forEach(realMethod -> {
       ApiOperationMatch apiOperationMatch =
