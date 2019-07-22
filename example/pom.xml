@@ -24,7 +24,7 @@
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>service-graphql</artifactId>
+      <artifactId>service-openapi</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>
