@@ -21,6 +21,11 @@ type Query {
       orderBy: "sort"
     )
 
+  default_breweries : [Brewery!]!
+    @sparql(
+      repository: "local"
+    )
+
   breweries_sort_nested(sort: [SortField!] = [{ field: "address.postalCode", order: ASC }]):[Brewery!]
    @sparql(
       repository: "local"
@@ -64,7 +69,7 @@ type Brewery {
   url: String!
     @transform(expr: "url.getLocalName()")
   address: Address
-  postalCode: String!
+  postalCode: String
   beers(ingredient: String @filter(field: "ingredients.name"), supplement: String @filter(field: "supplements.name")): [Beer!]
 }
 

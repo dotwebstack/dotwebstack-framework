@@ -6,7 +6,7 @@ info:
 
 components:
   schemas:
-    Plan:
+    Brewery:
       type: object
       required:
         - id
@@ -19,9 +19,9 @@ components:
           nullable: true
 
 paths:
-  /plan:
+  /breweries:
     get:
-      x-dws-query: plan
+      x-dws-query: default_breweries
       responses:
         200:
           description: OK
