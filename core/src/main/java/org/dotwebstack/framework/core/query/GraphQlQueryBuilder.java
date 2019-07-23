@@ -44,11 +44,9 @@ public class GraphQlQueryBuilder {
   }
 
   private GraphQlField toGraphQlField(FieldDefinition fieldDefinition) {
-    List<GraphQlArgument> arguments = getArguments(fieldDefinition);
     List<GraphQlField> fields = getGraphQlFields(fieldDefinition);
     return GraphQlField.builder()
         .name(fieldDefinition.getName())
-        .arguments(arguments)
         .fields(fields)
         .build();
   }

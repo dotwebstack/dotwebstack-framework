@@ -1,0 +1,46 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Ruimtelijke Plannen API",
+    "version": "3.0.0"
+  },
+  "components": {
+    "schemas": {
+      "Brewery": {
+        "type": "object",
+        "required": [
+          "id",
+          "naam"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "naam": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/breweries": {
+      "get": {
+        "x-dws-query": "default_breweries",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/hal+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plan"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

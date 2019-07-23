@@ -13,6 +13,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.util.Objects;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -22,9 +23,8 @@ import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
+@EnableConfigurationProperties(OpenApiProperties.class)
 class OpenApiConfiguration {
-
-  private static final String FILENAME = "config/model/spec.yml";
 
   private final GraphQL graphQl;
 
@@ -34,17 +34,20 @@ class OpenApiConfiguration {
 
   private final ObjectMapper objectMapper;
 
+  private final OpenApiProperties properties;
+
   public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      GraphQlQueryBuilder queryBuilder, Jackson2ObjectMapperBuilder objectMapperBuiler) {
+      GraphQlQueryBuilder queryBuilder, Jackson2ObjectMapperBuilder objectMapperBuiler, OpenApiProperties properties) {
     this.graphQl = graphQl;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
     this.queryBuilder = queryBuilder;
     this.objectMapper = objectMapperBuiler.build();
+    this.properties = properties;
   }
 
   @Bean
   public OpenAPI openApi() {
-    return new OpenAPIV3Parser().read(FILENAME);
+    return new OpenAPIV3Parser().read(properties.getSpecificationFile());
   }
 
 
