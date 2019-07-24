@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
@@ -19,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
@@ -62,14 +62,19 @@ class OpenApiConfiguration {
     return new OpenAPIV3Parser().read(properties.getSpecificationFile());
   }
 
-
   @Bean
   public RouterFunction<ServerResponse> route(OpenAPI openApi) {
     RouterFunctions.Builder routerFunctions = RouterFunctions.route();
     openApi.getPaths()
         .forEach((name, path) -> {
           if (Objects.nonNull(path.getGet())) {
-            ResponseContext openApiContext = createOpenApiContext(openApi, path.getGet());
+            ResponseContext openApiContext = createOpenApiContext(openApi, name, "get", path.getGet());
+
+            routerFunctions.add(RouterFunctions.route(GET(name).and(accept(MediaType.APPLICATION_JSON)),
+                new CoreRequestHandler(openApiContext, graphQl, queryBuilder, objectMapper)));
+          }
+          if (Objects.nonNull(path.getPost())) {
+            ResponseContext openApiContext = createOpenApiContext(openApi, name, "post", path.getPost());
 
             routerFunctions.add(RouterFunctions.route(GET(name).and(accept(MediaType.APPLICATION_JSON)),
                 new CoreRequestHandler(openApiContext, graphQl, queryBuilder, objectMapper)));
@@ -78,7 +83,8 @@ class OpenApiConfiguration {
     return routerFunctions.build();
   }
 
-  private ResponseContext createOpenApiContext(OpenAPI openApi, Operation operation) {
+  private ResponseContext createOpenApiContext(OpenAPI openApi, String pathName, String operationName,
+      Operation operation) {
     String dwsQuery = (String) operation.getExtensions()
         .get("x-dws-query");
 
@@ -87,6 +93,15 @@ class OpenApiConfiguration {
         .stream()
         .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue()).stream())
         .collect(Collectors.toList());
+
+    long successResponseCount = responses.stream()
+        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
+        .count();
+    if (successResponseCount != 1) {
+      throw invalidConfigurationException(
+          "Expected exactly one response within the 200 range for path '{}' with method '{}'.", pathName,
+          operationName);
+    }
 
     return ResponseContext.builder()
         .graphQlField(getGraphQlField(getQueryFieldDefinition(dwsQuery)))
@@ -110,7 +125,7 @@ class OpenApiConfiguration {
     Schema schema = getSchemaReference(ref, openApi);
 
     if (Objects.isNull(schema)) {
-      throw ExceptionHelper.invalidConfigurationException("Schema '{}' not found in configuration", ref);
+      throw invalidConfigurationException("Schema '{}' not found in configuration", ref);
     }
 
     ResponseFieldTemplate root = createResponseObjectField(openApi, ref, schema, null);
@@ -164,14 +179,14 @@ class OpenApiConfiguration {
 
   private FieldDefinition getQueryFieldDefinition(String dwsQuery) {
     ObjectTypeDefinition query = (ObjectTypeDefinition) this.typeDefinitionRegistry.getType("Query")
-        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Type 'Query' not found in GraphQL schema."));
+        .orElseThrow(() -> invalidConfigurationException("Type 'Query' not found in GraphQL schema."));
     return query.getFieldDefinitions()
         .stream()
         .filter(fieldDefinition -> fieldDefinition.getName()
             .equals(dwsQuery))
         .findFirst()
-        .orElseThrow(() -> ExceptionHelper
-            .invalidConfigurationException("x-dws-query with value '{}' not found in GraphQL schema.", dwsQuery));
+        .orElseThrow(
+            () -> invalidConfigurationException("x-dws-query with value '{}' not found in GraphQL schema.", dwsQuery));
   }
 
   private GraphQlField getGraphQlField(FieldDefinition fieldDefinition) {
