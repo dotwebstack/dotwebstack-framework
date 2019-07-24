@@ -14,16 +14,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class GraphQlQueryBuilder {
+
   private TypeDefinitionRegistry registry;
 
   public GraphQlQueryBuilder(TypeDefinitionRegistry registry) {
     this.registry = registry;
   }
 
-  public String toQuery(FieldDefinition fieldDefinition) {
+  public String toQuery(GraphQlField graphQlField) {
     StringBuilder stringBuilder = new StringBuilder();
     stringBuilder.append("{");
-    addToQuery(toGraphQlField(fieldDefinition), stringBuilder);
+    addToQuery(graphQlField, stringBuilder);
     stringBuilder.append("}");
     return stringBuilder.toString();
   }
@@ -43,7 +44,7 @@ public class GraphQlQueryBuilder {
     }
   }
 
-  private GraphQlField toGraphQlField(FieldDefinition fieldDefinition) {
+  public GraphQlField toGraphQlField(FieldDefinition fieldDefinition) {
     List<GraphQlField> fields = getGraphQlFields(fieldDefinition);
     return GraphQlField.builder()
         .name(fieldDefinition.getName())

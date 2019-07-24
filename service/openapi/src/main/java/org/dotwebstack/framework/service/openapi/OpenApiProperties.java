@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.http;
+package org.dotwebstack.framework.service.openapi;
 
 import javax.validation.constraints.NotNull;
 import lombok.Getter;

@@ -1,0 +1,181 @@
+package org.dotwebstack.framework.service.openapi;
+
+import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
+import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.GraphQL;
+import graphql.language.FieldDefinition;
+import graphql.language.ObjectTypeDefinition;
+import graphql.schema.idl.TypeDefinitionRegistry;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
+import org.dotwebstack.framework.service.openapi.response.ResponseContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseFieldTemplate;
+import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.RouterFunctions;
+import org.springframework.web.reactive.function.server.ServerResponse;
+
+@Configuration
+@EnableConfigurationProperties(OpenApiProperties.class)
+class OpenApiConfiguration {
+
+  private final GraphQL graphQl;
+
+  private final TypeDefinitionRegistry typeDefinitionRegistry;
+
+  private final GraphQlQueryBuilder queryBuilder;
+
+  private final ObjectMapper objectMapper;
+
+  private final OpenApiProperties properties;
+
+  public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
+      GraphQlQueryBuilder queryBuilder, Jackson2ObjectMapperBuilder objectMapperBuiler, OpenApiProperties properties) {
+    this.graphQl = graphQl;
+    this.typeDefinitionRegistry = typeDefinitionRegistry;
+    this.queryBuilder = queryBuilder;
+    this.objectMapper = objectMapperBuiler.build();
+    this.properties = properties;
+  }
+
+  @Bean
+  public OpenAPI openApi() {
+    return new OpenAPIV3Parser().read(properties.getSpecificationFile());
+  }
+
+
+  @Bean
+  public RouterFunction<ServerResponse> route(OpenAPI openApi) {
+    RouterFunctions.Builder routerFunctions = RouterFunctions.route();
+    openApi.getPaths()
+        .forEach((name, path) -> {
+          if (Objects.nonNull(path.getGet())) {
+            ResponseContext openApiContext = createOpenApiContext(openApi, path.getGet());
+
+            routerFunctions.add(RouterFunctions.route(GET(name).and(accept(MediaType.APPLICATION_JSON)),
+                new CoreRequestHandler(openApiContext, graphQl, queryBuilder, objectMapper)));
+          }
+        });
+    return routerFunctions.build();
+  }
+
+  private ResponseContext createOpenApiContext(OpenAPI openApi, Operation operation) {
+    String dwsQuery = (String) operation.getExtensions()
+        .get("x-dws-query");
+
+    List<ResponseTemplate> responses = operation.getResponses()
+        .entrySet()
+        .stream()
+        .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue()).stream())
+        .collect(Collectors.toList());
+
+    return ResponseContext.builder()
+        .graphQlField(getGraphQlField(getQueryFieldDefinition(dwsQuery)))
+        .responses(responses)
+        .build();
+  }
+
+  private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse) {
+    return apiResponse.getContent()
+        .entrySet()
+        .stream()
+        .map(entry -> createResponseObject(openApi, responseCode, entry.getKey(), entry.getValue()))
+        .collect(Collectors.toList());
+  }
+
+  @SuppressWarnings("rawtypes")
+  private ResponseTemplate createResponseObject(OpenAPI openApi, String responseCode, String mediatype,
+      io.swagger.v3.oas.models.media.MediaType content) {
+    String ref = content.getSchema()
+        .get$ref();
+    Schema schema = getSchemaReference(ref, openApi);
+
+    if (Objects.isNull(schema)) {
+      throw ExceptionHelper.invalidConfigurationException("Schema '{}' not found in configuration", ref);
+    }
+
+    ResponseFieldTemplate root = createResponseObjectField(openApi, ref, schema, null);
+
+    return ResponseTemplate.builder()
+        .responseCode(Integer.parseInt(responseCode))
+        .mediaType(mediatype)
+        .responseObject(root)
+        .build();
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private ResponseFieldTemplate createResponseObjectField(OpenAPI openApi, String identifier, Schema schema,
+      Schema parent) {
+    Map<String, Schema> schemaProperties = schema.getProperties();
+
+    List<ResponseFieldTemplate> children = null;
+    if (Objects.nonNull(schemaProperties)) {
+      children = schemaProperties.entrySet()
+          .stream()
+          .map(entry -> createResponseObjectField(openApi, entry.getKey(), entry.getValue(), schema))
+          .collect(Collectors.toList());
+    }
+
+    List<ResponseFieldTemplate> items = null;
+    if (schema instanceof ArraySchema) {
+      Schema item = ((ArraySchema) schema).getItems();
+      String ref = item.get$ref();
+      Schema child = getSchemaReference(ref, openApi);
+      items = Collections.singletonList(createResponseObjectField(openApi, ref, child, null));
+    }
+
+    return ResponseFieldTemplate.builder()
+        .identifier(identifier)
+        .type(schema.getType())
+        .children(children)
+        .items(items)
+        .nillable(Objects.isNull(schema.getNullable()) ? Boolean.FALSE : schema.getNullable())
+        .required(Objects.isNull(parent) || parent.getRequired()
+            .contains(identifier))
+        .build();
+  }
+
+  @SuppressWarnings("rawtypes")
+  private Schema getSchemaReference(String ref, OpenAPI openApi) {
+    String[] refPath = ref.split("/");
+    return openApi.getComponents()
+        .getSchemas()
+        .get(refPath[refPath.length - 1]);
+  }
+
+  private FieldDefinition getQueryFieldDefinition(String dwsQuery) {
+    ObjectTypeDefinition query = (ObjectTypeDefinition) this.typeDefinitionRegistry.getType("Query")
+        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Type 'Query' not found in GraphQL schema."));
+    return query.getFieldDefinitions()
+        .stream()
+        .filter(fieldDefinition -> fieldDefinition.getName()
+            .equals(dwsQuery))
+        .findFirst()
+        .orElseThrow(() -> ExceptionHelper
+            .invalidConfigurationException("x-dws-query with value '{}' not found in GraphQL schema.", dwsQuery));
+  }
+
+  private GraphQlField getGraphQlField(FieldDefinition fieldDefinition) {
+    return this.queryBuilder.toGraphQlField(fieldDefinition);
+  }
+
+}

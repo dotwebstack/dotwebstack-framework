@@ -11,8 +11,5 @@ public class GraphQlField {
   private String name;
 
   @Builder.Default
-  private List<GraphQlArgument> arguments = Collections.emptyList();
-
-  @Builder.Default
   private List<GraphQlField> fields = Collections.emptyList();
 }

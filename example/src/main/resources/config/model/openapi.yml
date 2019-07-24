@@ -6,17 +6,36 @@ info:
 
 components:
   schemas:
+    Beer:
+      type: object
+      required:
+        - identifier
+        - name
+      properties:
+        identifier:
+          type: string
+        name:
+          type: string
+          nullable: true
+    Breweries:
+      type: array
+      items:
+       $ref: '#/components/schemas/Brewery'
     Brewery:
       type: object
       required:
-        - id
-        - naam
+        - identifier
+        - name
       properties:
-        id:
+        identifier:
           type: string
-        naam:
+        name:
           type: string
           nullable: true
+        beers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Beer'
 
 paths:
   /breweries:
@@ -28,4 +47,4 @@ paths:
           content:
             application/hal+json:
               schema:
-                $ref: '#/components/schemas/Plan'
+                $ref: '#/components/schemas/Breweries'
