@@ -48,6 +48,7 @@ public class GraphQlQueryBuilder {
     List<GraphQlField> fields = getGraphQlFields(fieldDefinition);
     return GraphQlField.builder()
         .name(fieldDefinition.getName())
+        .type(TypeHelper.getTypeName(TypeHelper.getBaseType(fieldDefinition.getType())))
         .fields(fields)
         .build();
   }

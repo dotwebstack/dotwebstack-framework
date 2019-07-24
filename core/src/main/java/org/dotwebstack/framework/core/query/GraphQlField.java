@@ -10,6 +10,8 @@ import lombok.Getter;
 public class GraphQlField {
   private String name;
 
+  private String type;
+
   @Builder.Default
   private List<GraphQlField> fields = Collections.emptyList();
 }

@@ -20,9 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseFieldTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -69,6 +71,7 @@ class OpenApiConfiguration {
         .forEach((name, path) -> {
           if (Objects.nonNull(path.getGet())) {
             ResponseContext openApiContext = createOpenApiContext(openApi, name, "get", path.getGet());
+            ResponseContextValidator.validate(openApiContext);
 
             routerFunctions.add(RouterFunctions.route(GET(name).and(accept(MediaType.APPLICATION_JSON)),
                 new CoreRequestHandler(openApiContext, graphQl, queryBuilder, objectMapper)));
@@ -83,7 +86,7 @@ class OpenApiConfiguration {
     return routerFunctions.build();
   }
 
-  private ResponseContext createOpenApiContext(OpenAPI openApi, String pathName, String operationName,
+  private ResponseContext createOpenApiContext(OpenAPI openApi, String pathName, String methodName,
       Operation operation) {
     String dwsQuery = (String) operation.getExtensions()
         .get("x-dws-query");
@@ -91,7 +94,7 @@ class OpenApiConfiguration {
     List<ResponseTemplate> responses = operation.getResponses()
         .entrySet()
         .stream()
-        .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue()).stream())
+        .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), pathName, methodName).stream())
         .collect(Collectors.toList());
 
     long successResponseCount = responses.stream()
@@ -99,8 +102,7 @@ class OpenApiConfiguration {
         .count();
     if (successResponseCount != 1) {
       throw invalidConfigurationException(
-          "Expected exactly one response within the 200 range for path '{}' with method '{}'.", pathName,
-          operationName);
+          "Expected exactly one response within the 200 range for path '{}' with method '{}'.", pathName, methodName);
     }
 
     return ResponseContext.builder()
@@ -109,12 +111,35 @@ class OpenApiConfiguration {
         .build();
   }
 
-  private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse) {
+  private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse,
+      String pathName, String methodName) {
+    validateMediaType(responseCode, apiResponse, pathName, methodName);
     return apiResponse.getContent()
         .entrySet()
         .stream()
         .map(entry -> createResponseObject(openApi, responseCode, entry.getKey(), entry.getValue()))
         .collect(Collectors.toList());
+  }
+
+  private void validateMediaType(String responseCode, ApiResponse apiResponse, String pathName, String methodName) {
+    if (apiResponse.getContent()
+        .keySet()
+        .size() != 1) {
+      throw ExceptionHelper.invalidConfigurationException(
+          "Expected exactly one MediaType for path '{}' with method '{}' and response code '{}'.", pathName, methodName,
+          responseCode);
+    }
+    List<String> unsupportedMediaTypes = apiResponse.getContent()
+        .keySet()
+        .stream()
+        .filter(name -> !name.matches("application/.*\\+json"))
+        .collect(Collectors.toList());
+    if (!unsupportedMediaTypes.isEmpty()) {
+      throw ExceptionHelper.invalidConfigurationException(
+          "Unsupported MediaType(s) '{}' for path '{}' with method '{}' and response code '{}'.", unsupportedMediaTypes,
+          pathName, methodName, responseCode);
+
+    }
   }
 
   @SuppressWarnings("rawtypes")
