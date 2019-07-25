@@ -14,7 +14,6 @@ public class SequencePath extends BasePath {
 
   private final PropertyPath rest;
 
-
   @Override
   public RdfPredicate toPredicate() {
     return () -> {

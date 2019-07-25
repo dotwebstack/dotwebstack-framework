@@ -7,8 +7,6 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
-
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;

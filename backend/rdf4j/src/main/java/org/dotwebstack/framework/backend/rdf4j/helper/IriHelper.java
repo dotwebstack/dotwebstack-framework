@@ -7,7 +7,7 @@ public class IriHelper {
 
   public static final SimpleValueFactory VF = SimpleValueFactory.getInstance();
 
-  private IriHelper() { }
+  private IriHelper() {}
 
   public static IRI createIri(String iriString) {
     return VF.createIRI(iriString);
