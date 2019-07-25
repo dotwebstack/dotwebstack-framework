@@ -6,7 +6,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIE
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_TARGET_CLASS;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SHACL_LITERAL;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.XSD_STRING;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.stringify;
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;

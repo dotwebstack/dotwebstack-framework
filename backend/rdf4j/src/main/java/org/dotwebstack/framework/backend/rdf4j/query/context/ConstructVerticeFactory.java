@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.isOfType;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.stringify;
 
 import graphql.schema.SelectedField;
 import java.util.List;
@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -40,8 +41,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
           NodeShape childShape = propertyShape.getNode();
 
           if (Objects.isNull(childShape)) {
-            return createSimpleEdge(query.var(), null, propertyShape.getPath()
-                .toPredicate(), true, true);
+            return createSimpleEdge(query.var(), null, propertyShape.getPath(), true, true);
           }
           return createComplexEdge(query, nodeShape, field);
         })
@@ -66,10 +66,12 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
    * A complex edge is an edge with filters vertices/filters added to it
    */
   private Edge createComplexEdge(OuterQuery<?> query, NodeShape nodeShape, SelectedField field) {
+    BasePath path = nodeShape.getPropertyShape(field.getName())
+        .getPath();
+
     return Edge.builder()
-        .predicate(nodeShape.getPropertyShape(field.getName())
-            .getPath()
-            .toPredicate())
+        .predicate(path.toPredicate())
+        .constructPredicate(path.toConstructPredicate())
         .object(createVertice(query.var(), query, nodeShape.getPropertyShape(field.getName())
             .getNode(),
             field.getSelectionSet()

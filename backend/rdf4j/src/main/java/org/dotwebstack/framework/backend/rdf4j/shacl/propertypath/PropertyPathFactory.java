@@ -20,7 +20,7 @@ public class PropertyPathFactory {
 
   private PropertyPathFactory() {}
 
-  private static final ImmutableMap.Builder<IRI, Function<List<PropertyPath>, PropertyPath>> BUILDER =
+  private static final ImmutableMap.Builder<IRI, Function<List<BasePath>, BasePath>> BUILDER =
       new ImmutableMap.Builder<>();
 
   static {
@@ -32,9 +32,9 @@ public class PropertyPathFactory {
     BUILDER.put(SHACL.ZERO_OR_ONE_PATH, PropertyPathFactory::zeroOrOne);
   }
 
-  private static final Map<IRI, Function<List<PropertyPath>, PropertyPath>> MAP = BUILDER.build();
+  private static final Map<IRI, Function<List<BasePath>, BasePath>> MAP = BUILDER.build();
 
-  public static PropertyPath create(Model model, Resource subject, IRI predicate) {
+  public static BasePath create(Model model, Resource subject, IRI predicate) {
     Value value = ValueUtils.findRequiredProperty(model, subject, predicate);
 
     if (value instanceof MemBNode) {
@@ -43,7 +43,7 @@ public class PropertyPathFactory {
           .get(0)
           .getPredicate();
 
-      List<PropertyPath> childs = listOf(blankNode.getSubjectStatementList()).stream()
+      List<BasePath> childs = listOf(blankNode.getSubjectStatementList()).stream()
           .map(child -> create(model, child.getSubject(), child.getPredicate()))
           .collect(Collectors.toList());
 
@@ -55,7 +55,7 @@ public class PropertyPathFactory {
         .build();
   }
 
-  private static PropertyPath sequencePath(List<PropertyPath> propertyPaths) {
+  private static BasePath sequencePath(List<BasePath> propertyPaths) {
     assert propertyPaths.size() == 2;
     return SequencePath.builder()
         .first(propertyPaths.get(0))
@@ -63,35 +63,35 @@ public class PropertyPathFactory {
         .build();
   }
 
-  private static PropertyPath inversePath(List<PropertyPath> propertyPaths) {
+  private static BasePath inversePath(List<BasePath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return InversePath.builder()
         .object(propertyPaths.get(0))
         .build();
   }
 
-  private static PropertyPath alternativePath(List<PropertyPath> propertyPaths) {
+  private static BasePath alternativePath(List<BasePath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return AlternativePath.builder()
         .object((SequencePath) propertyPaths.get(0))
         .build();
   }
 
-  private static PropertyPath zeroOrMore(List<PropertyPath> propertyPaths) {
+  private static BasePath zeroOrMore(List<BasePath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return ZeroOrMorePath.builder()
         .object((PredicatePath) propertyPaths.get(0))
         .build();
   }
 
-  private static PropertyPath oneOrMore(List<PropertyPath> propertyPaths) {
+  private static BasePath oneOrMore(List<BasePath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return OneOrMorePath.builder()
         .object((PredicatePath) propertyPaths.get(0))
         .build();
   }
 
-  private static PropertyPath zeroOrOne(List<PropertyPath> propertyPaths) {
+  private static BasePath zeroOrOne(List<BasePath> propertyPaths) {
     assert propertyPaths.size() == 1;
     return ZeroOrOnePath.builder()
         .object((PredicatePath) propertyPaths.get(0))

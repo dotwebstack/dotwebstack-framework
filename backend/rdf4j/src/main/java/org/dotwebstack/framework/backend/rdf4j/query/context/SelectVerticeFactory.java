@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getFieldName;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.stringify;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import graphql.schema.GraphQLDirectiveContainer;
