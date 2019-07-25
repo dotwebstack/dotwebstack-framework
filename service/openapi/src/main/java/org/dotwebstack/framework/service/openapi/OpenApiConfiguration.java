@@ -25,7 +25,7 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
-import org.dotwebstack.framework.service.openapi.response.ResponseFieldTemplate;
+import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -50,6 +50,8 @@ class OpenApiConfiguration {
 
   private final OpenApiProperties properties;
 
+  private final ResponseContextValidator responseContextValidator;
+
   public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       GraphQlQueryBuilder queryBuilder, Jackson2ObjectMapperBuilder objectMapperBuiler, OpenApiProperties properties) {
     this.graphQl = graphQl;
@@ -57,6 +59,7 @@ class OpenApiConfiguration {
     this.queryBuilder = queryBuilder;
     this.objectMapper = objectMapperBuiler.build();
     this.properties = properties;
+    this.responseContextValidator = new ResponseContextValidator();
   }
 
   @Bean
@@ -71,13 +74,14 @@ class OpenApiConfiguration {
         .forEach((name, path) -> {
           if (Objects.nonNull(path.getGet())) {
             ResponseContext openApiContext = createOpenApiContext(openApi, name, "get", path.getGet());
-            ResponseContextValidator.validate(openApiContext);
+            responseContextValidator.validate(openApiContext);
 
             routerFunctions.add(RouterFunctions.route(GET(name).and(accept(MediaType.APPLICATION_JSON)),
                 new CoreRequestHandler(openApiContext, graphQl, queryBuilder, objectMapper)));
           }
           if (Objects.nonNull(path.getPost())) {
             ResponseContext openApiContext = createOpenApiContext(openApi, name, "post", path.getPost());
+            responseContextValidator.validate(openApiContext);
 
             routerFunctions.add(RouterFunctions.route(GET(name).and(accept(MediaType.APPLICATION_JSON)),
                 new CoreRequestHandler(openApiContext, graphQl, queryBuilder, objectMapper)));
@@ -150,10 +154,10 @@ class OpenApiConfiguration {
     Schema schema = getSchemaReference(ref, openApi);
 
     if (Objects.isNull(schema)) {
-      throw invalidConfigurationException("Schema '{}' not found in configuration", ref);
+      throw invalidConfigurationException("Schema '{}' not found in configuration.", ref);
     }
 
-    ResponseFieldTemplate root = createResponseObjectField(openApi, ref, schema, null);
+    ResponseObject root = createResponseObjectField(openApi, ref, schema, null);
 
     return ResponseTemplate.builder()
         .responseCode(Integer.parseInt(responseCode))
@@ -163,11 +167,10 @@ class OpenApiConfiguration {
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private ResponseFieldTemplate createResponseObjectField(OpenAPI openApi, String identifier, Schema schema,
-      Schema parent) {
+  private ResponseObject createResponseObjectField(OpenAPI openApi, String identifier, Schema schema, Schema parent) {
     Map<String, Schema> schemaProperties = schema.getProperties();
 
-    List<ResponseFieldTemplate> children = null;
+    List<ResponseObject> children = null;
     if (Objects.nonNull(schemaProperties)) {
       children = schemaProperties.entrySet()
           .stream()
@@ -175,7 +178,7 @@ class OpenApiConfiguration {
           .collect(Collectors.toList());
     }
 
-    List<ResponseFieldTemplate> items = null;
+    List<ResponseObject> items = null;
     if (schema instanceof ArraySchema) {
       Schema item = ((ArraySchema) schema).getItems();
       String ref = item.get$ref();
@@ -183,7 +186,7 @@ class OpenApiConfiguration {
       items = Collections.singletonList(createResponseObjectField(openApi, ref, child, null));
     }
 
-    return ResponseFieldTemplate.builder()
+    return ResponseObject.builder()
         .identifier(identifier)
         .type(schema.getType())
         .children(children)

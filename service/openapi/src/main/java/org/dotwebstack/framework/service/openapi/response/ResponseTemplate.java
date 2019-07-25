@@ -11,7 +11,7 @@ public class ResponseTemplate {
 
   private String mediaType;
 
-  private ResponseFieldTemplate responseObject;
+  private ResponseObject responseObject;
 
   public boolean isApplicable(int bottom, int top) {
     return this.responseCode >= bottom && this.responseCode <= top;

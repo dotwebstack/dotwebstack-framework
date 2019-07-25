@@ -1,16 +1,20 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLByte;
+import static graphql.Scalars.GraphQLFloat;
+import static graphql.Scalars.GraphQLInt;
+import static graphql.Scalars.GraphQLLong;
+import static graphql.Scalars.GraphQLShort;
+
 import com.google.common.collect.ImmutableList;
-import graphql.Scalars;
 import java.util.List;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 
 public class ResponseContextValidator {
 
-  private ResponseContextValidator() {}
-
-  public static void validate(ResponseContext responseContext) {
+  public void validate(ResponseContext responseContext) {
     GraphQlField field = responseContext.getGraphQlField();
     ResponseTemplate okResponse = responseContext.getResponses()
         .stream()
@@ -21,18 +25,17 @@ public class ResponseContextValidator {
     validate(okResponse.getResponseObject(), field);
   }
 
-  private static void validate(ResponseFieldTemplate template, GraphQlField field) {
-
+  private void validate(ResponseObject template, GraphQlField field) {
     String graphQlType = field.getType();
     String oasType = template.getType();
     switch (oasType) {
       case "array":
-        ResponseFieldTemplate fieldTemplate = template.getItems()
+        ResponseObject fieldTemplate = template.getItems()
             .get(0);
         validate(fieldTemplate, field);
         break;
       case "object":
-        List<ResponseFieldTemplate> children = template.getChildren();
+        List<ResponseObject> children = template.getChildren();
         children.forEach(child -> {
           GraphQlField graphQlChildField = field.getFields()
               .stream()
@@ -40,28 +43,32 @@ public class ResponseContextValidator {
                   .equals(child.getIdentifier()))
               .findFirst()
               .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
-                  "OAS field '{}' not found in matching GraphQl object '{}'", child.getIdentifier(), field.getName()));
+                  "OAS field '{}' not found in matching GraphQl object '{}'.", child.getIdentifier(), field.getName()));
           validate(child, graphQlChildField);
         });
         break;
       case "string":
         break;
       case "number":
-        if (!ImmutableList.of(Scalars.GraphQLFloat.getName(), Scalars.GraphQLInt.getName())
+        if (!ImmutableList
+            .of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLLong.getName(), GraphQLByte.getName(),
+                GraphQLShort.getName())
             .contains(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is not compatible with GraphQl type '{}'",
+          throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is not compatible with GraphQl type '{}'.",
               oasType, graphQlType);
         }
         break;
       case "integer":
-        if (!"Int".equals(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is not compatible with GraphQl type '{}'",
+        if (!ImmutableList.of(GraphQLInt.getName(), GraphQLByte.getName(), GraphQLShort.getName())
+            .contains(graphQlType)) {
+          throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is not compatible with GraphQl type '{}'.",
               oasType, graphQlType);
         }
         break;
       case "boolean":
-        if (!"Boolean".equals(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is not compatible with GraphQl type '{}'",
+        if (!GraphQLBoolean.getName()
+            .equals(graphQlType)) {
+          throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is not compatible with GraphQl type '{}'.",
               oasType, graphQlType);
         }
         break;

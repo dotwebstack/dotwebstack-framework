@@ -7,14 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
+import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseFieldTemplate;
+import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -42,7 +40,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   @SuppressWarnings("unchecked")
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
-    String mediatype = "application/hal+json";
+    String mediaType = "application/hal+json";
 
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(buildQueryString())
@@ -52,51 +50,28 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       ExecutionResult result = graphQL.execute(executionInput);
       if (result.getErrors()
           .isEmpty()) {
-        ResponseFieldTemplate template = openApiContext.getResponses()
+        ResponseObject template = openApiContext.getResponses()
             .stream()
-            .filter(response -> response.isApplicable(200, 300, mediatype))
+            .filter(response -> response.isApplicable(200, 299, mediaType))
             .findFirst()
-            .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("Mediatype '{}' was not found", mediatype))
+            .orElseThrow(
+                () -> ExceptionHelper.unsupportedOperationException("MediaType '{}' was not found.", mediaType))
             .getResponseObject();
 
-        String json = toJson(mapResultOnTemplate(template,
+        String json = toJson(new ResponseMapper().mapResponse(template,
             ((Map<String, Object>) result.getData()).get(this.openApiContext.getGraphQlField()
                 .getName())));
         return ServerResponse.ok()
             .body(fromObject(json));
       }
       return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(fromObject(String.format("GraphQl query resulted in errors: %s", toJson(result.getErrors()))));
+          .body(fromObject(String.format("GraphQl query resulted in errors: %s.", toJson(result.getErrors()))));
     } catch (JsonProcessingException e) {
       return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(fromObject("Error while serializing response to JSON."));
     }
   }
 
-  @SuppressWarnings("unchecked")
-  private Object mapResultOnTemplate(ResponseFieldTemplate objectField, Object data) {
-    switch (objectField.getType()) {
-      case "array":
-        ResponseFieldTemplate childObjectField = objectField.getItems()
-            .get(0);
-        return ((List<Object>) data).stream()
-            .map(object -> mapResultOnTemplate(childObjectField, object))
-            .collect(Collectors.toList());
-      case "object":
-        Map<String, Object> result = new HashMap<>();
-
-        objectField.getChildren()
-            .stream()
-            .forEach(child -> {
-              Object object = mapResultOnTemplate(child, ((Map<String, Object>) data).get(child.getIdentifier()));
-              result.put(child.getIdentifier(), object);
-            });
-
-        return result;
-      default:
-        return data;
-    }
-  }
 
   private String toJson(Object object) throws JsonProcessingException {
     return objectMapper.writerWithDefaultPrettyPrinter()

@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class ResponseFieldTemplate {
+public class ResponseObject {
 
   private String identifier;
 
@@ -16,8 +16,8 @@ public class ResponseFieldTemplate {
 
   private boolean nillable;
 
-  private List<ResponseFieldTemplate> children;
+  private List<ResponseObject> children;
 
-  private List<ResponseFieldTemplate> items;
+  private List<ResponseObject> items;
 
 }

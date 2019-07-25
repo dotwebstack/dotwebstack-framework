@@ -11,15 +11,12 @@ components:
       required:
         - identifier
         - name
-        - test
       properties:
         identifier:
           type: string
         name:
           type: string
           nullable: true
-        test:
-          type: string
     Breweries:
       type: array
       items:
@@ -29,10 +26,14 @@ components:
       required:
         - identifier
         - name
+        - openinghours
       properties:
         identifier:
           type: string
         name:
+          type: string
+          nullable: true
+        openinghours:
           type: string
           nullable: true
         beers:
