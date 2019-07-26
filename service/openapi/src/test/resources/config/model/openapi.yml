@@ -26,6 +26,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Object2'
+        o1_object1:
+          $ref: '#/components/schemas/Object2'
     Object2:
       type: object
       required:

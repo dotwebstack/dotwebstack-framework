@@ -29,7 +29,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
 @EnableConfigurationProperties(OpenApiProperties.class)
-class OpenApiConfiguration {
+public class OpenApiConfiguration {
 
   private final GraphQL graphQl;
 
