@@ -9,12 +9,13 @@ import static graphql.Scalars.GraphQLShort;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 
 public class ResponseContextValidator {
 
-  public void validate(ResponseContext responseContext) {
+  public void validate(@NonNull ResponseContext responseContext) {
     GraphQlField field = responseContext.getGraphQlField();
     ResponseTemplate okResponse = responseContext.getResponses()
         .stream()
@@ -47,6 +48,13 @@ public class ResponseContextValidator {
           validate(child, graphQlChildField);
         });
         break;
+      default:
+        validateTypes(oasType, graphQlType, template.getIdentifier());
+    }
+  }
+
+  protected void validateTypes(String oasType, String graphQlType, String identifier) {
+    switch (oasType) {
       case "string":
         break;
       case "number":
@@ -54,26 +62,30 @@ public class ResponseContextValidator {
             .of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLLong.getName(), GraphQLByte.getName(),
                 GraphQLShort.getName())
             .contains(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is not compatible with GraphQl type '{}'.",
-              oasType, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(
+              "OAS type '{}' in property '{}' is not compatible with GraphQl type '{}'.", oasType, graphQlType,
+              identifier);
         }
         break;
       case "integer":
         if (!ImmutableList.of(GraphQLInt.getName(), GraphQLByte.getName(), GraphQLShort.getName())
             .contains(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is not compatible with GraphQl type '{}'.",
-              oasType, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(
+              "OAS type '{}' in property '{}' is not compatible with GraphQl type '{}'.", oasType, graphQlType,
+              identifier);
         }
         break;
       case "boolean":
         if (!GraphQLBoolean.getName()
             .equals(graphQlType)) {
-          throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is not compatible with GraphQl type '{}'.",
-              oasType, graphQlType);
+          throw ExceptionHelper.invalidConfigurationException(
+              "OAS type '{}' in property '{}' is not compatible with GraphQl type '{}'.", oasType, graphQlType,
+              identifier);
         }
         break;
       default:
         throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is currently not supported.", oasType);
     }
+
   }
 }

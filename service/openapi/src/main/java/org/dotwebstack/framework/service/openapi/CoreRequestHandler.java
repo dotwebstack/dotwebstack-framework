@@ -25,15 +25,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final GraphQL graphQL;
 
-  private final GraphQlQueryBuilder queryBuilder;
-
   private final ObjectMapper objectMapper;
 
-  CoreRequestHandler(ResponseContext openApiContext, GraphQL graphQL, GraphQlQueryBuilder queryBuilder,
-      ObjectMapper objectMapper) {
+  CoreRequestHandler(ResponseContext openApiContext, GraphQL graphQL, ObjectMapper objectMapper) {
     this.openApiContext = openApiContext;
     this.graphQL = graphQL;
-    this.queryBuilder = queryBuilder;
     this.objectMapper = objectMapper;
   }
 
@@ -79,6 +75,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private String buildQueryString() {
-    return this.queryBuilder.toQuery(this.openApiContext.getGraphQlField());
+    return new GraphQlQueryBuilder().toQuery(this.openApiContext.getGraphQlField());
   }
 }

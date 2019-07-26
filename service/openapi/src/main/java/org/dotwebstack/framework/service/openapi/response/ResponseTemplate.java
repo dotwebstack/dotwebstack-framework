@@ -2,9 +2,11 @@ package org.dotwebstack.framework.service.openapi.response;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Builder
 @Getter
+@Setter
 public class ResponseTemplate {
 
   private int responseCode;

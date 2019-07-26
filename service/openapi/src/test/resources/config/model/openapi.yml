@@ -1,0 +1,66 @@
+openapi: 3.0.2
+
+info:
+  title: test API
+  version: 3.0.0
+
+components:
+  schemas:
+    Object1:
+      type: object
+      required:
+        - o1_prop1
+        - o1_prop2
+        - o1_array1
+      properties:
+        o1_prop1:
+          type: string
+        o1_prop2:
+          type: number
+          nullable: true
+        o1_prop3:
+          type: integer
+        o1_prop4:
+          type: boolean
+        o1_array1:
+          type: array
+          items:
+            $ref: '#/components/schemas/Object2'
+    Object2:
+      type: object
+      required:
+        - o2_prop1
+      properties:
+        o2_prop1:
+          type: string
+
+paths:
+  /query1:
+    get:
+      x-dws-query: query1
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object1'
+    post:
+      x-dws-query: query1
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object1'
+  /query2:
+    get:
+      x-dws-query: query2
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object2'
