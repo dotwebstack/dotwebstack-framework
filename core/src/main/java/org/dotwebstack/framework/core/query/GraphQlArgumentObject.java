@@ -10,6 +10,4 @@ import lombok.Getter;
 public class GraphQlArgumentObject extends GraphQlArgument {
   @Builder.Default
   private List<GraphQlArgument> arguments = Collections.emptyList();
-
-  ;
 }

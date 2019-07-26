@@ -30,7 +30,7 @@ public class ResponseTemplateBuilderTest {
     List<ResponseTemplate> responseTemplates = getResponseTemplates(this.openApi, "/query1", "get");
 
     // Assert
-    assertEquals(responseTemplates.size(), 1);
+    assertEquals(1, responseTemplates.size());
     ResponseTemplate okResponse = responseTemplates.stream()
         .filter(rt -> rt.isApplicable(200, 299))
         .findFirst()

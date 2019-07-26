@@ -91,7 +91,7 @@ public class ResponseTemplateBuilder {
     Map<String, Schema> schemaProperties = schema.getProperties();
     List<ResponseObject> children = schemaProperties.entrySet()
         .stream()
-        .map((entry) -> {
+        .map(entry -> {
           String propId = entry.getKey();
           Schema propSchema = entry.getValue();
           return createResponseObjectFromProperty(openApi, propId, schema, propSchema);
@@ -140,7 +140,7 @@ public class ResponseTemplateBuilder {
   }
 
   private boolean isNillable(ObjectSchema schema) {
-    return Objects.isNull(schema.getNullable()) ? Boolean.FALSE : schema.getNullable();
+    return schema == null ? false : Boolean.FALSE == schema.getNullable();
   }
 
   private static boolean isRequired(Schema<?> schema, String property) {
