@@ -140,7 +140,7 @@ public class ResponseTemplateBuilder {
   }
 
   private boolean isNillable(ObjectSchema schema) {
-    return schema == null ? false : Boolean.FALSE == schema.getNullable();
+    return schema != null && Boolean.FALSE.equals(schema.getNullable());
   }
 
   private static boolean isRequired(Schema<?> schema, String property) {
