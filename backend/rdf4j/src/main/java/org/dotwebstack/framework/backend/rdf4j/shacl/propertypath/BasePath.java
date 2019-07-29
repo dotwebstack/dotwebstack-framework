@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify
 
 import java.util.Set;
 import java.util.UUID;
+import lombok.Getter;
 import lombok.Setter;
 import org.dotwebstack.framework.backend.rdf4j.constants.Rdf4jConstants;
 import org.eclipse.rdf4j.model.IRI;
@@ -15,25 +16,22 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 @Setter
+@Getter
 public abstract class BasePath implements PropertyPath {
 
   private UUID uuid = UUID.randomUUID();
 
-  public IRI toIri() {
-    return createIri(Rdf4jConstants.DOTWEBSTACK_IDENTIFIER + this.getClass()
-        .getSimpleName()
-        .toLowerCase() + "#" + uuid.toString());
-  }
+  private IRI baseIri = createIri(Rdf4jConstants.DOTWEBSTACK_IDENTIFIER + this.getClass()
+      .getSimpleName()
+      .toLowerCase() + "#" + uuid.toString());
 
   @Override
   public Set<Value> resolvePath(Model model, Resource subject) {
-    return Models.getProperties(model, subject, toIri());
+    return Models.getProperties(model, subject, getBaseIri());
   }
 
   public RdfPredicate toConstructPredicate() {
-    return () -> stringify(createIri(Rdf4jConstants.DOTWEBSTACK_IDENTIFIER + this.getClass()
-        .getSimpleName()
-        .toLowerCase() + "#" + uuid.toString()));
+    return () -> stringify(getBaseIri());
   }
 
 }

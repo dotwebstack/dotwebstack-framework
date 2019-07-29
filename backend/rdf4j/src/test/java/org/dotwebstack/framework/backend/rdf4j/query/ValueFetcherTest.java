@@ -334,7 +334,7 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.toIri(), POSTAL_CODE_1)
+    Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.getBaseIri(), POSTAL_CODE_1)
         .build();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
@@ -358,7 +358,7 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.toIri(), BEER_NAME_EXAMPLE_1)
+    Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.getBaseIri(), BEER_NAME_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, SCHEMA_NAME, BREWERY_NAME_EXAMPLE_1)
         .build();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
@@ -385,7 +385,7 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model1 = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.toIri(), BREWERY_NAME_EXAMPLE_1)
+    Model model1 = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.getBaseIri(), BREWERY_NAME_EXAMPLE_1)
         .build();
 
     Model model3 = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
@@ -416,10 +416,10 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BEER_EXAMPLE_1, propertyPath.toIri(), BEERTYPE_EXAMPLE_1_NAME)
-        .add(BEER_EXAMPLE_2, propertyPath.toIri(), BEERTYPE_EXAMPLE_1_NAME)
-        .add(BEER_EXAMPLE_1, propertyPath.toIri(), BEERTYPE_EXAMPLE_2_NAME)
-        .add(BEER_EXAMPLE_2, propertyPath.toIri(), BEERTYPE_EXAMPLE_2_NAME)
+    Model model = new ModelBuilder().add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
+        .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
         .build();
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
@@ -443,10 +443,10 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BEER_EXAMPLE_1, propertyPath.toIri(), BEERTYPE_EXAMPLE_1_NAME)
-        .add(BEER_EXAMPLE_2, propertyPath.toIri(), BEERTYPE_EXAMPLE_1_NAME)
-        .add(BEER_EXAMPLE_1, propertyPath.toIri(), BEERTYPE_EXAMPLE_2_NAME)
-        .add(BEER_EXAMPLE_2, propertyPath.toIri(), BEERTYPE_EXAMPLE_2_NAME)
+    Model model = new ModelBuilder().add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
+        .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
         .build();
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
@@ -470,7 +470,7 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BEER_EXAMPLE_2, propertyPath.toIri(), BEERTYPE_EXAMPLE_1_NAME)
+    Model model = new ModelBuilder().add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
         .build();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLString);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
