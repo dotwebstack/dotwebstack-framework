@@ -41,7 +41,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
           NodeShape childShape = propertyShape.getNode();
 
           if (Objects.isNull(childShape)) {
-            return createSimpleEdge(query.var(), null, propertyShape.getPath(), true, true);
+            return createSimpleEdge(query.var(), propertyShape.getPath(), true, true);
           }
           return createComplexEdge(query, nodeShape, field);
         })
@@ -50,7 +50,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     makeEdgesUnique(edges);
 
     edges.add(createSimpleEdge(null, Rdf.iri(nodeShape.getTargetClass()
-        .stringValue()), () -> stringify(RDF.TYPE), false, true));
+        .stringValue()), () -> stringify(RDF.TYPE), true));
 
     getArgumentFieldMapping(nodeShape, fields)
         .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)

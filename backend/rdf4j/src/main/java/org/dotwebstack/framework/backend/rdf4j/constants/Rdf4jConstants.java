@@ -4,6 +4,6 @@ public class Rdf4jConstants {
 
   private Rdf4jConstants() {}
 
-  public static final String DOTWEBSTACK_IDENTIFIER = "http://www.dotwebstack.org/";
+  public static final String DOTWEBSTACK_NAMESPACE = "http://www.dotwebstack.org/";
 
 }

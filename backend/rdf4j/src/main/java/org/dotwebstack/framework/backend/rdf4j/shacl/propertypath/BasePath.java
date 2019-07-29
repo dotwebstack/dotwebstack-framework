@@ -21,7 +21,7 @@ public abstract class BasePath implements PropertyPath {
 
   private UUID uuid = UUID.randomUUID();
 
-  private IRI baseIri = createIri(Rdf4jConstants.DOTWEBSTACK_IDENTIFIER + this.getClass()
+  private IRI baseIri = createIri(Rdf4jConstants.DOTWEBSTACK_NAMESPACE + this.getClass()
       .getSimpleName()
       .toLowerCase() + "#" + uuid.toString());
 
