@@ -70,76 +70,69 @@ public class ResponseTemplateBuilder {
   }
 
   @SuppressWarnings("rawtypes")
-  private ResponseTemplate createResponseObject(OpenAPI openApi, String responseCode, String mediatype,
+  private ResponseTemplate createResponseObject(OpenAPI openApi, String responseCode, String mediaType,
       io.swagger.v3.oas.models.media.MediaType content) {
     String ref = content.getSchema()
         .get$ref();
-    ObjectSchema schema = getSchemaReference(ref, openApi);
+    Schema schema = getSchemaReference(ref, openApi);
 
     ResponseObject root = createResponseObject(openApi, ref, schema, true, false);
 
     return ResponseTemplate.builder()
         .responseCode(Integer.parseInt(responseCode))
-        .mediaType(mediatype)
+        .mediaType(mediaType)
         .responseObject(root)
         .build();
   }
 
-  @SuppressWarnings("rawtypes")
-  private ResponseObject createResponseObject(OpenAPI openApi, String identifier, ObjectSchema schema,
-      boolean isRequired, boolean isNillable) {
-    Map<String, Schema> schemaProperties = schema.getProperties();
-    List<ResponseObject> children = schemaProperties.entrySet()
-        .stream()
-        .map(entry -> {
-          String propId = entry.getKey();
-          Schema propSchema = entry.getValue();
-          return createResponseObjectFromProperty(openApi, propId, schema, propSchema);
-        })
-        .collect(Collectors.toList());
-    return ResponseObject.builder()
-        .identifier(identifier)
-        .type(schema.getType())
-        .children(children)
-        .nillable(isNillable)
-        .required(isRequired)
-        .build();
-  }
-
-  @SuppressWarnings("rawtypes")
-  private ResponseObject createResponseObjectFromProperty(OpenAPI openApi, String identifier, ObjectSchema schema,
-      Schema propertySchema) {
-    boolean required = isRequired(schema, identifier);
-    boolean nillable = isNillable(schema);
-    if (propertySchema.get$ref() != null) {
-      String ref = propertySchema.get$ref();
-      ObjectSchema objectSchema = getSchemaReference(ref, openApi);
-
-      return createResponseObject(openApi, identifier, objectSchema, required, nillable);
-    } else if (propertySchema instanceof ArraySchema) {
-      String ref = ((ArraySchema) propertySchema).getItems()
-          .get$ref();
-      ObjectSchema objectSchema = getSchemaReference(ref, openApi);
-
-      ResponseObject item = createResponseObject(openApi, identifier, objectSchema, required, nillable);
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private ResponseObject createResponseObject(OpenAPI openApi, String identifier, Schema schema, boolean isRequired,
+      boolean isNillable) {
+    if (schema.get$ref() != null) {
+      Schema refSchema = getSchemaReference(schema.get$ref(), openApi);
+      return createResponseObject(openApi, identifier, refSchema, isRequired, isNillable);
+    } else if (schema instanceof ObjectSchema) {
+      Map<String, Schema> schemaProperties = schema.getProperties();
+      List<ResponseObject> children = schemaProperties.entrySet()
+          .stream()
+          .map(entry -> {
+            String propId = entry.getKey();
+            Schema propSchema = entry.getValue();
+            boolean childRequired = isRequired(schema, identifier);
+            boolean childNillable = isNillable(propSchema);
+            return createResponseObject(openApi, propId, propSchema, childRequired, childNillable);
+          })
+          .collect(Collectors.toList());
       return ResponseObject.builder()
           .identifier(identifier)
-          .type(propertySchema.getType())
-          .nillable(nillable)
-          .required(required)
+          .type(schema.getType())
+          .children(children)
+          .nillable(isNillable)
+          .required(isRequired)
+          .build();
+    } else if (schema instanceof ArraySchema) {
+      String ref = ((ArraySchema) schema).getItems()
+          .get$ref();
+      Schema refSchema = getSchemaReference(ref, openApi);
+      ResponseObject item = createResponseObject(openApi, identifier, refSchema, true, false);
+      return ResponseObject.builder()
+          .identifier(identifier)
+          .type(schema.getType())
           .items(ImmutableList.of(item))
+          .nillable(isNillable)
+          .required(isRequired)
           .build();
     } else {
       return ResponseObject.builder()
           .identifier(identifier)
-          .type(propertySchema.getType())
-          .nillable(nillable)
-          .required(required)
+          .type(schema.getType())
+          .nillable(isNillable)
+          .required(isRequired)
           .build();
     }
   }
 
-  private boolean isNillable(ObjectSchema schema) {
+  private boolean isNillable(Schema<?> schema) {
     return schema != null && Boolean.FALSE.equals(schema.getNullable());
   }
 
@@ -149,7 +142,7 @@ public class ResponseTemplateBuilder {
   }
 
   @SuppressWarnings("rawtypes")
-  private ObjectSchema getSchemaReference(String ref, OpenAPI openApi) {
+  private Schema getSchemaReference(String ref, OpenAPI openApi) {
     String[] refPath = ref.split("/");
     Schema result = openApi.getComponents()
         .getSchemas()
@@ -159,6 +152,6 @@ public class ResponseTemplateBuilder {
       throw invalidConfigurationException("Schema '{}' not found in configuration.", ref);
     }
 
-    return (ObjectSchema) result;
+    return result;
   }
 }
