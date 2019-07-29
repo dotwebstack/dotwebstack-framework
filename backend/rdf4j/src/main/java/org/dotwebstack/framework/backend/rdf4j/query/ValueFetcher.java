@@ -20,6 +20,8 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.SimpleIRI;
+import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sail.memory.model.MemResource;
 import org.springframework.stereotype.Component;
@@ -69,12 +71,19 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private Stream<Value> resolve(PropertyShape propertyShape, QuerySolution source) {
     return propertyShape.getPath()
-        .resolvePath(source.getModel(), source.getSubject(), false)
+        .resolvePath(source.getModel(), source.getSubject())
         .stream()
         .filter(result -> {
           if (propertyShape.getNode() != null) {
             // in case we have strong typing (sh:node), remove the types from the result that do not conform
             // typing
+            if (result instanceof SimpleIRI) {
+              return Models.getProperties(source.getModel(), (SimpleIRI) result, RDF.TYPE)
+                  .stream()
+                  .anyMatch(property -> property.equals(propertyShape.getNode()
+                      .getTargetClass()));
+            }
+
             return resultIsOfType(result, propertyShape.getNode()
                 .getTargetClass());
           }

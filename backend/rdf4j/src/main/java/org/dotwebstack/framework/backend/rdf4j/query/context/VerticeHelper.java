@@ -33,10 +33,10 @@ public class VerticeHelper {
     if (edge.isVisible()) {
       if (Objects.nonNull(edge.getObject()
           .getSubject())) {
-        triplePatterns.add(GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
+        triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getObject()
             .getSubject()));
       } else {
-        triplePatterns.add(GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
+        triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getObject()
             .getIri()));
       }
     }

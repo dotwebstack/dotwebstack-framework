@@ -7,11 +7,8 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCO
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_POSTALCODE_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.ADDRESS_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPES_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_1_NAME;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_2;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERTYPE_EXAMPLE_2_NAME;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_ZERO_OR_MORE_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_BEERTYPE_ZERO_OR_ONE_SHAPE;
@@ -24,7 +21,6 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_ADDRESS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERNAMES_SHAPE;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_EXAMPLE_1;
@@ -34,7 +30,6 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_FOUNDED_
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_IDENTIFIER_PATH;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_LABEL;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_LABEL_PATH;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_EXAMPLE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
@@ -45,9 +40,7 @@ import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_OWNERS_P
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_POSTAL_CODE_SHAPE;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.POSTAL_CODE_1;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.POSTAL_CODE_FIELD;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_ADDRESS;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_NAME;
-import static org.dotwebstack.framework.backend.rdf4j.Constants.SCHEMA_POSTAL_CODE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -72,8 +65,8 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.AlternativePath;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
-import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PropertyPathFactoryTest;
 import org.dotwebstack.framework.core.converters.CoreConverter;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
@@ -332,7 +325,7 @@ class ValueFetcherTest {
   @Test
   void get_ReturnsString_ForSequencePropertyPath() {
     // Arrange
-    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_POSTAL_CODE_SHAPE);
+    BasePath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_POSTAL_CODE_SHAPE);
     PropertyShape propertyShape = PropertyShape.builder()
         .name(POSTAL_CODE_FIELD)
         .path(propertyPath)
@@ -341,8 +334,7 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, SCHEMA_ADDRESS, BREWERY_ADDRESS_EXAMPLE_1)
-        .add(BREWERY_ADDRESS_EXAMPLE_1, SCHEMA_POSTAL_CODE, POSTAL_CODE_1)
+    Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.getBaseIri(), POSTAL_CODE_1)
         .build();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
@@ -357,7 +349,7 @@ class ValueFetcherTest {
   @Test
   void get_ReturnsString_ForInversePropertyPath() {
     // Arrange
-    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_BEERNAMES_SHAPE);
+    BasePath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_BEERNAMES_SHAPE);
     PropertyShape propertyShape = PropertyShape.builder()
         .name(BEER_NAMES_FIELD)
         .path(propertyPath)
@@ -366,9 +358,8 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BEER_EXAMPLE_1, BREWERY_BEERS_PATH, BREWERY_EXAMPLE_1)
+    Model model = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.getBaseIri(), BEER_NAME_EXAMPLE_1)
         .add(BREWERY_EXAMPLE_1, SCHEMA_NAME, BREWERY_NAME_EXAMPLE_1)
-        .add(BEER_EXAMPLE_1, SCHEMA_NAME, BEER_NAME_EXAMPLE_1)
         .build();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLID);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BREWERY_EXAMPLE_1));
@@ -383,7 +374,7 @@ class ValueFetcherTest {
   @Test
   void get_ReturnsString_ForAlternativePropertyPath() {
     // Arrange
-    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_LABEL_PATH);
+    BasePath propertyPath = PropertyPathFactoryTest.createPropertyPath(BREWERY_LABEL_PATH);
     assertThat(propertyPath, is(instanceOf(AlternativePath.class)));
 
     PropertyShape propertyShape = PropertyShape.builder()
@@ -394,10 +385,7 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model1 = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_LABEL, BREWERY_NAME_EXAMPLE_1)
-        .build();
-
-    Model model2 = new ModelBuilder().add(BREWERY_EXAMPLE_1, SCHEMA_NAME, BREWERY_NAME_EXAMPLE_1)
+    Model model1 = new ModelBuilder().add(BREWERY_EXAMPLE_1, propertyPath.getBaseIri(), BREWERY_NAME_EXAMPLE_1)
         .build();
 
     Model model3 = new ModelBuilder().add(BREWERY_EXAMPLE_1, BREWERY_FOUNDED_PATH, BREWERY_FOUNDED_EXAMPLE_1)
@@ -408,22 +396,18 @@ class ValueFetcherTest {
     when(environment.getSource()).thenReturn(new QuerySolution(model1, BREWERY_EXAMPLE_1));
     Object result1 = valueFetcher.get(environment);
 
-    when(environment.getSource()).thenReturn(new QuerySolution(model2, BREWERY_EXAMPLE_1));
-    Object result2 = valueFetcher.get(environment);
-
     when(environment.getSource()).thenReturn(new QuerySolution(model3, BREWERY_EXAMPLE_1));
     Object result3 = valueFetcher.get(environment);
 
     // Assert
     assertThat(result1, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
-    assertThat(result2, is(equalTo(BREWERY_NAME_EXAMPLE_1.stringValue())));
     assertThat(result3, is(equalTo(null)));
   }
 
   @Test
   void get_ReturnsStringList_ForOneOrMorePropertyPath() {
     // Arrange
-    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BEER_BEERTYPE_SHAPE);
+    BasePath propertyPath = PropertyPathFactoryTest.createPropertyPath(BEER_BEERTYPE_SHAPE);
     PropertyShape propertyShape = PropertyShape.builder()
         .name(BEERTYPES_FIELD)
         .path(propertyPath)
@@ -432,10 +416,10 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
-        .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
-        .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_2)
-        .add(BEERTYPE_EXAMPLE_2, SCHEMA_NAME, BEERTYPE_EXAMPLE_2_NAME)
+    Model model = new ModelBuilder().add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
+        .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
         .build();
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
@@ -450,7 +434,7 @@ class ValueFetcherTest {
   @Test
   void get_ReturnsStringList_ForZeroOrMorePropertyPath() {
     // Arrange
-    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BEER_BEERTYPE_ZERO_OR_MORE_SHAPE);
+    BasePath propertyPath = PropertyPathFactoryTest.createPropertyPath(BEER_BEERTYPE_ZERO_OR_MORE_SHAPE);
     PropertyShape propertyShape = PropertyShape.builder()
         .name(BREWERY_BEERTYPE_ZERO_OR_MORE_TYPE)
         .path(propertyPath)
@@ -459,10 +443,10 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
-        .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
-        .add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_2)
-        .add(BEERTYPE_EXAMPLE_2, SCHEMA_NAME, BEERTYPE_EXAMPLE_2_NAME)
+    Model model = new ModelBuilder().add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
+        .add(BEER_EXAMPLE_1, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
+        .add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_2_NAME)
         .build();
     when(environment.getFieldType()).thenReturn(GraphQLList.list(Scalars.GraphQLString));
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));
@@ -477,7 +461,7 @@ class ValueFetcherTest {
   @Test
   void get_ReturnsString_ForZeroOrOnePropertyPath() {
     // Arrange
-    PropertyPath propertyPath = PropertyPathFactoryTest.createPropertyPath(BEER_BEERTYPE_ZERO_OR_ONE_SHAPE);
+    BasePath propertyPath = PropertyPathFactoryTest.createPropertyPath(BEER_BEERTYPE_ZERO_OR_ONE_SHAPE);
     PropertyShape propertyShape = PropertyShape.builder()
         .name(BREWERY_BEERTYPE_ZERO_OR_ONE_TYPE)
         .path(propertyPath)
@@ -486,8 +470,7 @@ class ValueFetcherTest {
     when(nodeShape.getPropertyShape(any())).thenReturn(propertyShape);
     ValueFetcher valueFetcher = new ValueFetcher(nodeShapeRegistry, converterRouter);
 
-    Model model = new ModelBuilder().add(BEER_EXAMPLE_2, BEER_BEERTYPE_PATH, BEERTYPE_EXAMPLE_1)
-        .add(BEERTYPE_EXAMPLE_1, SCHEMA_NAME, BEERTYPE_EXAMPLE_1_NAME)
+    Model model = new ModelBuilder().add(BEER_EXAMPLE_2, propertyPath.getBaseIri(), BEERTYPE_EXAMPLE_1_NAME)
         .build();
     when(environment.getFieldType()).thenReturn(Scalars.GraphQLString);
     when(environment.getSource()).thenReturn(new QuerySolution(model, BEER_EXAMPLE_2));

@@ -80,7 +80,7 @@ public class PropertyPathFactoryTest {
     assertTrue(object instanceof PredicatePath);
   }
 
-  public static PropertyPath createPropertyPath(Resource subject) {
+  public static BasePath createPropertyPath(Resource subject) {
     return PropertyPathFactory.create(shapeModel, subject, SHACL.PATH);
   }
 

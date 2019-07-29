@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
@@ -34,10 +35,19 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 abstract class AbstractVerticeFactory {
 
-  /*
-   * A simple edge is an edge without any vertices or filters added to it
-   */
-  Edge createSimpleEdge(Variable subject, Iri iri, RdfPredicate predicate, boolean isOptional, boolean isVisible) {
+  Edge createSimpleEdge(Variable subject, BasePath basePath, boolean isOptional, boolean isVisible) {
+    return Edge.builder()
+        .predicate(basePath.toPredicate())
+        .constructPredicate(basePath.toConstructPredicate())
+        .object(Vertice.builder()
+            .subject(subject)
+            .build())
+        .isVisible(isVisible)
+        .isOptional(isOptional)
+        .build();
+  }
+
+  Edge createSimpleEdge(Variable subject, Iri iri, RdfPredicate predicate, boolean isVisible) {
     return Edge.builder()
         .predicate(predicate)
         .object(Vertice.builder()
@@ -45,7 +55,7 @@ abstract class AbstractVerticeFactory {
             .iri(iri)
             .build())
         .isVisible(isVisible)
-        .isOptional(isOptional)
+        .isOptional(false)
         .build();
   }
 
@@ -176,8 +186,7 @@ abstract class AbstractVerticeFactory {
     }
 
     return optional.orElseGet(() -> {
-      Edge edge = createSimpleEdge(query.var(), null, propertyShape.getPath()
-          .toPredicate(), required, false);
+      Edge edge = createSimpleEdge(query.var(), propertyShape.getPath(), required, false);
       vertice.getEdges()
           .add(edge);
       return edge;
@@ -226,9 +235,8 @@ abstract class AbstractVerticeFactory {
       match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false);
       subject = getSubjectForField(match, nodeShape, fieldPaths);
     } else {
-      Edge edge = createSimpleEdge(query.var(), null, nodeShape.getPropertyShape(fieldPaths[0])
-          .getPath()
-          .toPredicate(), true, false);
+      Edge edge = createSimpleEdge(query.var(), nodeShape.getPropertyShape(fieldPaths[0])
+          .getPath(), true, false);
       fieldPaths = ArrayUtils.remove(fieldPaths, 0);
 
       vertice.getEdges()

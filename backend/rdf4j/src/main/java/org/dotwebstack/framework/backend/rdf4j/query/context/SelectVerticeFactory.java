@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getFieldName;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.stringify;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import graphql.schema.GraphQLDirectiveContainer;
@@ -33,7 +33,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
       } else {
         Edge edge = createSimpleEdge(query.var(), null, nodeShape.getPropertyShape(fieldPath[0])
             .getPath()
-            .toPredicate(), false, false);
+            .toPredicate(), false);
         fieldPath = ArrayUtils.remove(fieldPath, 0);
         addFilterToVertice(edge.getObject(), container, query, childShape, filter.getValue(), fieldPath);
         vertice.getEdges()
@@ -52,7 +52,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     List<Edge> edges = new ArrayList<>();
 
     edges.add(createSimpleEdge(null, Rdf.iri(nodeShape.getTargetClass()
-        .stringValue()), () -> stringify(RDF.TYPE), false, true));
+        .stringValue()), () -> stringify(RDF.TYPE), true));
 
     return Vertice.builder()
         .subject(subject)

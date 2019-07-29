@@ -96,7 +96,7 @@
       beer_sh:Beer_brewery,
       beer_sh:Beer_beerTypes ;
     sh:property [
-      sh:path ( beer_def:ingredient ) ;
+      sh:path beer_def:ingredient ;
       sh:or (
         [
           sh:name "ingredients" ;

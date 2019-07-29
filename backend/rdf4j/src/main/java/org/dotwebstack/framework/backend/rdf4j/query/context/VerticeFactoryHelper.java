@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirectiveContainer;
@@ -66,7 +67,7 @@ class VerticeFactoryHelper {
             : container.getName();
   }
 
-  public static Variable getSubjectForField(Edge match, NodeShape nodeShape, String[] fieldPaths) {
+  static Variable getSubjectForField(Edge match, NodeShape nodeShape, String[] fieldPaths) {
     if (fieldPaths.length == 1) {
       return match.getObject()
           .getSubject();
@@ -87,9 +88,5 @@ class VerticeFactoryHelper {
                 .getSubject()));
 
     return getSubjectForField(next, propertyShape.getNode(), ArrayUtils.remove(fieldPaths, 0));
-  }
-
-  public static String stringify(IRI iri) {
-    return "<" + iri.stringValue() + ">";
   }
 }
