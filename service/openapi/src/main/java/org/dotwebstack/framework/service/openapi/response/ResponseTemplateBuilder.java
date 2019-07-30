@@ -60,7 +60,7 @@ public class ResponseTemplateBuilder {
     List<String> unsupportedMediaTypes = apiResponse.getContent()
         .keySet()
         .stream()
-        .filter(name -> !name.matches("application/.*\\+json"))
+        .filter(name -> !name.matches("application/(.)*(\\\\+)?json"))
         .collect(Collectors.toList());
     if (!unsupportedMediaTypes.isEmpty()) {
       throw ExceptionHelper.invalidConfigurationException(

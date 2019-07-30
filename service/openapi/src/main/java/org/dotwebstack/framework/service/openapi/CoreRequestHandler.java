@@ -36,8 +36,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   @SuppressWarnings("unchecked")
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
-    String mediaType = "application/hal+json";
-
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(buildQueryString())
         .build();
@@ -48,10 +46,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .isEmpty()) {
         ResponseObject template = openApiContext.getResponses()
             .stream()
-            .filter(response -> response.isApplicable(200, 299, mediaType))
+            .filter(response -> response.isApplicable(200, 299))
             .findFirst()
-            .orElseThrow(
-                () -> ExceptionHelper.unsupportedOperationException("MediaType '{}' was not found.", mediaType))
+            .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."))
             .getResponseObject();
 
         String json = toJson(new ResponseMapper().mapResponse(template,
@@ -67,7 +64,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .body(fromObject("Error while serializing response to JSON."));
     }
   }
-
 
   private String toJson(Object object) throws JsonProcessingException {
     return objectMapper.writerWithDefaultPrettyPrinter()

@@ -31,8 +31,6 @@ public class OpenApiConfigurationTest {
 
   private OpenApiConfiguration openApiConfiguration;
 
-
-
   @BeforeEach
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
