@@ -12,8 +12,9 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseObject;
+import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -44,17 +45,18 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       ExecutionResult result = graphQL.execute(executionInput);
       if (result.getErrors()
           .isEmpty()) {
-        ResponseObject template = openApiContext.getResponses()
+        ResponseTemplate template = openApiContext.getResponses()
             .stream()
             .filter(response -> response.isApplicable(200, 299))
             .findFirst()
-            .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."))
-            .getResponseObject();
+            .orElseThrow(
+                () -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
 
-        String json = toJson(new ResponseMapper().mapResponse(template,
+        String json = toJson(new ResponseMapper().mapResponse(template.getResponseObject(),
             ((Map<String, Object>) result.getData()).get(this.openApiContext.getGraphQlField()
                 .getName())));
         return ServerResponse.ok()
+            .contentType(MediaType.parseMediaType(template.getMediaType()))
             .body(fromObject(json));
       }
       return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
