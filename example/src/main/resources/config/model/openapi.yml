@@ -1,7 +1,7 @@
 openapi: 3.0.2
 
 info:
-  title: Ruimtelijke Plannen API
+  title: Breweries
   version: 3.0.0
 
 components:
