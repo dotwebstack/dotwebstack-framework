@@ -1,5 +1,5 @@
 # 1 graphql
-This service can be used to expose the internal GraphQL service as a webservice.
+This service can be used to expose the internal GraphQL service as a web service.
 
 The graphql service can be included in a Spring Boot project with the following dependency:
 ```xml
