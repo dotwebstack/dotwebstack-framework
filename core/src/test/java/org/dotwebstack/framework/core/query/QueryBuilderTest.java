@@ -24,7 +24,7 @@ public class QueryBuilderTest {
   }
 
   @Test
-  public void test_toQuery_Valid() {
+  public void toQuery_returns_validQuery() {
     // Arrange
     this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");

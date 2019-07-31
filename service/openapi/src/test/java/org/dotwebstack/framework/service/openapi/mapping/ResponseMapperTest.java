@@ -22,24 +22,37 @@ class ResponseMapperTest {
   @Test
   @SuppressWarnings("unchecked")
   public void map_returnsProperty_ForValidResponse() {
+    // Arrange
     ResponseObject responseObject = getObject("root", ImmutableList.of(REQUIRED_NILLABLE_STRING));
+
+    // Act
     Map<String, Object> response = (Map<String, Object>) responseMapper.mapResponse(responseObject,
         ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value"));
+
+    // Assert
     assertTrue("prop1value".equals(response.get(REQUIRED_NILLABLE_STRING.getIdentifier())));
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void map_omitsProperty_ForMissingNonRequiredProperty() {
+    // Arrange
     ResponseObject responseObject = getObject("root", ImmutableList.of(NOT_REQUIRED_NILLABLE_STRING));
+
+    // Act
     Map<String, Object> response =
         (Map<String, Object>) responseMapper.mapResponse(responseObject, ImmutableMap.of("another key", "prop1value"));
+
+    // Assert
     assertTrue(response.isEmpty());
   }
 
   @Test
   public void map_throwsException_ForMissingRequiredNonNillableProperty() {
+    // Arrange
     ResponseObject responseObject = getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING));
+
+    // Act / Assert
     assertThrows(MappingException.class,
         () -> responseMapper.mapResponse(responseObject, ImmutableMap.of("other key", "prop1value")));
   }

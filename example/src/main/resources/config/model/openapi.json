@@ -1,24 +1,56 @@
 {
   "openapi": "3.0.2",
   "info": {
-    "title": "Ruimtelijke Plannen API",
+    "title": "Breweries",
     "version": "3.0.0"
   },
   "components": {
     "schemas": {
+      "Beer": {
+        "type": "object",
+        "required": [
+          "identifier",
+          "name"
+        ],
+        "properties": {
+          "identifier": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Breweries": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Brewery"
+        }
+      },
       "Brewery": {
         "type": "object",
         "required": [
-          "id",
-          "naam"
+          "identifier",
+          "name"
         ],
         "properties": {
-          "id": {
+          "identifier": {
             "type": "string"
           },
-          "naam": {
+          "name": {
             "type": "string",
             "nullable": true
+          },
+          "openinghours": {
+            "type": "string",
+            "nullable": true
+          },
+          "beers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Beer"
+            }
           }
         }
       }
@@ -34,7 +66,7 @@
             "content": {
               "application/hal+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plan"
+                  "$ref": "#/components/schemas/Breweries"
                 }
               }
             }

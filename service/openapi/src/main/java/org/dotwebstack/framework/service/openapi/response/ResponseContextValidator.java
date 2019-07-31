@@ -19,7 +19,7 @@ public class ResponseContextValidator {
     GraphQlField field = responseContext.getGraphQlField();
     ResponseTemplate okResponse = responseContext.getResponses()
         .stream()
-        .filter(r -> r.isApplicable(200, 299))
+        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
         .findFirst()
         .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response in the 200 range found."));
 

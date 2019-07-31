@@ -68,7 +68,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private String toJson(Object object) throws JsonProcessingException {
-    return objectMapper.writerWithDefaultPrettyPrinter()
+    return objectMapper.writer()
         .writeValueAsString(object);
   }
 

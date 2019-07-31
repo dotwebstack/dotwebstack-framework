@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,7 +89,7 @@ public class OpenApiConfiguration {
 
             responseContextValidator.validate(openApiContext);
 
-            routerFunctions.add(RouterFunctions.route(GET(name).and(accept(MediaType.APPLICATION_JSON)),
+            routerFunctions.add(RouterFunctions.route(POST(name).and(accept(MediaType.APPLICATION_JSON)),
                 new CoreRequestHandler(openApiContext, graphQl, objectMapper)));
           }
         });

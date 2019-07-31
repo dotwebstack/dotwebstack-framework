@@ -23,7 +23,7 @@ public class GraphQlFieldBuilderTest {
   }
 
   @Test
-  public void test_toGraphQlField_throwsException_MissingType() {
+  public void toGraphQlField_throwsException_MissingType() {
     // Arrange
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
