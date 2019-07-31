@@ -10,3 +10,5 @@ dotwebstack:
       rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
       beer_def: https://github.com/dotwebstack/beer/def#
       brewery_id: https://github.com/dotwebstack/beer/id/brewery/
+  openapi:
+    specificationFile: config/model/openapi.yml

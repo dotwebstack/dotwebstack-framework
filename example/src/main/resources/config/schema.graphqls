@@ -21,6 +21,11 @@ type Query {
       orderBy: "sort"
     )
 
+  default_breweries : [Brewery!]!
+    @sparql(
+      repository: "local"
+    )
+
   breweries_sort_nested(sort: [SortField!] = [{ field: "address.postalCode", order: ASC }]):[Brewery!]
    @sparql(
       repository: "local"

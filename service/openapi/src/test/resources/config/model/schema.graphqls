@@ -1,0 +1,22 @@
+schema {
+  query: Query
+}
+
+type Query {
+    query1(argument1: String, argument2: String): [Object1!]
+
+    query2: Object2!
+}
+
+type Object1 {
+    o1_prop1: String!
+    o1_prop2: Float!
+    o1_prop3: Int!
+    o1_prop4: Boolean!
+    o1_array1: [Object2]!
+    o1_object1: Object2
+}
+
+type Object2 {
+    o2_prop1: String!
+}

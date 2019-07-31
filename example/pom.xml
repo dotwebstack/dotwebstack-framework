@@ -14,17 +14,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webflux</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.dotwebstack.framework</groupId>
       <artifactId>backend-rdf4j</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>service-graphql</artifactId>
+      <artifactId>service-openapi</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

@@ -19,9 +19,8 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.dotwebstack.framework</groupId>
-      <artifactId>service-http</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webflux</artifactId>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>

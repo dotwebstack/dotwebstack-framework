@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.http;
+package org.dotwebstack.framework.service.openapi;
 
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializationFeature;
