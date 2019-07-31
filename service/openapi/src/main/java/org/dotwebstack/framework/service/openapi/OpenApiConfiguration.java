@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.web.reactive.function.server.RequestPredicate;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -73,26 +75,27 @@ public class OpenApiConfiguration {
         .forEach((name, path) -> {
           GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(path);
           if (Objects.nonNull(path.getGet())) {
-            List<ResponseTemplate> responseTemplates =
-                responseTemplateBuilder.buildResponseTemplates(name, "get", path.getGet());
-            ResponseContext openApiContext = new ResponseContext(graphQlField, responseTemplates);
-
-            responseContextValidator.validate(openApiContext);
-
-            routerFunctions.add(RouterFunctions.route(GET(name).and(accept(MediaType.APPLICATION_JSON)),
-                new CoreRequestHandler(openApiContext, graphQl, objectMapper)));
+            routerFunctions
+                .add(toRouterFunction(responseTemplateBuilder, name, graphQlField, "get", path.getGet(), GET(name)));
           }
           if (Objects.nonNull(path.getPost())) {
-            List<ResponseTemplate> responseTemplates =
-                responseTemplateBuilder.buildResponseTemplates(name, "post", path.getPost());
-            ResponseContext openApiContext = new ResponseContext(graphQlField, responseTemplates);
-
-            responseContextValidator.validate(openApiContext);
-
-            routerFunctions.add(RouterFunctions.route(POST(name).and(accept(MediaType.APPLICATION_JSON)),
-                new CoreRequestHandler(openApiContext, graphQl, objectMapper)));
+            routerFunctions
+                .add(toRouterFunction(responseTemplateBuilder, name, graphQlField, "post", path.getPost(), POST(name)));
           }
         });
     return routerFunctions.build();
+  }
+
+  protected RouterFunction<ServerResponse> toRouterFunction(ResponseTemplateBuilder responseTemplateBuilder,
+      String name, GraphQlField graphQlField, String methodName, Operation operation,
+      RequestPredicate requestPredicate) {
+    List<ResponseTemplate> responseTemplates =
+        responseTemplateBuilder.buildResponseTemplates(name, methodName, operation);
+    ResponseContext openApiContext = new ResponseContext(graphQlField, responseTemplates);
+
+    responseContextValidator.validate(openApiContext);
+
+    return RouterFunctions.route(requestPredicate.and(accept(MediaType.APPLICATION_JSON)),
+        new CoreRequestHandler(openApiContext, graphQl, objectMapper));
   }
 }
