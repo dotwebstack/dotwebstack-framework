@@ -19,11 +19,13 @@ public class ResponseContextValidator {
 
   public void validate(@NonNull ResponseContext responseContext, String pathName) {
     GraphQlField field = responseContext.getGraphQlField();
-    responseContext.getResponses()
+    long matched = responseContext.getResponses()
         .stream()
         .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
-        .findFirst()
-        .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response in the 200 range found."));
+        .count();
+    if (matched == 0) {
+      throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
+    }
     validateParameters(field, responseContext.getParameters(), pathName);
     responseContext.getResponses()
         .forEach(response -> validate(response.getResponseObject(), field));
