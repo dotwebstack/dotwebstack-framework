@@ -14,6 +14,8 @@ public class GraphQlArgument {
 
   private boolean required;
 
+  private boolean hasDefault;
+
   @Builder.Default
   private List<GraphQlArgument> children = Collections.emptyList();
 }

@@ -11,6 +11,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.OpenAPIV3Parser;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import lombok.NonNull;
@@ -88,13 +89,14 @@ public class OpenApiConfiguration {
   }
 
   protected RouterFunction<ServerResponse> toRouterFunction(PathItem pathItem,
-      ResponseTemplateBuilder responseTemplateBuilder, String name, GraphQlField graphQlField, String methodName,
+      ResponseTemplateBuilder responseTemplateBuilder, String path, GraphQlField graphQlField, String methodName,
       Operation operation, RequestPredicate requestPredicate) {
     List<ResponseTemplate> responseTemplates =
-        responseTemplateBuilder.buildResponseTemplates(name, methodName, operation);
-    ResponseContext openApiContext = new ResponseContext(graphQlField, responseTemplates, operation.getParameters());
+        responseTemplateBuilder.buildResponseTemplates(path, methodName, operation);
+    ResponseContext openApiContext = new ResponseContext(graphQlField, responseTemplates,
+        operation.getParameters() != null ? operation.getParameters() : Collections.emptyList());
 
-    responseContextValidator.validate(openApiContext);
+    responseContextValidator.validate(openApiContext, path);
 
     return RouterFunctions.route(requestPredicate.and(accept(MediaType.APPLICATION_JSON)),
         new CoreRequestHandler(openApiContext, graphQl, objectMapper));

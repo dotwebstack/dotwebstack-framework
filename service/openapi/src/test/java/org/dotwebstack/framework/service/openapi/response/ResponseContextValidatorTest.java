@@ -6,6 +6,7 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -35,7 +36,7 @@ public class ResponseContextValidatorTest {
     ResponseContext getResponseContext = getResponseContext("/query1", "get");
 
     // Act / Assert
-    validator.validate(getResponseContext);
+    validator.validate(getResponseContext, "/query1");
   }
 
   @Test
@@ -44,7 +45,7 @@ public class ResponseContextValidatorTest {
     ResponseContext getResponseContext = getResponseContext("/query1", "post");
 
     // Act / Assert
-    this.validator.validate(getResponseContext);
+    this.validator.validate(getResponseContext, "/query1");
   }
 
   @Test
@@ -53,7 +54,7 @@ public class ResponseContextValidatorTest {
     ResponseContext getResponseContext = getResponseContext("/query2", "get");
 
     // Act / Assert
-    this.validator.validate(getResponseContext);
+    this.validator.validate(getResponseContext, "/query2");
   }
 
   @Test
@@ -65,7 +66,7 @@ public class ResponseContextValidatorTest {
         .setResponseCode(300);
 
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () -> this.validator.validate(getResponseContext));
+    assertThrows(UnsupportedOperationException.class, () -> this.validator.validate(getResponseContext, "/query2"));
   }
 
   @Test
@@ -75,7 +76,7 @@ public class ResponseContextValidatorTest {
     ResponseContext getResponseContext = getResponseContext("/query1", "get");
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext));
+    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext, "/query2"));
   }
 
   @Test
@@ -85,7 +86,7 @@ public class ResponseContextValidatorTest {
     ResponseContext getResponseContext = getResponseContext("/query1", "get");
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext));
+    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext, "/query1"));
   }
 
   @Test
@@ -128,7 +129,7 @@ public class ResponseContextValidatorTest {
     ResponseContext getResponseContext = getResponseContext("/query1", "get");
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext));
+    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext, "/query1"));
   }
 
   private ResponseContext getResponseContext(String path, String methodName) {
@@ -139,6 +140,6 @@ public class ResponseContextValidatorTest {
     GraphQlField field = TestResources.queryFieldHelper(this.registry)
         .resolveGraphQlField(pathItem);
 
-    return new ResponseContext(field, responses, null);
+    return new ResponseContext(field, responses, Collections.emptyList());
   }
 }
