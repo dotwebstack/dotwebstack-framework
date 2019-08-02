@@ -19,7 +19,7 @@ public class ResponseContextValidator {
 
   public void validate(@NonNull ResponseContext responseContext, String pathName) {
     GraphQlField field = responseContext.getGraphQlField();
-    ResponseTemplate okResponse = responseContext.getResponses()
+    responseContext.getResponses()
         .stream()
         .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
         .findFirst()
@@ -61,14 +61,16 @@ public class ResponseContextValidator {
     parameters.stream()
         .forEach(p -> {
           String name = p.getName();
-          field.getArguments()
+          long matching = field.getArguments()
               .stream()
               .filter(argument -> argument.getName()
                   .equals(name))
-              .findFirst()
-              .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
-                  "OAS argument '{}' for path '{}' was " + "not " + "found on GraphQL field '{}'", name, pathName,
-                  field.getName()));
+              .count();
+          if (matching == 0) {
+            throw ExceptionHelper.invalidConfigurationException(
+                "OAS argument '{}' for path '{}' was " + "not " + "found on GraphQL field '{}'", name, pathName,
+                field.getName());
+          }
         });
     field.getArguments()
         .forEach(argument -> verifyRequiredNoDefaultArgument(argument, parameters, pathName));
@@ -76,13 +78,15 @@ public class ResponseContextValidator {
 
   private void verifyRequiredNoDefaultArgument(GraphQlArgument argument, List<Parameter> parameters, String pathName) {
     if (argument.isRequired() && !argument.isHasDefault()) {
-      parameters.stream()
+      long matching = parameters.stream()
           .filter(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
               .equals(argument.getName()))
-          .findFirst()
-          .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
-              "No required OAS parameter found for required and no-default GraphQL argument" + " '{}' in path '{}'",
-              argument.getName(), pathName));
+          .count();
+      if (matching == 0) {
+        throw ExceptionHelper.invalidConfigurationException(
+            "No required OAS parameter found for required and no-default GraphQL argument" + " '{}' in path '{}'",
+            argument.getName(), pathName);
+      }
     }
     if (argument.isRequired()) {
       argument.getChildren()
