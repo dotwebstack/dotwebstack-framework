@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.core.query;
 
 import graphql.language.FieldDefinition;
+import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
+import graphql.language.NonNullType;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.Type;
 import graphql.language.TypeDefinition;
@@ -22,6 +24,7 @@ public class GraphQlFieldBuilder {
   }
 
   public GraphQlField toGraphQlField(@NonNull FieldDefinition fieldDefinition) {
+
     List<GraphQlField> fields = getGraphQlFields(fieldDefinition);
     List<GraphQlArgument> arguments = getArguments(fieldDefinition);
     return GraphQlField.builder()
@@ -57,12 +60,26 @@ public class GraphQlFieldBuilder {
 
   @SuppressWarnings("rawtypes")
   private GraphQlArgument toGraphQlArgument(InputValueDefinition inputValueDefinition) {
-    Type<?> baseType = TypeHelper.getBaseType(inputValueDefinition.getType());
+    GraphQlArgument.GraphQlArgumentBuilder builder = GraphQlArgument.builder();
+
+    Type inputValueDefinitionType = inputValueDefinition.getType();
+    builder.required(inputValueDefinitionType instanceof NonNullType);
+
+    Type<?> baseType = TypeHelper.getBaseType(inputValueDefinitionType);
     String type = TypeHelper.getTypeName(baseType);
     TypeDefinition typeDefinition = this.registry.getType(baseType)
         .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Type '{}' not found in the GraphQL schema.",
             baseType));
 
-    return new GraphQlArgument(inputValueDefinition.getName(), type, null);
+
+    builder.name(inputValueDefinition.getName())
+        .type(type);
+    if (typeDefinition instanceof InputObjectTypeDefinition) {
+      builder.children(((InputObjectTypeDefinition) typeDefinition).getInputValueDefinitions()
+          .stream()
+          .map(this::toGraphQlArgument)
+          .collect(Collectors.toList()));
+    }
+    return builder.build();
   }
 }
