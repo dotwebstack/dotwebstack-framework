@@ -90,8 +90,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private Map<String, String> resolveParameters(ServerRequest request) throws ParameterValidationException {
     Map<String, String> result = new HashMap<>();
-    for (Parameter parameter : this.responseContext.getParameters()) {
-      resolveParameter(parameter, request, result);
+    if (Objects.nonNull(this.responseContext.getParameters())) {
+      for (Parameter parameter : this.responseContext.getParameters()) {
+        resolveParameter(parameter, request, result);
+      }
     }
     return result;
   }
