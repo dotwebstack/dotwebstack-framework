@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class GraphQlArgumentObject extends GraphQlArgument {
+public class GraphQlArgumentObject {
   @Builder.Default
   private List<GraphQlArgument> arguments = Collections.emptyList();
 }

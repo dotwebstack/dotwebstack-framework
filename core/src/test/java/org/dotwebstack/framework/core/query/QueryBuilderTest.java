@@ -10,6 +10,7 @@ import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.HashMap;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ public class QueryBuilderTest {
     GraphQlField queryField = builder.toGraphQlField(fieldDefinition);
 
     // Act
-    String query = new GraphQlQueryBuilder().toQuery(queryField);
+    String query = new GraphQlQueryBuilder().toQuery(queryField, new HashMap<>());
 
     // Assert
     assertEquals("{brewery{identifier,name,founded,foundedAtYear}}", query);

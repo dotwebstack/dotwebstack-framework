@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
@@ -22,14 +25,14 @@ import reactor.core.publisher.Mono;
 
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
-  private final ResponseContext openApiContext;
+  private final ResponseContext responseContext;
 
   private final GraphQL graphQL;
 
   private final ObjectMapper objectMapper;
 
-  CoreRequestHandler(ResponseContext openApiContext, GraphQL graphQL, ObjectMapper objectMapper) {
-    this.openApiContext = openApiContext;
+  CoreRequestHandler(ResponseContext responseContext, GraphQL graphQL, ObjectMapper objectMapper) {
+    this.responseContext = responseContext;
     this.graphQL = graphQL;
     this.objectMapper = objectMapper;
   }
@@ -37,24 +40,33 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   @SuppressWarnings("unchecked")
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
+
+    Map<String, String> inputParams = resolveParametres(request);
+
+    String query = buildQueryString(inputParams);
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(buildQueryString())
+        .query(query)
         .build();
 
     try {
       ExecutionResult result = graphQL.execute(executionInput);
       if (result.getErrors()
           .isEmpty()) {
-        ResponseTemplate template = openApiContext.getResponses()
+        ResponseTemplate template = responseContext.getResponses()
             .stream()
             .filter(response -> response.isApplicable(200, 299))
             .findFirst()
             .orElseThrow(
                 () -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
 
-        String json = toJson(new ResponseMapper().mapResponse(template.getResponseObject(),
-            ((Map<String, Object>) result.getData()).get(this.openApiContext.getGraphQlField()
-                .getName())));
+        Object response = new ResponseMapper().mapResponse(template.getResponseObject(),
+            ((Map<String, Object>) result.getData()).get(this.responseContext.getGraphQlField()
+                .getName()));
+        if (response == null) {
+          return ServerResponse.notFound()
+              .build();
+        }
+        String json = toJson(response);
         return ServerResponse.ok()
             .contentType(MediaType.parseMediaType(template.getMediaType()))
             .body(fromObject(json));
@@ -67,12 +79,41 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
+  private Map<String, String> resolveParametres(ServerRequest request) {
+    Map<String, String> result = new HashMap<>();
+    this.responseContext.getParameters()
+        .stream()
+        .forEach(parameter -> resolveParameter(parameter, request, result));
+    return result;
+  }
+
+  private void resolveParameter(Parameter parameter, ServerRequest request, Map<String, String> result) {
+    switch (parameter.getIn()) {
+      case "path":
+        result.put(parameter.getName(), request.pathVariable(parameter.getName()));
+        break;
+      case "query":
+        request.queryParam(parameter.getName())
+            .ifPresent(value -> result.put(parameter.getName(), value));
+        break;
+      case "header":
+        List<String> paramHeader = request.headers()
+            .header(parameter.getName());
+        if (!paramHeader.isEmpty()) {
+          result.put(parameter.getName(), paramHeader.get(0));
+        }
+        break;
+      default:
+        throw ExceptionHelper.illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
+    }
+  }
+
   private String toJson(Object object) throws JsonProcessingException {
     return objectMapper.writer()
         .writeValueAsString(object);
   }
 
-  private String buildQueryString() {
-    return new GraphQlQueryBuilder().toQuery(this.openApiContext.getGraphQlField());
+  private String buildQueryString(Map<String, String> inputParams) {
+    return new GraphQlQueryBuilder().toQuery(this.responseContext.getGraphQlField(), inputParams);
   }
 }

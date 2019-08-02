@@ -12,6 +12,7 @@ import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
@@ -53,14 +54,14 @@ public class OpenApiConfigurationTest {
     openApiConfiguration.route(openApi);
 
     // Assert
-    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(ResponseTemplateBuilder.class), eq("/query1"),
-        any(GraphQlField.class), eq("get"), any(Operation.class),
+    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(PathItem.class),
+        any(ResponseTemplateBuilder.class), eq("/query1"), any(GraphQlField.class), eq("get"), any(Operation.class),
         argThat(new RequestPredicateMatcher("(GET && " + "/query1)")));
-    verify(this.openApiConfiguration).toRouterFunction(any(ResponseTemplateBuilder.class), eq("/query1"),
-        any(GraphQlField.class), eq("post"), any(Operation.class),
+    verify(this.openApiConfiguration).toRouterFunction(any(PathItem.class), any(ResponseTemplateBuilder.class),
+        eq("/query1"), any(GraphQlField.class), eq("post"), any(Operation.class),
         argThat(new RequestPredicateMatcher("(POST && " + "/query1)")));
-    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(ResponseTemplateBuilder.class), eq("/query2"),
-        any(GraphQlField.class), eq("get"), any(Operation.class),
+    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(PathItem.class),
+        any(ResponseTemplateBuilder.class), eq("/query2"), any(GraphQlField.class), eq("get"), any(Operation.class),
         argThat(new RequestPredicateMatcher("(GET && " + "/query2)")));
   }
 

@@ -139,6 +139,6 @@ public class ResponseContextValidatorTest {
     GraphQlField field = TestResources.queryFieldHelper(this.registry)
         .resolveGraphQlField(pathItem);
 
-    return new ResponseContext(field, responses);
+    return new ResponseContext(field, responses, null);
   }
 }

@@ -9,6 +9,7 @@ import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.util.List;
 import java.util.Objects;
@@ -75,23 +76,23 @@ public class OpenApiConfiguration {
         .forEach((name, path) -> {
           GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(path);
           if (Objects.nonNull(path.getGet())) {
-            routerFunctions
-                .add(toRouterFunction(responseTemplateBuilder, name, graphQlField, "get", path.getGet(), GET(name)));
+            routerFunctions.add(
+                toRouterFunction(path, responseTemplateBuilder, name, graphQlField, "get", path.getGet(), GET(name)));
           }
           if (Objects.nonNull(path.getPost())) {
-            routerFunctions
-                .add(toRouterFunction(responseTemplateBuilder, name, graphQlField, "post", path.getPost(), POST(name)));
+            routerFunctions.add(toRouterFunction(path, responseTemplateBuilder, name, graphQlField, "post",
+                path.getPost(), POST(name)));
           }
         });
     return routerFunctions.build();
   }
 
-  protected RouterFunction<ServerResponse> toRouterFunction(ResponseTemplateBuilder responseTemplateBuilder,
-      String name, GraphQlField graphQlField, String methodName, Operation operation,
-      RequestPredicate requestPredicate) {
+  protected RouterFunction<ServerResponse> toRouterFunction(PathItem pathItem,
+      ResponseTemplateBuilder responseTemplateBuilder, String name, GraphQlField graphQlField, String methodName,
+      Operation operation, RequestPredicate requestPredicate) {
     List<ResponseTemplate> responseTemplates =
         responseTemplateBuilder.buildResponseTemplates(name, methodName, operation);
-    ResponseContext openApiContext = new ResponseContext(graphQlField, responseTemplates);
+    ResponseContext openApiContext = new ResponseContext(graphQlField, responseTemplates, operation.getParameters());
 
     responseContextValidator.validate(openApiContext);
 

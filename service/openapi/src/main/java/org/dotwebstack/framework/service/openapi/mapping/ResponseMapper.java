@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,12 +14,18 @@ public class ResponseMapper {
   public Object mapResponse(@NonNull ResponseObject responseObject, Object data) {
     switch (responseObject.getType()) {
       case "array":
+        if (data == null) {
+          return Collections.emptyList();
+        }
         ResponseObject childResponseObject = responseObject.getItems()
             .get(0);
         return ((List<Object>) data).stream()
             .map(object -> mapResponse(childResponseObject, object))
             .collect(Collectors.toList());
       case "object":
+        if (data == null) {
+          return null;
+        }
         Map<String, Object> result = new HashMap<>();
 
         responseObject.getChildren()

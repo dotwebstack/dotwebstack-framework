@@ -39,11 +39,32 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Beer'
+    SortField:
+      type: array
+      items:
+        schema:
+          type: object
+          properties:
+            field:
+              type: string
+            order:
+              type: string
+
+
 
 paths:
-  /breweries:
+  /breweries/{name}:
     get:
-      x-dws-query: default_breweries
+      x-dws-query: breweries
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+        - name: sort
+          in: header
+          schema:
+            $ref: '#/components/schemas/SortField'
       responses:
         200:
           description: OK
@@ -51,3 +72,19 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Breweries'
+  /brewery/{identifier}:
+    get:
+      x-dws-query: brewery
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Brewery'

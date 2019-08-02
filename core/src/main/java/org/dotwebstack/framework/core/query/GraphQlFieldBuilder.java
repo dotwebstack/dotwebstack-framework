@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.query;
 
 import graphql.language.FieldDefinition;
+import graphql.language.InputValueDefinition;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.Type;
 import graphql.language.TypeDefinition;
@@ -22,10 +23,12 @@ public class GraphQlFieldBuilder {
 
   public GraphQlField toGraphQlField(@NonNull FieldDefinition fieldDefinition) {
     List<GraphQlField> fields = getGraphQlFields(fieldDefinition);
+    List<GraphQlArgument> arguments = getArguments(fieldDefinition);
     return GraphQlField.builder()
         .name(fieldDefinition.getName())
         .type(TypeHelper.getTypeName(TypeHelper.getBaseType(fieldDefinition.getType())))
         .fields(fields)
+        .arguments(arguments)
         .build();
   }
 
@@ -46,6 +49,20 @@ public class GraphQlFieldBuilder {
   }
 
   private List<GraphQlArgument> getArguments(FieldDefinition fieldDefinition) {
-    throw ExceptionHelper.unsupportedOperationException("getArguments not yet supported.");
+    return fieldDefinition.getInputValueDefinitions()
+        .stream()
+        .map(this::toGraphQlArgument)
+        .collect(Collectors.toList());
+  }
+
+  @SuppressWarnings("rawtypes")
+  private GraphQlArgument toGraphQlArgument(InputValueDefinition inputValueDefinition) {
+    Type<?> baseType = TypeHelper.getBaseType(inputValueDefinition.getType());
+    String type = TypeHelper.getTypeName(baseType);
+    TypeDefinition typeDefinition = this.registry.getType(baseType)
+        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Type '{}' not found in the GraphQL schema.",
+            baseType));
+
+    return new GraphQlArgument(inputValueDefinition.getName(), type, null);
   }
 }
