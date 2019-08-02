@@ -42,13 +42,12 @@ components:
     SortField:
       type: array
       items:
-        schema:
-          type: object
-          properties:
-            field:
-              type: string
-            order:
-              type: string
+        type: object
+        properties:
+          field:
+            type: string
+          order:
+            type: string
 
 
 

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.query;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.common.collect.ImmutableMap;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.ScalarTypeDefinition;
@@ -38,6 +39,24 @@ public class QueryBuilderTest {
 
     // Assert
     assertEquals("{brewery{identifier,name,founded,foundedAtYear}}", query);
+  }
+
+  @Test
+  public void toQuery_returns_validQueryWithArguments() {
+    // Arrange
+    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
+
+    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
+    GraphQlField queryField = builder.toGraphQlField(fieldDefinition);
+
+    ImmutableMap<String, String> arguments = ImmutableMap.of("identifier", "1");
+
+    // Act
+    String query = new GraphQlQueryBuilder().toQuery(queryField, arguments);
+
+    // Assert
+    assertEquals("{brewery(identifier: 1){identifier,name,founded,foundedAtYear}}", query);
   }
 
   private FieldDefinition getQueryFieldDefinition(String name) {

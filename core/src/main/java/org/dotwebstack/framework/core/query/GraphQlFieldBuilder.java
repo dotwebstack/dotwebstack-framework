@@ -24,7 +24,6 @@ public class GraphQlFieldBuilder {
   }
 
   public GraphQlField toGraphQlField(@NonNull FieldDefinition fieldDefinition) {
-
     List<GraphQlField> fields = getGraphQlFields(fieldDefinition);
     List<GraphQlArgument> arguments = getArguments(fieldDefinition);
     return GraphQlField.builder()
@@ -71,7 +70,6 @@ public class GraphQlFieldBuilder {
     TypeDefinition typeDefinition = this.registry.getType(baseType)
         .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Type '{}' not found in the GraphQL schema.",
             baseType));
-
 
     builder.name(inputValueDefinition.getName())
         .type(type);
