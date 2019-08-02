@@ -8,14 +8,14 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.parameters.Parameter;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
+import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
+import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -47,7 +47,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
     try {
       inputParams = resolveParameters(request);
-    } catch (UnsupportedOperationException e) {
+    } catch (ParameterValidationException e) {
       return ServerResponse.status(HttpStatus.NOT_FOUND)
           .body(fromObject(String.format("Error while obtaining request parameters: %s", e.getMessage())));
     }
@@ -88,15 +88,16 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private Map<String, String> resolveParameters(ServerRequest request) {
+  private Map<String, String> resolveParameters(ServerRequest request) throws ParameterValidationException {
     Map<String, String> result = new HashMap<>();
-    this.responseContext.getParameters()
-        .stream()
-        .forEach(parameter -> resolveParameter(parameter, request, result));
+    for (Parameter parameter : this.responseContext.getParameters()) {
+      resolveParameter(parameter, request, result);
+    }
     return result;
   }
 
-  private void resolveParameter(Parameter parameter, ServerRequest request, Map<String, String> result) {
+  private void resolveParameter(Parameter parameter, ServerRequest request, Map<String, String> result)
+      throws ParameterValidationException {
     String paramValue;
     switch (parameter.getIn()) {
       case "path":
@@ -109,7 +110,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         paramValue = getHeaderParam(parameter, request);
         break;
       default:
-        throw ExceptionHelper.unsupportedOperationException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
+        throw ExceptionHelper.illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
     }
 
     if (Objects.nonNull(paramValue)) {
@@ -117,35 +118,36 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private String getPathParam(Parameter parameter, ServerRequest request) {
+  private String getPathParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
     try {
       return request.pathVariable(parameter.getName());
     } catch (Exception e) {
       if (parameter.getRequired()) {
-        throw ExceptionHelper.unsupportedOperationException("No value provided for required path parameter '{}'",
+        throw OpenApiExceptionHelper.parameterValidationException("No value provided for required path parameter '{}'",
             parameter.getName());
       }
     }
     return null;
   }
 
-  private String getQueryParam(Parameter parameter, ServerRequest request) {
-    String param = request.queryParam(parameter.getName()).orElse(null);
+  private String getQueryParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+    String param = request.queryParam(parameter.getName())
+        .orElse(null);
 
     if (parameter.getRequired() && Objects.isNull(param)) {
-      throw ExceptionHelper.unsupportedOperationException("No value provided for required query parameter '{}'",
+      throw OpenApiExceptionHelper.parameterValidationException("No value provided for required query parameter '{}'",
           parameter.getName());
     }
     return param;
   }
 
-  private String getHeaderParam(Parameter parameter, ServerRequest request) {
+  private String getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
     List<String> paramHeader = request.headers()
         .header(parameter.getName());
     if (paramHeader.isEmpty()) {
       if (parameter.getRequired()) {
-        throw ExceptionHelper.unsupportedOperationException("No value provided for required header parameter '{}'",
-            parameter.getName());
+        throw OpenApiExceptionHelper
+            .parameterValidationException("No value provided for required header parameter '{}'", parameter.getName());
       }
       return null;
     }

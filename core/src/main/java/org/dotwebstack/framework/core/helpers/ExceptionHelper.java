@@ -6,7 +6,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 
 public class ExceptionHelper {
 
-  private ExceptionHelper() {}
+  protected ExceptionHelper() {}
 
   public static String formatMessage(String message, Object... arguments) {
     try {
