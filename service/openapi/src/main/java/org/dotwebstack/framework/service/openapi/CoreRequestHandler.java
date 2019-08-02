@@ -8,9 +8,12 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.parameters.Parameter;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
@@ -40,8 +43,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   @SuppressWarnings("unchecked")
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
+    Map<String, String> inputParams;
 
-    Map<String, String> inputParams = resolveParametres(request);
+    try {
+      inputParams = resolveParameters(request);
+    } catch (UnsupportedOperationException e) {
+      return ServerResponse.status(HttpStatus.NOT_FOUND)
+          .body(fromObject(String.format("Error while obtaining request parameters: %s", e.getMessage())));
+    }
 
     String query = buildQueryString(inputParams);
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
@@ -79,7 +88,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private Map<String, String> resolveParametres(ServerRequest request) {
+  private Map<String, String> resolveParameters(ServerRequest request) {
     Map<String, String> result = new HashMap<>();
     this.responseContext.getParameters()
         .stream()
@@ -88,24 +97,59 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private void resolveParameter(Parameter parameter, ServerRequest request, Map<String, String> result) {
+    String paramValue;
     switch (parameter.getIn()) {
       case "path":
-        result.put(parameter.getName(), request.pathVariable(parameter.getName()));
+        paramValue = getPathParam(parameter, request);
         break;
       case "query":
-        request.queryParam(parameter.getName())
-            .ifPresent(value -> result.put(parameter.getName(), value));
+        paramValue = getQueryParam(parameter, request);
         break;
       case "header":
-        List<String> paramHeader = request.headers()
-            .header(parameter.getName());
-        if (!paramHeader.isEmpty()) {
-          result.put(parameter.getName(), paramHeader.get(0));
-        }
+        paramValue = getHeaderParam(parameter, request);
         break;
       default:
-        throw ExceptionHelper.illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
+        throw ExceptionHelper.unsupportedOperationException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
     }
+
+    if (Objects.nonNull(paramValue)) {
+      result.put(parameter.getName(), paramValue);
+    }
+  }
+
+  private String getPathParam(Parameter parameter, ServerRequest request) {
+    try {
+      return request.pathVariable(parameter.getName());
+    } catch (Exception e) {
+      if (parameter.getRequired()) {
+        throw ExceptionHelper.unsupportedOperationException("No value provided for required path parameter '{}'",
+            parameter.getName());
+      }
+    }
+    return null;
+  }
+
+  private String getQueryParam(Parameter parameter, ServerRequest request) {
+    String param = request.queryParam(parameter.getName()).orElse(null);
+
+    if (parameter.getRequired() && Objects.isNull(param)) {
+      throw ExceptionHelper.unsupportedOperationException("No value provided for required query parameter '{}'",
+          parameter.getName());
+    }
+    return param;
+  }
+
+  private String getHeaderParam(Parameter parameter, ServerRequest request) {
+    List<String> paramHeader = request.headers()
+        .header(parameter.getName());
+    if (paramHeader.isEmpty()) {
+      if (parameter.getRequired()) {
+        throw ExceptionHelper.unsupportedOperationException("No value provided for required header parameter '{}'",
+            parameter.getName());
+      }
+      return null;
+    }
+    return paramHeader.get(0);
   }
 
   private String toJson(Object object) throws JsonProcessingException {

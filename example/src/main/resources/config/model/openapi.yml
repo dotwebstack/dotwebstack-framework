@@ -53,12 +53,13 @@ components:
 
 
 paths:
-  /breweries/{name}:
+  /breweries:
     get:
       x-dws-query: breweries
       parameters:
         - name: name
-          in: path
+          in: query
+          required: false
           schema:
             type: string
         - name: sort
