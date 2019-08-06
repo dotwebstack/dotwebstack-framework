@@ -69,14 +69,13 @@ public class OpenApiConfiguration {
         .build();
     openApi.getPaths()
         .forEach((name, path) -> {
-          GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(path);
           if (Objects.nonNull(path.getGet())) {
-            routerFunctions
-                .add(toRouterFunction(responseTemplateBuilder, name, graphQlField, "get", path.getGet(), GET(name)));
+             routerFunctions.add(toRouterFunction(responseTemplateBuilder, name,
+                queryFieldHelper.resolveGraphQlField(path.getGet()), "get", path.getGet(), GET(name)));
           }
           if (Objects.nonNull(path.getPost())) {
-            routerFunctions
-                .add(toRouterFunction(responseTemplateBuilder, name, graphQlField, "post", path.getPost(), POST(name)));
+           routerFunctions.add(toRouterFunction(responseTemplateBuilder, name,
+                queryFieldHelper.resolveGraphQlField(path.getPost()), "post", path.getPost(), POST(name)));
           }
         });
     return routerFunctions.build();
