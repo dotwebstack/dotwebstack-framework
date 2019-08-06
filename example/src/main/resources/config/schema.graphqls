@@ -83,7 +83,7 @@ type Beer {
   name: String!
   brewery: String!
   beerTypes: [String]!
-  ingredients(ingredientName: [String] @filter(field: "name")): [Ingredient!]
+  ingredients(name: [String] @filter(field: "name")): [Ingredient!]
   supplements: [Supplement!]
 }
 

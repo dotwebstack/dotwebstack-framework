@@ -1,7 +1,5 @@
 package org.dotwebstack.framework.core.validators;
 
-import static graphql.schema.GraphQLTypeUtil.unwrapAll;
-
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeDefinition;
@@ -11,18 +9,15 @@ import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectField;
-import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import java.util.List;
 import java.util.Objects;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.directives.FilterOperator;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.springframework.stereotype.Component;
@@ -125,26 +120,6 @@ public class FilterValidator {
       throw new DirectiveValidationException(
           "Filter 'operator' [{}] on field '{}' is invalid. It should be one of: '=', '!=', '<', '<=', '>'," + " '>='",
           argument.getValue(), name);
-    }
-  }
-
-  public void validateUniqueness(GraphQLFieldDefinition fieldDefinition, List<String> filterNames) {
-    fieldDefinition.getArguments()
-        .forEach(argument -> {
-          GraphQLDirective filterDirective = argument.getDirective(CoreDirectives.FILTER_NAME);
-          if (Objects.nonNull(filterDirective)) {
-            if (filterNames.contains(argument.getName())) {
-              throw ExceptionHelper.illegalArgumentException(
-                  "There are more than one filter arguments with name '{}' within the same query context",
-                  argument.getName());
-            }
-            filterNames.add(argument.getName());
-          }
-        });
-    GraphQLUnmodifiedType childType = unwrapAll(fieldDefinition.getType());
-    if (childType instanceof GraphQLObjectType) {
-      ((GraphQLObjectType) childType).getFieldDefinitions()
-          .forEach(childFieldDefinition -> validateUniqueness(childFieldDefinition, filterNames));
     }
   }
 }

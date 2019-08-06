@@ -151,22 +151,3 @@ The filter directive (@filter) allows the user to apply a filter on a field. The
   sinceBefore: String @filter(field: "founded", operator: "<")
   name: [String] @filter(field: "name")): [Brewery!]!
 ```
-
-It is not allowed to have more than one filter argument with the same name applied to the same query context. 
-This means that the following schema is invalid, since both `breweries` and `beers` have an argument called `name` with a 
-filter applied to it. Both filters are used within the same `breweries` context. The correct way to model your schema is 
-rename one or both of the filters so that the argument has a unique name.
-
-```schema.graphqls
-type Query {
-  breweries(name: String @filter): [Brewery]
-}
-
-type Brewery {
-  beers(name: String @filter): [Beer]
-}
-
-type Beer {
-  name
-}
-```

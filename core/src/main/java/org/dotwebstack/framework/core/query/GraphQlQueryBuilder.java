@@ -13,7 +13,7 @@ public class GraphQlQueryBuilder {
     StringJoiner joiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
 
-    addToQuery(graphQlField, joiner, argumentJoiner, inputParams);
+    addToQuery(graphQlField, joiner, argumentJoiner, inputParams, true);
     builder.append("query Wrapper");
     if (!argumentJoiner.toString()
         .isEmpty()) {
@@ -26,11 +26,11 @@ public class GraphQlQueryBuilder {
   }
 
   private void addToQuery(GraphQlField field, StringJoiner joiner, StringJoiner headerArgumentJoiner,
-      Map<String, Object> inputParams) {
+      Map<String, Object> inputParams, boolean isTopLevel) {
     StringJoiner argumentJoiner = new StringJoiner(",", "(", ")");
     argumentJoiner.setEmptyValue("");
     if (!field.getArguments()
-        .isEmpty()) {
+        .isEmpty() && isTopLevel) {
       field.getArguments()
           .stream()
           .filter(graphQlArgument -> inputParams.containsKey(graphQlArgument.getName()))
@@ -43,7 +43,7 @@ public class GraphQlQueryBuilder {
         .isEmpty()) {
       StringJoiner childJoiner = new StringJoiner(",", "{", "}");
       field.getFields()
-          .forEach(childField -> addToQuery(childField, childJoiner, headerArgumentJoiner, inputParams));
+          .forEach(childField -> addToQuery(childField, childJoiner, headerArgumentJoiner, inputParams, false));
       joiner.add(field.getName() + argumentJoiner.toString() + childJoiner.toString());
     } else {
       joiner.add(field.getName() + argumentJoiner.toString());
