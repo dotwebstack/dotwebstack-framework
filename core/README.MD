@@ -145,9 +145,28 @@ In the given example the `status` is retrieved from a `statusIri`.
 ## 1.6 Filter Directive
 The filter directive (@filter) allows the user to apply a filter on a field. The field-argument is optional and has a default value consisting of the name of the field where the directive is applied on. So when @filter is used without parameters, the name of the field and the default operator (=) will be used.  
 
-```schema.graphQls
+```schema.graphqls
   page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
   founded: String @filter(),
   sinceBefore: String @filter(field: "founded", operator: "<")
   name: [String] @filter(field: "name")): [Brewery!]!
+```
+
+It is not allowed to have more than one filter argument with the same name applied to the same query context. 
+This means that the following schema is invalid, since both `breweries` and `beers` have an argument called `name` with a 
+filter applied to it. Both filters are used within the same `breweries` context. The correct way to model your schema is 
+rename one or both of the filters so that the argument has a unique name.
+
+```schema.graphqls
+type Query {
+  breweries(name: String @filter): [Brewery]
+}
+
+type Brewery {
+  beers(name: String @filter): [Beer]
+}
+
+type Beer {
+  name
+}
 ```

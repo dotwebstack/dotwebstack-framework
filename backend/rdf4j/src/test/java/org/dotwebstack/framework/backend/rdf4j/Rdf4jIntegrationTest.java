@@ -361,7 +361,8 @@ class Rdf4jIntegrationTest {
   @Test
   void graphqlQuery_ReturnsMap_ForQueryWithNestedFilter() {
     // Arrange
-    String query = "{ breweries(name: \"Alfa Brouwerij\"){ beers { ingredients(name: [\"Hop\", \"Gerst\"]){ name }}}}";
+    String query =
+        "{ breweries(name: \"Alfa Brouwerij\"){ beers { ingredients(ingredientName: [\"Hop\", \"Gerst\"]){ name }}}}";
 
     // Act
     ExecutionResult result = graphQL.execute(query);
