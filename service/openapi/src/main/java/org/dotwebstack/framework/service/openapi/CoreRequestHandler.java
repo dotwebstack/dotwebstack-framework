@@ -4,6 +4,7 @@ import static org.springframework.web.reactive.function.BodyInserters.fromObject
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -45,7 +46,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   @SuppressWarnings("unchecked")
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
-    Map<String, String> inputParams;
+    Map<String, Object> inputParams;
 
     try {
       inputParams = resolveParameters(request);
@@ -96,8 +97,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private Map<String, String> resolveParameters(ServerRequest request) throws ParameterValidationException {
-    Map<String, String> result = new HashMap<>();
+  private Map<String, Object> resolveParameters(ServerRequest request) throws ParameterValidationException {
+    Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseContext.getParameters())) {
       for (Parameter parameter : this.responseContext.getParameters()) {
         resolveParameter(parameter, request, result);
@@ -106,9 +107,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     return result;
   }
 
-  private void resolveParameter(Parameter parameter, ServerRequest request, Map<String, String> result)
+  private void resolveParameter(Parameter parameter, ServerRequest request, Map<String, Object> result)
       throws ParameterValidationException {
-    String paramValue;
+
+    Object paramValue;
     switch (parameter.getIn()) {
       case "path":
         paramValue = getPathParam(parameter, request);
@@ -123,45 +125,85 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         throw ExceptionHelper.illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
     }
 
-    if (Objects.nonNull(paramValue)) {
-      result.put(parameter.getName(), paramValue);
+    Object deserialized = deserialize(parameter, paramValue);
+    if (Objects.nonNull(deserialized)) {
+      result.put(parameter.getName(), deserialized);
     }
   }
 
-  private String getPathParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+  private Object deserialize(Parameter parameter, Object paramValue) {
+
+    String schemaType = parameter.getSchema()
+        .getType();
+    switch (schemaType) {
+      case "array":
+        return deserializeArray(parameter, paramValue);
+      case "object":
+        return deserializeObject(parameter, paramValue);
+      default:
+        return paramValue;
+    }
+  }
+
+  private Object deserializeObject(Parameter parameter, Object paramValue) {
+    return paramValue;
+  }
+
+  private Object deserializeArray(Parameter parameter, Object paramValue) {
+    Parameter.StyleEnum style = parameter.getStyle();
+    boolean explode = parameter.getExplode();
+
+    if (style == Parameter.StyleEnum.SIMPLE && !explode) {
+      return ImmutableList.copyOf(((String) paramValue).split(","));
+    } else if (style == Parameter.StyleEnum.FORM && !explode) {
+      return ImmutableList.copyOf(((String) paramValue).split(","));
+    } else if (style == Parameter.StyleEnum.SPACEDELIMITED && !explode) {
+      return ImmutableList.copyOf(((String) paramValue).split(" "));
+    } else if (style == Parameter.StyleEnum.PIPEDELIMITED && !explode) {
+      return ImmutableList.copyOf(((String) paramValue).split("\\|"));
+    } else {
+      return paramValue;
+    }
+  }
+
+  private Object getPathParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
     try {
       return request.pathVariable(parameter.getName());
     } catch (Exception e) {
       if (parameter.getRequired()) {
-        throw OpenApiExceptionHelper.parameterValidationException("No value provided for required path parameter '{}'",
-            parameter.getName());
+        throw OpenApiExceptionHelper.parameterValidationException(
+            "No value provided for required path parameter " + "'{}'.", parameter.getName());
       }
     }
     return null;
   }
 
-  private String getQueryParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
-    String param = request.queryParam(parameter.getName())
-        .orElse(null);
+  private Object getQueryParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+    Object value = request.queryParams()
+        .get(parameter.getName());
 
-    if (parameter.getRequired() && Objects.isNull(param)) {
+    if (parameter.getRequired() && Objects.isNull(value)) {
       throw OpenApiExceptionHelper.parameterValidationException("No value provided for required query parameter '{}'",
           parameter.getName());
     }
-    return param;
+    return value;
   }
 
-  private String getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
-    List<String> paramHeader = request.headers()
+  private Object getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+    List<String> result = request.headers()
         .header(parameter.getName());
-    if (paramHeader.isEmpty()) {
+    if (result.isEmpty()) {
       if (parameter.getRequired()) {
         throw OpenApiExceptionHelper
             .parameterValidationException("No value provided for required header parameter '{}'", parameter.getName());
       }
-      return null;
     }
-    return paramHeader.get(0);
+    if (!"array".equals(parameter.getSchema()
+        .getType())) {
+      return !result.isEmpty() ? result.get(0) : null;
+    } else {
+      return result;
+    }
   }
 
   private String toJson(Object object) throws JsonProcessingException {
@@ -169,7 +211,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .writeValueAsString(object);
   }
 
-  private String buildQueryString(Map<String, String> inputParams) {
+  private String buildQueryString(Map<String, Object> inputParams) {
     return new GraphQlQueryBuilder().toQuery(this.responseContext.getGraphQlField(), inputParams);
   }
 }

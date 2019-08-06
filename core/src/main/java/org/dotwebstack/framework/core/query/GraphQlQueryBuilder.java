@@ -8,7 +8,7 @@ import lombok.NonNull;
 
 public class GraphQlQueryBuilder {
 
-  public String toQuery(@NonNull GraphQlField graphQlField, Map<String, String> inputParams) {
+  public String toQuery(@NonNull GraphQlField graphQlField, Map<String, Object> inputParams) {
     StringBuilder builder = new StringBuilder();
     StringJoiner joiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
@@ -26,7 +26,7 @@ public class GraphQlQueryBuilder {
   }
 
   private void addToQuery(GraphQlField field, StringJoiner joiner, StringJoiner headerArgumentJoiner,
-      Map<String, String> inputParams) {
+      Map<String, Object> inputParams) {
     StringJoiner argumentJoiner = new StringJoiner(",", "(", ")");
     argumentJoiner.setEmptyValue("");
     if (!field.getArguments()

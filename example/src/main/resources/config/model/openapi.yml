@@ -52,15 +52,19 @@ components:
 
 
 paths:
-  /breweries:
+  /breweries/{*name}:
     get:
       x-dws-query: breweries
       parameters:
         - name: name
           in: query
+          explode: false
+          style: spaceDelimited
           required: false
           schema:
-            type: string
+            type: array
+            items:
+              type: string
         - name: sinceAfter
           in: header
           required: true

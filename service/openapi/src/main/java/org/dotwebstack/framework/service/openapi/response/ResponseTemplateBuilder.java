@@ -133,8 +133,13 @@ public class ResponseTemplateBuilder {
       boolean isRequired, boolean isNillable) {
     String ref = schema.getItems()
         .get$ref();
-    Schema refSchema = getSchemaReference(ref, openApi);
-    ResponseObject item = createResponseObject(openApi, identifier, refSchema, true, false);
+    ResponseObject item;
+    if (Objects.nonNull(ref)) {
+      Schema refSchema = getSchemaReference(ref, openApi);
+      item = createResponseObject(openApi, identifier, refSchema, true, false);
+    } else {
+      item = createResponseObject(openApi, identifier, schema.getItems(), true, false);
+    }
     return ResponseObject.builder()
         .identifier(identifier)
         .type(schema.getType())
@@ -142,6 +147,7 @@ public class ResponseTemplateBuilder {
         .nillable(isNillable)
         .required(isRequired)
         .build();
+
   }
 
   private boolean isNillable(Schema<?> schema) {

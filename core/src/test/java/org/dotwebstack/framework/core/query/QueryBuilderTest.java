@@ -50,7 +50,7 @@ public class QueryBuilderTest {
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
     GraphQlField queryField = builder.toGraphQlField(fieldDefinition);
 
-    ImmutableMap<String, String> arguments = ImmutableMap.of("identifier", "1");
+    ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
 
     // Act
     String query = new GraphQlQueryBuilder().toQuery(queryField, arguments);
