@@ -8,10 +8,12 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
@@ -52,9 +54,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .body(fromObject(String.format("Error while obtaining request parameters: %s", e.getMessage())));
     }
 
+    Map<String, Object> variables = inputParams.entrySet()
+        .stream()
+        .map(entry -> new AbstractMap.SimpleEntry<String, Object>(entry.getKey(), entry.getValue()))
+        .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+
     String query = buildQueryString(inputParams);
     ExecutionInput executionInput = ExecutionInput.newExecutionInput()
         .query(query)
+        .variables(variables)
         .build();
 
     try {

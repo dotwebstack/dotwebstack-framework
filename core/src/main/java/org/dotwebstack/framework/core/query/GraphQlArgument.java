@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.query;
 
+import graphql.language.Type;
 import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
@@ -10,7 +11,9 @@ import lombok.Getter;
 public class GraphQlArgument {
   private String name;
 
-  private String type;
+  private String baseType;
+
+  private Type<?> type;
 
   private boolean required;
 

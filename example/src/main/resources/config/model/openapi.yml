@@ -61,6 +61,11 @@ paths:
           required: false
           schema:
             type: string
+        - name: sinceAfter
+          in: header
+          required: true
+          schema:
+            type: string
         - name: sort
           in: header
           schema:

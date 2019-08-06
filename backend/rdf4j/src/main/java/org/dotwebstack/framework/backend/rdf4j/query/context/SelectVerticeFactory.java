@@ -9,14 +9,21 @@ import graphql.schema.GraphQLDirectiveContainer;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.ArrayUtils;
+import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SelectVerticeFactory extends AbstractVerticeFactory {
+
+  public SelectVerticeFactory(SerializerRouter serializerRouter) {
+    super(serializerRouter);
+  }
 
   public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
       List<DirectiveContainerTuple> filterMapping, List<Object> orderByList) {

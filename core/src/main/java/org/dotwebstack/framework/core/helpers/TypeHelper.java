@@ -26,6 +26,17 @@ public class TypeHelper {
     }
   }
 
+  public static Type<?> unwrapType(Type<?> type) {
+    if (type instanceof ListType) {
+      return (Type<?>) type.getChildren()
+          .get(0);
+    }
+    if (type instanceof NonNullType) {
+      return ((NonNullType) type).getType();
+    }
+    return type;
+  }
+
   public static Type<?> getBaseType(Type<?> type) {
     if (type instanceof ListType) {
       return getBaseType((Type<?>) type.getChildren()
@@ -35,6 +46,21 @@ public class TypeHelper {
       return getBaseType(((NonNullType) type).getType());
     }
     return type;
+  }
+
+  public static String getTypeString(Type<?> type) {
+    StringBuilder builder = new StringBuilder();
+    if (type instanceof ListType) {
+      builder.append("[");
+      builder.append(getTypeString(unwrapType(type)));
+      builder.append("]");
+    } else if (type instanceof NonNullType) {
+      builder.append(getTypeString(unwrapType(type)));
+      builder.append("!");
+    } else {
+      builder.append(((TypeName) type).getName());
+    }
+    return builder.toString();
   }
 
   public static String getTypeName(Type<?> type) {

@@ -53,15 +53,22 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private final List<QueryValidator> validators;
 
+  private final SelectVerticeFactory selectVerticeFactory;
+
+  private final ConstructVerticeFactory constructVerticeFactory;
+
   public QueryFetcher(RepositoryConnection repositoryConnection, NodeShapeRegistry nodeShapeRegistry,
       Map<String, String> prefixMap, JexlEngine jexlEngine, List<QueryValidator> validators,
-      CoreTraverser coreTraverser) {
+      CoreTraverser coreTraverser, SelectVerticeFactory selectVerticeFactory,
+      ConstructVerticeFactory constructVerticeFactory) {
     this.repositoryConnection = repositoryConnection;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = prefixMap;
     this.jexlEngine = jexlEngine;
     this.coreTraverser = coreTraverser;
     this.validators = validators;
+    this.selectVerticeFactory = selectVerticeFactory;
+    this.constructVerticeFactory = constructVerticeFactory;
   }
 
   @Override
@@ -116,7 +123,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       return ImmutableList.of(subject);
     }
 
-    String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine, new SelectVerticeFactory())
+    String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine, selectVerticeFactory)
         .getQueryString(arguments, sparqlDirective, filterMapping);
 
     LOG.debug("Executing query for subjects:\n{}", subjectQuery);
@@ -135,7 +142,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       return new TreeModel();
     }
 
-    String graphQuery = GraphQueryBuilder.create(environment, subjects, new ConstructVerticeFactory())
+    String graphQuery = GraphQueryBuilder.create(environment, subjects, constructVerticeFactory)
         .getQueryString();
 
     LOG.debug("Executing query for graph:\n{}", graphQuery);

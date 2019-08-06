@@ -38,7 +38,7 @@ public class QueryBuilderTest {
     String query = new GraphQlQueryBuilder().toQuery(queryField, new HashMap<>());
 
     // Assert
-    assertEquals("{brewery{identifier,name,founded,foundedAtYear}}", query);
+    assertEquals("query Wrapper{brewery{identifier,name,founded,foundedAtYear}}", query);
   }
 
   @Test
@@ -56,7 +56,9 @@ public class QueryBuilderTest {
     String query = new GraphQlQueryBuilder().toQuery(queryField, arguments);
 
     // Assert
-    assertEquals("{brewery(identifier: 1){identifier,name,founded,foundedAtYear}}", query);
+    assertEquals(
+        "query Wrapper($identifier: ID!){brewery(identifier: $identifier){identifier,name,founded,foundedAtYear}}",
+        query);
   }
 
   private FieldDefinition getQueryFieldDefinition(String name) {

@@ -66,13 +66,14 @@ public class GraphQlFieldBuilder {
     builder.hasDefault(inputValueDefinition.getDefaultValue() != null);
 
     Type<?> baseType = TypeHelper.getBaseType(inputValueDefinitionType);
-    String type = TypeHelper.getTypeName(baseType);
+    String baseTypeName = TypeHelper.getTypeName(baseType);
     TypeDefinition typeDefinition = this.registry.getType(baseType)
         .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Type '{}' not found in the GraphQL schema.",
             baseType));
 
     builder.name(inputValueDefinition.getName())
-        .type(type);
+        .type(inputValueDefinitionType)
+        .baseType(baseTypeName);
     if (typeDefinition instanceof InputObjectTypeDefinition) {
       builder.children(((InputObjectTypeDefinition) typeDefinition).getInputValueDefinitions()
           .stream()

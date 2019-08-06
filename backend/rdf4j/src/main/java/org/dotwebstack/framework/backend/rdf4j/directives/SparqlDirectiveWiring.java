@@ -16,6 +16,8 @@ import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
+import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
+import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
@@ -41,9 +43,14 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private CoreTraverser coreTraverser;
 
+  private final SelectVerticeFactory selectVerticeFactory;
+
+  private final ConstructVerticeFactory constructVerticeFactory;
+
   public SparqlDirectiveWiring(List<RepositoryResolver> repositoryResolvers, NodeShapeRegistry nodeShapeRegistry,
       Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintValidator constraintValidator,
-      CoreTraverser coreTraverser) {
+      CoreTraverser coreTraverser, SelectVerticeFactory selectVerticeFactory,
+      ConstructVerticeFactory constructVerticeFactory) {
     this.repositoryResolvers = repositoryResolvers;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null ? HashBiMap.create(rdf4jProperties.getPrefixes())
@@ -51,6 +58,8 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     this.jexlEngine = jexlEngine;
     this.constraintValidator = constraintValidator;
     this.coreTraverser = coreTraverser;
+    this.selectVerticeFactory = selectVerticeFactory;
+    this.constructVerticeFactory = constructVerticeFactory;
   }
 
   @Override
@@ -79,7 +88,8 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     validateSortField(fieldDefinition, sortFieldValidator);
 
     QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
-        ImmutableList.of(constraintValidator, sortFieldValidator), coreTraverser);
+        ImmutableList.of(constraintValidator, sortFieldValidator), coreTraverser, selectVerticeFactory,
+        constructVerticeFactory);
 
     environment.getCodeRegistry()
         .dataFetcher(environment.getFieldsContainer(), fieldDefinition, queryFetcher);
