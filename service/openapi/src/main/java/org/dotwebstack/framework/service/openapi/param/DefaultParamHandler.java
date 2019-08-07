@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.IntStream;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
@@ -56,7 +55,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  private Object deserialize(Parameter parameter, Object paramValue) {
+  protected Object deserialize(Parameter parameter, Object paramValue) {
     if (paramValue == null) {
       return null;
     }
@@ -74,7 +73,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  private Object deserializeObject(Parameter parameter, Object paramValue) {
+  protected Object deserializeObject(Parameter parameter, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
 
@@ -86,7 +85,7 @@ public class DefaultParamHandler implements ParamHandler {
     return paramValue;
   }
 
-  private Object deserializeObjectFromKeyValueString(String keyValueString, String separator) {
+  protected Object deserializeObjectFromKeyValueString(String keyValueString, String separator) {
     String[] split = keyValueString.split(",");
     if (split.length % 2 != 0) {
       throw ExceptionHelper.illegalArgumentException(
@@ -94,16 +93,16 @@ public class DefaultParamHandler implements ParamHandler {
           separator);
     }
     Map<String, String> result = new HashMap<>();
-    IntStream.iterate(0, i -> i < split.length, i -> i + 2)
-        .forEach(i -> {
-          String key = split[i];
-          String value = split[i + 1];
-          result.put(key, value);
-        });
+    for (int i = 0; i < split.length; i++) {
+      String key = split[i];
+      String value = split[i + 1];
+      result.put(key, value);
+    }
+
     return result;
   }
 
-  private Object deserializeObjectFromKeyValueString(String keyValueString, String elementSeparator,
+  protected Object deserializeObjectFromKeyValueString(String keyValueString, String elementSeparator,
       String keyValueSeparator) {
     Map<String, String> result = new HashMap<>();
     Arrays.asList(keyValueString.split(elementSeparator))
@@ -120,7 +119,7 @@ public class DefaultParamHandler implements ParamHandler {
     return result;
   }
 
-  private Object deserializeArray(Parameter parameter, Object paramValue) {
+  protected Object deserializeArray(Parameter parameter, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
 
@@ -137,7 +136,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  private Object getPathParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+  protected Object getPathParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
     try {
       return request.pathVariable(parameter.getName());
     } catch (IllegalArgumentException e) {
@@ -149,7 +148,7 @@ public class DefaultParamHandler implements ParamHandler {
     return null;
   }
 
-  private Object getQueryParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+  protected Object getQueryParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
     Object value = request.queryParams()
         .get(parameter.getName());
 
@@ -160,7 +159,7 @@ public class DefaultParamHandler implements ParamHandler {
     return value;
   }
 
-  private Object getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+  protected Object getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
     List<String> result = request.headers()
         .header(parameter.getName());
     if (result.isEmpty()) {
