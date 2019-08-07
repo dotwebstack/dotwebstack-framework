@@ -18,7 +18,7 @@ public class ParamHandlerRouter {
 
   public ParamHandler getParamHandler(@NonNull Parameter parameter) {
     return this.customHandlers.stream()
-        .filter(handler -> handler.canHandle(parameter))
+        .filter(handler -> handler.supports(parameter))
         .findFirst()
         .orElse(this.defaultHandler);
   }

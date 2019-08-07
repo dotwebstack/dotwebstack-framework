@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 
 public interface ParamHandler {
 
-  boolean canHandle(@NonNull Parameter parameter);
+  boolean supports(@NonNull Parameter parameter);
 
   Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter)
       throws ParameterValidationException;

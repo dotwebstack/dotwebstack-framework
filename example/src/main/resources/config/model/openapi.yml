@@ -52,12 +52,12 @@ components:
 
 
 paths:
-  /breweries/sort/{sort}:
+  /breweries:
     get:
       x-dws-query: breweries
       parameters:
         - name: name
-          in: path
+          in: query
           required: false
           schema:
             type: array
@@ -69,10 +69,14 @@ paths:
           schema:
             type: string
         - name: sort
-          explode: true
-          in: path
+          in: header
+          x-dws-type: sort
           schema:
-            $ref: '#/components/schemas/SortField'
+            type: array
+            default: ['name']
+            items:
+              type: string
+              enum: ['name', '-founded']
       responses:
         200:
           description: OK

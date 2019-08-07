@@ -4,7 +4,11 @@ public class ParameterValidationException extends Exception {
 
   static final long serialVersionUID = 1564735180022L;
 
-  ParameterValidationException(String formatMessage, Throwable cause) {
+  public ParameterValidationException(String formatMessage) {
+    super(formatMessage);
+  }
+
+  public ParameterValidationException(String formatMessage, Throwable cause) {
     super(formatMessage, cause);
   }
 }
