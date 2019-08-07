@@ -15,6 +15,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,12 +41,15 @@ public class OpenApiConfigurationTest {
 
   private OpenApiConfiguration openApiConfiguration;
 
+  @Mock
+  private ParamHandlerRouter paramHandlerRouter;
+
   @BeforeEach
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
-    this.openApiConfiguration =
-        spy(new OpenApiConfiguration(graphQL, this.registry, new Jackson2ObjectMapperBuilder(), openApiProperties));
+    this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, new Jackson2ObjectMapperBuilder(),
+        openApiProperties, paramHandlerRouter));
   }
 
   @Test

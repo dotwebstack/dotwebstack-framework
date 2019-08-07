@@ -18,8 +18,8 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
+import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -46,16 +46,17 @@ public class OpenApiConfiguration {
 
   private final OpenApiProperties properties;
 
-  private final ResponseContextValidator responseContextValidator;
+  private final ParamHandlerRouter paramHandlerRouter;
 
   public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      Jackson2ObjectMapperBuilder objectMapperBuilder, OpenApiProperties properties) {
+      Jackson2ObjectMapperBuilder objectMapperBuilder, OpenApiProperties properties,
+      ParamHandlerRouter paramHandlerRouter) {
     this.graphQl = graphQl;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
+    this.paramHandlerRouter = paramHandlerRouter;
     this.graphQlFieldBuilder = new GraphQlFieldBuilder(this.typeDefinitionRegistry);
     this.objectMapper = objectMapperBuilder.build();
     this.properties = properties;
-    this.responseContextValidator = new ResponseContextValidator();
   }
 
   @Bean
@@ -93,12 +94,10 @@ public class OpenApiConfiguration {
       Operation operation, RequestPredicate requestPredicate) {
     List<ResponseTemplate> responseTemplates =
         responseTemplateBuilder.buildResponseTemplates(path, methodName, operation);
-    ResponseContext openApiContext = new ResponseContext(graphQlField, responseTemplates,
+    ResponseContext responseContext = new ResponseContext(graphQlField, responseTemplates,
         operation.getParameters() != null ? operation.getParameters() : Collections.emptyList());
 
-    responseContextValidator.validate(openApiContext, path);
-
     return RouterFunctions.route(requestPredicate.and(accept(MediaType.APPLICATION_JSON)),
-        new CoreRequestHandler(openApiContext, graphQl, objectMapper));
+        new CoreRequestHandler(path, responseContext, graphQl, objectMapper, paramHandlerRouter));
   }
 }

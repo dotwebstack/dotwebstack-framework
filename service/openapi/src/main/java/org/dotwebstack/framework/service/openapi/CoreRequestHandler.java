@@ -4,7 +4,6 @@ import static org.springframework.web.reactive.function.BodyInserters.fromObject
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -16,11 +15,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.query.GraphQlArgument;
+import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
-import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
+import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,16 +33,66 @@ import reactor.core.publisher.Mono;
 
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
+  private String pathName;
+
   private final ResponseContext responseContext;
 
   private final GraphQL graphQL;
 
   private final ObjectMapper objectMapper;
 
-  CoreRequestHandler(ResponseContext responseContext, GraphQL graphQL, ObjectMapper objectMapper) {
+  private final ParamHandlerRouter paramHandlerRouter;
+
+  CoreRequestHandler(String pathName, ResponseContext responseContext, GraphQL graphQL, ObjectMapper objectMapper,
+      ParamHandlerRouter paramHandlerRouter) {
+    this.pathName = pathName;
     this.responseContext = responseContext;
     this.graphQL = graphQL;
     this.objectMapper = objectMapper;
+    this.paramHandlerRouter = paramHandlerRouter;
+    validateSchema();
+  }
+
+  private void validateSchema() {
+    GraphQlField field = responseContext.getGraphQlField();
+    long matched = responseContext.getResponses()
+        .stream()
+        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
+        .count();
+    if (matched == 0) {
+      throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
+    }
+    validateParameters(field, responseContext.getParameters(), pathName);
+    ResponseContextValidator responseContextValidator = new ResponseContextValidator();
+    responseContext.getResponses()
+        .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
+  }
+
+  private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
+    parameters.forEach(parameter -> {
+      this.paramHandlerRouter.getParamHandler(parameter)
+          .validate(field, parameter, pathName);
+    });
+    field.getArguments()
+        .forEach(argument -> verifyRequiredNoDefaultArgument(argument, parameters, pathName));
+  }
+
+  private void verifyRequiredNoDefaultArgument(GraphQlArgument argument, List<Parameter> parameters, String pathName) {
+    if (argument.isRequired() && !argument.isHasDefault()) {
+      long matching = parameters.stream()
+          .filter(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
+              .equals(argument.getName()))
+          .count();
+      if (matching == 0) {
+        throw ExceptionHelper.invalidConfigurationException(
+            "No required OAS parameter found for required and no-default GraphQL argument" + " '{}' in path '{}'",
+            argument.getName(), pathName);
+      }
+    }
+    if (argument.isRequired()) {
+      argument.getChildren()
+          .forEach(child -> verifyRequiredNoDefaultArgument(child, parameters, pathName));
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -101,109 +153,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseContext.getParameters())) {
       for (Parameter parameter : this.responseContext.getParameters()) {
-        resolveParameter(parameter, request, result);
+        paramHandlerRouter.getParamHandler(parameter)
+            .getValue(request, parameter)
+            .ifPresent(value -> result.put(parameter.getName(), value));
       }
     }
     return result;
-  }
-
-  private void resolveParameter(Parameter parameter, ServerRequest request, Map<String, Object> result)
-      throws ParameterValidationException {
-
-    Object paramValue;
-    switch (parameter.getIn()) {
-      case "path":
-        paramValue = getPathParam(parameter, request);
-        break;
-      case "query":
-        paramValue = getQueryParam(parameter, request);
-        break;
-      case "header":
-        paramValue = getHeaderParam(parameter, request);
-        break;
-      default:
-        throw ExceptionHelper.illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
-    }
-
-    Object deserialized = deserialize(parameter, paramValue);
-    if (Objects.nonNull(deserialized)) {
-      result.put(parameter.getName(), deserialized);
-    }
-  }
-
-  private Object deserialize(Parameter parameter, Object paramValue) {
-
-    String schemaType = parameter.getSchema()
-        .getType();
-    switch (schemaType) {
-      case "array":
-        return deserializeArray(parameter, paramValue);
-      case "object":
-        return deserializeObject(parameter, paramValue);
-      default:
-        return paramValue;
-    }
-  }
-
-  private Object deserializeObject(Parameter parameter, Object paramValue) {
-    return paramValue;
-  }
-
-  private Object deserializeArray(Parameter parameter, Object paramValue) {
-    Parameter.StyleEnum style = parameter.getStyle();
-    boolean explode = parameter.getExplode();
-
-    if (style == Parameter.StyleEnum.SIMPLE && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split(","));
-    } else if (style == Parameter.StyleEnum.FORM && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split(","));
-    } else if (style == Parameter.StyleEnum.SPACEDELIMITED && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split(" "));
-    } else if (style == Parameter.StyleEnum.PIPEDELIMITED && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split("\\|"));
-    } else {
-      return paramValue;
-    }
-  }
-
-  private Object getPathParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
-    try {
-      return request.pathVariable(parameter.getName());
-    } catch (Exception e) {
-      if (parameter.getRequired()) {
-        throw OpenApiExceptionHelper.parameterValidationException(
-            "No value provided for required path parameter " + "'{}'.", parameter.getName());
-      }
-    }
-    return null;
-  }
-
-  private Object getQueryParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
-    Object value = request.queryParams()
-        .get(parameter.getName());
-
-    if (parameter.getRequired() && Objects.isNull(value)) {
-      throw OpenApiExceptionHelper.parameterValidationException("No value provided for required query parameter '{}'",
-          parameter.getName());
-    }
-    return value;
-  }
-
-  private Object getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
-    List<String> result = request.headers()
-        .header(parameter.getName());
-    if (result.isEmpty()) {
-      if (parameter.getRequired()) {
-        throw OpenApiExceptionHelper
-            .parameterValidationException("No value provided for required header parameter '{}'", parameter.getName());
-      }
-    }
-    if (!"array".equals(parameter.getSchema()
-        .getType())) {
-      return !result.isEmpty() ? result.get(0) : null;
-    } else {
-      return result;
-    }
   }
 
   private String toJson(Object object) throws JsonProcessingException {

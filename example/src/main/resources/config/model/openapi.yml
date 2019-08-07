@@ -52,14 +52,12 @@ components:
 
 
 paths:
-  /breweries/{*name}:
+  /breweries/sort/{sort}:
     get:
       x-dws-query: breweries
       parameters:
         - name: name
-          in: query
-          explode: false
-          style: spaceDelimited
+          in: path
           required: false
           schema:
             type: array
@@ -71,7 +69,8 @@ paths:
           schema:
             type: string
         - name: sort
-          in: header
+          explode: true
+          in: path
           schema:
             $ref: '#/components/schemas/SortField'
       responses:
