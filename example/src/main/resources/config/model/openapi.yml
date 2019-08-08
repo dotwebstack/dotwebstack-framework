@@ -18,9 +18,20 @@ components:
           type: string
           nullable: true
     Breweries:
-      type: array
-      items:
-       $ref: '#/components/schemas/Brewery'
+      type: object
+      required:
+        - _embedded
+      properties:
+        _embedded:
+          x-dws-envelope: true
+          type: object
+          required:
+            - breweries
+          properties:
+            breweries:
+              type: array
+              items:
+               $ref: '#/components/schemas/Brewery'
     Brewery:
       type: object
       required:

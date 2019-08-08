@@ -30,6 +30,7 @@ public class ResponseContextValidator {
       case "object":
         List<ResponseObject> children = template.getChildren();
         children.forEach(child -> {
+          // check vendor extensies child .... als x-dws-envelope --> geen validatie
           GraphQlField graphQlChildField = field.getFields()
               .stream()
               .filter(childField -> childField.getName()
