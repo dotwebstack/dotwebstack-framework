@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,19 +52,18 @@ public class SortParamHandler extends DefaultParamHandler {
           }
           return Optional.of(list.stream()
               .map(this::parseSortParam)
-              .collect(Collectors.joining(", ", "[", "]")));
+              .collect(Collectors.toList()));
         case "string":
-          return Optional.of("[" + this.parseSortParam((String) value.get()) + "]");
+          return Optional.of(Collections.singletonList(this.parseSortParam((String) value.get())));
         default:
           throw new ParameterValidationException(String
               .format("Sort parameter '%s' is of wrong type, can only be string of string[]", parameter.getName()));
       }
     }
-
     return value;
   }
 
-  private String parseSortParam(String sortString) {
+  private Map<String, String> parseSortParam(String sortString) {
     String order = "ASC";
     String field = sortString.replace("\"", "");
     if (field.startsWith("-")) {
@@ -70,6 +71,6 @@ public class SortParamHandler extends DefaultParamHandler {
       field = field.substring(1);
     }
 
-    return "{field: \"" + field + "\", order: " + order + "}";
+    return ImmutableMap.of("field", field, "order", order);
   }
 }

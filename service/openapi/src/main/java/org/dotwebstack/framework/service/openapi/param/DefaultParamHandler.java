@@ -1,9 +1,10 @@
 package org.dotwebstack.framework.service.openapi.param;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -74,16 +75,13 @@ public class DefaultParamHandler implements ParamHandler {
         break;
       case "string":
         if (Objects.nonNull(parameter.getSchema()
-            .getEnum())) {
-          if (!parameter.getSchema()
-              .getEnum()
-              .contains(paramValue)) {
-            throw new ParameterValidationException(
-                String.format("Parameter '%s' has an invalid value, should be one of: '%s'", parameter.getName(),
-                    Joiner.on(", ")
-                        .join(parameter.getSchema()
-                            .getEnum())));
-          }
+            .getEnum())
+            && !parameter.getSchema()
+                .getEnum()
+                .contains(paramValue)) {
+          throw new ParameterValidationException(
+              String.format("Parameter '%s' has an invalid value, should be one of: '%s'", parameter.getName(),
+                  String.join(",", ((StringSchema) parameter.getSchema()).getEnum())));
         }
         break;
       default:
@@ -100,7 +98,7 @@ public class DefaultParamHandler implements ParamHandler {
     if (Objects.nonNull(((ArraySchema) parameter.getSchema()).getItems()
         .getEnum())) {
       List<String> list;
-      List<?> enumList = ((ArraySchema) parameter.getSchema()).getItems()
+      List<String> enumList = (List<String>) ((ArraySchema) parameter.getSchema()).getItems()
           .getEnum();
       if (paramValue instanceof String) {
         list = Stream.of(((String) paramValue).replace("[", "")
@@ -119,10 +117,7 @@ public class DefaultParamHandler implements ParamHandler {
       if (!invalidValues.isEmpty()) {
         throw new ParameterValidationException(
             String.format("Parameter '%s' has (an) invalid value(s): '%s', should be one of: '%s'", parameter.getName(),
-                Joiner.on(", ")
-                    .join(invalidValues),
-                Joiner.on(", ")
-                    .join(enumList)));
+                String.join(", ", invalidValues), String.join(", ", enumList)));
       }
     }
   }
@@ -225,22 +220,25 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   protected Object getQueryParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
-    Object value = request.queryParams()
+    List<String> result = request.queryParams()
         .get(parameter.getName());
 
-    if (Objects.isNull(value)) {
+    if (Objects.isNull(result)) {
       if (Objects.nonNull(parameter.getSchema()) && Objects.nonNull(parameter.getSchema()
           .getDefault())) {
-        value = parameter.getSchema()
-            .getDefault();
+        result = new ArrayList<>();
       }
-      if (parameter.getRequired() && Objects.isNull(value)) {
+      if (parameter.getRequired() && Objects.isNull(result)) {
         throw OpenApiExceptionHelper.parameterValidationException("No value provided for required query parameter '{}'",
             parameter.getName());
       }
     }
 
-    return value;
+    if ("array".equals(parameter.getSchema()
+        .getType()) && parameter.getExplode()) {
+      return result;
+    }
+    return !result.isEmpty() ? result.get(0) : null;
   }
 
   protected Object getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {

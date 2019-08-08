@@ -9,7 +9,6 @@ import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.util.Collections;
 import java.util.List;
@@ -78,20 +77,20 @@ public class OpenApiConfiguration {
         .forEach((name, path) -> {
           GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(path);
           if (Objects.nonNull(path.getGet())) {
-            routerFunctions.add(
-                toRouterFunction(path, responseTemplateBuilder, name, graphQlField, "get", path.getGet(), GET(name)));
+            routerFunctions
+                .add(toRouterFunction(responseTemplateBuilder, name, graphQlField, "get", path.getGet(), GET(name)));
           }
           if (Objects.nonNull(path.getPost())) {
-            routerFunctions.add(toRouterFunction(path, responseTemplateBuilder, name, graphQlField, "post",
-                path.getPost(), POST(name)));
+            routerFunctions
+                .add(toRouterFunction(responseTemplateBuilder, name, graphQlField, "post", path.getPost(), POST(name)));
           }
         });
     return routerFunctions.build();
   }
 
-  protected RouterFunction<ServerResponse> toRouterFunction(PathItem pathItem,
-      ResponseTemplateBuilder responseTemplateBuilder, String path, GraphQlField graphQlField, String methodName,
-      Operation operation, RequestPredicate requestPredicate) {
+  protected RouterFunction<ServerResponse> toRouterFunction(ResponseTemplateBuilder responseTemplateBuilder,
+      String path, GraphQlField graphQlField, String methodName, Operation operation,
+      RequestPredicate requestPredicate) {
     List<ResponseTemplate> responseTemplates =
         responseTemplateBuilder.buildResponseTemplates(path, methodName, operation);
     ResponseContext responseContext = new ResponseContext(graphQlField, responseTemplates,

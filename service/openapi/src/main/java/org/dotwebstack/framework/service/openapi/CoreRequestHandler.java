@@ -69,10 +69,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
-    parameters.forEach(parameter -> {
-      this.paramHandlerRouter.getParamHandler(parameter)
-          .validate(field, parameter, pathName);
-    });
+    parameters.forEach(parameter -> this.paramHandlerRouter.getParamHandler(parameter)
+        .validate(field, parameter, pathName));
     field.getArguments()
         .forEach(argument -> verifyRequiredNoDefaultArgument(argument, parameters, pathName));
   }
@@ -103,13 +101,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     try {
       inputParams = resolveParameters(request);
     } catch (ParameterValidationException e) {
-      return ServerResponse.status(HttpStatus.NOT_FOUND)
+      return ServerResponse.status(HttpStatus.BAD_REQUEST)
           .body(fromObject(String.format("Error while obtaining request parameters: %s", e.getMessage())));
     }
 
     Map<String, Object> variables = inputParams.entrySet()
         .stream()
-        .map(entry -> new AbstractMap.SimpleEntry<String, Object>(entry.getKey(), entry.getValue()))
+        .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue()))
         .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
 
     String query = buildQueryString(inputParams);
@@ -141,7 +139,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             .contentType(MediaType.parseMediaType(template.getMediaType()))
             .body(fromObject(json));
       }
-      return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
+      return ServerResponse.status(HttpStatus.BAD_REQUEST)
           .body(fromObject(String.format("GraphQl query resulted in errors: %s.", toJson(result.getErrors()))));
     } catch (JsonProcessingException e) {
       return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
