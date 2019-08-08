@@ -4,10 +4,10 @@ The service can be configured by providing a `openapi.yml` specification in addi
 
 The openapi service can be included in a Spring Boot project with the following dependency:
 ```xml
-    <dependency>
-        <groupId>org.dotwebstack.framework</groupId>
-        <artifactId>service-openapi</artifactId>
-    </dependency>
+<dependency>
+  <groupId>org.dotwebstack.framework</groupId>
+  <artifactId>service-openapi</artifactId>
+</dependency>
 ```
 
 # 1.1 Specification file
@@ -34,22 +34,22 @@ paths:
 ```
  maps to the `default_breweries` GraphQL query:
 ```
-   default_breweries : [Brewery!]!
-     @sparql(
-       repository: "local"
-     )
+default_breweries : [Brewery!]!
+@sparql(
+  repository: "local"
+)
 ```
 
 Each operation response should have a reference to the return type using content.<mediaType>.schema.$ref. The following example
 specifies that the OK response (200) returns the `Breweries` type:
 ```yaml
-      responses:
-        200:
-          description: OK
-          content:
-            application/hal+json:
-              schema:
-                $ref: '#/components/schemas/Breweries'
+responses:
+  200:
+    description: OK
+    content:
+    application/hal+json:
+      schema:
+        $ref: '#/components/schemas/Breweries'
 ```
 
 

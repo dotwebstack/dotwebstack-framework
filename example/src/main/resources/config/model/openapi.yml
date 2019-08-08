@@ -58,6 +58,7 @@ paths:
       parameters:
         - name: name
           in: query
+          explode: false
           required: false
           schema:
             type: array

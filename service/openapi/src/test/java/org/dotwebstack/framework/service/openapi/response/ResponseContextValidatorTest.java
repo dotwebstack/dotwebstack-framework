@@ -32,7 +32,6 @@ public class ResponseContextValidatorTest {
   @Test
   public void validate_succeeds_query1Get() {
     // Arrange
-    ResponseContextValidator validator = new ResponseContextValidator();
     ResponseContext getResponseContext = getResponseContext("/query1", "get");
 
     // Act / Assert

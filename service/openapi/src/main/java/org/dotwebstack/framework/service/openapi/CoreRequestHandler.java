@@ -8,12 +8,10 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -37,19 +35,23 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final ResponseContext responseContext;
 
+  private final ResponseContextValidator responseContextValidator;
+
   private final GraphQL graphQL;
 
   private final ObjectMapper objectMapper;
 
   private final ParamHandlerRouter paramHandlerRouter;
 
-  CoreRequestHandler(String pathName, ResponseContext responseContext, GraphQL graphQL, ObjectMapper objectMapper,
+  CoreRequestHandler(String pathName, ResponseContext responseContext,
+      ResponseContextValidator responseContextValidator, GraphQL graphQL, ObjectMapper objectMapper,
       ParamHandlerRouter paramHandlerRouter) {
     this.pathName = pathName;
     this.responseContext = responseContext;
     this.graphQL = graphQL;
     this.objectMapper = objectMapper;
     this.paramHandlerRouter = paramHandlerRouter;
+    this.responseContextValidator = responseContextValidator;
     validateSchema();
   }
 
@@ -63,7 +65,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
     }
     validateParameters(field, responseContext.getParameters(), pathName);
-    ResponseContextValidator responseContextValidator = new ResponseContextValidator();
     responseContext.getResponses()
         .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
   }
@@ -96,27 +97,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   @SuppressWarnings("unchecked")
   @Override
   public Mono<ServerResponse> handle(ServerRequest request) {
-    Map<String, Object> inputParams;
-
     try {
-      inputParams = resolveParameters(request);
-    } catch (ParameterValidationException e) {
-      return ServerResponse.status(HttpStatus.BAD_REQUEST)
-          .body(fromObject(String.format("Error while obtaining request parameters: %s", e.getMessage())));
-    }
+      Map<String, Object> inputParams = resolveParameters(request);
 
-    Map<String, Object> variables = inputParams.entrySet()
-        .stream()
-        .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue()))
-        .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+      String query = buildQueryString(inputParams);
+      ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+          .query(query)
+          .variables(inputParams)
+          .build();
 
-    String query = buildQueryString(inputParams);
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
-        .variables(variables)
-        .build();
-
-    try {
       ExecutionResult result = graphQL.execute(executionInput);
       if (result.getErrors()
           .isEmpty()) {
@@ -144,7 +133,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     } catch (JsonProcessingException e) {
       return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(fromObject("Error while serializing response to JSON."));
+    } catch (ParameterValidationException e) {
+      return ServerResponse.status(HttpStatus.BAD_REQUEST)
+          .body(fromObject(String.format("Error while obtaining request parameters: %s", e.getMessage())));
     }
+
   }
 
   private Map<String, Object> resolveParameters(ServerRequest request) throws ParameterValidationException {

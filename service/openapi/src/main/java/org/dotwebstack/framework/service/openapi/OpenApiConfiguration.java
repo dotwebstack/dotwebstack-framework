@@ -19,6 +19,7 @@ import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -47,14 +48,17 @@ public class OpenApiConfiguration {
 
   private final ParamHandlerRouter paramHandlerRouter;
 
+  private final ResponseContextValidator responseContextValidator;
+
   public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       Jackson2ObjectMapperBuilder objectMapperBuilder, OpenApiProperties properties,
-      ParamHandlerRouter paramHandlerRouter) {
+      ParamHandlerRouter paramHandlerRouter, ResponseContextValidator responseContextValidator) {
     this.graphQl = graphQl;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
     this.paramHandlerRouter = paramHandlerRouter;
     this.graphQlFieldBuilder = new GraphQlFieldBuilder(this.typeDefinitionRegistry);
     this.objectMapper = objectMapperBuilder.build();
+    this.responseContextValidator = responseContextValidator;
     this.properties = properties;
   }
 
@@ -96,7 +100,7 @@ public class OpenApiConfiguration {
     ResponseContext responseContext = new ResponseContext(graphQlField, responseTemplates,
         operation.getParameters() != null ? operation.getParameters() : Collections.emptyList());
 
-    return RouterFunctions.route(requestPredicate.and(accept(MediaType.APPLICATION_JSON)),
-        new CoreRequestHandler(path, responseContext, graphQl, objectMapper, paramHandlerRouter));
+    return RouterFunctions.route(requestPredicate.and(accept(MediaType.APPLICATION_JSON)), new CoreRequestHandler(path,
+        responseContext, responseContextValidator, graphQl, objectMapper, paramHandlerRouter));
   }
 }

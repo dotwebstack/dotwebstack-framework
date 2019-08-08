@@ -12,7 +12,9 @@ import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ResponseContextValidator {
 
   public void validate(@NonNull ResponseObject template, @NonNull GraphQlField field) {

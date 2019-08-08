@@ -13,7 +13,6 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.GraphQLObjectType;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -22,7 +21,6 @@ import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.serializers.LocalDateSerializer;
-import org.dotwebstack.framework.backend.rdf4j.serializers.Serializer;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.serializers.ZonedDateTimeSerializer;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -54,16 +52,15 @@ class SubjectQueryBuilderTest {
 
   private SubjectQueryBuilder subjectQueryBuilder;
 
-  List<Serializer> serializers = ImmutableList.of(new LocalDateSerializer(), new ZonedDateTimeSerializer());
-
   @BeforeEach
   void setUp() {
     when(this.environmentMock.getNodeShapeRegistry()).thenReturn(this.registryMock);
     when(this.environmentMock.getObjectType()).thenReturn(this.objectTypeMock);
     when(this.environmentMock.getNodeShapeRegistry()
         .get(any(GraphQLObjectType.class))).thenReturn(this.nodeShapeMock);
-    this.subjectQueryBuilder = SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine,
-        new SelectVerticeFactory(new SerializerRouter(serializers)));
+    this.subjectQueryBuilder =
+        SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine, new SelectVerticeFactory(
+            new SerializerRouter(ImmutableList.of(new LocalDateSerializer(), new ZonedDateTimeSerializer()))));
   }
 
   private GraphQLDirective getValidPagingDirective() {

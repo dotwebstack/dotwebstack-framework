@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -66,8 +65,7 @@ public class DefaultParamHandler implements ParamHandler {
         .count();
     if (matching == 0) {
       throw ExceptionHelper.invalidConfigurationException(
-          "OAS argument '{}' for path '{}' was " + "not " + "found on GraphQL field '{}'", name, pathName,
-          field.getName());
+          "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", name, pathName, field.getName());
     }
   }
 
@@ -215,7 +213,7 @@ public class DefaultParamHandler implements ParamHandler {
   protected Object getPathParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
     try {
       return request.pathVariable(parameter.getName());
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException exception) {
       if (Objects.nonNull(parameter.getSchema()) && Objects.nonNull(parameter.getSchema()
           .getDefault())) {
         return parameter.getSchema()
@@ -236,9 +234,10 @@ public class DefaultParamHandler implements ParamHandler {
     if (Objects.isNull(result)) {
       if (Objects.nonNull(parameter.getSchema()) && Objects.nonNull(parameter.getSchema()
           .getDefault())) {
-        result = new ArrayList<>();
+        return parameter.getSchema()
+            .getDefault();
       }
-      if (parameter.getRequired() && Objects.isNull(result)) {
+      if (parameter.getRequired()) {
         throw OpenApiExceptionHelper.parameterValidationException("No value provided for required query parameter '{}'",
             parameter.getName());
       }
@@ -261,7 +260,7 @@ public class DefaultParamHandler implements ParamHandler {
         return parameter.getSchema()
             .getDefault();
       }
-      if (result.isEmpty() && parameter.getRequired()) {
+      if (parameter.getRequired()) {
         throw OpenApiExceptionHelper
             .parameterValidationException("No value provided for required header parameter '{}'", parameter.getName());
       }
