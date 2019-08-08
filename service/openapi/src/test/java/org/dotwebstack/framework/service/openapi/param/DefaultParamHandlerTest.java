@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.param;
 
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.junit.jupiter.api.Assertions;
@@ -18,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -230,9 +231,33 @@ public class DefaultParamHandlerTest {
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryParamArrayNotSupported() {
+  public void getValue_returnsValue_forArrayEnumCheck() throws ParameterValidationException {
     // Arrange
-    mockParameterQuery("test", "v1,v2", TYPE_OBJECT, true, Parameter.StyleEnum.LABEL);
+    mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
+    mockArrayEnum(asList("v1", "v2", "v3", "v4"));
+
+    // Act
+    Optional<Object> result = paramHandler.getValue(request, parameter);
+
+    // Assert
+    assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
+  }
+
+  @Test
+  public void getValue_throwsException_forArrayEnumCheck() {
+    // Arrange
+    mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
+    mockArrayEnum(asList("v1", "v2"));
+
+    // Act / Assert
+    Assertions.assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
+  }
+
+
+  @Test
+  public void getValue_throwsException_withArraytUnsupportedStyle() {
+    // Arrange
+    mockParameterQuery("test", "v1,v2", TYPE_ARRAY, true, Parameter.StyleEnum.LABEL);
 
     // Act / Assert
     Assertions.assertThrows(UnsupportedOperationException.class, () -> paramHandler.getValue(request, parameter));
@@ -263,13 +288,29 @@ public class DefaultParamHandlerTest {
   }
 
   @Test
-  public void getValue_returnsValue_fromQueryParamObjectNotSupported() {
+  public void getValue_returnsDefaultValue_fromQueryParaString() throws ParameterValidationException {
+    // Arrange
+    mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
+    when(parameter.getSchema()
+        .getDefault()).thenReturn("default");
+
+    // Act
+    Optional<Object> result = paramHandler.getValue(request, parameter);
+
+    // Assert
+    assertEquals("default", result.get());
+  }
+
+  @Test
+  public void getValue_throwsException_withObjectUnsupportedStyle() {
     // Arrange
     mockParameterPath("test", "k1=v1,k2=v2", TYPE_OBJECT, true, Parameter.StyleEnum.FORM);
 
     // Act / Assert
     Assertions.assertThrows(UnsupportedOperationException.class, () -> paramHandler.getValue(request, parameter));
   }
+
 
   private void mockParameterPath(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
     when(parameter.getIn()).thenReturn("path");
@@ -287,10 +328,16 @@ public class DefaultParamHandlerTest {
 
   private void mockParameterHeader(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
     when(parameter.getIn()).thenReturn("header");
-    ServerRequest.Headers headers = Mockito.mock(ServerRequest.Headers.class);
+    ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     when(headers.header(name)).thenReturn(asList(value));
     when(request.headers()).thenReturn(headers);
     mockParameter(name, type, explode, style);
+  }
+
+  @SuppressWarnings("rawtypes")
+  private void mockArrayEnum(List<String> value) {
+    Schema itemSchema = ((ArraySchema) parameter.getSchema()).getItems();
+    when(itemSchema.getEnum()).thenReturn(value);
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
@@ -301,23 +348,22 @@ public class DefaultParamHandlerTest {
     Schema schema;
     switch (type) {
       case "array":
-        ArraySchema arraySchema = Mockito.mock(ArraySchema.class);
-        Schema itemSchema = Mockito.mock(StringSchema.class);
+        ArraySchema arraySchema = mock(ArraySchema.class);
+        Schema itemSchema = mock(StringSchema.class);
         when(itemSchema.getEnum()).thenReturn(null);
         when(arraySchema.getItems()).thenReturn(itemSchema);
 
         schema = arraySchema;
         break;
       case "object":
-        schema = Mockito.mock(ObjectSchema.class);
+        schema = mock(ObjectSchema.class);
         break;
       default:
-        schema = Mockito.mock(Schema.class);
+        schema = mock(Schema.class);
     }
     when(schema.getEnum()).thenReturn(null);
 
     when(parameter.getSchema()).thenReturn(schema);
     when(schema.getType()).thenReturn(type);
   }
-
 }

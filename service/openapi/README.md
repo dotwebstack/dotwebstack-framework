@@ -51,6 +51,9 @@ specifies that the OK response (200) returns the `Breweries` type:
               schema:
                 $ref: '#/components/schemas/Breweries'
 ```
+
+
+
 Currently, exactly one MediaType per response is supported and it should match `application/.*json`.
 
 
