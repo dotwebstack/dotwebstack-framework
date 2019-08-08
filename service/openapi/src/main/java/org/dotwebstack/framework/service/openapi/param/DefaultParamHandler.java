@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
@@ -82,8 +84,8 @@ public class DefaultParamHandler implements ParamHandler {
         if (Objects.nonNull(parameter.getSchema()
             .getEnum())
             && !parameter.getSchema()
-                .getEnum()
-                .contains(paramValue)) {
+            .getEnum()
+            .contains(paramValue)) {
           throw new ParameterValidationException(
               String.format("Parameter '%s' has an invalid value, should be one of: '%s'", parameter.getName(),
                   String.join(",", ((StringSchema) parameter.getSchema()).getEnum())));
@@ -133,8 +135,8 @@ public class DefaultParamHandler implements ParamHandler {
     }
     String schemaType = parameter.getSchema()
         .get$ref() != null ? "object"
-            : parameter.getSchema()
-                .getType();
+        : parameter.getSchema()
+        .getType();
     switch (schemaType) {
       case "array":
         return deserializeArray(parameter, paramValue);
@@ -197,7 +199,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   protected Object deserializeObjectFromKeyValueString(String keyValueString, String elementSeparator,
-      String keyValueSeparator) {
+                                                       String keyValueSeparator) {
     Map<String, String> result = new HashMap<>();
     Arrays.asList(keyValueString.split(elementSeparator))
         .forEach(keyValue -> {
@@ -248,7 +250,7 @@ public class DefaultParamHandler implements ParamHandler {
         .getType()) && parameter.getExplode()) {
       return result;
     }
-    return !result.isEmpty() ? result.get(0) : null;
+    return (!Objects.isNull(result) && !result.isEmpty()) ? result.get(0) : null;
   }
 
   protected Object getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
