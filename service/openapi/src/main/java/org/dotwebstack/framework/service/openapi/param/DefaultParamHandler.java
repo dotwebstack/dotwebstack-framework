@@ -1,5 +1,10 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.FORM;
+import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMITED;
+import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
+import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
+
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -140,16 +145,39 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
+  protected Object deserializeArray(Parameter parameter, Object paramValue) {
+    Parameter.StyleEnum style = parameter.getStyle();
+    boolean explode = parameter.getExplode();
+
+    if (style == SIMPLE && !explode) {
+      return ImmutableList.copyOf(((String) paramValue).split(","));
+    } else if (style == FORM && !explode) {
+      return ImmutableList.copyOf(((String) paramValue).split(","));
+    } else if (style == SPACEDELIMITED && !explode) {
+      return ImmutableList.copyOf(((String) paramValue).split(" "));
+    } else if (style == PIPEDELIMITED && !explode) {
+      return ImmutableList.copyOf(((String) paramValue).split("\\|"));
+    } else {
+      throw ExceptionHelper.unsupportedOperationException(
+          "Array deserialization not supported for parameter with 'explode=false' and style "
+              + "'{}'. Supported styles are '{}'.",
+          style, ImmutableList.of(SIMPLE, FORM, SPACEDELIMITED, PIPEDELIMITED));
+    }
+  }
+
   protected Object deserializeObject(Parameter parameter, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
 
-    if (style == Parameter.StyleEnum.SIMPLE && !explode) {
+    if (style == SIMPLE && !explode) {
       return deserializeObjectFromKeyValueString((String) paramValue, ",");
-    } else if (style == Parameter.StyleEnum.SIMPLE && explode) {
+    } else if (style == SIMPLE && explode) {
       return deserializeObjectFromKeyValueString((String) paramValue, ",", "=");
+    } else {
+      throw ExceptionHelper.unsupportedOperationException(
+          "Object deserialization not supported for parameter style " + "'{}'. Supported styles are '{}'.", style,
+          ImmutableList.of(SIMPLE));
     }
-    return paramValue;
   }
 
   protected Object deserializeObjectFromKeyValueString(String keyValueString, String separator) {
@@ -160,12 +188,11 @@ public class DefaultParamHandler implements ParamHandler {
           separator);
     }
     Map<String, String> result = new HashMap<>();
-    for (int i = 0; i < split.length; i++) {
+    for (int i = 0; i < split.length; i += 2) {
       String key = split[i];
       String value = split[i + 1];
       result.put(key, value);
     }
-
     return result;
   }
 
@@ -183,23 +210,6 @@ public class DefaultParamHandler implements ParamHandler {
           result.put(split[0], split[1]);
         });
     return result;
-  }
-
-  protected Object deserializeArray(Parameter parameter, Object paramValue) {
-    Parameter.StyleEnum style = parameter.getStyle();
-    boolean explode = parameter.getExplode();
-
-    if (style == Parameter.StyleEnum.SIMPLE && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split(","));
-    } else if (style == Parameter.StyleEnum.FORM && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split(","));
-    } else if (style == Parameter.StyleEnum.SPACEDELIMITED && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split(" "));
-    } else if (style == Parameter.StyleEnum.PIPEDELIMITED && !explode) {
-      return ImmutableList.copyOf(((String) paramValue).split("\\|"));
-    } else {
-      return paramValue;
-    }
   }
 
   protected Object getPathParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
