@@ -51,11 +51,7 @@ responses:
       schema:
         $ref: '#/components/schemas/Breweries'
 ```
-
-
-
 Currently, exactly one MediaType per response is supported and it should match `application/.*json`.
-
 
 # 1.1.2 Type mapping
 Type definitions in the schema are mapped to GraphQL types based on their name. For example, the following OpenAPI type 

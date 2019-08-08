@@ -57,11 +57,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private void validateSchema() {
     GraphQlField field = responseContext.getGraphQlField();
-    long matched = responseContext.getResponses()
+    if (responseContext.getResponses()
         .stream()
-        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
-        .count();
-    if (matched == 0) {
+        .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
       throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
     }
     validateParameters(field, responseContext.getParameters(), pathName);
@@ -73,16 +71,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     parameters.forEach(parameter -> this.paramHandlerRouter.getParamHandler(parameter)
         .validate(field, parameter, pathName));
     field.getArguments()
-        .forEach(argument -> verifyRequiredNoDefaultArgument(argument, parameters, pathName));
+        .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  private void verifyRequiredNoDefaultArgument(GraphQlArgument argument, List<Parameter> parameters, String pathName) {
+  private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters, String pathName) {
     if (argument.isRequired() && !argument.isHasDefault()) {
-      long matching = parameters.stream()
-          .filter(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
-              .equals(argument.getName()))
-          .count();
-      if (matching == 0) {
+      if (parameters.stream()
+          .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
+              .equals(argument.getName()))) {
         throw ExceptionHelper.invalidConfigurationException(
             "No required OAS parameter found for required and no-default GraphQL argument" + " '{}' in path '{}'",
             argument.getName(), pathName);
@@ -90,7 +86,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
     if (argument.isRequired()) {
       argument.getChildren()
-          .forEach(child -> verifyRequiredNoDefaultArgument(child, parameters, pathName));
+          .forEach(child -> verifyRequiredWithoutDefaultArgument(child, parameters, pathName));
     }
   }
 
