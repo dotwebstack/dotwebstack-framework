@@ -11,9 +11,9 @@ public class ParamHandlerRouter {
 
   private ParamHandler defaultHandler;
 
-  public ParamHandlerRouter(List<ParamHandler> customHandlers) {
+  public ParamHandlerRouter(List<ParamHandler> customHandlers, DefaultParamHandler defaultHandler) {
     this.customHandlers = customHandlers;
-    this.defaultHandler = new DefaultParamHandler();
+    this.defaultHandler = defaultHandler;
   }
 
   public ParamHandler getParamHandler(@NonNull Parameter parameter) {

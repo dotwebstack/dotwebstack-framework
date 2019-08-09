@@ -12,9 +12,11 @@ import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import java.util.Collections;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
+import org.dotwebstack.framework.service.openapi.param.DefaultParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
@@ -42,9 +44,6 @@ public class OpenApiConfigurationTest {
   private OpenApiConfiguration openApiConfiguration;
 
   @Mock
-  private ParamHandlerRouter paramHandlerRouter;
-
-  @Mock
   private ResponseContextValidator responseContextValidator;
 
   @Mock
@@ -55,7 +54,7 @@ public class OpenApiConfigurationTest {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
     this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, responseMapper, openApiProperties,
-        paramHandlerRouter, responseContextValidator));
+        new ParamHandlerRouter(Collections.emptyList(), new DefaultParamHandler(openApi)), responseContextValidator));
   }
 
   @Test

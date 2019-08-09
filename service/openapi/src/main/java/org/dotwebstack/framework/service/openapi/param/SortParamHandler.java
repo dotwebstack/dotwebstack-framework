@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.param;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
 import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,6 +19,10 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 
 @Component
 public class SortParamHandler extends DefaultParamHandler {
+
+  public SortParamHandler(OpenAPI openApi) {
+    super(openApi);
+  }
 
   @Override
   public boolean supports(Parameter parameter) {

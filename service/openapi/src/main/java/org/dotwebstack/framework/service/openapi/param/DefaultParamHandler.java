@@ -6,8 +6,11 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Arrays;
@@ -21,6 +24,8 @@ import java.util.stream.Stream;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
+import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
+import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
@@ -36,6 +41,12 @@ public class DefaultParamHandler implements ParamHandler {
   private static final String PARAM_QUERY_TYPE = "query";
 
   private static final String PARAM_HEADER_TYPE = "header";
+
+  private final OpenAPI openApi;
+
+  public DefaultParamHandler(OpenAPI openApi) {
+    this.openApi = openApi;
+  }
 
   @Override
   public boolean supports(Parameter parameter) {
@@ -63,9 +74,13 @@ public class DefaultParamHandler implements ParamHandler {
       Object convertedValue = deserialize(parameter, paramValue);
       validateEnumValues(convertedValue, parameter);
       return Optional.of(convertedValue);
+    } else {
+      Optional<Object> defaultValue = getDefault(parameter);
+      if (parameter.getRequired()) {
+        throw parameterValidationException("No value provided for required query parameter '{}'.", parameter.getName());
+      }
+      return defaultValue;
     }
-
-    return Optional.empty();
   }
 
   @Override
@@ -225,33 +240,13 @@ public class DefaultParamHandler implements ParamHandler {
     try {
       return request.pathVariable(parameter.getName());
     } catch (IllegalArgumentException exception) {
-      if (Objects.nonNull(parameter.getSchema()) && Objects.nonNull(parameter.getSchema()
-          .getDefault())) {
-        return parameter.getSchema()
-            .getDefault();
-      }
-      if (parameter.getRequired()) {
-        throw parameterValidationException("No value provided for required path parameter " + "'{}'.",
-            parameter.getName());
-      }
+      return null;
     }
-    return null;
   }
 
   protected Object getQueryParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
     List<String> result = request.queryParams()
         .get(parameter.getName());
-
-    if (Objects.isNull(result)) {
-      if (Objects.nonNull(parameter.getSchema()) && Objects.nonNull(parameter.getSchema()
-          .getDefault())) {
-        return parameter.getSchema()
-            .getDefault();
-      }
-      if (parameter.getRequired()) {
-        throw parameterValidationException("No value provided for required query parameter '{}'", parameter.getName());
-      }
-    }
 
     if (ARRAY_TYPE.equals(parameter.getSchema()
         .getType()) && parameter.getExplode()) {
@@ -263,19 +258,25 @@ public class DefaultParamHandler implements ParamHandler {
   protected Object getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
     List<String> result = request.headers()
         .header(parameter.getName());
+    return !result.isEmpty() ? result.get(0) : null;
+  }
 
-    if (result.isEmpty()) {
-      if (Objects.nonNull(parameter.getSchema()) && Objects.nonNull(parameter.getSchema()
-          .getDefault())) {
-        return parameter.getSchema()
-            .getDefault()
-            .toString();
-      }
-      if (parameter.getRequired()) {
-        throw parameterValidationException("No value provided for required header parameter '{}'", parameter.getName());
+  @SuppressWarnings("rawtypes")
+  protected Optional<Object> getDefault(Parameter parameter) {
+    Schema schema = parameter.getSchema()
+        .get$ref() != null ? SchemaUtils.getSchemaReference(
+            parameter.getSchema()
+                .get$ref(),
+            openApi) : parameter.getSchema();
+    if (schema != null && schema.getDefault() != null) {
+      switch (schema.getType()) {
+        case "array":
+        case "object":
+          return Optional.ofNullable(JsonNodeUtils.toObject((JsonNode) schema.getDefault()));
+        default:
+          return Optional.of(schema.getDefault());
       }
     }
-
-    return !result.isEmpty() ? result.get(0) : null;
+    return Optional.empty();
   }
 }

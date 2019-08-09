@@ -30,6 +30,7 @@ components:
           $ref: '#/components/schemas/Object2'
     Object2:
       type: object
+      default: {"o2_prop1":"v1"}
       required:
         - o2_prop1
       properties:
@@ -59,6 +60,45 @@ paths:
   /query2:
     get:
       x-dws-query: query2
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object2'
+  /query3/{query3_param1}:
+    get:
+      x-dws-query: query3
+      parameters:
+        - name: query3_param1
+          in: path
+          schema:
+            type: array
+            default: ['default1', 'default2']
+            items:
+              type: string
+              enum: ['default1', 'default2']
+        - name: query3_param2
+          in: header
+          schema:
+            type: string
+            default: "query3_param2_default"
+        - name: query3_param3
+          in: header
+          schema:
+            type: object
+            properties:
+              p1:
+                type: string
+              p2:
+                type: string
+            default: {"p1":"v1", "p2":"v2"}
+        - name: query3_param4
+          in: header
+          schema:
+            $ref: '#/components/schemas/Object2'
+
       responses:
         200:
           description: OK

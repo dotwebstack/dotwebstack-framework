@@ -6,6 +6,8 @@ type Query {
     query1(argument1: String, argument2: String): [Object1!]
 
     query2: Object2!
+
+    query3(query3_param1: [String], query3_param2: String, query3_param3: String, query3_param4: String): Object2!
 }
 
 type Object1 {

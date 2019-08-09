@@ -7,13 +7,16 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +50,7 @@ public class DefaultParamHandlerTest {
 
   @BeforeEach
   public void setup() {
-    this.paramHandler = new DefaultParamHandler();
+    this.paramHandler = new DefaultParamHandler(TestResources.openApi());
   }
 
   @Test
@@ -288,18 +291,18 @@ public class DefaultParamHandlerTest {
   }
 
   @Test
-  public void getValue_returnsDefaultValue_fromQueryParaString() throws ParameterValidationException {
+  public void getValue_returnsDefaultValue_fromQueryParamString() throws ParameterValidationException, IOException {
     // Arrange
     mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
     when(parameter.getSchema()
-        .getDefault()).thenReturn("default");
+        .getDefault()).thenReturn("default1");
 
     // Act
     Optional<Object> result = paramHandler.getValue(request, parameter);
 
     // Assert
-    assertEquals("default", result.get());
+    assertEquals("default1", result.get());
   }
 
   @Test
@@ -309,6 +312,70 @@ public class DefaultParamHandlerTest {
 
     // Act / Assert
     Assertions.assertThrows(UnsupportedOperationException.class, () -> paramHandler.getValue(request, parameter));
+  }
+
+  @Test
+  public void getDefault_returnsListForArrayType() {
+    // Arrange
+    PathItem query3 = TestResources.openApi()
+        .getPaths()
+        .get("/query3/{query3_param1}");
+
+    // Act
+    Optional<Object> defaultValue = paramHandler.getDefault(query3.getGet()
+        .getParameters()
+        .get(0));
+
+    // Assert
+    assertEquals(asList("default1", "default2"), defaultValue.orElseGet(() -> new NullPointerException("")));
+  }
+
+  @Test
+  public void getDefault_returnsStringForStringType() {
+    // Arrange
+    PathItem query3 = TestResources.openApi()
+        .getPaths()
+        .get("/query3/{query3_param1}");
+
+    // Act
+    Optional<Object> defaultValue = paramHandler.getDefault(query3.getGet()
+        .getParameters()
+        .get(1));
+
+    // Assert
+    assertEquals("query3_param2_default", defaultValue.orElseGet(() -> new NullPointerException("")));
+  }
+
+  @Test
+  public void getDefault_returnsMapForInlineObjectType() {
+    // Arrange
+    PathItem query3 = TestResources.openApi()
+        .getPaths()
+        .get("/query3/{query3_param1}");
+
+    // Act
+    Optional<Object> defaultValue = paramHandler.getDefault(query3.getGet()
+        .getParameters()
+        .get(2));
+
+    // Assert
+    assertEquals(ImmutableMap.of("p1", "v1", "p2", "v2"), defaultValue.orElseGet(() -> new NullPointerException("")));
+  }
+
+  @Test
+  public void getDefault_returnsMapForRefObjectType() {
+    // Arrange
+    PathItem query3 = TestResources.openApi()
+        .getPaths()
+        .get("/query3/{query3_param1}");
+
+    // Act
+    Optional<Object> defaultValue = paramHandler.getDefault(query3.getGet()
+        .getParameters()
+        .get(3));
+
+    // Assert
+    assertEquals(ImmutableMap.of("o2_prop1", "v1"), defaultValue.orElseGet(() -> new NullPointerException("")));
   }
 
 

@@ -8,7 +8,6 @@ import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
-import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -43,8 +42,6 @@ public class OpenApiConfiguration {
 
   private final ResponseMapper responseMapper;
 
-  private final OpenApiProperties properties;
-
   private final ParamHandlerRouter paramHandlerRouter;
 
   private final ResponseContextValidator responseContextValidator;
@@ -58,12 +55,6 @@ public class OpenApiConfiguration {
     this.graphQlFieldBuilder = new GraphQlFieldBuilder(this.typeDefinitionRegistry);
     this.responseMapper = responseMapper;
     this.responseContextValidator = responseContextValidator;
-    this.properties = properties;
-  }
-
-  @Bean
-  public OpenAPI openApi() {
-    return new OpenAPIV3Parser().read(properties.getSpecificationFile());
   }
 
   @Bean
