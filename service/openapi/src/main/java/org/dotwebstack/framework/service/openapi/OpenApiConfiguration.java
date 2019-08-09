@@ -4,7 +4,6 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -17,6 +16,7 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
+import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
@@ -26,7 +26,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.reactive.function.server.RequestPredicate;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -42,7 +41,7 @@ public class OpenApiConfiguration {
 
   private final GraphQlFieldBuilder graphQlFieldBuilder;
 
-  private final ObjectMapper objectMapper;
+  private final ResponseMapper responseMapper;
 
   private final OpenApiProperties properties;
 
@@ -51,13 +50,13 @@ public class OpenApiConfiguration {
   private final ResponseContextValidator responseContextValidator;
 
   public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      Jackson2ObjectMapperBuilder objectMapperBuilder, OpenApiProperties properties,
-      ParamHandlerRouter paramHandlerRouter, ResponseContextValidator responseContextValidator) {
+      ResponseMapper responseMapper, OpenApiProperties properties, ParamHandlerRouter paramHandlerRouter,
+      ResponseContextValidator responseContextValidator) {
     this.graphQl = graphQl;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
     this.paramHandlerRouter = paramHandlerRouter;
     this.graphQlFieldBuilder = new GraphQlFieldBuilder(this.typeDefinitionRegistry);
-    this.objectMapper = objectMapperBuilder.build();
+    this.responseMapper = responseMapper;
     this.responseContextValidator = responseContextValidator;
     this.properties = properties;
   }
@@ -101,6 +100,6 @@ public class OpenApiConfiguration {
         operation.getParameters() != null ? operation.getParameters() : Collections.emptyList());
 
     return RouterFunctions.route(requestPredicate.and(accept(MediaType.APPLICATION_JSON)), new CoreRequestHandler(path,
-        responseContext, responseContextValidator, graphQl, objectMapper, paramHandlerRouter));
+        responseContext, responseContextValidator, graphQl, responseMapper, paramHandlerRouter));
   }
 }

@@ -4,6 +4,7 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.FORM;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMITED;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -19,7 +20,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -82,16 +82,15 @@ public class DefaultParamHandler implements ParamHandler {
             && !parameter.getSchema()
                 .getEnum()
                 .contains(paramValue)) {
-          throw new ParameterValidationException(
-              String.format("Parameter '%s' has an invalid value, should be one of: '%s'", parameter.getName(),
-                  String.join(",", ((StringSchema) parameter.getSchema()).getEnum())));
+          throw parameterValidationException("Parameter '{}' has an invalid value, should be one of: '%s'",
+              parameter.getName(), String.join(",", ((StringSchema) parameter.getSchema()).getEnum()));
         }
         break;
       default:
         if (Objects.nonNull(parameter.getSchema()
             .getEnum())) {
-          throw new ParameterValidationException(String
-              .format("Sort parameter '%s' is of wrong type, can only be string of string[]", parameter.getName()));
+          throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string of string[]",
+              parameter.getName());
         }
     }
   }
@@ -110,17 +109,16 @@ public class DefaultParamHandler implements ParamHandler {
       } else if (paramValue instanceof List) {
         list = (List<String>) paramValue;
       } else {
-        throw new ParameterValidationException(
-            String.format("Enumerated parameter '%s' can only be of string or string[]", parameter.getName()));
+        throw parameterValidationException("Enumerated parameter '%s' can only be of string or string[]",
+            parameter.getName());
       }
       List<String> invalidValues = list.stream()
           .filter(param -> !enumList.contains(param))
           .collect(Collectors.toList());
 
       if (!invalidValues.isEmpty()) {
-        throw new ParameterValidationException(
-            String.format("Parameter '%s' has (an) invalid value(s): '%s', should be one of: '%s'", parameter.getName(),
-                String.join(", ", invalidValues), String.join(", ", enumList)));
+        throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
+            parameter.getName(), String.join(", ", invalidValues), String.join(", ", enumList));
       }
     }
   }
@@ -220,8 +218,8 @@ public class DefaultParamHandler implements ParamHandler {
             .getDefault();
       }
       if (parameter.getRequired()) {
-        throw OpenApiExceptionHelper.parameterValidationException(
-            "No value provided for required path parameter " + "'{}'.", parameter.getName());
+        throw parameterValidationException("No value provided for required path parameter " + "'{}'.",
+            parameter.getName());
       }
     }
     return null;
@@ -238,8 +236,7 @@ public class DefaultParamHandler implements ParamHandler {
             .getDefault();
       }
       if (parameter.getRequired()) {
-        throw OpenApiExceptionHelper.parameterValidationException("No value provided for required query parameter '{}'",
-            parameter.getName());
+        throw parameterValidationException("No value provided for required query parameter '{}'", parameter.getName());
       }
     }
 
@@ -261,8 +258,7 @@ public class DefaultParamHandler implements ParamHandler {
             .getDefault();
       }
       if (parameter.getRequired()) {
-        throw OpenApiExceptionHelper
-            .parameterValidationException("No value provided for required header parameter '{}'", parameter.getName());
+        throw parameterValidationException("No value provided for required header parameter '{}'", parameter.getName());
       }
     }
 

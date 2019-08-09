@@ -3,7 +3,6 @@ package org.dotwebstack.framework.service.openapi;
 import static org.springframework.web.reactive.function.BodyInserters.fromObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -16,6 +15,7 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
+import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
@@ -39,17 +39,17 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final GraphQL graphQL;
 
-  private final ObjectMapper objectMapper;
+  private final ResponseMapper responseMapper;
 
   private final ParamHandlerRouter paramHandlerRouter;
 
   CoreRequestHandler(String pathName, ResponseContext responseContext,
-      ResponseContextValidator responseContextValidator, GraphQL graphQL, ObjectMapper objectMapper,
+      ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
       ParamHandlerRouter paramHandlerRouter) {
     this.pathName = pathName;
     this.responseContext = responseContext;
     this.graphQL = graphQL;
-    this.objectMapper = objectMapper;
+    this.responseMapper = responseMapper;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
     validateSchema();
@@ -113,26 +113,26 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             .orElseThrow(
                 () -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
 
-        Object response = new ResponseMapper().mapResponse(template.getResponseObject(),
+        String json = responseMapper.toJson(template.getResponseObject(),
             ((Map<String, Object>) result.getData()).get(this.responseContext.getGraphQlField()
                 .getName()));
-        if (response == null) {
-          return ServerResponse.notFound()
-              .build();
-        }
-        String json = toJson(response);
+
         return ServerResponse.ok()
             .contentType(MediaType.parseMediaType(template.getMediaType()))
             .body(fromObject(json));
       }
       return ServerResponse.status(HttpStatus.BAD_REQUEST)
-          .body(fromObject(String.format("GraphQl query resulted in errors: %s.", toJson(result.getErrors()))));
+          .body(fromObject(
+              String.format("GraphQl query resulted in errors: %s.", responseMapper.toJson(result.getErrors()))));
     } catch (JsonProcessingException e) {
       return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(fromObject("Error while serializing response to JSON."));
     } catch (ParameterValidationException e) {
       return ServerResponse.status(HttpStatus.BAD_REQUEST)
           .body(fromObject(String.format("Error while obtaining request parameters: %s", e.getMessage())));
+    } catch (NoResultFoundException e) {
+      return ServerResponse.notFound()
+          .build();
     }
 
   }
@@ -147,11 +147,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       }
     }
     return result;
-  }
-
-  private String toJson(Object object) throws JsonProcessingException {
-    return objectMapper.writer()
-        .writeValueAsString(object);
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {

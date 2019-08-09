@@ -14,6 +14,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
@@ -23,7 +24,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.reactive.function.server.RequestPredicate;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,12 +47,15 @@ public class OpenApiConfigurationTest {
   @Mock
   private ResponseContextValidator responseContextValidator;
 
+  @Mock
+  private ResponseMapper responseMapper;
+
   @BeforeEach
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
-    this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, new Jackson2ObjectMapperBuilder(),
-        openApiProperties, paramHandlerRouter, responseContextValidator));
+    this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, responseMapper, openApiProperties,
+        paramHandlerRouter, responseContextValidator));
   }
 
   @Test
