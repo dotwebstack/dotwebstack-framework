@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.List;
 import lombok.NonNull;
@@ -11,9 +12,9 @@ public class ParamHandlerRouter {
 
   private ParamHandler defaultHandler;
 
-  public ParamHandlerRouter(List<ParamHandler> customHandlers, DefaultParamHandler defaultHandler) {
+  public ParamHandlerRouter(List<ParamHandler> customHandlers, OpenAPI openApi) {
     this.customHandlers = customHandlers;
-    this.defaultHandler = defaultHandler;
+    this.defaultHandler = new DefaultParamHandler(openApi);
   }
 
   public ParamHandler getParamHandler(@NonNull Parameter parameter) {

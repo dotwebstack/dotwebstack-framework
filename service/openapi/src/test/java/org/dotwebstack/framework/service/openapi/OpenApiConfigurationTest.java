@@ -54,7 +54,7 @@ public class OpenApiConfigurationTest {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
     this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, responseMapper, openApiProperties,
-        new ParamHandlerRouter(Collections.emptyList(), new DefaultParamHandler(openApi)), responseContextValidator));
+        new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator));
   }
 
   @Test
