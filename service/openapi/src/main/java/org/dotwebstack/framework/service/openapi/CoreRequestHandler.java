@@ -31,8 +31,6 @@ import reactor.core.publisher.Mono;
 
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
-  private String pathName;
-
   private final ResponseContext responseContext;
 
   private final ResponseContextValidator responseContextValidator;
@@ -42,6 +40,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private final ResponseMapper responseMapper;
 
   private final ParamHandlerRouter paramHandlerRouter;
+
+  private String pathName;
 
   CoreRequestHandler(String pathName, ResponseContext responseContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
@@ -76,14 +76,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
       String pathName) {
-    if (argument.isRequired() && !argument.isHasDefault()) {
-      if (parameters.stream()
-          .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
-              .equals(argument.getName()))) {
-        throw ExceptionHelper.invalidConfigurationException(
-            "No required OAS parameter found for required and no-default GraphQL argument" + " '{}' in path '{}'",
-            argument.getName(), pathName);
-      }
+    if (argument.isRequired() && !argument.isHasDefault() && parameters.stream()
+        .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
+            .equals(argument.getName()))) {
+      throw ExceptionHelper.invalidConfigurationException(
+          "No required OAS parameter found for required and no-default GraphQL argument" + " '{}' in path '{}'",
+          argument.getName(), pathName);
     }
     if (argument.isRequired()) {
       argument.getChildren()
@@ -134,7 +132,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       return ServerResponse.notFound()
           .build();
     }
-
   }
 
   private Map<String, Object> resolveParameters(ServerRequest request) throws ParameterValidationException {

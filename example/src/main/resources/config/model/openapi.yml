@@ -49,8 +49,6 @@ components:
           order:
             type: string
 
-
-
 paths:
   /breweries:
     get:

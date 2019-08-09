@@ -24,6 +24,19 @@ import org.dotwebstack.framework.service.openapi.exception.ParameterValidationEx
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
+
+  private static final String ARRAY_TYPE = "array";
+
+  private static final String OBJECT_TYPE = "object";
+
+  private static final String STRING_TYPE = "string";
+
+  private static final String PARAM_PATH_TYPE = "path";
+
+  private static final String PARAM_QUERY_TYPE = "query";
+
+  private static final String PARAM_HEADER_TYPE = "header";
+
   @Override
   public boolean supports(Parameter parameter) {
     return true;
@@ -33,13 +46,13 @@ public class DefaultParamHandler implements ParamHandler {
   public Optional<Object> getValue(ServerRequest request, Parameter parameter) throws ParameterValidationException {
     Object paramValue;
     switch (parameter.getIn()) {
-      case "path":
+      case PARAM_PATH_TYPE:
         paramValue = getPathParam(parameter, request);
         break;
-      case "query":
+      case PARAM_QUERY_TYPE:
         paramValue = getQueryParam(parameter, request);
         break;
-      case "header":
+      case PARAM_HEADER_TYPE:
         paramValue = getHeaderParam(parameter, request);
         break;
       default:
@@ -73,10 +86,10 @@ public class DefaultParamHandler implements ParamHandler {
     String type = parameter.getSchema()
         .getType();
     switch (type) {
-      case "array":
+      case ARRAY_TYPE:
         validateEnumValuesForArray(paramValue, parameter);
         break;
-      case "string":
+      case STRING_TYPE:
         if (Objects.nonNull(parameter.getSchema()
             .getEnum())
             && !parameter.getSchema()
@@ -132,9 +145,9 @@ public class DefaultParamHandler implements ParamHandler {
             : parameter.getSchema()
                 .getType();
     switch (schemaType) {
-      case "array":
+      case ARRAY_TYPE:
         return deserializeArray(parameter, paramValue);
-      case "object":
+      case OBJECT_TYPE:
         return deserializeObject(parameter, paramValue);
       default:
         return paramValue;
@@ -165,10 +178,11 @@ public class DefaultParamHandler implements ParamHandler {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
 
-    if (style == SIMPLE && !explode) {
-      return deserializeObjectFromKeyValueString((String) paramValue, ",");
-    } else if (style == SIMPLE && explode) {
-      return deserializeObjectFromKeyValueString((String) paramValue, ",", "=");
+    if (style == SIMPLE) {
+      if (explode) {
+        return deserializeObjectFromKeyValueString((String) paramValue, ",", "=");
+      }
+      return deserializeObjectFromKeyValueString((String) paramValue);
     } else {
       throw ExceptionHelper.unsupportedOperationException(
           "Object deserialization not supported for parameter style " + "'{}'. Supported styles are '{}'.", style,
@@ -176,12 +190,11 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  protected Object deserializeObjectFromKeyValueString(String keyValueString, String separator) {
+  protected Object deserializeObjectFromKeyValueString(String keyValueString) {
     String[] split = keyValueString.split(",");
     if (split.length % 2 != 0) {
-      throw ExceptionHelper.illegalArgumentException(
-          "Key value string '{}' with separator '{}' should contain an " + "even number of elements.", keyValueString,
-          separator);
+      throw ExceptionHelper.illegalArgumentException("Key value string '{}' should contain an even number of elements.",
+          keyValueString);
     }
     Map<String, String> result = new HashMap<>();
     for (int i = 0; i < split.length; i += 2) {
@@ -240,7 +253,7 @@ public class DefaultParamHandler implements ParamHandler {
       }
     }
 
-    if ("array".equals(parameter.getSchema()
+    if (ARRAY_TYPE.equals(parameter.getSchema()
         .getType()) && parameter.getExplode()) {
       return result;
     }
@@ -255,7 +268,8 @@ public class DefaultParamHandler implements ParamHandler {
       if (Objects.nonNull(parameter.getSchema()) && Objects.nonNull(parameter.getSchema()
           .getDefault())) {
         return parameter.getSchema()
-            .getDefault();
+            .getDefault()
+            .toString();
       }
       if (parameter.getRequired()) {
         throw parameterValidationException("No value provided for required header parameter '{}'", parameter.getName());
