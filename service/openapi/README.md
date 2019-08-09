@@ -53,7 +53,48 @@ responses:
 ```
 Currently, exactly one MediaType per response is supported and it should match `application/.*json`.
 
-# 1.1.2 Type mapping
+# 1.1.2 Operation parameters
+The use of operation parameters is supported for path variables, query string variables and HTTP header variables. The following OAS example defines a `path` parameter of type `string` for the `get` operation:
+ 
+ ````yaml
+paths:
+  /breweries/{name}:
+    get:
+      x-dws-query: breweries
+      parameters:
+        - name: name
+          in: path
+          schema:
+            type: string
+````
+All parameter names in the OAS spec should correspond to existing GraphQL query arguments. The ``name`` parameter in the example should
+also be present in the GraphQL query argument list:
+````
+  breweries(name: String): [Brewery!]!
+````
+# 1.1.3 Sort parameter
+The parameter for providing sort information is modelled with a vendor extension `x-dws-type: sort`. Parameters with this extension should
+have an array type schema where the array contains the fields on which to sort.
+
+**Ordering:** A field preceded by `-` is mapped to DESC order and a field without a prefix to ASC order.
+
+**Default:** A default value may be specified which will be used if there is no input from the request.
+
+The following parameter will sort on ascending name and descending description and specifies the default value `['name']`:
+````yaml
+     parameters:
+        - name: sort
+          in: header
+          x-dws-type: sort
+          schema:
+            type: array
+            default: ['name']
+            items:
+              type: string
+              enum: ['name', '-description']
+````
+
+# 1.1.4 Type mapping
 Type definitions in the schema are mapped to GraphQL types based on their name. For example, the following OpenAPI type 
 ```yaml
 components:
