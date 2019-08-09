@@ -47,9 +47,20 @@ components:
           type: string
           nullable: true
         beers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Beer'
+          type: object
+          required:
+            - _embedded
+          properties:
+            _embedded:
+              x-dws-envelope: true
+              type: object
+              required:
+                - beers
+              properties:
+                beers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Beer'
     SortField:
       type: array
       items:

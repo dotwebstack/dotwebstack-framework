@@ -31,14 +31,21 @@ public class ResponseContextValidator {
         List<ResponseObject> children = template.getChildren();
         children.forEach(child -> {
           // check vendor extensies child .... als x-dws-envelope --> geen validatie
-          GraphQlField graphQlChildField = field.getFields()
-              .stream()
-              .filter(childField -> childField.getName()
-                  .equals(child.getIdentifier()))
-              .findFirst()
-              .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
-                  "OAS field '{}' not found in matching GraphQl object '{}'.", child.getIdentifier(), field.getName()));
-          validate(child, graphQlChildField);
+          if (child.isEnvelope()) {
+            ResponseObject embedded = child.getChildren()
+                .get(0);
+            validate(embedded, field);
+          } else {
+            GraphQlField graphQlChildField = field.getFields()
+                .stream()
+                .filter(childField -> childField.getName()
+                    .equals(child.getIdentifier()))
+                .findFirst()
+                .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
+                    "OAS field '{}' not found in matching GraphQl object '{}'.", child.getIdentifier(),
+                    field.getName()));
+            validate(child, graphQlChildField);
+          }
         });
         break;
       default:

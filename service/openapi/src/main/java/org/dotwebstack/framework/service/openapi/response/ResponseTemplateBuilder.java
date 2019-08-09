@@ -99,6 +99,7 @@ public class ResponseTemplateBuilder {
     } else {
       return ResponseObject.builder()
           .identifier(identifier)
+          .isEnvelope(isEnvelope(schema))
           .type(schema.getType())
           .nillable(isNillable)
           .required(isRequired)
@@ -122,6 +123,7 @@ public class ResponseTemplateBuilder {
         .collect(Collectors.toList());
     return ResponseObject.builder()
         .identifier(identifier)
+        .isEnvelope(isEnvelope(schema))
         .type(schema.getType())
         .children(children)
         .nillable(isNillable)
@@ -143,6 +145,7 @@ public class ResponseTemplateBuilder {
     }
     return ResponseObject.builder()
         .identifier(identifier)
+        .isEnvelope(isEnvelope(schema))
         .type(schema.getType())
         .items(ImmutableList.of(item))
         .nillable(isNillable)
@@ -158,5 +161,14 @@ public class ResponseTemplateBuilder {
   private static boolean isRequired(Schema<?> schema, String property) {
     return schema == null || schema.getRequired()
         .contains(property);
+  }
+
+  private boolean isEnvelope(Schema<?> schema) {
+    if (Objects.nonNull(schema.getExtensions()) && Objects.nonNull(schema.getExtensions()
+        .get("x-dws-envelope"))) {
+      return (boolean) schema.getExtensions()
+          .get("x-dws-envelope");
+    }
+    return false;
   }
 }
