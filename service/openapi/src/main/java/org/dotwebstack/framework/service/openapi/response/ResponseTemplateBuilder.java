@@ -114,7 +114,7 @@ public class ResponseTemplateBuilder {
         .map(entry -> {
           String propId = entry.getKey();
           Schema propSchema = entry.getValue();
-          boolean childRequired = isRequired(schema, identifier);
+          boolean childRequired = isRequired(schema, propId);
           boolean childNillable = isNillable(propSchema);
           return createResponseObject(openApi, propId, propSchema, childRequired, childNillable);
         })
