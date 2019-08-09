@@ -22,9 +22,7 @@ Both `JSON` and `yaml` file formats are supported.
 Path operations and types used in the specification should map to the GraphQL service.
 
 # 1.1.1 Operation mapping
-Operations in the OpenAPI specification are mapped to GraphQL queries using the value of the `x-dws-query` specification extension. For example, the 
-following `get` operation in the `/breweries` path
-
+Operations in the OpenAPI specification are mapped to GraphQL queries using the value of the `x-dws-query` specification extension. For example, the following `get` operation in the `/breweries` path:
 ```yaml
 paths:
   /breweries:
@@ -39,9 +37,7 @@ default_breweries : [Brewery!]!
   repository: "local"
 )
 ```
-
-Each operation response should have a reference to the return type using content.<mediaType>.schema.$ref. The following example
-specifies that the OK response (200) returns the `Breweries` type:
+Each operation response should have a reference to the return type using `content.<mediaType>.schema.$ref`. The following example specifies that the OK response (200) returns the `Breweries` type:
 ```yaml
 responses:
   200:
@@ -55,8 +51,7 @@ Currently, exactly one MediaType per response is supported and it should match `
 
 # 1.1.2 Operation parameters
 The use of operation parameters is supported for path variables, query string variables and HTTP header variables. The following OAS example defines a `path` parameter of type `string` for the `get` operation:
- 
- ````yaml
+````yaml
 paths:
   /breweries/{name}:
     get:
@@ -67,19 +62,15 @@ paths:
           schema:
             type: string
 ````
-All parameter names in the OAS spec should correspond to existing GraphQL query arguments. The ``name`` parameter in the example should
-also be present in the GraphQL query argument list:
+All parameter names in the OAS spec should correspond to existing GraphQL query arguments:
 ````
   breweries(name: String): [Brewery!]!
 ````
+
 # 1.1.3 Sort parameter
-The parameter for providing sort information is modelled with a vendor extension `x-dws-type: sort`. Parameters with this extension should
-have an array type schema where the array contains the fields on which to sort.
-
+The parameter for providing sort information is modelled with a vendor extension `x-dws-type: sort`. Parameters with this extension should have an array type schema where the array contains the fields on which to sort.
 **Ordering:** A field preceded by `-` is mapped to DESC order and a field without a prefix to ASC order.
-
 **Default:** A default value may be specified which will be used if there is no input from the request.
-
 The following parameter will sort on ascending name and descending description and specifies the default value `['name']`:
 ````yaml
      parameters:
