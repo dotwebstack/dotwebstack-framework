@@ -141,7 +141,7 @@ public class DefaultParamHandler implements ParamHandler {
       return null;
     }
     String schemaType = parameter.getSchema()
-        .get$ref() != null ? "object"
+        .get$ref() != null ? OBJECT_TYPE
             : parameter.getSchema()
                 .getType();
     switch (schemaType) {
