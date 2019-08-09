@@ -7,5 +7,4 @@ public class NoResultFoundException extends Exception {
   NoResultFoundException(String formatMessage, Throwable cause) {
     super(formatMessage, cause);
   }
-
 }
