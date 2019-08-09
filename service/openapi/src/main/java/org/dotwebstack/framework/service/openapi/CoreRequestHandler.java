@@ -74,7 +74,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .forEach(argument -> verifyRequiredWithoutDefaultArgument(argument, parameters, pathName));
   }
 
-  private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters, String pathName) {
+  private void verifyRequiredWithoutDefaultArgument(GraphQlArgument argument, List<Parameter> parameters,
+      String pathName) {
     if (argument.isRequired() && !argument.isHasDefault()) {
       if (parameters.stream()
           .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()

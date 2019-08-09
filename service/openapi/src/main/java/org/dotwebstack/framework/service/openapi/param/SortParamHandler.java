@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.springframework.stereotype.Component;
@@ -49,7 +48,8 @@ public class SortParamHandler extends DefaultParamHandler {
           } else if (value.get() instanceof List) {
             list = new ArrayList<>(((List<String>) value.get()));
           } else {
-            throw OpenApiExceptionHelper.parameterValidationException("Sort parameter '{}' is of wrong type, can only be string of string[]", parameter.getName());
+            throw OpenApiExceptionHelper.parameterValidationException(
+                "Sort parameter '{}' is of wrong type, can only be string of string[]", parameter.getName());
           }
           return Optional.of(list.stream()
               .map(this::parseSortParam)
