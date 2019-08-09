@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -76,9 +75,15 @@ public class DefaultParamHandler implements ParamHandler {
       return Optional.of(convertedValue);
     } else {
       Optional<Object> defaultValue = getDefault(parameter);
-      if (parameter.getRequired()) {
-        throw parameterValidationException("No value provided for required query parameter '{}'.", parameter.getName());
+      if (defaultValue.isPresent()) {
+        validateEnumValues(defaultValue.get(), parameter);
+      } else {
+        if (parameter.getRequired()) {
+          throw parameterValidationException("No value provided for required query parameter '{}'.",
+              parameter.getName());
+        }
       }
+
       return defaultValue;
     }
   }
@@ -97,6 +102,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private void validateEnumValues(Object paramValue, Parameter parameter) throws ParameterValidationException {
     String type = parameter.getSchema()
         .getType();
@@ -111,7 +117,8 @@ public class DefaultParamHandler implements ParamHandler {
                 .getEnum()
                 .contains(paramValue)) {
           throw parameterValidationException("Parameter '{}' has an invalid value, should be one of: '%s'",
-              parameter.getName(), String.join(",", ((StringSchema) parameter.getSchema()).getEnum()));
+              parameter.getName(), String.join(",", parameter.getSchema()
+                  .getEnum()));
         }
         break;
       default:
@@ -151,7 +158,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  protected Object deserialize(Parameter parameter, Object paramValue) {
+  private Object deserialize(Parameter parameter, Object paramValue) {
     if (paramValue == null) {
       return null;
     }
@@ -169,7 +176,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  protected Object deserializeArray(Parameter parameter, Object paramValue) {
+  private Object deserializeArray(Parameter parameter, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
 
@@ -189,7 +196,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  protected Object deserializeObject(Parameter parameter, Object paramValue) {
+  private Object deserializeObject(Parameter parameter, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
 
@@ -205,7 +212,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  protected Object deserializeObjectFromKeyValueString(String keyValueString) {
+  private Object deserializeObjectFromKeyValueString(String keyValueString) {
     String[] split = keyValueString.split(",");
     if (split.length % 2 != 0) {
       throw ExceptionHelper.illegalArgumentException("Key value string '{}' should contain an even number of elements.",
@@ -220,7 +227,7 @@ public class DefaultParamHandler implements ParamHandler {
     return result;
   }
 
-  protected Object deserializeObjectFromKeyValueString(String keyValueString, String elementSeparator,
+  private Object deserializeObjectFromKeyValueString(String keyValueString, String elementSeparator,
       String keyValueSeparator) {
     Map<String, String> result = new HashMap<>();
     Arrays.asList(keyValueString.split(elementSeparator))
@@ -236,7 +243,7 @@ public class DefaultParamHandler implements ParamHandler {
     return result;
   }
 
-  protected Object getPathParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+  private Object getPathParam(Parameter parameter, ServerRequest request) {
     try {
       return request.pathVariable(parameter.getName());
     } catch (IllegalArgumentException exception) {
@@ -244,7 +251,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
-  protected Object getQueryParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+  private Object getQueryParam(Parameter parameter, ServerRequest request) {
     List<String> result = request.queryParams()
         .get(parameter.getName());
 
@@ -255,14 +262,14 @@ public class DefaultParamHandler implements ParamHandler {
     return (!Objects.isNull(result) && !result.isEmpty()) ? result.get(0) : null;
   }
 
-  protected Object getHeaderParam(Parameter parameter, ServerRequest request) throws ParameterValidationException {
+  private Object getHeaderParam(Parameter parameter, ServerRequest request) {
     List<String> result = request.headers()
         .header(parameter.getName());
     return !result.isEmpty() ? result.get(0) : null;
   }
 
   @SuppressWarnings("rawtypes")
-  protected Optional<Object> getDefault(Parameter parameter) {
+  Optional<Object> getDefault(Parameter parameter) {
     Schema schema = parameter.getSchema()
         .get$ref() != null ? SchemaUtils.getSchemaReference(
             parameter.getSchema()
@@ -270,8 +277,8 @@ public class DefaultParamHandler implements ParamHandler {
             openApi) : parameter.getSchema();
     if (schema != null && schema.getDefault() != null) {
       switch (schema.getType()) {
-        case "array":
-        case "object":
+        case ARRAY_TYPE:
+        case OBJECT_TYPE:
           return Optional.ofNullable(JsonNodeUtils.toObject((JsonNode) schema.getDefault()));
         default:
           return Optional.of(schema.getDefault());

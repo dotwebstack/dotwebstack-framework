@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.param;
 
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -13,12 +14,10 @@ import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -253,7 +252,7 @@ public class DefaultParamHandlerTest {
     mockArrayEnum(asList("v1", "v2"));
 
     // Act / Assert
-    Assertions.assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
+    assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
   }
 
 
@@ -263,7 +262,7 @@ public class DefaultParamHandlerTest {
     mockParameterQuery("test", "v1,v2", TYPE_ARRAY, true, Parameter.StyleEnum.LABEL);
 
     // Act / Assert
-    Assertions.assertThrows(UnsupportedOperationException.class, () -> paramHandler.getValue(request, parameter));
+    assertThrows(UnsupportedOperationException.class, () -> paramHandler.getValue(request, parameter));
   }
 
   @Test
@@ -291,7 +290,7 @@ public class DefaultParamHandlerTest {
   }
 
   @Test
-  public void getValue_returnsDefaultValue_fromQueryParamString() throws ParameterValidationException, IOException {
+  public void getValue_returnsDefaultValue_fromQueryParamString() throws ParameterValidationException {
     // Arrange
     mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
@@ -306,12 +305,37 @@ public class DefaultParamHandlerTest {
   }
 
   @Test
+  public void getValue_throwsError_whenDefaultValueIsNotSet() {
+    // Arrange
+    mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
+    when(parameter.getRequired()).thenReturn(true);
+
+    // Act & Assert
+    assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
+  }
+
+  @Test
+  public void getValue_throwsError_whenDefaultDoesNotMatchEnum() {
+    // Arrange
+    mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
+    when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
+    when(parameter.getSchema()
+        .getDefault()).thenReturn("default1");
+    when(parameter.getSchema()
+        .getEnum()).thenReturn(ImmutableList.of("default2"));
+
+    // Act & Assert
+    assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
+  }
+
+  @Test
   public void getValue_throwsException_withObjectUnsupportedStyle() {
     // Arrange
     mockParameterPath("test", "k1=v1,k2=v2", TYPE_OBJECT, true, Parameter.StyleEnum.FORM);
 
     // Act / Assert
-    Assertions.assertThrows(UnsupportedOperationException.class, () -> paramHandler.getValue(request, parameter));
+    assertThrows(UnsupportedOperationException.class, () -> paramHandler.getValue(request, parameter));
   }
 
   @Test
