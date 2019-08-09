@@ -16,7 +16,6 @@ import java.util.Collections;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
-import org.dotwebstack.framework.service.openapi.param.DefaultParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;

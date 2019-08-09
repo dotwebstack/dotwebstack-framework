@@ -26,10 +26,8 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
-@Component
 public class DefaultParamHandler implements ParamHandler {
 
   private static final String ARRAY_TYPE = "array";
