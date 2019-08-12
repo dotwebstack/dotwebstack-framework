@@ -5,13 +5,14 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Objects;
+import lombok.NonNull;
 
 public class SchemaUtils {
 
   private SchemaUtils() {}
 
   @SuppressWarnings("rawtypes")
-  public static Schema getSchemaReference(String ref, OpenAPI openApi) {
+  public static Schema getSchemaReference(@NonNull String ref, @NonNull OpenAPI openApi) {
     String[] refPath = ref.split("/");
     Schema result = openApi.getComponents()
         .getSchemas()

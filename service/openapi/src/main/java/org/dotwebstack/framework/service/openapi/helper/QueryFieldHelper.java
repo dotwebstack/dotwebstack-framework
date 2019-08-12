@@ -7,6 +7,7 @@ import graphql.language.ObjectTypeDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.PathItem;
 import lombok.Builder;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 
@@ -17,7 +18,7 @@ public class QueryFieldHelper {
 
   private GraphQlFieldBuilder graphQlFieldBuilder;
 
-  public GraphQlField resolveGraphQlField(PathItem path) {
+  public GraphQlField resolveGraphQlField(@NonNull PathItem path) {
     String dwsQuery = (String) path.getGet()
         .getExtensions()
         .get("x-dws-query");
