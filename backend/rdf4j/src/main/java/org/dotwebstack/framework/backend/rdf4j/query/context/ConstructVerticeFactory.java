@@ -7,6 +7,7 @@ import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
@@ -16,8 +17,14 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ConstructVerticeFactory extends AbstractVerticeFactory {
+
+  public ConstructVerticeFactory(SerializerRouter serializerRouter) {
+    super(serializerRouter);
+  }
 
   public Vertice createVertice(List<IRI> filterSubjects, final Variable subject, OuterQuery<?> query,
       NodeShape nodeShape, List<SelectedField> fields) {

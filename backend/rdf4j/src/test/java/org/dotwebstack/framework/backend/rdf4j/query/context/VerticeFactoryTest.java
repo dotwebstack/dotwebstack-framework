@@ -19,6 +19,9 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
 import graphql.schema.SelectedField;
 import java.util.Collections;
+import org.dotwebstack.framework.backend.rdf4j.serializers.LocalDateSerializer;
+import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
+import org.dotwebstack.framework.backend.rdf4j.serializers.ZonedDateTimeSerializer;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
@@ -42,9 +45,12 @@ public class VerticeFactoryTest {
   @Mock
   private NodeShape nodeShape;
 
-  SelectVerticeFactory selectVerticeFactory = new SelectVerticeFactory();
+  SerializerRouter router =
+      new SerializerRouter(ImmutableList.of(new LocalDateSerializer(), new ZonedDateTimeSerializer()));
 
-  ConstructVerticeFactory constructVerticeFactory = new ConstructVerticeFactory();
+  SelectVerticeFactory selectVerticeFactory = new SelectVerticeFactory(router);
+
+  ConstructVerticeFactory constructVerticeFactory = new ConstructVerticeFactory(router);
 
   @Mock
   SelectedField selectedField;

@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 
 @Builder
 public class ResponseTemplateBuilder {
@@ -74,7 +75,7 @@ public class ResponseTemplateBuilder {
       io.swagger.v3.oas.models.media.MediaType content) {
     String ref = content.getSchema()
         .get$ref();
-    Schema schema = getSchemaReference(ref, openApi);
+    Schema schema = SchemaUtils.getSchemaReference(ref, openApi);
 
     ResponseObject root = createResponseObject(openApi, ref, schema, true, false);
 
@@ -89,8 +90,8 @@ public class ResponseTemplateBuilder {
   private ResponseObject createResponseObject(OpenAPI openApi, String identifier, Schema schema, boolean isRequired,
       boolean isNillable) {
     if (schema.get$ref() != null) {
-      return createResponseObject(openApi, identifier, getSchemaReference(schema.get$ref(), openApi), isRequired,
-          isNillable);
+      return createResponseObject(openApi, identifier, SchemaUtils.getSchemaReference(schema.get$ref(), openApi),
+          isRequired, isNillable);
     } else if (schema instanceof ObjectSchema) {
       return createResponseObject(openApi, identifier, (ObjectSchema) schema, isRequired, isNillable);
     } else if (schema instanceof ArraySchema) {
@@ -114,7 +115,7 @@ public class ResponseTemplateBuilder {
         .map(entry -> {
           String propId = entry.getKey();
           Schema propSchema = entry.getValue();
-          boolean childRequired = isRequired(schema, identifier);
+          boolean childRequired = isRequired(schema, propId);
           boolean childNillable = isNillable(propSchema);
           return createResponseObject(openApi, propId, propSchema, childRequired, childNillable);
         })
@@ -133,8 +134,13 @@ public class ResponseTemplateBuilder {
       boolean isRequired, boolean isNillable) {
     String ref = schema.getItems()
         .get$ref();
-    Schema refSchema = getSchemaReference(ref, openApi);
-    ResponseObject item = createResponseObject(openApi, identifier, refSchema, true, false);
+    ResponseObject item;
+    if (Objects.nonNull(ref)) {
+      Schema refSchema = SchemaUtils.getSchemaReference(ref, openApi);
+      item = createResponseObject(openApi, identifier, refSchema, true, false);
+    } else {
+      item = createResponseObject(openApi, identifier, schema.getItems(), true, false);
+    }
     return ResponseObject.builder()
         .identifier(identifier)
         .type(schema.getType())
@@ -142,6 +148,7 @@ public class ResponseTemplateBuilder {
         .nillable(isNillable)
         .required(isRequired)
         .build();
+
   }
 
   private boolean isNillable(Schema<?> schema) {
@@ -151,19 +158,5 @@ public class ResponseTemplateBuilder {
   private static boolean isRequired(Schema<?> schema, String property) {
     return schema == null || schema.getRequired()
         .contains(property);
-  }
-
-  @SuppressWarnings("rawtypes")
-  private Schema getSchemaReference(String ref, OpenAPI openApi) {
-    String[] refPath = ref.split("/");
-    Schema result = openApi.getComponents()
-        .getSchemas()
-        .get(refPath[refPath.length - 1]);
-
-    if (Objects.isNull(result)) {
-      throw invalidConfigurationException("Schema '{}' not found in configuration.", ref);
-    }
-
-    return result;
   }
 }

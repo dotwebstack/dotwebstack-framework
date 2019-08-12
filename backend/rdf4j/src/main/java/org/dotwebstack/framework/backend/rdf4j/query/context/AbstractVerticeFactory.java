@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
+import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
@@ -34,6 +35,12 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 abstract class AbstractVerticeFactory {
+
+  private SerializerRouter serializerRouter;
+
+  public AbstractVerticeFactory(SerializerRouter serializerRouter) {
+    this.serializerRouter = serializerRouter;
+  }
 
   Edge createSimpleEdge(Variable subject, BasePath basePath, boolean isOptional, boolean isVisible) {
     return Edge.builder()
@@ -133,7 +140,7 @@ abstract class AbstractVerticeFactory {
     }
 
     List<Operand> operands = filterArguments.stream()
-        .map(filterArgument -> getOperand(nodeShape, argumentName, filterArgument))
+        .map(filterArgument -> getOperand(nodeShape, argumentName, serializerRouter.serialize(filterArgument)))
         .collect(Collectors.toList());
 
     return Filter.builder()

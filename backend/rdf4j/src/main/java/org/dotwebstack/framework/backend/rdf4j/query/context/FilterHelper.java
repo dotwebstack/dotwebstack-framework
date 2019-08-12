@@ -15,7 +15,6 @@ import java.util.function.BiFunction;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.directives.FilterOperator;
-import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
@@ -66,9 +65,7 @@ public class FilterHelper {
     return usedExpression;
   }
 
-  public static Operand getOperand(NodeShape nodeShape, String field, Object value) {
-    String string = ObjectHelper.cast(String.class, value);
-
+  public static Operand getOperand(NodeShape nodeShape, String field, String filterString) {
     if (Objects.isNull(nodeShape.getPropertyShape(field))) {
       throw unsupportedOperationException("Property shape for '{}' does not exist on node shape '{}'", field,
           nodeShape);
@@ -77,10 +74,10 @@ public class FilterHelper {
     if (nodeShape.getPropertyShape(field)
         .getNodeKind()
         .equals(SHACL.IRI)) {
-      return Rdf.iri(string);
+      return Rdf.iri(filterString);
     }
 
-    return Rdf.literalOfType(string, Rdf.iri(nodeShape.getPropertyShape(field)
+    return Rdf.literalOfType(filterString, Rdf.iri(nodeShape.getPropertyShape(field)
         .getDatatype()
         .stringValue()));
   }

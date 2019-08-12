@@ -30,7 +30,7 @@ public class DateCoercing implements Coercing<LocalDate, LocalDate> {
 
   @Override
   public LocalDate parseValue(@NonNull Object value) {
-    throw new UnsupportedOperationException();
+    return serialize(value);
   }
 
   @Override

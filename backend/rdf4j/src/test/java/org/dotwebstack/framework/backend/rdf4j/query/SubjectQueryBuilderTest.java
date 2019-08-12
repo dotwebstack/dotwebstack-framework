@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
@@ -19,6 +20,9 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
+import org.dotwebstack.framework.backend.rdf4j.serializers.LocalDateSerializer;
+import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
+import org.dotwebstack.framework.backend.rdf4j.serializers.ZonedDateTimeSerializer;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +59,8 @@ class SubjectQueryBuilderTest {
     when(this.environmentMock.getNodeShapeRegistry()
         .get(any(GraphQLObjectType.class))).thenReturn(this.nodeShapeMock);
     this.subjectQueryBuilder =
-        SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine, new SelectVerticeFactory());
+        SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine, new SelectVerticeFactory(
+            new SerializerRouter(ImmutableList.of(new LocalDateSerializer(), new ZonedDateTimeSerializer()))));
   }
 
   private GraphQLDirective getValidPagingDirective() {

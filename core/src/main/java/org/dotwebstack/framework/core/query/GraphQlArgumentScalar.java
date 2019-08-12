@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class GraphQlArgumentScalar extends GraphQlArgument {
+public class GraphQlArgumentScalar {
   private final String value;
 }

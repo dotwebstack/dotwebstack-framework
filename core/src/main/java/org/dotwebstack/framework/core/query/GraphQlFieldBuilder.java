@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.core.query;
 
 import graphql.language.FieldDefinition;
+import graphql.language.InputObjectTypeDefinition;
+import graphql.language.InputValueDefinition;
+import graphql.language.NonNullType;
 import graphql.language.ScalarTypeDefinition;
 import graphql.language.Type;
 import graphql.language.TypeDefinition;
@@ -22,10 +25,12 @@ public class GraphQlFieldBuilder {
 
   public GraphQlField toGraphQlField(@NonNull FieldDefinition fieldDefinition) {
     List<GraphQlField> fields = getGraphQlFields(fieldDefinition);
+    List<GraphQlArgument> arguments = getArguments(fieldDefinition);
     return GraphQlField.builder()
         .name(fieldDefinition.getName())
         .type(TypeHelper.getTypeName(TypeHelper.getBaseType(fieldDefinition.getType())))
         .fields(fields)
+        .arguments(arguments)
         .build();
   }
 
@@ -46,6 +51,35 @@ public class GraphQlFieldBuilder {
   }
 
   private List<GraphQlArgument> getArguments(FieldDefinition fieldDefinition) {
-    throw ExceptionHelper.unsupportedOperationException("getArguments not yet supported.");
+    return fieldDefinition.getInputValueDefinitions()
+        .stream()
+        .map(this::toGraphQlArgument)
+        .collect(Collectors.toList());
+  }
+
+  @SuppressWarnings("rawtypes")
+  private GraphQlArgument toGraphQlArgument(InputValueDefinition inputValueDefinition) {
+    GraphQlArgument.GraphQlArgumentBuilder builder = GraphQlArgument.builder();
+
+    Type inputValueDefinitionType = inputValueDefinition.getType();
+    builder.required(inputValueDefinitionType instanceof NonNullType);
+    builder.hasDefault(inputValueDefinition.getDefaultValue() != null);
+
+    Type<?> baseType = TypeHelper.getBaseType(inputValueDefinitionType);
+    String baseTypeName = TypeHelper.getTypeName(baseType);
+    TypeDefinition typeDefinition = this.registry.getType(baseType)
+        .orElseThrow(() -> ExceptionHelper.invalidConfigurationException("Type '{}' not found in the GraphQL schema.",
+            baseType));
+
+    builder.name(inputValueDefinition.getName())
+        .type(inputValueDefinitionType)
+        .baseType(baseTypeName);
+    if (typeDefinition instanceof InputObjectTypeDefinition) {
+      builder.children(((InputObjectTypeDefinition) typeDefinition).getInputValueDefinitions()
+          .stream()
+          .map(this::toGraphQlArgument)
+          .collect(Collectors.toList()));
+    }
+    return builder.build();
   }
 }

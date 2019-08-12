@@ -12,21 +12,13 @@ import java.util.List;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ResponseContextValidator {
 
-  public void validate(@NonNull ResponseContext responseContext) {
-    GraphQlField field = responseContext.getGraphQlField();
-    ResponseTemplate okResponse = responseContext.getResponses()
-        .stream()
-        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
-        .findFirst()
-        .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response in the 200 range found."));
-
-    validate(okResponse.getResponseObject(), field);
-  }
-
-  private void validate(ResponseObject template, GraphQlField field) {
+  public void validate(@NonNull ResponseObject template, @NonNull GraphQlField field) {
+    field.getArguments();
     String graphQlType = field.getType();
     String oasType = template.getType();
     switch (oasType) {
@@ -86,6 +78,5 @@ public class ResponseContextValidator {
       default:
         throw ExceptionHelper.invalidConfigurationException("OAS type '{}' is currently not supported.", oasType);
     }
-
   }
 }

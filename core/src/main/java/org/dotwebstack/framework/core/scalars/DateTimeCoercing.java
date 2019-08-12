@@ -31,7 +31,7 @@ class DateTimeCoercing implements Coercing<ZonedDateTime, ZonedDateTime> {
 
   @Override
   public ZonedDateTime parseValue(@NonNull Object value) {
-    throw new UnsupportedOperationException();
+    return serialize(value);
   }
 
   @Override

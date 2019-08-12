@@ -50,7 +50,7 @@ class DateCoercingTest {
   @Test
   void parseValue_ThrowsException() {
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () -> coercing.parseValue(new Object()));
+    assertThrows(CoercingSerializeException.class, () -> coercing.parseValue(new Object()));
   }
 
   @Test
