@@ -9,6 +9,7 @@ import static graphql.Scalars.GraphQLShort;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Objects;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -29,16 +30,19 @@ public class ResponseContextValidator {
         break;
       case "object":
         List<ResponseObject> children = template.getChildren();
-        children.forEach(child -> {
-          GraphQlField graphQlChildField = field.getFields()
-              .stream()
-              .filter(childField -> childField.getName()
-                  .equals(child.getIdentifier()))
-              .findFirst()
-              .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
-                  "OAS field '{}' not found in matching GraphQl object '{}'.", child.getIdentifier(), field.getName()));
-          validate(child, graphQlChildField);
-        });
+        children.stream()
+            .filter(child -> Objects.isNull(child.getDwsTemplate()))
+            .forEach(child -> {
+              GraphQlField graphQlChildField = field.getFields()
+                  .stream()
+                  .filter(childField -> childField.getName()
+                      .equals(child.getIdentifier()))
+                  .findFirst()
+                  .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
+                      "OAS field '{}' not found in matching GraphQl object '{}'.", child.getIdentifier(),
+                      field.getName()));
+              validate(child, graphQlChildField);
+            });
         break;
       default:
         validateTypes(oasType, graphQlType, template.getIdentifier());

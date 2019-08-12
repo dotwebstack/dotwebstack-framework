@@ -20,4 +20,6 @@ public class ResponseObject {
 
   private List<ResponseObject> items;
 
+  private String dwsTemplate;
+
 }
