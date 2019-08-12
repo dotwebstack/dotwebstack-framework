@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 public class ResponseContextValidator {
 
   public void validate(@NonNull ResponseObject template, @NonNull GraphQlField field) {
-    field.getArguments();
     String graphQlType = field.getType();
     String oasType = template.getType();
     switch (oasType) {

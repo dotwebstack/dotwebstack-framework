@@ -17,7 +17,7 @@ components:
         name:
           type: string
           nullable: true
-    Breweries:
+    BreweryCollection:
       type: object
       required:
         - _embedded
@@ -46,21 +46,16 @@ components:
         openinghours:
           type: string
           nullable: true
-        beers:
+        _embedded:
+          x-dws-envelope: true
           type: object
           required:
-            - _embedded
+            - beers
           properties:
-            _embedded:
-              x-dws-envelope: true
-              type: object
-              required:
-                - beers
-              properties:
-                beers:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Beer'
+            beers:
+              type: array
+              items:
+                $ref: '#/components/schemas/Beer'
     SortField:
       type: array
       items:
@@ -105,7 +100,7 @@ paths:
           content:
             application/hal+json:
               schema:
-                $ref: '#/components/schemas/Breweries'
+                $ref: '#/components/schemas/BreweryCollection'
   /brewery/{identifier}:
     get:
       x-dws-query: brewery

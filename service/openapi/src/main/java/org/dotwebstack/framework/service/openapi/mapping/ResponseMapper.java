@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,8 +14,6 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
-
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 
@@ -61,13 +60,12 @@ public class ResponseMapper {
         }
 
         Map<String, Object> result = new HashMap<>();
-
         responseObject.getChildren()
             .forEach(child -> {
               Object object;
               if (child.isEnvelope()) {
                 object = mapEnvelopeObject(data, child);
-                if (!(Objects.isNull(object) && (child.isNillable() || !child.isRequired()))) {
+                if (!Objects.isNull(object)) {
                   result.put(child.getIdentifier(), object);
                 }
               } else {
@@ -97,23 +95,23 @@ public class ResponseMapper {
     return object;
   }
 
+  @SuppressWarnings("rawtypes")
   private Object mapEnvelopeObject(Object data, ResponseObject child) {
-    if (Objects.isNull(data)) {
-      if (child.isRequired()) {
-        throw mappingException("Could not map GraphQL response: Required and non-nillable "
-            + "x-dws-envelope property '{}' was required, but returned a null value.", child.getIdentifier());
-      }
-      return null;
-    }
-
-    if ((data instanceof List) && (((List) data).isEmpty())) {
-      if (child.isRequired()) {
-        return Collections.emptyList();
-      }
-    }
-
     ResponseObject embedded = child.getChildren()
         .get(0);
-    return mapDataToResponse(embedded, data);
+
+    if (Objects.nonNull(data)) {
+      if (data instanceof List && !((List) data).isEmpty()) {
+        return mapDataToResponse(embedded, data);
+      }
+
+      if (data instanceof Map && ((Map) data).containsKey(embedded.getIdentifier())) {
+        List childData = (List) ((Map) data).get(embedded.getIdentifier());
+        if (!childData.isEmpty()) {
+          return mapDataToResponse(embedded, childData);
+        }
+      }
+    }
+    return null;
   }
 }

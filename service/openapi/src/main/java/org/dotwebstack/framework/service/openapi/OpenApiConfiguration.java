@@ -70,11 +70,11 @@ public class OpenApiConfiguration {
     openApi.getPaths()
         .forEach((name, path) -> {
           if (Objects.nonNull(path.getGet())) {
-             routerFunctions.add(toRouterFunction(responseTemplateBuilder, name,
+            routerFunctions.add(toRouterFunction(responseTemplateBuilder, name,
                 queryFieldHelper.resolveGraphQlField(path.getGet()), "get", path.getGet(), GET(name)));
           }
           if (Objects.nonNull(path.getPost())) {
-           routerFunctions.add(toRouterFunction(responseTemplateBuilder, name,
+            routerFunctions.add(toRouterFunction(responseTemplateBuilder, name,
                 queryFieldHelper.resolveGraphQlField(path.getPost()), "post", path.getPost(), POST(name)));
           }
         });
