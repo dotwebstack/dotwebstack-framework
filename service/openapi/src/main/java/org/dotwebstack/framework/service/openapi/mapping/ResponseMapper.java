@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
@@ -117,7 +118,7 @@ public class ResponseMapper {
         .entrySet()
         .forEach(e -> context.set("env." + e.getKey(), e.getValue()));
 
-    return jexlHelper.evaluateExpression(dwsTemplate, context, String.class)
-        .get();
+    Optional<String> evaluated = jexlHelper.evaluateExpression(dwsTemplate, context, String.class);
+    return evaluated.isPresent() ? evaluated.get() : null;
   }
 }

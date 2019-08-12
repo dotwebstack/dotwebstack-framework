@@ -21,8 +21,8 @@ public class EnvironmentProperties {
     this.map = StreamSupport.stream(propertySources.spliterator(), false)
         .filter(ps -> ps instanceof EnumerablePropertySource)
         .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
-        .flatMap(Arrays::<String>stream)
-        .collect(Collectors.toMap(p -> p, p -> environment.getProperty(p)));
+        .flatMap(Arrays::stream)
+        .collect(Collectors.toMap(propertyName -> propertyName, environment::getProperty));
   }
 
   public Map<String, String> getAllProperties() {
