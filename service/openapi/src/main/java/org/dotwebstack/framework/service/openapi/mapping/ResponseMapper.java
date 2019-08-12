@@ -70,7 +70,7 @@ public class ResponseMapper {
                 }
               } else {
                 object = mapObject((Map<String, Object>) data, child);
-                if (!(Objects.isNull(object) && child.isNillable())) {
+                if (!(Objects.isNull(object))) {
                   result.put(child.getIdentifier(), object);
                 }
               }
@@ -83,7 +83,7 @@ public class ResponseMapper {
 
   private Object mapObject(Map<String, Object> data, ResponseObject child) {
     Object object = mapDataToResponse(child, data.get(child.getIdentifier()));
-    if (child.isRequired() && Objects.isNull(object)) {
+    if ((child.isRequired() && ((Objects.isNull(object))) || (child.isNillable() && isEmptyList(object)))) {
       if (child.isNillable()) {
         return null;
       } else {
@@ -93,6 +93,13 @@ public class ResponseMapper {
     }
 
     return object;
+  }
+
+  private boolean isEmptyList(Object object) {
+    if (object instanceof List) {
+      return ((List) object).isEmpty();
+    }
+    return false;
   }
 
   @SuppressWarnings("rawtypes")

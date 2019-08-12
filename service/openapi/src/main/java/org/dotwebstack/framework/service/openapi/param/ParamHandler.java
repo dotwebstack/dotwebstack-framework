@@ -15,4 +15,8 @@ public interface ParamHandler {
       throws ParameterValidationException;
 
   void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName);
+
+  default String getName(String name) {
+    return name;
+  }
 }

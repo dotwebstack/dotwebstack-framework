@@ -91,12 +91,10 @@ public class DefaultParamHandler implements ParamHandler {
   @Override
   public void validate(GraphQlField field, Parameter parameter, String pathName) {
     String name = parameter.getName();
-    long matching = field.getArguments()
+    if (field.getArguments()
         .stream()
-        .filter(argument -> argument.getName()
-            .equals(name))
-        .count();
-    if (matching == 0) {
+        .noneMatch(argument -> argument.getName()
+            .equals(name))) {
       throw ExceptionHelper.invalidConfigurationException(
           "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", name, pathName, field.getName());
     }

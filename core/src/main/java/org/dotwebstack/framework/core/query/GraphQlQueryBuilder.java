@@ -2,7 +2,9 @@ package org.dotwebstack.framework.core.query;
 
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeString;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 import lombok.NonNull;
 
@@ -13,7 +15,7 @@ public class GraphQlQueryBuilder {
     StringJoiner joiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
 
-    addToQuery(graphQlField, joiner, argumentJoiner, inputParams, true);
+    addToQuery(graphQlField, joiner, argumentJoiner, inputParams, true, "");
     builder.append("query Wrapper");
     if (!argumentJoiner.toString()
         .isEmpty()) {
@@ -26,7 +28,7 @@ public class GraphQlQueryBuilder {
   }
 
   private void addToQuery(GraphQlField field, StringJoiner joiner, StringJoiner headerArgumentJoiner,
-      Map<String, Object> inputParams, boolean isTopLevel) {
+      Map<String, Object> inputParams, boolean isTopLevel, String path) {
     StringJoiner argumentJoiner = new StringJoiner(",", "(", ")");
     argumentJoiner.setEmptyValue("");
     if (!field.getArguments()
@@ -39,14 +41,29 @@ public class GraphQlQueryBuilder {
             headerArgumentJoiner.add("$" + graphQlArgument.getName() + ": " + getTypeString(graphQlArgument.getType()));
           });
     }
+
     if (!field.getFields()
-        .isEmpty()) {
+        .isEmpty() && (isTopLevel || isExpanded(inputParams, path))) {
       StringJoiner childJoiner = new StringJoiner(",", "{", "}");
       field.getFields()
-          .forEach(childField -> addToQuery(childField, childJoiner, headerArgumentJoiner, inputParams, false));
+          .forEach(childField -> {
+            String childPath = (path.equals("") ? "" : path + ".") + childField.getName();
+            addToQuery(childField, childJoiner, headerArgumentJoiner, inputParams, false, childPath);
+          });
       joiner.add(field.getName() + argumentJoiner.toString() + childJoiner.toString());
-    } else {
+    } else if (field.getFields()
+        .isEmpty()) {
       joiner.add(field.getName() + argumentJoiner.toString());
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private boolean isExpanded(Map<String, Object> inputParams, String path) {
+    List<String> expandVariables = (List<String>) inputParams.get("x-dws-expand");
+    if (Objects.nonNull(expandVariables)) {
+      return expandVariables.stream()
+          .anyMatch(path::equals);
+    }
+    return false;
   }
 }

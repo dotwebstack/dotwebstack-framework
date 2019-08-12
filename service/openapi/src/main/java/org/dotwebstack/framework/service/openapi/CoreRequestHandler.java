@@ -18,6 +18,7 @@ import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
+import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
@@ -138,9 +139,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseContext.getParameters())) {
       for (Parameter parameter : this.responseContext.getParameters()) {
-        paramHandlerRouter.getParamHandler(parameter)
-            .getValue(request, parameter)
-            .ifPresent(value -> result.put(parameter.getName(), value));
+        ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
+        handler.getValue(request, parameter)
+            .ifPresent(value -> result.put(handler.getName(parameter.getName()), value));
       }
     }
     return result;

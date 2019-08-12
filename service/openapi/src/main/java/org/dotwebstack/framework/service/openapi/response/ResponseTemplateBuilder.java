@@ -139,7 +139,7 @@ public class ResponseTemplateBuilder {
     ResponseObject item;
     if (Objects.nonNull(ref)) {
       Schema refSchema = getSchemaReference(ref, openApi);
-      item = createResponseObject(openApi, identifier, refSchema, true, false);
+      item = createResponseObject(openApi, identifier, refSchema, true, isNillable(refSchema));
     } else {
       item = createResponseObject(openApi, identifier, schema.getItems(), true, false);
     }
@@ -155,7 +155,7 @@ public class ResponseTemplateBuilder {
   }
 
   private boolean isNillable(Schema<?> schema) {
-    return schema != null && (isEnvelope(schema) || Boolean.FALSE.equals(schema.getNullable()));
+    return schema != null && (isEnvelope(schema) || Boolean.TRUE.equals(schema.getNullable()));
   }
 
   private static boolean isRequired(Schema<?> schema, String property) {

@@ -17,6 +17,11 @@ components:
         name:
           type: string
           nullable: true
+        ingredients:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/Ingredient'
     BreweryCollection:
       type: object
       required:
@@ -46,16 +51,20 @@ components:
         openinghours:
           type: string
           nullable: true
-        _embedded:
-          x-dws-envelope: true
-          type: object
-          required:
-            - beers
-          properties:
-            beers:
-              type: array
-              items:
-                $ref: '#/components/schemas/Beer'
+        beers:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/Beer'
+    Ingredient:
+      type: object
+      nullable: true
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          nullable: true
     SortField:
       type: array
       items:
@@ -71,6 +80,17 @@ paths:
     get:
       x-dws-query: breweries
       parameters:
+        - name: expand
+          x-dws-expand: true
+          in: query
+          explode: false
+          required: false
+          schema:
+            type: array
+            default: ['beers']
+            items:
+              type: string
+              enum: ['beers', 'beers.ingredients', 'beers.supplements']
         - name: name
           in: query
           explode: false
