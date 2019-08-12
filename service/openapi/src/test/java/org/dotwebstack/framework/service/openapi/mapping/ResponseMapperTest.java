@@ -7,6 +7,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.junit.jupiter.api.Test;
@@ -19,7 +21,11 @@ class ResponseMapperTest {
 
   private static final ResponseObject NOT_REQUIRED_NILLABLE_STRING = getProperty("prop3", "string", false, true);
 
-  private ResponseMapper responseMapper = new ResponseMapper(new Jackson2ObjectMapperBuilder());
+  private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
+      .strict(true)
+      .create();
+
+  private ResponseMapper responseMapper = new ResponseMapper(new Jackson2ObjectMapperBuilder(), jexlEngine, null);
 
   @Test
   @SuppressWarnings("unchecked")

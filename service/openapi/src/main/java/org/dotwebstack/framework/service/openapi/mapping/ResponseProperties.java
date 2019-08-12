@@ -1,0 +1,31 @@
+package org.dotwebstack.framework.service.openapi.mapping;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import lombok.NonNull;
+import org.springframework.core.env.AbstractEnvironment;
+import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ResponseProperties {
+
+  private final Map<String, String> map;
+
+  public ResponseProperties(@NonNull Environment environment) {
+    MutablePropertySources propertySources = ((AbstractEnvironment) environment).getPropertySources();
+    this.map = StreamSupport.stream(propertySources.spliterator(), false)
+        .filter(ps -> ps instanceof EnumerablePropertySource)
+        .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
+        .flatMap(Arrays::<String>stream)
+        .collect(Collectors.toMap(p -> p, p -> environment.getProperty(p)));
+  }
+
+  public Map<String, String> getAllProperties() {
+    return this.map;
+  }
+}
