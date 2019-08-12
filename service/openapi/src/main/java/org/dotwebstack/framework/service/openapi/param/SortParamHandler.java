@@ -54,7 +54,7 @@ public class SortParamHandler extends DefaultParamHandler {
           } else if (value.get() instanceof List) {
             list = new ArrayList<>(((List<String>) value.get()));
           } else {
-            throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string of string[]",
+            throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string or string[].",
                 parameter.getName());
           }
           return Optional.of(list.stream()
@@ -63,7 +63,7 @@ public class SortParamHandler extends DefaultParamHandler {
         case "string":
           return Optional.of(Collections.singletonList(this.parseSortParam((String) value.get())));
         default:
-          throw parameterValidationException("Sort parameter '%s' is of wrong type, can only be string of string[]",
+          throw parameterValidationException("Sort parameter '%s' is of wrong type, can only be string or string[].",
               parameter.getName());
       }
     }
