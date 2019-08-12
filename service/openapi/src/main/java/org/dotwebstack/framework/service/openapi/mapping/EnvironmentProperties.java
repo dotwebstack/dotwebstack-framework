@@ -12,11 +12,11 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ResponseProperties {
+public class EnvironmentProperties {
 
   private final Map<String, String> map;
 
-  public ResponseProperties(@NonNull Environment environment) {
+  public EnvironmentProperties(@NonNull Environment environment) {
     MutablePropertySources propertySources = ((AbstractEnvironment) environment).getPropertySources();
     this.map = StreamSupport.stream(propertySources.spliterator(), false)
         .filter(ps -> ps instanceof EnumerablePropertySource)

@@ -27,10 +27,10 @@ public class ResponseMapper {
 
   private final JexlHelper jexlHelper;
 
-  private final ResponseProperties properties;
+  private final EnvironmentProperties properties;
 
   public ResponseMapper(Jackson2ObjectMapperBuilder objectMapperBuilder, JexlEngine jexlEngine,
-      ResponseProperties properties) {
+      EnvironmentProperties properties) {
     this.objectMapper = objectMapperBuilder.build();
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.properties = properties;
@@ -51,7 +51,7 @@ public class ResponseMapper {
   }
 
   @SuppressWarnings("unchecked")
-  private Object mapDataToResponse(@NonNull ResponseObject responseObject, Object data, List<Object> dataDeque) {
+  private Object mapDataToResponse(@NonNull ResponseObject responseObject, Object data, List<Object> dataStack) {
     switch (responseObject.getType()) {
       case "array":
         if (data == null) {
@@ -60,7 +60,7 @@ public class ResponseMapper {
         ResponseObject childResponseObject = responseObject.getItems()
             .get(0);
         return ((List<Object>) data).stream()
-            .map(object -> mapDataToResponse(childResponseObject, object, dataDeque))
+            .map(object -> mapDataToResponse(childResponseObject, object, dataStack))
             .collect(Collectors.toList());
       case "object":
         if (data == null) {
@@ -70,10 +70,10 @@ public class ResponseMapper {
 
         responseObject.getChildren()
             .forEach(child -> {
-              dataDeque.add(data);
+              dataStack.add(0, data);
               Object object =
-                  mapDataToResponse(child, ((Map<String, Object>) data).get(child.getIdentifier()), dataDeque);
-              dataDeque.remove(0);
+                  mapDataToResponse(child, ((Map<String, Object>) data).get(child.getIdentifier()), dataStack);
+              dataStack.remove(0);
               if (!child.isRequired() && object == null) {
                 // property is not required and not returned: don't add to response.
               } else if (child.isRequired() && child.isNillable() && object == null) {
@@ -88,7 +88,7 @@ public class ResponseMapper {
         return result;
       default:
         if (!Objects.isNull(responseObject.getDwsTemplate())) {
-          return executeJexl(responseObject.getDwsTemplate(), dataDeque);
+          return executeJexl(responseObject.getDwsTemplate(), dataStack);
         } else {
           return data;
         }
@@ -96,15 +96,15 @@ public class ResponseMapper {
   }
 
   @SuppressWarnings("unchecked")
-  private Object executeJexl(String dwsTemplate, List<Object> dataDeque) {
+  protected Object executeJexl(String dwsTemplate, List<Object> dataStack) {
 
     MapContext context = new MapContext();
 
+    // add object data to context
     String prefix = "fields.";
-    for (Object data : dataDeque) {
-      Map<String, Object> map = (Map<String, Object>) data;
+    for (Object data : dataStack) {
       String finalPrefix = prefix;
-      map.entrySet()
+      ((Map<String, Object>) data).entrySet()
           .stream()
           .filter(e -> !(e.getValue() instanceof Map))
           .forEach(e -> context.set(finalPrefix + e.getKey(), e.getValue()));
@@ -112,6 +112,7 @@ public class ResponseMapper {
       prefix += "_parent.";
     }
 
+    // add properties data to context
     this.properties.getAllProperties()
         .entrySet()
         .forEach(e -> context.set("env." + e.getKey(), e.getValue()));
