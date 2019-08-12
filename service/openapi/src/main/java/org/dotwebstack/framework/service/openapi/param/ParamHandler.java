@@ -16,7 +16,7 @@ public interface ParamHandler {
 
   void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName);
 
-  default String getName(String name) {
+  default String getParameterName(String name) {
     return name;
   }
 }

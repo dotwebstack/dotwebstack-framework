@@ -1,6 +1,10 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,10 +14,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.NonNull;
+import org.apache.commons.lang3.ArrayUtils;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
+import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
+
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 @Component
 public class ExpandParamHandler extends DefaultParamHandler {
@@ -62,12 +71,47 @@ public class ExpandParamHandler extends DefaultParamHandler {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName) {
+    Schema schema = parameter.getSchema();
 
+    switch (schema.getType()) {
+      case ARRAY_TYPE:
+        ((ArrayList<String>) JsonNodeUtils.toObject((ArrayNode) schema.getDefault()))
+            .forEach(defaultValue -> validateExpandParam(graphQlField, defaultValue, pathName));
+        break;
+      case STRING_TYPE:
+        validateExpandParam(graphQlField, ((StringSchema) schema).getDefault(), pathName);
+        break;
+    }
+  }
+
+  private void validateExpandParam(GraphQlField graphQlField, String expandValue, String pathName) {
+    String[] pathParams = expandValue.split("\\.");
+    validate(graphQlField, pathParams[0], pathName);
+
+    if (pathParams.length > 1) {
+      graphQlField.getFields()
+          .stream()
+          .filter(field -> field.getName().equals(expandValue))
+          .findFirst().ifPresent(
+          childField -> validateExpandParam(childField, String.join(".", ArrayUtils.remove(pathParams, 0)), pathName));
+    }
   }
 
   @Override
-  public String getName(String name) {
+  public void validate(GraphQlField graphQlField, String fieldName, String pathName) {
+    if (graphQlField.getFields()
+        .stream()
+        .noneMatch(field -> field.getName()
+            .equals(fieldName))) {
+      throw ExceptionHelper.invalidConfigurationException(
+          "No field with name '{}' was found on GraphQL field '{}'", fieldName, graphQlField.getName());
+    }
+  }
+
+  @Override
+  public String getParameterName(String name) {
     return "x-dws-expand";
   }
 }

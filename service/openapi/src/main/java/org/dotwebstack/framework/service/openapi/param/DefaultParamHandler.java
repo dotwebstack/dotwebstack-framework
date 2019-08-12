@@ -29,11 +29,11 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
 
-  private static final String ARRAY_TYPE = "array";
+  static final String ARRAY_TYPE = "array";
 
-  private static final String OBJECT_TYPE = "object";
+  static final String OBJECT_TYPE = "object";
 
-  private static final String STRING_TYPE = "string";
+  static final String STRING_TYPE = "string";
 
   private static final String PARAM_PATH_TYPE = "path";
 
@@ -90,13 +90,16 @@ public class DefaultParamHandler implements ParamHandler {
 
   @Override
   public void validate(GraphQlField field, Parameter parameter, String pathName) {
-    String name = parameter.getName();
+    this.validate(field, parameter.getName(), pathName);
+  }
+
+  public void validate(GraphQlField field, String parameterName, String pathName) {
     if (field.getArguments()
         .stream()
         .noneMatch(argument -> argument.getName()
-            .equals(name))) {
+            .equals(parameterName))) {
       throw ExceptionHelper.invalidConfigurationException(
-          "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", name, pathName, field.getName());
+          "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", parameterName, pathName, field.getName());
     }
   }
 
