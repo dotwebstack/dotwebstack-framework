@@ -17,6 +17,9 @@ components:
         name:
           type: string
           nullable: true
+        link:
+          type: string
+          x-dws-template: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
     Breweries:
       type: array
       items:

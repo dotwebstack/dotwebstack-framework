@@ -20,6 +20,9 @@ import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 
 @Builder
 public class ResponseTemplateBuilder {
+
+  private static final String X_DWS_TEMPLATE = "x-dws-template";
+
   private final OpenAPI openApi;
 
   public List<ResponseTemplate> buildResponseTemplates(@NonNull String pathName, @NonNull String methodName,
@@ -97,11 +100,13 @@ public class ResponseTemplateBuilder {
     } else if (schema instanceof ArraySchema) {
       return createResponseObject(openApi, identifier, (ArraySchema) schema, isRequired, isNillable);
     } else {
+
       return ResponseObject.builder()
           .identifier(identifier)
           .type(schema.getType())
           .nillable(isNillable)
           .required(isRequired)
+          .dwsTemplate(getDwsTemplate(schema))
           .build();
     }
   }
@@ -125,6 +130,7 @@ public class ResponseTemplateBuilder {
         .type(schema.getType())
         .children(children)
         .nillable(isNillable)
+        .dwsTemplate(getDwsTemplate(schema))
         .required(isRequired)
         .build();
   }
@@ -146,6 +152,7 @@ public class ResponseTemplateBuilder {
         .type(schema.getType())
         .items(ImmutableList.of(item))
         .nillable(isNillable)
+        .dwsTemplate(getDwsTemplate(schema))
         .required(isRequired)
         .build();
 
@@ -158,5 +165,23 @@ public class ResponseTemplateBuilder {
   private static boolean isRequired(Schema<?> schema, String property) {
     return schema == null || schema.getRequired()
         .contains(property);
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private String getDwsTemplate(Schema schema) {
+    Map<String, Object> extensions = schema.getExtensions();
+    if (extensions != null) {
+      Object result = extensions.get(X_DWS_TEMPLATE);
+      if (result != null && !(result instanceof String)) {
+        throw ExceptionHelper.invalidConfigurationException("Value of extension '{}' should be a string.",
+            X_DWS_TEMPLATE);
+      }
+      if (result != null && !"string".equals(schema.getType())) {
+        throw ExceptionHelper.invalidConfigurationException("Extension '{}' is only allowed for string types.",
+            X_DWS_TEMPLATE);
+      }
+      return (String) result;
+    }
+    return null;
   }
 }
