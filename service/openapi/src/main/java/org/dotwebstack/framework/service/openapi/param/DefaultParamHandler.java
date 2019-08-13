@@ -4,7 +4,6 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.FORM;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMITED;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
@@ -108,17 +107,16 @@ public class DefaultParamHandler implements ParamHandler {
         validateEnumValuesForArray(paramValue, parameter);
         break;
       case STRING_TYPE:
-        if (hasEnum(parameter)
-            && !parameter.getSchema()
-                .getEnum()
-                .contains(paramValue)) {
+        if (hasEnum(parameter) && !parameter.getSchema()
+            .getEnum()
+            .contains(paramValue)) {
           throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
               parameter.getName(), paramValue, String.join(", ", parameter.getSchema()
                   .getEnum()));
         }
         break;
       default:
-        if (!hasEnum(parameter)) {
+        if (hasEnum(parameter)) {
           throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string of string[]",
               parameter.getName());
         }
@@ -284,13 +282,19 @@ public class DefaultParamHandler implements ParamHandler {
   private boolean hasEnum(Parameter parameter) {
     if (parameter.getSchema() instanceof ArraySchema) {
       ArraySchema arraySchema = (ArraySchema) parameter.getSchema();
-      if (Objects.nonNull(arraySchema.getItems().getEnum()) && !arraySchema.getItems().getEnum().isEmpty()) {
+      if (Objects.nonNull(arraySchema.getItems()
+          .getEnum())
+          && !arraySchema.getItems()
+              .getEnum()
+              .isEmpty()) {
         return true;
       }
     } else if (parameter.getSchema() instanceof StringSchema) {
-      return Objects.nonNull(parameter.getSchema().getEnum()) && !parameter.getSchema().getEnum().isEmpty();
-    } else {
-      return ();
+      return Objects.nonNull(parameter.getSchema()
+          .getEnum())
+          && !parameter.getSchema()
+              .getEnum()
+              .isEmpty();
     }
     return false;
   }

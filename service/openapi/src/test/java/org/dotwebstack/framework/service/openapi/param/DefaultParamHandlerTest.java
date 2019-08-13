@@ -50,6 +50,9 @@ public class DefaultParamHandlerTest {
   @Mock
   private Parameter parameter;
 
+  @Mock
+  private StringSchema schema;
+
   private DefaultParamHandler paramHandler;
 
   @BeforeEach
@@ -325,10 +328,10 @@ public class DefaultParamHandlerTest {
     // Arrange
     mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
-    when(parameter.getSchema()
-        .getDefault()).thenReturn("default1");
-    when(parameter.getSchema()
-        .getEnum()).thenReturn(ImmutableList.of("default2"));
+    when(parameter.getSchema()).thenReturn(schema);
+    when(schema.getDefault()).thenReturn("default1");
+    when(schema.getType()).thenReturn(TYPE_STRING);
+    when(schema.getEnum()).thenReturn(ImmutableList.of("default2"));
 
     // Act & Assert
     assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
