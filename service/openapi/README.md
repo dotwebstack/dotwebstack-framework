@@ -123,9 +123,9 @@ name: expand
       enum: ['beers', 'beers.ingredients', 'beers.supplements']
 ```
 
-In the example the expand parameter is used to join the `beers` by default. The GraphQL query is expanded to contain the 
+In the example the expand parameter is used to include `beers` in the response by default. The GraphQL query is expanded to contain the
 scalar fields of the beers object as well. In our `Brewery` model it means that the `name` and `identifier` are returned, 
-but `ingredients` and `supplements` are not, because they are non-scalar objects. In order to expand the query  in this 
+but `ingredients` and `supplements` are not, because they are non-scalar objects. In order to expand the query in this 
 case with `ingredients`, the user has to provide an expand parameter with value `beers.ingredients`. It is possible to add 
 on object on a lower level with a dotted notation. Parent objects are added to query automatically. This means that when 
 you expand the query with `beers.ingredients` it is not necessary to provide a separate expand value for `beers`. However,
