@@ -15,6 +15,7 @@ import java.util.Map;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
+import org.dotwebstack.framework.backend.rdf4j.RepositoryAdapter;
 import org.dotwebstack.framework.backend.rdf4j.query.QueryFetcher;
 import org.dotwebstack.framework.backend.rdf4j.query.context.ConstructVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
@@ -24,14 +25,12 @@ import org.dotwebstack.framework.core.directives.DirectiveUtils;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.validators.ConstraintValidator;
 import org.dotwebstack.framework.core.validators.SortFieldValidator;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryResolver;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
-  private final List<RepositoryResolver> repositoryResolvers;
+  private final List<RepositoryAdapter> repositoryAdapters;
 
   private final NodeShapeRegistry nodeShapeRegistry;
 
@@ -47,11 +46,11 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
 
   private final ConstructVerticeFactory constructVerticeFactory;
 
-  public SparqlDirectiveWiring(List<RepositoryResolver> repositoryResolvers, NodeShapeRegistry nodeShapeRegistry,
+  public SparqlDirectiveWiring(List<RepositoryAdapter> repositoryAdapters, NodeShapeRegistry nodeShapeRegistry,
       Rdf4jProperties rdf4jProperties, JexlEngine jexlEngine, ConstraintValidator constraintValidator,
       CoreTraverser coreTraverser, SelectVerticeFactory selectVerticeFactory,
       ConstructVerticeFactory constructVerticeFactory) {
-    this.repositoryResolvers = repositoryResolvers;
+    this.repositoryAdapters = repositoryAdapters;
     this.nodeShapeRegistry = nodeShapeRegistry;
     this.prefixMap = rdf4jProperties.getPrefixes() != null ? HashBiMap.create(rdf4jProperties.getPrefixes())
         .inverse() : ImmutableMap.of();
@@ -74,19 +73,17 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     String repositoryId =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, environment.getDirective(), String.class);
 
-    RepositoryResolver repositoryResolver = repositoryResolvers.stream()
-        .filter(resolver -> resolver.getRepository(repositoryId) != null)
+    RepositoryAdapter repositoryAdapter = repositoryAdapters.stream()
+        .filter(repositoryAdapter1 -> repositoryAdapter1.supports(repositoryId))
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId));
 
-    RepositoryConnection connection = repositoryResolver.getRepository(repositoryId)
-        .getConnection();
 
     // startup time validation of default values for sort fields
     SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
     validateSortField(fieldDefinition, sortFieldValidator);
 
-    QueryFetcher queryFetcher = new QueryFetcher(connection, nodeShapeRegistry, prefixMap, jexlEngine,
+    QueryFetcher queryFetcher = new QueryFetcher(repositoryAdapter, nodeShapeRegistry, prefixMap, jexlEngine,
         ImmutableList.of(constraintValidator, sortFieldValidator), coreTraverser, selectVerticeFactory,
         constructVerticeFactory);
 
