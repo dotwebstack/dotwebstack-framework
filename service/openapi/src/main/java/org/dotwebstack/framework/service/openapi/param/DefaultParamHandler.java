@@ -4,6 +4,7 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.FORM;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMITED;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
@@ -17,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -106,8 +108,7 @@ public class DefaultParamHandler implements ParamHandler {
         validateEnumValuesForArray(paramValue, parameter);
         break;
       case STRING_TYPE:
-        if (Objects.nonNull(parameter.getSchema()
-            .getEnum())
+        if (hasEnum(parameter)
             && !parameter.getSchema()
                 .getEnum()
                 .contains(paramValue)) {
@@ -117,8 +118,7 @@ public class DefaultParamHandler implements ParamHandler {
         }
         break;
       default:
-        if (Objects.nonNull(parameter.getSchema()
-            .getEnum())) {
+        if (!hasEnum(parameter)) {
           throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string of string[]",
               parameter.getName());
         }
@@ -127,8 +127,7 @@ public class DefaultParamHandler implements ParamHandler {
 
   @SuppressWarnings("unchecked")
   private void validateEnumValuesForArray(Object paramValue, Parameter parameter) {
-    if (Objects.nonNull(((ArraySchema) parameter.getSchema()).getItems()
-        .getEnum())) {
+    if (hasEnum(parameter)) {
       List<String> list;
       List<String> enumList = (List<String>) ((ArraySchema) parameter.getSchema()).getItems()
           .getEnum();
@@ -280,6 +279,20 @@ public class DefaultParamHandler implements ParamHandler {
       }
     }
     return Optional.empty();
+  }
+
+  private boolean hasEnum(Parameter parameter) {
+    if (parameter.getSchema() instanceof ArraySchema) {
+      ArraySchema arraySchema = (ArraySchema) parameter.getSchema();
+      if (Objects.nonNull(arraySchema.getItems().getEnum()) && !arraySchema.getItems().getEnum().isEmpty()) {
+        return true;
+      }
+    } else if (parameter.getSchema() instanceof StringSchema) {
+      return Objects.nonNull(parameter.getSchema().getEnum()) && !parameter.getSchema().getEnum().isEmpty();
+    } else {
+      return ();
+    }
+    return false;
   }
 
   boolean supportsDwsType(Parameter parameter, String typeString) {

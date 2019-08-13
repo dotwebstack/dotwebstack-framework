@@ -73,6 +73,7 @@ paths:
       parameters:
         - name: query3_param1
           in: path
+          required: true
           schema:
             type: array
             default: ['default1', 'default2']
