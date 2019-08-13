@@ -26,19 +26,12 @@ public class SortParamHandler extends DefaultParamHandler {
 
   @Override
   public boolean supports(Parameter parameter) {
-    Map<String, Object> extensions = parameter.getExtensions();
-    if (Objects.nonNull(extensions)) {
-      String handler = (String) extensions.get("x-dws-type");
-      if (Objects.nonNull(handler)) {
-        return handler.equals("sort");
-      }
-    }
-    return false;
+    return supportsDwsType(parameter, "sort");
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public Optional<Object> getValue(ServerRequest request, Parameter parameter) throws ParameterValidationException {
+  public Optional<Object> getValue(ServerRequest request, Parameter parameter) {
     Optional<Object> value = super.getValue(request, parameter);
 
     if (value.isPresent()) {

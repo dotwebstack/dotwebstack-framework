@@ -53,7 +53,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   @Override
-  public Optional<Object> getValue(ServerRequest request, Parameter parameter) throws ParameterValidationException {
+  public Optional<Object> getValue(ServerRequest request, Parameter parameter) {
     Object paramValue;
     switch (parameter.getIn()) {
       case PARAM_PATH_TYPE:
@@ -287,5 +287,16 @@ public class DefaultParamHandler implements ParamHandler {
       }
     }
     return Optional.empty();
+  }
+
+  boolean supportsDwsType(Parameter parameter, String typeString) {
+    Map<String, Object> extensions = parameter.getExtensions();
+    if (Objects.nonNull(extensions)) {
+      String handler = (String) extensions.get("x-dws-type");
+      if (Objects.nonNull(handler)) {
+        return handler.equals(typeString);
+      }
+    }
+    return false;
   }
 }

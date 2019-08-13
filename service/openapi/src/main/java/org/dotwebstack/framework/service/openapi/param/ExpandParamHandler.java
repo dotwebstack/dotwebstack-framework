@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -32,20 +31,12 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   @Override
   public boolean supports(Parameter parameter) {
-    Map<String, Object> extensions = parameter.getExtensions();
-    if (Objects.nonNull(extensions)) {
-      String handler = (String) extensions.get("x-dws-type");
-      if (Objects.nonNull(handler)) {
-        return handler.equals("expand");
-      }
-    }
-    return false;
+    return supportsDwsType(parameter, "expand");
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter)
-      throws ParameterValidationException {
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter) {
     Optional<Object> expandValueOptional = super.getValue(request, parameter);
 
     if (expandValueOptional.isPresent()) {

@@ -5,12 +5,14 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
@@ -44,46 +46,54 @@ public class ResponseMapper {
   private Object mapDataToResponse(@NonNull ResponseObject responseObject, Object data) {
     switch (responseObject.getType()) {
       case "array":
-        if (Objects.isNull(data)) {
-          return Collections.emptyList();
-        }
-
-        ResponseObject childResponseObject = responseObject.getItems()
-            .get(0);
-
-        return ((List<Object>) data).stream()
-            .map(object -> mapDataToResponse(childResponseObject, object))
-            .collect(Collectors.toList());
+        return mapArrayDataToResponse(responseObject, data);
       case "object":
-        if (Objects.isNull(data)) {
-          return null;
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        responseObject.getChildren()
-            .forEach(child -> {
-              Object object;
-              if (child.isEnvelope()) {
-                object = mapEnvelopeObject(data, child);
-                if (!Objects.isNull(object)) {
-                  result.put(child.getIdentifier(), object);
-                }
-              } else {
-                object = mapObject((Map<String, Object>) data, child);
-                if (!(Objects.isNull(object))) {
-                  result.put(child.getIdentifier(), object);
-                }
-              }
-            });
-        return result;
+        return MapObjectDataToResponse(responseObject, data);
       default:
         return data;
     }
   }
 
+  private Object MapObjectDataToResponse(@NonNull ResponseObject responseObject, Object data) {
+    if (Objects.isNull(data)) {
+      return null;
+    }
+
+    Map<String, Object> result = new HashMap<>();
+    responseObject.getChildren()
+        .forEach(child -> {
+          Object object;
+          if (child.isEnvelope()) {
+            object = mapEnvelopeObject(data, child);
+            if (!Objects.isNull(object)) {
+              result.put(child.getIdentifier(), object);
+            }
+          } else {
+            object = mapObject((Map<String, Object>) data, child);
+            if (!(Objects.isNull(object))) {
+              result.put(child.getIdentifier(), object);
+            }
+          }
+        });
+    return result;
+  }
+
+  private Object mapArrayDataToResponse(@NonNull ResponseObject responseObject, Object data) {
+    if (Objects.isNull(data)) {
+      return Collections.emptyList();
+    }
+
+    ResponseObject childResponseObject = responseObject.getItems()
+        .get(0);
+
+    return ((List<Object>) data).stream()
+        .map(object -> mapDataToResponse(childResponseObject, object))
+        .collect(Collectors.toList());
+  }
+
   private Object mapObject(Map<String, Object> data, ResponseObject child) {
     Object object = mapDataToResponse(child, data.get(child.getIdentifier()));
-    if ((child.isRequired() && ((Objects.isNull(object))) || (child.isNillable() && isEmptyList(object)))) {
+    if ((child.isRequired() && ((Objects.isNull(object)) || (child.isNillable() && isEmptyList(object))))) {
       if (child.isNillable()) {
         return null;
       } else {

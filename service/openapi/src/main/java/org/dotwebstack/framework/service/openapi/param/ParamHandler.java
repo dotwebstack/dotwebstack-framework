@@ -11,8 +11,7 @@ public interface ParamHandler {
 
   boolean supports(@NonNull Parameter parameter);
 
-  Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter)
-      throws ParameterValidationException;
+  Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter);
 
   void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName);
 
