@@ -89,15 +89,20 @@ public class ResponseMapper {
         return result;
       default:
         if (!Objects.isNull(responseObject.getDwsTemplate())) {
-          return executeJexl(responseObject.getDwsTemplate(), dataStack);
-        } else {
-          return data;
+          Optional<String> evaluated = evaluateJexl(responseObject.getDwsTemplate(), dataStack);
+          if (!evaluated.isPresent() && responseObject.isRequired() && !responseObject.isNillable()) {
+            throw new MappingException(String.format(
+                "Could not create response: required and non-nillable property '%s' template evaluation returned null.",
+                responseObject.getIdentifier()));
+          }
+          return evaluated.get();
         }
+        return data;
     }
   }
 
   @SuppressWarnings("unchecked")
-  protected Object executeJexl(String dwsTemplate, List<Object> dataStack) {
+  protected Optional<String> evaluateJexl(String dwsTemplate, List<Object> dataStack) {
 
     MapContext context = new MapContext();
 
@@ -107,8 +112,8 @@ public class ResponseMapper {
       String finalPrefix = prefix;
       ((Map<String, Object>) data).entrySet()
           .stream()
-          .filter(e -> !(e.getValue() instanceof Map))
-          .forEach(e -> context.set(finalPrefix + e.getKey(), e.getValue()));
+          .filter(entry -> !(entry.getValue() instanceof Map))
+          .forEach(entry -> context.set(finalPrefix + entry.getKey(), entry.getValue()));
 
       prefix += "_parent.";
     }
@@ -118,7 +123,6 @@ public class ResponseMapper {
         .entrySet()
         .forEach(e -> context.set("env." + e.getKey(), e.getValue()));
 
-    Optional<String> evaluated = jexlHelper.evaluateExpression(dwsTemplate, context, String.class);
-    return evaluated.isPresent() ? evaluated.get() : null;
+    return jexlHelper.evaluateExpression(dwsTemplate, context, String.class);
   }
 }

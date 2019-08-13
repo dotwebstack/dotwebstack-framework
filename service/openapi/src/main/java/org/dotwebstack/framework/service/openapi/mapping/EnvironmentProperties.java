@@ -14,11 +14,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class EnvironmentProperties {
 
-  private final Map<String, String> map;
+  private final Map<String, String> envProperties;
 
   public EnvironmentProperties(@NonNull Environment environment) {
     MutablePropertySources propertySources = ((AbstractEnvironment) environment).getPropertySources();
-    this.map = StreamSupport.stream(propertySources.spliterator(), false)
+    this.envProperties = StreamSupport.stream(propertySources.spliterator(), false)
         .filter(ps -> ps instanceof EnumerablePropertySource)
         .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
         .flatMap(Arrays::stream)
@@ -26,6 +26,6 @@ public class EnvironmentProperties {
   }
 
   public Map<String, String> getAllProperties() {
-    return this.map;
+    return this.envProperties;
   }
 }

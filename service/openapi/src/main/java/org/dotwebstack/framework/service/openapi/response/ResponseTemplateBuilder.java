@@ -20,6 +20,9 @@ import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 
 @Builder
 public class ResponseTemplateBuilder {
+
+  private static final String X_DWS_TEMPLATE = "x-dws-template";
+
   private final OpenAPI openApi;
 
   public List<ResponseTemplate> buildResponseTemplates(@NonNull String pathName, @NonNull String methodName,
@@ -168,13 +171,14 @@ public class ResponseTemplateBuilder {
   private String getDwsTemplate(Schema schema) {
     Map<String, Object> extensions = schema.getExtensions();
     if (extensions != null) {
-      Object result = extensions.get("x-dws-template");
+      Object result = extensions.get(X_DWS_TEMPLATE);
       if (result != null && !(result instanceof String)) {
-        throw ExceptionHelper.invalidConfigurationException("Value of extension 'x-dws-template' should be a string.");
+        throw ExceptionHelper.invalidConfigurationException("Value of extension '{}' should be a string.",
+            X_DWS_TEMPLATE);
       }
       if (result != null && !"string".equals(schema.getType())) {
-        throw ExceptionHelper
-            .invalidConfigurationException("Extension 'x-dws-template' is only allowed for string types.");
+        throw ExceptionHelper.invalidConfigurationException("Extension '{}' is only allowed for string types.",
+            X_DWS_TEMPLATE);
       }
       return (String) result;
     }
