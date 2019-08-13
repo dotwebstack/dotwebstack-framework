@@ -90,12 +90,14 @@ public class ResponseMapper {
       default:
         if (!Objects.isNull(responseObject.getDwsTemplate())) {
           Optional<String> evaluated = evaluateJexl(responseObject.getDwsTemplate(), dataStack);
-          if (!evaluated.isPresent() && responseObject.isRequired() && !responseObject.isNillable()) {
+          if (evaluated.isEmpty() && responseObject.isRequired() && !responseObject.isNillable()) {
             throw new MappingException(String.format(
                 "Could not create response: required and non-nillable property '%s' template evaluation returned null.",
                 responseObject.getIdentifier()));
+          } else if (evaluated.isPresent()) {
+            return evaluated.get();
           }
-          return evaluated.get();
+          return null;
         }
         return data;
     }
