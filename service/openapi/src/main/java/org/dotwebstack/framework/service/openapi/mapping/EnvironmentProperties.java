@@ -22,6 +22,14 @@ public class EnvironmentProperties {
         .filter(ps -> ps instanceof EnumerablePropertySource)
         .map(ps -> ((EnumerablePropertySource) ps).getPropertyNames())
         .flatMap(Arrays::stream)
+        .filter(propertyName -> {
+          try {
+            environment.getProperty(propertyName);
+            return true;
+          } catch (IllegalArgumentException e) {
+            return false;
+          }
+        })
         .collect(Collectors.toMap(propertyName -> propertyName, environment::getProperty));
   }
 
