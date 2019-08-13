@@ -99,7 +99,7 @@ Similarly, properties defined in the OpenAPI type are mapped to GraphQL type fie
 When defining an openAPI type, properties are restricted to a subset of the fields of the corresponding GraphQL type.
 
 # 1.1.5 Response properties template
-By using a response property template, it is possible to return properties that are not directly mapped from a GraphQL field. A template can be assigned to a property by adding the extension field `x-dws-template` to a property of type `string`:
+By using a response property template, it is possible to return properties that are derived from one or several GraphQL fields and environmental variables. A template can be assigned to a property by adding the extension field `x-dws-template` to a property of type `string`:
 ```yaml
 properties:
   identifier:
