@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.springframework.web.reactive.function.BodyInserters.fromObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -69,6 +70,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
+    if(parameters.stream()
+        .filter(parameter -> Objects.nonNull(parameter.getExtensions()) &&
+            Objects.nonNull(parameter.getExtensions().get("x-dws-type")) &&
+            "expand".equals(parameter.getExtensions().get("x-dws-type"))).count() > 1) {
+      throw invalidConfigurationException("It is not possible to have more than one expand parameter per Operation");
+    }
     parameters.forEach(parameter -> this.paramHandlerRouter.getParamHandler(parameter)
         .validate(field, parameter, pathName));
     field.getArguments()
@@ -80,7 +87,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     if (argument.isRequired() && !argument.isHasDefault() && parameters.stream()
         .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
             .equals(argument.getName()))) {
-      throw ExceptionHelper.invalidConfigurationException(
+      throw invalidConfigurationException(
           "No required OAS parameter found for required and no-default GraphQL argument" + " '{}' in path '{}'",
           argument.getName(), pathName);
     }
@@ -135,7 +142,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private Map<String, Object> resolveParameters(ServerRequest request) throws ParameterValidationException {
+  private Map<String, Object> resolveParameters(ServerRequest request) {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseContext.getParameters())) {
       for (Parameter parameter : this.responseContext.getParameters()) {

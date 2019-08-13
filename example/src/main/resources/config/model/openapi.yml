@@ -81,7 +81,7 @@ paths:
       x-dws-query: breweries
       parameters:
         - name: expand
-          x-dws-expand: true
+          x-dws-type: expand
           in: query
           explode: false
           required: false

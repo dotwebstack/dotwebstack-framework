@@ -104,7 +104,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   @SuppressWarnings("unchecked")
-  private void validateEnumValues(Object paramValue, Parameter parameter) throws ParameterValidationException {
+  void validateEnumValues(Object paramValue, Parameter parameter) {
     String type = parameter.getSchema()
         .getType();
     switch (type) {
@@ -117,9 +117,8 @@ public class DefaultParamHandler implements ParamHandler {
             && !parameter.getSchema()
                 .getEnum()
                 .contains(paramValue)) {
-          throw parameterValidationException("Parameter '{}' has an invalid value, should be one of: '%s'",
-              parameter.getName(), String.join(",", parameter.getSchema()
-                  .getEnum()));
+          throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
+              parameter.getName(), paramValue, String.join(", ", parameter.getSchema().getEnum()));
         }
         break;
       default:
@@ -132,7 +131,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   @SuppressWarnings("unchecked")
-  private void validateEnumValuesForArray(Object paramValue, Parameter parameter) throws ParameterValidationException {
+  private void validateEnumValuesForArray(Object paramValue, Parameter parameter) {
     if (Objects.nonNull(((ArraySchema) parameter.getSchema()).getItems()
         .getEnum())) {
       List<String> list;
@@ -145,7 +144,7 @@ public class DefaultParamHandler implements ParamHandler {
       } else if (paramValue instanceof List) {
         list = (List<String>) paramValue;
       } else {
-        throw parameterValidationException("Enumerated parameter '%s' can only be of string or string[]",
+        throw parameterValidationException("Enumerated parameter '{}' can only be of string or string[]",
             parameter.getName());
       }
       List<String> invalidValues = list.stream()
