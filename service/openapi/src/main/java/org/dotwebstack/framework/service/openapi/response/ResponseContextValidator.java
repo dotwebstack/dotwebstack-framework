@@ -35,7 +35,6 @@ public class ResponseContextValidator {
       case OBJECT_TYPE:
         List<ResponseObject> children = template.getChildren();
         children.forEach(child -> {
-          // check vendor extensies child .... als x-dws-envelope --> geen validatie
           if (child.isEnvelope()) {
             ResponseObject embedded = child.getChildren()
                 .get(0);

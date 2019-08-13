@@ -1,0 +1,15 @@
+schema {
+  query: Query
+}
+
+type Query {
+  brewery(identifier: ID!): Brewery!
+}
+
+type Brewery {
+  identifier: ID!
+  name: String!
+  founded: DateTime!
+  foundedAtYear: Int!
+    @transform(expr: "foundedAtYear.getYear()")
+}

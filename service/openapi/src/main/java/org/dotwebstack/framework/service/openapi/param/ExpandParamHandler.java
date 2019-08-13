@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.param;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -48,7 +49,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
         Stream.of(path)
             .forEach(pathElement -> {
               if (!pathBuilder.toString()
-                  .equals("")) {
+                  .isEmpty()) {
                 pathBuilder.append(".");
               }
               pathBuilder.append(pathElement);
@@ -87,7 +88,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
             .forEach(enumParam -> validateExpandParam(graphQlField, enumParam, pathName));
         break;
       default:
-        throw invalidConfigurationException("Expand arameter '{}' can only be of type array or string",
+        throw invalidConfigurationException("Expand parameter '{}' can only be of type array or string",
             parameter.getName());
     }
   }
@@ -121,6 +122,6 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   @Override
   public String getParameterName(String name) {
-    return "x-dws-expand";
+    return X_DWS_EXPANDED_PARAMS;
   }
 }

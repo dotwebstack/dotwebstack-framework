@@ -1,12 +1,14 @@
-package org.dotwebstack.framework.core.query;
+package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeString;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 import lombok.NonNull;
+import org.dotwebstack.framework.core.query.GraphQlField;
 
 public class GraphQlQueryBuilder {
 
@@ -47,7 +49,7 @@ public class GraphQlQueryBuilder {
       StringJoiner childJoiner = new StringJoiner(",", "{", "}");
       field.getFields()
           .forEach(childField -> {
-            String childPath = (path.equals("") ? "" : path + ".") + childField.getName();
+            String childPath = (path.isEmpty() ? "" : path + ".") + childField.getName();
             addToQuery(childField, childJoiner, headerArgumentJoiner, inputParams, false, childPath);
           });
       joiner.add(field.getName() + argumentJoiner.toString() + childJoiner.toString());
@@ -59,7 +61,7 @@ public class GraphQlQueryBuilder {
 
   @SuppressWarnings("unchecked")
   private boolean isExpanded(Map<String, Object> inputParams, String path) {
-    List<String> expandVariables = (List<String>) inputParams.get("x-dws-expand");
+    List<String> expandVariables = (List<String>) inputParams.get(X_DWS_EXPANDED_PARAMS);
     if (Objects.nonNull(expandVariables)) {
       return expandVariables.stream()
           .anyMatch(path::equals);

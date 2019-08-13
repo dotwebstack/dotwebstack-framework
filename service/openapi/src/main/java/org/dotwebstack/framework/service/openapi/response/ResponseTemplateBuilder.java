@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSchemaReference;
 
 import com.google.common.collect.ImmutableList;
@@ -165,9 +166,9 @@ public class ResponseTemplateBuilder {
 
   private boolean isEnvelope(Schema<?> schema) {
     if (Objects.nonNull(schema.getExtensions()) && Objects.nonNull(schema.getExtensions()
-        .get("x-dws-envelope"))) {
+        .get(X_DWS_ENVELOPE))) {
       return (boolean) schema.getExtensions()
-          .get("x-dws-envelope");
+          .get(X_DWS_ENVELOPE);
     }
     return false;
   }

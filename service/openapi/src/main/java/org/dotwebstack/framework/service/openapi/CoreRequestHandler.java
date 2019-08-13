@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.springframework.web.reactive.function.BodyInserters.fromObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,12 +16,12 @@ import java.util.Objects;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -72,9 +73,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
     if (parameters.stream()
         .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
-            .get("x-dws-type")) && "expand".equals(
+            .get(X_DWS_TYPE)) && "expand".equals(
                 parameter.getExtensions()
-                    .get("x-dws-type")))
+                    .get(X_DWS_TYPE)))
         .count() > 1) {
       throw invalidConfigurationException("It is not possible to have more than one expand parameter per Operation");
     }

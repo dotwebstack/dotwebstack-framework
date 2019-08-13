@@ -11,6 +11,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -302,7 +303,7 @@ public class DefaultParamHandler implements ParamHandler {
   boolean supportsDwsType(Parameter parameter, String typeString) {
     Map<String, Object> extensions = parameter.getExtensions();
     if (Objects.nonNull(extensions)) {
-      String handler = (String) extensions.get("x-dws-type");
+      String handler = (String) extensions.get(X_DWS_TYPE);
       if (Objects.nonNull(handler)) {
         return handler.equals(typeString);
       }

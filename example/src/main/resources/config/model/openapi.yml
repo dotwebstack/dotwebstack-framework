@@ -19,7 +19,6 @@ components:
           nullable: true
         ingredients:
           type: array
-          nullable: true
           items:
             $ref: '#/components/schemas/Ingredient'
     BreweryCollection:
@@ -58,7 +57,6 @@ components:
             $ref: '#/components/schemas/Beer'
     Ingredient:
       type: object
-      nullable: true
       required:
         - name
       properties:
