@@ -70,10 +70,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
-    if(parameters.stream()
-        .filter(parameter -> Objects.nonNull(parameter.getExtensions()) &&
-            Objects.nonNull(parameter.getExtensions().get("x-dws-type")) &&
-            "expand".equals(parameter.getExtensions().get("x-dws-type"))).count() > 1) {
+    if (parameters.stream()
+        .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
+            .get("x-dws-type")) && "expand".equals(
+                parameter.getExtensions()
+                    .get("x-dws-type")))
+        .count() > 1) {
       throw invalidConfigurationException("It is not possible to have more than one expand parameter per Operation");
     }
     parameters.forEach(parameter -> this.paramHandlerRouter.getParamHandler(parameter)

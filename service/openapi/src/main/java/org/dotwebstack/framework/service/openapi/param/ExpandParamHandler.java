@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -20,8 +22,6 @@ import org.dotwebstack.framework.service.openapi.exception.ParameterValidationEx
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
-
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 @Component
 public class ExpandParamHandler extends DefaultParamHandler {
@@ -73,7 +73,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"rawtypes", "unchecked"})
   public void validate(@NonNull GraphQlField graphQlField, @NonNull Parameter parameter, @NonNull String pathName) {
     Schema schema = parameter.getSchema();
 
@@ -84,15 +84,30 @@ public class ExpandParamHandler extends DefaultParamHandler {
               validateExpandParam(graphQlField, defaultValue, pathName);
               validateEnumValues(defaultValue, parameter);
             });
-        ((ArraySchema) schema).getItems().getEnum().forEach((enumParam -> validateExpandParam(graphQlField, (String) enumParam, pathName)));
+        ((ArraySchema) schema).getItems()
+            .getEnum()
+            .forEach((enumParam -> validateExpandParam(graphQlField, (String) enumParam, pathName)));
         break;
       case STRING_TYPE:
         validateExpandParam(graphQlField, ((StringSchema) schema).getDefault(), pathName);
-        validateEnumValues( ((StringSchema) schema).getDefault(), parameter);
-        ((StringSchema) schema).getEnum().forEach(enumParam -> validateExpandParam(graphQlField, enumParam, pathName));
+        validateEnumValues(((StringSchema) schema).getDefault(), parameter);
+        ((StringSchema) schema).getEnum()
+            .forEach(enumParam -> validateExpandParam(graphQlField, enumParam, pathName));
         break;
       default:
-        throw invalidConfigurationException("Expand arameter '{}' can only be of type array or string", parameter.getName());
+        throw invalidConfigurationException("Expand arameter '{}' can only be of type array or string",
+            parameter.getName());
+    }
+  }
+
+  @Override
+  public void validate(GraphQlField graphQlField, String fieldName, String pathName) {
+    if (graphQlField.getFields()
+        .stream()
+        .noneMatch(field -> field.getName()
+            .equals(fieldName))) {
+      throw invalidConfigurationException("No field with name '{}' was found on GraphQL field '{}'", fieldName,
+          graphQlField.getName());
     }
   }
 
@@ -103,21 +118,12 @@ public class ExpandParamHandler extends DefaultParamHandler {
     if (pathParams.length > 1) {
       GraphQlField childField = graphQlField.getFields()
           .stream()
-          .filter(field -> field.getName().equals(pathParams[0]))
+          .filter(field -> field.getName()
+              .equals(pathParams[0]))
           .findFirst()
-          .orElseThrow(() -> invalidConfigurationException("No field with name '{}' was found on GraphQL field '{}'", pathParams[0], graphQlField.getName()));
+          .orElseThrow(() -> invalidConfigurationException("No field with name '{}' was found on GraphQL field '{}'",
+              pathParams[0], graphQlField.getName()));
       validateExpandParam(childField, String.join(".", ArrayUtils.remove(pathParams, 0)), pathName);
-    }
-  }
-
-  @Override
-  public void validate(GraphQlField graphQlField, String fieldName, String pathName) {
-    if (graphQlField.getFields()
-        .stream()
-        .noneMatch(field -> field.getName()
-            .equals(fieldName))) {
-      throw invalidConfigurationException(
-          "No field with name '{}' was found on GraphQL field '{}'", fieldName, graphQlField.getName());
     }
   }
 

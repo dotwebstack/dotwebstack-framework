@@ -99,7 +99,8 @@ public class DefaultParamHandler implements ParamHandler {
         .noneMatch(argument -> argument.getName()
             .equals(parameterName))) {
       throw ExceptionHelper.invalidConfigurationException(
-          "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", parameterName, pathName, field.getName());
+          "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", parameterName, pathName,
+          field.getName());
     }
   }
 
@@ -118,7 +119,8 @@ public class DefaultParamHandler implements ParamHandler {
                 .getEnum()
                 .contains(paramValue)) {
           throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
-              parameter.getName(), paramValue, String.join(", ", parameter.getSchema().getEnum()));
+              parameter.getName(), paramValue, String.join(", ", parameter.getSchema()
+                  .getEnum()));
         }
         break;
       default:
