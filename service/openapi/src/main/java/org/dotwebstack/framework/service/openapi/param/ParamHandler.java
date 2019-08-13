@@ -4,7 +4,6 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Optional;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public interface ParamHandler {

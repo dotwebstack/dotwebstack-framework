@@ -5,6 +5,12 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMI
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_HEADER_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -22,24 +28,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
-
-  static final String ARRAY_TYPE = "array";
-
-  static final String OBJECT_TYPE = "object";
-
-  static final String STRING_TYPE = "string";
-
-  private static final String PARAM_PATH_TYPE = "path";
-
-  private static final String PARAM_QUERY_TYPE = "query";
-
-  private static final String PARAM_HEADER_TYPE = "header";
 
   private final OpenAPI openApi;
 

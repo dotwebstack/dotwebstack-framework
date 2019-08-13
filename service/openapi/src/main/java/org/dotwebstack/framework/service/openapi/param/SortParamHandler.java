@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.service.openapi.param;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -9,11 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -38,7 +38,7 @@ public class SortParamHandler extends DefaultParamHandler {
       String type = parameter.getSchema()
           .getType();
       switch (type) {
-        case "array":
+        case ARRAY_TYPE:
           List<String> list;
           if (value.get() instanceof String) {
             list = Stream.of(((String) value.get()).replace("[", "")
@@ -53,7 +53,7 @@ public class SortParamHandler extends DefaultParamHandler {
           return Optional.of(list.stream()
               .map(this::parseSortParam)
               .collect(Collectors.toList()));
-        case "string":
+        case STRING_TYPE:
           return Optional.of(Collections.singletonList(this.parseSortParam((String) value.get())));
         default:
           throw parameterValidationException("Sort parameter '%s' is of wrong type, can only be string or string[].",

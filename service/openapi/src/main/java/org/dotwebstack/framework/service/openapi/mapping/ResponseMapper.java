@@ -2,17 +2,17 @@ package org.dotwebstack.framework.service.openapi.mapping;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import lombok.NonNull;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
@@ -42,19 +42,19 @@ public class ResponseMapper {
         .writeValueAsString(object);
   }
 
-  @SuppressWarnings("unchecked")
   private Object mapDataToResponse(@NonNull ResponseObject responseObject, Object data) {
     switch (responseObject.getType()) {
-      case "array":
+      case ARRAY_TYPE:
         return mapArrayDataToResponse(responseObject, data);
-      case "object":
-        return MapObjectDataToResponse(responseObject, data);
+      case OBJECT_TYPE:
+        return mapObjectDataToResponse(responseObject, data);
       default:
         return data;
     }
   }
 
-  private Object MapObjectDataToResponse(@NonNull ResponseObject responseObject, Object data) {
+  @SuppressWarnings("unchecked")
+  private Object mapObjectDataToResponse(@NonNull ResponseObject responseObject, Object data) {
     if (Objects.isNull(data)) {
       return null;
     }
@@ -78,6 +78,7 @@ public class ResponseMapper {
     return result;
   }
 
+  @SuppressWarnings("unchecked")
   private Object mapArrayDataToResponse(@NonNull ResponseObject responseObject, Object data) {
     if (Objects.isNull(data)) {
       return Collections.emptyList();
