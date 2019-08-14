@@ -15,6 +15,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRI
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Objects;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -34,23 +35,25 @@ public class ResponseContextValidator {
         break;
       case OBJECT_TYPE:
         List<ResponseObject> children = template.getChildren();
-        children.forEach(child -> {
-          if (child.isEnvelope()) {
-            ResponseObject embedded = child.getChildren()
-                .get(0);
-            validate(embedded, field);
-          } else {
-            GraphQlField graphQlChildField = field.getFields()
-                .stream()
-                .filter(childField -> childField.getName()
-                    .equals(child.getIdentifier()))
-                .findFirst()
-                .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
-                    "OAS field '{}' not found in matching GraphQl object '{}'.", child.getIdentifier(),
-                    field.getName()));
-            validate(child, graphQlChildField);
-          }
-        });
+        children.stream()
+            .filter(child -> Objects.isNull(child.getDwsTemplate()))
+            .forEach(child -> {
+              if (child.isEnvelope()) {
+                ResponseObject embedded = child.getChildren()
+                    .get(0);
+                validate(embedded, field);
+              } else {
+                GraphQlField graphQlChildField = field.getFields()
+                    .stream()
+                    .filter(childField -> childField.getName()
+                        .equals(child.getIdentifier()))
+                    .findFirst()
+                    .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
+                        "OAS field '{}' not found in matching GraphQl object '{}'.", child.getIdentifier(),
+                        field.getName()));
+                validate(child, graphQlChildField);
+              }
+            });
         break;
       default:
         validateTypes(oasType, graphQlType, template.getIdentifier());

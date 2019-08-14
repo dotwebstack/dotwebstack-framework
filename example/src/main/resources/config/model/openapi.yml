@@ -21,6 +21,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Ingredient'
+        link:
+          type: string
+          x-dws-template: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
     BreweryCollection:
       type: object
       required:

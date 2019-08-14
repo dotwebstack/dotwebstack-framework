@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TEMPLATE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSchemaReference;
 
 import com.google.common.collect.ImmutableList;
@@ -21,6 +22,7 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 
 @Builder
 public class ResponseTemplateBuilder {
+
   private final OpenAPI openApi;
 
   public List<ResponseTemplate> buildResponseTemplates(@NonNull String pathName, @NonNull String methodName,
@@ -98,12 +100,14 @@ public class ResponseTemplateBuilder {
     } else if (schema instanceof ArraySchema) {
       return createResponseObject(openApi, identifier, (ArraySchema) schema, isRequired, isNillable);
     } else {
+
       return ResponseObject.builder()
           .identifier(identifier)
           .isEnvelope(isEnvelope(schema))
           .type(schema.getType())
           .nillable(isNillable)
           .required(isRequired)
+          .dwsTemplate(getDwsTemplate(schema))
           .build();
     }
   }
@@ -128,6 +132,7 @@ public class ResponseTemplateBuilder {
         .type(schema.getType())
         .children(children)
         .nillable(isNillable)
+        .dwsTemplate(getDwsTemplate(schema))
         .required(isRequired)
         .build();
   }
@@ -150,6 +155,7 @@ public class ResponseTemplateBuilder {
         .type(schema.getType())
         .items(ImmutableList.of(item))
         .nillable(isNillable)
+        .dwsTemplate(getDwsTemplate(schema))
         .required(isRequired)
         .build();
 
@@ -171,5 +177,23 @@ public class ResponseTemplateBuilder {
           .get(X_DWS_ENVELOPE);
     }
     return false;
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private String getDwsTemplate(Schema schema) {
+    Map<String, Object> extensions = schema.getExtensions();
+    if (extensions != null) {
+      Object result = extensions.get(X_DWS_TEMPLATE);
+      if (result != null && !(result instanceof String)) {
+        throw ExceptionHelper.invalidConfigurationException("Value of extension '{}' should be a string.",
+            X_DWS_TEMPLATE);
+      }
+      if (result != null && !"string".equals(schema.getType())) {
+        throw ExceptionHelper.invalidConfigurationException("Extension '{}' is only allowed for string types.",
+            X_DWS_TEMPLATE);
+      }
+      return (String) result;
+    }
+    return null;
   }
 }

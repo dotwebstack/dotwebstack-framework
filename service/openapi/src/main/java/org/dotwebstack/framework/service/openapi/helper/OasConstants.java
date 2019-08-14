@@ -28,6 +28,8 @@ public class OasConstants {
 
   public static final String X_DWS_QUERY = "x-dws-query";
 
+  public static final String X_DWS_TEMPLATE = "x-dws-template";
+
   public static final String X_DWS_ENVELOPE = "x-dws-envelope";
 
   public static final String X_DWS_EXPANDED_PARAMS = "x-dws-expand";

@@ -190,4 +190,19 @@ BreweryCollection:
 The root response is of `type:object` and contains a required property `_embedded`. This `_embedded` property has 
 `x-dws-envelope: true`. This way DotWebStack knows that this is a property that is not in the GraphQL response. Since 
 `_embedded` in its turn consists of a list of `Breweries` the GraphQL response is mapped to the `Brewery` object defined
-in the OpenApi specification.    
+in the OpenApi specification.
+
+# 1.1.7 Response properties template
+By using a response property template, it is possible to return properties that are derived from one or several GraphQL fields and environmental variables. A template can be assigned to a property by adding the extension field `x-dws-template` to a property of type `string`:
+```yaml
+properties:
+  identifier:
+    type: string
+  link:
+    type: string
+    x-dws-template: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
+```
+The content of `x-dws-template` should be a valid [JEXL](http://commons.apache.org/proper/commons-jexl/) expression. The expression is evaluated while translating the GraphQL response to the REST response and supports the following variables:
+* `env`: The Spring environment variables. The most straightforward way to use an environment variable is to add it to the `application.yml`.
+* `fields.<property>`: A scalar field of the object containing the `x-dws-template` property.
+* `fields._parent.<property>`: Same as above, but using the parent of the object. This construction can be used recursively to access parents of parents: `fields._parent._parent.<property>`.

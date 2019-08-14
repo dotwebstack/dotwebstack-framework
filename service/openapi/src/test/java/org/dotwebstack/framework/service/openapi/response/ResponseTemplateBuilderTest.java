@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.List;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -133,6 +134,35 @@ public class ResponseTemplateBuilderTest {
     openApi.getComponents()
         .getSchemas()
         .remove("Object2");
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class, () -> getResponseTemplates(this.openApi, "/query1", "get"));
+  }
+
+  @Test
+  public void build_resolvesXdwsTemplate_forValidSchema() {
+    // Act
+    List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query1", "get");
+
+    // Assert
+    assertEquals(1, templates.size());
+    ResponseTemplate responseTemplate = templates.get(0);
+    assertEquals(1, responseTemplate.getResponseObject()
+        .getChildren()
+        .stream()
+        .filter(ro -> "template_content".equals(ro.getDwsTemplate()))
+        .count());
+  }
+
+  @Test
+  public void build_throwsException_InvalidXdwsTemplateType() {
+    // Arrange
+    Schema<?> property1 = (Schema) openApi.getComponents()
+        .getSchemas()
+        .get("Object1")
+        .getProperties()
+        .get("o1_prop1");
+    property1.setType("object");
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> getResponseTemplates(this.openApi, "/query1", "get"));
