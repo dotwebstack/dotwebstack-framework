@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -33,7 +34,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   @Override
   public boolean supports(Parameter parameter) {
-    return supportsDwsType(parameter, "expand");
+    return supportsDwsType(parameter, X_DWS_EXPAND_TYPE);
   }
 
   @SuppressWarnings("unchecked")
