@@ -126,10 +126,10 @@ name: expand
 In the example the expand parameter is used to include `beers` in the response by default. The GraphQL query is expanded to contain the
 scalar fields of the beers object as well. In our `Brewery` model it means that the `name` and `identifier` are returned, 
 but `ingredients` and `supplements` are not, because they are non-scalar objects. In order to expand the query in this 
-case with `ingredients`, the user has to provide an expand parameter with value `beers.ingredients`. It is possible to add 
-on object on a lower level with a dotted notation. Parent objects are added to query automatically. This means that when 
-you expand the query with `beers.ingredients` it is not necessary to provide a separate expand value for `beers`. However,
-when you add the `beers` value too, it is skipped the second time.  
+case with `ingredients`, the user has to provide an expand parameter with value `beers.ingredients`. It is possible to 
+expand lower level fields with a dotted notation, without explicitly expanding the parent objects. Parent objects are 
+added to query automatically. This means that when you expand the query with `beers.ingredients` it is not necessary to
+provide a separate expand value for `beers`. However, when you add the `beers` value too, it is skipped the second time.  
 
 In the example you can see usage of the `default` and `enum` flags. It is possible to use these to expand the query by 
 default with one or more values and to restrict which values can be expanded.  
@@ -150,7 +150,9 @@ Similarly, properties defined in the OpenAPI type are mapped to GraphQL type fie
 When defining an openAPI type, properties are restricted to a subset of the fields of the corresponding GraphQL type.
 
 # 1.1.6 Envelope type
-It is also possible to add fields to an OpenApi response that are not in the GraphQL response. An example can be seen in
+It is also possible to add fields to an OpenApi response that are not in the GraphQL response. This is useful if you want 
+to enrich your response, for example in case of a `hal+json` response. The `_links` or `_embedded` objects you create are
+not part of the GraphQL response, but you want them to be part of the rest response. An example can be seen in
 the following response that contains an `_embedded` brewery:
 
 ```json
