@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
@@ -46,15 +47,10 @@ public class ExpandParamHandler extends DefaultParamHandler {
       List<String> allValues = new ArrayList<>();
       ((List<String>) expandValueOptional.get()).forEach(value -> {
         String[] path = value.split("\\.");
-        StringBuilder pathBuilder = new StringBuilder();
+        StringJoiner pathBuilder = new StringJoiner(".");
         Stream.of(path)
             .forEach(pathElement -> {
-              if (!pathBuilder.toString()
-                  .isEmpty()) {
-                pathBuilder.append(".");
-              }
-              pathBuilder.append(pathElement);
-
+              pathBuilder.add(pathElement);
               if (!allValues.contains(pathBuilder.toString())) {
                 allValues.add(pathBuilder.toString());
               }
