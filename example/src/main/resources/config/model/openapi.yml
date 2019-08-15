@@ -17,13 +17,28 @@ components:
         name:
           type: string
           nullable: true
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ingredient'
         link:
           type: string
           x-dws-template: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
-    Breweries:
-      type: array
-      items:
-       $ref: '#/components/schemas/Brewery'
+    BreweryCollection:
+      type: object
+      required:
+        - _embedded
+      properties:
+        _embedded:
+          x-dws-envelope: true
+          type: object
+          required:
+            - breweries
+          properties:
+            breweries:
+              type: array
+              items:
+               $ref: '#/components/schemas/Brewery'
     Brewery:
       type: object
       required:
@@ -40,8 +55,17 @@ components:
           nullable: true
         beers:
           type: array
+          nullable: true
           items:
             $ref: '#/components/schemas/Beer'
+    Ingredient:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          nullable: true
     SortField:
       type: array
       items:
@@ -57,6 +81,17 @@ paths:
     get:
       x-dws-query: breweries
       parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          explode: false
+          required: false
+          schema:
+            type: array
+            default: ['beers']
+            items:
+              type: string
+              enum: ['beers', 'beers.ingredients', 'beers.supplements']
         - name: name
           in: query
           explode: false
@@ -86,7 +121,7 @@ paths:
           content:
             application/hal+json:
               schema:
-                $ref: '#/components/schemas/Breweries'
+                $ref: '#/components/schemas/BreweryCollection'
   /brewery/{identifier}:
     get:
       x-dws-query: brewery

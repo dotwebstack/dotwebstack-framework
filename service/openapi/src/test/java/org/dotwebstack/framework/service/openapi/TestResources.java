@@ -22,13 +22,13 @@ public class TestResources {
 
   public static TypeDefinitionRegistry typeDefinitionRegistry() {
     Reader reader = new InputStreamReader(TestResources.class.getClassLoader()
-        .getResourceAsStream("config/model/schema.graphqls"));
+        .getResourceAsStream("config/schema.graphqls"));
     return new SchemaParser().parse(reader);
   }
 
   public static TypeDefinitionRegistry typeDefinitionRegistry(String regex, String replacement) throws IOException {
     String schemaString = FileUtils.readFileToString(new File(TestResources.class.getClassLoader()
-        .getResource("config/model/schema.graphqls")
+        .getResource("config/schema.graphqls")
         .getFile()), "UTF-8")
         .replaceAll(regex, replacement);
     return new SchemaParser().parse(schemaString);

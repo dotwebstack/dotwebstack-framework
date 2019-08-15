@@ -5,12 +5,20 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMI
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_HEADER_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,24 +30,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
-
-  private static final String ARRAY_TYPE = "array";
-
-  private static final String OBJECT_TYPE = "object";
-
-  private static final String STRING_TYPE = "string";
-
-  private static final String PARAM_PATH_TYPE = "path";
-
-  private static final String PARAM_QUERY_TYPE = "query";
-
-  private static final String PARAM_HEADER_TYPE = "header";
 
   private final OpenAPI openApi;
 
@@ -53,7 +48,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   @Override
-  public Optional<Object> getValue(ServerRequest request, Parameter parameter) throws ParameterValidationException {
+  public Optional<Object> getValue(ServerRequest request, Parameter parameter) {
     Object paramValue;
     switch (parameter.getIn()) {
       case PARAM_PATH_TYPE:
@@ -90,20 +85,22 @@ public class DefaultParamHandler implements ParamHandler {
 
   @Override
   public void validate(GraphQlField field, Parameter parameter, String pathName) {
-    String name = parameter.getName();
-    long matching = field.getArguments()
+    this.validate(field, parameter.getName(), pathName);
+  }
+
+  public void validate(GraphQlField field, String parameterName, String pathName) {
+    if (field.getArguments()
         .stream()
-        .filter(argument -> argument.getName()
-            .equals(name))
-        .count();
-    if (matching == 0) {
+        .noneMatch(argument -> argument.getName()
+            .equals(parameterName))) {
       throw ExceptionHelper.invalidConfigurationException(
-          "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", name, pathName, field.getName());
+          "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", parameterName, pathName,
+          field.getName());
     }
   }
 
   @SuppressWarnings("unchecked")
-  private void validateEnumValues(Object paramValue, Parameter parameter) throws ParameterValidationException {
+  void validateEnumValues(Object paramValue, Parameter parameter) {
     String type = parameter.getSchema()
         .getType();
     switch (type) {
@@ -111,29 +108,25 @@ public class DefaultParamHandler implements ParamHandler {
         validateEnumValuesForArray(paramValue, parameter);
         break;
       case STRING_TYPE:
-        if (Objects.nonNull(parameter.getSchema()
-            .getEnum())
-            && !parameter.getSchema()
-                .getEnum()
-                .contains(paramValue)) {
-          throw parameterValidationException("Parameter '{}' has an invalid value, should be one of: '%s'",
-              parameter.getName(), String.join(",", parameter.getSchema()
+        if (hasEnum(parameter) && !parameter.getSchema()
+            .getEnum()
+            .contains(paramValue)) {
+          throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
+              parameter.getName(), paramValue, String.join(", ", parameter.getSchema()
                   .getEnum()));
         }
         break;
       default:
-        if (Objects.nonNull(parameter.getSchema()
-            .getEnum())) {
-          throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string of string[]",
+        if (hasEnum(parameter)) {
+          throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string or string[]",
               parameter.getName());
         }
     }
   }
 
   @SuppressWarnings("unchecked")
-  private void validateEnumValuesForArray(Object paramValue, Parameter parameter) throws ParameterValidationException {
-    if (Objects.nonNull(((ArraySchema) parameter.getSchema()).getItems()
-        .getEnum())) {
+  private void validateEnumValuesForArray(Object paramValue, Parameter parameter) {
+    if (hasEnum(parameter)) {
       List<String> list;
       List<String> enumList = (List<String>) ((ArraySchema) parameter.getSchema()).getItems()
           .getEnum();
@@ -144,7 +137,7 @@ public class DefaultParamHandler implements ParamHandler {
       } else if (paramValue instanceof List) {
         list = (List<String>) paramValue;
       } else {
-        throw parameterValidationException("Enumerated parameter '%s' can only be of string or string[]",
+        throw parameterValidationException("Enumerated parameter '{}' can only be of string or string[]",
             parameter.getName());
       }
       List<String> invalidValues = list.stream()
@@ -285,5 +278,36 @@ public class DefaultParamHandler implements ParamHandler {
       }
     }
     return Optional.empty();
+  }
+
+  private boolean hasEnum(Parameter parameter) {
+    if (parameter.getSchema() instanceof ArraySchema) {
+      ArraySchema arraySchema = (ArraySchema) parameter.getSchema();
+      if (Objects.nonNull(arraySchema.getItems()
+          .getEnum())
+          && !arraySchema.getItems()
+              .getEnum()
+              .isEmpty()) {
+        return true;
+      }
+    } else if (parameter.getSchema() instanceof StringSchema) {
+      return Objects.nonNull(parameter.getSchema()
+          .getEnum())
+          && !parameter.getSchema()
+              .getEnum()
+              .isEmpty();
+    }
+    return false;
+  }
+
+  boolean supportsDwsType(Parameter parameter, String typeString) {
+    Map<String, Object> extensions = parameter.getExtensions();
+    if (Objects.nonNull(extensions)) {
+      String handler = (String) extensions.get(X_DWS_TYPE);
+      if (Objects.nonNull(handler)) {
+        return handler.equals(typeString);
+      }
+    }
+    return false;
   }
 }

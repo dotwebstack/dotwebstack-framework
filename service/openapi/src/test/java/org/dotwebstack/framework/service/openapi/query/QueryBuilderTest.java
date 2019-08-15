@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.query;
+package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,6 +12,8 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
+import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,7 +77,7 @@ public class QueryBuilderTest {
   private TypeDefinitionRegistry loadTypeDefinitionRegistry() {
     Reader reader = new InputStreamReader(this.getClass()
         .getClassLoader()
-        .getResourceAsStream("config/schema.graphqls"));
+        .getResourceAsStream("config/brewery.graphqls"));
     return new SchemaParser().parse(reader);
   }
 }

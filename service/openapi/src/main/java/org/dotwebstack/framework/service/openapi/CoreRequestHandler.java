@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.springframework.web.reactive.function.BodyInserters.fromObject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,11 +16,12 @@ import java.util.Objects;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.core.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
+import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -68,6 +71,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
+    if (parameters.stream()
+        .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
+            .get(X_DWS_TYPE)) && "expand".equals(
+                parameter.getExtensions()
+                    .get(X_DWS_TYPE)))
+        .count() > 1) {
+      throw invalidConfigurationException("It is not possible to have more than one expand parameter per Operation");
+    }
     parameters.forEach(parameter -> this.paramHandlerRouter.getParamHandler(parameter)
         .validate(field, parameter, pathName));
     field.getArguments()
@@ -79,7 +90,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     if (argument.isRequired() && !argument.isHasDefault() && parameters.stream()
         .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
             .equals(argument.getName()))) {
-      throw ExceptionHelper.invalidConfigurationException(
+      throw invalidConfigurationException(
           "No required OAS parameter found for required and no-default GraphQL argument" + " '{}' in path '{}'",
           argument.getName(), pathName);
     }
@@ -134,13 +145,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  private Map<String, Object> resolveParameters(ServerRequest request) throws ParameterValidationException {
+  private Map<String, Object> resolveParameters(ServerRequest request) {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseContext.getParameters())) {
       for (Parameter parameter : this.responseContext.getParameters()) {
-        paramHandlerRouter.getParamHandler(parameter)
-            .getValue(request, parameter)
-            .ifPresent(value -> result.put(parameter.getName(), value));
+        ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
+        handler.getValue(request, parameter)
+            .ifPresent(value -> result.put(handler.getParameterName(parameter.getName()), value));
       }
     }
     return result;

@@ -1,6 +1,11 @@
 package org.dotwebstack.framework.service.openapi.param;
 
 import static java.util.Arrays.asList;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_HEADER_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -44,6 +49,9 @@ public class DefaultParamHandlerTest {
 
   @Mock
   private Parameter parameter;
+
+  @Mock
+  private StringSchema schema;
 
   private DefaultParamHandler paramHandler;
 
@@ -320,10 +328,10 @@ public class DefaultParamHandlerTest {
     // Arrange
     mockParameterPath("test", "v", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
     when(request.pathVariable("test")).thenThrow(IllegalArgumentException.class);
-    when(parameter.getSchema()
-        .getDefault()).thenReturn("default1");
-    when(parameter.getSchema()
-        .getEnum()).thenReturn(ImmutableList.of("default2"));
+    when(parameter.getSchema()).thenReturn(schema);
+    when(schema.getDefault()).thenReturn("default1");
+    when(schema.getType()).thenReturn(TYPE_STRING);
+    when(schema.getEnum()).thenReturn(ImmutableList.of("default2"));
 
     // Act & Assert
     assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
@@ -404,13 +412,13 @@ public class DefaultParamHandlerTest {
 
 
   private void mockParameterPath(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
-    when(parameter.getIn()).thenReturn("path");
+    when(parameter.getIn()).thenReturn(PARAM_PATH_TYPE);
     when(request.pathVariable(name)).thenReturn(value);
     mockParameter(name, type, explode, style);
   }
 
   private void mockParameterQuery(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
-    when(parameter.getIn()).thenReturn("query");
+    when(parameter.getIn()).thenReturn(PARAM_QUERY_TYPE);
     MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add(name, value);
     when(request.queryParams()).thenReturn(map);
@@ -418,7 +426,7 @@ public class DefaultParamHandlerTest {
   }
 
   private void mockParameterHeader(String name, String value, String type, boolean explode, Parameter.StyleEnum style) {
-    when(parameter.getIn()).thenReturn("header");
+    when(parameter.getIn()).thenReturn(PARAM_HEADER_TYPE);
     ServerRequest.Headers headers = mock(ServerRequest.Headers.class);
     when(headers.header(name)).thenReturn(asList(value));
     when(request.headers()).thenReturn(headers);
@@ -438,7 +446,7 @@ public class DefaultParamHandlerTest {
     when(parameter.getStyle()).thenReturn(style);
     Schema schema;
     switch (type) {
-      case "array":
+      case ARRAY_TYPE:
         ArraySchema arraySchema = mock(ArraySchema.class);
         Schema itemSchema = mock(StringSchema.class);
         when(itemSchema.getEnum()).thenReturn(null);
@@ -446,7 +454,7 @@ public class DefaultParamHandlerTest {
 
         schema = arraySchema;
         break;
-      case "object":
+      case OBJECT_TYPE:
         schema = mock(ObjectSchema.class);
         break;
       default:

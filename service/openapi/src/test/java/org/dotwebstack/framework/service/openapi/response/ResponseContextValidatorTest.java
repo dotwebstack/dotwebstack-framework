@@ -137,7 +137,7 @@ public class ResponseContextValidatorTest {
         .get(path);
     List<ResponseTemplate> responses = ResponseTemplateBuilderTest.getResponseTemplates(this.openApi, path, methodName);
     GraphQlField field = TestResources.queryFieldHelper(this.registry)
-        .resolveGraphQlField(pathItem);
+        .resolveGraphQlField(pathItem.getGet());
 
     return new ResponseContext(field, responses, Collections.emptyList());
   }
