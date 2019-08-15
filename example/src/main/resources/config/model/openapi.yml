@@ -67,7 +67,7 @@ paths:
               type: string
         - name: sinceAfter
           in: header
-          required: true
+          required: false
           schema:
             type: string
         - name: sort

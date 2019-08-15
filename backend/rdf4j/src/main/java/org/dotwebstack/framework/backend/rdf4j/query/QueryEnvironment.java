@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import graphql.schema.DataFetchingFieldSelectionSet;
-import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import java.util.Map;
 import lombok.Builder;
@@ -14,7 +14,7 @@ public class QueryEnvironment {
 
   private final GraphQLObjectType objectType;
 
-  private final GraphQLDirective sparqlDirective;
+  private final GraphQLFieldDefinition fieldDefinition;
 
   private final DataFetchingFieldSelectionSet selectionSet;
 

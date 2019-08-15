@@ -1,17 +1,14 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-
 import com.google.common.collect.ImmutableMap;
+import graphql.schema.GraphQLFieldDefinition;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +20,11 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
+import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.RepositoryResolver;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryImplConfig;
 import org.eclipse.rdf4j.repository.manager.LocalRepositoryManager;
@@ -57,7 +55,31 @@ class Rdf4jConfiguration {
   }
 
   @Bean
-  RepositoryResolver repositoryResolver(@NonNull CoreProperties coreProperties,
+  RepositoryAdapter localRepositoryAdapter(LocalRepositoryManager localRepositoryManager) {
+    return new RepositoryAdapter() {
+      @Override
+      public TupleQuery prepareTupleQuery(String repositoryId, GraphQLFieldDefinition fieldDefinition, String query) {
+        return localRepositoryManager.getRepository(repositoryId)
+            .getConnection()
+            .prepareTupleQuery(query);
+      }
+
+      @Override
+      public GraphQuery prepareGraphQuery(String repositoryId, GraphQLFieldDefinition fieldDefinition, String query) {
+        return localRepositoryManager.getRepository(repositoryId)
+            .getConnection()
+            .prepareGraphQuery(query);
+      }
+
+      @Override
+      public boolean supports(String repositoryId) {
+        return localRepositoryManager.hasRepositoryConfig(repositoryId);
+      }
+    };
+  }
+
+  @Bean
+  LocalRepositoryManager localRepositoryManager(@NonNull CoreProperties coreProperties,
       @NonNull Rdf4jProperties rdf4jProperties, @NonNull ConfigFactory configFactory,
       @NonNull ResourceLoader resourceLoader) throws IOException {
     LOG.debug("Initializing repository manager");
@@ -85,30 +107,23 @@ class Rdf4jConfiguration {
   }
 
   @Bean
-  NodeShapeRegistry nodeShapeRegistry(@NonNull List<RepositoryResolver> repositoryResolvers,
+  NodeShapeRegistry nodeShapeRegistry(@NonNull LocalRepositoryManager localRepositoryManager,
       @NonNull Rdf4jProperties rdf4jProperties) {
-    Optional<RepositoryResolver> optionalResolver = repositoryResolvers.stream()
-        .filter(repositoryResolver -> repositoryResolver.getRepository(LOCAL_REPOSITORY_ID) != null)
-        .findFirst();
+    Repository repository = localRepositoryManager.getRepository(LOCAL_REPOSITORY_ID);
 
-    if (optionalResolver.isPresent()) {
-      RepositoryResolver repositoryResolver = optionalResolver.get();
-      Model shapeModel = QueryResults.asModel(repositoryResolver.getRepository(LOCAL_REPOSITORY_ID)
-          .getConnection()
-          .getStatements(null, null, null, rdf4jProperties.getShape()
-              .getGraph()));
-      NodeShapeRegistry registry = new NodeShapeRegistry(rdf4jProperties.getShape()
-          .getPrefix());
+    Model shapeModel = QueryResults.asModel(repository.getConnection()
+        .getStatements(null, null, null, rdf4jProperties.getShape()
+            .getGraph()));
+    NodeShapeRegistry registry = new NodeShapeRegistry(rdf4jProperties.getShape()
+        .getPrefix());
 
-      Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
-          .stream()
-          .map(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject))
-          .forEach(shape -> registry.register(shape.getIdentifier(), shape));
+    Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
+        .stream()
+        .map(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject))
+        .forEach(shape -> registry.register(shape.getIdentifier(), shape));
 
-      return registry;
-    }
-    throw illegalArgumentException(
-        "It is not possible to add a node shape registry to a not existing local repository");
+    return registry;
+
   }
 
   private static RepositoryConfig createRepositoryConfig(Entry<String, RepositoryProperties> repositoryEntry,
