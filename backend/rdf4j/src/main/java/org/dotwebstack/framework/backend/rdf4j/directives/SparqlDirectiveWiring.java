@@ -73,8 +73,8 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     String repositoryId =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, environment.getDirective(), String.class);
 
-    RepositoryAdapter repositoryAdapter = repositoryAdapters.stream()
-        .filter(repositoryAdapter1 -> repositoryAdapter1.supports(repositoryId))
+    RepositoryAdapter supportedAdapter = repositoryAdapters.stream()
+        .filter(repositoryAdapter -> repositoryAdapter.supports(repositoryId))
         .findFirst()
         .orElseThrow(() -> new InvalidConfigurationException("Repository '{}' was never configured.", repositoryId));
 
@@ -83,7 +83,7 @@ public class SparqlDirectiveWiring implements SchemaDirectiveWiring {
     SortFieldValidator sortFieldValidator = new SortFieldValidator(coreTraverser, environment.getRegistry());
     validateSortField(fieldDefinition, sortFieldValidator);
 
-    QueryFetcher queryFetcher = new QueryFetcher(repositoryAdapter, nodeShapeRegistry, prefixMap, jexlEngine,
+    QueryFetcher queryFetcher = new QueryFetcher(supportedAdapter, nodeShapeRegistry, prefixMap, jexlEngine,
         ImmutableList.of(constraintValidator, sortFieldValidator), coreTraverser, selectVerticeFactory,
         constructVerticeFactory);
 
