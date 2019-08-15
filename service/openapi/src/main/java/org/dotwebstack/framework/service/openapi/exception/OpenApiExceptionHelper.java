@@ -18,4 +18,8 @@ public class OpenApiExceptionHelper extends ExceptionHelper {
   public static NoResultFoundException noResultFoundException(String message, Object... arguments) {
     return new NoResultFoundException(formatMessage(message, arguments), findCause(arguments));
   }
+
+  public static GraphQlErrorException graphQlErrorException(String message, Object... arguments) {
+    return new GraphQlErrorException(formatMessage(message, arguments), findCause(arguments));
+  }
 }

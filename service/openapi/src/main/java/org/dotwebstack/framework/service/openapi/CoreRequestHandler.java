@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi;
 
+import static java.lang.String.format;
+import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.springframework.web.reactive.function.BodyInserters.fromObject;
@@ -16,7 +18,9 @@ import java.util.Objects;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
+import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
@@ -26,11 +30,12 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
@@ -56,6 +61,22 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
     validateSchema();
+  }
+
+  @Override
+  public Mono<ServerResponse> handle(ServerRequest request) {
+    Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(request))
+        .publishOn(Schedulers.elastic())
+        .onErrorResume(ParameterValidationException.class,
+            e -> getMonoError(format("Error while obtaining " + "request parameters: %s", e.getMessage()),
+                HttpStatus.BAD_REQUEST))
+        .onErrorResume(JsonProcessingException.class,
+            e -> getMonoError("Error while serializing response to JSON" + ".", HttpStatus.INTERNAL_SERVER_ERROR))
+        .onErrorResume(GraphQlErrorException.class, e -> getMonoError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
+        .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND));
+
+    return ServerResponse.ok()
+        .body(fromPublisher(bodyPublisher, String.class));
   }
 
   private void validateSchema() {
@@ -100,50 +121,37 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  @Override
-  public Mono<ServerResponse> handle(ServerRequest request) {
-    try {
-      Map<String, Object> inputParams = resolveParameters(request);
-
-      String query = buildQueryString(inputParams);
-      ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-          .query(query)
-          .variables(inputParams)
-          .build();
-
-      ExecutionResult result = graphQL.execute(executionInput);
-      if (result.getErrors()
-          .isEmpty()) {
-        ResponseTemplate template = responseContext.getResponses()
-            .stream()
-            .filter(response -> response.isApplicable(200, 299))
-            .findFirst()
-            .orElseThrow(
-                () -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
-
-        String json = responseMapper.toJson(template.getResponseObject(),
-            ((Map<String, Object>) result.getData()).get(this.responseContext.getGraphQlField()
-                .getName()));
-
-        return ServerResponse.ok()
-            .contentType(MediaType.parseMediaType(template.getMediaType()))
-            .body(fromObject(json));
-      }
-      return ServerResponse.status(HttpStatus.BAD_REQUEST)
-          .body(fromObject(
-              String.format("GraphQl query resulted in errors: %s.", responseMapper.toJson(result.getErrors()))));
-    } catch (JsonProcessingException e) {
-      return ServerResponse.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(fromObject("Error while serializing response to JSON."));
-    } catch (ParameterValidationException e) {
-      return ServerResponse.status(HttpStatus.BAD_REQUEST)
-          .body(fromObject(String.format("Error while obtaining request parameters: %s", e.getMessage())));
-    } catch (NoResultFoundException e) {
-      return ServerResponse.notFound()
-          .build();
-    }
+  protected Mono<String> getMonoError(String message, HttpStatus statusCode) {
+    return Mono.error(new ResponseStatusException(statusCode, message));
   }
+
+  @SuppressWarnings("unchecked")
+  private String getResponse(ServerRequest request)
+      throws ParameterValidationException, NoResultFoundException, JsonProcessingException, GraphQlErrorException {
+    Map<String, Object> inputParams = resolveParameters(request);
+
+    String query = buildQueryString(inputParams);
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .variables(inputParams)
+        .build();
+
+    ExecutionResult result = graphQL.execute(executionInput);
+    if (result.getErrors()
+        .isEmpty()) {
+      ResponseTemplate template = responseContext.getResponses()
+          .stream()
+          .filter(response -> response.isApplicable(200, 299))
+          .findFirst()
+          .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
+
+      return responseMapper.toJson(template.getResponseObject(),
+          ((Map<String, Object>) result.getData()).get(this.responseContext.getGraphQlField()
+              .getName()));
+    }
+    throw OpenApiExceptionHelper.graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+  }
+
 
   private Map<String, Object> resolveParameters(ServerRequest request) {
     Map<String, Object> result = new HashMap<>();
