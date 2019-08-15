@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import static graphql.Scalars.GraphQLBigDecimal;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLByte;
 import static graphql.Scalars.GraphQLFloat;
@@ -67,7 +68,7 @@ public class ResponseContextValidator {
       case NUMBER_TYPE:
         if (!ImmutableList
             .of(GraphQLFloat.getName(), GraphQLInt.getName(), GraphQLLong.getName(), GraphQLByte.getName(),
-                GraphQLShort.getName())
+                GraphQLShort.getName(), GraphQLBigDecimal.getName())
             .contains(graphQlType)) {
           throw ExceptionHelper.invalidConfigurationException(
               "OAS type '{}' in property '{}' is not compatible with GraphQl type '{}'.", oasType, graphQlType,
