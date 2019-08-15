@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.service.openapi;
 
 import static java.lang.String.format;
-import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
-import static org.springframework.web.reactive.function.BodyInserters.fromObject;
+import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import graphql.ExecutionInput;
@@ -94,7 +94,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
     if (parameters.stream()
         .filter(parameter -> Objects.nonNull(parameter.getExtensions()) && Objects.nonNull(parameter.getExtensions()
-            .get(X_DWS_TYPE)) && "expand".equals(
+            .get(X_DWS_TYPE)) && X_DWS_EXPAND_TYPE.equals(
                 parameter.getExtensions()
                     .get(X_DWS_TYPE)))
         .count() > 1) {
