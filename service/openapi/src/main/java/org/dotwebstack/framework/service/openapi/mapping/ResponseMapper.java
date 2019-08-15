@@ -128,7 +128,7 @@ public class ResponseMapper {
         return null;
       } else {
         throw mappingException("Could not map GraphQL response: Required and non-nillable "
-            + "property '{}}' was not return in GraphQL response.", child.getIdentifier());
+            + "property '{}' was not returned in GraphQL response.", child.getIdentifier());
       }
     }
 
@@ -164,13 +164,20 @@ public class ResponseMapper {
     return false;
   }
 
+  private boolean isFilledList(Object object) {
+    if (object instanceof List) {
+      return !((List) object).isEmpty();
+    }
+    return false;
+  }
+
   @SuppressWarnings("rawtypes")
   private Object mapEnvelopeObject(Object data, ResponseObject child, List<Object> dataStack) {
     ResponseObject embedded = child.getChildren()
         .get(0);
 
     if (Objects.nonNull(data)) {
-      if (data instanceof List && !((List) data).isEmpty()) {
+      if (isFilledList(data)) {
         return mapDataToResponse(embedded, data, dataStack);
       }
 

@@ -16,16 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 public class ExpandParamHandlerTest {
-
-  private static final String TYPE_ARRAY = "array";
-
-  private static final String TYPE_OBJECT = "object";
 
   private static final String TYPE_STRING = "string";
 
@@ -46,7 +39,7 @@ public class ExpandParamHandlerTest {
   }
 
   @Test
-  public void validate_doesNotTrowError_withValidExpand() throws ParameterValidationException {
+  public void validate_doesNotThrowError_withValidExpand() throws ParameterValidationException {
     // Arrange
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
@@ -61,7 +54,7 @@ public class ExpandParamHandlerTest {
   }
 
   @Test
-  public void validate_doesNotTrowError_withValidNestedExpandParameter() throws ParameterValidationException {
+  public void validate_doesNotThrowError_withValidNestedExpandParameter() throws ParameterValidationException {
     // Arrange
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
@@ -79,7 +72,7 @@ public class ExpandParamHandlerTest {
   }
 
   @Test
-  public void validate_trowError_withInvalidExpandParam() throws ParameterValidationException {
+  public void validate_throwError_withInvalidExpandParam() throws ParameterValidationException {
     // Arrange
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("beers")
@@ -96,7 +89,7 @@ public class ExpandParamHandlerTest {
   }
 
   @Test
-  public void validate_doesNotTrowError_withInValidNestedExpandParameter() throws ParameterValidationException {
+  public void validate_doesNotThrowError_withInValidNestedExpandParameter() throws ParameterValidationException {
     // Arrange
     when(graphQlField.getFields()).thenReturn(ImmutableList.of(GraphQlField.builder()
         .name("address")

@@ -118,7 +118,7 @@ public class DefaultParamHandler implements ParamHandler {
         break;
       default:
         if (hasEnum(parameter)) {
-          throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string of string[]",
+          throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string or string[]",
               parameter.getName());
         }
     }
