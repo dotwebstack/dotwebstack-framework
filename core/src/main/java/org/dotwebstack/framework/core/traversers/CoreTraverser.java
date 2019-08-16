@@ -16,7 +16,6 @@ import graphql.schema.GraphQLInputObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.TypeDefinitionRegistry;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,8 +66,8 @@ public class CoreTraverser {
     if (container.getType() instanceof GraphQLInputObjectType) {
       List<DirectiveContainerTuple> result = new ArrayList<>();
 
-      Map<String,Object> nestedArguments = getNestedMap(arguments, container.getName());
-      result.add(new DirectiveContainerTuple(container,nestedArguments));
+      Map<String, Object> nestedArguments = getNestedMap(arguments, container.getName());
+      result.add(new DirectiveContainerTuple(container, nestedArguments));
 
       result.addAll(getInputObjectFieldsFromObjectType((GraphQLInputObjectType) container.getType(), nestedArguments));
 

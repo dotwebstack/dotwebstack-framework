@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLFieldDefinition;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.TupleQuery;
 

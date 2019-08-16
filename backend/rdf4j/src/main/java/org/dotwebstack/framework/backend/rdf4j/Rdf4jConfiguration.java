@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.rdf4j;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLFieldDefinition;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
