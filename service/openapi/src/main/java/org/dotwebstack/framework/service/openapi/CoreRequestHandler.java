@@ -30,6 +30,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -75,7 +76,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .onErrorResume(GraphQlErrorException.class, e -> getMonoError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
         .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND));
 
+    ResponseTemplate template = getResponseTemplate();
     return ServerResponse.ok()
+        .contentType(MediaType.parseMediaType(template.getMediaType()))
         .body(fromPublisher(bodyPublisher, String.class));
   }
 
@@ -139,11 +142,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     ExecutionResult result = graphQL.execute(executionInput);
     if (result.getErrors()
         .isEmpty()) {
-      ResponseTemplate template = responseContext.getResponses()
-          .stream()
-          .filter(response -> response.isApplicable(200, 299))
-          .findFirst()
-          .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
+      ResponseTemplate template = getResponseTemplate();
 
       return responseMapper.toJson(template.getResponseObject(),
           ((Map<String, Object>) result.getData()).get(this.responseContext.getGraphQlField()
@@ -152,6 +151,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     throw OpenApiExceptionHelper.graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
+  private ResponseTemplate getResponseTemplate() {
+    return responseContext.getResponses()
+        .stream()
+        .filter(response -> response.isApplicable(200, 299))
+        .findFirst()
+        .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
+  }
 
   private Map<String, Object> resolveParameters(ServerRequest request) {
     Map<String, Object> result = new HashMap<>();
