@@ -1,8 +1,8 @@
 # 1 openapi
-This service can be used to expose the internal GraphQL service as a an [openAPI](https://swagger.io/specification/) service.
-The service can be configured by providing a `openapi.yml` specification in addition to the `shapes.trig` and `schema.graphqls` configuration files.
+This service can be used to expose the internal GraphQL service as an [OpenAPI](https://github.com/OAI/OpenAPI-Specification) service.
+The service can be configured by providing an `openapi.yaml` specification in the resource path.
 
-The openapi service can be included in a Spring Boot project with the following dependency:
+The OpenAPI service can be included in a Spring Boot project with the following dependency:
 
 ```xml
 <dependency>
@@ -12,16 +12,7 @@ The openapi service can be included in a Spring Boot project with the following 
 ```
 
 # 1.1 Specification file
-The openapi service looks for the OpenAPI specification in the classpath resource `config/model/openapi.yml` by default.
-A custom path can be configured in the `application.yml`:
-
-```yaml
-dotwebstack:
-  openapi:
-    specificationFile: config/model/my_alternative_openapi.yml
-```
-
-Both `JSON` and `yaml` file formats are supported.
+The OpenAPI service looks for the OpenAPI specification in the classpath resource `config/openapi.yaml`.
 Path operations and types used in the specification should map to the GraphQL service.
 
 # 1.1.1 Operation mapping

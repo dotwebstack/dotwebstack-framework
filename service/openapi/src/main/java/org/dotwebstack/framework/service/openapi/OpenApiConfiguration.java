@@ -21,7 +21,6 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -31,7 +30,6 @@ import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
-@EnableConfigurationProperties(OpenApiProperties.class)
 public class OpenApiConfiguration {
 
   private final GraphQL graphQl;
@@ -47,7 +45,7 @@ public class OpenApiConfiguration {
   private final ResponseContextValidator responseContextValidator;
 
   public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
-      ResponseMapper responseMapper, OpenApiProperties properties, ParamHandlerRouter paramHandlerRouter,
+      ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter,
       ResponseContextValidator responseContextValidator) {
     this.graphQl = graphQl;
     this.typeDefinitionRegistry = typeDefinitionRegistry;

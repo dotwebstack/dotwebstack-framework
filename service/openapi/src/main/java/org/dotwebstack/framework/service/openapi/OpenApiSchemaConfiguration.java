@@ -2,22 +2,25 @@ package org.dotwebstack.framework.service.openapi;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.dotwebstack.framework.core.CoreProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableConfigurationProperties(OpenApiProperties.class)
 public class OpenApiSchemaConfiguration {
 
-  private final OpenApiProperties properties;
+  private static final String SPEC_FILENAME = "openapi.yaml";
 
-  public OpenApiSchemaConfiguration(OpenApiProperties properties) {
-    this.properties = properties;
+  private final CoreProperties coreProperties;
+
+  public OpenApiSchemaConfiguration(CoreProperties properties) {
+    this.coreProperties = properties;
   }
 
   @Bean
   public OpenAPI openApi() {
-    return new OpenAPIV3Parser().read(properties.getSpecificationFile());
+    return new OpenAPIV3Parser().read(coreProperties.getResourcePath()
+        .resolve(SPEC_FILENAME)
+        .getPath());
   }
 }
