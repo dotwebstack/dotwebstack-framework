@@ -15,6 +15,7 @@ components:
       properties:
         o1_prop1:
           type: string
+          x-dws-template: "template_content"
         o1_prop2:
           type: number
           nullable: true
@@ -73,6 +74,7 @@ paths:
       parameters:
         - name: query3_param1
           in: path
+          required: true
           schema:
             type: array
             default: ['default1', 'default2']

@@ -16,8 +16,12 @@ public class ResponseObject {
 
   private boolean nillable;
 
+  private boolean isEnvelope;
+
   private List<ResponseObject> children;
 
   private List<ResponseObject> items;
+
+  private String dwsTemplate;
 
 }

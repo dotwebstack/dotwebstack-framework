@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi;
 
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -80,7 +81,7 @@ public class OpenApiConfigurationTest {
         .get("/query1")
         .getGet()
         .getExtensions()
-        .put("x-dws-query", "unknownQuery");
+        .put(X_DWS_QUERY, "unknownQuery");
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> openApiConfiguration.route(openApi));

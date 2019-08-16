@@ -1,11 +1,12 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Operation;
 import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -18,10 +19,9 @@ public class QueryFieldHelper {
 
   private GraphQlFieldBuilder graphQlFieldBuilder;
 
-  public GraphQlField resolveGraphQlField(@NonNull PathItem path) {
-    String dwsQuery = (String) path.getGet()
-        .getExtensions()
-        .get("x-dws-query");
+  public GraphQlField resolveGraphQlField(@NonNull Operation operation) {
+    String dwsQuery = (String) operation.getExtensions()
+        .get(X_DWS_QUERY);
     FieldDefinition queryFieldDefinition = getQueryFieldDefinition(dwsQuery);
 
     return this.graphQlFieldBuilder.toGraphQlField(queryFieldDefinition);

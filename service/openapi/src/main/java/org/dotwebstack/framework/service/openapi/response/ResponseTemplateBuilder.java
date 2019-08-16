@@ -1,6 +1,9 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TEMPLATE;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSchemaReference;
 
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -16,10 +19,10 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
-import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 
 @Builder
 public class ResponseTemplateBuilder {
+
   private final OpenAPI openApi;
 
   public List<ResponseTemplate> buildResponseTemplates(@NonNull String pathName, @NonNull String methodName,
@@ -75,7 +78,7 @@ public class ResponseTemplateBuilder {
       io.swagger.v3.oas.models.media.MediaType content) {
     String ref = content.getSchema()
         .get$ref();
-    Schema schema = SchemaUtils.getSchemaReference(ref, openApi);
+    Schema schema = getSchemaReference(ref, openApi);
 
     ResponseObject root = createResponseObject(openApi, ref, schema, true, false);
 
@@ -90,18 +93,21 @@ public class ResponseTemplateBuilder {
   private ResponseObject createResponseObject(OpenAPI openApi, String identifier, Schema schema, boolean isRequired,
       boolean isNillable) {
     if (schema.get$ref() != null) {
-      return createResponseObject(openApi, identifier, SchemaUtils.getSchemaReference(schema.get$ref(), openApi),
-          isRequired, isNillable);
+      return createResponseObject(openApi, identifier, getSchemaReference(schema.get$ref(), openApi), isRequired,
+          isNillable);
     } else if (schema instanceof ObjectSchema) {
       return createResponseObject(openApi, identifier, (ObjectSchema) schema, isRequired, isNillable);
     } else if (schema instanceof ArraySchema) {
       return createResponseObject(openApi, identifier, (ArraySchema) schema, isRequired, isNillable);
     } else {
+
       return ResponseObject.builder()
           .identifier(identifier)
+          .isEnvelope(isEnvelope(schema))
           .type(schema.getType())
           .nillable(isNillable)
           .required(isRequired)
+          .dwsTemplate(getDwsTemplate(schema))
           .build();
     }
   }
@@ -122,9 +128,11 @@ public class ResponseTemplateBuilder {
         .collect(Collectors.toList());
     return ResponseObject.builder()
         .identifier(identifier)
+        .isEnvelope(isEnvelope(schema))
         .type(schema.getType())
         .children(children)
         .nillable(isNillable)
+        .dwsTemplate(getDwsTemplate(schema))
         .required(isRequired)
         .build();
   }
@@ -136,27 +144,56 @@ public class ResponseTemplateBuilder {
         .get$ref();
     ResponseObject item;
     if (Objects.nonNull(ref)) {
-      Schema refSchema = SchemaUtils.getSchemaReference(ref, openApi);
-      item = createResponseObject(openApi, identifier, refSchema, true, false);
+      Schema refSchema = getSchemaReference(ref, openApi);
+      item = createResponseObject(openApi, identifier, refSchema, true, isNillable(refSchema));
     } else {
       item = createResponseObject(openApi, identifier, schema.getItems(), true, false);
     }
     return ResponseObject.builder()
         .identifier(identifier)
+        .isEnvelope(isEnvelope(schema))
         .type(schema.getType())
         .items(ImmutableList.of(item))
         .nillable(isNillable)
+        .dwsTemplate(getDwsTemplate(schema))
         .required(isRequired)
         .build();
 
   }
 
   private boolean isNillable(Schema<?> schema) {
-    return schema != null && Boolean.FALSE.equals(schema.getNullable());
+    return schema != null && (isEnvelope(schema) || Boolean.TRUE.equals(schema.getNullable()));
   }
 
   private static boolean isRequired(Schema<?> schema, String property) {
     return schema == null || schema.getRequired()
         .contains(property);
+  }
+
+  private boolean isEnvelope(Schema<?> schema) {
+    if (Objects.nonNull(schema.getExtensions()) && Objects.nonNull(schema.getExtensions()
+        .get(X_DWS_ENVELOPE))) {
+      return (boolean) schema.getExtensions()
+          .get(X_DWS_ENVELOPE);
+    }
+    return false;
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private String getDwsTemplate(Schema schema) {
+    Map<String, Object> extensions = schema.getExtensions();
+    if (extensions != null) {
+      Object result = extensions.get(X_DWS_TEMPLATE);
+      if (result != null && !(result instanceof String)) {
+        throw ExceptionHelper.invalidConfigurationException("Value of extension '{}' should be a string.",
+            X_DWS_TEMPLATE);
+      }
+      if (result != null && !"string".equals(schema.getType())) {
+        throw ExceptionHelper.invalidConfigurationException("Extension '{}' is only allowed for string types.",
+            X_DWS_TEMPLATE);
+      }
+      return (String) result;
+    }
+    return null;
   }
 }

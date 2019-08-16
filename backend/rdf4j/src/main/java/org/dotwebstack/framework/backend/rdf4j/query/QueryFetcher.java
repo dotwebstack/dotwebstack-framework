@@ -143,6 +143,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
 
   private Model fetchGraph(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment, List<IRI> subjects,
       RepositoryAdapter repositoryAdapter) {
+
     if (subjects.isEmpty()) {
       return new TreeModel();
     }
