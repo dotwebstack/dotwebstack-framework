@@ -93,10 +93,10 @@ public final class QueryFetcher implements DataFetcher<Object> {
     List<DirectiveContainerTuple> filterMapping =
         coreTraverser.getTuples(environment, directiveWithValueFilter(CoreDirectives.FILTER_NAME));
 
-    List<IRI> subjects = fetchSubjects(queryEnvironment, filterMapping, environment.getArguments(), repositoryAdapter);
+    List<IRI> subjects = fetchSubjects(environment,queryEnvironment, filterMapping, environment.getArguments(), repositoryAdapter);
 
     // Fetch graph for given subjects
-    Model model = fetchGraph(queryEnvironment, subjects, repositoryAdapter);
+    Model model = fetchGraph(environment,queryEnvironment, subjects, repositoryAdapter);
 
     if (GraphQLTypeUtil.isList(outputType)) {
       return subjects.stream()
@@ -107,7 +107,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     return model.isEmpty() ? null : new QuerySolution(model, subjects.get(0));
   }
 
-  private List<IRI> fetchSubjects(QueryEnvironment environment, List<DirectiveContainerTuple> filterMapping,
+  private List<IRI> fetchSubjects(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment, List<DirectiveContainerTuple> filterMapping,
       Map<String, Object> arguments, RepositoryAdapter repositoryAdapter) {
 
     GraphQLDirective sparqlDirective = environment.getFieldDefinition()
@@ -123,7 +123,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
       return ImmutableList.of(subject);
     }
 
-    String subjectQuery = SubjectQueryBuilder.create(environment, jexlEngine, selectVerticeFactory)
+    String subjectQuery = SubjectQueryBuilder.create(queryEnvironment, jexlEngine, selectVerticeFactory)
         .getQueryString(arguments, sparqlDirective, filterMapping);
 
     LOG.debug("Executing query for subjects:\n{}", subjectQuery);
@@ -132,7 +132,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, sparqlDirective, String.class);
 
     TupleQueryResult queryResult =
-        repositoryAdapter.prepareTupleQuery(repositoryId, environment.getFieldDefinition(), subjectQuery)
+        repositoryAdapter.prepareTupleQuery(repositoryId, environment, subjectQuery)
             .evaluate();
 
     return QueryResults.asList(queryResult)
@@ -141,12 +141,12 @@ public final class QueryFetcher implements DataFetcher<Object> {
         .collect(Collectors.toList());
   }
 
-  private Model fetchGraph(QueryEnvironment environment, List<IRI> subjects, RepositoryAdapter repositoryAdapter) {
+  private Model fetchGraph(DataFetchingEnvironment environment, QueryEnvironment queryEnvironment, List<IRI> subjects, RepositoryAdapter repositoryAdapter) {
     if (subjects.isEmpty()) {
       return new TreeModel();
     }
 
-    String graphQuery = GraphQueryBuilder.create(environment, subjects, constructVerticeFactory)
+    String graphQuery = GraphQueryBuilder.create(queryEnvironment, subjects, constructVerticeFactory)
         .getQueryString();
 
     LOG.debug("Executing query for graph:\n{}", graphQuery);
@@ -159,7 +159,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, sparqlDirective, String.class);
 
     GraphQueryResult queryResult =
-        repositoryAdapter.prepareGraphQuery(repositoryId, environment.getFieldDefinition(), graphQuery)
+        repositoryAdapter.prepareGraphQuery(repositoryId, environment, graphQuery)
             .evaluate();
 
     return QueryResults.asModel(queryResult);

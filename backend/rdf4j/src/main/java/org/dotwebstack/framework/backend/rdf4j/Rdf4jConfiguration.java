@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
 import com.google.common.collect.ImmutableMap;
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import java.io.File;
 import java.io.IOException;
@@ -58,14 +59,14 @@ class Rdf4jConfiguration {
   RepositoryAdapter localRepositoryAdapter(LocalRepositoryManager localRepositoryManager) {
     return new RepositoryAdapter() {
       @Override
-      public TupleQuery prepareTupleQuery(String repositoryId, GraphQLFieldDefinition fieldDefinition, String query) {
+      public TupleQuery prepareTupleQuery(String repositoryId, DataFetchingEnvironment environment, String query) {
         return localRepositoryManager.getRepository(repositoryId)
             .getConnection()
             .prepareTupleQuery(query);
       }
 
       @Override
-      public GraphQuery prepareGraphQuery(String repositoryId, GraphQLFieldDefinition fieldDefinition, String query) {
+      public GraphQuery prepareGraphQuery(String repositoryId, DataFetchingEnvironment environment, String query) {
         return localRepositoryManager.getRepository(repositoryId)
             .getConnection()
             .prepareGraphQuery(query);
