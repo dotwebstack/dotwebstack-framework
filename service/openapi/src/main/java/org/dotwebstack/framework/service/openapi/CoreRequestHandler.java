@@ -130,7 +130,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   @SuppressWarnings("unchecked")
   private String getResponse(ServerRequest request)
-      throws ParameterValidationException, NoResultFoundException, JsonProcessingException, GraphQlErrorException {
+      throws NoResultFoundException, JsonProcessingException, GraphQlErrorException {
     Map<String, Object> inputParams = resolveParameters(request);
 
     String query = buildQueryString(inputParams);
