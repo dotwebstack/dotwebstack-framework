@@ -90,19 +90,19 @@ public class ResponseMapper {
     responseObject.getChildren()
         .forEach(child -> {
           Object object;
-          dataStack.add(0, data);
           if (child.isEnvelope()) {
             object = mapEnvelopeObject(data, child, dataStack);
             if (!Objects.isNull(object)) {
               result.put(child.getIdentifier(), object);
             }
           } else {
+            dataStack.add(0, data);
             object = mapObject((Map<String, Object>) data, child, dataStack);
             if (!(Objects.isNull(object))) {
               result.put(child.getIdentifier(), object);
             }
+            dataStack.remove(0);
           }
-          dataStack.remove(0);
         });
     return result;
   }
