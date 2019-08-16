@@ -11,6 +11,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,8 @@ public class ResponseTemplateBuilder {
     List<ResponseTemplate> responses = operation.getResponses()
         .entrySet()
         .stream()
-        .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), pathName, methodName).stream())
+        .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), pathName, methodName,
+            operation.getRequestBody()).stream())
         .collect(Collectors.toList());
 
     long successResponseCount = responses.stream()
@@ -44,12 +46,12 @@ public class ResponseTemplateBuilder {
   }
 
   private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse,
-      String pathName, String methodName) {
+      String pathName, String methodName, RequestBody requestBody) {
     validateMediaType(responseCode, apiResponse, pathName, methodName);
     return apiResponse.getContent()
         .entrySet()
         .stream()
-        .map(entry -> createResponseObject(openApi, responseCode, entry.getKey(), entry.getValue()))
+        .map(entry -> createResponseObject(openApi, responseCode, entry.getKey(), entry.getValue(), requestBody))
         .collect(Collectors.toList());
   }
 
@@ -75,7 +77,7 @@ public class ResponseTemplateBuilder {
 
   @SuppressWarnings("rawtypes")
   private ResponseTemplate createResponseObject(OpenAPI openApi, String responseCode, String mediaType,
-      io.swagger.v3.oas.models.media.MediaType content) {
+      io.swagger.v3.oas.models.media.MediaType content, RequestBody requestBody) {
     String ref = content.getSchema()
         .get$ref();
     Schema schema = getSchemaReference(ref, openApi);
@@ -86,6 +88,7 @@ public class ResponseTemplateBuilder {
         .responseCode(Integer.parseInt(responseCode))
         .mediaType(mediaType)
         .responseObject(root)
+        .requestBody(requestBody)
         .build();
   }
 
