@@ -34,9 +34,6 @@ public class OpenApiConfigurationTest {
   @Mock
   private GraphQL graphQL;
 
-  @Mock
-  private OpenApiProperties openApiProperties;
-
   private TypeDefinitionRegistry registry;
 
   private OpenAPI openApi;
@@ -53,7 +50,7 @@ public class OpenApiConfigurationTest {
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
-    this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, responseMapper, openApiProperties,
+    this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, responseMapper,
         new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator));
   }
 
