@@ -182,7 +182,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     if (Objects.nonNull(this.responseContext.getParameters())) {
       for (Parameter parameter : this.responseContext.getParameters()) {
         ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
-        handler.getValue(request, parameter)
+        handler.getValue(request, parameter, responseContext)
             .ifPresent(value -> result.put(handler.getParameterName(parameter.getName()), value));
       }
     }

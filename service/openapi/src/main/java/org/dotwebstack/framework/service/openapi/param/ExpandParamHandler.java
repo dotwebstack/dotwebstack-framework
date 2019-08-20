@@ -23,6 +23,7 @@ import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
+import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -40,8 +41,9 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter) {
-    Optional<Object> expandValueOptional = super.getValue(request, parameter);
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter,
+      @NonNull ResponseContext responseContext) {
+    Optional<Object> expandValueOptional = super.getValue(request, parameter, responseContext);
 
     if (expandValueOptional.isPresent()) {
       List<String> allValues = new ArrayList<>();
