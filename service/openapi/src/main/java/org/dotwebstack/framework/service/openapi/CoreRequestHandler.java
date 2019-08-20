@@ -172,6 +172,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {
-    return new GraphQlQueryBuilder().toQuery(this.responseContext.getGraphQlField(), inputParams);
+    return new GraphQlQueryBuilder().toQuery(this.responseContext, inputParams);
   }
 }
