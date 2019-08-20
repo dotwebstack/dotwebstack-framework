@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.response;
 
-import io.swagger.v3.oas.models.parameters.RequestBody;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,8 +14,6 @@ public class ResponseTemplate {
   private String mediaType;
 
   private ResponseObject responseObject;
-
-  private RequestBody requestBody;
 
   public boolean isApplicable(int bottom, int top) {
     return this.responseCode >= bottom && this.responseCode <= top;

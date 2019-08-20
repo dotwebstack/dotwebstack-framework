@@ -18,6 +18,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,12 +47,15 @@ public class OpenApiConfigurationTest {
   @Mock
   private ResponseMapper responseMapper;
 
+  @Mock
+  private RequestBodyHandler requestBodyHandler;
+
   @BeforeEach
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
     this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, responseMapper,
-        new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator));
+        new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator, requestBodyHandler));
   }
 
   @Test

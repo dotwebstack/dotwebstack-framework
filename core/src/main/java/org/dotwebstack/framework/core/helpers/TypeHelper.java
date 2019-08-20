@@ -26,6 +26,14 @@ public class TypeHelper {
     }
   }
 
+  public static Type<?> unwrapNonNullType(Type<?> type) {
+    if (type instanceof NonNullType) {
+      return (Type<?>) type.getChildren()
+          .get(0);
+    }
+    return type;
+  }
+
   public static Type<?> unwrapType(Type<?> type) {
     if (type instanceof ListType) {
       return (Type<?>) type.getChildren()

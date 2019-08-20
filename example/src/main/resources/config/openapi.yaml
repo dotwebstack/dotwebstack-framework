@@ -78,8 +78,12 @@ components:
     Geometry:
       type: object
       properties:
-        wkt:
+        wktString:
           type: string
+        points:
+          type: array
+          items:
+            type: string
 
 paths:
   /breweries:
@@ -92,7 +96,7 @@ paths:
             schema:
               type: object
               properties:
-                geometrie:
+                geometry:
                   $ref: '#/components/schemas/Geometry'
       responses:
         200:

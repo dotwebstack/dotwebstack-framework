@@ -25,6 +25,7 @@ import org.dotwebstack.framework.service.openapi.exception.ParameterValidationEx
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
@@ -50,17 +51,20 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final ParamHandlerRouter paramHandlerRouter;
 
+  private final RequestBodyHandler requestBodyHandler;
+
   private String pathName;
 
   CoreRequestHandler(String pathName, ResponseContext responseContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
-      ParamHandlerRouter paramHandlerRouter) {
+      ParamHandlerRouter paramHandlerRouter, RequestBodyHandler requestBodyHandler) {
     this.pathName = pathName;
     this.responseContext = responseContext;
     this.graphQL = graphQL;
     this.responseMapper = responseMapper;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
+    this.requestBodyHandler = requestBodyHandler;
     validateSchema();
   }
 
@@ -90,8 +94,13 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
     }
     validateParameters(field, responseContext.getParameters(), pathName);
+    if (responseContext.getRequestBody() != null) {
+      this.requestBodyHandler.validate(field, responseContext.getRequestBody(), pathName);
+    }
     responseContext.getResponses()
-        .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
+        .forEach(response -> {
+          responseContextValidator.validate(response.getResponseObject(), field);
+        });
   }
 
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {

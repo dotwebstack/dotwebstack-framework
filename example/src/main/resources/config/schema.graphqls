@@ -13,7 +13,9 @@ type Query {
             sinceAfter: Date @filter(field: "founded", operator: ">"),
             sinceBefore: Date @filter(field: "founded", operator: "<")
             name: [String] @filter(field: "name"),
-            beerName: String @filter(field: "beers.name")): [Brewery!]!
+            geometry: Geometry,
+            beerName: String @filter(field: "beers.name")): [Brewery!]!,
+
     @sparql(
       repository: "local"
       limit: "pageSize"
@@ -112,3 +114,10 @@ input FilterQueryInput {
   sinceAfter: Date
     @filter(field: "founded", operator: ">=")
 }
+
+input Geometry {
+    wktString: String
+    points: [String!]!
+}
+
+
