@@ -21,7 +21,7 @@ class OptionsRequestHandler implements HandlerFunction<ServerResponse> {
   public Mono<ServerResponse> handle(@NonNull ServerRequest serverRequest) {
     return ServerResponse.ok()
         .header("Allow", String.format("OPTIONS, %s", StringUtils.join(allowMethods.stream()
-            .map(Enum::name)
+            .map(Enum<HttpMethod>::name)
             .toArray(), ", ")))
         .build();
   }
