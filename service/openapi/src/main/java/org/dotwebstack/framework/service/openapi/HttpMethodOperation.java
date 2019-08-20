@@ -7,7 +7,7 @@ import org.springframework.http.HttpMethod;
 
 @Builder
 @Getter
-class HttpMethodOperation {
+public class HttpMethodOperation {
   private String name;
 
   private HttpMethod httpMethod;

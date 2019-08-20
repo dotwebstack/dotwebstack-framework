@@ -4,9 +4,10 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeast;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import graphql.GraphQL;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import lombok.Getter;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
@@ -61,22 +63,22 @@ public class OpenApiConfigurationTest {
 
   @Test
   public void route_returnsFunctions() {
-
+    // Arrange
     final ArgumentCaptor<HttpMethodOperation> argumentCaptor = ArgumentCaptor.forClass(HttpMethodOperation.class);
 
     final RouterFunctionAnswer optionsAnswer = new RouterFunctionAnswer();
     doAnswer(optionsAnswer).when(openApiConfiguration)
-        .toOptionRouterFunction(any(HttpMethodOperation.class));
+        .toOptionRouterFunction(anyList());
 
     // Act
     openApiConfiguration.route(openApi);
 
     // Assert
 
-    assertEquals(4, optionsAnswer.getResults()
+    assertEquals(3, optionsAnswer.getResults()
         .size()); // Assert OPTIONS route
 
-    verify(this.openApiConfiguration, atLeast(4)).toRouterFunctions(any(ResponseTemplateBuilder.class),
+    verify(this.openApiConfiguration, times(4)).toRouterFunctions(any(ResponseTemplateBuilder.class),
         argumentCaptor.capture());
 
     List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues();
@@ -118,15 +120,16 @@ public class OpenApiConfigurationTest {
   }
 
   @SuppressWarnings("unchecked")
-  private static class RouterFunctionAnswer implements Answer<RouterFunction<ServerResponse>> {
+  private static class RouterFunctionAnswer implements Answer<Optional<RouterFunction<ServerResponse>>> {
 
     @Getter
     private List<RouterFunction<ServerResponse>> results = new ArrayList<>();
 
     @Override
-    public RouterFunction<ServerResponse> answer(InvocationOnMock invocationOnMock) throws Throwable {
-      RouterFunction<ServerResponse> result = (RouterFunction<ServerResponse>) invocationOnMock.callRealMethod();
-      results.add(result);
+    public Optional<RouterFunction<ServerResponse>> answer(InvocationOnMock invocationOnMock) throws Throwable {
+      Optional<RouterFunction<ServerResponse>> result =
+          (Optional<RouterFunction<ServerResponse>>) invocationOnMock.callRealMethod();
+      result.ifPresent(results::add);
       return result;
     }
   }

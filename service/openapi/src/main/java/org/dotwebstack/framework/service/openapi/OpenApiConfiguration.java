@@ -3,15 +3,17 @@ package org.dotwebstack.framework.service.openapi;
 import static org.springframework.web.reactive.function.server.RequestPredicates.OPTIONS;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
-import com.google.common.collect.ImmutableList;
 import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -69,8 +71,10 @@ public class OpenApiConfiguration {
 
     openApi.getPaths()
         .forEach((name, path) -> Stream.of(path)
-            .flatMap(p -> getHttpMethodOperations(path, name).stream())
-            .flatMap(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, httpMethodOperation).stream())
+            .map(p -> getHttpMethodOperations(path, name))
+            .peek(httpMethodOperations -> toOptionRouterFunction(httpMethodOperations).ifPresent(routerFunctions::add))
+            .flatMap(Collection::stream)
+            .map(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, httpMethodOperation))
             .forEach(routerFunctions::add));
 
     return routerFunctions.build();
@@ -89,18 +93,16 @@ public class OpenApiConfiguration {
     }
     if (Objects.nonNull(pathItem.getPost())) {
       result.add(builder.httpMethod(HttpMethod.POST)
-          .operation(pathItem.getGet())
+          .operation(pathItem.getPost())
           .build());
     }
     return result;
   }
 
 
-  protected List<RouterFunction<ServerResponse>> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,
+  protected RouterFunction<ServerResponse> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,
       HttpMethodOperation httpMethodOperation) {
-    List<ResponseTemplate> responseTemplates = responseTemplateBuilder
-        .buildResponseTemplates(httpMethodOperation.getName(), httpMethodOperation.getHttpMethod()
-            .name(), httpMethodOperation.getOperation());
+    List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
 
     GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(httpMethodOperation.getOperation());
 
@@ -112,15 +114,22 @@ public class OpenApiConfiguration {
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(accept(MediaType.APPLICATION_JSON));
 
-    RouterFunction<ServerResponse> methodFunction =
-        RouterFunctions.route(requestPredicate, new CoreRequestHandler(httpMethodOperation.getName(), responseContext,
-            responseContextValidator, graphQl, responseMapper, paramHandlerRouter));
+    return RouterFunctions.route(requestPredicate, new CoreRequestHandler(httpMethodOperation.getName(),
+        responseContext, responseContextValidator, graphQl, responseMapper, paramHandlerRouter));
 
-    return ImmutableList.of(methodFunction, toOptionRouterFunction(httpMethodOperation));
   }
 
-  protected RouterFunction<ServerResponse> toOptionRouterFunction(HttpMethodOperation httpMethodOperation) {
-    return RouterFunctions.route(OPTIONS(httpMethodOperation.getName()),
-        new OptionsRequestHandler(httpMethodOperation.getHttpMethod()));
+  protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(
+      @NonNull List<HttpMethodOperation> httpMethodOperations) {
+    if (httpMethodOperations.size() == 0) {
+      return Optional.empty();
+    }
+
+    List<HttpMethod> httpMethods = httpMethodOperations.stream()
+        .map(HttpMethodOperation::getHttpMethod)
+        .collect(Collectors.toList());
+
+    return Optional.of(RouterFunctions.route(OPTIONS(httpMethodOperations.get(0)
+        .getName()), new OptionsRequestHandler(httpMethods)));
   }
 }
