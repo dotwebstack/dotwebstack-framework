@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeString;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
+import static org.dotwebstack.framework.service.openapi.response.ResponseContextHelper.getRequiredResponseObjectsForSuccessResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 public class GraphQlQueryBuilder {
 
   public String toQuery(@NonNull ResponseContext responseContext, Map<String, Object> inputParams) {
-    Set<String> requiredPaths = responseContext.getRequiredResponseObjectsForSuccessResponse();
+    Set<String> requiredPaths = getRequiredResponseObjectsForSuccessResponse(responseContext);
 
     StringBuilder builder = new StringBuilder();
     StringJoiner joiner = new StringJoiner(",", "{", "}");
@@ -33,7 +34,7 @@ public class GraphQlQueryBuilder {
     return builder.toString();
   }
 
-  private void addToQuery(GraphQlField field, Set<String> requiredPaths, StringJoiner joiner,
+  protected void addToQuery(GraphQlField field, Set<String> requiredPaths, StringJoiner joiner,
       StringJoiner headerArgumentJoiner, Map<String, Object> inputParams, boolean isTopLevel, String path) {
     StringJoiner argumentJoiner = new StringJoiner(",", "(", ")");
     argumentJoiner.setEmptyValue("");

@@ -115,7 +115,8 @@ public class ResponseMapper {
                     dataStack.remove(0);
                   });
             } else {
-              throw invalidConfigurationException("");
+              throw invalidConfigurationException("Cannot map {} to response, it is of the wrong type",
+                  child.getIdentifier());
             }
           }
         });
