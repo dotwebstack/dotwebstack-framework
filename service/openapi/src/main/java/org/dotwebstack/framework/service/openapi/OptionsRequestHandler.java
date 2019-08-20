@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.service.openapi;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -20,9 +20,9 @@ class OptionsRequestHandler implements HandlerFunction<ServerResponse> {
   @Override
   public Mono<ServerResponse> handle(@NonNull ServerRequest serverRequest) {
     return ServerResponse.ok()
-        .header("Allow", String.format("OPTIONS, %s", StringUtils.join(allowMethods.stream()
+        .header("Allow", String.format("OPTIONS, %s", allowMethods.stream()
             .map(Enum<HttpMethod>::name)
-            .toArray(), ", ")))
+            .collect(Collectors.joining(", "))))
         .build();
   }
 }

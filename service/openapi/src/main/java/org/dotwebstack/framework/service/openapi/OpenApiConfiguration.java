@@ -70,12 +70,19 @@ public class OpenApiConfiguration {
         .build();
 
     openApi.getPaths()
-        .forEach((name, path) -> Stream.of(path)
-            .map(p -> getHttpMethodOperations(path, name))
-            .peek(httpMethodOperations -> toOptionRouterFunction(httpMethodOperations).ifPresent(routerFunctions::add))
-            .flatMap(Collection::stream)
-            .map(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, httpMethodOperation))
-            .forEach(routerFunctions::add));
+        .forEach((name, path) -> {
+          Optional<List<HttpMethodOperation>> operations = Optional.of(path)
+              .map(p -> getHttpMethodOperations(path, name));
+
+          operations.flatMap(this::toOptionRouterFunction)
+              .ifPresent(routerFunctions::add);
+
+          operations.ifPresent(httpMethodOperations -> Stream.of(httpMethodOperations)
+              .flatMap(Collection::stream)
+              .map(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, httpMethodOperation))
+              .forEach(routerFunctions::add));
+
+        });
 
     return routerFunctions.build();
   }
