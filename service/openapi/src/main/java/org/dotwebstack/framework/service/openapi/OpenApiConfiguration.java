@@ -18,6 +18,8 @@ import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -69,14 +71,15 @@ public class OpenApiConfiguration {
     ResponseTemplateBuilder responseTemplateBuilder = ResponseTemplateBuilder.builder()
         .openApi(openApi)
         .build();
+    RequestBodyContextBuilder requestBodyContextBuilder = new RequestBodyContextBuilder(openApi);
     openApi.getPaths()
         .forEach((name, path) -> {
           if (Objects.nonNull(path.getGet())) {
-            routerFunctions.add(toRouterFunction(responseTemplateBuilder, name,
+            routerFunctions.add(toRouterFunction(responseTemplateBuilder, requestBodyContextBuilder, name,
                 queryFieldHelper.resolveGraphQlField(path.getGet()), "get", path.getGet(), GET(name)));
           }
           if (Objects.nonNull(path.getPost())) {
-            routerFunctions.add(toRouterFunction(responseTemplateBuilder, name,
+            routerFunctions.add(toRouterFunction(responseTemplateBuilder, requestBodyContextBuilder, name,
                 queryFieldHelper.resolveGraphQlField(path.getPost()), "post", path.getPost(), POST(name)));
           }
         });
@@ -84,13 +87,15 @@ public class OpenApiConfiguration {
   }
 
   protected RouterFunction<ServerResponse> toRouterFunction(ResponseTemplateBuilder responseTemplateBuilder,
-      String path, GraphQlField graphQlField, String methodName, Operation operation,
-      RequestPredicate requestPredicate) {
+      RequestBodyContextBuilder requestBodyContextBuilder, String path, GraphQlField graphQlField, String methodName,
+      Operation operation, RequestPredicate requestPredicate) {
+    RequestBodyContext requestBodyContext =
+        requestBodyContextBuilder.buildRequestBodyContext(operation.getRequestBody());
+
     List<ResponseTemplate> responseTemplates =
         responseTemplateBuilder.buildResponseTemplates(path, methodName, operation);
     ResponseContext responseContext = new ResponseContext(graphQlField, responseTemplates,
-        operation.getParameters() != null ? operation.getParameters() : Collections.emptyList(),
-        operation.getRequestBody());
+        operation.getParameters() != null ? operation.getParameters() : Collections.emptyList(), requestBodyContext);
 
     return RouterFunctions.route(requestPredicate.and(accept(MediaType.APPLICATION_JSON)), new CoreRequestHandler(path,
         responseContext, responseContextValidator, graphQl, responseMapper, paramHandlerRouter, requestBodyHandler));

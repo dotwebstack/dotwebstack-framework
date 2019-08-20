@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.ListType;
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,11 +22,13 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
+import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
+import reactor.core.publisher.Mono;
 
 @Component
 public class RequestBodyHandler {
@@ -40,8 +45,16 @@ public class RequestBodyHandler {
     this.typeValidator = new TypeValidator();
   }
 
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull RequestBody requestBody) {
-    return null;
+  public Optional<Object> getValue(@NonNull ServerRequest request) {
+    Mono<String> mono = request.bodyToMono(String.class);
+    String value = mono.block();
+    try {
+      JsonNode node = new ObjectMapper().reader()
+          .readTree(value);
+      return Optional.ofNullable(JsonNodeUtils.toObject(node));
+    } catch (IOException e) {
+      throw ExceptionHelper.illegalArgumentException("Could not parse request body as JSON: {}", e.getMessage());
+    }
   }
 
   @SuppressWarnings("rawtypes")
@@ -71,7 +84,7 @@ public class RequestBodyHandler {
               .equals(name))
           .findFirst()
           .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
-              "OAS property '{}' for path '{}' was not found as a " + "GraphQL argument on field '{}'", name, pathName,
+              "OAS property '{}' for path '{}' was not found as a " + "GraphQL argument on field '{}'.", name, pathName,
               graphQlField.getName()));
       validate(name, propertySchema, argument.getType(), pathName);
     });

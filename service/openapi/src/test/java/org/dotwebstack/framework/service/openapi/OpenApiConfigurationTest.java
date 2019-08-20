@@ -19,6 +19,7 @@ import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,14 +65,14 @@ public class OpenApiConfigurationTest {
     openApiConfiguration.route(openApi);
 
     // Assert
-    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(ResponseTemplateBuilder.class), eq("/query1"),
-        any(GraphQlField.class), eq("get"), any(Operation.class),
+    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(ResponseTemplateBuilder.class),
+        any(RequestBodyContextBuilder.class), eq("/query1"), any(GraphQlField.class), eq("get"), any(Operation.class),
         argThat(new RequestPredicateMatcher("(GET && " + "/query1)")));
-    verify(this.openApiConfiguration).toRouterFunction(any(ResponseTemplateBuilder.class), eq("/query1"),
-        any(GraphQlField.class), eq("post"), any(Operation.class),
+    verify(this.openApiConfiguration).toRouterFunction(any(ResponseTemplateBuilder.class),
+        any(RequestBodyContextBuilder.class), eq("/query1"), any(GraphQlField.class), eq("post"), any(Operation.class),
         argThat(new RequestPredicateMatcher("(POST && " + "/query1)")));
-    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(ResponseTemplateBuilder.class), eq("/query2"),
-        any(GraphQlField.class), eq("get"), any(Operation.class),
+    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(ResponseTemplateBuilder.class),
+        any(RequestBodyContextBuilder.class), eq("/query2"), any(GraphQlField.class), eq("get"), any(Operation.class),
         argThat(new RequestPredicateMatcher("(GET && " + "/query2)")));
   }
 

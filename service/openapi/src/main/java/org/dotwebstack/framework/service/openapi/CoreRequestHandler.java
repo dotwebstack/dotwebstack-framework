@@ -27,6 +27,7 @@ import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -94,8 +95,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
     }
     validateParameters(field, responseContext.getParameters(), pathName);
-    if (responseContext.getRequestBody() != null) {
-      this.requestBodyHandler.validate(field, responseContext.getRequestBody(), pathName);
+    if (responseContext.getRequestBodyContext() != null) {
+      this.requestBodyHandler.validate(field, responseContext.getRequestBodyContext()
+          .getRequestBody(), pathName);
     }
     responseContext.getResponses()
         .forEach(response -> {
@@ -176,6 +178,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         handler.getValue(request, parameter)
             .ifPresent(value -> result.put(handler.getParameterName(parameter.getName()), value));
       }
+    }
+    RequestBodyContext requestBodyContext = this.responseContext.getRequestBodyContext();
+    if (Objects.nonNull(requestBodyContext)) {
+      this.requestBodyHandler.getValue(request)
+          .ifPresent(value -> result.put(requestBodyContext.getName(), value));
     }
     return result;
   }

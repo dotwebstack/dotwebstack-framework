@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import io.swagger.v3.oas.models.parameters.Parameter;
-import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.List;
 import lombok.Getter;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -15,13 +14,13 @@ public class ResponseContext {
 
   private List<Parameter> parameters;
 
-  private RequestBody requestBody;
+  private RequestBodyContext requestBodyContext;
 
   public ResponseContext(GraphQlField graphQlField, List<ResponseTemplate> responses, List<Parameter> parameters,
-      RequestBody requestBody) {
+      RequestBodyContext requestBodyContext) {
     this.graphQlField = graphQlField;
     this.responses = responses;
     this.parameters = parameters;
-    this.requestBody = requestBody;
+    this.requestBodyContext = requestBodyContext;
   }
 }
