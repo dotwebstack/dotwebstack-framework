@@ -59,7 +59,9 @@ public class GraphQlQueryBuilder {
               String childPath = (path.isEmpty() ? "" : path + ".") + childField.getName();
               addToQuery(childField, requiredPaths, childJoiner, headerArgumentJoiner, inputParams, false, childPath);
             });
-        joiner.add(field.getName() + argumentJoiner.toString() + childJoiner.toString());
+        if (!"{}".equals(childJoiner.toString())) {
+          joiner.add(field.getName() + argumentJoiner.toString() + childJoiner.toString());
+        }
       } else {
         joiner.add(field.getName() + argumentJoiner.toString());
       }
