@@ -14,7 +14,6 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -151,16 +150,18 @@ public class RequestBodyHandler {
       validate(propertyName, itemSchema, TypeHelper.getBaseType(unwrapped), pathName);
     } else {
       // handle scalar
-      this.typeValidator.validateGraphQlToOpenApiTypes(schema.getType(), TypeHelper.getTypeName(unwrapped),
+      this.typeValidator.validateTypesOpenApiToGraphQ(schema.getType(), TypeHelper.getTypeName(unwrapped),
           propertyName);
     }
   }
 
   private void validateContentType(ServerRequest request) throws BadRequestException {
     List<String> contentTypeHeaders = request.headers()
-        .header(OasConstants.HEADER_CONTENT_TYPE) != null ? request.headers()
-            .header(OasConstants.HEADER_CONTENT_TYPE) : Collections.emptyList();
-    if (contentTypeHeaders.size() != 1) {
+        .header(OasConstants.HEADER_CONTENT_TYPE);
+    if (contentTypeHeaders == null) {
+      throw OpenApiExceptionHelper.badRequestException("Expected exactly 1 '{}' header but found {}.",
+          OasConstants.HEADER_CONTENT_TYPE, 0);
+    } else if (contentTypeHeaders.size() != 1) {
       throw OpenApiExceptionHelper.badRequestException("Expected exactly 1 '{}' header but found {}.",
           OasConstants.HEADER_CONTENT_TYPE, contentTypeHeaders.size());
     } else if (!MediaType.APPLICATION_JSON.toString()

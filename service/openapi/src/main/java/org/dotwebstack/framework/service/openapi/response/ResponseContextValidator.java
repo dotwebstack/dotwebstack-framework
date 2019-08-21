@@ -47,7 +47,7 @@ public class ResponseContextValidator {
             });
         break;
       default:
-        this.typeValidator.validateOpenApiToGraphQlTypes(oasType, graphQlType, template.getIdentifier());
+        this.typeValidator.validateTypesGraphQlToOpenApi(oasType, graphQlType, template.getIdentifier());
     }
   }
 }

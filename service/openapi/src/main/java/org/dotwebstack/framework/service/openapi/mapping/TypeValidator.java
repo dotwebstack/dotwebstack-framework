@@ -18,7 +18,7 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 
 public class TypeValidator {
 
-  public void validateGraphQlToOpenApiTypes(String oasType, String graphQlType, String identifier) {
+  public void validateTypesOpenApiToGraphQ(String oasType, String graphQlType, String identifier) {
     switch (oasType) {
       case STRING_TYPE:
         if (!GraphQLString.getName()
@@ -60,7 +60,7 @@ public class TypeValidator {
     }
   }
 
-  public void validateOpenApiToGraphQlTypes(String oasType, String graphQlType, String identifier) {
+  public void validateTypesGraphQlToOpenApi(String oasType, String graphQlType, String identifier) {
     switch (oasType) {
       case STRING_TYPE:
         break;
