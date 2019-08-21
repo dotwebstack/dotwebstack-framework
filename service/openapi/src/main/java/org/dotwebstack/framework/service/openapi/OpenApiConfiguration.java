@@ -119,6 +119,7 @@ public class OpenApiConfiguration {
                 .getParameters() : Collections.emptyList());
 
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
+        .and(RequestPredicates.path(httpMethodOperation.getName()))
         .and(accept(MediaType.APPLICATION_JSON));
 
     return RouterFunctions.route(requestPredicate, new CoreRequestHandler(httpMethodOperation.getName(),
