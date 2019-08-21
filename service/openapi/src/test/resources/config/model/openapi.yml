@@ -108,3 +108,23 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Object2'
+  /query4:
+    get:
+      x-dws-query: query4
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                object3:
+                  $ref: '#/components/schemas/Object3'
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/Object2'
+
