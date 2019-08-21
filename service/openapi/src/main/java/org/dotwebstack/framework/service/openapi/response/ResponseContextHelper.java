@@ -7,11 +7,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 
 public class ResponseContextHelper {
 
-  public static Set<String> getRequiredResponseObjectsForSuccessResponse(ResponseContext responseContext) {
+  private ResponseContextHelper() {}
+
+  public static Set<String> getRequiredResponseObjectsForSuccessResponse(@NonNull ResponseContext responseContext) {
     ResponseTemplate successResponse = responseContext.getResponses()
         .stream()
         .filter(template -> template.isApplicable(200, 299))
@@ -44,20 +47,20 @@ public class ResponseContextHelper {
 
     if (!responseObject.getChildren()
         .isEmpty()) {
-      responseObjects.putAll(responseObject.getChildren()
+      responseObject.getChildren()
           .stream()
           .flatMap(child -> getRequiredResponseObject(joiner.toString(), child, childField).entrySet()
               .stream())
-          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+          .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
     }
 
     if (!responseObject.getItems()
         .isEmpty()) {
-      responseObjects.putAll(responseObject.getItems()
+      responseObject.getItems()
           .stream()
           .flatMap(item -> getRequiredResponseObject(joiner.toString(), item, graphQlField).entrySet()
               .stream())
-          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+          .forEach(entry -> responseObjects.put(entry.getKey(), entry.getValue()));
     }
 
     return responseObjects;

@@ -15,7 +15,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 
 public class GraphQlQueryBuilder {
 
-  public String toQuery(@NonNull ResponseContext responseContext, Map<String, Object> inputParams) {
+  public String toQuery(@NonNull ResponseContext responseContext, @NonNull Map<String, Object> inputParams) {
     Set<String> requiredPaths = getRequiredResponseObjectsForSuccessResponse(responseContext);
 
     StringBuilder builder = new StringBuilder();

@@ -67,7 +67,7 @@ public class ResponseMapper {
   }
 
   private Object mapScalarDataToResponse(@NonNull ResponseObject responseObject, Object data, List<Object> dataStack) {
-    if (!Objects.isNull(responseObject.getDwsTemplate())) {
+    if (Objects.nonNull(responseObject.getDwsTemplate())) {
       Optional<String> evaluated = evaluateJexl(responseObject.getDwsTemplate(), dataStack);
       if (!evaluated.isPresent() && responseObject.isRequired() && !responseObject.isNillable()) {
         throw new MappingException(String.format(
@@ -93,7 +93,7 @@ public class ResponseMapper {
           Object object;
           if (child.isEnvelope()) {
             object = mapEnvelopeObject(data, child, dataStack);
-            if (!Objects.isNull(object)) {
+            if (Objects.nonNull(object)) {
               result.put(child.getIdentifier(), object);
             }
           } else {

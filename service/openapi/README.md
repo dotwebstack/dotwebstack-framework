@@ -90,7 +90,7 @@ The following parameter will sort on ascending name and descending description a
 
 # 1.1.4 Expand parameter
 By default only GraphQL fields with the `ID` type and the fields that are marked as `required` in the OpenApi response 
-are returned. If a required field in OpenApi is of type `object` in GraphQL, the child fields of this type with the `ID` 
+are returned. If a required field in OpenApi is of type `object` in GraphQL, only the child fields of this type with the `ID` 
 type are returned by default. 
 
 It is possible to expand a query manually with fields that are not returned by default by adding a parameter with 
@@ -109,7 +109,7 @@ name: expand
 ```
 
 In the example the expand parameter is used to include `beers` in the response by default. Since `beers` refers to an 
-object field in GraphQL, it means that the fields within `beers` with an `ID` type are returned as well, all other fields 
+object field in GraphQL, only it means that the fields within `beers` with an `ID` type are returned as well, all other fields 
 are not by default. In order to expand the fields that do no have this `ID` type, , the user has to provide an expand 
 parameter with value `beers.ingredients`. It is possible to expand lower level fields with a dotted notation, without explicitly 
 expanding the parent objects. Parent objects are added to query automatically. This means that when you expand the query 
