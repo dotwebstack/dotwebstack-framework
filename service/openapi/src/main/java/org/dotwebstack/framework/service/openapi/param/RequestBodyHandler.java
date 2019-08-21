@@ -55,10 +55,10 @@ public class RequestBodyHandler {
       throws BadRequestException {
     Mono<String> mono = request.bodyToMono(String.class);
     String value = mono.block();
-    if (value == null && requestBodyContext.getRequestBody()
+    if (Objects.isNull(value) && requestBodyContext.getRequestBody()
         .getRequired()) {
       throw OpenApiExceptionHelper.badRequestException("Request body required but not found.");
-    } else if (value == null) {
+    } else if (Objects.isNull(value)) {
       return Optional.empty();
     } else {
       validateContentType(request);
@@ -95,8 +95,7 @@ public class RequestBodyHandler {
     properties.forEach((name, propertySchema) -> {
       GraphQlArgument argument = graphQlField.getArguments()
           .stream()
-          .filter(a -> a.getName()
-              .equals(name))
+          .filter(a -> Objects.equals(a.getName(), name))
           .findFirst()
           .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
               "OAS property '{}' for path '{}' was not found as a " + "GraphQL argument on field '{}'.", name, pathName,
@@ -111,7 +110,6 @@ public class RequestBodyHandler {
         : propertySchema;
     Type unwrapped = TypeHelper.unwrapNonNullType(graphQlType);
     if (OasConstants.OBJECT_TYPE.equals(schema.getType())) {
-      // handle object
       if (!(unwrapped instanceof TypeName)) {
         throw ExceptionHelper.invalidConfigurationException(
             "Property '{}' with OAS object type cannot be mapped to GraphQL type '{}', "
@@ -128,8 +126,7 @@ public class RequestBodyHandler {
       properties.forEach((name, childSchema) -> {
         InputValueDefinition inputValueDefinition = typeDefinition.getInputValueDefinitions()
             .stream()
-            .filter(iv -> iv.getName()
-                .equals(name))
+            .filter(iv -> Objects.equals(iv.getName(), name))
             .findFirst()
             .orElseThrow(
                 () -> ExceptionHelper
@@ -140,7 +137,6 @@ public class RequestBodyHandler {
         validate(name, childSchema, inputValueDefinition.getType(), pathName);
       });
     } else if (OasConstants.ARRAY_TYPE.equals(schema.getType())) {
-      // handle array
       if (!(unwrapped instanceof ListType)) {
         throw ExceptionHelper
             .invalidConfigurationException("Property '{}' with OAS array type cannot be mapped to GraphQL type '{}', it"
@@ -149,7 +145,6 @@ public class RequestBodyHandler {
       Schema<?> itemSchema = ((ArraySchema) schema).getItems();
       validate(propertyName, itemSchema, TypeHelper.getBaseType(unwrapped), pathName);
     } else {
-      // handle scalar
       this.typeValidator.validateTypesOpenApiToGraphQ(schema.getType(), TypeHelper.getTypeName(unwrapped),
           propertyName);
     }
@@ -161,8 +156,7 @@ public class RequestBodyHandler {
     if (contentTypeHeaders.size() != 1) {
       throw OpenApiExceptionHelper.badRequestException("Expected exactly 1 '{}' header but found {}.",
           OasConstants.HEADER_CONTENT_TYPE, contentTypeHeaders.size());
-    } else if (!MediaType.APPLICATION_JSON.toString()
-        .equals(contentTypeHeaders.get(0))) {
+    } else if (!Objects.equals(MediaType.APPLICATION_JSON.toString(), contentTypeHeaders.get(0))) {
       throw new UnsupportedMediaTypeException(MediaType.parseMediaType(contentTypeHeaders.get(0)),
           Arrays.asList(MediaType.APPLICATION_JSON));
     }

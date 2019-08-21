@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -184,8 +185,8 @@ public class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
 
     // Act
-    Optional<Object> value = this.requestBodyHandler.getValue(serverRequest, requestBodyContext);
-    assertFalse(value.isPresent());
+    assertFalse(this.requestBodyHandler.getValue(serverRequest, requestBodyContext)
+        .isPresent());
   }
 
   private ServerRequest mockServerRequest(String requestBodyContent, MediaType contentType) {
@@ -195,7 +196,7 @@ public class RequestBodyHandlerTest {
     when(serverRequest.headers()).thenReturn(headers);
 
     Mono<String> mono;
-    if (requestBodyContent == null) {
+    if (Objects.isNull(requestBodyContent)) {
       mono = Mono.empty();
     } else {
       mono = Mono.just(requestBodyContent);
