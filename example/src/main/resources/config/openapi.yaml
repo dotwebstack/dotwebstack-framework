@@ -75,36 +75,9 @@ components:
             type: string
           order:
             type: string
-    Geometry:
-      type: object
-      properties:
-        wktString:
-          type: string
-        points:
-          type: array
-          items:
-            type: string
 
 paths:
   /breweries:
-    post:
-      x-dws-query: breweries
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                geometry:
-                  $ref: '#/components/schemas/Geometry'
-      responses:
-        200:
-          description: OK
-          content:
-            application/hal+json:
-              schema:
-                $ref: '#/components/schemas/BreweryCollection'
     get:
       x-dws-query: breweries
       parameters:
