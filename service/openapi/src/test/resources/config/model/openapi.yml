@@ -37,6 +37,17 @@ components:
       properties:
         o2_prop1:
           type: string
+    Object3:
+      type: object
+      required:
+        - o3_prop2
+      properties:
+        o3_prop1:
+          type: string
+        o3_prop2:
+          type: array
+          items:
+            type: string
 
 paths:
   /query1:
