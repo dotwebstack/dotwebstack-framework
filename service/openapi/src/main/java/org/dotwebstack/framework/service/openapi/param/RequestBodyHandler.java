@@ -13,6 +13,9 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,7 +29,9 @@ import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
@@ -46,19 +51,18 @@ public class RequestBodyHandler {
   }
 
   public Optional<Object> getValue(@NonNull ServerRequest request) {
-    String value = getRequestBodyString(request);
+    validateContentType(request);
+
+    Mono<String> mono = request.bodyToMono(String.class);
+    String value = mono.block();
+
     try {
       JsonNode node = new ObjectMapper().reader()
           .readTree(value);
       return Optional.ofNullable(JsonNodeUtils.toObject(node));
     } catch (IOException e) {
-      throw ExceptionHelper.illegalArgumentException("Could not parse request body as JSON: {}", e.getMessage());
+      throw ExceptionHelper.illegalArgumentException("Could not parse request body as JSON: {}.", e.getMessage());
     }
-  }
-
-  protected String getRequestBodyString(@NonNull ServerRequest request) {
-    Mono<String> mono = request.bodyToMono(String.class);
-    return mono.block();
   }
 
   @SuppressWarnings("rawtypes")
@@ -141,6 +145,19 @@ public class RequestBodyHandler {
       // handle scalar
       this.typeValidator.validateGraphQlToOpenApiTypes(schema.getType(), TypeHelper.getTypeName(unwrapped),
           propertyName);
+    }
+  }
+
+  private void validateContentType(ServerRequest request) {
+    ServerRequest.Headers headers = request.headers();
+    List<String> contentTypeHeaders = headers != null ? headers.header("Content-Type") : Collections.emptyList();
+    if (contentTypeHeaders.size() != 1) {
+      throw ExceptionHelper.illegalArgumentException("Expected exactly 1 'Content-Type' header but found {}.",
+          contentTypeHeaders.size());
+    } else if (!MediaType.APPLICATION_JSON.toString()
+        .equals(contentTypeHeaders.get(0))) {
+      throw new UnsupportedMediaTypeException(MediaType.parseMediaType(contentTypeHeaders.get(0)),
+          Arrays.asList(MediaType.APPLICATION_JSON));
     }
   }
 }

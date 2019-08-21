@@ -33,6 +33,7 @@ import org.dotwebstack.framework.service.openapi.response.ResponseContextValidat
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -79,7 +80,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .onErrorResume(JsonProcessingException.class,
             e -> getMonoError("Error while serializing response to JSON" + ".", HttpStatus.INTERNAL_SERVER_ERROR))
         .onErrorResume(GraphQlErrorException.class, e -> getMonoError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
-        .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND));
+        .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND))
+        .onErrorResume(UnsupportedMediaTypeException.class, e -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE));
 
     ResponseTemplate template = getResponseTemplate();
     return ServerResponse.ok()

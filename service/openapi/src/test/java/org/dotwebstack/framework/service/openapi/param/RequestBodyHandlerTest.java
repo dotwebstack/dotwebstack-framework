@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.param;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -21,10 +23,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class RequestBodyHandlerTest {
 
   private OpenAPI openApi;
@@ -115,9 +122,8 @@ public class RequestBodyHandlerTest {
   @Test
   public void getValue_returns_Map_forValidJson() {
     // Arrange
-    ServerRequest serverRequest = Mockito.mock(ServerRequest.class);
-    Mono<String> mono = Mono.just("{ \"o3_prop1\" : \"value\", \"o3_prop2\" : [\"value1\", \"value2\"] }");
-    when(serverRequest.bodyToMono(String.class)).thenReturn(mono);
+    ServerRequest serverRequest = mockServerRequest(
+        "{ \"o3_prop1\" : \"value\", \"o3_prop2\" : [\"value1\", \"value2\"] }", MediaType.APPLICATION_JSON);
 
     // Act
     Optional<Object> value = this.requestBodyHandler.getValue(serverRequest);
@@ -138,11 +144,30 @@ public class RequestBodyHandlerTest {
   @Test
   public void getValue_throwsException_forInvalidJson() {
     // Arrange
-    ServerRequest serverRequest = Mockito.mock(ServerRequest.class);
-    Mono<String> mono = Mono.just("test");
-    when(serverRequest.bodyToMono(String.class)).thenReturn(mono);
+    ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_JSON);
 
     // Act / Assert
     assertThrows(IllegalArgumentException.class, () -> this.requestBodyHandler.getValue(serverRequest));
   }
+
+  @Test
+  public void getValue_throwsException_unsupportedMediaType() {
+    // Arrange
+    ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_PDF);
+
+    // Act / Assert
+    assertThrows(UnsupportedMediaTypeException.class, () -> this.requestBodyHandler.getValue(serverRequest));
+  }
+
+  private ServerRequest mockServerRequest(String requestBodyContent, MediaType contentType) {
+    ServerRequest serverRequest = Mockito.mock(ServerRequest.class);
+    ServerRequest.Headers headers = Mockito.mock(ServerRequest.Headers.class);
+    when(headers.header(eq("Content-Type"))).thenReturn(Arrays.asList(contentType.toString()));
+    when(serverRequest.headers()).thenReturn(headers);
+
+    Mono<String> mono = Mono.just(requestBodyContent);
+    when(serverRequest.bodyToMono(String.class)).thenReturn(mono);
+    return serverRequest;
+  }
+
 }
