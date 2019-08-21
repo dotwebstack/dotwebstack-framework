@@ -157,9 +157,9 @@ public class RequestBodyHandler {
   }
 
   private void validateContentType(ServerRequest request) throws BadRequestException {
-    ServerRequest.Headers headers = request.headers();
-    List<String> contentTypeHeaders =
-        headers != null ? headers.header(OasConstants.HEADER_CONTENT_TYPE) : Collections.emptyList();
+    List<String> contentTypeHeaders = request.headers()
+        .header(OasConstants.HEADER_CONTENT_TYPE) != null ? request.headers()
+            .header(OasConstants.HEADER_CONTENT_TYPE) : Collections.emptyList();
     if (contentTypeHeaders.size() != 1) {
       throw OpenApiExceptionHelper.badRequestException("Expected exactly 1 '{}' header but found {}.",
           OasConstants.HEADER_CONTENT_TYPE, contentTypeHeaders.size());
