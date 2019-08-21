@@ -12,9 +12,11 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.List;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
 
 public class ResponseTemplateBuilderTest {
 
@@ -28,7 +30,7 @@ public class ResponseTemplateBuilderTest {
   @Test
   public void build_returnsTemplates_ForValidSpec() {
     // Arrange / Act
-    List<ResponseTemplate> responseTemplates = getResponseTemplates(this.openApi, "/query1", "get");
+    List<ResponseTemplate> responseTemplates = getResponseTemplates(this.openApi, "/query1", HttpMethod.GET);
 
     // Assert
     assertEquals(1, responseTemplates.size());
@@ -63,7 +65,8 @@ public class ResponseTemplateBuilderTest {
         .put("300", response);
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> getResponseTemplates(this.openApi, "/query1", "get"));
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
@@ -81,7 +84,8 @@ public class ResponseTemplateBuilderTest {
         .put("205", response);
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> getResponseTemplates(this.openApi, "/query1", "get"));
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
@@ -98,7 +102,8 @@ public class ResponseTemplateBuilderTest {
     content.put("application/text", mediaType);
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> getResponseTemplates(this.openApi, "/query1", "get"));
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
@@ -114,7 +119,8 @@ public class ResponseTemplateBuilderTest {
     content.put("application/hal2+json", mediaType);
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> getResponseTemplates(this.openApi, "/query1", "get"));
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
@@ -125,7 +131,8 @@ public class ResponseTemplateBuilderTest {
         .remove("Object1");
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> getResponseTemplates(this.openApi, "/query1", "get"));
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
@@ -136,13 +143,14 @@ public class ResponseTemplateBuilderTest {
         .remove("Object2");
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> getResponseTemplates(this.openApi, "/query1", "get"));
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
   @Test
   public void build_resolvesXdwsTemplate_forValidSchema() {
     // Act
-    List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query1", "get");
+    List<ResponseTemplate> templates = getResponseTemplates(this.openApi, "/query1", HttpMethod.GET);
 
     // Assert
     assertEquals(1, templates.size());
@@ -165,26 +173,31 @@ public class ResponseTemplateBuilderTest {
     property1.setType("object");
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> getResponseTemplates(this.openApi, "/query1", "get"));
+    assertThrows(InvalidConfigurationException.class,
+        () -> getResponseTemplates(this.openApi, "/query1", HttpMethod.GET));
   }
 
 
-  public static List<ResponseTemplate> getResponseTemplates(OpenAPI openApi, String path, String methodName) {
-    Operation operation = null;
-    switch (methodName) {
-      case "get":
+  public static List<ResponseTemplate> getResponseTemplates(OpenAPI openApi, String path, HttpMethod httpMethod) {
+    Operation operation;
+    switch (httpMethod) {
+      case GET:
         operation = openApi.getPaths()
             .get(path)
             .getGet();
         break;
-      case "post":
+      case POST:
         operation = openApi.getPaths()
             .get(path)
             .getPost();
         break;
       default:
-        throw ExceptionHelper.unsupportedOperationException("method '{}' not yet supported.", methodName);
+        throw ExceptionHelper.unsupportedOperationException("method '{}' not yet supported.", httpMethod);
     }
-    return new ResponseTemplateBuilder(openApi).buildResponseTemplates(path, methodName, operation);
+    return new ResponseTemplateBuilder(openApi).buildResponseTemplates(HttpMethodOperation.builder()
+        .name(path)
+        .httpMethod(httpMethod)
+        .operation(operation)
+        .build());
   }
 }

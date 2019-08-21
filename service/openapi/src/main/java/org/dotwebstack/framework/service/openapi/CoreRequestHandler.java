@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -65,7 +66,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   @Override
-  public Mono<ServerResponse> handle(ServerRequest request) {
+  public Mono<ServerResponse> handle(@NonNull ServerRequest request) {
     Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(request))
         .publishOn(Schedulers.elastic())
         .onErrorResume(ParameterValidationException.class,
