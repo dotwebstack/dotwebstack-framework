@@ -24,11 +24,13 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
@@ -50,18 +52,24 @@ public class RequestBodyHandler {
     this.typeValidator = new TypeValidator();
   }
 
-  public Optional<Object> getValue(@NonNull ServerRequest request) {
-    validateContentType(request);
-
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext)
+      throws BadRequestException {
     Mono<String> mono = request.bodyToMono(String.class);
     String value = mono.block();
-
-    try {
-      JsonNode node = new ObjectMapper().reader()
-          .readTree(value);
-      return Optional.ofNullable(JsonNodeUtils.toObject(node));
-    } catch (IOException e) {
-      throw ExceptionHelper.illegalArgumentException("Could not parse request body as JSON: {}.", e.getMessage());
+    if (value == null && requestBodyContext.getRequestBody()
+        .getRequired()) {
+      throw OpenApiExceptionHelper.badRequestException("Request body required but not found.");
+    } else if (value == null) {
+      return Optional.empty();
+    } else {
+      validateContentType(request);
+      try {
+        JsonNode node = new ObjectMapper().reader()
+            .readTree(value);
+        return Optional.ofNullable(JsonNodeUtils.toObject(node));
+      } catch (IOException e) {
+        throw ExceptionHelper.illegalArgumentException("Could not parse request body as JSON: {}.", e.getMessage());
+      }
     }
   }
 
@@ -148,12 +156,13 @@ public class RequestBodyHandler {
     }
   }
 
-  private void validateContentType(ServerRequest request) {
+  private void validateContentType(ServerRequest request) throws BadRequestException {
     ServerRequest.Headers headers = request.headers();
-    List<String> contentTypeHeaders = headers != null ? headers.header("Content-Type") : Collections.emptyList();
+    List<String> contentTypeHeaders =
+        headers != null ? headers.header(OasConstants.HEADER_CONTENT_TYPE) : Collections.emptyList();
     if (contentTypeHeaders.size() != 1) {
-      throw ExceptionHelper.illegalArgumentException("Expected exactly 1 'Content-Type' header but found {}.",
-          contentTypeHeaders.size());
+      throw OpenApiExceptionHelper.badRequestException("Expected exactly 1 '{}' header but found {}.",
+          OasConstants.HEADER_CONTENT_TYPE, contentTypeHeaders.size());
     } else if (!MediaType.APPLICATION_JSON.toString()
         .equals(contentTypeHeaders.get(0))) {
       throw new UnsupportedMediaTypeException(MediaType.parseMediaType(contentTypeHeaders.get(0)),

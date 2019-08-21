@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.param;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
@@ -18,6 +19,8 @@ import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.TestResources;
+import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,22 +45,25 @@ public class RequestBodyHandlerTest {
 
   private RequestBodyHandler requestBodyHandler;
 
+  private RequestBody requestBody;
+
+  private RequestBodyContext requestBodyContext;
+
   @BeforeEach
   public void setup() {
     this.openApi = TestResources.openApi();
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry();
     this.requestBodyHandler = new RequestBodyHandler(openApi, typeDefinitionRegistry);
     this.graphQlField = TestResources.getGraphQlField(this.typeDefinitionRegistry, "query4");
+    this.requestBody = this.openApi.getPaths()
+        .get("/query4")
+        .getGet()
+        .getRequestBody();
+    this.requestBodyContext = new RequestBodyContext("object3", this.requestBody);
   }
 
   @Test
   public void validate_succeeds_forValidSchema() {
-    // Arrange
-    RequestBody requestBody = this.openApi.getPaths()
-        .get("/query4")
-        .getGet()
-        .getRequestBody();
-
     // Act / Assert
     this.requestBodyHandler.validate(graphQlField, requestBody, "/query4");
   }
@@ -120,13 +126,13 @@ public class RequestBodyHandlerTest {
   }
 
   @Test
-  public void getValue_returns_Map_forValidJson() {
+  public void getValue_returns_Map_forValidJson() throws BadRequestException {
     // Arrange
     ServerRequest serverRequest = mockServerRequest(
         "{ \"o3_prop1\" : \"value\", \"o3_prop2\" : [\"value1\", \"value2\"] }", MediaType.APPLICATION_JSON);
 
     // Act
-    Optional<Object> value = this.requestBodyHandler.getValue(serverRequest);
+    Optional<Object> value = this.requestBodyHandler.getValue(serverRequest, requestBodyContext);
 
     // Assert
     assertTrue(value.isPresent());
@@ -147,7 +153,8 @@ public class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_JSON);
 
     // Act / Assert
-    assertThrows(IllegalArgumentException.class, () -> this.requestBodyHandler.getValue(serverRequest));
+    assertThrows(IllegalArgumentException.class,
+        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext));
   }
 
   @Test
@@ -156,7 +163,29 @@ public class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest("test", MediaType.APPLICATION_PDF);
 
     // Act / Assert
-    assertThrows(UnsupportedMediaTypeException.class, () -> this.requestBodyHandler.getValue(serverRequest));
+    assertThrows(UnsupportedMediaTypeException.class,
+        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext));
+  }
+
+  @Test
+  public void getValue_throwsException_emptyRequestBodyRequired() {
+    // Arrange
+    ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
+
+    // Act / Assert
+    assertThrows(BadRequestException.class, () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext));
+  }
+
+  @Test
+  public void getValue_returnsEmpty_emptyRequestBodyNotRequired() throws BadRequestException {
+    // Arrange
+    this.requestBodyContext.getRequestBody()
+        .setRequired(Boolean.FALSE);
+    ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
+
+    // Act
+    Optional<Object> value = this.requestBodyHandler.getValue(serverRequest, requestBodyContext);
+    assertFalse(value.isPresent());
   }
 
   private ServerRequest mockServerRequest(String requestBodyContent, MediaType contentType) {
@@ -165,7 +194,12 @@ public class RequestBodyHandlerTest {
     when(headers.header(eq("Content-Type"))).thenReturn(Arrays.asList(contentType.toString()));
     when(serverRequest.headers()).thenReturn(headers);
 
-    Mono<String> mono = Mono.just(requestBodyContent);
+    Mono<String> mono;
+    if (requestBodyContent == null) {
+      mono = Mono.empty();
+    } else {
+      mono = Mono.just(requestBodyContent);
+    }
     when(serverRequest.bodyToMono(String.class)).thenReturn(mono);
     return serverRequest;
   }

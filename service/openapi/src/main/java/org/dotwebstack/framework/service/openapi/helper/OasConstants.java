@@ -34,4 +34,6 @@ public class OasConstants {
 
   public static final String X_DWS_EXPANDED_PARAMS = "x-dws-expand";
 
+  public static final String HEADER_CONTENT_TYPE = "Content-Type";
+
 }

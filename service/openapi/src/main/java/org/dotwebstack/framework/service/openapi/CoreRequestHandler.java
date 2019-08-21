@@ -18,6 +18,7 @@ import java.util.Objects;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
@@ -81,7 +82,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
             e -> getMonoError("Error while serializing response to JSON" + ".", HttpStatus.INTERNAL_SERVER_ERROR))
         .onErrorResume(GraphQlErrorException.class, e -> getMonoError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
         .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND))
-        .onErrorResume(UnsupportedMediaTypeException.class, e -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE));
+        .onErrorResume(UnsupportedMediaTypeException.class, e -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
+        .onErrorResume(BadRequestException.class, e -> getMonoError(null, HttpStatus.BAD_REQUEST));
 
     ResponseTemplate template = getResponseTemplate();
     return ServerResponse.ok()
@@ -143,7 +145,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   @SuppressWarnings("unchecked")
   private String getResponse(ServerRequest request)
-      throws NoResultFoundException, JsonProcessingException, GraphQlErrorException {
+      throws NoResultFoundException, JsonProcessingException, GraphQlErrorException, BadRequestException {
     Map<String, Object> inputParams = resolveParameters(request);
 
     String query = buildQueryString(inputParams);
@@ -172,7 +174,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
   }
 
-  private Map<String, Object> resolveParameters(ServerRequest request) {
+  private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
     Map<String, Object> result = new HashMap<>();
     if (Objects.nonNull(this.responseContext.getParameters())) {
       for (Parameter parameter : this.responseContext.getParameters()) {
@@ -183,7 +185,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
     RequestBodyContext requestBodyContext = this.responseContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
-      this.requestBodyHandler.getValue(request)
+      this.requestBodyHandler.getValue(request, requestBodyContext)
           .ifPresent(value -> result.put(requestBodyContext.getName(), value));
     }
     return result;
