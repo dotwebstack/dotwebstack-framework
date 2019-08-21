@@ -46,8 +46,7 @@ public class RequestBodyHandler {
   }
 
   public Optional<Object> getValue(@NonNull ServerRequest request) {
-    Mono<String> mono = request.bodyToMono(String.class);
-    String value = mono.block();
+    String value = getRequestBodyString(request);
     try {
       JsonNode node = new ObjectMapper().reader()
           .readTree(value);
@@ -55,6 +54,11 @@ public class RequestBodyHandler {
     } catch (IOException e) {
       throw ExceptionHelper.illegalArgumentException("Could not parse request body as JSON: {}", e.getMessage());
     }
+  }
+
+  protected String getRequestBodyString(@NonNull ServerRequest request) {
+    Mono<String> mono = request.bodyToMono(String.class);
+    return mono.block();
   }
 
   @SuppressWarnings("rawtypes")
@@ -107,7 +111,8 @@ public class RequestBodyHandler {
       }
       InputObjectTypeDefinition typeDefinition =
           (InputObjectTypeDefinition) this.typeDefinitionRegistry.getType(unwrapped)
-              .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(""));
+              .orElseThrow(() -> ExceptionHelper
+                  .invalidConfigurationException("Could not find type definition of GraphQL type '{}'", unwrapped));
       Map<String, Schema> properties = schema.getProperties();
       properties.forEach((name, childSchema) -> {
         InputValueDefinition inputValueDefinition = typeDefinition.getInputValueDefinitions()
@@ -134,7 +139,8 @@ public class RequestBodyHandler {
       validate(propertyName, itemSchema, TypeHelper.getBaseType(unwrapped), pathName);
     } else {
       // handle scalar
-      this.typeValidator.validateTypes(schema.getType(), TypeHelper.getTypeName(unwrapped), propertyName);
+      this.typeValidator.validateGraphQlToOpenApiTypes(schema.getType(), TypeHelper.getTypeName(unwrapped),
+          propertyName);
     }
   }
 }

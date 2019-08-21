@@ -93,35 +93,50 @@ public class ResponseContextValidatorTest {
   @Test
   public void validate_throwsException_dataTypeMismatchToNumber() {
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("number", "String", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("number", "Boolean", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("number", "ID", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("number", "Char", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("number", "String", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("number", "Boolean", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("number", "ID", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("number", "Char", ""));
   }
 
   @Test
   public void validate_throwsException_dataTypeMismatchToInteger() {
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("integer", "Long", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("integer", "String", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("integer", "Boolean", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("integer", "Float", ""));
     assertThrows(InvalidConfigurationException.class,
-        () -> this.typeValidator.validateTypes("integer", "BigInteger", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("integer", "ID", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("integer", "Char", ""));
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("integer", "Long", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("integer", "String", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("integer", "Boolean", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("integer", "Float", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("integer", "BigInteger", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("integer", "ID", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("integer", "Char", ""));
   }
 
   @Test
   public void validate_throwsException_dataTypeMismatchToBoolean() {
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("boolean", "Long", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("boolean", "String", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("boolean", "Float", ""));
     assertThrows(InvalidConfigurationException.class,
-        () -> this.typeValidator.validateTypes("boolean", "BigInteger", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("boolean", "ID", ""));
-    assertThrows(InvalidConfigurationException.class, () -> this.typeValidator.validateTypes("boolean", "Char", ""));
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("boolean", "Long", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("boolean", "String", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("boolean", "Float", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("boolean", "BigInteger", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("boolean", "ID", ""));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.typeValidator.validateOpenApiToGraphQlTypes("boolean", "Char", ""));
 
   }
 

@@ -3,9 +3,9 @@ package org.dotwebstack.framework.service.openapi.response;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 
@@ -36,9 +36,8 @@ public class RequestBodyContextBuilder {
     if (schema.get$ref() != null) {
       schema = SchemaUtils.getSchemaReference(schema.get$ref(), openApi);
     }
-    List<String> propertyNames = ((Set<String>) schema.getProperties()
-        .keySet()).stream()
-            .collect(Collectors.toList());
+    List<String> propertyNames = new ArrayList<>(((Set<String>) schema.getProperties()
+        .keySet()));
     if (propertyNames.size() != 1) {
       throw ExceptionHelper.invalidConfigurationException(
           "Request body schema should contain exactly 1 property, found properties ().", propertyNames.size());
