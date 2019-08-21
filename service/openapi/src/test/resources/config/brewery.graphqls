@@ -12,4 +12,22 @@ type Brewery {
   founded: DateTime!
   foundedAtYear: Int!
     @transform(expr: "foundedAtYear.getYear()")
+  beers: [Beer]
+}
+
+type Beer {
+  identifier: ID!
+  name: String
+  ingredients: [Ingredient]
+  supplements: [Supplement]
+}
+
+type Supplement {
+  identifier: ID
+  name: String
+}
+
+type Ingredient {
+  identifier: ID
+  name: String
 }

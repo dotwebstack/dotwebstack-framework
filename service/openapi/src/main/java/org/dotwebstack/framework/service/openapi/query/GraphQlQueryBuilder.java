@@ -49,8 +49,8 @@ public class GraphQlQueryBuilder {
           });
     }
 
-    if ((isTopLevel || requiredPaths.contains(path) || field.getType()
-        .equals("ID") || isExpanded(inputParams, path))) {
+    if ((isTopLevel || requiredPaths.contains(path) || isGraphQlIdentifier(field.getType())
+        || isExpanded(inputParams, path))) {
       if (!field.getFields()
           .isEmpty()) {
         StringJoiner childJoiner = new StringJoiner(",", "{", "}");
@@ -64,6 +64,13 @@ public class GraphQlQueryBuilder {
         joiner.add(field.getName() + argumentJoiner.toString());
       }
     }
+  }
+
+  private boolean isGraphQlIdentifier(String type) {
+    return type.replaceAll("!", "")
+        .replaceAll("\\[", "")
+        .replaceAll("]", "")
+        .matches("^ID$");
   }
 
   @SuppressWarnings("unchecked")

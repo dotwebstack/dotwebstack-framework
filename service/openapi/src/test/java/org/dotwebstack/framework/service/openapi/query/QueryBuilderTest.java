@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.ScalarTypeDefinition;
@@ -13,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.StringJoiner;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
@@ -71,6 +73,30 @@ public class QueryBuilderTest {
     // Assert
     assertEquals("$identifier: ID!", argumentJoiner.toString());
     assertEquals("{brewery(identifier: $identifier){identifier}}", bodyJoiner.toString());
+  }
+
+  @Test
+  public void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
+    // Arrange
+    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    FieldDefinition breweryDefinition = getQueryFieldDefinition("brewery");
+
+    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
+    GraphQlField breweryField = builder.toGraphQlField(breweryDefinition);
+
+    ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
+    Set<String> requiredFields = ImmutableSet.of("name", "beers", "beers.name", "beers.ingredients",
+        "beers.ingredients.name", "beers.supplements", "beers.supplements.name");
+
+    // Act
+    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
+    StringJoiner argumentJoiner = new StringJoiner(",");
+    new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, bodyJoiner, argumentJoiner, arguments, true, "");
+
+    // Assert
+    assertEquals("$identifier: ID!", argumentJoiner.toString());
+    assertEquals("{brewery(identifier: $identifier){identifier,name,beers{identifier,name,ingredients{identifier,name},"
+        + "supplements{identifier,name}}}}", bodyJoiner.toString());
   }
 
   private FieldDefinition getQueryFieldDefinition(String name) {
