@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.ScalarTypeDefinition;
@@ -12,12 +13,18 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringJoiner;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class QueryBuilderTest {
 
   private TypeDefinitionRegistry registry;
@@ -36,11 +43,15 @@ public class QueryBuilderTest {
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
     GraphQlField queryField = builder.toGraphQlField(fieldDefinition);
 
+    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
+    StringJoiner argumentJoiner = new StringJoiner(",");
+
     // Act
-    String query = new GraphQlQueryBuilder().toQuery(queryField, new HashMap<>());
+    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, new HashMap<>(), true,
+        "");
 
     // Assert
-    assertEquals("query Wrapper{brewery{identifier,name,founded,foundedAtYear}}", query);
+    assertEquals("{brewery{identifier}}", bodyJoiner.toString());
   }
 
   @Test
@@ -54,13 +65,39 @@ public class QueryBuilderTest {
 
     ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
 
+    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
+    StringJoiner argumentJoiner = new StringJoiner(",");
+
     // Act
-    String query = new GraphQlQueryBuilder().toQuery(queryField, arguments);
+    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, arguments, true, "");
 
     // Assert
-    assertEquals(
-        "query Wrapper($identifier: ID!){brewery(identifier: $identifier){identifier,name,founded,foundedAtYear}}",
-        query);
+    assertEquals("$identifier: ID!", argumentJoiner.toString());
+    assertEquals("{brewery(identifier: $identifier){identifier}}", bodyJoiner.toString());
+  }
+
+  @Test
+  public void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
+    // Arrange
+    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    FieldDefinition breweryDefinition = getQueryFieldDefinition("brewery");
+
+    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
+    GraphQlField breweryField = builder.toGraphQlField(breweryDefinition);
+
+    ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
+    Set<String> requiredFields = ImmutableSet.of("name", "beers", "beers.name", "beers.ingredients",
+        "beers.ingredients.name", "beers.supplements", "beers.supplements.name");
+    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
+    StringJoiner argumentJoiner = new StringJoiner(",");
+
+    // Act
+    new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, bodyJoiner, argumentJoiner, arguments, true, "");
+
+    // Assert
+    assertEquals("$identifier: ID!", argumentJoiner.toString());
+    assertEquals("{brewery(identifier: $identifier){identifier,name,beers{identifier,name,ingredients{identifier,name},"
+        + "supplements{identifier,name}}}}", bodyJoiner.toString());
   }
 
   private FieldDefinition getQueryFieldDefinition(String name) {

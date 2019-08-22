@@ -23,11 +23,12 @@ components:
             $ref: '#/components/schemas/Ingredient'
         link:
           type: string
-          x-dws-template: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
+          x-dws-template: '`${env.dotwebstack.base_url}/brewery/${fields._parent.identifier}/beers/${fields.identifier}`'
     BreweryCollection:
       type: object
       required:
         - _embedded
+        - _links
       properties:
         _embedded:
           x-dws-envelope: true
@@ -39,6 +40,21 @@ components:
               type: array
               items:
                $ref: '#/components/schemas/Brewery'
+        _links:
+          x-dws-envelope: true
+          type: object
+          required:
+            - self
+          properties:
+            self:
+              x-dws-envelope: true
+              type: object
+              required:
+                - href
+              properties:
+                href:
+                  type: string
+                  x-dws-template: '`${env.dotwebstack.base_url}/breweries`'
     Brewery:
       type: object
       required:
@@ -58,11 +74,16 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/Beer'
+        link:
+          type: string
+          x-dws-template: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
     Ingredient:
       type: object
       required:
         - name
       properties:
+        identifier:
+          type: string
         name:
           type: string
           nullable: true

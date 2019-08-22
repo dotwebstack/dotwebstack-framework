@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
@@ -66,7 +67,7 @@ public class ResponseMapper {
   }
 
   private Object mapScalarDataToResponse(@NonNull ResponseObject responseObject, Object data, List<Object> dataStack) {
-    if (!Objects.isNull(responseObject.getDwsTemplate())) {
+    if (Objects.nonNull(responseObject.getDwsTemplate())) {
       Optional<String> evaluated = evaluateJexl(responseObject.getDwsTemplate(), dataStack);
       if (!evaluated.isPresent() && responseObject.isRequired() && !responseObject.isNillable()) {
         throw new MappingException(String.format(
@@ -92,16 +93,31 @@ public class ResponseMapper {
           Object object;
           if (child.isEnvelope()) {
             object = mapEnvelopeObject(data, child, dataStack);
-            if (!Objects.isNull(object)) {
+            if (Objects.nonNull(object)) {
               result.put(child.getIdentifier(), object);
             }
           } else {
-            dataStack.add(0, data);
-            object = mapObject((Map<String, Object>) data, child, dataStack);
-            if (!(Objects.isNull(object))) {
-              result.put(child.getIdentifier(), object);
+            if (data instanceof Map) {
+              dataStack.add(0, data);
+              object = mapObject((Map<String, Object>) data, child, dataStack);
+              if (!(Objects.isNull(object))) {
+                result.put(child.getIdentifier(), object);
+              }
+              dataStack.remove(0);
+            } else if (data instanceof List) {
+              ((List) data).stream()
+                  .forEach(item -> {
+                    dataStack.add(0, item);
+                    Object itemObject = mapObject((Map<String, Object>) item, child, dataStack);
+                    if (!(Objects.isNull(itemObject))) {
+                      result.put(child.getIdentifier(), itemObject);
+                    }
+                    dataStack.remove(0);
+                  });
+            } else {
+              throw invalidConfigurationException("Cannot map {} to response, it is of the wrong type",
+                  child.getIdentifier());
             }
-            dataStack.remove(0);
           }
         });
     return result;

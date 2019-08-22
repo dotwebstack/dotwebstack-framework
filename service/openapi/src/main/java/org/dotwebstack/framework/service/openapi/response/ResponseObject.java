@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,9 +19,11 @@ public class ResponseObject {
 
   private boolean isEnvelope;
 
-  private List<ResponseObject> children;
+  @Builder.Default
+  private List<ResponseObject> children = new ArrayList<>();
 
-  private List<ResponseObject> items;
+  @Builder.Default
+  private List<ResponseObject> items = new ArrayList<>();
 
   private String dwsTemplate;
 

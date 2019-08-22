@@ -86,9 +86,14 @@ public class ResponseTemplateBuilder {
       io.swagger.v3.oas.models.media.MediaType content) {
     String ref = content.getSchema()
         .get$ref();
-    Schema schema = getSchemaReference(ref, openApi);
 
-    ResponseObject root = createResponseObject(openApi, ref, schema, true, false);
+    ResponseObject root;
+    if (Objects.nonNull(ref)) {
+      Schema schema = getSchemaReference(ref, openApi);
+      root = createResponseObject(openApi, ref, schema, true, false);
+    } else {
+      root = createResponseObject(openApi, null, content.getSchema(), true, false);
+    }
 
     return ResponseTemplate.builder()
         .responseCode(Integer.parseInt(responseCode))
