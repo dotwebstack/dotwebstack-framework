@@ -85,7 +85,8 @@ public class OpenApiConfiguration {
 
           operations.ifPresent(httpMethodOperations -> Stream.of(httpMethodOperations)
               .flatMap(Collection::stream)
-              .map(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, requestBodyContextBuilder, httpMethodOperation))
+              .map(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, requestBodyContextBuilder,
+                  httpMethodOperation))
               .forEach(routerFunctions::add));
 
         });
@@ -113,10 +114,10 @@ public class OpenApiConfiguration {
   }
 
   protected RouterFunction<ServerResponse> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,
-    RequestBodyContextBuilder requestBodyContextBuilder,
-                                                             HttpMethodOperation httpMethodOperation) {
+      RequestBodyContextBuilder requestBodyContextBuilder, HttpMethodOperation httpMethodOperation) {
     RequestBodyContext requestBodyContext =
-        requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation().getRequestBody());
+        requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
+            .getRequestBody());
 
     List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
 
@@ -125,7 +126,8 @@ public class OpenApiConfiguration {
     ResponseContext responseContext = new ResponseContext(graphQlField, responseTemplates,
         httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
-            .getParameters() : Collections.emptyList(), requestBodyContext);
+                .getParameters() : Collections.emptyList(),
+        requestBodyContext);
 
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()))

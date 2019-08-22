@@ -34,7 +34,9 @@ public class ResponseTemplateBuilder {
         .stream()
         .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), httpMethodOperation.getName(),
             httpMethodOperation.getHttpMethod()
-                .name(), httpMethodOperation.getOperation().getRequestBody()).stream())
+                .name(),
+            httpMethodOperation.getOperation()
+                .getRequestBody()).stream())
         .collect(Collectors.toList());
 
     long successResponseCount = responses.stream()
