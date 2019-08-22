@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi.param;
+package org.dotwebstack.framework.service.openapi.requestbody;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,13 +31,11 @@ import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
-@Component
-public class RequestBodyHandler {
+public class DefaultRequestBodyHandler implements RequestBodyHandler {
 
   private OpenAPI openApi;
 
@@ -45,14 +43,15 @@ public class RequestBodyHandler {
 
   private TypeValidator typeValidator;
 
-  public RequestBodyHandler(OpenAPI openApi, TypeDefinitionRegistry typeDefinitionRegistry) {
+  public DefaultRequestBodyHandler(OpenAPI openApi, TypeDefinitionRegistry typeDefinitionRegistry) {
     this.openApi = openApi;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
     this.typeValidator = new TypeValidator();
   }
 
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext)
-      throws BadRequestException {
+  @Override
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext,
+      Map<String, Object> parameterMap) throws BadRequestException {
     Mono<String> mono = request.bodyToMono(String.class);
     String value = mono.block();
     if (Objects.isNull(value) && requestBodyContext.getRequestBody()
@@ -160,5 +159,10 @@ public class RequestBodyHandler {
       throw new UnsupportedMediaTypeException(MediaType.parseMediaType(contentTypeHeaders.get(0)),
           Arrays.asList(MediaType.APPLICATION_JSON));
     }
+  }
+
+  @Override
+  public boolean supports(@NonNull RequestBodyContext requestBodyContext) {
+    return true;
   }
 }

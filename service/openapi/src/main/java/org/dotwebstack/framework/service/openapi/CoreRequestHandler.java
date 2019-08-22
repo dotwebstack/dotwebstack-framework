@@ -27,8 +27,8 @@ import org.dotwebstack.framework.service.openapi.exception.ParameterValidationEx
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
-import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
+import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
@@ -55,20 +55,20 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final ParamHandlerRouter paramHandlerRouter;
 
-  private final RequestBodyHandler requestBodyHandler;
+  private final RequestBodyHandlerRouter requestBodyHandlerRouter;
 
-  private String pathName;
+  private final String pathName;
 
   CoreRequestHandler(String pathName, ResponseContext responseContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
-      ParamHandlerRouter paramHandlerRouter, RequestBodyHandler requestBodyHandler) {
+      ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter) {
     this.pathName = pathName;
     this.responseContext = responseContext;
     this.graphQL = graphQL;
     this.responseMapper = responseMapper;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseContextValidator = responseContextValidator;
-    this.requestBodyHandler = requestBodyHandler;
+    this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     validateSchema();
   }
 
@@ -77,10 +77,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     Mono<String> bodyPublisher = Mono.fromCallable(() -> getResponse(request))
         .publishOn(Schedulers.elastic())
         .onErrorResume(ParameterValidationException.class,
-            e -> getMonoError(format("Error while obtaining " + "request parameters: %s", e.getMessage()),
+            e -> getMonoError(format("Error while obtaining request parameters: %s", e.getMessage()),
                 HttpStatus.BAD_REQUEST))
         .onErrorResume(JsonProcessingException.class,
-            e -> getMonoError("Error while serializing response to JSON" + ".", HttpStatus.INTERNAL_SERVER_ERROR))
+            e -> getMonoError("Error while serializing response to JSON.", HttpStatus.INTERNAL_SERVER_ERROR))
         .onErrorResume(GraphQlErrorException.class, e -> getMonoError(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR))
         .onErrorResume(NoResultFoundException.class, e -> getMonoError(null, HttpStatus.NOT_FOUND))
         .onErrorResume(UnsupportedMediaTypeException.class, e -> getMonoError(null, HttpStatus.UNSUPPORTED_MEDIA_TYPE))
@@ -100,16 +100,15 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
     }
     validateParameters(field, responseContext.getParameters(), pathName);
-    if (responseContext.getRequestBodyContext() != null) {
-      this.requestBodyHandler.validate(field, responseContext.getRequestBodyContext()
-          .getRequestBody(), pathName);
+    RequestBodyContext requestBodyContext = responseContext.getRequestBodyContext();
+    if (Objects.nonNull(requestBodyContext)) {
+      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBodyContext)
+          .validate(field, requestBodyContext.getRequestBody(), pathName);
     }
     responseContext.getResponses()
         .stream()
         .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
-        .forEach(response -> {
-          responseContextValidator.validate(response.getResponseObject(), field);
-        });
+        .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
   }
 
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
@@ -133,7 +132,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .noneMatch(parameter -> Boolean.TRUE.equals(parameter.getRequired()) && parameter.getName()
             .equals(argument.getName()))) {
       throw invalidConfigurationException(
-          "No required OAS parameter found for required and no-default GraphQL argument" + " '{}' in path '{}'",
+          "No required OAS parameter found for required and no-default GraphQL argument '{}' in path '{}'",
           argument.getName(), pathName);
     }
     if (argument.isRequired()) {
@@ -188,7 +187,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
     RequestBodyContext requestBodyContext = this.responseContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
-      this.requestBodyHandler.getValue(request, requestBodyContext)
+      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBodyContext)
+          .getValue(request, requestBodyContext, result)
           .ifPresent(value -> result.put(requestBodyContext.getName(), value));
     }
     return result;

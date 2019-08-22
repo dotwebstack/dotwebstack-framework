@@ -21,6 +21,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
+import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ public class RequestBodyHandlerTest {
 
   private GraphQlField graphQlField;
 
-  private RequestBodyHandler requestBodyHandler;
+  private DefaultRequestBodyHandler requestBodyHandler;
 
   private RequestBody requestBody;
 
@@ -54,7 +55,7 @@ public class RequestBodyHandlerTest {
   public void setup() {
     this.openApi = TestResources.openApi();
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry();
-    this.requestBodyHandler = new RequestBodyHandler(openApi, typeDefinitionRegistry);
+    this.requestBodyHandler = new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry);
     this.graphQlField = TestResources.getGraphQlField(this.typeDefinitionRegistry, "query4");
     this.requestBody = this.openApi.getPaths()
         .get("/query4")
@@ -98,7 +99,7 @@ public class RequestBodyHandlerTest {
   public void validate_throwsException_forPropertyNotFoundInGraphQlInput() {
     // Arrange
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop3: String");
-    this.requestBodyHandler = new RequestBodyHandler(openApi, typeDefinitionRegistry);
+    this.requestBodyHandler = new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry);
 
     RequestBody requestBody = this.openApi.getPaths()
         .get("/query4")
@@ -114,7 +115,7 @@ public class RequestBodyHandlerTest {
   public void validate_throwsException_forGraphQlTypeMismatch() {
     // Arrange
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop1: Boolean");
-    this.requestBodyHandler = new RequestBodyHandler(openApi, typeDefinitionRegistry);
+    this.requestBodyHandler = new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry);
 
     RequestBody requestBody = this.openApi.getPaths()
         .get("/query4")
@@ -133,7 +134,7 @@ public class RequestBodyHandlerTest {
         "{ \"o3_prop1\" : \"value\", \"o3_prop2\" : [\"value1\", \"value2\"] }", MediaType.APPLICATION_JSON);
 
     // Act
-    Optional<Object> value = this.requestBodyHandler.getValue(serverRequest, requestBodyContext);
+    Optional<Object> value = this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null);
 
     // Assert
     assertTrue(value.isPresent());
@@ -155,7 +156,7 @@ public class RequestBodyHandlerTest {
 
     // Act / Assert
     assertThrows(IllegalArgumentException.class,
-        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext));
+        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null));
   }
 
   @Test
@@ -165,7 +166,7 @@ public class RequestBodyHandlerTest {
 
     // Act / Assert
     assertThrows(UnsupportedMediaTypeException.class,
-        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext));
+        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null));
   }
 
   @Test
@@ -174,7 +175,8 @@ public class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
 
     // Act / Assert
-    assertThrows(BadRequestException.class, () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext));
+    assertThrows(BadRequestException.class,
+        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null));
   }
 
   @Test
@@ -185,7 +187,7 @@ public class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
 
     // Act
-    assertFalse(this.requestBodyHandler.getValue(serverRequest, requestBodyContext)
+    assertFalse(this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null)
         .isPresent());
   }
 
