@@ -105,6 +105,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .getRequestBody(), pathName);
     }
     responseContext.getResponses()
+        .stream()
+        .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
         .forEach(response -> {
           responseContextValidator.validate(response.getResponseObject(), field);
         });

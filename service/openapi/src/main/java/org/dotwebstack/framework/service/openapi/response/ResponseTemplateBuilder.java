@@ -179,8 +179,8 @@ public class ResponseTemplateBuilder {
   }
 
   private static boolean isRequired(Schema<?> schema, String property) {
-    return schema == null || schema.getRequired()
-        .contains(property);
+    return schema == null || (Objects.nonNull(schema.getRequired()) && schema.getRequired()
+        .contains(property));
   }
 
   private boolean isEnvelope(Schema<?> schema) {

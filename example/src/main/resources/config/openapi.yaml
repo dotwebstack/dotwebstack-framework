@@ -96,6 +96,14 @@ components:
             type: string
           order:
             type: string
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        errorCode:
+          type: string
+
 
 paths:
   /breweries:
@@ -143,6 +151,12 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/BreweryCollection'
+        400:
+          description: error
+          content:
+            application/hal+json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /brewery/{identifier}:
     get:
       x-dws-query: brewery
