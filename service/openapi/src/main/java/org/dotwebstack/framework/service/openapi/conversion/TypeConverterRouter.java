@@ -6,11 +6,11 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TypeConverterDelegator {
+public class TypeConverterRouter {
 
   private List<TypeConverter<Object, Object>> typeConverters;
 
-  public TypeConverterDelegator(List<TypeConverter<Object, Object>> typeConverters) {
+  public TypeConverterRouter(List<TypeConverter<Object, Object>> typeConverters) {
     this.typeConverters = typeConverters;
   }
 

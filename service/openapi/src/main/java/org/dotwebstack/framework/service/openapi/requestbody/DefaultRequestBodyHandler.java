@@ -54,7 +54,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
       Map<String, Object> parameterMap) throws BadRequestException {
     Mono<String> mono = request.bodyToMono(String.class);
     String value = mono.block();
-    if (Objects.isNull(value) && requestBodyContext.getRequestBody()
+    if (Objects.isNull(value) && requestBodyContext.getRequestBodySchema()
         .getRequired()) {
       throw OpenApiExceptionHelper.badRequestException("Request body required but not found.");
     } else if (Objects.isNull(value)) {
@@ -72,8 +72,8 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   }
 
   @SuppressWarnings("rawtypes")
-  public void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody parameter, @NonNull String pathName) {
-    parameter.getContent()
+  public void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody requestBody, @NonNull String pathName) {
+    requestBody.getContent()
         .forEach((key, mediaType) -> {
           Schema schema = mediaType.getSchema();
           if (schema.get$ref() != null) {
@@ -164,5 +164,9 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   @Override
   public boolean supports(@NonNull RequestBodyContext requestBodyContext) {
     return true;
+  }
+
+  protected OpenAPI getOpenApi() {
+    return this.openApi;
   }
 }

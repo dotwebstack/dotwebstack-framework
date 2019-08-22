@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
-import org.dotwebstack.framework.service.openapi.response.ResponseContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +52,7 @@ public class DefaultParamHandlerTest {
   private Parameter parameter;
 
   @Mock
-  private ResponseContext responseContext;
+  private ResponseSchemaContext responseSchemaContext;
 
   @Mock
   private StringSchema schema;
@@ -70,7 +70,7 @@ public class DefaultParamHandlerTest {
     mockParameterPath("test", "v1", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals("v1", result.get());
@@ -82,7 +82,7 @@ public class DefaultParamHandlerTest {
     mockParameterQuery("test", "v1", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals("v1", result.get());
@@ -94,7 +94,7 @@ public class DefaultParamHandlerTest {
     mockParameterHeader("test", "v1", TYPE_STRING, false, Parameter.StyleEnum.SIMPLE);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals("v1", result.get());
@@ -106,7 +106,7 @@ public class DefaultParamHandlerTest {
     mockParameterPath("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.SIMPLE);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -118,7 +118,7 @@ public class DefaultParamHandlerTest {
     mockParameterPath("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.FORM);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -130,7 +130,7 @@ public class DefaultParamHandlerTest {
     mockParameterPath("test", "v1 v2 v3", TYPE_ARRAY, false, Parameter.StyleEnum.SPACEDELIMITED);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -142,7 +142,7 @@ public class DefaultParamHandlerTest {
     mockParameterPath("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -154,7 +154,7 @@ public class DefaultParamHandlerTest {
     mockParameterQuery("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.SIMPLE);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -166,7 +166,7 @@ public class DefaultParamHandlerTest {
     mockParameterQuery("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.FORM);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -178,7 +178,7 @@ public class DefaultParamHandlerTest {
     mockParameterQuery("test", "v1 v2 v3", TYPE_ARRAY, false, Parameter.StyleEnum.SPACEDELIMITED);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -190,7 +190,7 @@ public class DefaultParamHandlerTest {
     mockParameterQuery("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -202,7 +202,7 @@ public class DefaultParamHandlerTest {
     mockParameterHeader("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.SIMPLE);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -214,7 +214,7 @@ public class DefaultParamHandlerTest {
     mockParameterHeader("test", "v1,v2,v3", TYPE_ARRAY, false, Parameter.StyleEnum.FORM);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -226,7 +226,7 @@ public class DefaultParamHandlerTest {
     mockParameterHeader("test", "v1 v2 v3", TYPE_ARRAY, false, Parameter.StyleEnum.SPACEDELIMITED);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -238,7 +238,7 @@ public class DefaultParamHandlerTest {
     mockParameterHeader("test", "v1|v2|v3", TYPE_ARRAY, false, Parameter.StyleEnum.PIPEDELIMITED);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -251,7 +251,7 @@ public class DefaultParamHandlerTest {
     mockArrayEnum(asList("v1", "v2", "v3", "v4"));
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableList.of("v1", "v2", "v3"), result.get());
@@ -264,7 +264,8 @@ public class DefaultParamHandlerTest {
     mockArrayEnum(asList("v1", "v2"));
 
     // Act / Assert
-    assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter, responseContext));
+    assertThrows(ParameterValidationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
 
@@ -274,7 +275,8 @@ public class DefaultParamHandlerTest {
     mockParameterQuery("test", "v1,v2", TYPE_ARRAY, true, Parameter.StyleEnum.LABEL);
 
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () -> paramHandler.getValue(request, parameter, responseContext));
+    assertThrows(UnsupportedOperationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
@@ -283,7 +285,7 @@ public class DefaultParamHandlerTest {
     mockParameterPath("test", "k1,v1,k2,v2", TYPE_OBJECT, false, Parameter.StyleEnum.SIMPLE);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableMap.of("k1", "v1", "k2", "v2"), result.get());
@@ -295,7 +297,7 @@ public class DefaultParamHandlerTest {
     mockParameterPath("test", "k1=v1,k2=v2", TYPE_OBJECT, true, Parameter.StyleEnum.SIMPLE);
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals(ImmutableMap.of("k1", "v1", "k2", "v2"), result.get());
@@ -310,7 +312,7 @@ public class DefaultParamHandlerTest {
         .getDefault()).thenReturn("default1");
 
     // Act
-    Optional<Object> result = paramHandler.getValue(request, parameter, responseContext);
+    Optional<Object> result = paramHandler.getValue(request, parameter, responseSchemaContext);
 
     // Assert
     assertEquals("default1", result.get());
@@ -324,7 +326,8 @@ public class DefaultParamHandlerTest {
     when(parameter.getRequired()).thenReturn(true);
 
     // Act & Assert
-    assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter, responseContext));
+    assertThrows(ParameterValidationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
@@ -338,7 +341,8 @@ public class DefaultParamHandlerTest {
     when(schema.getEnum()).thenReturn(ImmutableList.of("default2"));
 
     // Act & Assert
-    assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter, responseContext));
+    assertThrows(ParameterValidationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test
@@ -347,7 +351,8 @@ public class DefaultParamHandlerTest {
     mockParameterPath("test", "k1=v1,k2=v2", TYPE_OBJECT, true, Parameter.StyleEnum.FORM);
 
     // Act / Assert
-    assertThrows(UnsupportedOperationException.class, () -> paramHandler.getValue(request, parameter, responseContext));
+    assertThrows(UnsupportedOperationException.class,
+        () -> paramHandler.getValue(request, parameter, responseSchemaContext));
   }
 
   @Test

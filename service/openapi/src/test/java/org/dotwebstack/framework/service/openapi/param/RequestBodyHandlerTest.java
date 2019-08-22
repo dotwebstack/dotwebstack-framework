@@ -182,7 +182,7 @@ public class RequestBodyHandlerTest {
   @Test
   public void getValue_returnsEmpty_emptyRequestBodyNotRequired() throws BadRequestException {
     // Arrange
-    this.requestBodyContext.getRequestBody()
+    this.requestBodyContext.getRequestBodySchema()
         .setRequired(Boolean.FALSE);
     ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
 

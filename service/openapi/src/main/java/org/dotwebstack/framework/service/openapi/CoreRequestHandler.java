@@ -30,9 +30,10 @@ import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.query.GraphQlQueryBuilder;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
-import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
+import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
@@ -45,7 +46,7 @@ import reactor.core.scheduler.Schedulers;
 
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
-  private final ResponseContext responseContext;
+  private final ResponseSchemaContext responseSchemaContext;
 
   private final ResponseContextValidator responseContextValidator;
 
@@ -59,11 +60,11 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final String pathName;
 
-  CoreRequestHandler(String pathName, ResponseContext responseContext,
+  CoreRequestHandler(String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
       ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter) {
     this.pathName = pathName;
-    this.responseContext = responseContext;
+    this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
     this.responseMapper = responseMapper;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -93,19 +94,19 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private void validateSchema() {
-    GraphQlField field = responseContext.getGraphQlField();
-    if (responseContext.getResponses()
+    GraphQlField field = responseSchemaContext.getGraphQlField();
+    if (responseSchemaContext.getResponses()
         .stream()
         .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
       throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
     }
-    validateParameters(field, responseContext.getParameters(), pathName);
-    RequestBodyContext requestBodyContext = responseContext.getRequestBodyContext();
+    validateParameters(field, responseSchemaContext.getParameters(), pathName);
+    RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBodyContext)
-          .validate(field, requestBodyContext.getRequestBody(), pathName);
+          .validate(field, requestBodyContext.getRequestBodySchema(), pathName);
     }
-    responseContext.getResponses()
+    responseSchemaContext.getResponses()
         .stream()
         .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
         .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field));
@@ -161,15 +162,19 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .isEmpty()) {
       ResponseTemplate template = getResponseTemplate();
 
-      return responseMapper.toJson(template.getResponseObject(),
-          ((Map<String, Object>) result.getData()).get(this.responseContext.getGraphQlField()
-              .getName()));
+      ResponseWriteContext writeContext = ResponseWriteContext.builder()
+          .schema(template.getResponseObject())
+          .data(result.getData())
+          .parameters(inputParams)
+          .build();
+
+      return responseMapper.toJson(writeContext);
     }
     throw OpenApiExceptionHelper.graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
   private ResponseTemplate getResponseTemplate() {
-    return responseContext.getResponses()
+    return responseSchemaContext.getResponses()
         .stream()
         .filter(response -> response.isApplicable(200, 299))
         .findFirst()
@@ -178,14 +183,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
     Map<String, Object> result = new HashMap<>();
-    if (Objects.nonNull(this.responseContext.getParameters())) {
-      for (Parameter parameter : this.responseContext.getParameters()) {
+    if (Objects.nonNull(this.responseSchemaContext.getParameters())) {
+      for (Parameter parameter : this.responseSchemaContext.getParameters()) {
         ParamHandler handler = paramHandlerRouter.getParamHandler(parameter);
-        handler.getValue(request, parameter, responseContext)
+        handler.getValue(request, parameter, responseSchemaContext)
             .ifPresent(value -> result.put(handler.getParameterName(parameter.getName()), value));
       }
     }
-    RequestBodyContext requestBodyContext = this.responseContext.getRequestBodyContext();
+    RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
       this.requestBodyHandlerRouter.getRequestBodyHandler(requestBodyContext)
           .getValue(request, requestBodyContext, result)
@@ -195,6 +200,6 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
   }
 
   private String buildQueryString(Map<String, Object> inputParams) {
-    return new GraphQlQueryBuilder().toQuery(this.responseContext, inputParams);
+    return new GraphQlQueryBuilder().toQuery(this.responseSchemaContext, inputParams);
   }
 }

@@ -24,8 +24,8 @@ import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
-import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -123,7 +123,7 @@ public class OpenApiConfiguration {
 
     GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(httpMethodOperation.getOperation());
 
-    ResponseContext responseContext = new ResponseContext(graphQlField, responseTemplates,
+    ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responseTemplates,
         httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
                 .getParameters() : Collections.emptyList(),
@@ -134,7 +134,7 @@ public class OpenApiConfiguration {
         .and(accept(MediaType.APPLICATION_JSON));
 
     return RouterFunctions.route(requestPredicate,
-        new CoreRequestHandler(httpMethodOperation.getName(), responseContext, responseContextValidator, graphQl,
+        new CoreRequestHandler(httpMethodOperation.getName(), responseSchemaContext, responseContextValidator, graphQl,
             responseMapper, paramHandlerRouter, requestBodyHandlerRouter));
   }
 

@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.response;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TEMPLATE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSchemaReference;
 
 import com.google.common.collect.ImmutableList;
@@ -118,6 +119,7 @@ public class ResponseTemplateBuilder {
           .identifier(identifier)
           .isEnvelope(isEnvelope(schema))
           .type(schema.getType())
+          .dwsType(getDwsType(schema))
           .nillable(isNillable)
           .required(isRequired)
           .dwsTemplate(getDwsTemplate(schema))
@@ -143,6 +145,7 @@ public class ResponseTemplateBuilder {
         .identifier(identifier)
         .isEnvelope(isEnvelope(schema))
         .type(schema.getType())
+        .dwsType(getDwsType(schema))
         .children(children)
         .nillable(isNillable)
         .dwsTemplate(getDwsTemplate(schema))
@@ -166,6 +169,7 @@ public class ResponseTemplateBuilder {
         .identifier(identifier)
         .isEnvelope(isEnvelope(schema))
         .type(schema.getType())
+        .dwsType(getDwsType(schema))
         .items(ImmutableList.of(item))
         .nillable(isNillable)
         .dwsTemplate(getDwsTemplate(schema))
@@ -195,17 +199,26 @@ public class ResponseTemplateBuilder {
   @SuppressWarnings({"rawtypes", "unchecked"})
   private String getDwsTemplate(Schema schema) {
     Map<String, Object> extensions = schema.getExtensions();
-    if (extensions != null) {
+    if (Objects.nonNull(extensions)) {
       Object result = extensions.get(X_DWS_TEMPLATE);
-      if (result != null && !(result instanceof String)) {
+      if (Objects.nonNull(result) && !(result instanceof String)) {
         throw ExceptionHelper.invalidConfigurationException("Value of extension '{}' should be a string.",
             X_DWS_TEMPLATE);
       }
-      if (result != null && !"string".equals(schema.getType())) {
+      if (Objects.nonNull(result) && !"string".equals(schema.getType())) {
         throw ExceptionHelper.invalidConfigurationException("Extension '{}' is only allowed for string types.",
             X_DWS_TEMPLATE);
       }
       return (String) result;
+    }
+    return null;
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private String getDwsType(Schema schema) {
+    Map<String, Object> extensions = schema.getExtensions();
+    if (Objects.nonNull(extensions)) {
+      return (String) extensions.get(X_DWS_TYPE);
     }
     return null;
   }

@@ -19,6 +19,8 @@ public class ResponseObject {
 
   private boolean isEnvelope;
 
+  private String dwsType;
+
   @Builder.Default
   private List<ResponseObject> children = new ArrayList<>();
 

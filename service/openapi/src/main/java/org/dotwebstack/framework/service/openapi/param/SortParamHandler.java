@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_SORT_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.XDwsExtensionHelper.supportsDwsType;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -16,7 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
-import org.dotwebstack.framework.service.openapi.response.ResponseContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -35,8 +36,8 @@ public class SortParamHandler extends DefaultParamHandler {
   @SuppressWarnings("unchecked")
   @Override
   public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter,
-      @NonNull ResponseContext responseContext) {
-    Optional<Object> value = super.getValue(request, parameter, responseContext);
+      @NonNull ResponseSchemaContext responseSchemaContext) {
+    Optional<Object> value = super.getValue(request, parameter, responseSchemaContext);
 
     if (value.isPresent()) {
       String type = parameter.getSchema()

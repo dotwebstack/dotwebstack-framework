@@ -6,7 +6,7 @@ import lombok.Getter;
 import org.dotwebstack.framework.core.query.GraphQlField;
 
 @Getter
-public class ResponseContext {
+public class ResponseSchemaContext {
 
   private GraphQlField graphQlField;
 
@@ -16,7 +16,7 @@ public class ResponseContext {
 
   private RequestBodyContext requestBodyContext;
 
-  public ResponseContext(GraphQlField graphQlField, List<ResponseTemplate> responses, List<Parameter> parameters,
+  public ResponseSchemaContext(GraphQlField graphQlField, List<ResponseTemplate> responses, List<Parameter> parameters,
       RequestBodyContext requestBodyContext) {
     this.graphQlField = graphQlField;
     this.responses = responses;
