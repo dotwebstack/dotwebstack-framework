@@ -93,7 +93,7 @@ By default only GraphQL fields with the `ID` type and the fields that are marked
 are returned. If a required field in OpenApi is of type `object` in GraphQL, only the child fields of this type with the `ID` 
 type are returned by default. 
 
-It is possible to expand a query manually with fields that are not returned by default by adding a parameter with 
+It is possible to expand a query with fields that are not returned by default by adding a parameter with 
 `x-dws-type: expand`. This parameter can be of type `string` or `array` and the values should refer to a field in GraphQL: 
 
 ```yaml
@@ -109,12 +109,12 @@ name: expand
 ```
 
 In the example the expand parameter is used to include `beers` in the response by default. Since `beers` refers to an 
-object field in GraphQL, only it means that the fields within `beers` with an `ID` type are returned as well, all other fields 
-are not by default. In order to expand the fields that do no have this `ID` type, , the user has to provide an expand 
+object field in GraphQL, it means that the fields within `beers` with an `ID` type are returned as well, all other fields 
+are not by default. In order to expand the fields that do no have this `ID` type, the user has to provide an expand 
 parameter with value `beers.ingredients`. It is possible to expand lower level fields with a dotted notation, without explicitly 
-expanding the parent objects. Parent objects are added to query automatically. This means that when you expand the query 
+expanding the parent objects. Parent objects are added to the query automatically. This means that when you expand the query 
 with `beers.ingredients` it is not necessary to provide a separate expand value for `beers`. However, when you add the 
-`beers` value too, it is skipped the second time.  
+`beers` value too, it is only added once.  
 
 In the example you can see usage of the `default` and `enum` flags. It is possible to use these to expand the query by 
 default with one or more values and to restrict which values can be expanded.  

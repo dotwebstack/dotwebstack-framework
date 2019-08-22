@@ -65,9 +65,10 @@ public class QueryBuilderTest {
 
     ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
 
-    // Act
     StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
+
+    // Act
     new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, arguments, true, "");
 
     // Assert
@@ -87,10 +88,10 @@ public class QueryBuilderTest {
     ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
     Set<String> requiredFields = ImmutableSet.of("name", "beers", "beers.name", "beers.ingredients",
         "beers.ingredients.name", "beers.supplements", "beers.supplements.name");
-
-    // Act
     StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
+
+    // Act
     new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, bodyJoiner, argumentJoiner, arguments, true, "");
 
     // Assert
