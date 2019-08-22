@@ -21,6 +21,9 @@ import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
+import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
+import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
@@ -46,11 +49,13 @@ public class OpenApiConfiguration {
 
   private final ResponseContextValidator responseContextValidator;
 
+  private final RequestBodyHandler requestBodyHandler;
+
   private QueryFieldHelper queryFieldHelper;
 
   public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter,
-      ResponseContextValidator responseContextValidator) {
+      ResponseContextValidator responseContextValidator, RequestBodyHandler requestBodyHandler) {
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMapper = responseMapper;
@@ -59,6 +64,7 @@ public class OpenApiConfiguration {
         .typeDefinitionRegistry(typeDefinitionRegistry)
         .graphQlFieldBuilder(new GraphQlFieldBuilder(typeDefinitionRegistry))
         .build();
+    this.requestBodyHandler = requestBodyHandler;
   }
 
   @Bean
@@ -68,7 +74,7 @@ public class OpenApiConfiguration {
     ResponseTemplateBuilder responseTemplateBuilder = ResponseTemplateBuilder.builder()
         .openApi(openApi)
         .build();
-
+    RequestBodyContextBuilder requestBodyContextBuilder = new RequestBodyContextBuilder(openApi);
     openApi.getPaths()
         .forEach((name, path) -> {
           Optional<List<HttpMethodOperation>> operations = Optional.of(path)
@@ -79,7 +85,8 @@ public class OpenApiConfiguration {
 
           operations.ifPresent(httpMethodOperations -> Stream.of(httpMethodOperations)
               .flatMap(Collection::stream)
-              .map(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, httpMethodOperation))
+              .map(httpMethodOperation -> toRouterFunctions(responseTemplateBuilder, requestBodyContextBuilder,
+                  httpMethodOperation))
               .forEach(routerFunctions::add));
 
         });
@@ -106,9 +113,12 @@ public class OpenApiConfiguration {
     return result;
   }
 
-
   protected RouterFunction<ServerResponse> toRouterFunctions(ResponseTemplateBuilder responseTemplateBuilder,
-      HttpMethodOperation httpMethodOperation) {
+      RequestBodyContextBuilder requestBodyContextBuilder, HttpMethodOperation httpMethodOperation) {
+    RequestBodyContext requestBodyContext =
+        requestBodyContextBuilder.buildRequestBodyContext(httpMethodOperation.getOperation()
+            .getRequestBody());
+
     List<ResponseTemplate> responseTemplates = responseTemplateBuilder.buildResponseTemplates(httpMethodOperation);
 
     GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(httpMethodOperation.getOperation());
@@ -116,14 +126,15 @@ public class OpenApiConfiguration {
     ResponseContext responseContext = new ResponseContext(graphQlField, responseTemplates,
         httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
-                .getParameters() : Collections.emptyList());
+                .getParameters() : Collections.emptyList(),
+        requestBodyContext);
 
     RequestPredicate requestPredicate = RequestPredicates.method(httpMethodOperation.getHttpMethod())
         .and(RequestPredicates.path(httpMethodOperation.getName()))
         .and(accept(MediaType.APPLICATION_JSON));
 
     return RouterFunctions.route(requestPredicate, new CoreRequestHandler(httpMethodOperation.getName(),
-        responseContext, responseContextValidator, graphQl, responseMapper, paramHandlerRouter));
+        responseContext, responseContextValidator, graphQl, responseMapper, paramHandlerRouter, requestBodyHandler));
 
   }
 

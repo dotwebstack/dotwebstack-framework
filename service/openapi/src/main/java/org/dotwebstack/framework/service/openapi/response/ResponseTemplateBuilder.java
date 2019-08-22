@@ -8,8 +8,10 @@ import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSc
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +34,9 @@ public class ResponseTemplateBuilder {
         .stream()
         .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), httpMethodOperation.getName(),
             httpMethodOperation.getHttpMethod()
-                .name()).stream())
+                .name(),
+            httpMethodOperation.getOperation()
+                .getRequestBody()).stream())
         .collect(Collectors.toList());
 
     long successResponseCount = responses.stream()
@@ -47,8 +51,11 @@ public class ResponseTemplateBuilder {
   }
 
   private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse,
-      String pathName, String methodName) {
-    validateMediaType(responseCode, apiResponse, pathName, methodName);
+      String pathName, String methodName, RequestBody requestBody) {
+    validateMediaType(responseCode, apiResponse.getContent(), pathName, methodName);
+    if (requestBody != null) {
+      validateMediaType(responseCode, requestBody.getContent(), pathName, methodName);
+    }
     return apiResponse.getContent()
         .entrySet()
         .stream()
@@ -56,16 +63,14 @@ public class ResponseTemplateBuilder {
         .collect(Collectors.toList());
   }
 
-  private void validateMediaType(String responseCode, ApiResponse apiResponse, String pathName, String methodName) {
-    if (apiResponse.getContent()
-        .keySet()
+  private void validateMediaType(String responseCode, Content content, String pathName, String methodName) {
+    if (content.keySet()
         .size() != 1) {
       throw ExceptionHelper.invalidConfigurationException(
           "Expected exactly one MediaType for path '{}' with method '{}' and response code '{}'.", pathName, methodName,
           responseCode);
     }
-    List<String> unsupportedMediaTypes = apiResponse.getContent()
-        .keySet()
+    List<String> unsupportedMediaTypes = content.keySet()
         .stream()
         .filter(name -> !name.matches("application/(.)*(\\\\+)?json"))
         .collect(Collectors.toList());

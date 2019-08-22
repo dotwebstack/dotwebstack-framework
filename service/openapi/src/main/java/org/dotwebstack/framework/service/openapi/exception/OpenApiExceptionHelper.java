@@ -22,4 +22,8 @@ public class OpenApiExceptionHelper extends ExceptionHelper {
   public static GraphQlErrorException graphQlErrorException(String message, Object... arguments) {
     return new GraphQlErrorException(formatMessage(message, arguments), findCause(arguments));
   }
+
+  public static BadRequestException badRequestException(String message, Object... arguments) {
+    return new BadRequestException(formatMessage(message, arguments), findCause(arguments));
+  }
 }

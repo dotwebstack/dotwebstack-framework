@@ -127,7 +127,24 @@ provide a separate expand value for `beers`. However, when you add the `beers` v
 In the example you can see usage of the `default` and `enum` flags. It is possible to use these to expand the query by 
 default with one or more values and to restrict which values can be expanded.  
 
-# 1.1.5 Type mapping
+# 1.1.5 Request body
+In addition to request parameters, it is possible to use the HTTP request body to provide input with the `requestBody` element of an operation:
+```yaml
+    get:
+      x-dws-query: query4
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                object3:
+                  $ref: '#/components/schemas/Object3'
+```
+The `requestBody` only supports the `application/json` MediaType as content and should have a schema of type `object` with exactly 1 property. The name of the property is used to map the request body to the GraphQL argument of the corresponding query.
+
+# 1.1.6 Type mapping
 Type definitions in the schema are mapped to GraphQL types based on their name. For example, the following OpenAPI type 
 
 ```yaml
@@ -142,7 +159,7 @@ will be mapped to the `Beer` type defined in `schema.graphqls`:
 Similarly, properties defined in the OpenAPI type are mapped to GraphQL type fields based on their name.
 When defining an openAPI type, properties are restricted to a subset of the fields of the corresponding GraphQL type.
 
-# 1.1.6 Envelope type
+# 1.1.7 Envelope type
 It is also possible to add fields to an OpenApi response that are not in the GraphQL response. This is useful if you want 
 to enrich your response, for example in case of a `hal+json` response. The `_links` or `_embedded` objects you create are
 not part of the GraphQL response, but you want them to be part of the rest response. An example can be seen in
@@ -185,7 +202,7 @@ The root response is of `type:object` and contains a required property `_embedde
 `_embedded` in its turn consists of a list of `Breweries` the GraphQL response is mapped to the `Brewery` object defined
 in the OpenApi specification.
 
-# 1.1.7 Response properties template
+# 1.1.8 Response properties template
 By using a response property template, it is possible to return properties that are derived from one or several GraphQL fields and environmental variables. A template can be assigned to a property by adding the extension field `x-dws-template` to a property of type `string`:
 ```yaml
 properties:

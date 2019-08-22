@@ -14,9 +14,13 @@ public class ResponseContext {
 
   private List<Parameter> parameters;
 
-  public ResponseContext(GraphQlField graphQlField, List<ResponseTemplate> responses, List<Parameter> parameters) {
+  private RequestBodyContext requestBodyContext;
+
+  public ResponseContext(GraphQlField graphQlField, List<ResponseTemplate> responses, List<Parameter> parameters,
+      RequestBodyContext requestBodyContext) {
     this.graphQlField = graphQlField;
     this.responses = responses;
     this.parameters = parameters;
+    this.requestBodyContext = requestBodyContext;
   }
 }
