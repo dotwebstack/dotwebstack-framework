@@ -1,34 +1,39 @@
 package org.dotwebstack.framework.service.openapi;
 
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import lombok.Getter;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
-import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
-import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatcher;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.reactive.function.server.RequestPredicate;
+import org.mockito.stubbing.Answer;
+import org.springframework.http.HttpMethod;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerResponse;
 
 @ExtendWith(MockitoExtension.class)
 public class OpenApiConfigurationTest {
@@ -48,33 +53,58 @@ public class OpenApiConfigurationTest {
   @Mock
   private ResponseMapper responseMapper;
 
-  @Mock
-  private RequestBodyHandler requestBodyHandler;
-
   @BeforeEach
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
     this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, responseMapper,
-        new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator, requestBodyHandler));
+        new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator));
   }
 
   @Test
   public void route_returnsFunctions() {
+    // Arrange
+    final ArgumentCaptor<HttpMethodOperation> argumentCaptor = ArgumentCaptor.forClass(HttpMethodOperation.class);
+
+    final RouterFunctionAnswer optionsAnswer = new RouterFunctionAnswer();
+    doAnswer(optionsAnswer).when(openApiConfiguration)
+        .toOptionRouterFunction(anyList());
+
     // Act
     openApiConfiguration.route(openApi);
 
     // Assert
-    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(ResponseTemplateBuilder.class),
-        any(RequestBodyContextBuilder.class), eq("/query1"), any(GraphQlField.class), eq("get"), any(Operation.class),
-        argThat(new RequestPredicateMatcher("(GET && " + "/query1)")));
-    verify(this.openApiConfiguration).toRouterFunction(any(ResponseTemplateBuilder.class),
-        any(RequestBodyContextBuilder.class), eq("/query1"), any(GraphQlField.class), eq("post"), any(Operation.class),
-        argThat(new RequestPredicateMatcher("(POST && " + "/query1)")));
-    verify(this.openApiConfiguration, atLeastOnce()).toRouterFunction(any(ResponseTemplateBuilder.class),
-        any(RequestBodyContextBuilder.class), eq("/query2"), any(GraphQlField.class), eq("get"), any(Operation.class),
-        argThat(new RequestPredicateMatcher("(GET && " + "/query2)")));
+
+    assertEquals(3, optionsAnswer.getResults()
+        .size()); // Assert OPTIONS route
+
+    verify(this.openApiConfiguration, times(4)).toRouterFunctions(any(ResponseTemplateBuilder.class),
+        argumentCaptor.capture());
+
+    List<HttpMethodOperation> actualHttpMethodOperations = argumentCaptor.getAllValues();
+    assertEquals(4, actualHttpMethodOperations.size());
+
+    assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(0)
+        .getHttpMethod());
+    assertEquals("/query1", actualHttpMethodOperations.get(0)
+        .getName());
+
+    assertEquals(HttpMethod.POST, actualHttpMethodOperations.get(1)
+        .getHttpMethod());
+    assertEquals("/query1", actualHttpMethodOperations.get(1)
+        .getName());
+
+    assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(2)
+        .getHttpMethod());
+    assertEquals("/query2", actualHttpMethodOperations.get(2)
+        .getName());
+
+    assertEquals(HttpMethod.GET, actualHttpMethodOperations.get(3)
+        .getHttpMethod());
+    assertEquals("/query3/{query3_param1}", actualHttpMethodOperations.get(3)
+        .getName());
   }
+
 
   @Test
   public void route_throwsException_MissingQuery() {
@@ -89,18 +119,18 @@ public class OpenApiConfigurationTest {
     assertThrows(InvalidConfigurationException.class, () -> openApiConfiguration.route(openApi));
   }
 
-  private static class RequestPredicateMatcher implements ArgumentMatcher<RequestPredicate> {
+  @SuppressWarnings("unchecked")
+  private static class RouterFunctionAnswer implements Answer<Optional<RouterFunction<ServerResponse>>> {
 
-    private final String expectedString;
-
-    public RequestPredicateMatcher(String expectdString) {
-      this.expectedString = expectdString;
-    }
+    @Getter
+    private List<RouterFunction<ServerResponse>> results = new ArrayList<>();
 
     @Override
-    public boolean matches(RequestPredicate requestPredicate) {
-      return requestPredicate != null && requestPredicate.toString()
-          .equals(expectedString);
+    public Optional<RouterFunction<ServerResponse>> answer(InvocationOnMock invocationOnMock) throws Throwable {
+      Optional<RouterFunction<ServerResponse>> result =
+          (Optional<RouterFunction<ServerResponse>>) invocationOnMock.callRealMethod();
+      result.ifPresent(results::add);
+      return result;
     }
   }
 }

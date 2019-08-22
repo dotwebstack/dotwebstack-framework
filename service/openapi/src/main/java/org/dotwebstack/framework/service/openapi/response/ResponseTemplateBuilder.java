@@ -7,7 +7,6 @@ import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSc
 
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.ObjectSchema;
@@ -21,19 +20,21 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 
 @Builder
 public class ResponseTemplateBuilder {
 
   private final OpenAPI openApi;
 
-  public List<ResponseTemplate> buildResponseTemplates(@NonNull String pathName, @NonNull String methodName,
-      @NonNull Operation operation) {
-    List<ResponseTemplate> responses = operation.getResponses()
+  public List<ResponseTemplate> buildResponseTemplates(@NonNull HttpMethodOperation httpMethodOperation) {
+    List<ResponseTemplate> responses = httpMethodOperation.getOperation()
+        .getResponses()
         .entrySet()
         .stream()
-        .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), pathName, methodName,
-            operation.getRequestBody()).stream())
+        .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), httpMethodOperation.getName(),
+            httpMethodOperation.getHttpMethod()
+                .name(), httpMethodOperation.getOperation().getRequestBody()).stream())
         .collect(Collectors.toList());
 
     long successResponseCount = responses.stream()
@@ -41,7 +42,8 @@ public class ResponseTemplateBuilder {
         .count();
     if (successResponseCount != 1) {
       throw invalidConfigurationException(
-          "Expected exactly one response within the 200 range for path '{}' with method '{}'.", pathName, methodName);
+          "Expected exactly one response within the 200 range for path '{}' with method '{}'.",
+          httpMethodOperation.getName(), httpMethodOperation.getHttpMethod());
     }
     return responses;
   }

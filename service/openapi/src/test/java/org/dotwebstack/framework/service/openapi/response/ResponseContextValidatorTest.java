@@ -14,6 +14,7 @@ import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
 
 public class ResponseContextValidatorTest {
 
@@ -36,7 +37,7 @@ public class ResponseContextValidatorTest {
   @Test
   public void validate_succeeds_query1Get() {
     // Arrange
-    ResponseContext getResponseContext = getResponseContext("/query1", "get");
+    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.GET);
 
     // Act / Assert
     this.validator.validate(getResponseContext.getResponses()
@@ -47,7 +48,7 @@ public class ResponseContextValidatorTest {
   @Test
   public void validate_succeeds_query1Post() {
     // Arrange
-    ResponseContext getResponseContext = getResponseContext("/query1", "post");
+    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.POST);
 
     // Act / Assert
     this.validator.validate(getResponseContext.getResponses()
@@ -58,7 +59,7 @@ public class ResponseContextValidatorTest {
   @Test
   public void validate_succeeds_query2Get() {
     // Arrange
-    ResponseContext getResponseContext = getResponseContext("/query2", "get");
+    ResponseContext getResponseContext = getResponseContext("/query2", HttpMethod.GET);
 
     // Act / Assert
     this.validator.validate(getResponseContext.getResponses()
@@ -70,7 +71,7 @@ public class ResponseContextValidatorTest {
   public void validate_throwsException_graphQlFieldNotFound() throws IOException {
     // Arrange
     this.registry = TestResources.typeDefinitionRegistry("o2_prop1", "other_property");
-    ResponseContext getResponseContext = getResponseContext("/query1", "get");
+    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.GET);
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext.getResponses()
@@ -82,7 +83,7 @@ public class ResponseContextValidatorTest {
   public void validate_throwsException_typeMismatch() throws IOException {
     // Arrange
     this.registry = TestResources.typeDefinitionRegistry("o2_prop1", "other_property");
-    ResponseContext getResponseContext = getResponseContext("/query1", "get");
+    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.GET);
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext.getResponses()
@@ -144,7 +145,7 @@ public class ResponseContextValidatorTest {
   public void validate_throwsException_dataTypeMismatchStringToInteger() throws IOException {
     // Arrange
     this.registry = TestResources.typeDefinitionRegistry("o1_prop2: Float!", "o1_prop2: Boolean!");
-    ResponseContext getResponseContext = getResponseContext("/query1", "get");
+    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.GET);
 
     // Act / Assert
     assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext.getResponses()
@@ -152,11 +153,11 @@ public class ResponseContextValidatorTest {
         .getResponseObject(), getResponseContext.getGraphQlField()));
   }
 
-  private ResponseContext getResponseContext(String path, String methodName) {
+  private ResponseContext getResponseContext(String path, HttpMethod httpMethod) {
 
     PathItem pathItem = this.openApi.getPaths()
         .get(path);
-    List<ResponseTemplate> responses = ResponseTemplateBuilderTest.getResponseTemplates(this.openApi, path, methodName);
+    List<ResponseTemplate> responses = ResponseTemplateBuilderTest.getResponseTemplates(this.openApi, path, httpMethod);
     GraphQlField field = TestResources.queryFieldHelper(this.registry)
         .resolveGraphQlField(pathItem.getGet());
 

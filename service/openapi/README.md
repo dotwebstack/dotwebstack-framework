@@ -48,6 +48,8 @@ responses:
 
 Currently, exactly one MediaType per response is supported and it should match `application/.*json`.
 
+Foreach unique operation path you are capable to fire a preflight request which will return a empty response body and a 'Allow' response header which contains all allowed httpMethods.
+
 # 1.1.2 Operation parameters
 The use of operation parameters is supported for path variables, query string variables and HTTP header variables. The following OAS example defines a `path` parameter of type `string` for the `get` operation:
 
