@@ -2,12 +2,13 @@ package org.dotwebstack.framework.service.openapi.response;
 
 import java.util.List;
 import java.util.Map;
+import lombok.NonNull;
 
 public class ResponseWriteContextHelper {
 
   private ResponseWriteContextHelper() {}
 
-  public static ResponseWriteContext unwrapSchema(ResponseWriteContext parentContext) {
+  public static ResponseWriteContext unwrapSchema(@NonNull ResponseWriteContext parentContext) {
     return ResponseWriteContext.builder()
         .schema(parentContext.getSchema()
             .getChildren()
@@ -18,7 +19,7 @@ public class ResponseWriteContextHelper {
   }
 
   @SuppressWarnings("unchecked")
-  public static ResponseWriteContext unwrapData(ResponseWriteContext parentContext) {
+  public static ResponseWriteContext unwrapData(@NonNull ResponseWriteContext parentContext) {
     return ResponseWriteContext.builder()
         .parameters(parentContext.getParameters())
         .schema(parentContext.getSchema())
@@ -28,7 +29,7 @@ public class ResponseWriteContextHelper {
   }
 
   @SuppressWarnings("rawtypes")
-  public static ResponseWriteContext unwrapSchemaAndData(ResponseWriteContext parentContext) {
+  public static ResponseWriteContext unwrapSchemaAndData(@NonNull ResponseWriteContext parentContext) {
     ResponseObject embedded = parentContext.getSchema()
         .getChildren()
         .get(0);

@@ -8,49 +8,38 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.Map;
 import java.util.Objects;
+import lombok.NonNull;
 
 public class DwsExtensionHelper {
 
   private DwsExtensionHelper() {}
 
-  public static String getDwsType(Schema<?> schema) {
+  public static String getDwsType(@NonNull Schema<?> schema) {
     return (String) getDwsExtension(schema, X_DWS_TYPE);
   }
 
-  public static boolean supportsDwsType(Parameter parameter, String typeString) {
+  public static boolean supportsDwsType(@NonNull Parameter parameter, @NonNull String typeString) {
     Map<String, Object> extensions = parameter.getExtensions();
     return supportsDwsType(typeString, extensions);
   }
 
-  public static boolean supportsDwsType(RequestBody requestBody, String typeString) {
+  public static boolean supportsDwsType(@NonNull RequestBody requestBody, @NonNull String typeString) {
     Map<String, Object> extensions = requestBody.getExtensions();
     return supportsDwsType(typeString, extensions);
   }
 
   private static boolean supportsDwsType(String typeString, Map<String, Object> extensions) {
-    if (Objects.nonNull(extensions)) {
-      String handler = (String) extensions.get(X_DWS_TYPE);
-      if (Objects.nonNull(handler)) {
-        return Objects.equals(handler, typeString);
-      }
-    }
-    return false;
+    String handler = (String) extensions.get(X_DWS_TYPE);
+    return (Objects.nonNull(handler)) && Objects.equals(handler, typeString);
   }
 
-  public static Object getDwsExtension(Schema<?> schema, String typeName) {
+  public static Object getDwsExtension(@NonNull Schema<?> schema, @NonNull String typeName) {
     Map<String, Object> extensions = schema.getExtensions();
-    if (Objects.isNull(extensions)) {
-      return null;
-    }
-
-    return extensions.get(typeName);
+    return (Objects.nonNull(extensions)) ? extensions.get(typeName) : null;
   }
 
-  public static boolean isEnvelope(Schema<?> schema) {
+  public static boolean isEnvelope(@NonNull Schema<?> schema) {
     Boolean isEnvelope = (Boolean) getDwsExtension(schema, X_DWS_ENVELOPE);
-    if (Objects.nonNull(isEnvelope)) {
-      return isEnvelope;
-    }
-    return false;
+    return Objects.nonNull(isEnvelope) ? isEnvelope : false;
   }
 }

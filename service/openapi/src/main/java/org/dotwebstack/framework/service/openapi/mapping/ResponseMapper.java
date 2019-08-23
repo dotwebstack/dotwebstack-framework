@@ -149,11 +149,8 @@ public class ResponseMapper {
   }
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
-    if (Objects.nonNull(writeContext.getSchema()
-        .getDwsType())) {
-      return typeConverterRouter.convert(item, writeContext.getParameters());
-    }
-    return item;
+    return Objects.nonNull(writeContext.getSchema()
+        .getDwsType()) ? typeConverterRouter.convert(item, writeContext.getParameters()) : item;
   }
 
   @SuppressWarnings("unchecked")
@@ -182,10 +179,7 @@ public class ResponseMapper {
     ResponseWriteContext writeContext = unwrapData(parentContext);
 
     Object object = mapDataToResponse(writeContext, dataStack);
-    if ((writeContext.getSchema()
-        .isRequired()
-        && ((Objects.isNull(object)) || (writeContext.getSchema()
-            .isNillable() && isEmptyList(object))))) {
+    if (isRequiredAndNullOrEmpty(writeContext, object)) {
       if (writeContext.getSchema()
           .isNillable()) {
         return null;
@@ -222,8 +216,13 @@ public class ResponseMapper {
     return jexlHelper.evaluateExpression(dwsTemplate, context, String.class);
   }
 
-  private boolean isEmptyList(Object object) {
-    if (object instanceof List) {
+  private boolean isRequiredAndNullOrEmpty(ResponseWriteContext writeContext, Object object) {
+    return writeContext.getSchema()
+        .isRequired() && ((Objects.isNull(object)) || isEmptyList(writeContext.getSchema(), object));
+  }
+
+  private boolean isEmptyList(ResponseObject responseObject, Object object) {
+    if (responseObject.isNillable() && object instanceof List) {
       return ((List) object).isEmpty();
     }
     return false;

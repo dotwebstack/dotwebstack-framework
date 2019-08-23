@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,7 +19,7 @@ public class TypeConverterRouter {
   }
 
   @SuppressWarnings("unchecked")
-  public Object convert(Object source, Map<String, Object> parameters) {
+  public Object convert(@NonNull Object source, @NonNull Map<String, Object> parameters) {
     Optional<TypeConverter> converter = typeConverters.stream()
         .filter(typeConverter -> typeConverter.supports(source))
         .findFirst();
