@@ -1,10 +1,10 @@
 package org.dotwebstack.framework.service.openapi.param;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_SORT_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.XDwsExtensionHelper.supportsDwsType;
 
 import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.OpenAPI;

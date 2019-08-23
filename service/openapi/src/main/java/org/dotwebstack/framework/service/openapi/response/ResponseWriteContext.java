@@ -14,4 +14,7 @@ public class ResponseWriteContext {
 
   Map<String, Object> parameters;
 
+  public boolean isSchemaRequiredNonNillable() {
+    return getSchema().isRequired() && !getSchema().isNillable();
+  }
 }

@@ -58,7 +58,7 @@ public class ResponseMapper {
     return toJson(response);
   }
 
-  public String toJson(Object object) throws JsonProcessingException {
+  private String toJson(Object object) throws JsonProcessingException {
     return this.objectMapper.writer()
         .writeValueAsString(object);
   }
@@ -80,10 +80,7 @@ public class ResponseMapper {
         .getDwsTemplate())) {
       Optional<String> evaluated = evaluateJexl(writeContext.getSchema()
           .getDwsTemplate(), dataStack);
-      if (!evaluated.isPresent() && writeContext.getSchema()
-          .isRequired()
-          && !writeContext.getSchema()
-              .isNillable()) {
+      if (!evaluated.isPresent() && writeContext.isSchemaRequiredNonNillable()) {
         throw new MappingException(String.format(
             "Could not create response: required and non-nillable property '%s' template evaluation returned null.",
             writeContext.getSchema()
@@ -181,7 +178,6 @@ public class ResponseMapper {
         .collect(Collectors.toList());
   }
 
-  @SuppressWarnings("unchecked")
   private Object mapObject(ResponseWriteContext parentContext, List<Object> dataStack) {
     ResponseWriteContext writeContext = unwrapData(parentContext);
 
@@ -193,13 +189,12 @@ public class ResponseMapper {
       if (writeContext.getSchema()
           .isNillable()) {
         return null;
-      } else {
-        throw mappingException(
-            "Could not map GraphQL response: Required and non-nillable "
-                + "property '{}' was not returned in GraphQL response.",
-            writeContext.getSchema()
-                .getIdentifier());
       }
+      throw mappingException(
+          "Could not map GraphQL response: Required and non-nillable "
+              + "property '{}' was not returned in GraphQL response.",
+          writeContext.getSchema()
+              .getIdentifier());
     }
 
     return object;

@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.conversion;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,7 +27,7 @@ public class TypeConverterRouter {
       return converter.get()
           .convert(source, parameters);
     }
-    return source;
+    throw illegalArgumentException("Could not find a converter for {}", source);
   }
 
 }
