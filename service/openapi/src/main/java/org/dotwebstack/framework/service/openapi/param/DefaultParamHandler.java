@@ -11,7 +11,6 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -28,10 +27,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
@@ -48,7 +49,8 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   @Override
-  public Optional<Object> getValue(ServerRequest request, Parameter parameter) {
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter,
+      @NonNull ResponseSchemaContext responseSchemaContext) {
     Object paramValue;
     switch (parameter.getIn()) {
       case PARAM_PATH_TYPE:
@@ -296,17 +298,6 @@ public class DefaultParamHandler implements ParamHandler {
           && !parameter.getSchema()
               .getEnum()
               .isEmpty();
-    }
-    return false;
-  }
-
-  boolean supportsDwsType(Parameter parameter, String typeString) {
-    Map<String, Object> extensions = parameter.getExtensions();
-    if (Objects.nonNull(extensions)) {
-      String handler = (String) extensions.get(X_DWS_TYPE);
-      if (Objects.nonNull(handler)) {
-        return handler.equals(typeString);
-      }
     }
     return false;
   }

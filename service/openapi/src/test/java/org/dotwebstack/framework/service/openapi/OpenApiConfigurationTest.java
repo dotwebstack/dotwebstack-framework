@@ -9,6 +9,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import graphql.GraphQL;
 import graphql.schema.idl.TypeDefinitionRegistry;
@@ -21,7 +22,8 @@ import lombok.Getter;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
-import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
+import org.dotwebstack.framework.service.openapi.requestbody.DefaultRequestBodyHandler;
+import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
@@ -56,14 +58,14 @@ public class OpenApiConfigurationTest {
   private ResponseMapper responseMapper;
 
   @Mock
-  private RequestBodyHandler requestBodyHandler;
+  private RequestBodyHandlerRouter requestBodyHandlerRouter;
 
   @BeforeEach
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
     this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, responseMapper,
-        new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator, requestBodyHandler));
+        new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator, requestBodyHandlerRouter));
   }
 
   @Test
@@ -75,11 +77,13 @@ public class OpenApiConfigurationTest {
     doAnswer(optionsAnswer).when(openApiConfiguration)
         .toOptionRouterFunction(anyList());
 
+    when(requestBodyHandlerRouter.getRequestBodyHandler(any()))
+        .thenReturn(new DefaultRequestBodyHandler(this.openApi, this.registry));
+
     // Act
     openApiConfiguration.route(openApi);
 
     // Assert
-
     assertEquals(4, optionsAnswer.getResults()
         .size()); // Assert OPTIONS route
 

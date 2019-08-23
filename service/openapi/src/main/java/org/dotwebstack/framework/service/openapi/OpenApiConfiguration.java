@@ -21,11 +21,11 @@ import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 import org.dotwebstack.framework.service.openapi.helper.QueryFieldHelper;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandlerRouter;
-import org.dotwebstack.framework.service.openapi.param.RequestBodyHandler;
+import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContextBuilder;
-import org.dotwebstack.framework.service.openapi.response.ResponseContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -49,13 +49,13 @@ public class OpenApiConfiguration {
 
   private final ResponseContextValidator responseContextValidator;
 
-  private final RequestBodyHandler requestBodyHandler;
+  private final RequestBodyHandlerRouter requestBodyHandlerRouter;
 
   private QueryFieldHelper queryFieldHelper;
 
   public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter,
-      ResponseContextValidator responseContextValidator, RequestBodyHandler requestBodyHandler) {
+      ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter) {
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMapper = responseMapper;
@@ -64,7 +64,7 @@ public class OpenApiConfiguration {
         .typeDefinitionRegistry(typeDefinitionRegistry)
         .graphQlFieldBuilder(new GraphQlFieldBuilder(typeDefinitionRegistry))
         .build();
-    this.requestBodyHandler = requestBodyHandler;
+    this.requestBodyHandlerRouter = requestBodyHandlerRouter;
   }
 
   @Bean
@@ -123,7 +123,7 @@ public class OpenApiConfiguration {
 
     GraphQlField graphQlField = queryFieldHelper.resolveGraphQlField(httpMethodOperation.getOperation());
 
-    ResponseContext responseContext = new ResponseContext(graphQlField, responseTemplates,
+    ResponseSchemaContext responseSchemaContext = new ResponseSchemaContext(graphQlField, responseTemplates,
         httpMethodOperation.getOperation()
             .getParameters() != null ? httpMethodOperation.getOperation()
                 .getParameters() : Collections.emptyList(),
@@ -133,9 +133,9 @@ public class OpenApiConfiguration {
         .and(RequestPredicates.path(httpMethodOperation.getName()))
         .and(accept(MediaType.APPLICATION_JSON));
 
-    return RouterFunctions.route(requestPredicate, new CoreRequestHandler(httpMethodOperation.getName(),
-        responseContext, responseContextValidator, graphQl, responseMapper, paramHandlerRouter, requestBodyHandler));
-
+    return RouterFunctions.route(requestPredicate,
+        new CoreRequestHandler(httpMethodOperation.getName(), responseSchemaContext, responseContextValidator, graphQl,
+            responseMapper, paramHandlerRouter, requestBodyHandlerRouter));
   }
 
   protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(

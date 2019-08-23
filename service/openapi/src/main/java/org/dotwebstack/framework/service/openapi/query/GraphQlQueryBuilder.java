@@ -11,18 +11,19 @@ import java.util.Set;
 import java.util.StringJoiner;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
-import org.dotwebstack.framework.service.openapi.response.ResponseContext;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 
 public class GraphQlQueryBuilder {
 
-  public String toQuery(@NonNull ResponseContext responseContext, @NonNull Map<String, Object> inputParams) {
-    Set<String> requiredPaths = getRequiredResponseObjectsForSuccessResponse(responseContext);
+  public String toQuery(@NonNull ResponseSchemaContext responseSchemaContext,
+      @NonNull Map<String, Object> inputParams) {
+    Set<String> requiredPaths = getRequiredResponseObjectsForSuccessResponse(responseSchemaContext);
 
     StringBuilder builder = new StringBuilder();
     StringJoiner joiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
 
-    addToQuery(responseContext.getGraphQlField(), requiredPaths, joiner, argumentJoiner, inputParams, true, "");
+    addToQuery(responseSchemaContext.getGraphQlField(), requiredPaths, joiner, argumentJoiner, inputParams, true, "");
     builder.append("query Wrapper");
     if (!argumentJoiner.toString()
         .isEmpty()) {

@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TEMPLATE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSchemaReference;
 
@@ -26,6 +28,11 @@ import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 public class ResponseTemplateBuilder {
 
   private final OpenAPI openApi;
+
+  private static boolean isRequired(Schema<?> schema, String property) {
+    return schema == null || (Objects.nonNull(schema.getRequired()) && schema.getRequired()
+        .contains(property));
+  }
 
   public List<ResponseTemplate> buildResponseTemplates(@NonNull HttpMethodOperation httpMethodOperation) {
     List<ResponseTemplate> responses = httpMethodOperation.getOperation()
@@ -118,6 +125,7 @@ public class ResponseTemplateBuilder {
           .identifier(identifier)
           .isEnvelope(isEnvelope(schema))
           .type(schema.getType())
+          .dwsType(getDwsType(schema))
           .nillable(isNillable)
           .required(isRequired)
           .dwsTemplate(getDwsTemplate(schema))
@@ -143,6 +151,7 @@ public class ResponseTemplateBuilder {
         .identifier(identifier)
         .isEnvelope(isEnvelope(schema))
         .type(schema.getType())
+        .dwsType(getDwsType(schema))
         .children(children)
         .nillable(isNillable)
         .dwsTemplate(getDwsTemplate(schema))
@@ -166,6 +175,7 @@ public class ResponseTemplateBuilder {
         .identifier(identifier)
         .isEnvelope(isEnvelope(schema))
         .type(schema.getType())
+        .dwsType(getDwsType(schema))
         .items(ImmutableList.of(item))
         .nillable(isNillable)
         .dwsTemplate(getDwsTemplate(schema))
@@ -178,35 +188,22 @@ public class ResponseTemplateBuilder {
     return schema != null && (isEnvelope(schema) || Boolean.TRUE.equals(schema.getNullable()));
   }
 
-  private static boolean isRequired(Schema<?> schema, String property) {
-    return schema == null || (Objects.nonNull(schema.getRequired()) && schema.getRequired()
-        .contains(property));
-  }
+  private String getDwsTemplate(Schema<?> schema) {
+    Object result = getDwsExtension(schema, X_DWS_TEMPLATE);
 
-  private boolean isEnvelope(Schema<?> schema) {
-    if (Objects.nonNull(schema.getExtensions()) && Objects.nonNull(schema.getExtensions()
-        .get(X_DWS_ENVELOPE))) {
-      return (boolean) schema.getExtensions()
-          .get(X_DWS_ENVELOPE);
+    if (Objects.isNull(result)) {
+      return null;
     }
-    return false;
-  }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  private String getDwsTemplate(Schema schema) {
-    Map<String, Object> extensions = schema.getExtensions();
-    if (extensions != null) {
-      Object result = extensions.get(X_DWS_TEMPLATE);
-      if (result != null && !(result instanceof String)) {
-        throw ExceptionHelper.invalidConfigurationException("Value of extension '{}' should be a string.",
-            X_DWS_TEMPLATE);
-      }
-      if (result != null && !"string".equals(schema.getType())) {
-        throw ExceptionHelper.invalidConfigurationException("Extension '{}' is only allowed for string types.",
-            X_DWS_TEMPLATE);
-      }
-      return (String) result;
+    if (!(result instanceof String)) {
+      throw ExceptionHelper.invalidConfigurationException("Value of extension '{}' should be a string.",
+          X_DWS_TEMPLATE);
     }
-    return null;
+    if (!Objects.equals("string", schema.getType())) {
+      throw ExceptionHelper.invalidConfigurationException("Extension '{}' is only allowed for string types.",
+          X_DWS_TEMPLATE);
+    }
+
+    return (String) result;
   }
 }
