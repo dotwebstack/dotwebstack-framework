@@ -6,22 +6,24 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 @Component
+@SuppressWarnings("rawtypes")
 public class TypeConverterRouter {
 
-  private List<TypeConverter<Object, Object>> typeConverters;
+  private List<TypeConverter> typeConverters;
 
-  public TypeConverterRouter(List<TypeConverter<Object, Object>> typeConverters) {
+  public TypeConverterRouter(List<TypeConverter> typeConverters) {
     this.typeConverters = typeConverters;
   }
 
-  public Object convert(Object source, Map<String, Object> context) {
-    Optional<TypeConverter<Object, Object>> converter = typeConverters.stream()
+  @SuppressWarnings("unchecked")
+  public Object convert(Object source, Map<String, Object> parameters) {
+    Optional<TypeConverter> converter = typeConverters.stream()
         .filter(typeConverter -> typeConverter.supports(source))
         .findFirst();
 
     if (converter.isPresent()) {
       return converter.get()
-          .convert(source, context);
+          .convert(source, parameters);
     }
     return source;
   }
