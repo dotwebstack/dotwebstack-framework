@@ -11,6 +11,7 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,10 +163,18 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .isEmpty()) {
       ResponseTemplate template = getResponseTemplate();
 
+      Object data = ((Map) result.getData()).values()
+          .iterator()
+          .next();
+      List<Object> dataStack = new ArrayList<>();
+      if (data instanceof Map) {
+        dataStack.add(0, data);
+      }
       ResponseWriteContext writeContext = ResponseWriteContext.builder()
           .schema(template.getResponseObject())
-          .data(result.getData())
+          .data(data)
           .parameters(inputParams)
+          .dataStack(dataStack)
           .build();
 
       return responseMapper.toJson(writeContext);
