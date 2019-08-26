@@ -82,6 +82,31 @@ public class JexlHelperTest {
   }
 
   @Test
+  public void evaluateScript_returns_value() {
+    final String expectedValue = "value1";
+    final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
+
+    final Optional<String> evaluated =
+        this.jexlHelper.evaluateScript("var result = `${key1}`; return result;", context, String.class);
+
+    // Assert
+    assertThat("expected non-empty optional", evaluated.isPresent());
+    assertThat(expectedValue, is(equalTo(evaluated.get())));
+  }
+
+  @Test
+  public void evaluateScript_returns_null() {
+    final String expectedValue = "value1";
+    final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
+
+    final Optional<String> evaluated =
+        this.jexlHelper.evaluateScript("var result = `${key1}`; return null;", context, String.class);
+
+    // Assert
+    assertThat("expected empty optional", !evaluated.isPresent());
+  }
+
+  @Test
   public void evaluateExpression_throwsException_forTypeMismatch() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
@@ -89,6 +114,16 @@ public class JexlHelperTest {
     // Assert
     assertThrows(IllegalArgumentException.class,
         () -> this.jexlHelper.evaluateExpression("directiveValue1", context, Integer.class));
+  }
+
+  @Test
+  public void evaluateScript_throwsException_forTypeMismatch() {
+    final String expectedValue = "value1";
+    final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
+
+    // Assert
+    assertThrows(IllegalArgumentException.class,
+        () -> this.jexlHelper.evaluateScript("return 12;", context, String.class));
   }
 
   private GraphQLDirective getGraphQlDirective() {
