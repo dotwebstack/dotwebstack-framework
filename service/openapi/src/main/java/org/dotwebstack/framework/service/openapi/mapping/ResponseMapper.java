@@ -213,7 +213,7 @@ public class ResponseMapper {
     this.properties.getAllProperties()
         .forEach((key, value) -> context.set("env." + key, value));
 
-    return jexlHelper.evaluateExpression(dwsTemplate, context, String.class);
+    return jexlHelper.evaluateScript(dwsTemplate, context, String.class);
   }
 
   private boolean isRequiredAndNullOrEmpty(ResponseWriteContext writeContext, Object object) {

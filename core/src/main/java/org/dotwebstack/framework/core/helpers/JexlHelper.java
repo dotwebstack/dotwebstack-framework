@@ -9,6 +9,7 @@ import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.JexlScript;
 import org.dotwebstack.framework.core.directives.DirectiveUtils;
 
 public class JexlHelper {
@@ -17,6 +18,19 @@ public class JexlHelper {
 
   public JexlHelper(@NonNull JexlEngine engine) {
     this.engine = engine;
+  }
+
+  public <T> Optional<T> evaluateScript(String scriptString, JexlContext context, Class<T> clazz) {
+    JexlScript script = this.engine.createScript(scriptString);
+    Object evaluated = script.execute(context);
+    if (evaluated == null) {
+      return Optional.empty();
+    } else if (!clazz.isInstance(evaluated)) {
+      throw illegalArgumentException("Jexl evaluateDirectiveArgument type mismatch: expected[{}], but was [{}].", clazz,
+          evaluated.getClass());
+    } else {
+      return Optional.of(cast(clazz, evaluated));
+    }
   }
 
   public <T> Optional<T> evaluateExpression(String expressionString, JexlContext context, Class<T> clazz) {
