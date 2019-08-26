@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -119,9 +120,13 @@ class ResponseMapperTest {
     Map<String, Object> rootData =
         ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1", child1Data);
 
+    List<Object> dataStack = new ArrayList<>();
+    dataStack.add(0, rootData);
+
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(responseObject)
         .data(rootData)
+        .dataStack(dataStack)
         .build();
 
     // Act

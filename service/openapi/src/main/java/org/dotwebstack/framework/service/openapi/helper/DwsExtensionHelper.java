@@ -20,12 +20,12 @@ public class DwsExtensionHelper {
 
   public static boolean supportsDwsType(@NonNull Parameter parameter, @NonNull String typeString) {
     Map<String, Object> extensions = parameter.getExtensions();
-    return supportsDwsType(typeString, extensions);
+    return Objects.nonNull(extensions) && supportsDwsType(typeString, extensions);
   }
 
   public static boolean supportsDwsType(@NonNull RequestBody requestBody, @NonNull String typeString) {
     Map<String, Object> extensions = requestBody.getExtensions();
-    return supportsDwsType(typeString, extensions);
+    return Objects.nonNull(extensions) && supportsDwsType(typeString, extensions);
   }
 
   private static boolean supportsDwsType(String typeString, Map<String, Object> extensions) {

@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,6 +13,9 @@ public class ResponseWriteContext {
   ResponseObject schema;
 
   Object data;
+
+  @Builder.Default
+  List<Object> dataStack = new ArrayList<>();
 
   Map<String, Object> parameters;
 
