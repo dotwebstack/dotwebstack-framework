@@ -1,14 +1,14 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.mappingException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.noResultFoundException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapData;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapSchema;
-import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapSchemaAndListData;
+import static org.dotwebstack.framework.service.openapi.mapping.ResponseMapperHelper.isRequiredAndNullOrEmpty;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseContextFromChildData;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createResponseWriteContextFromChildSchema;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapChildSchema;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.unwrapItemSchema;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +25,6 @@ import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.helpers.JexlHelper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
-import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
@@ -69,30 +68,30 @@ public class ResponseMapper {
       case ARRAY_TYPE:
         return mapArrayDataToResponse(writeContext);
       case OBJECT_TYPE:
+        if (writeContext.getSchema()
+            .isEnvelope()) {
+          return mapEnvelopeObjectToResponse(writeContext);
+        }
         return mapObjectDataToResponse(writeContext);
       default:
         return mapScalarDataToResponse(writeContext);
     }
   }
 
-  private Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
-    if (Objects.nonNull(writeContext.getSchema()
-        .getDwsTemplate())) {
-      Optional<String> evaluated = evaluateJexl(writeContext);
-      if (!evaluated.isPresent() && writeContext.isSchemaRequiredNonNillable()) {
-        throw new MappingException(String.format(
-            "Could not create response: required and non-nillable property '%s' template evaluation returned null.",
-            writeContext.getSchema()
-                .getIdentifier()));
-      } else if (evaluated.isPresent()) {
-        return evaluated.get();
-      }
-      return null;
+  @SuppressWarnings("unchecked")
+  private Object mapArrayDataToResponse(ResponseWriteContext parentContext) {
+    if (Objects.isNull(parentContext.getData())) {
+      return Collections.emptyList();
     }
-    return writeContext.getData();
+
+    if (parentContext.getData() instanceof List) {
+      return ((List<Object>) parentContext.getData()).stream()
+          .map(childData -> mapDataToResponse(createResponseContextFromChildData(parentContext, childData)))
+          .collect(Collectors.toList());
+    }
+    return mapDataToResponse(unwrapItemSchema(parentContext));
   }
 
-  @SuppressWarnings("unchecked")
   private Object mapObjectDataToResponse(@NonNull ResponseWriteContext parentContext) {
     if (Objects.isNull(parentContext.getData())) {
       return null;
@@ -101,88 +100,67 @@ public class ResponseMapper {
     Map<String, Object> result = new HashMap<>();
     parentContext.getSchema()
         .getChildren()
-        .forEach(child -> {
-          ResponseWriteContext writeContext = createNewResponseWriteContext(parentContext, child);
-          Object object;
-          if (child.isEnvelope()) {
-            object = mapEnvelopeObject(writeContext);
-            if (Objects.nonNull(object)) {
-              result.put(child.getIdentifier(), convertType(writeContext, object));
-            }
-          } else {
-            if (writeContext.getData() instanceof Map) {
-              object = mapObject(writeContext, child);
-              if (!(Objects.isNull(object))) {
-                result.put(child.getIdentifier(), convertType(writeContext, object));
-              }
-            } else if (writeContext.getData() instanceof List) {
-              ((List) writeContext.getData()).stream()
-                  .forEach(item -> {
-                    ResponseWriteContext itemContext = createNewResponseWriteContext(writeContext, item);
-                    Object itemObject = mapObject(itemContext);
-                    if (!(Objects.isNull(itemObject))) {
-                      result.put(child.getIdentifier(), convertType(itemContext, itemObject));
-                    }
-                  });
-            } else {
-              throw invalidConfigurationException("Cannot map {} to response, it is of the wrong type",
-                  child.getIdentifier());
-            }
+        .forEach(childSchema -> {
+          ResponseWriteContext writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
+          Object object = mapObject(writeContext, mapDataToResponse(writeContext));
+          if (!(Objects.isNull(object))) {
+            result.put(childSchema.getIdentifier(), convertType(writeContext, object));
           }
         });
     return result;
   }
+
+  private Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
+    if (Objects.isNull(writeContext.getSchema()
+        .getDwsTemplate())) {
+      return writeContext.getData();
+    }
+
+    Optional<String> evaluated = evaluateJexl(writeContext);
+    if (evaluated.isPresent()) {
+      return evaluated.get();
+    }
+
+    if (writeContext.isSchemaRequiredNonNillable()) {
+      throw new MappingException(String.format(
+          "Could not create response: required and non-nillable property '%s' template evaluation returned null.",
+          writeContext.getSchema()
+              .getIdentifier()));
+    }
+
+    return null;
+  }
+
+  @SuppressWarnings("rawtypes")
+  private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext) {
+    Map<String, Object> result = new HashMap<>();
+    ResponseWriteContext writeContext = unwrapChildSchema(parentContext);
+    Object object = mapDataToResponse(writeContext);
+    result.put(writeContext.getSchema()
+        .getIdentifier(), object);
+    return result;
+  }
+
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
     return Objects.nonNull(writeContext.getSchema()
         .getDwsType()) ? typeConverterRouter.convert(item, writeContext.getParameters()) : item;
   }
 
-  @SuppressWarnings("unchecked")
-  private Object mapArrayDataToResponse(@NonNull ResponseWriteContext writeContext) {
-    if (Objects.isNull(writeContext.getData())) {
-      return Collections.emptyList();
-    }
 
-    ResponseObject childResponseObject = writeContext.getSchema()
-        .getItems()
-        .get(0);
-
-    return ((List<Object>) writeContext.getData()).stream()
-        .map(childData -> {
-          List<Object> dataStack = writeContext.getDataStack();
-          dataStack.add(0, childData);
-
-          ResponseWriteContext childWriteContext = ResponseWriteContext.builder()
-              .schema(childResponseObject)
-              .data(childData)
-              .parameters(writeContext.getParameters())
-              .dataStack(dataStack)
-              .build();
-
-          return mapDataToResponse(childWriteContext);
-        })
-        .collect(Collectors.toList());
-  }
-
-  private Object mapObject(ResponseWriteContext parentContext, ResponseObject child) {
-    return mapObject(unwrapData(parentContext, child));
-  }
-
-  private Object mapObject(ResponseWriteContext writeContext) {
-    Object object = mapDataToResponse(writeContext);
+  private Object mapObject(ResponseWriteContext writeContext, Object object) {
     if (isRequiredAndNullOrEmpty(writeContext, object)) {
       if (writeContext.getSchema()
           .isNillable()) {
         return null;
+      } else {
+        throw mappingException(
+            "Could not map GraphQL response: Required and non-nillable "
+                + "property '{}' was not returned in GraphQL response.",
+            writeContext.getSchema()
+                .getIdentifier());
       }
-      throw mappingException(
-          "Could not map GraphQL response: Required and non-nillable "
-              + "property '{}' was not returned in GraphQL response.",
-          writeContext.getSchema()
-              .getIdentifier());
     }
-
     return object;
   }
 
@@ -208,47 +186,5 @@ public class ResponseMapper {
 
     return jexlHelper.evaluateScript(writeContext.getSchema()
         .getDwsTemplate(), context, String.class);
-  }
-
-  private boolean isRequiredAndNullOrEmpty(ResponseWriteContext writeContext, Object object) {
-    return writeContext.getSchema()
-        .isRequired() && ((Objects.isNull(object)) || isEmptyList(writeContext.getSchema(), object));
-  }
-
-  private boolean isEmptyList(ResponseObject responseObject, Object object) {
-    if (responseObject.isNillable() && object instanceof List) {
-      return ((List) object).isEmpty();
-    }
-    return false;
-  }
-
-  private boolean isFilledList(Object object) {
-    if (object instanceof List) {
-      return !((List) object).isEmpty();
-    }
-    return false;
-  }
-
-  @SuppressWarnings("rawtypes")
-  private Object mapEnvelopeObject(ResponseWriteContext parentContext) {
-    if (Objects.nonNull(parentContext.getData())) {
-      if (isFilledList(parentContext.getData())) {
-        return mapDataToResponse(unwrapSchema(parentContext));
-      }
-
-      ResponseObject embedded = parentContext.getSchema()
-          .getChildren()
-          .get(0);
-      if (parentContext.getData() instanceof Map
-          && ((Map) parentContext.getData()).containsKey(embedded.getIdentifier())) {
-
-        List childData = (List) ((Map) parentContext.getData()).get(embedded.getIdentifier());
-        if (!childData.isEmpty()) {
-          return mapDataToResponse(unwrapSchemaAndListData(parentContext));
-        }
-      }
-    }
-    throw invalidConfigurationException("Unable to map envelope object '{}'", parentContext.getSchema()
-        .getIdentifier());
   }
 }
