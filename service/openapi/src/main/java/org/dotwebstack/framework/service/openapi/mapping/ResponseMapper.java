@@ -103,7 +103,7 @@ public class ResponseMapper {
         .forEach(childSchema -> {
           ResponseWriteContext writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
           Object object = mapObject(writeContext, mapDataToResponse(writeContext));
-          if (!(Objects.isNull(object))) {
+          if (Objects.nonNull(object)) {
             result.put(childSchema.getIdentifier(), convertType(writeContext, object));
           }
         });
@@ -122,7 +122,7 @@ public class ResponseMapper {
     }
 
     if (writeContext.isSchemaRequiredNonNillable()) {
-      throw new MappingException(String.format(
+      throw mappingException(String.format(
           "Could not create response: required and non-nillable property '%s' template evaluation returned null.",
           writeContext.getSchema()
               .getIdentifier()));

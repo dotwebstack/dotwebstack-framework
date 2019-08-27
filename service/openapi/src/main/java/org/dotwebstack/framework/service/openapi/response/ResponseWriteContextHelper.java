@@ -33,7 +33,7 @@ public class ResponseWriteContextHelper {
         parentContext.getDataStack());
   }
 
-  public static Deque<Object> createNewDataStack(Deque<Object> previousDataStack, Object newEntry) {
+  public static Deque<Object> createNewDataStack(@NonNull Deque<Object> previousDataStack, Object newEntry) {
     Deque<Object> dataStack = new ArrayDeque<>(previousDataStack);
     if (newEntry instanceof Map) {
       dataStack.push(newEntry);
@@ -42,7 +42,7 @@ public class ResponseWriteContextHelper {
   }
 
   public static ResponseWriteContext createResponseWriteContextFromChildSchema(
-      @NonNull ResponseWriteContext parentContext, ResponseObject childSchema) {
+      @NonNull ResponseWriteContext parentContext, @NonNull ResponseObject childSchema) {
     Deque<Object> dataStack = new ArrayDeque<>(parentContext.getDataStack());
     Object data = parentContext.getData();
 
@@ -64,14 +64,14 @@ public class ResponseWriteContextHelper {
   }
 
   public static ResponseWriteContext createResponseContextFromChildData(@NonNull ResponseWriteContext parentContext,
-      Object childData) {
+      @NonNull Object childData) {
     Deque<Object> dataStack = createNewDataStack(parentContext.getDataStack(), childData);
     return createNewResponseWriteContext(parentContext.getSchema(), childData, parentContext.getParameters(),
         dataStack);
   }
 
-  public static ResponseWriteContext createNewResponseWriteContext(ResponseObject schema, Object data,
-      Map<String, Object> parameters, Deque<Object> dataStack) {
+  public static ResponseWriteContext createNewResponseWriteContext(@NonNull ResponseObject schema, Object data,
+      @NonNull Map<String, Object> parameters, @NonNull Deque<Object> dataStack) {
     return ResponseWriteContext.builder()
         .schema(schema)
         .data(data)
