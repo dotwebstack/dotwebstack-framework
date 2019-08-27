@@ -4,6 +4,8 @@ import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
 import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +13,7 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +36,6 @@ import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseContextValidator;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseTemplate;
-import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
@@ -142,11 +144,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
   }
 
-  protected Mono<String> getMonoError(String message, HttpStatus statusCode) {
+  private Mono<String> getMonoError(String message, HttpStatus statusCode) {
     return Mono.error(new ResponseStatusException(statusCode, message));
   }
 
-  @SuppressWarnings("unchecked")
   private String getResponse(ServerRequest request)
       throws NoResultFoundException, JsonProcessingException, GraphQlErrorException, BadRequestException {
     Map<String, Object> inputParams = resolveParameters(request);
@@ -160,15 +161,12 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     ExecutionResult result = graphQL.execute(executionInput);
     if (result.getErrors()
         .isEmpty()) {
-      ResponseTemplate template = getResponseTemplate();
+      Object data = ((Map) result.getData()).values()
+          .iterator()
+          .next();
 
-      ResponseWriteContext writeContext = ResponseWriteContext.builder()
-          .schema(template.getResponseObject())
-          .data(result.getData())
-          .parameters(inputParams)
-          .build();
-
-      return responseMapper.toJson(writeContext);
+      return responseMapper.toJson(createNewResponseWriteContext(getResponseTemplate().getResponseObject(), data,
+          inputParams, createNewDataStack(new ArrayDeque<>(), data)));
     }
     throw OpenApiExceptionHelper.graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }

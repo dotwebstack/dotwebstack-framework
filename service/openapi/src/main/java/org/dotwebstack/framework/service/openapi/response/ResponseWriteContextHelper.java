@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.response;
 
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Map;
 import lombok.NonNull;
 
@@ -8,37 +9,74 @@ public class ResponseWriteContextHelper {
 
   private ResponseWriteContextHelper() {}
 
-  public static ResponseWriteContext unwrapSchema(@NonNull ResponseWriteContext parentContext) {
-    return ResponseWriteContext.builder()
-        .schema(parentContext.getSchema()
-            .getChildren()
-            .get(0))
-        .data(parentContext.getData())
-        .parameters(parentContext.getParameters())
-        .build();
-  }
-
-  @SuppressWarnings("unchecked")
-  public static ResponseWriteContext unwrapData(@NonNull ResponseWriteContext parentContext) {
-    return ResponseWriteContext.builder()
-        .parameters(parentContext.getParameters())
-        .schema(parentContext.getSchema())
-        .data(((Map<String, Object>) parentContext.getData()).get(parentContext.getSchema()
-            .getIdentifier()))
-        .build();
-  }
-
-  @SuppressWarnings("rawtypes")
-  public static ResponseWriteContext unwrapSchemaAndData(@NonNull ResponseWriteContext parentContext) {
-    ResponseObject embedded = parentContext.getSchema()
+  public static ResponseWriteContext unwrapChildSchema(@NonNull ResponseWriteContext parentContext) {
+    ResponseObject childSchema = parentContext.getSchema()
         .getChildren()
         .get(0);
-    List childData = (List) ((Map) parentContext.getData()).get(embedded.getIdentifier());
-    return ResponseWriteContext.builder()
-        .schema(embedded)
-        .data(childData)
-        .parameters(parentContext.getParameters())
-        .build();
+
+    Object data = parentContext.getData();
+    Deque<Object> dataStack = new ArrayDeque<>(parentContext.getDataStack());
+
+    if (!childSchema.isEnvelope() && data instanceof Map) {
+      data = ((Map) data).get(childSchema.getIdentifier());
+      dataStack = createNewDataStack(dataStack, data);
+    }
+
+    return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack);
   }
 
+  public static ResponseWriteContext unwrapItemSchema(@NonNull ResponseWriteContext parentContext) {
+    ResponseObject childSchema = parentContext.getSchema()
+        .getItems()
+        .get(0);
+    return createNewResponseWriteContext(childSchema, parentContext.getData(), parentContext.getParameters(),
+        parentContext.getDataStack());
+  }
+
+  public static Deque<Object> createNewDataStack(@NonNull Deque<Object> previousDataStack, Object newEntry) {
+    Deque<Object> dataStack = new ArrayDeque<>(previousDataStack);
+    if (newEntry instanceof Map) {
+      dataStack.push(newEntry);
+    }
+    return dataStack;
+  }
+
+  public static ResponseWriteContext createResponseWriteContextFromChildSchema(
+      @NonNull ResponseWriteContext parentContext, @NonNull ResponseObject childSchema) {
+    Deque<Object> dataStack = new ArrayDeque<>(parentContext.getDataStack());
+    Object data = parentContext.getData();
+
+    if (!childSchema.isEnvelope()) {
+      if (!parentContext.getDataStack()
+          .isEmpty()) {
+        data = ((Map) parentContext.getDataStack()
+            .peek()).get(childSchema.getIdentifier());
+        dataStack = createNewDataStack(parentContext.getDataStack(), data);
+        return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack);
+      }
+
+      if (data instanceof Map) {
+        data = ((Map) data).get(childSchema.getIdentifier());
+      }
+    }
+
+    return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack);
+  }
+
+  public static ResponseWriteContext createResponseContextFromChildData(@NonNull ResponseWriteContext parentContext,
+      @NonNull Object childData) {
+    Deque<Object> dataStack = createNewDataStack(parentContext.getDataStack(), childData);
+    return createNewResponseWriteContext(parentContext.getSchema(), childData, parentContext.getParameters(),
+        dataStack);
+  }
+
+  public static ResponseWriteContext createNewResponseWriteContext(@NonNull ResponseObject schema, Object data,
+      Map<String, Object> parameters, @NonNull Deque<Object> dataStack) {
+    return ResponseWriteContext.builder()
+        .schema(schema)
+        .data(data)
+        .parameters(parameters)
+        .dataStack(dataStack)
+        .build();
+  }
 }
