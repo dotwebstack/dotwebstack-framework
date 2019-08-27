@@ -14,6 +14,7 @@ import graphql.schema.GraphQLArgument;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
@@ -34,6 +35,10 @@ public class ConstraintValidator implements QueryValidator {
   }
 
   public void validate(DirectiveContainerTuple directiveContainerTuple) {
+    if(Objects.isNull(directiveContainerTuple.getValue())){
+      return; //TODO: check on required type
+    }
+
     Stream.of(directiveContainerTuple)
         .map(container -> directiveContainerTuple.getContainer()
             .getDirective(CONSTRAINT_NAME))

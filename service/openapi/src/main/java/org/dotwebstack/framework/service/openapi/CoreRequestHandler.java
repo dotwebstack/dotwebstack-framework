@@ -101,8 +101,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
     validateParameters(field, responseContext.getParameters(), pathName);
     if (responseContext.getRequestBodyContext() != null) {
-      this.requestBodyHandler.validate(field, responseContext.getRequestBodyContext()
-          .getRequestBody(), pathName);
+      this.requestBodyHandler.validate(field, responseContext.getRequestBodyContext().getRequestBody(), pathName);
     }
     responseContext.getResponses()
         .stream()

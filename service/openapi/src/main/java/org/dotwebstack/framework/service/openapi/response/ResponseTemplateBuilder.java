@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TEMPLATE;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSchemaReference;
 
 import com.google.common.collect.ImmutableList;
@@ -19,7 +21,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 
 @Builder
@@ -35,8 +36,8 @@ public class ResponseTemplateBuilder {
         .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), httpMethodOperation.getName(),
             httpMethodOperation.getHttpMethod()
                 .name(),
-            httpMethodOperation.getOperation()
-                .getRequestBody()).stream())
+            resolveRequestBody(openApi,httpMethodOperation.getOperation()
+                .getRequestBody())).stream())
         .collect(Collectors.toList());
 
     long successResponseCount = responses.stream()
@@ -63,10 +64,10 @@ public class ResponseTemplateBuilder {
         .collect(Collectors.toList());
   }
 
-  private void validateMediaType(String responseCode, Content content, String pathName, String methodName) {
+  private void validateMediaType(@NonNull String responseCode, @NonNull Content content, @NonNull String pathName, @NonNull String methodName) {
     if (content.keySet()
         .size() != 1) {
-      throw ExceptionHelper.invalidConfigurationException(
+      throw invalidOpenApiConfigurationException(
           "Expected exactly one MediaType for path '{}' with method '{}' and response code '{}'.", pathName, methodName,
           responseCode);
     }
@@ -75,7 +76,7 @@ public class ResponseTemplateBuilder {
         .filter(name -> !name.matches("application/(.)*(\\\\+)?json"))
         .collect(Collectors.toList());
     if (!unsupportedMediaTypes.isEmpty()) {
-      throw ExceptionHelper.invalidConfigurationException(
+      throw invalidOpenApiConfigurationException(
           "Unsupported MediaType(s) '{}' for path '{}' with method '{}' and response code '{}'.", unsupportedMediaTypes,
           pathName, methodName, responseCode);
     }
@@ -198,11 +199,11 @@ public class ResponseTemplateBuilder {
     if (extensions != null) {
       Object result = extensions.get(X_DWS_TEMPLATE);
       if (result != null && !(result instanceof String)) {
-        throw ExceptionHelper.invalidConfigurationException("Value of extension '{}' should be a string.",
+        throw invalidOpenApiConfigurationException("Value of extension '{}' should be a string.",
             X_DWS_TEMPLATE);
       }
       if (result != null && !"string".equals(schema.getType())) {
-        throw ExceptionHelper.invalidConfigurationException("Extension '{}' is only allowed for string types.",
+        throw invalidOpenApiConfigurationException("Extension '{}' is only allowed for string types.",
             X_DWS_TEMPLATE);
       }
       return (String) result;

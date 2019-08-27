@@ -4,6 +4,8 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.FORM;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMITED;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
@@ -12,6 +14,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
+import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -20,7 +23,9 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +33,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
@@ -61,7 +68,7 @@ public class DefaultParamHandler implements ParamHandler {
         paramValue = getHeaderParam(parameter, request);
         break;
       default:
-        throw ExceptionHelper.illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
+        throw illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
     }
 
     if (Objects.nonNull(paramValue)) {
@@ -74,7 +81,7 @@ public class DefaultParamHandler implements ParamHandler {
         validateEnumValues(defaultValue.get(), parameter);
       } else {
         if (parameter.getRequired()) {
-          throw parameterValidationException("No value provided for required query parameter '{}'.",
+          throw parameterValidationException("No value provided for required {} parameter '{}'.",parameter.getIn(),
               parameter.getName());
         }
       }
@@ -85,19 +92,59 @@ public class DefaultParamHandler implements ParamHandler {
 
   @Override
   public void validate(GraphQlField field, Parameter parameter, String pathName) {
-    this.validate(field, parameter.getName(), pathName);
+    String parameterName = parameter.getName();
+    if (Objects.nonNull(parameter.getExtensions())) {
+
+      //TODO: compleet en netter maken
+      if(hasExtension(parameter.getExtensions(),"x-dws-transient",Boolean.TRUE)
+          || hasExtension(parameter.getExtensions(),"x-dws-type","expand")) {
+        return;
+      }
+      if (parameter.getExtensions().containsKey("x-dws-name")) {
+        parameterName = (String) parameter.getExtensions().get("x-dws-name");
+      }
+    }
+
+    this.validate(field, parameterName, pathName);
+  }
+
+  private boolean hasExtension(Map<String, Object> extensions, String name, Object value) {
+    if(Objects.isNull(extensions)) {
+      return false;
+    }
+
+    if(extensions.containsKey(name)) {
+      return Objects.equals(value, extensions.get(name));
+    }
+
+    return false;
   }
 
   public void validate(GraphQlField field, String parameterName, String pathName) {
-    if (field.getArguments()
+    List<GraphQlArgument> flattenArguments = flattenArguments(field);
+    if (flattenArguments
         .stream()
         .noneMatch(argument -> argument.getName()
             .equals(parameterName))) {
-      throw ExceptionHelper.invalidConfigurationException(
+      throw invalidOpenApiConfigurationException(
           "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", parameterName, pathName,
           field.getName());
     }
   }
+
+  private List<GraphQlArgument> flattenArguments(GraphQlField field) {
+    return field.getArguments().stream().flatMap(argument -> flattenArguments(argument).stream()).collect(Collectors.toList());
+  }
+
+  private List<GraphQlArgument> flattenArguments(GraphQlArgument argument) {
+    if (isEmpty(argument.getChildren())) {
+      return Collections.singletonList(argument);
+    }
+
+    return argument.getChildren().stream().flatMap(arg -> flattenArguments(arg).stream()).collect(Collectors.toList());
+  }
+
+
 
   @SuppressWarnings("unchecked")
   void validateEnumValues(Object paramValue, Parameter parameter) {
@@ -208,7 +255,7 @@ public class DefaultParamHandler implements ParamHandler {
   private Object deserializeObjectFromKeyValueString(String keyValueString) {
     String[] split = keyValueString.split(",");
     if (split.length % 2 != 0) {
-      throw ExceptionHelper.illegalArgumentException("Key value string '{}' should contain an even number of elements.",
+      throw illegalArgumentException("Key value string '{}' should contain an even number of elements.",
           keyValueString);
     }
     Map<String, String> result = new HashMap<>();
@@ -227,7 +274,7 @@ public class DefaultParamHandler implements ParamHandler {
         .forEach(keyValue -> {
           String[] split = keyValue.split(keyValueSeparator);
           if (split.length != 2) {
-            throw ExceptionHelper.illegalArgumentException(
+            throw illegalArgumentException(
                 "Key value element '{}' with separator '{}' should have one " + "key and one value.", keyValue,
                 keyValueSeparator);
           }

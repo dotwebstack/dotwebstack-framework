@@ -11,7 +11,7 @@ public class JsonNodeUtils {
 
   private JsonNodeUtils() {}
 
-  public static Object toObject(@NonNull JsonNode node) {
+  public static Object toObject(JsonNode node) {
     switch (node.getNodeType()) {
       case ARRAY:
         List<Object> result = new ArrayList<>();

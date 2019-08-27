@@ -10,6 +10,7 @@ import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
@@ -35,6 +36,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
+
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 
 @Component
 public class RequestBodyHandler {
@@ -74,7 +77,7 @@ public class RequestBodyHandler {
 
   @SuppressWarnings("rawtypes")
   public void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody parameter, @NonNull String pathName) {
-    parameter.getContent()
+    resolveRequestBody(openApi,parameter).getContent()
         .forEach((key, mediaType) -> {
           Schema schema = mediaType.getSchema();
           if (schema.get$ref() != null) {
@@ -122,20 +125,13 @@ public class RequestBodyHandler {
           (InputObjectTypeDefinition) this.typeDefinitionRegistry.getType(unwrapped)
               .orElseThrow(() -> ExceptionHelper
                   .invalidConfigurationException("Could not find type definition of GraphQL type '{}'", unwrapped));
-      Map<String, Schema> properties = schema.getProperties();
-      properties.forEach((name, childSchema) -> {
-        InputValueDefinition inputValueDefinition = typeDefinition.getInputValueDefinitions()
-            .stream()
-            .filter(iv -> Objects.equals(iv.getName(), name))
-            .findFirst()
-            .orElseThrow(
-                () -> ExceptionHelper
-                    .invalidConfigurationException(
-                        "OAS property '{}' for path '{}' was not found as a "
-                            + "GraphQL intput value on input object type '{}'",
-                        name, pathName, typeDefinition.getName()));
-        validate(name, childSchema, inputValueDefinition.getType(), pathName);
-      });
+
+      if (schema instanceof ComposedSchema) {
+        //TODO: implement oneOf,allOf() etc..
+      } else {
+        validateProperties(pathName, schema, typeDefinition);
+      }
+
     } else if (OasConstants.ARRAY_TYPE.equals(schema.getType())) {
       if (!(unwrapped instanceof ListType)) {
         throw ExceptionHelper
@@ -148,6 +144,23 @@ public class RequestBodyHandler {
       this.typeValidator.validateTypesOpenApiToGraphQ(schema.getType(), TypeHelper.getTypeName(unwrapped),
           propertyName);
     }
+  }
+
+  private void validateProperties(String pathName, Schema schema, InputObjectTypeDefinition typeDefinition) {
+    Map<String, Schema> properties = schema.getProperties();
+    properties.forEach((name, childSchema) -> {
+      InputValueDefinition inputValueDefinition = typeDefinition.getInputValueDefinitions()
+          .stream()
+          .filter(iv -> Objects.equals(iv.getName(), name))
+          .findFirst()
+          .orElseThrow(
+              () -> ExceptionHelper
+                  .invalidConfigurationException(
+                      "OAS property '{}' for path '{}' was not found as a "
+                          + "GraphQL intput value on input object type '{}'",
+                      name, pathName, typeDefinition.getName()));
+      validate(name, childSchema, inputValueDefinition.getType(), pathName);
+    });
   }
 
   private void validateContentType(ServerRequest request) throws BadRequestException {

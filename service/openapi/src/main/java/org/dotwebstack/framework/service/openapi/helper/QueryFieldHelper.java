@@ -12,6 +12,8 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
 
+import java.util.HashMap;
+
 @Builder
 public class QueryFieldHelper {
 
@@ -24,7 +26,7 @@ public class QueryFieldHelper {
         .get(X_DWS_QUERY);
     FieldDefinition queryFieldDefinition = getQueryFieldDefinition(dwsQuery);
 
-    return this.graphQlFieldBuilder.toGraphQlField(queryFieldDefinition);
+    return this.graphQlFieldBuilder.toGraphQlField(queryFieldDefinition, new HashMap<>());
   }
 
   private FieldDefinition getQueryFieldDefinition(String dwsQuery) {
