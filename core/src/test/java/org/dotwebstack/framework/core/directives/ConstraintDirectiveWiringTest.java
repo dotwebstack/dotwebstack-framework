@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import graphql.Scalars;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
+import graphql.schema.GraphQLNonNull;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
@@ -41,7 +42,7 @@ class ConstraintDirectiveWiringTest {
     // Arrange
     GraphQLArgument argument = GraphQLArgument.newArgument()
         .name(CoreDirectives.CONSTRAINT_ARG_MIN)
-        .type(Scalars.GraphQLInt)
+        .type(new GraphQLNonNull(Scalars.GraphQLInt))
         .value(1)
         .build();
 

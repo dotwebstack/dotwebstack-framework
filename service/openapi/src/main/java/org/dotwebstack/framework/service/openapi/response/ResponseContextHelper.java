@@ -14,14 +14,15 @@ public class ResponseContextHelper {
 
   private ResponseContextHelper() {}
 
-  public static Set<String> getRequiredResponseObjectsForSuccessResponse(@NonNull ResponseContext responseContext) {
-    ResponseTemplate successResponse = responseContext.getResponses()
+  public static Set<String> getRequiredResponseObjectsForSuccessResponse(
+      @NonNull ResponseSchemaContext responseSchemaContext) {
+    ResponseTemplate successResponse = responseSchemaContext.getResponses()
         .stream()
         .filter(template -> template.isApplicable(200, 299))
         .findFirst()
-        .orElseThrow(() -> invalidConfigurationException("No success response found for ResponseContext!"));
+        .orElseThrow(() -> invalidConfigurationException("No success response found for ResponseSchemaContext!"));
 
-    return getRequiredResponseObject("", successResponse.getResponseObject(), responseContext.getGraphQlField())
+    return getRequiredResponseObject("", successResponse.getResponseObject(), responseSchemaContext.getGraphQlField())
         .keySet()
         .stream()
         .filter(path -> !path.isEmpty())

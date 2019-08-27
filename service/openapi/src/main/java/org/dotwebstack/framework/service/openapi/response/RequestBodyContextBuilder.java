@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 
 public class RequestBodyContextBuilder {
@@ -26,7 +25,7 @@ public class RequestBodyContextBuilder {
 
   public RequestBodyContext buildRequestBodyContext(RequestBody requestBody) {
     if (requestBody != null) {
-      return new RequestBodyContext(getPropertyName(resolveRequestBody(openApi,requestBody)), requestBody);
+      return new RequestBodyContext(getPropertyName(resolveRequestBody(openApi, requestBody)), requestBody);
     } else {
       return null;
     }
@@ -52,8 +51,8 @@ public class RequestBodyContextBuilder {
     List<String> propertyNames = new ArrayList<>(((Set<String>) schema.getProperties()
         .keySet()));
     if (propertyNames.size() != 1) {
-      throw invalidConfigurationException(
-          "Request body schema should contain exactly 1 property, found properties ().", propertyNames.size());
+      throw invalidConfigurationException("Request body schema should contain exactly 1 property, found properties ().",
+          propertyNames.size());
     }
     return propertyNames.get(0);
   }

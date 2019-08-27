@@ -5,6 +5,8 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 
 public class InvalidOpenApiConfigurationException extends InvalidConfigurationException {
 
+  private static final long serialVersionUID = 1L;
+
   public InvalidOpenApiConfigurationException(@NonNull String message, Object... arguments) {
     super(message, arguments);
   }

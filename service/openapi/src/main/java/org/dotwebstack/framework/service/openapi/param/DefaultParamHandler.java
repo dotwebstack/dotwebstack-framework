@@ -5,7 +5,6 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMI
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
@@ -13,8 +12,6 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
-import static org.springframework.util.CollectionUtils.isEmpty;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -23,9 +20,7 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
-
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,12 +28,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
+import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
-import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
@@ -55,7 +50,8 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   @Override
-  public Optional<Object> getValue(ServerRequest request, Parameter parameter) {
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter,
+      @NonNull ResponseSchemaContext responseSchemaContext) {
     Object paramValue;
     switch (parameter.getIn()) {
       case PARAM_PATH_TYPE:
@@ -81,7 +77,7 @@ public class DefaultParamHandler implements ParamHandler {
         validateEnumValues(defaultValue.get(), parameter);
       } else {
         if (parameter.getRequired()) {
-          throw parameterValidationException("No value provided for required {} parameter '{}'.",parameter.getIn(),
+          throw parameterValidationException("No value provided for required {} parameter '{}'.", parameter.getIn(),
               parameter.getName());
         }
       }
@@ -95,56 +91,43 @@ public class DefaultParamHandler implements ParamHandler {
     String parameterName = parameter.getName();
     if (Objects.nonNull(parameter.getExtensions())) {
 
-      //TODO: compleet en netter maken
-      if(hasExtension(parameter.getExtensions(),"x-dws-transient",Boolean.TRUE)
-          || hasExtension(parameter.getExtensions(),"x-dws-type","expand")) {
+      // TODO: compleet en netter maken
+      if (hasExtension(parameter.getExtensions(), "x-dws-transient", Boolean.TRUE)
+          || hasExtension(parameter.getExtensions(), "x-dws-type", "expand")) {
         return;
       }
-      if (parameter.getExtensions().containsKey("x-dws-name")) {
-        parameterName = (String) parameter.getExtensions().get("x-dws-name");
+      if (parameter.getExtensions()
+          .containsKey("x-dws-name")) {
+        parameterName = (String) parameter.getExtensions()
+            .get("x-dws-name");
       }
     }
 
     this.validate(field, parameterName, pathName);
   }
 
-  private boolean hasExtension(Map<String, Object> extensions, String name, Object value) {
-    if(Objects.isNull(extensions)) {
-      return false;
-    }
-
-    if(extensions.containsKey(name)) {
-      return Objects.equals(value, extensions.get(name));
-    }
-
-    return false;
-  }
-
   public void validate(GraphQlField field, String parameterName, String pathName) {
-    List<GraphQlArgument> flattenArguments = flattenArguments(field);
-    if (flattenArguments
+    if (field.getArguments()
         .stream()
         .noneMatch(argument -> argument.getName()
             .equals(parameterName))) {
-      throw invalidOpenApiConfigurationException(
+      throw ExceptionHelper.invalidConfigurationException(
           "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", parameterName, pathName,
           field.getName());
     }
   }
 
-  private List<GraphQlArgument> flattenArguments(GraphQlField field) {
-    return field.getArguments().stream().flatMap(argument -> flattenArguments(argument).stream()).collect(Collectors.toList());
-  }
-
-  private List<GraphQlArgument> flattenArguments(GraphQlArgument argument) {
-    if (isEmpty(argument.getChildren())) {
-      return Collections.singletonList(argument);
+  private boolean hasExtension(Map<String, Object> extensions, String name, Object value) {
+    if (Objects.isNull(extensions)) {
+      return false;
     }
 
-    return argument.getChildren().stream().flatMap(arg -> flattenArguments(arg).stream()).collect(Collectors.toList());
+    if (extensions.containsKey(name)) {
+      return Objects.equals(value, extensions.get(name));
+    }
+
+    return false;
   }
-
-
 
   @SuppressWarnings("unchecked")
   void validateEnumValues(Object paramValue, Parameter parameter) {
@@ -343,17 +326,6 @@ public class DefaultParamHandler implements ParamHandler {
           && !parameter.getSchema()
               .getEnum()
               .isEmpty();
-    }
-    return false;
-  }
-
-  boolean supportsDwsType(Parameter parameter, String typeString) {
-    Map<String, Object> extensions = parameter.getExtensions();
-    if (Objects.nonNull(extensions)) {
-      String handler = (String) extensions.get(X_DWS_TYPE);
-      if (Objects.nonNull(handler)) {
-        return handler.equals(typeString);
-      }
     }
     return false;
   }

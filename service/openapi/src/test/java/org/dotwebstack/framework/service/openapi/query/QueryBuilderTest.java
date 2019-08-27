@@ -34,71 +34,71 @@ public class QueryBuilderTest {
     this.registry = loadTypeDefinitionRegistry();
   }
 
-//  @Test
-//  public void toQuery_returns_validQuery() {
-//    // Arrange
-//    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
-//    FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
-//
-//    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-//    GraphQlField queryField = builder.toGraphQlField(fieldDefinition);
-//
-//    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
-//    StringJoiner argumentJoiner = new StringJoiner(",");
-//
-//    // Act
-//    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, new HashMap<>(), true,
-//        "");
-//
-//    // Assert
-//    assertEquals("{brewery{identifier}}", bodyJoiner.toString());
-//  }
-//
-//  @Test
-//  public void toQuery_returns_validQueryWithArguments() {
-//    // Arrange
-//    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
-//    FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
-//
-//    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-//    GraphQlField queryField = builder.toGraphQlField(fieldDefinition);
-//
-//    ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
-//
-//    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
-//    StringJoiner argumentJoiner = new StringJoiner(",");
-//
-//    // Act
-//    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, arguments, true, "");
-//
-//    // Assert
-//    assertEquals("$identifier: ID!", argumentJoiner.toString());
-//    assertEquals("{brewery(identifier: $identifier){identifier}}", bodyJoiner.toString());
-//  }
+  @Test
+  public void toQuery_returns_validQuery() {
+    // Arrange
+    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
 
-//  @Test
-//  public void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
-//    // Arrange
-//    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
-//    FieldDefinition breweryDefinition = getQueryFieldDefinition("brewery");
-//
-//    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-//    GraphQlField breweryField = builder.toGraphQlField(breweryDefinition);
-//
-//    ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
-//    Set<String> requiredFields = ImmutableSet.of("name", "beers", "beers.name", "beers.ingredients",
-//        "beers.ingredients.name", "beers.supplements", "beers.supplements.name");
-//    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
-//    StringJoiner argumentJoiner = new StringJoiner(",");
-//
-//    // Act
-//    new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, bodyJoiner, argumentJoiner, arguments, true, "");
-//
-//    // Assert
-//    assertEquals("$identifier: ID!", argumentJoiner.toString());
-//    assertEquals("{brewery(identifier: $identifier){identifier,name,beers{identifier,name,ingredients{identifier,name},"
-//        + "supplements{identifier,name}}}}", bodyJoiner.toString());
-//  }
+    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
+    GraphQlField queryField = builder.toGraphQlField(fieldDefinition, new HashMap<>());
+
+    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
+    StringJoiner argumentJoiner = new StringJoiner(",");
+
+    // Act
+    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, new HashMap<>(), true,
+        "");
+
+    // Assert
+    assertEquals("{brewery{identifier}}", bodyJoiner.toString());
+  }
+
+  @Test
+  public void toQuery_returns_validQueryWithArguments() {
+    // Arrange
+    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
+
+    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
+    GraphQlField queryField = builder.toGraphQlField(fieldDefinition, new HashMap<>());
+
+    ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
+
+    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
+    StringJoiner argumentJoiner = new StringJoiner(",");
+
+    // Act
+    new GraphQlQueryBuilder().addToQuery(queryField, new HashSet<>(), bodyJoiner, argumentJoiner, arguments, true, "");
+
+    // Assert
+    assertEquals("$identifier: ID!", argumentJoiner.toString());
+    assertEquals("{brewery(identifier: $identifier){identifier}}", bodyJoiner.toString());
+  }
+
+  @Test
+  public void toQuery_returns_validQueryWithRequiredFieldsAndArguments() {
+    // Arrange
+    this.registry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
+    FieldDefinition breweryDefinition = getQueryFieldDefinition("brewery");
+
+    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
+    GraphQlField breweryField = builder.toGraphQlField(breweryDefinition, new HashMap<>());
+
+    ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
+    Set<String> requiredFields = ImmutableSet.of("name", "beers", "beers.name", "beers.ingredients",
+        "beers.ingredients.name", "beers.supplements", "beers.supplements.name");
+    StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
+    StringJoiner argumentJoiner = new StringJoiner(",");
+
+    // Act
+    new GraphQlQueryBuilder().addToQuery(breweryField, requiredFields, bodyJoiner, argumentJoiner, arguments, true, "");
+
+    // Assert
+    assertEquals("$identifier: ID!", argumentJoiner.toString());
+    assertEquals("{brewery(identifier: $identifier){identifier,name,beers{identifier,name,ingredients{identifier,name},"
+        + "supplements{identifier,name}}}}", bodyJoiner.toString());
+  }
 
   private FieldDefinition getQueryFieldDefinition(String name) {
     ObjectTypeDefinition query = (ObjectTypeDefinition) this.registry.getType("Query")

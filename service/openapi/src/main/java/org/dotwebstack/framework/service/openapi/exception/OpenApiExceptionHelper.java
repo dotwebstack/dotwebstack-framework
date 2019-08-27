@@ -27,7 +27,8 @@ public class OpenApiExceptionHelper extends ExceptionHelper {
     return new BadRequestException(formatMessage(message, arguments), findCause(arguments));
   }
 
-  public static InvalidOpenApiConfigurationException invalidOpenApiConfigurationException(String message, Object... arguments) {
-    return new InvalidOpenApiConfigurationException(formatMessage(message,arguments),findCause(arguments));
+  public static InvalidOpenApiConfigurationException invalidOpenApiConfigurationException(String message,
+      Object... arguments) {
+    return new InvalidOpenApiConfigurationException(formatMessage(message, arguments), findCause(arguments));
   }
 }
