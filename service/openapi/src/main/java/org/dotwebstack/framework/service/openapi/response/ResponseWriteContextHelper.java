@@ -71,7 +71,7 @@ public class ResponseWriteContextHelper {
   }
 
   public static ResponseWriteContext createNewResponseWriteContext(@NonNull ResponseObject schema, Object data,
-      @NonNull Map<String, Object> parameters, @NonNull Deque<Object> dataStack) {
+      Map<String, Object> parameters, @NonNull Deque<Object> dataStack) {
     return ResponseWriteContext.builder()
         .schema(schema)
         .data(data)

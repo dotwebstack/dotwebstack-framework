@@ -10,7 +10,7 @@ class ResponseMapperHelper {
 
   private ResponseMapperHelper() {}
 
-  static boolean isRequiredAndNullOrEmpty(@NonNull ResponseWriteContext writeContext, @NonNull Object object) {
+  static boolean isRequiredAndNullOrEmpty(@NonNull ResponseWriteContext writeContext, Object object) {
     return writeContext.getSchema()
         .isRequired() && ((Objects.isNull(object)) || isEmptyList(writeContext.getSchema(), object));
   }
