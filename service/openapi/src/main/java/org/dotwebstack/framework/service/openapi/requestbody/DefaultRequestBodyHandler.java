@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.requestbody;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,7 +13,6 @@ import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
@@ -84,8 +84,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
           }
           String type = schema.getType();
           if (!Objects.equals(type, OasConstants.OBJECT_TYPE)) {
-            throw OpenApiExceptionHelper
-                .invalidConfigurationException("Schema type '{}' not supported for request body.", type);
+            throw invalidConfigurationException("Schema type '{}' not supported for request body.", type);
           }
           validate(schema, graphQlField, pathName);
         });
@@ -99,7 +98,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
           .stream()
           .filter(a -> Objects.equals(a.getName(), name))
           .findFirst()
-          .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
+          .orElseThrow(() -> invalidConfigurationException(
               "OAS property '{}' for path '{}' was not found as a " + "GraphQL argument on field '{}'.", name, pathName,
               graphQlField.getName()));
       validate(name, propertySchema, argument.getType(), pathName);
@@ -114,29 +113,24 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     Type unwrapped = TypeHelper.unwrapNonNullType(graphQlType);
     if (OasConstants.OBJECT_TYPE.equals(schema.getType())) {
       if (!(unwrapped instanceof TypeName)) {
-        throw ExceptionHelper.invalidConfigurationException(
+        throw invalidConfigurationException(
             "Property '{}' with OAS object type cannot be mapped to GraphQL type '{}', "
                 + "it should be mapped to type '{}'.",
             propertyName, unwrapped.getClass()
                 .getName(),
             TypeName.class.getName());
       }
-      InputObjectTypeDefinition typeDefinition =
-          (InputObjectTypeDefinition) this.typeDefinitionRegistry.getType(unwrapped)
-              .orElseThrow(() -> ExceptionHelper
-                  .invalidConfigurationException("Could not find type definition of GraphQL type '{}'", unwrapped));
-
-      if (schema instanceof ComposedSchema) {
-        // TODO: implement oneOf,allOf() etc..
-      } else {
-        validateProperties(pathName, schema, typeDefinition);
-      }
-
+      InputObjectTypeDefinition typeDefinition = (InputObjectTypeDefinition) this.typeDefinitionRegistry
+          .getType(unwrapped)
+          .orElseThrow(
+              () -> invalidConfigurationException("Could not find type definition of GraphQL type '{}'", unwrapped));
+      validateProperties(pathName, schema, typeDefinition);
     } else if (OasConstants.ARRAY_TYPE.equals(schema.getType())) {
       if (!(unwrapped instanceof ListType)) {
-        throw ExceptionHelper
-            .invalidConfigurationException("Property '{}' with OAS array type cannot be mapped to GraphQL type '{}', it"
-                + " should be mapped to type '{}'.", propertyName, unwrapped.getClass(), ListType.class.getName());
+        throw invalidConfigurationException(
+            "Property '{}' with OAS array type cannot be mapped to GraphQL type '{}', it"
+                + " should be mapped to type '{}'.",
+            propertyName, unwrapped.getClass(), ListType.class.getName());
       }
       Schema<?> itemSchema = ((ArraySchema) schema).getItems();
       validate(propertyName, itemSchema, TypeHelper.getBaseType(unwrapped), pathName);
@@ -154,7 +148,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
           .stream()
           .filter(iv -> Objects.equals(iv.getName(), name))
           .findFirst()
-          .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
+          .orElseThrow(() -> invalidConfigurationException(
               "OAS property '{}' for path '{}' was not found as a " + "GraphQL intput value on input object type '{}'",
               name, pathName, typeDefinition.getName()));
       validate(name, childSchema, inputValueDefinition.getType(), pathName);
