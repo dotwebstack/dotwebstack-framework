@@ -168,7 +168,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
   }
 
   @Override
-  public boolean supports(@NonNull RequestBodyContext requestBodyContext) {
+  public boolean supports(@NonNull RequestBody requestBody) {
     return true;
   }
 

@@ -16,5 +16,5 @@ public interface RequestBodyHandler {
 
   void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody requestBody, @NonNull String pathName);
 
-  boolean supports(@NonNull RequestBodyContext requestBodyContext);
+  boolean supports(@NonNull RequestBody requestBody);
 }

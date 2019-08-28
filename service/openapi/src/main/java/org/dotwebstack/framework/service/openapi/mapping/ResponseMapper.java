@@ -97,6 +97,11 @@ public class ResponseMapper {
       return null;
     }
 
+    if (Objects.nonNull(parentContext.getSchema()
+        .getDwsType())) {
+      return parentContext.getData();
+    }
+
     Map<String, Object> result = new HashMap<>();
     parentContext.getSchema()
         .getChildren()
