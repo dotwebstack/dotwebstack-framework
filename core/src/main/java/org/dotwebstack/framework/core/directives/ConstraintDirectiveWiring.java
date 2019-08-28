@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.directives;
 
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLInputObjectField;
-import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.SchemaDirectiveWiring;
 import graphql.schema.idl.SchemaDirectiveWiringEnvironment;
 import lombok.AllArgsConstructor;
@@ -21,13 +20,10 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
   public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     try {
       GraphQLArgument argument = environment.getElement();
-      // TODO: Als non null dan dient waarde altijd gechecked te worden of als waarde is meegegeven
-      if (GraphQLTypeUtil.isNonNull(argument.getType())) {
-        constraintValidator.validate(DirectiveContainerTuple.builder()
-            .container(argument)
-            .value(argument.getDefaultValue())
-            .build());
-      }
+      constraintValidator.validateSchema(DirectiveContainerTuple.builder()
+          .container(argument)
+          .value(argument.getDefaultValue())
+          .build());
     } catch (DirectiveValidationException exception) {
       throwConfigurationException(exception);
     }
@@ -39,7 +35,7 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
       SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     try {
       GraphQLInputObjectField inputObjectField = environment.getElement();
-      constraintValidator.validate(DirectiveContainerTuple.builder()
+      constraintValidator.validateSchema(DirectiveContainerTuple.builder()
           .container(inputObjectField)
           .value(inputObjectField.getDefaultValue())
           .build());
