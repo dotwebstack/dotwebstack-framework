@@ -111,7 +111,7 @@ class ValueFetcherTest {
     when(environment.getField()).thenReturn(Field.newField()
         .name(BREWERY_IDENTIFIER_FIELD)
         .build());
-    when(nodeShapeRegistry.get((GraphQLObjectType) any())).thenReturn(nodeShape);
+    when(nodeShapeRegistry.getByShaclName(any())).thenReturn(nodeShape);
     this.converters = ImmutableList.of(new DateConverter());
     this.converterRouter = new Rdf4jConverterRouter(converters);
   }

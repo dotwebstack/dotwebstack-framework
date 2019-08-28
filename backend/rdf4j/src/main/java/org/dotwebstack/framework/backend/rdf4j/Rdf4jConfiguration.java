@@ -18,7 +18,6 @@ import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryPropert
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
-import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.CoreProperties;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -125,7 +124,7 @@ class Rdf4jConfiguration {
     Map<IRI, NodeShape> nodeShapeMap = new HashMap<>();
     Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
         .stream()
-        .map(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject,nodeShapeMap))
+        .map(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject, nodeShapeMap))
         .forEach(shape -> registry.register(shape.getIdentifier(), shape));
 
     return registry;

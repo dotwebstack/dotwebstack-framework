@@ -8,7 +8,6 @@ import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import graphql.schema.GraphQLDirectiveContainer;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;

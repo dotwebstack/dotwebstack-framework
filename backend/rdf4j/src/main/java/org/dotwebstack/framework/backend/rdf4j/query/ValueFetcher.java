@@ -7,7 +7,6 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
-
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
@@ -60,9 +59,11 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private PropertyShape getPropertyShape(DataFetchingEnvironment environment) {
     if (environment.getParentType() instanceof GraphQLObjectType) {
-      NodeShape nodeShape = nodeShapeRegistry.getByShaclName(environment.getParentType().getName());
+      NodeShape nodeShape = nodeShapeRegistry.getByShaclName(environment.getParentType()
+          .getName());
 
-      return nodeShape.getPropertyShape(environment.getField().getName());
+      return nodeShape.getPropertyShape(environment.getField()
+          .getName());
     }
     throw unsupportedOperationException("Cannot determine property shape for parent type '{}'.",
         environment.getParentType()
