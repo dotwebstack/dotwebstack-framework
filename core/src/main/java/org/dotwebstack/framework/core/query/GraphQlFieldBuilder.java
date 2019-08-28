@@ -62,14 +62,12 @@ public class GraphQlFieldBuilder {
       return Collections.emptyList();
     }
 
-    // TODO: Verbeter code om met circulaire dependencies om te gaan
-
     List<FieldDefinition> children = typeDefinition.getChildren();
     return children.stream()
         .map(childFieldDefinition -> {
           String childType = TypeHelper.getTypeName(TypeHelper.getBaseType(childFieldDefinition.getType()));
-          if (typeNameFieldMap.containsKey(childType) && childFieldDefinition.getChildren()
-              .size() > 0) {
+          if (typeNameFieldMap.containsKey(childType) && !childFieldDefinition.getChildren()
+              .isEmpty()) {
             return GraphQlField.builder()
                 .name(childFieldDefinition.getName())
                 .fields(typeNameFieldMap.get(childType)

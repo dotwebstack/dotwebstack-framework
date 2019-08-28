@@ -22,6 +22,8 @@ public class OasConstants {
 
   public static final String X_DWS_TYPE = "x-dws-type";
 
+  public static final String X_DWS_NAME = "x-dws-name";
+
   public static final String X_DWS_EXPAND_TYPE = "expand";
 
   public static final String X_DWS_SORT_TYPE = "sort";
@@ -29,6 +31,8 @@ public class OasConstants {
   public static final String X_DWS_QUERY = "x-dws-query";
 
   public static final String X_DWS_TEMPLATE = "x-dws-template";
+
+  public static final String X_DWS_TRANSIENT = "x-dws-transient";
 
   public static final String X_DWS_ENVELOPE = "x-dws-envelope";
 
