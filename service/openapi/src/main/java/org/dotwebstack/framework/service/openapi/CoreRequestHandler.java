@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi;
 
 import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
@@ -100,7 +101,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     if (responseSchemaContext.getResponses()
         .stream()
         .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
-      throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
+      throw unsupportedOperationException("No response in the 200 range found.");
     }
     validateParameters(field, responseSchemaContext.getParameters(), pathName);
     RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();
@@ -176,7 +177,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .stream()
         .filter(response -> response.isApplicable(200, 299))
         .findFirst()
-        .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
+        .orElseThrow(() -> unsupportedOperationException("No response found within the 200 range."));
   }
 
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
