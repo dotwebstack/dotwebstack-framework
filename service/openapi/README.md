@@ -210,3 +210,5 @@ The content of `x-dws-template` should be a valid [JEXL](http://commons.apache.o
 * `env`: The Spring environment variables. The most straightforward way to use an environment variable is to add it to the `application.yml`.
 * `fields.<property>`: A scalar field of the object containing the `x-dws-template` property.
 * `fields._parent.<property>`: Same as above, but using the parent of the object. This construction can be used recursively to access parents of parents: `fields._parent._parent.<property>`.
+* `args.<inputName>`: An input parameter mapped to the current container field. Currently, all input parameters are mapped to the root/query field.
+* `args._parent.<inputName>`: Same as above, but using the parent of the object.
