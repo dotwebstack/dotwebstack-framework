@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
+import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createFieldContext;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
+import org.dotwebstack.framework.service.openapi.response.FieldContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,8 +60,8 @@ class ResponseMapperTest {
   public void map_returnsProperty_ForValidResponse() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     Object data = ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value");
-    Deque<Object> dataStack = new ArrayDeque<>();
-    dataStack.push(data);
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(data, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(getObject("root", ImmutableList.of(REQUIRED_NILLABLE_STRING)))
@@ -88,8 +91,8 @@ class ResponseMapperTest {
   public void map_omitsProperty_ForMissingNonRequiredProperty() throws NoResultFoundException, JsonProcessingException {
     // Arrange
     Object data = ImmutableMap.of("another key", "prop1value");
-    Deque<Object> dataStack = new ArrayDeque<>();
-    dataStack.push(data);
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(data, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(getObject("root", ImmutableList.of(NOT_REQUIRED_NILLABLE_STRING)))
@@ -130,8 +133,8 @@ class ResponseMapperTest {
     Map<String, Object> rootData =
         ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1", child1Data);
 
-    Deque<Object> dataStack = new ArrayDeque<>();
-    dataStack.push(rootData);
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, ImmutableMap.of("k1", "v1")));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(responseObject)
@@ -159,8 +162,8 @@ class ResponseMapperTest {
     Map<String, Object> child1Data = ImmutableMap.of("child2", child2Data);
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
 
-    Deque<Object> dataStack = new ArrayDeque<>();
-    dataStack.push(rootData);
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(responseObject)
@@ -189,8 +192,8 @@ class ResponseMapperTest {
     Map<String, Object> child1Data = ImmutableMap.of("child2", child2Data);
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
 
-    Deque<Object> dataStack = new ArrayDeque<>();
-    dataStack.push(rootData);
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(responseObject)
@@ -220,8 +223,8 @@ class ResponseMapperTest {
     Map<String, Object> child1Data = ImmutableMap.of("array1", array1Data);
     Map<String, Object> rootData = ImmutableMap.of("child1", child1Data);
 
-    Deque<Object> dataStack = new ArrayDeque<>();
-    dataStack.push(rootData);
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(responseObject)
@@ -250,8 +253,8 @@ class ResponseMapperTest {
     Map<String, Object> rootData =
         ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1", child1Data);
 
-    Deque<Object> dataStack = new ArrayDeque<>();
-    dataStack.push(rootData);
+    Deque<FieldContext> dataStack = new ArrayDeque<>();
+    dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(responseObject)

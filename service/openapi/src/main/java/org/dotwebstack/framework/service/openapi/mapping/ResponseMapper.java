@@ -169,17 +169,21 @@ public class ResponseMapper {
     MapContext context = new MapContext();
 
     // add object data to context
-    StringBuilder builder = new StringBuilder("fields.");
+    StringBuilder fieldsBuilder = new StringBuilder("fields.");
+    StringBuilder argsBuilder = new StringBuilder("args.");
     writeContext.getDataStack()
-        .forEach(data -> {
+        .forEach(fieldContext -> {
+          Object data = fieldContext.getData();
           ((Map<String, Object>) data).entrySet()
               .stream()
               .filter(entry -> !(entry.getValue() instanceof Map))
-              .forEach(entry -> context.set(builder.toString() + entry.getKey(), entry.getValue()));
+              .forEach(entry -> context.set(fieldsBuilder.toString() + entry.getKey(), entry.getValue()));
 
-          builder.append("_parent.");
+          Map<String, Object> input = fieldContext.getInput();
+          input.forEach((key, value) -> context.set(argsBuilder.toString() + key, value));
+          fieldsBuilder.append("_parent.");
+          argsBuilder.append("_parent.");
         });
-
     // add properties data to context
     this.properties.getAllProperties()
         .forEach((key, value) -> context.set("env." + key, value));
