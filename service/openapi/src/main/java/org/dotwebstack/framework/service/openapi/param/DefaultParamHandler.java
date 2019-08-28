@@ -6,12 +6,15 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_HEADER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TRANSIENT;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -91,15 +94,13 @@ public class DefaultParamHandler implements ParamHandler {
     String parameterName = parameter.getName();
     if (Objects.nonNull(parameter.getExtensions())) {
 
-      // TODO: compleet en netter maken
-      if (hasExtension(parameter.getExtensions(), "x-dws-transient", Boolean.TRUE)
-          || hasExtension(parameter.getExtensions(), "x-dws-type", "expand")) {
+      if (hasDwsExtensionWithValue(parameter, X_DWS_TRANSIENT, Boolean.TRUE)) {
         return;
       }
       if (parameter.getExtensions()
-          .containsKey("x-dws-name")) {
+          .containsKey(X_DWS_NAME)) {
         parameterName = (String) parameter.getExtensions()
-            .get("x-dws-name");
+            .get(X_DWS_NAME);
       }
     }
 
@@ -115,18 +116,6 @@ public class DefaultParamHandler implements ParamHandler {
           "OAS argument '{}' for path '{}' was not found on GraphQL field '{}'", parameterName, pathName,
           field.getName());
     }
-  }
-
-  private boolean hasExtension(Map<String, Object> extensions, String name, Object value) {
-    if (Objects.isNull(extensions)) {
-      return false;
-    }
-
-    if (extensions.containsKey(name)) {
-      return Objects.equals(value, extensions.get(name));
-    }
-
-    return false;
   }
 
   @SuppressWarnings("unchecked")

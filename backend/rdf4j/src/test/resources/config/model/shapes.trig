@@ -169,7 +169,7 @@
   .
 
   beer_sh:BeerType a sh:NodeShape ;
-    sh:name "beerTypeRaw" ;
+    sh:name "BeerType" ;
     sh:targetClass beer_def:BeerType ;
     sh:property
       beer_sh:BeerType_name ;
@@ -217,7 +217,7 @@
   .
 
   beer_sh:Address a sh:NodeShape ;
-    sh:name "address" ;
+    sh:name "Address" ;
     sh:targetClass beer_def:Address ;
     sh:property
       beer_sh:Address_postalcode,

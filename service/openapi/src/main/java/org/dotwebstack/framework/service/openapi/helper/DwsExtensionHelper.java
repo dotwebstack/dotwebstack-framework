@@ -34,6 +34,12 @@ public class DwsExtensionHelper {
     return (Objects.nonNull(handler)) && Objects.equals(handler, typeString);
   }
 
+  public static boolean hasDwsExtensionWithValue(@NonNull Parameter parameter, @NonNull String typeName,
+      @NonNull Object value) {
+    Map<String, Object> extensions = parameter.getExtensions();
+    return (Objects.nonNull(extensions)) && Objects.equals(value, extensions.get(typeName));
+  }
+
   public static Object getDwsExtension(@NonNull Schema<?> schema, @NonNull String typeName) {
     Map<String, Object> extensions = schema.getExtensions();
     return (Objects.nonNull(extensions)) ? extensions.get(typeName) : null;
