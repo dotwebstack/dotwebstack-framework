@@ -13,14 +13,10 @@ public class RequestBodyHandlerRouter {
 
   private RequestBodyHandler defaultHandler;
 
-  private TypeDefinitionRegistry typeDefinitionRegistry;
-
-  private OpenAPI openApi;
-
-  public RequestBodyHandlerRouter(List<RequestBodyHandler> customHandlers, OpenAPI openApi) {
+  public RequestBodyHandlerRouter(List<RequestBodyHandler> customHandlers, @NonNull OpenAPI openApi,
+      @NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
     this.customHandlers = customHandlers;
     this.defaultHandler = new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry);
-    this.openApi = openApi;
   }
 
   public RequestBodyHandler getRequestBodyHandler(@NonNull RequestBodyContext requestBodyContext) {

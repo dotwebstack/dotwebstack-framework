@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.requestbody;
 
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.language.InputObjectTypeDefinition;
@@ -44,7 +46,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
 
   private TypeValidator typeValidator;
 
-  public DefaultRequestBodyHandler(OpenAPI openApi, TypeDefinitionRegistry typeDefinitionRegistry) {
+  public DefaultRequestBodyHandler(@NonNull OpenAPI openApi, @NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
     this.openApi = openApi;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
     this.typeValidator = new TypeValidator();
@@ -74,7 +76,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
 
   @SuppressWarnings("rawtypes")
   public void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody requestBody, @NonNull String pathName) {
-    requestBody.getContent()
+    resolveRequestBody(openApi, requestBody).getContent()
         .forEach((key, mediaType) -> {
           Schema<?> schema = mediaType.getSchema();
           if (schema.get$ref() != null) {
