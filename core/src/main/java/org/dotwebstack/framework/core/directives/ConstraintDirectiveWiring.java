@@ -21,13 +21,12 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
   public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     try {
       GraphQLArgument argument = environment.getElement();
-      //TODO: Als non null dan dient waarde altijd gechecked te worden of als waarde is meegegeven
+      // TODO: Als non null dan dient waarde altijd gechecked te worden of als waarde is meegegeven
       if (GraphQLTypeUtil.isNonNull(argument.getType())) {
-        constraintValidator.validate(
-            DirectiveContainerTuple.builder()
-                .container(argument)
-                .value(argument.getDefaultValue())
-                .build());
+        constraintValidator.validate(DirectiveContainerTuple.builder()
+            .container(argument)
+            .value(argument.getDefaultValue())
+            .build());
       }
     } catch (DirectiveValidationException exception) {
       throwConfigurationException(exception);

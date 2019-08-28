@@ -7,10 +7,10 @@ import lombok.Getter;
 public class RequestBodyContext {
   private String name;
 
-  private RequestBody requestBody;
+  private RequestBody requestBodySchema;
 
-  public RequestBodyContext(String name, RequestBody requestBody) {
+  public RequestBodyContext(String name, RequestBody requestBodySchema) {
     this.name = name;
-    this.requestBody = requestBody;
+    this.requestBodySchema = requestBodySchema;
   }
 }

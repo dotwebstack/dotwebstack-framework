@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi.param;
+package org.dotwebstack.framework.service.openapi.requestbody;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,15 +32,11 @@ import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
-import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
-
-@Component
-public class RequestBodyHandler {
+public class DefaultRequestBodyHandler implements RequestBodyHandler {
 
   private OpenAPI openApi;
 
@@ -48,17 +44,18 @@ public class RequestBodyHandler {
 
   private TypeValidator typeValidator;
 
-  public RequestBodyHandler(OpenAPI openApi, TypeDefinitionRegistry typeDefinitionRegistry) {
+  public DefaultRequestBodyHandler(OpenAPI openApi, TypeDefinitionRegistry typeDefinitionRegistry) {
     this.openApi = openApi;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
     this.typeValidator = new TypeValidator();
   }
 
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext)
-      throws BadRequestException {
+  @Override
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext,
+      Map<String, Object> parameterMap) throws BadRequestException {
     Mono<String> mono = request.bodyToMono(String.class);
     String value = mono.block();
-    if (Objects.isNull(value) && requestBodyContext.getRequestBody()
+    if (Objects.isNull(value) && requestBodyContext.getRequestBodySchema()
         .getRequired()) {
       throw OpenApiExceptionHelper.badRequestException("Request body required but not found.");
     } else if (Objects.isNull(value)) {
@@ -76,10 +73,10 @@ public class RequestBodyHandler {
   }
 
   @SuppressWarnings("rawtypes")
-  public void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody parameter, @NonNull String pathName) {
-    resolveRequestBody(openApi,parameter).getContent()
+  public void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody requestBody, @NonNull String pathName) {
+    requestBody.getContent()
         .forEach((key, mediaType) -> {
-          Schema schema = mediaType.getSchema();
+          Schema<?> schema = mediaType.getSchema();
           if (schema.get$ref() != null) {
             schema = SchemaUtils.getSchemaReference(schema.get$ref(), openApi);
           }
@@ -92,8 +89,8 @@ public class RequestBodyHandler {
         });
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  private void validate(Schema schema, GraphQlField graphQlField, String pathName) {
+  @SuppressWarnings("rawtypes")
+  private void validate(Schema<?> schema, GraphQlField graphQlField, String pathName) {
     Map<String, Schema> properties = schema.getProperties();
     properties.forEach((name, propertySchema) -> {
       GraphQlArgument argument = graphQlField.getArguments()
@@ -107,10 +104,11 @@ public class RequestBodyHandler {
     });
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  private void validate(String propertyName, Schema propertySchema, Type graphQlType, String pathName) {
-    Schema schema = propertySchema.get$ref() != null ? SchemaUtils.getSchemaReference(propertySchema.get$ref(), openApi)
-        : propertySchema;
+  @SuppressWarnings("rawtypes")
+  private void validate(String propertyName, Schema<?> propertySchema, Type graphQlType, String pathName) {
+    Schema<?> schema =
+        propertySchema.get$ref() != null ? SchemaUtils.getSchemaReference(propertySchema.get$ref(), openApi)
+            : propertySchema;
     Type unwrapped = TypeHelper.unwrapNonNullType(graphQlType);
     if (OasConstants.OBJECT_TYPE.equals(schema.getType())) {
       if (!(unwrapped instanceof TypeName)) {
@@ -127,7 +125,7 @@ public class RequestBodyHandler {
                   .invalidConfigurationException("Could not find type definition of GraphQL type '{}'", unwrapped));
 
       if (schema instanceof ComposedSchema) {
-        //TODO: implement oneOf,allOf() etc..
+        // TODO: implement oneOf,allOf() etc..
       } else {
         validateProperties(pathName, schema, typeDefinition);
       }
@@ -146,19 +144,17 @@ public class RequestBodyHandler {
     }
   }
 
-  private void validateProperties(String pathName, Schema schema, InputObjectTypeDefinition typeDefinition) {
+  @SuppressWarnings("rawtypes")
+  private void validateProperties(String pathName, Schema<?> schema, InputObjectTypeDefinition typeDefinition) {
     Map<String, Schema> properties = schema.getProperties();
     properties.forEach((name, childSchema) -> {
       InputValueDefinition inputValueDefinition = typeDefinition.getInputValueDefinitions()
           .stream()
           .filter(iv -> Objects.equals(iv.getName(), name))
           .findFirst()
-          .orElseThrow(
-              () -> ExceptionHelper
-                  .invalidConfigurationException(
-                      "OAS property '{}' for path '{}' was not found as a "
-                          + "GraphQL intput value on input object type '{}'",
-                      name, pathName, typeDefinition.getName()));
+          .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
+              "OAS property '{}' for path '{}' was not found as a " + "GraphQL intput value on input object type '{}'",
+              name, pathName, typeDefinition.getName()));
       validate(name, childSchema, inputValueDefinition.getType(), pathName);
     });
   }
@@ -173,5 +169,14 @@ public class RequestBodyHandler {
       throw new UnsupportedMediaTypeException(MediaType.parseMediaType(contentTypeHeaders.get(0)),
           Arrays.asList(MediaType.APPLICATION_JSON));
     }
+  }
+
+  @Override
+  public boolean supports(@NonNull RequestBodyContext requestBodyContext) {
+    return true;
+  }
+
+  protected OpenAPI getOpenApi() {
+    return this.openApi;
   }
 }

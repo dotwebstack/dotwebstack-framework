@@ -6,8 +6,6 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJE
 
 import java.util.List;
 import java.util.Objects;
-
-import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
@@ -16,8 +14,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResponseContextValidator {
   private final TypeValidator typeValidator = new TypeValidator();
-
-  private static List<String> IGNORE = ImmutableList.of("_links");
 
   public void validate(@NonNull ResponseObject template, @NonNull GraphQlField field) {
     String graphQlType = field.getType();
@@ -32,7 +28,6 @@ public class ResponseContextValidator {
         List<ResponseObject> children = template.getChildren();
         children.stream()
             .filter(child -> Objects.isNull(child.getDwsTemplate()))
-            .filter(child -> !IGNORE.contains(child.getIdentifier())) // TODO: _links etc op een betere manier ignoren! :-)
             .forEach(child -> {
               if (child.isEnvelope()) {
                 ResponseObject embedded = child.getChildren()
@@ -44,7 +39,9 @@ public class ResponseContextValidator {
                     .filter(childField -> childField.getName()
                         .equals(child.getIdentifier()))
                     .findFirst()
-                    .orElseThrow(() -> invalidOpenApiConfigurationException("OAS field '{}' not found in matching GraphQl object '{}' for schema type '{}'", child.getIdentifier(), field.getName(),field.getType()));
+                    .orElseThrow(() -> invalidOpenApiConfigurationException(
+                        "OAS field '{}' not found in matching GraphQl object '{}' for schema type '{}'",
+                        child.getIdentifier(), field.getName(), field.getType()));
                 validate(child, graphQlChildField);
               }
             });

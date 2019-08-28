@@ -7,12 +7,11 @@ import graphql.language.FieldDefinition;
 import graphql.language.ObjectTypeDefinition;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.v3.oas.models.Operation;
+import java.util.HashMap;
 import lombok.Builder;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.core.query.GraphQlFieldBuilder;
-
-import java.util.HashMap;
 
 @Builder
 public class QueryFieldHelper {

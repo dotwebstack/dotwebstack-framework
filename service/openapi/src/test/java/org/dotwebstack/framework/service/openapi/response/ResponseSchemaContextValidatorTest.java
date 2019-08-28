@@ -16,7 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 
-public class ResponseContextValidatorTest {
+public class ResponseSchemaContextValidatorTest {
 
   private OpenAPI openApi;
 
@@ -37,58 +37,60 @@ public class ResponseContextValidatorTest {
   @Test
   public void validate_succeeds_query1Get() {
     // Arrange
-    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.GET);
+    ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
 
     // Act / Assert
-    this.validator.validate(getResponseContext.getResponses()
+    this.validator.validate(getResponseSchemaContext.getResponses()
         .get(0)
-        .getResponseObject(), getResponseContext.getGraphQlField());
+        .getResponseObject(), getResponseSchemaContext.getGraphQlField());
   }
 
   @Test
   public void validate_succeeds_query1Post() {
     // Arrange
-    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.POST);
+    ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.POST);
 
     // Act / Assert
-    this.validator.validate(getResponseContext.getResponses()
+    this.validator.validate(getResponseSchemaContext.getResponses()
         .get(0)
-        .getResponseObject(), getResponseContext.getGraphQlField());
+        .getResponseObject(), getResponseSchemaContext.getGraphQlField());
   }
 
   @Test
   public void validate_succeeds_query2Get() {
     // Arrange
-    ResponseContext getResponseContext = getResponseContext("/query2", HttpMethod.GET);
+    ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query2", HttpMethod.GET);
 
     // Act / Assert
-    this.validator.validate(getResponseContext.getResponses()
+    this.validator.validate(getResponseSchemaContext.getResponses()
         .get(0)
-        .getResponseObject(), getResponseContext.getGraphQlField());
+        .getResponseObject(), getResponseSchemaContext.getGraphQlField());
   }
 
   @Test
   public void validate_throwsException_graphQlFieldNotFound() throws IOException {
     // Arrange
     this.registry = TestResources.typeDefinitionRegistry("o2_prop1", "other_property");
-    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.GET);
+    ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext.getResponses()
-        .get(0)
-        .getResponseObject(), getResponseContext.getGraphQlField()));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.validator.validate(getResponseSchemaContext.getResponses()
+            .get(0)
+            .getResponseObject(), getResponseSchemaContext.getGraphQlField()));
   }
 
   @Test
   public void validate_throwsException_typeMismatch() throws IOException {
     // Arrange
     this.registry = TestResources.typeDefinitionRegistry("o2_prop1", "other_property");
-    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.GET);
+    ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext.getResponses()
-        .get(0)
-        .getResponseObject(), getResponseContext.getGraphQlField()));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.validator.validate(getResponseSchemaContext.getResponses()
+            .get(0)
+            .getResponseObject(), getResponseSchemaContext.getGraphQlField()));
   }
 
   @Test
@@ -145,15 +147,16 @@ public class ResponseContextValidatorTest {
   public void validate_throwsException_dataTypeMismatchStringToInteger() throws IOException {
     // Arrange
     this.registry = TestResources.typeDefinitionRegistry("o1_prop2: Float!", "o1_prop2: Boolean!");
-    ResponseContext getResponseContext = getResponseContext("/query1", HttpMethod.GET);
+    ResponseSchemaContext getResponseSchemaContext = getResponseContext("/query1", HttpMethod.GET);
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> this.validator.validate(getResponseContext.getResponses()
-        .get(0)
-        .getResponseObject(), getResponseContext.getGraphQlField()));
+    assertThrows(InvalidConfigurationException.class,
+        () -> this.validator.validate(getResponseSchemaContext.getResponses()
+            .get(0)
+            .getResponseObject(), getResponseSchemaContext.getGraphQlField()));
   }
 
-  private ResponseContext getResponseContext(String path, HttpMethod httpMethod) {
+  private ResponseSchemaContext getResponseContext(String path, HttpMethod httpMethod) {
 
     PathItem pathItem = this.openApi.getPaths()
         .get(path);
@@ -161,6 +164,6 @@ public class ResponseContextValidatorTest {
     GraphQlField field = TestResources.queryFieldHelper(this.registry)
         .resolveGraphQlField(pathItem.getGet());
 
-    return new ResponseContext(field, responses, Collections.emptyList(), null);
+    return new ResponseSchemaContext(field, responses, Collections.emptyList(), null);
   }
 }

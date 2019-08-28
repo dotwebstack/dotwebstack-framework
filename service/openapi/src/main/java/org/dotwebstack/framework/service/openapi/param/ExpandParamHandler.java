@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.param;
 
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPANDED_PARAMS;
@@ -23,6 +24,7 @@ import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -40,8 +42,9 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter) {
-    Optional<Object> expandValueOptional = super.getValue(request, parameter);
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter,
+      @NonNull ResponseSchemaContext responseSchemaContext) {
+    Optional<Object> expandValueOptional = super.getValue(request, parameter, responseSchemaContext);
 
     if (expandValueOptional.isPresent()) {
       List<String> allValues = new ArrayList<>();
@@ -70,13 +73,11 @@ public class ExpandParamHandler extends DefaultParamHandler {
     switch (schema.getType()) {
       case ARRAY_TYPE:
         if (Objects.nonNull(schema.getDefault())) {
-          ((ArrayList<String>)
-                  Objects.requireNonNull(JsonNodeUtils.toObject((ArrayNode) schema.getDefault())))
-              .forEach(
-                  defaultValue -> {
-                    validateExpandParam(graphQlField, defaultValue, pathName);
-                    validateEnumValues(defaultValue, parameter);
-                  });
+          ((ArrayList<String>) Objects.requireNonNull(JsonNodeUtils.toObject((ArrayNode) schema.getDefault())))
+              .forEach(defaultValue -> {
+                validateExpandParam(graphQlField, defaultValue, pathName);
+                validateEnumValues(defaultValue, parameter);
+              });
         }
         ((ArraySchema) schema).getItems()
             .getEnum()
@@ -91,8 +92,8 @@ public class ExpandParamHandler extends DefaultParamHandler {
             .forEach(enumParam -> validateExpandParam(graphQlField, enumParam, pathName));
         break;
       default:
-        throw invalidOpenApiConfigurationException("Expand parameter '{}' can only be of type array or string for path '{}'",
-            parameter.getName(),pathName);
+        throw invalidOpenApiConfigurationException(
+            "Expand parameter '{}' can only be of type array or string for path '{}'", parameter.getName(), pathName);
     }
   }
 
@@ -102,8 +103,9 @@ public class ExpandParamHandler extends DefaultParamHandler {
         .stream()
         .noneMatch(field -> field.getName()
             .equals(fieldName))) {
-      throw invalidOpenApiConfigurationException("No field with name '{}' was found on GraphQL field '{}' for path '{}'", fieldName,
-          graphQlField.getName(),pathName);
+      throw invalidOpenApiConfigurationException(
+          "No field with name '{}' was found on GraphQL field '{}' for path '{}'", fieldName, graphQlField.getName(),
+          pathName);
     }
   }
 
@@ -117,8 +119,9 @@ public class ExpandParamHandler extends DefaultParamHandler {
           .filter(field -> field.getName()
               .equals(pathParams[0]))
           .findFirst()
-          .orElseThrow(() -> invalidOpenApiConfigurationException("No field with name '{}' was found on GraphQL field '{}' for pathName '{}'",
-              pathParams[0], graphQlField.getName(),pathName));
+          .orElseThrow(() -> invalidOpenApiConfigurationException(
+              "No field with name '{}' was found on GraphQL field '{}' for pathName '{}'", pathParams[0],
+              graphQlField.getName(), pathName));
       validateExpandParam(childField, String.join(".", ArrayUtils.remove(pathParams, 0)), pathName);
     }
   }

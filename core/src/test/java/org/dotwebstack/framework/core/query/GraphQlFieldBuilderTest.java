@@ -9,6 +9,7 @@ import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.HashMap;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,16 +23,15 @@ public class GraphQlFieldBuilderTest {
     this.registry = loadTypeDefinitionRegistry();
   }
 
-  //TODO: Fix test
-//  @Test
-//  public void toGraphQlField_throwsException_MissingType() {
-//    // Arrange
-//    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-//    FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
-//
-//    // Act / Assert
-//    assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition,));
-//  }
+  @Test
+  public void toGraphQlField_throwsException_MissingType() {
+    // Arrange
+    GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
+    FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
+
+    // Act / Assert
+    assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition, new HashMap<>()));
+  }
 
   private FieldDefinition getQueryFieldDefinition(String name) {
     ObjectTypeDefinition query = (ObjectTypeDefinition) this.registry.getType("Query")

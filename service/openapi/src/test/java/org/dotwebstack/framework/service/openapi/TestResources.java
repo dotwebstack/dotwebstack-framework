@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
-
 import org.apache.commons.io.FileUtils;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -65,7 +64,7 @@ public class TestResources {
         .findFirst()
         .orElseThrow(() -> ExceptionHelper
             .invalidConfigurationException("Query field definition '{}' not found in graphql schema.", name));
-    return new GraphQlFieldBuilder(typeDefinitionRegistry).toGraphQlField(fieldDefinition,new HashMap<>());
+    return new GraphQlFieldBuilder(typeDefinitionRegistry).toGraphQlField(fieldDefinition, new HashMap<>());
   }
 
   private static String readString(String path) {
