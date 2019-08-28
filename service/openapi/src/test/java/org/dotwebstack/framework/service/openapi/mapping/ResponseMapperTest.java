@@ -36,7 +36,8 @@ class ResponseMapperTest {
   private static final ResponseObject NOT_REQUIRED_NILLABLE_STRING = getProperty("prop3", "string", false, true, null);
 
   private static final ResponseObject DWS_TEMPLATE = getProperty("prop4", "string", true, false,
-      "`${env.env_var_1}_${fields.prop2}_${fields._parent.prop2}_${fields._parent._parent.prop2}`");
+      "`${env.env_var_1}_${fields.prop2}_${fields._parent.prop2}_${fields._parent._parent.prop2}_${args._parent"
+          + "._parent.arg1}`");
 
   private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
       .strict(true)
@@ -134,7 +135,7 @@ class ResponseMapperTest {
         ImmutableMap.of(REQUIRED_NON_NILLABLE_STRING.getIdentifier(), "v1", "child1", child1Data);
 
     Deque<FieldContext> dataStack = new ArrayDeque<>();
-    dataStack.push(createFieldContext(rootData, ImmutableMap.of("k1", "v1")));
+    dataStack.push(createFieldContext(rootData, ImmutableMap.of("arg1", "arg_v1")));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(responseObject)
@@ -146,7 +147,9 @@ class ResponseMapperTest {
     String response = responseMapper.toJson(writeContext);
 
     // Assert
-    assertTrue(response.contains("\"prop4\":\"v0_v3_v2_v1\""));
+    String expectedSubString = "\"prop4\":\"v0_v3_v2_v1_arg_v1\"";
+    assertTrue(response.contains(expectedSubString), String
+        .format("Expected sub string [%s] not found in " + "returned response [%s]", expectedSubString, response));
   }
 
   @Test
