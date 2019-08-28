@@ -14,6 +14,8 @@ public final class NodeShape {
 
   private final IRI targetClass;
 
+  private final String name;
+
   private final Map<String, PropertyShape> propertyShapes;
 
   public PropertyShape getPropertyShape(String name) {

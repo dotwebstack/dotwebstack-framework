@@ -8,6 +8,8 @@ import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import graphql.schema.GraphQLDirectiveContainer;
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -55,7 +57,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     return vertice;
   }
 
-  private Vertice createVertice(final Variable subject, NodeShape nodeShape) {
+  private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape) {
     List<Edge> edges = new ArrayList<>();
 
     edges.add(createSimpleEdge(null, Rdf.iri(nodeShape.getTargetClass()

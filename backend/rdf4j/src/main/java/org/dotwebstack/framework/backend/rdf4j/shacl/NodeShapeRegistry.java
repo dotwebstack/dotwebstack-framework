@@ -15,12 +15,15 @@ public class NodeShapeRegistry {
 
   private final HashMap<IRI, NodeShape> nodeShapes = new HashMap<>();
 
+  private final HashMap<String, NodeShape> nodeShapesByName = new HashMap<>();
+
   public NodeShapeRegistry(String shapePrefix) {
     this.shapePrefix = shapePrefix;
   }
 
   public void register(IRI identifier, NodeShape nodeShape) {
     nodeShapes.put(identifier, nodeShape);
+    nodeShapesByName.put(nodeShape.getName(),nodeShape);
   }
 
   public Collection<NodeShape> all() {
@@ -33,6 +36,10 @@ public class NodeShapeRegistry {
 
   public NodeShape get(String objectName) {
     return get(VF.createIRI(shapePrefix, objectName));
+  }
+
+  public NodeShape getByShaclName(String shaclName) {
+    return nodeShapesByName.get(shaclName);
   }
 
   public NodeShape get(GraphQLObjectType objectType) {

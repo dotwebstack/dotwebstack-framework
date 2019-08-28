@@ -8,6 +8,7 @@
 <https://github.com/dotwebstack/beer/shapes> {
   beer_sh:Brewery a sh:NodeShape ;
     sh:targetClass beer_def:Brewery ;
+    sh:name "Brewery" ;
     sh:property
       beer_sh:Brewery_identifier ,
       beer_sh:Brewery_name ,
@@ -110,6 +111,7 @@
 
   beer_sh:Beer a sh:NodeShape ;
     sh:targetClass beer_def:Beer ;
+    sh:name "Beer" ;
     sh:property
       beer_sh:Beer_identifier ,
       beer_sh:Beer_name ,
@@ -242,6 +244,7 @@
 
   beer_sh:Ingredient a sh:NodeShape ;
     sh:targetClass beer_def:Ingredient ;
+    sh:name "Ingredient" ;
     sh:property
       beer_sh:Ingredient_name ;
     sh:nodeKind sh:IRI ;
@@ -258,6 +261,7 @@
 
   beer_sh:Supplement a sh:NodeShape ;
     sh:targetClass beer_def:Supplement ;
+    sh:name "Supplement" ;
     sh:property
       beer_sh:Supplement_name ;
     sh:nodeKind sh:IRI

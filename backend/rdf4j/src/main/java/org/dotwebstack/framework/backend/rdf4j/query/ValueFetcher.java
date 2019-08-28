@@ -7,14 +7,15 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
+import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -59,11 +60,11 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private PropertyShape getPropertyShape(DataFetchingEnvironment environment) {
     if (environment.getParentType() instanceof GraphQLObjectType) {
-      return nodeShapeRegistry.get((GraphQLObjectType) environment.getParentType())
-          .getPropertyShape(environment.getField()
-              .getName());
+      NodeShape nodeShape = nodeShapeRegistry.getByShaclName(environment.getParentType().getName());
+
+      return nodeShape.getPropertyShape(environment.getField().getName());
     }
-    throw ExceptionHelper.unsupportedOperationException("Cannot determine property shape for parent type '{}'.",
+    throw unsupportedOperationException("Cannot determine property shape for parent type '{}'.",
         environment.getParentType()
             .getClass()
             .getSimpleName());
