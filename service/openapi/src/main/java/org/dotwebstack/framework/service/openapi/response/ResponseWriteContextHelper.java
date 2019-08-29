@@ -58,9 +58,9 @@ public class ResponseWriteContextHelper {
     if (!childSchema.isEnvelope()) {
       if (!parentContext.getDataStack()
           .isEmpty()) {
-        FieldContext fieldContext = parentContext.getDataStack()
-            .peek();
-        data = ((Map) fieldContext.getData()).get(childSchema.getIdentifier());
+        data = ((Map) parentContext.getDataStack()
+            .peek()
+            .getData()).get(childSchema.getIdentifier());
         dataStack = createNewDataStack(parentContext.getDataStack(), data, Collections.emptyMap());
         return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack);
       }
