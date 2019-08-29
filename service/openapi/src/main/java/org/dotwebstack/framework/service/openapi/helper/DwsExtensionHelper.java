@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TEMPLATE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 
 import io.swagger.v3.oas.models.media.Schema;
@@ -33,9 +34,20 @@ public class DwsExtensionHelper {
     return (Objects.nonNull(handler)) && Objects.equals(handler, typeString);
   }
 
+  public static boolean hasDwsExtensionWithValue(@NonNull Parameter parameter, @NonNull String typeName,
+      @NonNull Object value) {
+    Map<String, Object> extensions = parameter.getExtensions();
+    return (Objects.nonNull(extensions)) && Objects.equals(value, extensions.get(typeName));
+  }
+
   public static Object getDwsExtension(@NonNull Schema<?> schema, @NonNull String typeName) {
     Map<String, Object> extensions = schema.getExtensions();
     return (Objects.nonNull(extensions)) ? extensions.get(typeName) : null;
+  }
+
+  public static boolean isTemplate(@NonNull Schema<?> schema) {
+    String isTemplate = ((String) getDwsExtension(schema, X_DWS_TEMPLATE));
+    return Objects.nonNull(isTemplate);
   }
 
   public static boolean isEnvelope(@NonNull Schema<?> schema) {
