@@ -6,7 +6,6 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
-import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_HEADER_TYPE;
@@ -14,7 +13,6 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TRANSIENT;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -94,9 +92,6 @@ public class DefaultParamHandler implements ParamHandler {
     String parameterName = parameter.getName();
     if (Objects.nonNull(parameter.getExtensions())) {
 
-      if (hasDwsExtensionWithValue(parameter, X_DWS_TRANSIENT, Boolean.TRUE)) {
-        return;
-      }
       if (parameter.getExtensions()
           .containsKey(X_DWS_NAME)) {
         parameterName = (String) parameter.getExtensions()
