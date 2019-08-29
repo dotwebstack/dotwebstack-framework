@@ -43,7 +43,7 @@ public class ResponseContextHelper {
         .findFirst()
         .orElse(graphQlField);
 
-    if (!responseObject.isEnvelope() && !childField.equals(graphQlField)
+    if (!responseObject.isEnvelope() && responseObject.isRequired() && !childField.equals(graphQlField)
         && !Objects.equals(responseObject.getType(), OasConstants.ARRAY_TYPE)) {
       joiner.add(responseObject.getIdentifier());
       responseObjects.put(joiner.toString(), responseObject);
