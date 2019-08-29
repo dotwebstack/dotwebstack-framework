@@ -2,9 +2,8 @@ package org.dotwebstack.framework.service.openapi;
 
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import java.util.List;
-
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;

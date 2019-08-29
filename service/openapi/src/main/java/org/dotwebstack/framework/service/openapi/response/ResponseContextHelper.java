@@ -4,11 +4,13 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 
 public class ResponseContextHelper {
 
@@ -41,7 +43,8 @@ public class ResponseContextHelper {
         .findFirst()
         .orElse(graphQlField);
 
-    if (!responseObject.isEnvelope() && !childField.equals(graphQlField)) {
+    if (!responseObject.isEnvelope() && !childField.equals(graphQlField)
+        && !Objects.equals(responseObject.getType(), OasConstants.ARRAY_TYPE)) {
       joiner.add(responseObject.getIdentifier());
       responseObjects.put(joiner.toString(), responseObject);
     }
