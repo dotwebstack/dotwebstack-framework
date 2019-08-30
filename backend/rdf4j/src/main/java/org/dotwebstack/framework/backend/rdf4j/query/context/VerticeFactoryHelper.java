@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 
 import graphql.schema.GraphQLDirectiveContainer;
 import java.util.Objects;
+import java.util.Set;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -39,22 +40,25 @@ class VerticeFactoryHelper {
   /*
    * Find out if given edge contains a child edge is of given type.
    */
-  static boolean hasChildEdgeOfType(Edge edge, IRI type) {
+  static boolean hasChildEdgeOfType(Edge edge, Set<IRI> types) {
     return edge.getObject()
         .getEdges()
         .stream()
-        .anyMatch(childEdge -> isOfType(childEdge, type));
+        .anyMatch(childEdge -> isOfType(childEdge, types));
   }
 
   /*
-   * Find out of given edge, is of given type
+   * Find out of given edge, is of any of the given types
    */
-  static boolean isOfType(Edge edge, IRI type) {
-    return (stringify(RDF.TYPE)).equals(edge.getPredicate()
-        .getQueryString()) && (stringify(type)).equals(
-            edge.getObject()
-                .getIri()
-                .getQueryString());
+  static boolean isOfType(Edge edge, Set<IRI> types) {
+    return types.stream()
+        .anyMatch(type -> (stringify(RDF.TYPE)).equals(edge.getPredicate()
+            .getQueryString())
+            && (edge.getObject()
+                .getIris()
+                .stream()
+                .anyMatch(iri -> iri.getQueryString()
+                    .equals(stringify(type)))));
   }
 
   static String getFieldName(GraphQLDirectiveContainer container) {

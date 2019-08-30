@@ -7,6 +7,7 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
@@ -83,22 +84,22 @@ public final class ValueFetcher extends SourceDataFetcher {
               return Models.getProperties(source.getModel(), (SimpleIRI) result, RDF.TYPE)
                   .stream()
                   .anyMatch(property -> property.equals(propertyShape.getNode()
-                      .getTargetClass()));
+                      .getTargetClasses()
+                      .iterator()
+                      .next()));
             }
 
             return resultIsOfType(result, propertyShape.getNode()
-                .getTargetClass());
+                .getTargetClasses());
           }
           return true;
         });
   }
 
-  private boolean resultIsOfType(Value value, IRI type) {
+  private boolean resultIsOfType(Value value, Set<IRI> types) {
     return listOf(((MemResource) value).getSubjectStatementList()).stream()
         .anyMatch(statement -> statement.getPredicate()
-            .equals(RDF.TYPE)
-            && statement.getObject()
-                .equals(type));
+            .equals(RDF.TYPE) && types.contains(statement.getObject()));
   }
 
   private Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {

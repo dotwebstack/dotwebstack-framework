@@ -13,6 +13,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -33,7 +34,6 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
-import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -277,11 +277,7 @@ public class DefaultParamHandler implements ParamHandler {
 
   @SuppressWarnings("rawtypes")
   Optional<Object> getDefault(Parameter parameter) {
-    Schema schema = parameter.getSchema()
-        .get$ref() != null ? SchemaUtils.getSchemaReference(
-            parameter.getSchema()
-                .get$ref(),
-            openApi) : parameter.getSchema();
+    Schema schema = resolveSchema(openApi, parameter.getSchema());
     if (schema != null && schema.getDefault() != null) {
       switch (schema.getType()) {
         case ARRAY_TYPE:
@@ -297,13 +293,11 @@ public class DefaultParamHandler implements ParamHandler {
   private boolean hasEnum(Parameter parameter) {
     if (parameter.getSchema() instanceof ArraySchema) {
       ArraySchema arraySchema = (ArraySchema) parameter.getSchema();
-      if (Objects.nonNull(arraySchema.getItems()
+      return Objects.nonNull(arraySchema.getItems()
           .getEnum())
           && !arraySchema.getItems()
               .getEnum()
-              .isEmpty()) {
-        return true;
-      }
+              .isEmpty();
     } else if (parameter.getSchema() instanceof StringSchema) {
       return Objects.nonNull(parameter.getSchema()
           .getEnum())

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
@@ -54,12 +55,12 @@ abstract class AbstractVerticeFactory {
         .build();
   }
 
-  Edge createSimpleEdge(Variable subject, Iri iri, RdfPredicate predicate, boolean isVisible) {
+  Edge createSimpleEdge(Variable subject, Set<Iri> iris, RdfPredicate predicate, boolean isVisible) {
     return Edge.builder()
         .predicate(predicate)
         .object(Vertice.builder()
             .subject(subject)
-            .iri(iri)
+            .iris(iris)
             .build())
         .isVisible(isVisible)
         .isOptional(false)
@@ -93,7 +94,7 @@ abstract class AbstractVerticeFactory {
               .getType()))) {
             return hasChildEdgeOfType(edge, nodeShape.getPropertyShape(field.getName())
                 .getNode()
-                .getTargetClass());
+                .getTargetClasses());
           }
           return true;
         })
@@ -188,7 +189,7 @@ abstract class AbstractVerticeFactory {
                   .getQueryString()))
           .filter(childEdge -> Objects.isNull(propertyShape.getNode()) || hasChildEdgeOfType(childEdge,
               propertyShape.getNode()
-                  .getTargetClass()))
+                  .getTargetClasses()))
           .findFirst();
     }
 

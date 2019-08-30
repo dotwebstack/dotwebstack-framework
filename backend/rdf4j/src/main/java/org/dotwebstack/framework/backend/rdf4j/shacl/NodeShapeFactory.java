@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIri;
+import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIris;
 import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyLiteral;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
@@ -46,7 +47,7 @@ public class NodeShapeFactory {
     NodeShape nodeShape = NodeShape.builder()
         .name(findRequiredPropertyLiteral(shapeModel, identifier, SHACL.NAME).stringValue())
         .identifier(identifier)
-        .targetClass(findRequiredPropertyIri(shapeModel, identifier, SHACL.TARGET_CLASS))
+        .targetClasses(findRequiredPropertyIris(shapeModel, identifier, SHACL.TARGET_CLASS))
         .propertyShapes(propertyShapes)
         .build();
 

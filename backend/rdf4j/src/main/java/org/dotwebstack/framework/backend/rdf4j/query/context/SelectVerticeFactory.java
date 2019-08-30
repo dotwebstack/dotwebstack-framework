@@ -8,6 +8,8 @@ import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import graphql.schema.GraphQLDirectiveContainer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
@@ -16,6 +18,7 @@ import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.springframework.stereotype.Component;
 
@@ -59,8 +62,12 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   private Vertice createVertice(final Variable subject, @NonNull NodeShape nodeShape) {
     List<Edge> edges = new ArrayList<>();
 
-    edges.add(createSimpleEdge(null, Rdf.iri(nodeShape.getTargetClass()
-        .stringValue()), () -> stringify(RDF.TYPE), true));
+    Set<Iri> iris = nodeShape.getTargetClasses()
+        .stream()
+        .map(targetClass -> Rdf.iri(targetClass.stringValue()))
+        .collect(Collectors.toSet());
+
+    edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
 
     return Vertice.builder()
         .subject(subject)

@@ -1,7 +1,10 @@
 package org.dotwebstack.framework.service.openapi.requestbody;
 
+import static java.util.Collections.singletonList;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.badRequestException;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,28 +19,27 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.apache.commons.lang3.BooleanUtils;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
-import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
-import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
-import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
 
+@Component
 public class DefaultRequestBodyHandler implements RequestBodyHandler {
 
   private OpenAPI openApi;
@@ -46,42 +48,43 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
 
   private TypeValidator typeValidator;
 
-  public DefaultRequestBodyHandler(@NonNull OpenAPI openApi, @NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
+  private ObjectMapper objectMapper;
+
+  public DefaultRequestBodyHandler(@NonNull OpenAPI openApi, @NonNull TypeDefinitionRegistry typeDefinitionRegistry,
+      @NonNull Jackson2ObjectMapperBuilder jackson2ObjectMapperBuilder) {
     this.openApi = openApi;
     this.typeDefinitionRegistry = typeDefinitionRegistry;
     this.typeValidator = new TypeValidator();
+    this.objectMapper = jackson2ObjectMapperBuilder.build();
   }
 
   @Override
-  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull RequestBodyContext requestBodyContext,
+  public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull RequestBody requestBody,
       Map<String, Object> parameterMap) throws BadRequestException {
     Mono<String> mono = request.bodyToMono(String.class);
     String value = mono.block();
-    if (Objects.isNull(value) && requestBodyContext.getRequestBodySchema()
-        .getRequired()) {
-      throw OpenApiExceptionHelper.badRequestException("Request body required but not found.");
+
+    if (Objects.isNull(value) && BooleanUtils.isTrue(requestBody.getRequired())) {
+      throw badRequestException("Request body required but not found.");
     } else if (Objects.isNull(value)) {
       return Optional.empty();
     } else {
       validateContentType(request);
       try {
-        JsonNode node = new ObjectMapper().reader()
+        JsonNode node = objectMapper.reader()
             .readTree(value);
         return Optional.ofNullable(JsonNodeUtils.toObject(node));
       } catch (IOException e) {
-        throw ExceptionHelper.illegalArgumentException("Could not parse request body as JSON: {}.", e.getMessage());
+        throw illegalArgumentException("Could not parse request body as JSON: {}.", e.getMessage());
       }
     }
   }
 
   @SuppressWarnings("rawtypes")
   public void validate(@NonNull GraphQlField graphQlField, @NonNull RequestBody requestBody, @NonNull String pathName) {
-    resolveRequestBody(openApi, requestBody).getContent()
+    requestBody.getContent()
         .forEach((key, mediaType) -> {
-          Schema<?> schema = mediaType.getSchema();
-          if (schema.get$ref() != null) {
-            schema = SchemaUtils.getSchemaReference(schema.get$ref(), openApi);
-          }
+          Schema<?> schema = resolveSchema(openApi, mediaType.getSchema());
           String type = schema.getType();
           if (!Objects.equals(type, OasConstants.OBJECT_TYPE)) {
             throw invalidConfigurationException("Schema type '{}' not supported for request body.", type);
@@ -107,9 +110,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
 
   @SuppressWarnings("rawtypes")
   private void validate(String propertyName, Schema<?> propertySchema, Type graphQlType, String pathName) {
-    Schema<?> schema =
-        propertySchema.get$ref() != null ? SchemaUtils.getSchemaReference(propertySchema.get$ref(), openApi)
-            : propertySchema;
+    Schema<?> schema = resolveSchema(openApi, propertySchema);
     Type unwrapped = TypeHelper.unwrapNonNullType(graphQlType);
     if (OasConstants.OBJECT_TYPE.equals(schema.getType())) {
       if (!(unwrapped instanceof TypeName)) {
@@ -159,20 +160,16 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     List<String> contentTypeHeaders = request.headers()
         .header(OasConstants.HEADER_CONTENT_TYPE);
     if (contentTypeHeaders.size() != 1) {
-      throw OpenApiExceptionHelper.badRequestException("Expected exactly 1 '{}' header but found {}.",
-          OasConstants.HEADER_CONTENT_TYPE, contentTypeHeaders.size());
+      throw badRequestException("Expected exactly 1 '{}' header but found {}.", OasConstants.HEADER_CONTENT_TYPE,
+          contentTypeHeaders.size());
     } else if (!Objects.equals(MediaType.APPLICATION_JSON.toString(), contentTypeHeaders.get(0))) {
       throw new UnsupportedMediaTypeException(MediaType.parseMediaType(contentTypeHeaders.get(0)),
-          Arrays.asList(MediaType.APPLICATION_JSON));
+          singletonList(MediaType.APPLICATION_JSON));
     }
   }
 
   @Override
   public boolean supports(@NonNull RequestBody requestBody) {
     return true;
-  }
-
-  protected OpenAPI getOpenApi() {
-    return this.openApi;
   }
 }

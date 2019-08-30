@@ -36,6 +36,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
@@ -64,7 +65,7 @@ public class OpenApiConfigurationTest {
   public void setup() {
     this.registry = TestResources.typeDefinitionRegistry();
     this.openApi = TestResources.openApi();
-    this.openApiConfiguration = spy(new OpenApiConfiguration(graphQL, this.registry, responseMapper,
+    this.openApiConfiguration = spy(new OpenApiConfiguration(openApi, graphQL, this.registry, responseMapper,
         new ParamHandlerRouter(Collections.emptyList(), openApi), responseContextValidator, requestBodyHandlerRouter));
   }
 
@@ -78,7 +79,7 @@ public class OpenApiConfigurationTest {
         .toOptionRouterFunction(anyList());
 
     when(requestBodyHandlerRouter.getRequestBodyHandler(any()))
-        .thenReturn(new DefaultRequestBodyHandler(this.openApi, this.registry));
+        .thenReturn(new DefaultRequestBodyHandler(this.openApi, this.registry, new Jackson2ObjectMapperBuilder()));
 
     // Act
     openApiConfiguration.route(openApi);

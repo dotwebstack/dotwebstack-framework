@@ -35,9 +35,6 @@ public class VerticeHelper {
           .getSubject())) {
         triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getObject()
             .getSubject()));
-      } else {
-        triplePatterns.add(GraphPatterns.tp(subject, edge.getConstructPredicate(), edge.getObject()
-            .getIri()));
       }
     }
 
@@ -63,10 +60,7 @@ public class VerticeHelper {
         .getSubject())) ? GraphPatterns.tp(subject, edge.getPredicate(),
             edge.getObject()
                 .getSubject())
-            .optional(edge.isOptional())
-            : GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
-                .getIri())
-                .optional(edge.isOptional());
+            .optional(edge.isOptional()) : getTriplePatternForIris(edge, subject);
 
     if (!edge.getObject()
         .getFilters()
@@ -85,6 +79,25 @@ public class VerticeHelper {
     graphPattern.and(childPatterns.toArray(new GraphPattern[0]));
 
     return singletonList(graphPattern);
+  }
+
+  private static GraphPattern getTriplePatternForIris(Edge edge, Variable subject) {
+    if (edge.getObject()
+        .getIris()
+        .size() == 1) {
+      return GraphPatterns.tp(subject, edge.getPredicate(), edge.getObject()
+          .getIris()
+          .iterator()
+          .next())
+          .optional(edge.isOptional());
+    }
+
+    return GraphPatterns.union(edge.getObject()
+        .getIris()
+        .stream()
+        .map(iri -> GraphPatterns.tp(subject, edge.getPredicate(), iri)
+            .optional(edge.isOptional()))
+        .toArray(GraphPattern[]::new));
   }
 
   private static Expression<?> getFilterExpression(Filter filter, Variable subject) {

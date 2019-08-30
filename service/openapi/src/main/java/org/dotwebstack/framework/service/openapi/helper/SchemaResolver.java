@@ -51,7 +51,7 @@ public class SchemaResolver {
 
       Schema<?> result = openApi.getComponents()
           .getSchemas()
-          .get(ref);
+          .get(refName);
 
       if (Objects.isNull(result)) {
         throw invalidOpenApiConfigurationException("Schema definition can't be found for reference '{}'", ref);

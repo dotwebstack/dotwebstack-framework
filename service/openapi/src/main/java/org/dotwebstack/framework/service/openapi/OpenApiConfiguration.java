@@ -41,6 +41,8 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 @Configuration
 public class OpenApiConfiguration {
 
+  private final OpenAPI openApi;
+
   private final GraphQL graphQl;
 
   private final ResponseMapper responseMapper;
@@ -53,9 +55,10 @@ public class OpenApiConfiguration {
 
   private QueryFieldHelper queryFieldHelper;
 
-  public OpenApiConfiguration(GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
+  public OpenApiConfiguration(OpenAPI openApi, GraphQL graphQl, TypeDefinitionRegistry typeDefinitionRegistry,
       ResponseMapper responseMapper, ParamHandlerRouter paramHandlerRouter,
       ResponseContextValidator responseContextValidator, RequestBodyHandlerRouter requestBodyHandlerRouter) {
+    this.openApi = openApi;
     this.graphQl = graphQl;
     this.paramHandlerRouter = paramHandlerRouter;
     this.responseMapper = responseMapper;
@@ -134,8 +137,8 @@ public class OpenApiConfiguration {
         .and(accept(MediaType.APPLICATION_JSON));
 
     return RouterFunctions.route(requestPredicate,
-        new CoreRequestHandler(httpMethodOperation.getName(), responseSchemaContext, responseContextValidator, graphQl,
-            responseMapper, paramHandlerRouter, requestBodyHandlerRouter));
+        new CoreRequestHandler(openApi, httpMethodOperation.getName(), responseSchemaContext, responseContextValidator,
+            graphQl, responseMapper, paramHandlerRouter, requestBodyHandlerRouter));
   }
 
   protected Optional<RouterFunction<ServerResponse>> toOptionRouterFunction(

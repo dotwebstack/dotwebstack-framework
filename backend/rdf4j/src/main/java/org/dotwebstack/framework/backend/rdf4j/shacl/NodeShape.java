@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
 import java.util.Map;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Getter;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
@@ -12,7 +13,7 @@ public final class NodeShape {
 
   private final IRI identifier;
 
-  private final IRI targetClass;
+  private final Set<IRI> targetClasses;
 
   private final String name;
 

@@ -79,7 +79,9 @@ class NodeShapeFactoryTest {
     assertThat(supplements.getNode()
         .getIdentifier(), equalTo(SUPPLEMENT_SHAPE));
     assertThat(supplements.getNode()
-        .getTargetClass(), equalTo(SUPPLEMENT_CLASS));
+        .getTargetClasses()
+        .iterator()
+        .next(), equalTo(SUPPLEMENT_CLASS));
 
     PropertyShape ingredients = propertyShapes.get("ingredients");
 
@@ -95,7 +97,9 @@ class NodeShapeFactoryTest {
     assertThat(ingredients.getNode()
         .getIdentifier(), equalTo(INGREDIENT_SHAPE));
     assertThat(ingredients.getNode()
-        .getTargetClass(), equalTo(INGREDIENT_CLASS));
+        .getTargetClasses()
+        .iterator()
+        .next(), equalTo(INGREDIENT_CLASS));
   }
 
 }
