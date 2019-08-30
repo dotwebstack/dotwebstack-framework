@@ -15,7 +15,7 @@ public class ResponseWriteContext {
   Object data;
 
   @Builder.Default
-  Deque<Object> dataStack = new ArrayDeque<>();
+  Deque<FieldContext> dataStack = new ArrayDeque<>();
 
   Map<String, Object> parameters;
 

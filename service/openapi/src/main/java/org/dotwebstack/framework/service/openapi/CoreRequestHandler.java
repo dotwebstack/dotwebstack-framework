@@ -166,7 +166,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .next();
 
       return responseMapper.toJson(createNewResponseWriteContext(getResponseTemplate().getResponseObject(), data,
-          inputParams, createNewDataStack(new ArrayDeque<>(), data)));
+          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams)));
     }
     throw OpenApiExceptionHelper.graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
