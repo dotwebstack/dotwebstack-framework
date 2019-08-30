@@ -7,7 +7,7 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TEMPLATE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
-import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSchemaReference;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -98,8 +98,7 @@ public class ResponseTemplateBuilder {
 
     ResponseObject root;
     if (Objects.nonNull(ref)) {
-      Schema schema = getSchemaReference(ref, openApi);
-      root = createResponseObject(openApi, ref, schema, true, false);
+      root = createResponseObject(openApi, ref, resolveSchema(openApi, content.getSchema()), true, false);
     } else {
       root = createResponseObject(openApi, null, content.getSchema(), true, false);
     }
@@ -115,8 +114,7 @@ public class ResponseTemplateBuilder {
   private ResponseObject createResponseObject(OpenAPI openApi, String identifier, Schema schema, boolean isRequired,
       boolean isNillable) {
     if (schema.get$ref() != null) {
-      return createResponseObject(openApi, identifier, getSchemaReference(schema.get$ref(), openApi), isRequired,
-          isNillable);
+      return createResponseObject(openApi, identifier, resolveSchema(openApi, schema), isRequired, isNillable);
     } else if (schema instanceof ObjectSchema) {
       return createResponseObject(openApi, identifier, (ObjectSchema) schema, isRequired, isNillable);
     } else if (schema instanceof ArraySchema) {
@@ -168,8 +166,8 @@ public class ResponseTemplateBuilder {
         .get$ref();
     ResponseObject item;
     if (Objects.nonNull(ref)) {
-      Schema refSchema = getSchemaReference(ref, openApi);
-      item = createResponseObject(openApi, identifier, refSchema, true, isNillable(refSchema));
+      Schema resolvedSchema = resolveSchema(openApi, schema, ref);
+      item = createResponseObject(openApi, identifier, resolvedSchema, true, isNillable(resolvedSchema));
     } else {
       item = createResponseObject(openApi, identifier, schema.getItems(), true, false);
     }

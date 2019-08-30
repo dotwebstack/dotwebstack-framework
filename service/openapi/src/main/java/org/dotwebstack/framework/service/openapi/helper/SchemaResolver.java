@@ -40,8 +40,10 @@ public class SchemaResolver {
   }
 
   public static Schema<?> resolveSchema(@NonNull OpenAPI openApi, @NonNull Schema<?> schema) {
-    String ref = schema.get$ref();
+    return resolveSchema(openApi, schema, schema.get$ref());
+  }
 
+  public static Schema<?> resolveSchema(@NonNull OpenAPI openApi, @NonNull Schema<?> schema, String ref) {
     if (Objects.nonNull(ref)) {
       String refName = StringUtils.substringAfterLast(ref, "/");
 
@@ -53,7 +55,7 @@ public class SchemaResolver {
           .getSchemas()
           .get(refName);
 
-      if (Objects.isNull(result)) {
+      if (result == null) {
         throw invalidOpenApiConfigurationException("Schema definition can't be found for reference '{}'", ref);
       }
 
