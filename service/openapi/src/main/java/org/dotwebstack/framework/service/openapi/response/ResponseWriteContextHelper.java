@@ -4,28 +4,32 @@ import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 
 public class ResponseWriteContextHelper {
 
   private ResponseWriteContextHelper() {}
 
-  public static ResponseWriteContext unwrapChildSchema(@NonNull ResponseWriteContext parentContext) {
-    ResponseObject childSchema = parentContext.getSchema()
+  public static List<ResponseWriteContext> unwrapChildSchema(@NonNull ResponseWriteContext parentContext) {
+    return parentContext.getSchema()
         .getChildren()
-        .get(0);
+        .stream()
+        .map(child -> {
+          Object data = parentContext.getData();
+          Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
-    Object data = parentContext.getData();
-    Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
+          if (!child.isEnvelope() && data instanceof Map) {
+            data = ((Map) data).get(child.getIdentifier());
+            dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
+          }
 
-    if (!childSchema.isEnvelope() && data instanceof Map) {
-      data = ((Map) data).get(childSchema.getIdentifier());
-      dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
-    }
-
-    return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack,
-        parentContext.getUri());
+          return createNewResponseWriteContext(child, data, parentContext.getParameters(), dataStack,
+              parentContext.getUri());
+        })
+        .collect(Collectors.toList());
   }
 
   public static ResponseWriteContext unwrapItemSchema(@NonNull ResponseWriteContext parentContext) {

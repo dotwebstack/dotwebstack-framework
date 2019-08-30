@@ -134,13 +134,13 @@ public class ResponseMapper {
   @SuppressWarnings("rawtypes")
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext) {
     Map<String, Object> result = new HashMap<>();
-    ResponseWriteContext writeContext = unwrapChildSchema(parentContext);
-    Object object = mapDataToResponse(writeContext);
-    result.put(writeContext.getSchema()
-        .getIdentifier(), object);
+    unwrapChildSchema(parentContext).forEach(child -> {
+      Object object = mapDataToResponse(child);
+      result.put(child.getSchema()
+          .getIdentifier(), object);
+    });
     return result;
   }
-
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
     return Objects.nonNull(writeContext.getSchema()
