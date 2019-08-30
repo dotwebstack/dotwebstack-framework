@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import java.util.ArrayDeque;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.Map;
 import lombok.NonNull;
@@ -20,7 +19,7 @@ public class ResponseWriteContextHelper {
 
     if (!childSchema.isEnvelope() && data instanceof Map) {
       data = ((Map) data).get(childSchema.getIdentifier());
-      dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
+      dataStack = createNewDataStack(dataStack, data, parentContext.getParameters());
     }
 
     return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack);
@@ -61,7 +60,7 @@ public class ResponseWriteContextHelper {
         data = ((Map) parentContext.getDataStack()
             .peek()
             .getData()).get(childSchema.getIdentifier());
-        dataStack = createNewDataStack(parentContext.getDataStack(), data, Collections.emptyMap());
+        dataStack = createNewDataStack(parentContext.getDataStack(), data, parentContext.getParameters());
         return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack);
       }
 
@@ -75,7 +74,8 @@ public class ResponseWriteContextHelper {
 
   public static ResponseWriteContext createResponseContextFromChildData(@NonNull ResponseWriteContext parentContext,
       @NonNull Object childData) {
-    Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), childData, Collections.emptyMap());
+    Deque<FieldContext> dataStack =
+        createNewDataStack(parentContext.getDataStack(), childData, parentContext.getParameters());
     return createNewResponseWriteContext(parentContext.getSchema(), childData, parentContext.getParameters(),
         dataStack);
   }

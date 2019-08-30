@@ -141,6 +141,7 @@ class ResponseMapperTest {
         .schema(responseObject)
         .data(rootData)
         .dataStack(dataStack)
+        .parameters(Collections.emptyMap())
         .build();
 
     // Act
