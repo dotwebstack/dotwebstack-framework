@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
@@ -137,10 +138,13 @@ class ResponseMapperTest {
     Deque<FieldContext> dataStack = new ArrayDeque<>();
     dataStack.push(createFieldContext(rootData, ImmutableMap.of("arg1", "arg_v1")));
 
+    URI uri = URI.create("http://dontcare.com:90210/bh?a=b");
+
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
         .schema(responseObject)
         .data(rootData)
         .dataStack(dataStack)
+        .uri(uri)
         .build();
 
     // Act

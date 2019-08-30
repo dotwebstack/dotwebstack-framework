@@ -15,7 +15,7 @@ import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactor
 import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
-import org.dotwebstack.framework.core.helpers.JexlHelper;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
