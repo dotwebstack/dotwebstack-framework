@@ -173,7 +173,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .next();
 
       return responseMapper.toJson(createNewResponseWriteContext(getResponseTemplate().getResponseObject(), data,
-          inputParams, createNewDataStack(new ArrayDeque<>(), data)));
+          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams)));
     }
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
