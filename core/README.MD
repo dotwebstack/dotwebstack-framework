@@ -153,7 +153,7 @@ The filter directive (@filter) allows the user to apply a filter on a field. The
 ```
 
 ## 1.7 Jexl Functions
-When using the JexlEngine provided by `org.dotwebstack.framework.core.CoreConfiguration.jexlBuilder`, it is possible to add custom functions to allow for more readable Jexl expressions. Custom functions can be added by creating a POJO class that implements the `org.dotwebstack.framework.core.jexl.JexlFunction` class. Any class implementing this interface will be picked up by Spring and added to the Jexl engine under its provided namespace.
+When using the JexlEngine provided by `org.dotwebstack.framework.core.CoreConfiguration.jexlBuilder`, it is possible to add custom functions to allow for more readable Jexl expressions. Custom functions can be added by creating a POJO class that implements the `org.dotwebstack.framework.core.jexl.JexlFunction` interface. Any class implementing this interface will be picked up by Spring and added to the Jexl engine under its provided namespace.
 ```java
 public class MyFunction implements JexlFunction {
   @Override
