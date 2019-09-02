@@ -1,28 +1,35 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import java.net.URI;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 
 public class ResponseWriteContextHelper {
 
   private ResponseWriteContextHelper() {}
 
-  public static ResponseWriteContext unwrapChildSchema(@NonNull ResponseWriteContext parentContext) {
-    ResponseObject childSchema = parentContext.getSchema()
+  public static List<ResponseWriteContext> unwrapChildSchema(@NonNull ResponseWriteContext parentContext) {
+    return parentContext.getSchema()
         .getChildren()
-        .get(0);
+        .stream()
+        .map(child -> {
+          Object data = parentContext.getData();
+          Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
 
-    Object data = parentContext.getData();
-    Deque<FieldContext> dataStack = new ArrayDeque<>(parentContext.getDataStack());
+          if (!child.isEnvelope() && data instanceof Map) {
+            data = ((Map) data).get(child.getIdentifier());
+            dataStack = createNewDataStack(dataStack, data, Collections.emptyMap());
+          }
 
-    if (!childSchema.isEnvelope() && data instanceof Map) {
-      data = ((Map) data).get(childSchema.getIdentifier());
-      dataStack = createNewDataStack(dataStack, data, parentContext.getParameters());
-    }
-
-    return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack);
+          return createNewResponseWriteContext(child, data, parentContext.getParameters(), dataStack,
+              parentContext.getUri());
+        })
+        .collect(Collectors.toList());
   }
 
   public static ResponseWriteContext unwrapItemSchema(@NonNull ResponseWriteContext parentContext) {
@@ -30,7 +37,7 @@ public class ResponseWriteContextHelper {
         .getItems()
         .get(0);
     return createNewResponseWriteContext(childSchema, parentContext.getData(), parentContext.getParameters(),
-        parentContext.getDataStack());
+        parentContext.getDataStack(), parentContext.getUri());
   }
 
   public static Deque<FieldContext> createNewDataStack(@NonNull Deque<FieldContext> previousDataStack, Object newData,
@@ -60,8 +67,9 @@ public class ResponseWriteContextHelper {
         data = ((Map) parentContext.getDataStack()
             .peek()
             .getData()).get(childSchema.getIdentifier());
-        dataStack = createNewDataStack(parentContext.getDataStack(), data, parentContext.getParameters());
-        return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack);
+        dataStack = createNewDataStack(parentContext.getDataStack(), data, Collections.emptyMap());
+        return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack,
+            parentContext.getUri());
       }
 
       if (data instanceof Map) {
@@ -69,24 +77,25 @@ public class ResponseWriteContextHelper {
       }
     }
 
-    return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack);
+    return createNewResponseWriteContext(childSchema, data, parentContext.getParameters(), dataStack,
+        parentContext.getUri());
   }
 
   public static ResponseWriteContext createResponseContextFromChildData(@NonNull ResponseWriteContext parentContext,
       @NonNull Object childData) {
-    Deque<FieldContext> dataStack =
-        createNewDataStack(parentContext.getDataStack(), childData, parentContext.getParameters());
-    return createNewResponseWriteContext(parentContext.getSchema(), childData, parentContext.getParameters(),
-        dataStack);
+    Deque<FieldContext> dataStack = createNewDataStack(parentContext.getDataStack(), childData, Collections.emptyMap());
+    return createNewResponseWriteContext(parentContext.getSchema(), childData, parentContext.getParameters(), dataStack,
+        parentContext.getUri());
   }
 
   public static ResponseWriteContext createNewResponseWriteContext(@NonNull ResponseObject schema, Object data,
-      Map<String, Object> parameters, @NonNull Deque<FieldContext> dataStack) {
+      Map<String, Object> parameters, @NonNull Deque<FieldContext> dataStack, URI uri) {
     return ResponseWriteContext.builder()
         .schema(schema)
         .data(data)
         .parameters(parameters)
         .dataStack(dataStack)
+        .uri(uri)
         .build();
   }
 }

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
-import org.dotwebstack.framework.core.helpers.JexlHelper;
+import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
@@ -139,13 +139,13 @@ public class ResponseMapper {
   @SuppressWarnings("rawtypes")
   private Object mapEnvelopeObjectToResponse(ResponseWriteContext parentContext) {
     Map<String, Object> result = new HashMap<>();
-    ResponseWriteContext writeContext = unwrapChildSchema(parentContext);
-    Object object = mapDataToResponse(writeContext);
-    result.put(writeContext.getSchema()
-        .getIdentifier(), object);
+    unwrapChildSchema(parentContext).forEach(child -> {
+      Object object = mapDataToResponse(child);
+      result.put(child.getSchema()
+          .getIdentifier(), object);
+    });
     return result;
   }
-
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
     return Objects.nonNull(writeContext.getSchema()
@@ -189,6 +189,15 @@ public class ResponseMapper {
           fieldsBuilder.append("_parent.");
           argsBuilder.append("_parent.");
         });
+
+    // add uri to context
+    String path = writeContext.getUri()
+        .getPath();
+    String uriString = writeContext.getUri()
+        .toString();
+    int pathIdx = uriString.indexOf(path);
+    context.set("request.uri", uriString.substring(pathIdx));
+
     // add properties data to context
     this.properties.getAllProperties()
         .forEach((key, value) -> context.set("env." + key, value));

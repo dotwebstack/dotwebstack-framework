@@ -18,6 +18,7 @@ import graphql.GraphQL;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.List;
@@ -172,8 +173,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .iterator()
           .next();
 
+      URI uri = request.uri();
       return responseMapper.toJson(createNewResponseWriteContext(getResponseTemplate().getResponseObject(), data,
-          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams)));
+          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
     }
     throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
