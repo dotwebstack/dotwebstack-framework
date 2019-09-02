@@ -13,6 +13,7 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.List;
@@ -165,8 +166,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
           .iterator()
           .next();
 
+      URI uri = request.uri();
       return responseMapper.toJson(createNewResponseWriteContext(getResponseTemplate().getResponseObject(), data,
-          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams)));
+          inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
     }
     throw OpenApiExceptionHelper.graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }

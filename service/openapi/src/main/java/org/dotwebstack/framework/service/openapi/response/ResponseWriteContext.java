@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
@@ -18,6 +19,8 @@ public class ResponseWriteContext {
   Deque<FieldContext> dataStack = new ArrayDeque<>();
 
   Map<String, Object> parameters;
+
+  URI uri;
 
   public boolean isSchemaRequiredNonNillable() {
     return getSchema().isRequired() && !getSchema().isNillable();

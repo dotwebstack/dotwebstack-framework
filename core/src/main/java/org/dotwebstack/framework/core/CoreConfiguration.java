@@ -10,14 +10,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.jexl.JexlFunction;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
 
+@Slf4j
 @Configuration
 @EnableConfigurationProperties(CoreProperties.class)
 public class CoreConfiguration {
@@ -55,8 +61,12 @@ public class CoreConfiguration {
   }
 
   @Bean
-  public JexlEngine jexlBuilder() {
+  public JexlEngine jexlBuilder(List<JexlFunction> jexlFunctions) {
+    Map<String, Object> namespaces = jexlFunctions.stream()
+        .collect(Collectors.toMap(JexlFunction::getNamespace, function -> function));
+    LOG.debug("Loading JEXL functions [{}]", namespaces);
     return new JexlBuilder().silent(false)
+        .namespaces(namespaces)
         .strict(true)
         .create();
   }

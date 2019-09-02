@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.helpers;
+package org.dotwebstack.framework.core.jexl;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
