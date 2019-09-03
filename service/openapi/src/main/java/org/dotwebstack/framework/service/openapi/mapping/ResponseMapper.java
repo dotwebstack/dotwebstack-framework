@@ -176,6 +176,11 @@ public class ResponseMapper {
     // add object data to context
     StringBuilder fieldsBuilder = new StringBuilder("fields.");
     StringBuilder argsBuilder = new StringBuilder("args.");
+    writeContext.getParameters()
+        .entrySet()
+        .forEach(entry -> {
+          context.set("input." + entry.getKey(), entry.getValue());
+        });
     writeContext.getDataStack()
         .forEach(fieldContext -> {
           Object data = fieldContext.getData();
