@@ -27,7 +27,7 @@ public class ResponseContextValidator {
       case OBJECT_TYPE:
         List<ResponseObject> children = template.getChildren();
         children.stream()
-            .filter(child -> Objects.isNull(child.getDwsTemplate()))
+            .filter(child -> Objects.isNull(child.getDwsExpr()))
             .forEach(child -> {
               if (child.isEnvelope()) {
                 ResponseObject embedded = child.getChildren()

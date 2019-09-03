@@ -27,6 +27,6 @@ public class ResponseObject {
   @Builder.Default
   private List<ResponseObject> items = new ArrayList<>();
 
-  private String dwsTemplate;
+  private String dwsExpr;
 
 }

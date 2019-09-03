@@ -117,7 +117,7 @@ public class ResponseMapper {
 
   private Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
     if (Objects.isNull(writeContext.getSchema()
-        .getDwsTemplate())) {
+        .getDwsExpr())) {
       return writeContext.getData();
     }
 
@@ -208,6 +208,6 @@ public class ResponseMapper {
         .forEach((key, value) -> context.set("env." + key, value));
 
     return jexlHelper.evaluateScript(writeContext.getSchema()
-        .getDwsTemplate(), context, String.class);
+        .getDwsExpr(), context, String.class);
   }
 }

@@ -196,19 +196,19 @@ The root response is of `type:object` and contains a required property `_embedde
 `_embedded` in its turn consists of a list of `Breweries` the GraphQL response is mapped to the `Brewery` object defined
 in the OpenApi specification.
 
-# 1.1.8 Response properties template
-By using a response property template, it is possible to return properties that are derived from one or several GraphQL fields and environmental variables. A template can be assigned to a property by adding the extension field `x-dws-template` to a property of type `string`:
+# 1.1.8 Response properties expression
+By using a response property expression, it is possible to return properties that are derived from one or several GraphQL fields and environmental variables. An expression can be assigned to a property by adding the extension field `x-dws-expr` to a property of type `string`:
 ```yaml
 properties:
   identifier:
     type: string
   link:
     type: string
-    x-dws-template: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
+    x-dws-expr: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
 ```
-The content of `x-dws-template` should be a valid [JEXL](http://commons.apache.org/proper/commons-jexl/) expression. The expression is evaluated while translating the GraphQL response to the REST response and supports the following variables:
+The content of `x-dws-expr` should be a valid [JEXL](http://commons.apache.org/proper/commons-jexl/) expression. The expression is evaluated while translating the GraphQL response to the REST response and supports the following variables:
 * `env`: The Spring environment variables. The most straightforward way to use an environment variable is to add it to the `application.yml`.
-* `fields.<property>`: A scalar field of the object containing the `x-dws-template` property.
+* `fields.<property>`: A scalar field of the object containing the `x-dws-expr` property.
 * `fields._parent.<property>`: Same as above, but using the parent of the object. This construction can be used recursively to access parents of parents: `fields._parent._parent.<property>`.
 * `args.<inputName>`: An input parameter mapped to the current container field. Currently, all input parameters are mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query field.
 * `args._parent.<inputName>`: Same as above, but using the parent of the object.

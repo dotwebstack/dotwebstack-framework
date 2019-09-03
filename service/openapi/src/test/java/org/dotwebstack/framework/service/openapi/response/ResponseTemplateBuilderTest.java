@@ -158,7 +158,7 @@ public class ResponseTemplateBuilderTest {
     assertEquals(1, responseTemplate.getResponseObject()
         .getChildren()
         .stream()
-        .filter(ro -> "template_content".equals(ro.getDwsTemplate()))
+        .filter(ro -> "template_content".equals(ro.getDwsExpr()))
         .count());
   }
 

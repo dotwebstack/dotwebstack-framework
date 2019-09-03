@@ -5,7 +5,7 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TEMPLATE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
@@ -128,7 +128,7 @@ public class ResponseTemplateBuilder {
           .dwsType(getDwsType(schema))
           .nillable(isNillable)
           .required(isRequired)
-          .dwsTemplate(getDwsTemplate(schema))
+          .dwsExpr(getDwsExpression(schema))
           .build();
     }
   }
@@ -154,7 +154,7 @@ public class ResponseTemplateBuilder {
         .dwsType(getDwsType(schema))
         .children(children)
         .nillable(isNillable)
-        .dwsTemplate(getDwsTemplate(schema))
+        .dwsExpr(getDwsExpression(schema))
         .required(isRequired)
         .build();
   }
@@ -178,7 +178,7 @@ public class ResponseTemplateBuilder {
         .dwsType(getDwsType(schema))
         .items(ImmutableList.of(item))
         .nillable(isNillable)
-        .dwsTemplate(getDwsTemplate(schema))
+        .dwsExpr(getDwsExpression(schema))
         .required(isRequired)
         .build();
 
@@ -188,18 +188,18 @@ public class ResponseTemplateBuilder {
     return schema != null && (isEnvelope(schema) || Boolean.TRUE.equals(schema.getNullable()));
   }
 
-  private String getDwsTemplate(Schema<?> schema) {
-    Object result = getDwsExtension(schema, X_DWS_TEMPLATE);
+  private String getDwsExpression(Schema<?> schema) {
+    Object result = getDwsExtension(schema, X_DWS_EXPR);
 
     if (Objects.isNull(result)) {
       return null;
     }
 
     if (!(result instanceof String)) {
-      throw invalidConfigurationException("Value of extension '{}' should be a string.", X_DWS_TEMPLATE);
+      throw invalidConfigurationException("Value of extension '{}' should be a string.", X_DWS_EXPR);
     }
     if (!Objects.equals("string", schema.getType())) {
-      throw invalidConfigurationException("Extension '{}' is only allowed for string types.", X_DWS_TEMPLATE);
+      throw invalidConfigurationException("Extension '{}' is only allowed for string types.", X_DWS_EXPR);
     }
 
     return (String) result;
