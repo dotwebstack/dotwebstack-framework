@@ -128,7 +128,7 @@ public class ResponseMapper {
 
     if (writeContext.isSchemaRequiredNonNillable()) {
       throw mappingException(String.format(
-          "Could not create response: required and non-nillable property '%s' template evaluation returned null.",
+          "Could not create response: required and non-nillable property '%s' expression evaluation returned null.",
           writeContext.getSchema()
               .getIdentifier()));
     }
