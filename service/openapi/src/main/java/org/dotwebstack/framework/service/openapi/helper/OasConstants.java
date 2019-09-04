@@ -30,7 +30,7 @@ public class OasConstants {
 
   public static final String X_DWS_QUERY = "x-dws-query";
 
-  public static final String X_DWS_TEMPLATE = "x-dws-template";
+  public static final String X_DWS_EXPR = "x-dws-expr";
 
   public static final String X_DWS_TRANSIENT = "x-dws-transient";
 

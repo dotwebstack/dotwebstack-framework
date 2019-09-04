@@ -23,7 +23,7 @@ components:
             $ref: '#/components/schemas/Ingredient'
         link:
           type: string
-          x-dws-template: '`${env.dotwebstack.base_url}/brewery/${fields._parent.identifier}/beers/${fields.identifier}`'
+          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields._parent.identifier}/beers/${fields.identifier}`'
     BreweryCollection:
       type: object
       required:
@@ -54,7 +54,7 @@ components:
               properties:
                 href:
                   type: string
-                  x-dws-template: '`${env.dotwebstack.base_url}/breweries`'
+                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
     Brewery:
       type: object
       required:
@@ -76,7 +76,7 @@ components:
             $ref: '#/components/schemas/Beer'
         link:
           type: string
-          x-dws-template: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
     Ingredient:
       type: object
       required:

@@ -299,7 +299,7 @@ class ResponseMapperTest {
         .type(type)
         .required(required)
         .nillable(nillable)
-        .dwsTemplate(dwsTemplate)
+        .dwsExpr(dwsTemplate)
         .build();
   }
 }
