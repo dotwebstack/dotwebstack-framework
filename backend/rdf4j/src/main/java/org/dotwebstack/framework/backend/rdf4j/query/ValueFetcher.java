@@ -78,15 +78,8 @@ public final class ValueFetcher extends SourceDataFetcher {
         .stream()
         .filter(result -> {
           if (propertyShape.getNode() != null) {
-            // in case we have strong typing (sh:node), remove the types from the result that do not conform
-            // typing
             if (result instanceof SimpleIRI) {
-              return Models.getProperties(source.getModel(), (SimpleIRI) result, RDF.TYPE)
-                  .stream()
-                  .anyMatch(property -> property.equals(propertyShape.getNode()
-                      .getTargetClasses()
-                      .iterator()
-                      .next()));
+              return true;
             }
 
             return resultIsOfType(result, propertyShape.getNode()
