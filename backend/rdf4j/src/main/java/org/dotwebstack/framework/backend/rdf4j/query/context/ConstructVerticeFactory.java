@@ -50,7 +50,6 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     makeEdgesUnique(edges);
 
-
     Set<Iri> iris = nodeShape.getTargetClasses()
         .stream()
         .map(targetClass -> Rdf.iri(targetClass.stringValue()))

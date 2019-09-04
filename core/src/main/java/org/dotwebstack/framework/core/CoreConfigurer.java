@@ -14,10 +14,8 @@ import static graphql.schema.FieldCoordinates.coordinates;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import graphql.Scalars;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
-import graphql.language.DirectiveLocation;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
@@ -82,25 +80,6 @@ public class CoreConfigurer implements GraphqlConfigurer {
     typeDefinitionRegistry.add(createTransformDefinition());
     typeDefinitionRegistry.add(createConstraintDefinition());
     typeDefinitionRegistry.add(createFilterDefinition());
-
-    TypeName optionalString = TypeName.newTypeName(Scalars.GraphQLString.getName())
-        .build();
-    NonNullType requiredString = NonNullType.newNonNullType(optionalString)
-        .build();
-
-    registry.add(DirectiveDefinition.newDirectiveDefinition()
-        .name("mlQuery")
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name("definition")
-            .type(requiredString)
-            .build())
-        .directiveLocation(DirectiveLocation.newDirectiveLocation()
-            .name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
-            .build())
-        .directiveLocation(DirectiveLocation.newDirectiveLocation()
-            .name(Introspection.DirectiveLocation.OBJECT.name())
-            .build())
-        .build());
   }
 
   private DirectiveDefinition createFilterDefinition() {

@@ -48,7 +48,7 @@ class VerticeFactoryHelper {
   }
 
   /*
-   * Find out of given edge, is of any of the given types
+   * Find out whether the given edge is of any of the given types
    */
   static boolean isOfType(Edge edge, Set<IRI> types) {
     return types.stream()

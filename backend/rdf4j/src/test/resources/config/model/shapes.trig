@@ -211,7 +211,7 @@
   beer_sh:Brewery_address a sh:PropertyShape ;
     sh:name "address" ;
     sh:path schema:address ;
-    sh:minCount 1 ;
+    sh:minCount 0 ;
     sh:maxCount 1 ;
     sh:node beer_sh:Address ;
   .
@@ -227,7 +227,7 @@
   beer_sh:Address_postalcode a sh:PropertyShape ;
     sh:name "postalCode" ;
     sh:path schema:postalCode ;
-    sh:minCount 1 ;
+    sh:minCount 0 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string

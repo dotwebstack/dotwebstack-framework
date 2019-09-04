@@ -91,7 +91,7 @@ public final class ValueFetcher extends SourceDataFetcher {
   private boolean resultIsOfType(Value value, Set<IRI> types) {
     return listOf(((MemResource) value).getSubjectStatementList()).stream()
         .anyMatch(statement -> statement.getPredicate()
-            .equals(RDF.TYPE) && types.contains(statement.getObject()));
+            .equals(RDF.TYPE) && statement.getObject() instanceof IRI && types.contains(statement.getObject()));
   }
 
   private Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {

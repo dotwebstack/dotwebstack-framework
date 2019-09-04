@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
-import org.apache.commons.lang3.BooleanUtils;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -64,7 +63,7 @@ public class DefaultRequestBodyHandler implements RequestBodyHandler {
     Mono<String> mono = request.bodyToMono(String.class);
     String value = mono.block();
 
-    if (Objects.isNull(value) && BooleanUtils.isTrue(requestBody.getRequired())) {
+    if (Objects.isNull(value) && Boolean.TRUE.equals(requestBody.getRequired())) {
       throw badRequestException("Request body required but not found.");
     } else if (Objects.isNull(value)) {
       return Optional.empty();

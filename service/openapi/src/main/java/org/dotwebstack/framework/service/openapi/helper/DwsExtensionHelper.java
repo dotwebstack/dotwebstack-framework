@@ -51,7 +51,7 @@ public class DwsExtensionHelper {
   }
 
   public static boolean isEnvelope(@NonNull Schema<?> schema) {
-    Boolean isEnvelope = ((Boolean) getDwsExtension(schema, X_DWS_ENVELOPE));
+    Boolean isEnvelope = (Boolean) getDwsExtension(schema, X_DWS_ENVELOPE);
     return (Objects.nonNull(isEnvelope) && isEnvelope) || isExpr(schema);
   }
 }
