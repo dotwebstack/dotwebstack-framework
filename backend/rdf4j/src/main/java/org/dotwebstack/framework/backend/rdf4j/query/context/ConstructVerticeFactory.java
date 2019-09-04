@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.isOfType;
 
 import graphql.schema.SelectedField;
 import java.util.List;
@@ -30,14 +29,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
   public Vertice createVertice(List<IRI> filterSubjects, final Variable subject, OuterQuery<?> query,
       NodeShape nodeShape, List<SelectedField> fields) {
-    Vertice vertice = createVertice(subject, query, nodeShape, fields);
-    vertice.getEdges()
-        .stream()
-        .filter(childEdge -> isOfType(childEdge, nodeShape.getTargetClasses()))
-        .findFirst()
-        .ifPresent(edge -> addSubjectFilters(edge.getObject(), filterSubjects));
-
-    return vertice;
+    return createVertice(subject, query, nodeShape, fields);
   }
 
   private Vertice createVertice(final Variable subject, OuterQuery<?> query, NodeShape nodeShape,
