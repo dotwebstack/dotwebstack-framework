@@ -6,14 +6,20 @@ import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAIN
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_ONEOF_INT;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_ARG_PATTERN;
 import static org.dotwebstack.framework.core.directives.CoreDirectives.CONSTRAINT_NAME;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.traversers.TraverserFilter.directiveFilter;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLDirectiveContainer;
+import graphql.schema.GraphQLInputObjectField;
+import graphql.schema.GraphQLInputType;
+import graphql.schema.GraphQLTypeUtil;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+import lombok.NonNull;
 import org.dotwebstack.framework.core.directives.DirectiveValidationException;
 import org.dotwebstack.framework.core.traversers.CoreTraverser;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
@@ -28,12 +34,27 @@ public class ConstraintValidator implements QueryValidator {
     this.coreTraverser = coreTraverser;
   }
 
-  public void validate(DataFetchingEnvironment dataFetchingEnvironment) {
-    coreTraverser.getTuples(dataFetchingEnvironment, directiveFilter(CONSTRAINT_NAME))
-        .forEach(this::validate);
+  public void validateSchema(@NonNull DirectiveContainerTuple directiveContainerTuple) {
+    validate(directiveContainerTuple, false);
   }
 
-  public void validate(DirectiveContainerTuple directiveContainerTuple) {
+  private void validateRequest(@NonNull DirectiveContainerTuple directiveContainerTuple) {
+    validate(directiveContainerTuple, true);
+  }
+
+  public void validate(DataFetchingEnvironment dataFetchingEnvironment) {
+    coreTraverser.getTuples(dataFetchingEnvironment, directiveFilter(CONSTRAINT_NAME))
+        .forEach(this::validateRequest);
+  }
+
+  private void validate(DirectiveContainerTuple directiveContainerTuple, boolean isRequest) {
+    if (Objects.isNull(directiveContainerTuple.getValue())) {
+      if (isRequest) {
+        validateRequiredValue(directiveContainerTuple.getContainer());
+      }
+      return;
+    }
+
     Stream.of(directiveContainerTuple)
         .map(container -> directiveContainerTuple.getContainer()
             .getDirective(CONSTRAINT_NAME))
@@ -93,6 +114,27 @@ public class ConstraintValidator implements QueryValidator {
     if (!constraint.contains(value)) {
       throw new DirectiveValidationException("Constraint 'oneOf' {} violated on '{}' with value '{}'", constraint, name,
           value);
+    }
+  }
+
+  private void validateRequiredValue(GraphQLDirectiveContainer container) {
+    Object defaultValue = null;
+    GraphQLInputType inputType = null;
+
+    if (container instanceof GraphQLArgument) {
+      GraphQLArgument argument = (GraphQLArgument) container;
+      defaultValue = argument.getDefaultValue();
+      inputType = argument.getType();
+    }
+
+    if (container instanceof GraphQLInputObjectField) {
+      GraphQLInputObjectField inputObjectField = (GraphQLInputObjectField) container;
+      defaultValue = inputObjectField.getDefaultValue();
+      inputType = inputObjectField.getType();
+    }
+
+    if (Objects.isNull(defaultValue) && GraphQLTypeUtil.isNonNull(inputType)) {
+      throw illegalArgumentException("Required value for '{}' was not found", container.getName());
     }
   }
 }

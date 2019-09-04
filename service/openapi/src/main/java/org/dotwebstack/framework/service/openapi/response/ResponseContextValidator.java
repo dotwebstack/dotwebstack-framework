@@ -1,12 +1,12 @@
 package org.dotwebstack.framework.service.openapi.response;
 
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 
 import java.util.List;
 import java.util.Objects;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
 import org.springframework.stereotype.Component;
@@ -27,7 +27,7 @@ public class ResponseContextValidator {
       case OBJECT_TYPE:
         List<ResponseObject> children = template.getChildren();
         children.stream()
-            .filter(child -> Objects.isNull(child.getDwsTemplate()))
+            .filter(child -> Objects.isNull(child.getDwsExpr()))
             .forEach(child -> {
               if (child.isEnvelope()) {
                 ResponseObject embedded = child.getChildren()
@@ -39,9 +39,9 @@ public class ResponseContextValidator {
                     .filter(childField -> childField.getName()
                         .equals(child.getIdentifier()))
                     .findFirst()
-                    .orElseThrow(() -> ExceptionHelper.invalidConfigurationException(
-                        "OAS field '{}' not found in matching GraphQl object '{}'.", child.getIdentifier(),
-                        field.getName()));
+                    .orElseThrow(() -> invalidOpenApiConfigurationException(
+                        "OAS field '{}' not found in matching GraphQl object '{}' for schema type '{}'",
+                        child.getIdentifier(), field.getName(), field.getType()));
                 validate(child, graphQlChildField);
               }
             });

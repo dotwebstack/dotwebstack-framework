@@ -20,7 +20,7 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
   public GraphQLArgument onArgument(SchemaDirectiveWiringEnvironment<GraphQLArgument> environment) {
     try {
       GraphQLArgument argument = environment.getElement();
-      constraintValidator.validate(DirectiveContainerTuple.builder()
+      constraintValidator.validateSchema(DirectiveContainerTuple.builder()
           .container(argument)
           .value(argument.getDefaultValue())
           .build());
@@ -35,7 +35,7 @@ public class ConstraintDirectiveWiring implements SchemaDirectiveWiring {
       SchemaDirectiveWiringEnvironment<GraphQLInputObjectField> environment) {
     try {
       GraphQLInputObjectField inputObjectField = environment.getElement();
-      constraintValidator.validate(DirectiveContainerTuple.builder()
+      constraintValidator.validateSchema(DirectiveContainerTuple.builder()
           .container(inputObjectField)
           .value(inputObjectField.getDefaultValue())
           .build());

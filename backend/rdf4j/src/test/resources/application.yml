@@ -1,4 +1,4 @@
-logging.level.root: OFF
+logging.level.root: DEBUG
 spring.main.banner-mode: 'off'
 
 dotwebstack:

@@ -31,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Mono;
@@ -55,7 +56,8 @@ public class RequestBodyHandlerTest {
   public void setup() {
     this.openApi = TestResources.openApi();
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry();
-    this.requestBodyHandler = new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry);
+    this.requestBodyHandler =
+        new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
     this.graphQlField = TestResources.getGraphQlField(this.typeDefinitionRegistry, "query4");
     this.requestBody = this.openApi.getPaths()
         .get("/query4")
@@ -99,7 +101,8 @@ public class RequestBodyHandlerTest {
   public void validate_throwsException_forPropertyNotFoundInGraphQlInput() {
     // Arrange
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop3: String");
-    this.requestBodyHandler = new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry);
+    this.requestBodyHandler =
+        new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
 
     RequestBody requestBody = this.openApi.getPaths()
         .get("/query4")
@@ -115,7 +118,8 @@ public class RequestBodyHandlerTest {
   public void validate_throwsException_forGraphQlTypeMismatch() {
     // Arrange
     this.typeDefinitionRegistry = TestResources.typeDefinitionRegistry("o3_prop1: String", "o3_prop1: Boolean");
-    this.requestBodyHandler = new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry);
+    this.requestBodyHandler =
+        new DefaultRequestBodyHandler(openApi, typeDefinitionRegistry, new Jackson2ObjectMapperBuilder());
 
     RequestBody requestBody = this.openApi.getPaths()
         .get("/query4")
@@ -134,7 +138,8 @@ public class RequestBodyHandlerTest {
         "{ \"o3_prop1\" : \"value\", \"o3_prop2\" : [\"value1\", \"value2\"] }", MediaType.APPLICATION_JSON);
 
     // Act
-    Optional<Object> value = this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null);
+    Optional<Object> value =
+        this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null);
 
     // Assert
     assertTrue(value.isPresent());
@@ -156,7 +161,7 @@ public class RequestBodyHandlerTest {
 
     // Act / Assert
     assertThrows(IllegalArgumentException.class,
-        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null));
+        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null));
   }
 
   @Test
@@ -166,7 +171,7 @@ public class RequestBodyHandlerTest {
 
     // Act / Assert
     assertThrows(UnsupportedMediaTypeException.class,
-        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null));
+        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null));
   }
 
   @Test
@@ -176,7 +181,7 @@ public class RequestBodyHandlerTest {
 
     // Act / Assert
     assertThrows(BadRequestException.class,
-        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null));
+        () -> this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null));
   }
 
   @Test
@@ -187,7 +192,7 @@ public class RequestBodyHandlerTest {
     ServerRequest serverRequest = mockServerRequest(null, MediaType.APPLICATION_JSON);
 
     // Act
-    assertFalse(this.requestBodyHandler.getValue(serverRequest, requestBodyContext, null)
+    assertFalse(this.requestBodyHandler.getValue(serverRequest, requestBodyContext.getRequestBodySchema(), null)
         .isPresent());
   }
 

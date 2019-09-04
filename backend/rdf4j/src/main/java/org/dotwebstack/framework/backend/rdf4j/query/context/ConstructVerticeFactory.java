@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.isOfType;
 
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -16,6 +16,7 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.springframework.stereotype.Component;
 
@@ -28,14 +29,7 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
   public Vertice createVertice(List<IRI> filterSubjects, final Variable subject, OuterQuery<?> query,
       NodeShape nodeShape, List<SelectedField> fields) {
-    Vertice vertice = createVertice(subject, query, nodeShape, fields);
-    vertice.getEdges()
-        .stream()
-        .filter(childEdge -> isOfType(childEdge, nodeShape.getTargetClass()))
-        .findFirst()
-        .ifPresent(edge -> addSubjectFilters(edge.getObject(), filterSubjects));
-
-    return vertice;
+    return createVertice(subject, query, nodeShape, fields);
   }
 
   private Vertice createVertice(final Variable subject, OuterQuery<?> query, NodeShape nodeShape,
@@ -56,8 +50,12 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
 
     makeEdgesUnique(edges);
 
-    edges.add(createSimpleEdge(null, Rdf.iri(nodeShape.getTargetClass()
-        .stringValue()), () -> stringify(RDF.TYPE), true));
+    Set<Iri> iris = nodeShape.getTargetClasses()
+        .stream()
+        .map(targetClass -> Rdf.iri(targetClass.stringValue()))
+        .collect(Collectors.toSet());
+
+    edges.add(createSimpleEdge(null, iris, () -> stringify(RDF.TYPE), true));
 
     getArgumentFieldMapping(nodeShape, fields)
         .forEach((argument, field) -> findEdgesToBeProcessed(nodeShape, field, edges)

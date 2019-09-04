@@ -5,13 +5,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.NonNull;
 
 public class JsonNodeUtils {
 
   private JsonNodeUtils() {}
 
-  public static Object toObject(@NonNull JsonNode node) {
+  public static Object toObject(JsonNode node) {
     switch (node.getNodeType()) {
       case ARRAY:
         List<Object> result = new ArrayList<>();

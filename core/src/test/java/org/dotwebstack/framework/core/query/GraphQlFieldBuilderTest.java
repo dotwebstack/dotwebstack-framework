@@ -9,6 +9,7 @@ import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.HashMap;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,7 @@ public class GraphQlFieldBuilderTest {
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
 
     // Act / Assert
-    assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition));
+    assertThrows(InvalidConfigurationException.class, () -> builder.toGraphQlField(fieldDefinition, new HashMap<>()));
   }
 
   private FieldDefinition getQueryFieldDefinition(String name) {

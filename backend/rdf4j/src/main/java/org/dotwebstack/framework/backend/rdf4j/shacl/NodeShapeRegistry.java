@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
 import graphql.schema.GraphQLObjectType;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,12 +17,15 @@ public class NodeShapeRegistry {
 
   private final HashMap<IRI, NodeShape> nodeShapes = new HashMap<>();
 
+  private final HashMap<String, NodeShape> nodeShapesByName = new HashMap<>();
+
   public NodeShapeRegistry(String shapePrefix) {
     this.shapePrefix = shapePrefix;
   }
 
   public void register(IRI identifier, NodeShape nodeShape) {
     nodeShapes.put(identifier, nodeShape);
+    nodeShapesByName.put(nodeShape.getName(), nodeShape);
   }
 
   public Collection<NodeShape> all() {
@@ -37,6 +42,14 @@ public class NodeShapeRegistry {
 
   public NodeShape get(GraphQLObjectType objectType) {
     return get(VF.createIRI(shapePrefix, objectType.getName()));
+  }
+
+  public NodeShape getByShaclName(String shaclName) throws UnsupportedOperationException {
+    NodeShape result = nodeShapesByName.get(shaclName);
+    if (result != null) {
+      return result;
+    }
+    throw unsupportedOperationException("Nodeshape not found by sh:name '{}'", shaclName);
   }
 
 }

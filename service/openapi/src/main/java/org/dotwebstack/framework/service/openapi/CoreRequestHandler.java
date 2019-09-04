@@ -2,8 +2,11 @@ package org.dotwebstack.framework.service.openapi;
 
 import static java.lang.String.format;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.graphQlErrorException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPAND_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewDataStack;
 import static org.dotwebstack.framework.service.openapi.response.ResponseWriteContextHelper.createNewResponseWriteContext;
 import static org.springframework.web.reactive.function.BodyInserters.fromPublisher;
@@ -12,7 +15,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.net.URI;
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -20,13 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlArgument;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
 import org.dotwebstack.framework.service.openapi.exception.GraphQlErrorException;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
-import org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.dotwebstack.framework.service.openapi.mapping.ResponseMapper;
 import org.dotwebstack.framework.service.openapi.param.ParamHandler;
@@ -49,6 +52,8 @@ import reactor.core.scheduler.Schedulers;
 
 public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
+  private OpenAPI openApi;
+
   private final ResponseSchemaContext responseSchemaContext;
 
   private final ResponseContextValidator responseContextValidator;
@@ -63,9 +68,10 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
 
   private final String pathName;
 
-  CoreRequestHandler(String pathName, ResponseSchemaContext responseSchemaContext,
+  CoreRequestHandler(OpenAPI openApi, String pathName, ResponseSchemaContext responseSchemaContext,
       ResponseContextValidator responseContextValidator, GraphQL graphQL, ResponseMapper responseMapper,
       ParamHandlerRouter paramHandlerRouter, RequestBodyHandlerRouter requestBodyHandlerRouter) {
+    this.openApi = openApi;
     this.pathName = pathName;
     this.responseSchemaContext = responseSchemaContext;
     this.graphQL = graphQL;
@@ -101,13 +107,14 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     if (responseSchemaContext.getResponses()
         .stream()
         .noneMatch(responseTemplate -> responseTemplate.isApplicable(200, 299))) {
-      throw ExceptionHelper.unsupportedOperationException("No response in the 200 range found.");
+      throw unsupportedOperationException("No response in the 200 range found.");
     }
     validateParameters(field, responseSchemaContext.getParameters(), pathName);
     RequestBodyContext requestBodyContext = responseSchemaContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
-      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBodyContext)
-          .validate(field, requestBodyContext.getRequestBodySchema(), pathName);
+      RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
+      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
+          .validate(field, requestBody, pathName);
     }
     responseSchemaContext.getResponses()
         .stream()
@@ -170,7 +177,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
       return responseMapper.toJson(createNewResponseWriteContext(getResponseTemplate().getResponseObject(), data,
           inputParams, createNewDataStack(new ArrayDeque<>(), data, inputParams), uri));
     }
-    throw OpenApiExceptionHelper.graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
+    throw graphQlErrorException("GraphQL query returned errors: {}", result.getErrors());
   }
 
   private ResponseTemplate getResponseTemplate() {
@@ -178,7 +185,7 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
         .stream()
         .filter(response -> response.isApplicable(200, 299))
         .findFirst()
-        .orElseThrow(() -> ExceptionHelper.unsupportedOperationException("No response found within the 200 range."));
+        .orElseThrow(() -> unsupportedOperationException("No response found within the 200 range."));
   }
 
   private Map<String, Object> resolveParameters(ServerRequest request) throws BadRequestException {
@@ -192,8 +199,9 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     }
     RequestBodyContext requestBodyContext = this.responseSchemaContext.getRequestBodyContext();
     if (Objects.nonNull(requestBodyContext)) {
-      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBodyContext)
-          .getValue(request, requestBodyContext, result)
+      RequestBody requestBody = resolveRequestBody(openApi, requestBodyContext.getRequestBodySchema());
+      this.requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
+          .getValue(request, requestBody, result)
           .ifPresent(value -> result.put(requestBodyContext.getName(), value));
     }
     return result;

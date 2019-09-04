@@ -4,6 +4,7 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.FORM;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMITED;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
@@ -11,6 +12,8 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -31,7 +34,6 @@ import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.helper.JsonNodeUtils;
-import org.dotwebstack.framework.service.openapi.helper.SchemaUtils;
 import org.dotwebstack.framework.service.openapi.response.ResponseSchemaContext;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -63,7 +65,7 @@ public class DefaultParamHandler implements ParamHandler {
         paramValue = getHeaderParam(parameter, request);
         break;
       default:
-        throw ExceptionHelper.illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
+        throw illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
     }
 
     if (Objects.nonNull(paramValue)) {
@@ -76,7 +78,7 @@ public class DefaultParamHandler implements ParamHandler {
         validateEnumValues(defaultValue.get(), parameter);
       } else {
         if (parameter.getRequired()) {
-          throw parameterValidationException("No value provided for required query parameter '{}'.",
+          throw parameterValidationException("No value provided for required {} parameter '{}'.", parameter.getIn(),
               parameter.getName());
         }
       }
@@ -87,7 +89,17 @@ public class DefaultParamHandler implements ParamHandler {
 
   @Override
   public void validate(GraphQlField field, Parameter parameter, String pathName) {
-    this.validate(field, parameter.getName(), pathName);
+    String parameterName = parameter.getName();
+    if (Objects.nonNull(parameter.getExtensions())) {
+
+      if (parameter.getExtensions()
+          .containsKey(X_DWS_NAME)) {
+        parameterName = (String) parameter.getExtensions()
+            .get(X_DWS_NAME);
+      }
+    }
+
+    this.validate(field, parameterName, pathName);
   }
 
   public void validate(GraphQlField field, String parameterName, String pathName) {
@@ -210,7 +222,7 @@ public class DefaultParamHandler implements ParamHandler {
   private Object deserializeObjectFromKeyValueString(String keyValueString) {
     String[] split = keyValueString.split(",");
     if (split.length % 2 != 0) {
-      throw ExceptionHelper.illegalArgumentException("Key value string '{}' should contain an even number of elements.",
+      throw illegalArgumentException("Key value string '{}' should contain an even number of elements.",
           keyValueString);
     }
     Map<String, String> result = new HashMap<>();
@@ -229,7 +241,7 @@ public class DefaultParamHandler implements ParamHandler {
         .forEach(keyValue -> {
           String[] split = keyValue.split(keyValueSeparator);
           if (split.length != 2) {
-            throw ExceptionHelper.illegalArgumentException(
+            throw illegalArgumentException(
                 "Key value element '{}' with separator '{}' should have one " + "key and one value.", keyValue,
                 keyValueSeparator);
           }
@@ -265,11 +277,7 @@ public class DefaultParamHandler implements ParamHandler {
 
   @SuppressWarnings("rawtypes")
   Optional<Object> getDefault(Parameter parameter) {
-    Schema schema = parameter.getSchema()
-        .get$ref() != null ? SchemaUtils.getSchemaReference(
-            parameter.getSchema()
-                .get$ref(),
-            openApi) : parameter.getSchema();
+    Schema schema = resolveSchema(openApi, parameter.getSchema());
     if (schema != null && schema.getDefault() != null) {
       switch (schema.getType()) {
         case ARRAY_TYPE:
@@ -285,13 +293,11 @@ public class DefaultParamHandler implements ParamHandler {
   private boolean hasEnum(Parameter parameter) {
     if (parameter.getSchema() instanceof ArraySchema) {
       ArraySchema arraySchema = (ArraySchema) parameter.getSchema();
-      if (Objects.nonNull(arraySchema.getItems()
+      return Objects.nonNull(arraySchema.getItems()
           .getEnum())
           && !arraySchema.getItems()
               .getEnum()
-              .isEmpty()) {
-        return true;
-      }
+              .isEmpty();
     } else if (parameter.getSchema() instanceof StringSchema) {
       return Objects.nonNull(parameter.getSchema()
           .getEnum())

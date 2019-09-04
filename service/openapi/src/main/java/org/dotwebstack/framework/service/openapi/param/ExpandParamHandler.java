@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.service.openapi.param;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
@@ -72,24 +72,28 @@ public class ExpandParamHandler extends DefaultParamHandler {
 
     switch (schema.getType()) {
       case ARRAY_TYPE:
-        ((ArrayList<String>) Objects.requireNonNull(JsonNodeUtils.toObject((ArrayNode) schema.getDefault())))
-            .forEach(defaultValue -> {
-              validateExpandParam(graphQlField, defaultValue, pathName);
-              validateEnumValues(defaultValue, parameter);
-            });
+        if (Objects.nonNull(schema.getDefault())) {
+          ((ArrayList<String>) Objects.requireNonNull(JsonNodeUtils.toObject((ArrayNode) schema.getDefault())))
+              .forEach(defaultValue -> {
+                validateExpandParam(graphQlField, defaultValue, pathName);
+                validateEnumValues(defaultValue, parameter);
+              });
+        }
         ((ArraySchema) schema).getItems()
             .getEnum()
             .forEach((enumParam -> validateExpandParam(graphQlField, (String) enumParam, pathName)));
         break;
       case STRING_TYPE:
-        validateExpandParam(graphQlField, ((StringSchema) schema).getDefault(), pathName);
-        validateEnumValues(((StringSchema) schema).getDefault(), parameter);
+        if (Objects.nonNull(schema.getDefault())) {
+          validateExpandParam(graphQlField, ((StringSchema) schema).getDefault(), pathName);
+          validateEnumValues(((StringSchema) schema).getDefault(), parameter);
+        }
         ((StringSchema) schema).getEnum()
             .forEach(enumParam -> validateExpandParam(graphQlField, enumParam, pathName));
         break;
       default:
-        throw invalidConfigurationException("Expand parameter '{}' can only be of type array or string",
-            parameter.getName());
+        throw invalidOpenApiConfigurationException(
+            "Expand parameter '{}' can only be of type array or string for path '{}'", parameter.getName(), pathName);
     }
   }
 
@@ -99,8 +103,9 @@ public class ExpandParamHandler extends DefaultParamHandler {
         .stream()
         .noneMatch(field -> field.getName()
             .equals(fieldName))) {
-      throw invalidConfigurationException("No field with name '{}' was found on GraphQL field '{}'", fieldName,
-          graphQlField.getName());
+      throw invalidOpenApiConfigurationException(
+          "No field with name '{}' was found on GraphQL field '{}' for path '{}'", fieldName, graphQlField.getName(),
+          pathName);
     }
   }
 
@@ -114,8 +119,9 @@ public class ExpandParamHandler extends DefaultParamHandler {
           .filter(field -> field.getName()
               .equals(pathParams[0]))
           .findFirst()
-          .orElseThrow(() -> invalidConfigurationException("No field with name '{}' was found on GraphQL field '{}'",
-              pathParams[0], graphQlField.getName()));
+          .orElseThrow(() -> invalidOpenApiConfigurationException(
+              "No field with name '{}' was found on GraphQL field '{}' for pathName '{}'", pathParams[0],
+              graphQlField.getName(), pathName));
       validateExpandParam(childField, String.join(".", ArrayUtils.remove(pathParams, 0)), pathName);
     }
   }

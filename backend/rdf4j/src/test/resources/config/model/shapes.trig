@@ -8,6 +8,7 @@
 <https://github.com/dotwebstack/beer/shapes> {
   beer_sh:Brewery a sh:NodeShape ;
     sh:targetClass beer_def:Brewery ;
+    sh:name "Brewery" ;
     sh:property
       beer_sh:Brewery_identifier ,
       beer_sh:Brewery_name ,
@@ -110,6 +111,7 @@
 
   beer_sh:Beer a sh:NodeShape ;
     sh:targetClass beer_def:Beer ;
+    sh:name "Beer" ;
     sh:property
       beer_sh:Beer_identifier ,
       beer_sh:Beer_name ,
@@ -167,7 +169,7 @@
   .
 
   beer_sh:BeerType a sh:NodeShape ;
-    sh:name "beerTypeRaw" ;
+    sh:name "BeerType" ;
     sh:targetClass beer_def:BeerType ;
     sh:property
       beer_sh:BeerType_name ;
@@ -209,13 +211,13 @@
   beer_sh:Brewery_address a sh:PropertyShape ;
     sh:name "address" ;
     sh:path schema:address ;
-    sh:minCount 1 ;
+    sh:minCount 0 ;
     sh:maxCount 1 ;
     sh:node beer_sh:Address ;
   .
 
   beer_sh:Address a sh:NodeShape ;
-    sh:name "address" ;
+    sh:name "Address" ;
     sh:targetClass beer_def:Address ;
     sh:property
       beer_sh:Address_postalcode,
@@ -225,7 +227,7 @@
   beer_sh:Address_postalcode a sh:PropertyShape ;
     sh:name "postalCode" ;
     sh:path schema:postalCode ;
-    sh:minCount 1 ;
+    sh:minCount 0 ;
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
@@ -242,6 +244,7 @@
 
   beer_sh:Ingredient a sh:NodeShape ;
     sh:targetClass beer_def:Ingredient ;
+    sh:name "Ingredient" ;
     sh:property
       beer_sh:Ingredient_name ;
     sh:nodeKind sh:IRI ;
@@ -258,6 +261,7 @@
 
   beer_sh:Supplement a sh:NodeShape ;
     sh:targetClass beer_def:Supplement ;
+    sh:name "Supplement" ;
     sh:property
       beer_sh:Supplement_name ;
     sh:nodeKind sh:IRI

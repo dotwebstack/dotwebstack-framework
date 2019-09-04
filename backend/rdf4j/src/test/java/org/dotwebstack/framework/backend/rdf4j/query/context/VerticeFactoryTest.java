@@ -58,7 +58,7 @@ public class VerticeFactoryTest {
   @Test
   void get_ReturnVertice_ForSimpleBreweryNodeShape() {
     // Arrange
-    when(nodeShape.getTargetClass()).thenReturn(BREWERY_TARGET_CLASS);
+    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -74,7 +74,9 @@ public class VerticeFactoryTest {
     assertThat(edge.getPredicate()
         .getQueryString(), is(stringify(RDF.TYPE)));
     assertThat(edge.getObject()
-        .getIri()
+        .getIris()
+        .iterator()
+        .next()
         .getQueryString(), is(stringify(BREWERY_TARGET_CLASS)));
   }
 
@@ -91,7 +93,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getTargetClass()).thenReturn(BREWERY_TARGET_CLASS);
+    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -120,7 +122,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(any())).thenReturn(breweryName);
-    when(nodeShape.getTargetClass()).thenReturn(BREWERY_TARGET_CLASS);
+    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     // Act
@@ -179,7 +181,7 @@ public class VerticeFactoryTest {
         .build();
 
     when(nodeShape.getPropertyShape(BREWERY_NAME_FIELD)).thenReturn(breweryName);
-    when(nodeShape.getTargetClass()).thenReturn(BREWERY_TARGET_CLASS);
+    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
     SelectQuery query = Queries.SELECT();
 
     ImmutableList<IRI> subjects = ImmutableList.of(BEER_3);

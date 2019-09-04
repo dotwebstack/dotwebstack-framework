@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
@@ -14,7 +15,7 @@ public class Vertice {
 
   private Variable subject;
 
-  private Iri iri;
+  private Set<Iri> iris;
 
   @Builder.Default
   private List<Edge> edges = new ArrayList<>();

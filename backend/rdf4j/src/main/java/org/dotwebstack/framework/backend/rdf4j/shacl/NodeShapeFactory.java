@@ -1,7 +1,13 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIri;
+import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyIris;
+import static org.dotwebstack.framework.backend.rdf4j.ValueUtils.findRequiredPropertyLiteral;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,20 +33,40 @@ public class NodeShapeFactory {
   private NodeShapeFactory() {}
 
   public static NodeShape createShapeFromModel(@NonNull Model shapeModel, @NonNull IRI identifier) {
-    return NodeShape.builder()
-        .identifier(identifier)
-        .targetClass(ValueUtils.findRequiredPropertyIri(shapeModel, identifier, SHACL.TARGET_CLASS))
-        .propertyShapes(buildPropertyShapes(shapeModel, identifier))
-        .build();
+    return createShapeFromModel(shapeModel, identifier, new HashMap<>());
   }
 
-  private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel, Resource nodeShape) {
+  public static NodeShape createShapeFromModel(@NonNull Model shapeModel, @NonNull IRI identifier,
+      Map<IRI, NodeShape> nodeShapeMap) {
+    Map<String, PropertyShape> propertyShapes = new HashMap<>();
+
+    if (nodeShapeMap.containsKey(identifier)) {
+      return nodeShapeMap.get(identifier);
+    }
+
+    NodeShape nodeShape = NodeShape.builder()
+        .name(findRequiredPropertyLiteral(shapeModel, identifier, SHACL.NAME).stringValue())
+        .identifier(identifier)
+        .targetClasses(findRequiredPropertyIris(shapeModel, identifier, SHACL.TARGET_CLASS))
+        .propertyShapes(propertyShapes)
+        .build();
+
+    nodeShapeMap.put(identifier, nodeShape);
+
+    // add propertyshapes afterwards to handle cyclic dependencies
+    propertyShapes.putAll(buildPropertyShapes(shapeModel, identifier, nodeShapeMap));
+
+    return nodeShape;
+  }
+
+  private static Map<String, PropertyShape> buildPropertyShapes(Model shapeModel, Resource nodeShape,
+      Map<IRI, NodeShape> nodeShapeMap) {
     /*
      * The sh:or can occur on multiple levels, either as a direct child of a nodeshape or as a child of
      * an sh:property. Here the direct childs of type sh:or on a nodeshape are processed
      */
     Map<String, PropertyShape> orShapes = getOrPropertyShapes(shapeModel, nodeShape).stream()
-        .map(shape -> buildPropertyShape(shapeModel, shape))
+        .map(shape -> buildPropertyShape(shapeModel, shape, nodeShapeMap))
         .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
 
     Map<String, PropertyShape> propertyShapes = Models.getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
@@ -54,7 +80,7 @@ public class NodeShapeFactory {
           }
         })
         .flatMap(List::stream)
-        .map(shape -> buildPropertyShape(shapeModel, shape))
+        .map(shape -> buildPropertyShape(shapeModel, shape, nodeShapeMap))
         .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
 
     return Stream.concat(orShapes.entrySet()
@@ -77,25 +103,30 @@ public class NodeShapeFactory {
             shapeModel.filter(nodeShape, null, null)
                 .stream()
                 .filter(statement -> !SHACL.OR.equals(statement.getPredicate()))
+                .filter(statement -> !SHACL.NAME.equals(statement.getPredicate()))
                 .forEach(statement -> {
-                  MemStatement memStatement = new MemStatement((MemResource) resource,
-                      (MemIRI) statement.getPredicate(), (MemResource) statement.getObject(), null, 0);
-                  ((MemBNode) resource).getSubjectStatementList()
-                      .add(memStatement);
-                  shapeModel.add(memStatement);
+                  if (resource instanceof MemResource && statement.getObject() instanceof MemResource) {
+                    MemStatement memStatement = new MemStatement((MemResource) resource,
+                        (MemIRI) statement.getPredicate(), (MemResource) statement.getObject(), null, 0);
+                    ((MemBNode) resource).getSubjectStatementList()
+                        .add(memStatement);
+                    shapeModel.add(memStatement);
+                  } else {
+                    throw unsupportedOperationException("Expected memResource got '{}' for statement '{}'", resource,
+                        statement);
+                  }
                 }))
             .collect(Collectors.toList()))
         .flatMap(List::stream)
         .collect(Collectors.toList());
   }
 
-  private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape) {
+  private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape, Map<IRI, NodeShape> nodeShapeMap) {
     PropertyShape.PropertyShapeBuilder builder = PropertyShape.builder();
     Resource usedShape = shape;
 
     builder.path(PropertyPathFactory.create(shapeModel, usedShape, SHACL.PATH))
-        .name(ValueUtils.findRequiredPropertyLiteral(shapeModel, usedShape, SHACL.NAME)
-            .stringValue());
+        .name(findRequiredPropertyLiteral(shapeModel, usedShape, SHACL.NAME).stringValue());
 
     if (ValueUtils.isPropertyIriPresent(shapeModel, usedShape, SHACL.NODE)) {
       /*
@@ -103,17 +134,17 @@ public class NodeShapeFactory {
        * focus is shifted so the properties of that NodeShape are resolved within this property shape
        */
       IRI nodeIri = ValueUtils.findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE);
-      builder.node(createShapeFromModel(shapeModel, nodeIri));
+      builder.node(createShapeFromModel(shapeModel, nodeIri, nodeShapeMap));
 
       usedShape = nodeIri;
     }
 
     if (ValueUtils.isPropertyIriPresent(shapeModel, usedShape, SHACL.NODE_KIND_PROP)) {
-      IRI nodeKind = ValueUtils.findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE_KIND_PROP);
+      IRI nodeKind = findRequiredPropertyIri(shapeModel, usedShape, SHACL.NODE_KIND_PROP);
       builder.nodeKind(nodeKind);
 
       if (nodeKind.equals(SHACL.LITERAL)) {
-        builder.datatype(ValueUtils.findRequiredPropertyIri(shapeModel, usedShape, SHACL.DATATYPE));
+        builder.datatype(findRequiredPropertyIri(shapeModel, usedShape, SHACL.DATATYPE));
       }
     }
 

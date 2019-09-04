@@ -144,6 +144,7 @@ class ResponseMapperTest {
         .schema(responseObject)
         .data(rootData)
         .dataStack(dataStack)
+        .parameters(Collections.emptyMap())
         .uri(uri)
         .build();
 
@@ -298,7 +299,7 @@ class ResponseMapperTest {
         .type(type)
         .required(required)
         .nillable(nillable)
-        .dwsTemplate(dwsTemplate)
+        .dwsExpr(dwsTemplate)
         .build();
   }
 }

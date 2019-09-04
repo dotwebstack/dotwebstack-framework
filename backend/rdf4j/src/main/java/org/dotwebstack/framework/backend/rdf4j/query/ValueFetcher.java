@@ -7,21 +7,21 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.converters.Rdf4jConverterRouter;
+import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.core.datafetchers.SourceDataFetcher;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleIRI;
-import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sail.memory.model.MemResource;
 import org.springframework.stereotype.Component;
@@ -59,11 +59,13 @@ public final class ValueFetcher extends SourceDataFetcher {
 
   private PropertyShape getPropertyShape(DataFetchingEnvironment environment) {
     if (environment.getParentType() instanceof GraphQLObjectType) {
-      return nodeShapeRegistry.get((GraphQLObjectType) environment.getParentType())
-          .getPropertyShape(environment.getField()
-              .getName());
+      NodeShape nodeShape = nodeShapeRegistry.getByShaclName(environment.getParentType()
+          .getName());
+
+      return nodeShape.getPropertyShape(environment.getField()
+          .getName());
     }
-    throw ExceptionHelper.unsupportedOperationException("Cannot determine property shape for parent type '{}'.",
+    throw unsupportedOperationException("Cannot determine property shape for parent type '{}'.",
         environment.getParentType()
             .getClass()
             .getSimpleName());
@@ -75,28 +77,24 @@ public final class ValueFetcher extends SourceDataFetcher {
         .stream()
         .filter(result -> {
           if (propertyShape.getNode() != null) {
-            // in case we have strong typing (sh:node), remove the types from the result that do not conform
-            // typing
             if (result instanceof SimpleIRI) {
-              return Models.getProperties(source.getModel(), (SimpleIRI) result, RDF.TYPE)
-                  .stream()
-                  .anyMatch(property -> property.equals(propertyShape.getNode()
-                      .getTargetClass()));
+              return true;
             }
 
             return resultIsOfType(result, propertyShape.getNode()
-                .getTargetClass());
+                .getTargetClasses());
           }
           return true;
         });
   }
 
-  private boolean resultIsOfType(Value value, IRI type) {
+  private boolean resultIsOfType(Value value, Set<IRI> types) {
     return listOf(((MemResource) value).getSubjectStatementList()).stream()
         .anyMatch(statement -> statement.getPredicate()
             .equals(RDF.TYPE)
-            && statement.getObject()
-                .equals(type));
+            && types.stream()
+                .anyMatch(type -> statement.getObject()
+                    .equals(type)));
   }
 
   private Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {

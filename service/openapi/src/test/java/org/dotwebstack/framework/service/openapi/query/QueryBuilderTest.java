@@ -41,7 +41,7 @@ public class QueryBuilderTest {
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
 
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-    GraphQlField queryField = builder.toGraphQlField(fieldDefinition);
+    GraphQlField queryField = builder.toGraphQlField(fieldDefinition, new HashMap<>());
 
     StringJoiner bodyJoiner = new StringJoiner(",", "{", "}");
     StringJoiner argumentJoiner = new StringJoiner(",");
@@ -61,7 +61,7 @@ public class QueryBuilderTest {
     FieldDefinition fieldDefinition = getQueryFieldDefinition("brewery");
 
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-    GraphQlField queryField = builder.toGraphQlField(fieldDefinition);
+    GraphQlField queryField = builder.toGraphQlField(fieldDefinition, new HashMap<>());
 
     ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
 
@@ -83,7 +83,7 @@ public class QueryBuilderTest {
     FieldDefinition breweryDefinition = getQueryFieldDefinition("brewery");
 
     GraphQlFieldBuilder builder = new GraphQlFieldBuilder(this.registry);
-    GraphQlField breweryField = builder.toGraphQlField(breweryDefinition);
+    GraphQlField breweryField = builder.toGraphQlField(breweryDefinition, new HashMap<>());
 
     ImmutableMap<String, Object> arguments = ImmutableMap.of("identifier", "1");
     Set<String> requiredFields = ImmutableSet.of("name", "beers", "beers.name", "beers.ingredients",

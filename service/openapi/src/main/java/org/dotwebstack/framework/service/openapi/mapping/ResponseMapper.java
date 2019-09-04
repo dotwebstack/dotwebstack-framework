@@ -97,6 +97,11 @@ public class ResponseMapper {
       return null;
     }
 
+    if (Objects.nonNull(parentContext.getSchema()
+        .getDwsType())) {
+      return parentContext.getData();
+    }
+
     Map<String, Object> result = new HashMap<>();
     parentContext.getSchema()
         .getChildren()
@@ -112,7 +117,7 @@ public class ResponseMapper {
 
   private Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
     if (Objects.isNull(writeContext.getSchema()
-        .getDwsTemplate())) {
+        .getDwsExpr())) {
       return writeContext.getData();
     }
 
@@ -123,7 +128,7 @@ public class ResponseMapper {
 
     if (writeContext.isSchemaRequiredNonNillable()) {
       throw mappingException(String.format(
-          "Could not create response: required and non-nillable property '%s' template evaluation returned null.",
+          "Could not create response: required and non-nillable property '%s' expression evaluation returned null.",
           writeContext.getSchema()
               .getIdentifier()));
     }
@@ -171,6 +176,11 @@ public class ResponseMapper {
     // add object data to context
     StringBuilder fieldsBuilder = new StringBuilder("fields.");
     StringBuilder argsBuilder = new StringBuilder("args.");
+    writeContext.getParameters()
+        .entrySet()
+        .forEach(entry -> {
+          context.set("input." + entry.getKey(), entry.getValue());
+        });
     writeContext.getDataStack()
         .forEach(fieldContext -> {
           Object data = fieldContext.getData();
@@ -198,6 +208,6 @@ public class ResponseMapper {
         .forEach((key, value) -> context.set("env." + key, value));
 
     return jexlHelper.evaluateScript(writeContext.getSchema()
-        .getDwsTemplate(), context, String.class);
+        .getDwsExpr(), context, String.class);
   }
 }

@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
+import static org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory.createShapeFromModel;
+
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.DataFetchingEnvironment;
 import java.io.File;
@@ -8,14 +10,17 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.RepositoryProperties;
-import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeFactory;
+import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShapeRegistry;
 import org.dotwebstack.framework.core.CoreProperties;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -117,9 +122,10 @@ class Rdf4jConfiguration {
     NodeShapeRegistry registry = new NodeShapeRegistry(rdf4jProperties.getShape()
         .getPrefix());
 
+    Map<IRI, NodeShape> nodeShapeMap = new HashMap<>();
     Models.subjectIRIs(shapeModel.filter(null, RDF.TYPE, SHACL.NODE_SHAPE))
         .stream()
-        .map(subject -> NodeShapeFactory.createShapeFromModel(shapeModel, subject))
+        .map(subject -> createShapeFromModel(shapeModel, subject, nodeShapeMap))
         .forEach(shape -> registry.register(shape.getIdentifier(), shape));
 
     return registry;

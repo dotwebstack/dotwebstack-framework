@@ -1,11 +1,13 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtension;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TEMPLATE;
-import static org.dotwebstack.framework.service.openapi.helper.SchemaUtils.getSchemaReference;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
 import com.google.common.collect.ImmutableList;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -21,7 +23,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 
 @Builder
@@ -42,8 +43,8 @@ public class ResponseTemplateBuilder {
         .flatMap(entry -> createResponses(openApi, entry.getKey(), entry.getValue(), httpMethodOperation.getName(),
             httpMethodOperation.getHttpMethod()
                 .name(),
-            httpMethodOperation.getOperation()
-                .getRequestBody()).stream())
+            resolveRequestBody(openApi, httpMethodOperation.getOperation()
+                .getRequestBody())).stream())
         .collect(Collectors.toList());
 
     long successResponseCount = responses.stream()
@@ -70,10 +71,11 @@ public class ResponseTemplateBuilder {
         .collect(Collectors.toList());
   }
 
-  private void validateMediaType(String responseCode, Content content, String pathName, String methodName) {
+  private void validateMediaType(@NonNull String responseCode, @NonNull Content content, @NonNull String pathName,
+      @NonNull String methodName) {
     if (content.keySet()
         .size() != 1) {
-      throw ExceptionHelper.invalidConfigurationException(
+      throw invalidOpenApiConfigurationException(
           "Expected exactly one MediaType for path '{}' with method '{}' and response code '{}'.", pathName, methodName,
           responseCode);
     }
@@ -82,7 +84,7 @@ public class ResponseTemplateBuilder {
         .filter(name -> !name.matches("application/(.)*(\\\\+)?json"))
         .collect(Collectors.toList());
     if (!unsupportedMediaTypes.isEmpty()) {
-      throw ExceptionHelper.invalidConfigurationException(
+      throw invalidOpenApiConfigurationException(
           "Unsupported MediaType(s) '{}' for path '{}' with method '{}' and response code '{}'.", unsupportedMediaTypes,
           pathName, methodName, responseCode);
     }
@@ -96,8 +98,7 @@ public class ResponseTemplateBuilder {
 
     ResponseObject root;
     if (Objects.nonNull(ref)) {
-      Schema schema = getSchemaReference(ref, openApi);
-      root = createResponseObject(openApi, ref, schema, true, false);
+      root = createResponseObject(openApi, ref, resolveSchema(openApi, content.getSchema()), true, false);
     } else {
       root = createResponseObject(openApi, null, content.getSchema(), true, false);
     }
@@ -113,8 +114,7 @@ public class ResponseTemplateBuilder {
   private ResponseObject createResponseObject(OpenAPI openApi, String identifier, Schema schema, boolean isRequired,
       boolean isNillable) {
     if (schema.get$ref() != null) {
-      return createResponseObject(openApi, identifier, getSchemaReference(schema.get$ref(), openApi), isRequired,
-          isNillable);
+      return createResponseObject(openApi, identifier, resolveSchema(openApi, schema), isRequired, isNillable);
     } else if (schema instanceof ObjectSchema) {
       return createResponseObject(openApi, identifier, (ObjectSchema) schema, isRequired, isNillable);
     } else if (schema instanceof ArraySchema) {
@@ -128,7 +128,7 @@ public class ResponseTemplateBuilder {
           .dwsType(getDwsType(schema))
           .nillable(isNillable)
           .required(isRequired)
-          .dwsTemplate(getDwsTemplate(schema))
+          .dwsExpr(getDwsExpression(schema))
           .build();
     }
   }
@@ -154,7 +154,7 @@ public class ResponseTemplateBuilder {
         .dwsType(getDwsType(schema))
         .children(children)
         .nillable(isNillable)
-        .dwsTemplate(getDwsTemplate(schema))
+        .dwsExpr(getDwsExpression(schema))
         .required(isRequired)
         .build();
   }
@@ -166,8 +166,8 @@ public class ResponseTemplateBuilder {
         .get$ref();
     ResponseObject item;
     if (Objects.nonNull(ref)) {
-      Schema refSchema = getSchemaReference(ref, openApi);
-      item = createResponseObject(openApi, identifier, refSchema, true, isNillable(refSchema));
+      Schema resolvedSchema = resolveSchema(openApi, schema, ref);
+      item = createResponseObject(openApi, identifier, resolvedSchema, true, isNillable(resolvedSchema));
     } else {
       item = createResponseObject(openApi, identifier, schema.getItems(), true, false);
     }
@@ -178,7 +178,7 @@ public class ResponseTemplateBuilder {
         .dwsType(getDwsType(schema))
         .items(ImmutableList.of(item))
         .nillable(isNillable)
-        .dwsTemplate(getDwsTemplate(schema))
+        .dwsExpr(getDwsExpression(schema))
         .required(isRequired)
         .build();
 
@@ -188,20 +188,18 @@ public class ResponseTemplateBuilder {
     return schema != null && (isEnvelope(schema) || Boolean.TRUE.equals(schema.getNullable()));
   }
 
-  private String getDwsTemplate(Schema<?> schema) {
-    Object result = getDwsExtension(schema, X_DWS_TEMPLATE);
+  private String getDwsExpression(Schema<?> schema) {
+    Object result = getDwsExtension(schema, X_DWS_EXPR);
 
     if (Objects.isNull(result)) {
       return null;
     }
 
     if (!(result instanceof String)) {
-      throw ExceptionHelper.invalidConfigurationException("Value of extension '{}' should be a string.",
-          X_DWS_TEMPLATE);
+      throw invalidConfigurationException("Value of extension '{}' should be a string.", X_DWS_EXPR);
     }
     if (!Objects.equals("string", schema.getType())) {
-      throw ExceptionHelper.invalidConfigurationException("Extension '{}' is only allowed for string types.",
-          X_DWS_TEMPLATE);
+      throw invalidConfigurationException("Extension '{}' is only allowed for string types.", X_DWS_EXPR);
     }
 
     return (String) result;
