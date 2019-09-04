@@ -7,8 +7,6 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
-
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -93,7 +91,10 @@ public final class ValueFetcher extends SourceDataFetcher {
   private boolean resultIsOfType(Value value, Set<IRI> types) {
     return listOf(((MemResource) value).getSubjectStatementList()).stream()
         .anyMatch(statement -> statement.getPredicate()
-            .equals(RDF.TYPE) && types.stream().anyMatch(type -> statement.getObject().equals(type)));
+            .equals(RDF.TYPE)
+            && types.stream()
+                .anyMatch(type -> statement.getObject()
+                    .equals(type)));
   }
 
   private Object convert(@NonNull Model model, @NonNull PropertyShape propertyShape, @NonNull Value value) {
