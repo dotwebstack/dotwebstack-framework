@@ -82,6 +82,11 @@ class Rdf4jConfiguration {
       public boolean supports(String repositoryId) {
         return localRepositoryManager.hasRepositoryConfig(repositoryId);
       }
+
+      @Override
+      public boolean addGraphQueryValuesBlock() {
+        return true;
+      }
     };
   }
 

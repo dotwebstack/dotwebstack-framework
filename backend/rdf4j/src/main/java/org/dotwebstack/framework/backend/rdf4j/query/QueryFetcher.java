@@ -149,7 +149,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     }
 
     String graphQuery = GraphQueryBuilder.create(queryEnvironment, subjects, constructVerticeFactory)
-        .getQueryString();
+        .getQueryString(repositoryAdapter.addGraphQueryValuesBlock());
 
     LOG.debug("Executing query for graph:\n{}", graphQuery);
 
