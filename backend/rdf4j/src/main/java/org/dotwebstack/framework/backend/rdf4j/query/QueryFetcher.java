@@ -149,7 +149,7 @@ public final class QueryFetcher implements DataFetcher<Object> {
     }
 
     String graphQuery = GraphQueryBuilder.create(queryEnvironment, subjects, constructVerticeFactory)
-        .getQueryString();
+        .getQueryString(repositoryAdapter.addGraphQueryValuesBlock());
 
     LOG.debug("Executing query for graph:\n{}", graphQuery);
 
@@ -160,7 +160,10 @@ public final class QueryFetcher implements DataFetcher<Object> {
     String repositoryId =
         DirectiveUtils.getArgument(Rdf4jDirectives.SPARQL_ARG_REPOSITORY, sparqlDirective, String.class);
 
-    GraphQueryResult queryResult = repositoryAdapter.prepareGraphQuery(repositoryId, environment, graphQuery)
+    GraphQueryResult queryResult = repositoryAdapter
+        .prepareGraphQuery(repositoryId, environment, graphQuery, subjects.stream()
+            .map(IRI::toString)
+            .collect(Collectors.toList()))
         .evaluate();
 
     return QueryResults.asModel(queryResult);

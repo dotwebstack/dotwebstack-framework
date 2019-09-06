@@ -32,7 +32,7 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
     return new GraphQueryBuilder(environment, subjects, constructVerticeFactory);
   }
 
-  String getQueryString() {
+  String getQueryString(boolean addValuesBlock) {
     NodeShape nodeShape = environment.getNodeShapeRegistry()
         .get(environment.getObjectType());
 
@@ -48,7 +48,9 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
             .toArray(new GraphPattern[] {}));
 
     String queryString = query.getQueryString();
-    queryString = queryString.replace("WHERE {", "WHERE {" + createValuesBlock(subjects, subjectVariable));
+    if (addValuesBlock) {
+      queryString = queryString.replace("WHERE {", "WHERE {" + createValuesBlock(subjects, subjectVariable));
+    }
 
     return queryString;
   }

@@ -11,6 +11,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import lombok.Cleanup;
@@ -70,7 +71,8 @@ class Rdf4jConfiguration {
       }
 
       @Override
-      public GraphQuery prepareGraphQuery(String repositoryId, DataFetchingEnvironment environment, String query) {
+      public GraphQuery prepareGraphQuery(String repositoryId, DataFetchingEnvironment environment, String query,
+          List<String> subjectIris) {
         return localRepositoryManager.getRepository(repositoryId)
             .getConnection()
             .prepareGraphQuery(query);
@@ -79,6 +81,11 @@ class Rdf4jConfiguration {
       @Override
       public boolean supports(String repositoryId) {
         return localRepositoryManager.hasRepositoryConfig(repositoryId);
+      }
+
+      @Override
+      public boolean addGraphQueryValuesBlock() {
+        return true;
       }
     };
   }
