@@ -1,20 +1,17 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getFieldName;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
-import graphql.schema.GraphQLDirectiveContainer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
-import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
@@ -30,23 +27,49 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
   }
 
   public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
-      List<DirectiveContainerTuple> filterMapping, List<Object> orderByList) {
+      List<FilterTuple> filterTuples, List<Object> orderByList) {
     Vertice vertice = createVertice(subject, nodeShape);
 
-    filterMapping.forEach(filter -> {
-      GraphQLDirectiveContainer container = filter.getContainer();
-      String fieldName = getFieldName(container);
-      String[] fieldPath = fieldName.split("\\.");
-      NodeShape childShape = getNextNodeShape(nodeShape, fieldPath);
+    filterTuples.forEach(filter -> {
+      NodeShape childShape = getNextNodeShape(nodeShape, filter.getPath());
 
       if (nodeShape.equals(childShape)) {
-        addFilterToVertice(vertice, container, query, nodeShape, filter.getValue(), fieldPath);
+        addFilterToVertice(vertice, query, nodeShape, filter);
       } else {
-        Edge edge = createSimpleEdge(query.var(), null, nodeShape.getPropertyShape(fieldPath[0])
-            .getPath()
-            .toPredicate(), false);
-        fieldPath = ArrayUtils.remove(fieldPath, 0);
-        addFilterToVertice(edge.getObject(), container, query, childShape, filter.getValue(), fieldPath);
+        Variable edgeSubject = query.var();
+        Edge edge;
+
+        if (filter.getPath()
+            .size() == 1) {
+          edge = createSimpleEdge(edgeSubject, null, nodeShape.getPropertyShape(filter.getPath()
+              .get(0))
+              .getPath()
+              .toPredicate(), false);
+
+          addFilterToVertice(edge.getObject(), query, childShape, filter);
+
+        } else {
+          FilterTuple childFilterTuple = FilterTuple.builder()
+              .path(filter.getPath()
+                  .subList(1, filter.getPath()
+                      .size()))
+              .value(filter.getValue())
+              .operator(filter.getOperator())
+              .build();
+          Vertice childVertice =
+              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterTuple), orderByList);
+
+          edge = Edge.builder()
+              .predicate(nodeShape.getPropertyShape(filter.getPath()
+                  .get(0))
+                  .getPath()
+                  .toPredicate())
+              .object(childVertice)
+              .isVisible(false)
+              .isOptional(false)
+              .build();
+
+        }
         vertice.getEdges()
             .add(edge);
       }

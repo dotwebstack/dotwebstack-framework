@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Collections.singletonList;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.getOperand;
-import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getFieldName;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getSubjectForField;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
@@ -14,6 +13,7 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
@@ -110,29 +109,45 @@ abstract class AbstractVerticeFactory {
       String[] fieldPath = field.getName()
           .split("\\.");
 
-      addFilterToVertice(vertice, argument, query, getNextNodeShape(nodeShape, fieldPath), filterValue, startPath);
+
+      addFilterToVertice(vertice, query, getNextNodeShape(nodeShape, Arrays.asList(fieldPath)), FilterTuple.builder()
+          .path(Arrays.asList(startPath))
+          .value(filterValue)
+          .build());
     }
   }
 
-  void addFilterToVertice(Vertice vertice, GraphQLDirectiveContainer container, OuterQuery<?> query,
-      NodeShape nodeShape, Object filterValue, String[] fieldPath) {
-    Edge match = findOrCreatePath(vertice, query, nodeShape, fieldPath, true);
+  void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterTuple filterTuple) {
+    Edge match = findOrCreatePath(vertice, query, nodeShape, filterTuple.getPath(), true);
 
     List<Filter> filters = Objects.nonNull(match.getObject()
         .getFilters()) ? match.getObject()
             .getFilters() : new ArrayList<>();
-    Filter filter = createFilter(nodeShape, container, filterValue, fieldPath[fieldPath.length - 1]);
+
+    Filter filter = createFilter(nodeShape, filterTuple.getOperator(), filterTuple.getValue(), filterTuple.getPath()
+        .get(filterTuple.getPath()
+            .size() - 1));
+
     filters.add(filter);
 
     match.getObject()
         .setFilters(filters);
   }
 
+  static String getFieldName(GraphQLDirectiveContainer container) {
+    return Objects.nonNull(container.getDirective(CoreDirectives.FILTER_NAME)
+        .getArgument(CoreDirectives.FILTER_ARG_FIELD)
+        .getValue())
+            ? (String) container.getDirective(CoreDirectives.FILTER_NAME)
+                .getArgument(CoreDirectives.FILTER_ARG_FIELD)
+                .getValue()
+            : container.getName();
+  }
+
   /*
    * Create a new filter with either one argument or a list of arguments
    */
-  private Filter createFilter(NodeShape nodeShape, GraphQLDirectiveContainer container, Object filterValue,
-      String argumentName) {
+  private Filter createFilter(NodeShape nodeShape, String filterOperator, Object filterValue, String argumentName) {
     List<Object> filterArguments;
     if (filterValue instanceof List) {
       filterArguments = castToList(filterValue);
@@ -145,9 +160,7 @@ abstract class AbstractVerticeFactory {
         .collect(Collectors.toList());
 
     return Filter.builder()
-        .operator(FilterOperator.getByValue((String) container.getDirective(CoreDirectives.FILTER_NAME)
-            .getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
-            .getValue())
+        .operator(FilterOperator.getByValue(filterOperator)
             .orElse(FilterOperator.EQ))
         .operands(operands)
         .build();
@@ -157,19 +170,19 @@ abstract class AbstractVerticeFactory {
    * Find the path to apply the filter on. In case no or a only partial path is found, create the part
    * of the path that does not yet exist
    */
-  private Edge findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, String[] fieldPaths,
+  private Edge findOrCreatePath(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, List<String> fieldPaths,
       boolean required) {
-    Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(fieldPaths[0]), vertice, required);
+    Edge match = findOrCreateEdge(query, nodeShape.getPropertyShape(fieldPaths.get(0)), vertice, required);
     if (required) {
       match.setOptional(false);
     }
 
-    if (fieldPaths.length == 1) {
+    if (fieldPaths.size() == 1) {
       return match;
     }
 
     NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
-    return findOrCreatePath(match.getObject(), query, childShape, ArrayUtils.remove(fieldPaths, 0), required);
+    return findOrCreatePath(match.getObject(), query, childShape, fieldPaths.subList(1, fieldPaths.size()), required);
   }
 
   /*
@@ -233,7 +246,7 @@ abstract class AbstractVerticeFactory {
     String order = orderMap.get("order")
         .toString();
 
-    String[] fieldPaths = fieldName.split("\\.");
+    List<String> fieldPaths = Arrays.asList(fieldName.split("\\."));
     NodeShape childShape = getNextNodeShape(nodeShape, fieldPaths);
 
     // add missing edges
@@ -243,9 +256,9 @@ abstract class AbstractVerticeFactory {
       match = findOrCreatePath(vertice, query, nodeShape, fieldPaths, false);
       subject = getSubjectForField(match, nodeShape, fieldPaths);
     } else {
-      Edge edge = createSimpleEdge(query.var(), nodeShape.getPropertyShape(fieldPaths[0])
+      Edge edge = createSimpleEdge(query.var(), nodeShape.getPropertyShape(fieldPaths.get(0))
           .getPath(), true, false);
-      fieldPaths = ArrayUtils.remove(fieldPaths, 0);
+      fieldPaths = fieldPaths.subList(1, fieldPaths.size());
 
       vertice.getEdges()
           .add(edge);

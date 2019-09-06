@@ -11,7 +11,6 @@ import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
-import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
@@ -86,13 +85,4 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
         .build();
   }
 
-  private void addSubjectFilters(Vertice vertice, List<IRI> filterSubjects) {
-    vertice.getFilters()
-        .add(Filter.builder()
-            .operator(FilterOperator.EQ)
-            .operands(filterSubjects.stream()
-                .map(filterSubject -> Rdf.iri(filterSubject.stringValue()))
-                .collect(Collectors.toList()))
-            .build());
-  }
 }

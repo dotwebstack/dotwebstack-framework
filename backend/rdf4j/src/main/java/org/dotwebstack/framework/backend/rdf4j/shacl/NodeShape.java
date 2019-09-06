@@ -19,12 +19,13 @@ public final class NodeShape {
 
   private final Map<String, PropertyShape> propertyShapes;
 
-  public PropertyShape getPropertyShape(String name) {
-    PropertyShape propertyShape = this.propertyShapes.get(name);
+  public PropertyShape getPropertyShape(String propertyShapeName) {
+    PropertyShape propertyShape = this.propertyShapes.get(propertyShapeName);
 
     // We need to validate the graphql definition against the shacl definition on bootstrap
     if (propertyShape == null) {
-      throw new InvalidConfigurationException("No property shape found for name '{}'", name);
+      throw new InvalidConfigurationException("No property shape found for name '{}' nodeshape '{}'", propertyShapeName,
+          this.name);
     }
 
     return propertyShape;
