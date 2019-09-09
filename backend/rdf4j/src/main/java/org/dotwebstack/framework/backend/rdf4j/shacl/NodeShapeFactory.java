@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
@@ -65,11 +64,11 @@ public class NodeShapeFactory {
      * The sh:or can occur on multiple levels, either as a direct child of a nodeshape or as a child of
      * an sh:property. Here the direct childs of type sh:or on a nodeshape are processed
      */
-    Map<String, PropertyShape> orShapes = getOrPropertyShapes(shapeModel, nodeShape).stream()
+    List<PropertyShape> orShapes = getOrPropertyShapes(shapeModel, nodeShape).stream()
         .map(shape -> buildPropertyShape(shapeModel, shape, nodeShapeMap))
-        .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
+        .collect(Collectors.toList());
 
-    Map<String, PropertyShape> propertyShapes = Models.getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
+    List<PropertyShape> propertyShapesList = Models.getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
         .map(shape -> {
           if (ValueUtils.isPropertyPresent(shapeModel, shape, SHACL.OR)) {
@@ -81,13 +80,15 @@ public class NodeShapeFactory {
         })
         .flatMap(List::stream)
         .map(shape -> buildPropertyShape(shapeModel, shape, nodeShapeMap))
-        .collect(Collectors.toMap(PropertyShape::getName, Function.identity()));
+        .collect(Collectors.toList());
 
-    return Stream.concat(orShapes.entrySet()
-        .stream(),
-        propertyShapes.entrySet()
-            .stream())
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, PropertyShape> result = new HashMap<>();
+
+    Stream.concat(propertyShapesList.stream(), orShapes.stream())
+        .filter(propertyShape -> !result.containsKey(propertyShape.getName()))
+        .forEach(propertyShape -> result.put(propertyShape.getName(), propertyShape));
+
+    return result;
   }
 
   private static List<Resource> getOrPropertyShapes(Model shapeModel, Resource nodeShape) {

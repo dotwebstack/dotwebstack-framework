@@ -1,9 +1,16 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
+import static java.util.Collections.singletonList;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEERS_TARGET_CLASS;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_3;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BEER_INGREDIENT;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_BEERS_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_LABEL;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_NAME_FIELD;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.BREWERY_TARGET_CLASS;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_NAME_FIELD;
+import static org.dotwebstack.framework.backend.rdf4j.Constants.INGREDIENTS_TARGET_CLASS;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.SHACL_LITERAL;
 import static org.dotwebstack.framework.backend.rdf4j.Constants.XSD_STRING;
 import static org.dotwebstack.framework.backend.rdf4j.helper.IriHelper.stringify;
@@ -14,20 +21,18 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import graphql.Scalars;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirective;
 import graphql.schema.SelectedField;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Set;
 import org.dotwebstack.framework.backend.rdf4j.serializers.LocalDateSerializer;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.serializers.ZonedDateTimeSerializer;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
+import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.InversePath;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.PredicatePath;
-import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterOperator;
-import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
@@ -45,12 +50,12 @@ public class VerticeFactoryTest {
   @Mock
   private NodeShape nodeShape;
 
-  SerializerRouter router =
+  private SerializerRouter router =
       new SerializerRouter(ImmutableList.of(new LocalDateSerializer(), new ZonedDateTimeSerializer()));
 
-  SelectVerticeFactory selectVerticeFactory = new SelectVerticeFactory(router);
+  private SelectVerticeFactory selectVerticeFactory = new SelectVerticeFactory(router);
 
-  ConstructVerticeFactory constructVerticeFactory = new ConstructVerticeFactory(router);
+  private ConstructVerticeFactory constructVerticeFactory = new ConstructVerticeFactory(router);
 
   @Mock
   SelectedField selectedField;
@@ -112,6 +117,99 @@ public class VerticeFactoryTest {
   @Test
   void get_ReturnVertice_WithFilteredSelectQuery() {
     // Arrange
+    PropertyShape ingredientName = PropertyShape.builder()
+        .name(INGREDIENTS_NAME_FIELD)
+        .path(PredicatePath.builder()
+            .iri(BREWERY_LABEL)
+            .build())
+        .nodeKind(SHACL_LITERAL)
+        .datatype(XSD_STRING)
+        .build();
+
+    NodeShape ingredientShape = NodeShape.builder()
+        .name("Ingredient")
+        .propertyShapes(ImmutableMap.of("name", ingredientName))
+        .targetClasses(Set.of(INGREDIENTS_TARGET_CLASS))
+        .build();
+
+    PropertyShape beerIngredients = PropertyShape.builder()
+        .name("ingredients")
+        .node(ingredientShape)
+        .path(PredicatePath.builder()
+            .iri(BEER_INGREDIENT)
+            .build())
+        .datatype(XSD_STRING)
+        .build();
+
+    NodeShape beersShape = NodeShape.builder()
+        .name("Beer")
+        .propertyShapes(ImmutableMap.of("ingredients", beerIngredients))
+        .targetClasses(Set.of(BEERS_TARGET_CLASS))
+        .build();
+
+    PropertyShape breweryBeers = PropertyShape.builder()
+        .name(BREWERY_BEERS_FIELD)
+        .path(InversePath.builder()
+            .object(PredicatePath.builder()
+                .iri(BREWERY_BEERS)
+                .build())
+            .build())
+        .node(beersShape)
+        .build();
+
+
+    when(nodeShape.getPropertyShape("beers")).thenReturn(breweryBeers);
+    when(nodeShape.getTargetClasses()).thenReturn(Collections.singleton(BREWERY_TARGET_CLASS));
+
+    SelectQuery query = Queries.SELECT();
+
+    // Act
+    Vertice vertice = selectVerticeFactory.createVertice(query.var(), query, nodeShape,
+        singletonList(FilterRule.builder()
+            .path(Arrays.asList("beers", "ingredients", "name"))
+            .value("Hop")
+            .build()),
+        Collections.emptyList());
+
+    // Assert
+    assertThat(vertice.getEdges()
+        .size(), is(2));
+    Edge edge = vertice.getEdges()
+        .get(1);
+
+    assertThat(edge.getObject()
+        .getEdges()
+        .size(), is(2));
+    edge = edge.getObject()
+        .getEdges()
+        .get(1);
+
+    assertThat(edge.getObject()
+        .getEdges()
+        .size(), is(2));
+    edge = edge.getObject()
+        .getEdges()
+        .get(1);
+
+    assertThat(edge.getObject()
+        .getFilters()
+        .size(), is(1));
+    Filter filter = edge.getObject()
+        .getFilters()
+        .get(0);
+
+    assertThat(filter.getOperator(), is(FilterOperator.EQ));
+    assertThat(filter.getOperands()
+        .size(), is(1));
+
+    Operand operand = filter.getOperands()
+        .get(0);
+    assertThat(operand.getQueryString(), is("\"Hop\"^^<http://www.w3.org/2001/XMLSchema#string>"));
+  }
+
+  @Test
+  void get_ReturnVertice_WithNestedFilteredSelectQuery() {
+    // Arrange
     PropertyShape breweryName = PropertyShape.builder()
         .name(BREWERY_NAME_FIELD)
         .path(PredicatePath.builder()
@@ -127,21 +225,8 @@ public class VerticeFactoryTest {
 
     // Act
     Vertice vertice = selectVerticeFactory.createVertice(query.var(), query, nodeShape,
-        ImmutableList.of(DirectiveContainerTuple.builder()
-            .container(GraphQLArgument.newArgument()
-                .name("name")
-                .withDirective(GraphQLDirective.newDirective()
-                    .name(CoreDirectives.FILTER_NAME)
-                    .argument(GraphQLArgument.newArgument()
-                        .name(CoreDirectives.FILTER_ARG_FIELD)
-                        .type(Scalars.GraphQLString)
-                        .build())
-                    .argument(GraphQLArgument.newArgument()
-                        .name(CoreDirectives.FILTER_ARG_OPERATOR)
-                        .type(Scalars.GraphQLString)
-                        .build()))
-                .type(Scalars.GraphQLString)
-                .build())
+        singletonList(FilterRule.builder()
+            .path(singletonList("name"))
             .value("Alfa Brouwerij")
             .build()),
         Collections.emptyList());

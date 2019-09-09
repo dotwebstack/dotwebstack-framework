@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.getFilterRulePath;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
@@ -7,14 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
+import org.dotwebstack.framework.backend.rdf4j.query.context.FilterRule;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeHelper;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.traversers.DirectiveContainerTuple;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
@@ -56,7 +60,18 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class)
             .orElse(new ArrayList());
 
-    Vertice root = selectVerticeFactory.createVertice(SUBJECT_VAR, query, nodeShape, filterMapping, orderByObject);
+    List<FilterRule> filterRules = filterMapping.stream()
+        .map(filterRule -> FilterRule.builder()
+            .path(getFilterRulePath(filterRule.getContainer()))
+            .operator((String) filterRule.getContainer()
+                .getDirective(CoreDirectives.FILTER_NAME)
+                .getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
+                .getValue())
+            .value(filterRule.getValue())
+            .build())
+        .collect(Collectors.toList());
+
+    Vertice root = selectVerticeFactory.createVertice(SUBJECT_VAR, query, nodeShape, filterRules, orderByObject);
 
     query.select(root.getSubject())
         .where(VerticeHelper.getWherePatterns(root)
