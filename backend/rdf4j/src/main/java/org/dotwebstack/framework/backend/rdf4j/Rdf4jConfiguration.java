@@ -99,7 +99,7 @@ class Rdf4jConfiguration {
     File baseDir = Files.createTempDirectory(BASE_DIR_PREFIX)
         .toFile();
     LocalRepositoryManager repositoryManager = new LocalRepositoryManager(baseDir);
-    repositoryManager.initialize();
+    repositoryManager.init();
 
     // Add & populate local repository
     repositoryManager.addRepositoryConfig(createLocalRepositoryConfig());

@@ -8,7 +8,7 @@ import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 @Data
 @Builder
-class Edge {
+class Edge implements Comparable<Edge> {
 
   private RdfPredicate predicate;
 
@@ -27,4 +27,8 @@ class Edge {
     return predicate;
   }
 
+  @Override
+  public int compareTo(Edge other) {
+    return Boolean.compare(isOptional, other.isOptional);
+  }
 }

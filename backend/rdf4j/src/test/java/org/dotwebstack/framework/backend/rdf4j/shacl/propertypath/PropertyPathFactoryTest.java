@@ -108,7 +108,7 @@ public class PropertyPathFactoryTest {
 
   public static Model loadShapeModel() throws IOException {
     Repository repo = new SailRepository(new MemoryStore());
-    repo.initialize();
+    repo.init();
     String shapesPath = "config/model/shapes.trig";
     try (RepositoryConnection connection = repo.getConnection();
         InputStream is = PropertyPathFactoryTest.class.getClassLoader()
