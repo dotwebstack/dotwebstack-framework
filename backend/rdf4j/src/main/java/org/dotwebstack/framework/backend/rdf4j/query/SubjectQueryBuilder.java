@@ -15,7 +15,7 @@ import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
-import org.dotwebstack.framework.backend.rdf4j.query.context.FilterTuple;
+import org.dotwebstack.framework.backend.rdf4j.query.context.FilterRule;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.query.context.Vertice;
 import org.dotwebstack.framework.backend.rdf4j.query.context.VerticeHelper;
@@ -62,8 +62,8 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         jexlHelper.evaluateDirectiveArgument(Rdf4jDirectives.SPARQL_ARG_ORDER_BY, sparqlDirective, context, List.class)
             .orElse(new ArrayList());
 
-    List<FilterTuple> filterTuples = filterMapping.stream()
-        .map(filterMap -> FilterTuple.builder()
+    List<FilterRule> filterRules = filterMapping.stream()
+        .map(filterMap -> FilterRule.builder()
             .path(Arrays.asList(getFieldName(filterMap.getContainer()).split("\\.")))
             .operator((String) filterMap.getContainer()
                 .getDirective(CoreDirectives.FILTER_NAME)
@@ -73,7 +73,7 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
             .build())
         .collect(Collectors.toList());
 
-    Vertice root = selectVerticeFactory.createVertice(SUBJECT_VAR, query, nodeShape, filterTuples, orderByObject);
+    Vertice root = selectVerticeFactory.createVertice(SUBJECT_VAR, query, nodeShape, filterRules, orderByObject);
 
     query.select(root.getSubject())
         .where(VerticeHelper.getWherePatterns(root)

@@ -26,11 +26,11 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
     super(serializerRouter);
   }
 
-  public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape,
-      List<FilterTuple> filterTuples, List<Object> orderByList) {
+  public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
+      List<Object> orderByList) {
     Vertice vertice = createVertice(subject, nodeShape);
 
-    filterTuples.forEach(filter -> {
+    filterRules.forEach(filter -> {
       NodeShape childShape = getNextNodeShape(nodeShape, filter.getPath());
 
       if (nodeShape.equals(childShape)) {
@@ -49,7 +49,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
           addFilterToVertice(edge.getObject(), query, childShape, filter);
 
         } else {
-          FilterTuple childFilterTuple = FilterTuple.builder()
+          FilterRule childFilterRule = FilterRule.builder()
               .path(filter.getPath()
                   .subList(1, filter.getPath()
                       .size()))
@@ -57,7 +57,7 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
               .operator(filter.getOperator())
               .build();
           Vertice childVertice =
-              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterTuple), orderByList);
+              createVertice(edgeSubject, query, childShape, Collections.singletonList(childFilterRule), orderByList);
 
           edge = Edge.builder()
               .predicate(nodeShape.getPropertyShape(filter.getPath()

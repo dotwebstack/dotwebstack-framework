@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class FilterTuple {
+public class FilterRule {
   private List<String> path;
 
   private String operator;

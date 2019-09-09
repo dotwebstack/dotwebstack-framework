@@ -110,22 +110,22 @@ abstract class AbstractVerticeFactory {
           .split("\\.");
 
 
-      addFilterToVertice(vertice, query, getNextNodeShape(nodeShape, Arrays.asList(fieldPath)), FilterTuple.builder()
+      addFilterToVertice(vertice, query, getNextNodeShape(nodeShape, Arrays.asList(fieldPath)), FilterRule.builder()
           .path(Arrays.asList(startPath))
           .value(filterValue)
           .build());
     }
   }
 
-  void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterTuple filterTuple) {
-    Edge match = findOrCreatePath(vertice, query, nodeShape, filterTuple.getPath(), true);
+  void addFilterToVertice(Vertice vertice, OuterQuery<?> query, NodeShape nodeShape, FilterRule filterRule) {
+    Edge match = findOrCreatePath(vertice, query, nodeShape, filterRule.getPath(), true);
 
     List<Filter> filters = Objects.nonNull(match.getObject()
         .getFilters()) ? match.getObject()
             .getFilters() : new ArrayList<>();
 
-    Filter filter = createFilter(nodeShape, filterTuple.getOperator(), filterTuple.getValue(), filterTuple.getPath()
-        .get(filterTuple.getPath()
+    Filter filter = createFilter(nodeShape, filterRule.getOperator(), filterRule.getValue(), filterRule.getPath()
+        .get(filterRule.getPath()
             .size() - 1));
 
     filters.add(filter);

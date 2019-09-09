@@ -90,6 +90,10 @@ public final class Constants {
 
   public static final Literal BREWERY_NAME_EXAMPLE_1 = VF.createLiteral("Brouwerij 1923");
 
+  public static final IRI BREWERY_BEERS = VF.createIRI("https://github.com/dotwebstack/beer/def#beers");
+
+  public static final String BREWERY_BEERS_FIELD = "beers";
+
   // Brewery.owners
 
   public static final String BREWERY_OWNERS_FIELD = "owners";
@@ -125,6 +129,8 @@ public final class Constants {
 
 
   // Brewery.beers
+
+  public static final IRI BEERS_TARGET_CLASS = VF.createIRI(BEER_DEF.concat("Beers"));
 
   public static final String BEERS_FIELD = "beers";
 
@@ -183,6 +189,8 @@ public final class Constants {
 
   public static final String BEERTYPE_EXAMPLE_2_NAME = "Beertype2";
 
+  public static final IRI BEER_INGREDIENT = VF.createIRI("https://github.com/dotwebstack/beer/def#ingredient");
+
   // Schema
 
   public static final IRI SCHEMA_ADDRESS = VF.createIRI(SCHEMA_PREFIX + "address");
@@ -228,4 +236,9 @@ public final class Constants {
   public static final String SUPPLEMENTS_FIELD = "supplements";
 
   public static final String SUPPLEMENTS_NAME_FIELD = "name";
+
+  // Ingredients
+
+  public static final IRI INGREDIENTS_TARGET_CLASS = VF.createIRI(BEER_DEF.concat("Ingredients"));
+
 }
