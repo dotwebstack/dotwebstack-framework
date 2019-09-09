@@ -1,14 +1,12 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
+import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.getFilterRulePath;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLDirectiveContainer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -63,13 +61,13 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
             .orElse(new ArrayList());
 
     List<FilterRule> filterRules = filterMapping.stream()
-        .map(filterMap -> FilterRule.builder()
-            .path(Arrays.asList(getFieldName(filterMap.getContainer()).split("\\.")))
-            .operator((String) filterMap.getContainer()
+        .map(filterRule -> FilterRule.builder()
+            .path(getFilterRulePath(filterRule.getContainer()))
+            .operator((String) filterRule.getContainer()
                 .getDirective(CoreDirectives.FILTER_NAME)
                 .getArgument(CoreDirectives.FILTER_ARG_OPERATOR)
                 .getValue())
-            .value(filterMap.getValue())
+            .value(filterRule.getValue())
             .build())
         .collect(Collectors.toList());
 
@@ -85,16 +83,6 @@ class SubjectQueryBuilder extends AbstractQueryBuilder<SelectQuery> {
         .forEach(query::orderBy);
 
     return this.query.getQueryString();
-  }
-
-  static String getFieldName(GraphQLDirectiveContainer container) {
-    return Objects.nonNull(container.getDirective(CoreDirectives.FILTER_NAME)
-        .getArgument(CoreDirectives.FILTER_ARG_FIELD)
-        .getValue())
-            ? (String) container.getDirective(CoreDirectives.FILTER_NAME)
-                .getArgument(CoreDirectives.FILTER_ARG_FIELD)
-                .getValue()
-            : container.getName();
   }
 
   Optional<Integer> getLimitFromContext(MapContext context, GraphQLDirective sparqlDirective) {

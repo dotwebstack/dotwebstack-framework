@@ -9,10 +9,14 @@ import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
 import com.google.common.collect.ImmutableMap;
+import graphql.schema.GraphQLDirectiveContainer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
+import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.directives.FilterOperator;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
@@ -80,5 +84,15 @@ public class FilterHelper {
     return Rdf.literalOfType(filterString, Rdf.iri(nodeShape.getPropertyShape(field)
         .getDatatype()
         .stringValue()));
+  }
+
+  public static List<String> getFilterRulePath(GraphQLDirectiveContainer container) {
+    String path = Optional.of(container)
+        .map(con -> container.getDirective(CoreDirectives.FILTER_NAME))
+        .map(dc -> dc.getArgument(CoreDirectives.FILTER_ARG_FIELD))
+        .map(arg -> (String) arg.getValue())
+        .orElse(container.getName());
+
+    return Arrays.asList(path.split("\\."));
   }
 }

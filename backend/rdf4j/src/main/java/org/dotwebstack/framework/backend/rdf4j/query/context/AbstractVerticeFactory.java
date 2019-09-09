@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query.context;
 
 import static java.util.Collections.singletonList;
+import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.getFilterRulePath;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.FilterHelper.getOperand;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getNextNodeShape;
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.getSubjectForField;
@@ -8,7 +9,6 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFacto
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 
 import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirectiveContainer;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.AbstractMap;
@@ -105,13 +105,12 @@ abstract class AbstractVerticeFactory {
     Object filterValue = field.getArguments()
         .get(argument.getName());
     if (Objects.nonNull(filterValue)) {
-      String[] startPath = getFieldName(argument).split("\\.");
+      List<String> startPath = getFilterRulePath(argument);
       String[] fieldPath = field.getName()
           .split("\\.");
 
-
       addFilterToVertice(vertice, query, getNextNodeShape(nodeShape, Arrays.asList(fieldPath)), FilterRule.builder()
-          .path(Arrays.asList(startPath))
+          .path(startPath)
           .value(filterValue)
           .build());
     }
@@ -132,16 +131,6 @@ abstract class AbstractVerticeFactory {
 
     match.getObject()
         .setFilters(filters);
-  }
-
-  static String getFieldName(GraphQLDirectiveContainer container) {
-    return Objects.nonNull(container.getDirective(CoreDirectives.FILTER_NAME)
-        .getArgument(CoreDirectives.FILTER_ARG_FIELD)
-        .getValue())
-            ? (String) container.getDirective(CoreDirectives.FILTER_NAME)
-                .getArgument(CoreDirectives.FILTER_ARG_FIELD)
-                .getValue()
-            : container.getName();
   }
 
   /*
