@@ -168,6 +168,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
             .collect(Collectors.toList()))
         .evaluate();
 
-    return QueryResults.asModel(queryResult);
+    Model result = QueryResults.asModel(queryResult);
+    LOG.debug("Fetched [{}] triples", result.size());
+    return result;
   }
 }

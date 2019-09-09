@@ -31,7 +31,6 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.collection.IsMapContaining;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -283,7 +282,6 @@ class Rdf4jIntegrationTest {
   }
 
   @Test
-  @Disabled("SPARQL where condition order isn't stable: random failing test!")
   void graphqlQuery_ReturnsMap_ForSortQueryWithNameNestedSorting() {
     // Arrange
     String query = "{ breweries(sort: [{field: \"address.postalCode\", order: DESC}]){ identifier }}";
@@ -304,7 +302,6 @@ class Rdf4jIntegrationTest {
   }
 
   @Test()
-  @Disabled("SPARQL where condition order isn't stable: random failing test!")
   void graphqlQuery_ReturnsMap_ForSortQueryWithNameMultipleSorting() {
     // Arrange
     String query = "{ breweries(sort: [{field: \"address.postalCode\", order: DESC}, {field: \"name\", order: ASC}]){"
