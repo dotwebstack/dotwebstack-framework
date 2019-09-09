@@ -339,7 +339,8 @@ class Rdf4jIntegrationTest {
     assertThat(result.getErrors()
         .get(0)
         .getMessage(),
-        is("Exception while fetching data (/breweries) : No property shape found for name 'unexisting'"));
+        is("Exception while fetching data (/breweries) : No property shape found for name 'unexisting' "
+            + "nodeshape 'Brewery'"));
   }
 
   @Test
