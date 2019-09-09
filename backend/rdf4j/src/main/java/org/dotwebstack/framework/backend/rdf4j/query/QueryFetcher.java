@@ -96,6 +96,8 @@ public final class QueryFetcher implements DataFetcher<Object> {
     List<IRI> subjects =
         fetchSubjects(environment, queryEnvironment, filterMapping, environment.getArguments(), repositoryAdapter);
 
+    LOG.debug("Fetched subjects: {}", subjects);
+
     // Fetch graph for given subjects
     Model model = fetchGraph(environment, queryEnvironment, subjects, repositoryAdapter);
 
