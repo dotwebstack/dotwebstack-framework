@@ -1,10 +1,11 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
+import static graphql.language.DirectiveLocation.newDirectiveLocation;
+import static graphql.language.InputValueDefinition.newInputValueDefinition;
+
 import graphql.Scalars;
 import graphql.introspection.Introspection;
 import graphql.language.DirectiveDefinition;
-import graphql.language.DirectiveLocation;
-import graphql.language.InputValueDefinition;
 import graphql.language.NonNullType;
 import graphql.language.TypeName;
 import graphql.schema.idl.RuntimeWiring;
@@ -34,31 +35,28 @@ public class Rdf4jConfigurer implements GraphqlConfigurer {
 
     registry.add(DirectiveDefinition.newDirectiveDefinition()
         .name(Rdf4jDirectives.SPARQL_NAME)
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Rdf4jDirectives.SPARQL_ARG_REPOSITORY)
+        .inputValueDefinition(newInputValueDefinition().name(Rdf4jDirectives.SPARQL_ARG_REPOSITORY)
             .type(requiredString)
             .build())
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Rdf4jDirectives.SPARQL_ARG_SUBJECT)
+        .inputValueDefinition(newInputValueDefinition().name(Rdf4jDirectives.SPARQL_ARG_SUBJECT)
             .type(optionalString)
             .build())
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Rdf4jDirectives.SPARQL_ARG_LIMIT)
+        .inputValueDefinition(newInputValueDefinition().name(Rdf4jDirectives.SPARQL_ARG_DISTINCT)
+            .type(TypeName.newTypeName(Scalars.GraphQLBoolean.getName())
+                .build())
+            .build())
+        .inputValueDefinition(newInputValueDefinition().name(Rdf4jDirectives.SPARQL_ARG_LIMIT)
             .type(optionalString)
             .build())
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Rdf4jDirectives.SPARQL_ARG_OFFSET)
+        .inputValueDefinition(newInputValueDefinition().name(Rdf4jDirectives.SPARQL_ARG_OFFSET)
             .type(optionalString)
             .build())
-        .inputValueDefinition(InputValueDefinition.newInputValueDefinition()
-            .name(Rdf4jDirectives.SPARQL_ARG_ORDER_BY)
+        .inputValueDefinition(newInputValueDefinition().name(Rdf4jDirectives.SPARQL_ARG_ORDER_BY)
             .type(optionalString)
             .build())
-        .directiveLocation(DirectiveLocation.newDirectiveLocation()
-            .name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
+        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.FIELD_DEFINITION.name())
             .build())
-        .directiveLocation(DirectiveLocation.newDirectiveLocation()
-            .name(Introspection.DirectiveLocation.OBJECT.name())
+        .directiveLocation(newDirectiveLocation().name(Introspection.DirectiveLocation.OBJECT.name())
             .build())
         .build());
   }

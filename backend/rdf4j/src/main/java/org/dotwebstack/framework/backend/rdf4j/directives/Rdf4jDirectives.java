@@ -8,6 +8,8 @@ public final class Rdf4jDirectives {
 
   public static final String SPARQL_ARG_SUBJECT = "subject";
 
+  public static final String SPARQL_ARG_DISTINCT = "distinct";
+
   public static final String SPARQL_ARG_LIMIT = "limit";
 
   public static final String SPARQL_ARG_OFFSET = "offset";

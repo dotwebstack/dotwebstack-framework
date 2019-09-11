@@ -124,7 +124,7 @@ The Rdf4j backend supports GraphQL field selections on any level within a graph.
 ## 1.3 Sparql directive
 
 The Rdf4j backend introduces the `@sparql` directive which can be added to a query in the `schema.graphqls` file. It allows 
-you to specify and assign paging and sort parameters and the specific query to a repository.
+you to specify and assign paging and sort parameters and the specific query to a repository. You can optional specify a `distinct` parameter with the value `true` to enforce distinct results.
 
 ## 1.4 Paging parameters
 
