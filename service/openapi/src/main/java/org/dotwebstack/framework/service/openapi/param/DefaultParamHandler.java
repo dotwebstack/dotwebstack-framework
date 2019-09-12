@@ -13,6 +13,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.STRING_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_VALIDATE;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -78,6 +79,11 @@ public class DefaultParamHandler implements ParamHandler {
         validateEnumValues(defaultValue.get(), parameter);
       } else {
         if (parameter.getRequired()) {
+          if (!parameter.getExtensions()
+              .isEmpty() && parameter.getExtensions()
+                  .containsKey(X_DWS_VALIDATE)) {
+            return Optional.empty();
+          }
           throw parameterValidationException("No value provided for required {} parameter '{}'.", parameter.getIn(),
               parameter.getName());
         }
@@ -91,7 +97,10 @@ public class DefaultParamHandler implements ParamHandler {
   public void validate(GraphQlField field, Parameter parameter, String pathName) {
     String parameterName = parameter.getName();
     if (Objects.nonNull(parameter.getExtensions())) {
-
+      if (parameter.getExtensions()
+          .containsKey(X_DWS_VALIDATE)) {
+        return;
+      }
       if (parameter.getExtensions()
           .containsKey(X_DWS_NAME)) {
         parameterName = (String) parameter.getExtensions()
