@@ -79,9 +79,8 @@ public class DefaultParamHandler implements ParamHandler {
         validateEnumValues(defaultValue.get(), parameter);
       } else {
         if (parameter.getRequired()) {
-          if (!parameter.getExtensions()
-              .isEmpty() && parameter.getExtensions()
-                  .containsKey(X_DWS_VALIDATE)) {
+          if (Objects.nonNull(parameter.getExtensions()) && parameter.getExtensions()
+              .containsKey(X_DWS_VALIDATE)) {
             return Optional.empty();
           }
           throw parameterValidationException("No value provided for required {} parameter '{}'.", parameter.getIn(),
