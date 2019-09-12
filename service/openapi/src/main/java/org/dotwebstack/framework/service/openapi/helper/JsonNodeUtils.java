@@ -17,6 +17,11 @@ public class JsonNodeUtils {
         node.forEach(n -> result.add(toObject(n)));
         return result;
       case NUMBER:
+        if (node.isFloatingPointNumber()) {
+          return node.asDouble();
+        } else {
+          return node.asInt();
+        }
       case BINARY:
         return node.asLong();
       case BOOLEAN:
