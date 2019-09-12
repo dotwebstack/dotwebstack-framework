@@ -134,6 +134,14 @@ paths:
           required: false
           schema:
             type: string
+        - name: "X-Api-Key"
+          description: "Geldige API Key om deze request uit te kunnen voeren."
+          in: "header"
+          required: true
+          x-dws-transient: true
+          x-dws-validate: false
+          schema:
+            type: "string"
         - name: sort
           in: header
           x-dws-type: sort
