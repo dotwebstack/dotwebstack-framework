@@ -5,6 +5,7 @@ dotwebstack:
   base_url: http://localhost:8080
   rdf4j:
     shape:
+      language: nl
       graph: https://github.com/dotwebstack/beer/shapes
       prefix: https://github.com/dotwebstack/beer/shapes#
     prefixes:

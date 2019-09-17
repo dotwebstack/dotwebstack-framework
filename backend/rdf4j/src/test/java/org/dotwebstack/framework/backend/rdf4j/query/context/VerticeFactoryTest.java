@@ -25,6 +25,7 @@ import graphql.schema.SelectedField;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.serializers.LocalDateSerializer;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.serializers.ZonedDateTimeSerializer;
@@ -39,6 +40,7 @@ import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.SelectQuery;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -50,15 +52,27 @@ public class VerticeFactoryTest {
   @Mock
   private NodeShape nodeShape;
 
+  @Mock
+  private Rdf4jProperties rdf4jProperties;
+
+  @Mock
+  private Rdf4jProperties.ShapeProperties shapeProperties;
+
   private SerializerRouter router =
       new SerializerRouter(ImmutableList.of(new LocalDateSerializer(), new ZonedDateTimeSerializer()));
 
-  private SelectVerticeFactory selectVerticeFactory = new SelectVerticeFactory(router);
+  private SelectVerticeFactory selectVerticeFactory;
 
-  private ConstructVerticeFactory constructVerticeFactory = new ConstructVerticeFactory(router);
+  private ConstructVerticeFactory constructVerticeFactory;
 
   @Mock
   SelectedField selectedField;
+
+  @BeforeEach
+  private void setup() {
+    selectVerticeFactory = new SelectVerticeFactory(router, rdf4jProperties);
+    constructVerticeFactory = new ConstructVerticeFactory(router, rdf4jProperties);
+  }
 
   @Test
   void get_ReturnVertice_ForSimpleBreweryNodeShape() {
@@ -117,6 +131,9 @@ public class VerticeFactoryTest {
   @Test
   void get_ReturnVertice_WithFilteredSelectQuery() {
     // Arrange
+    when(rdf4jProperties.getShape()).thenReturn(shapeProperties);
+    when(shapeProperties.getLanguage()).thenReturn("en");
+
     PropertyShape ingredientName = PropertyShape.builder()
         .name(INGREDIENTS_NAME_FIELD)
         .path(PredicatePath.builder()
@@ -210,6 +227,9 @@ public class VerticeFactoryTest {
   @Test
   void get_ReturnVertice_WithNestedFilteredSelectQuery() {
     // Arrange
+    when(rdf4jProperties.getShape()).thenReturn(shapeProperties);
+    when(shapeProperties.getLanguage()).thenReturn("en");
+
     PropertyShape breweryName = PropertyShape.builder()
         .name(BREWERY_NAME_FIELD)
         .path(PredicatePath.builder()
@@ -276,7 +296,7 @@ public class VerticeFactoryTest {
     ImmutableList<SelectedField> fields = ImmutableList.of(selectedField);
 
     // Act
-    Vertice vertice = constructVerticeFactory.createVertice(subjects, query.var(), query, nodeShape, fields);
+    Vertice vertice = constructVerticeFactory.createRoot(query.var(), query, nodeShape, fields);
 
     // Assert
     assertThat(vertice.getEdges()

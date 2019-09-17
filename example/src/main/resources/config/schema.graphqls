@@ -11,7 +11,7 @@ type Query {
   breweries(sort: [SortField!] = [{ field: "name", order: ASC }],
             page: Int = 1 @constraint(min: 1), pageSize: Int = 10 @constraint(oneOfInt: [10, 20, 50]),
             sinceAfter: Date @filter(field: "founded", operator: ">"),
-            sinceBefore: Date @filter(field: "founded", operator: "<")
+            sinceBefore: Date @filter(field: "founded", operator: "<"),
             name: [String] @filter(field: "name"),
             beerName: String @filter(field: "beers.name")): [Brewery!]!
     @sparql(
@@ -62,6 +62,7 @@ type Query {
 type Brewery {
   identifier: ID!
   name: String!
+  localName: String
   founded: Int!
     @transform(expr: "founded.getYear()")
   openinghours: String

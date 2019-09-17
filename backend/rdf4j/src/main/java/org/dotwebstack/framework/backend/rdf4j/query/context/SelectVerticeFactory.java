@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -22,8 +23,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class SelectVerticeFactory extends AbstractVerticeFactory {
 
-  public SelectVerticeFactory(SerializerRouter serializerRouter) {
-    super(serializerRouter);
+  public SelectVerticeFactory(SerializerRouter serializerRouter, Rdf4jProperties rdf4jProperties) {
+    super(serializerRouter, rdf4jProperties);
   }
 
   public Vertice createVertice(Variable subject, OuterQuery<?> query, NodeShape nodeShape, List<FilterRule> filterRules,
@@ -47,7 +48,6 @@ public class SelectVerticeFactory extends AbstractVerticeFactory {
               .toPredicate(), false);
 
           addFilterToVertice(edge.getObject(), query, childShape, filter);
-
         } else {
           FilterRule childFilterRule = FilterRule.builder()
               .path(filter.getPath()

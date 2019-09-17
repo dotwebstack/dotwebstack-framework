@@ -3,10 +3,12 @@ package org.dotwebstack.framework.backend.rdf4j.query.context;
 import static org.dotwebstack.framework.core.directives.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.GTE;
+import static org.dotwebstack.framework.core.directives.FilterOperator.LANGUAGE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LT;
 import static org.dotwebstack.framework.core.directives.FilterOperator.LTE;
 import static org.dotwebstack.framework.core.directives.FilterOperator.NE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.eclipse.rdf4j.sparqlbuilder.constraint.SparqlFunction.LANG;
 
 import com.google.common.collect.ImmutableMap;
 import graphql.schema.GraphQLDirectiveContainer;
@@ -19,6 +21,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterJoinType;
 import org.dotwebstack.framework.core.directives.FilterOperator;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expression;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
@@ -41,6 +44,12 @@ public class FilterHelper {
   private FilterHelper() {}
 
   static Expression<?> getExpressionFromOperator(Variable subject, FilterOperator operator, Operand operand) {
+    // filtering with a language tag will result in "FILTER LANG( ?x0 ) = 'en'" instead of "FILTER ?x0 =
+    // 'something'"
+    if (LANGUAGE.equals(operator)) {
+      return Expressions.equals(Expressions.function(LANG, subject), operand);
+    }
+
     BiFunction<Variable, Operand, Expression<?>> function = MAP.get(operator);
 
     if (function == null) {
@@ -50,7 +59,7 @@ public class FilterHelper {
     return function.apply(subject, operand);
   }
 
-  public static Expression<?> joinExpressions(FilterJoinType joinType, Expression<?> joinedExpression,
+  static Expression<?> joinExpressions(FilterJoinType joinType, Expression<?> joinedExpression,
       List<Expression<?>> expressions) {
     Expression<?> current = expressions.remove(0);
     Expression<?> usedExpression;
@@ -69,7 +78,7 @@ public class FilterHelper {
     return usedExpression;
   }
 
-  public static Operand getOperand(NodeShape nodeShape, String field, String filterString) {
+  static Operand getOperand(NodeShape nodeShape, String field, String filterString, String tagLanguage) {
     if (Objects.isNull(nodeShape.getPropertyShape(field))) {
       throw unsupportedOperationException("Property shape for '{}' does not exist on node shape '{}'", field,
           nodeShape);
@@ -79,6 +88,11 @@ public class FilterHelper {
         .getNodeKind()
         .equals(SHACL.IRI)) {
       return Rdf.iri(filterString);
+    }
+
+    if (Objects.equals(RDF.LANGSTRING, nodeShape.getPropertyShape(field)
+        .getDatatype())) {
+      return Rdf.literalOfLanguage(filterString, tagLanguage);
     }
 
     return Rdf.literalOfType(filterString, Rdf.iri(nodeShape.getPropertyShape(field)

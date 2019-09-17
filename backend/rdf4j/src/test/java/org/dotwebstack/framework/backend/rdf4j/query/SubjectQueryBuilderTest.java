@@ -18,6 +18,7 @@ import java.util.Optional;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.directives.Rdf4jDirectives;
 import org.dotwebstack.framework.backend.rdf4j.query.context.SelectVerticeFactory;
 import org.dotwebstack.framework.backend.rdf4j.serializers.LocalDateSerializer;
@@ -52,15 +53,19 @@ class SubjectQueryBuilderTest {
 
   private SubjectQueryBuilder subjectQueryBuilder;
 
+  @Mock
+  private Rdf4jProperties rdf4jProperties;
+
   @BeforeEach
   void setUp() {
     when(this.environmentMock.getNodeShapeRegistry()).thenReturn(this.registryMock);
     when(this.environmentMock.getObjectType()).thenReturn(this.objectTypeMock);
     when(this.environmentMock.getNodeShapeRegistry()
         .get(any(GraphQLObjectType.class))).thenReturn(this.nodeShapeMock);
-    this.subjectQueryBuilder =
-        SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine, new SelectVerticeFactory(
-            new SerializerRouter(ImmutableList.of(new LocalDateSerializer(), new ZonedDateTimeSerializer()))));
+    this.subjectQueryBuilder = SubjectQueryBuilder.create(this.environmentMock, this.jexlEngine,
+        new SelectVerticeFactory(
+            new SerializerRouter(ImmutableList.of(new LocalDateSerializer(), new ZonedDateTimeSerializer())),
+            rdf4jProperties));
   }
 
   private GraphQLDirective getValidPagingDirective() {

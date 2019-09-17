@@ -38,9 +38,8 @@ class GraphQueryBuilder extends AbstractQueryBuilder<ConstructQuery> {
 
     Variable subjectVariable = query.var();
 
-    Vertice root =
-        constructVerticeFactory.createVertice(subjects, subjectVariable, query, nodeShape, environment.getSelectionSet()
-            .getFields());
+    Vertice root = constructVerticeFactory.createRoot(subjectVariable, query, nodeShape, environment.getSelectionSet()
+        .getFields());
 
     query.construct(VerticeHelper.getConstructPatterns(root)
         .toArray(new TriplePattern[] {}))
