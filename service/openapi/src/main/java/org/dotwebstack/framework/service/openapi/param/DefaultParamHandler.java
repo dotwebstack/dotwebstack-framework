@@ -191,6 +191,7 @@ public class DefaultParamHandler implements ParamHandler {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private Object deserializeArray(Parameter parameter, Object paramValue) {
     Parameter.StyleEnum style = parameter.getStyle();
     boolean explode = parameter.getExplode();
@@ -199,6 +200,8 @@ public class DefaultParamHandler implements ParamHandler {
       return ImmutableList.copyOf(((String) paramValue).split(","));
     } else if (style == FORM && !explode) {
       return ImmutableList.copyOf(((String) paramValue).split(","));
+    } else if (style == FORM) {
+      return ImmutableList.copyOf((List) paramValue);
     } else if (style == SPACEDELIMITED && !explode) {
       return ImmutableList.copyOf(((String) paramValue).split(" "));
     } else if (style == PIPEDELIMITED && !explode) {
