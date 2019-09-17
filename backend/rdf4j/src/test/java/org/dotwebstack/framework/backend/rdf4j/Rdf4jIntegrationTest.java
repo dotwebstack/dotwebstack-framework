@@ -426,4 +426,21 @@ class Rdf4jIntegrationTest {
                         ImmutableMap.of(INGREDIENTS_NAME_FIELD, "Gerst")),
                     SUPPLEMENTS_FIELD, ImmutableList.of(ImmutableMap.of(SUPPLEMENTS_NAME_FIELD, "Gist"))))))));
   }
+
+  @Test
+  void graphQlQuery_ReturnLocalName_WithConfiguredLanguage() {
+    // Arrange
+    String query = "{breweries(name: \"Heineken Nederland\"){name, localName}}";
+
+    // Act
+    ExecutionResult result = graphQL.execute(query);
+
+    // Assert
+    assertThat(result.getErrors()
+        .isEmpty(), is(true));
+    Map<String, Object> data = result.getData();
+
+    assertThat(data, IsMapContaining.hasEntry(BREWERIES_FIELD,
+        ImmutableList.of(ImmutableMap.of("name", "Heineken Nederland", "localName", "Heineken Niederlande"))));
+  }
 }
