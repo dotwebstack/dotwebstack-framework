@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFacto
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 
+import com.google.common.collect.ImmutableList;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
@@ -278,12 +279,10 @@ abstract class AbstractVerticeFactory {
   }
 
   private Filter createLanguageFilter() {
-    ArrayList<Operand> languages = new ArrayList<>();
-    languages.add(Rdf.literalOf(rdf4jProperties.getShape()
-        .getLanguage()));
     return Filter.builder()
         .operator(FilterOperator.LANGUAGE)
-        .operands(languages)
+        .operands(ImmutableList.of(Rdf.literalOf(rdf4jProperties.getShape()
+            .getLanguage())))
         .build();
   }
 }

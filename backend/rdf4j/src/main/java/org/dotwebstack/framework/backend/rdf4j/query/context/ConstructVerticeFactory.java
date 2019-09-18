@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
@@ -26,8 +27,8 @@ public class ConstructVerticeFactory extends AbstractVerticeFactory {
     super(serializerRouter, rdf4jProperties);
   }
 
-  public Vertice createRoot(final Variable subject, OuterQuery<?> query, NodeShape nodeShape,
-      List<SelectedField> fields) {
+  public Vertice createRoot(@NonNull final Variable subject, @NonNull OuterQuery<?> query, @NonNull NodeShape nodeShape,
+      @NonNull List<SelectedField> fields) {
     return createVertice(subject, query, nodeShape, fields);
   }
 
