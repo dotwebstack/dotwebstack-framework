@@ -4,5 +4,6 @@ spring.main.banner-mode: 'off'
 dotwebstack:
   rdf4j:
     shape:
+      language: de
       graph: https://github.com/dotwebstack/beer/shapes
       prefix: https://github.com/dotwebstack/beer/shapes#

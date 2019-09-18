@@ -60,10 +60,14 @@ components:
       required:
         - identifier
         - name
+        - localName
       properties:
         identifier:
           type: string
         name:
+          type: string
+          nullable: true
+        localName:
           type: string
           nullable: true
         openinghours:

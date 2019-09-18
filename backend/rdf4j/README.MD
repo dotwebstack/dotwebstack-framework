@@ -464,6 +464,27 @@ type Beer {
 }
 ```
 
+### 1.7.2 Language filters
+Filtering can be applied to all sorts of datatypes. One special case is the language string, a string with a certain
+language applied to it:
+
+```
+beer_brewery:1 beer_def:localName "Heineken Nederland"@nl, "Heineken Niederlande"@de, "Heineken Netherlands"@en;
+```
+
+The the example above shows a brewery that has different names in different languages. Two types of filtering are
+possible in this case, one where the breweries are filtered on a localName in a certain language and one where the 
+local names themselves are filtered on the preferred language. In both cases `sh:datatype rdf:langString` has to be 
+assigned to the property shape belonging to `beer_def:localName`  
+
+For this to work a application wide language should be specified in the `application.yml` file
+```yml
+dotwebstack:
+  rdf4j:
+    shape:
+      language: nl
+``` 
+
 ## 1.8 sh:or 
 It is possible to have objects of multiple classes connected to the same subject with the same predicate. 
 A `beer` can have both `ingredients` and `supplements` as objects of the `ingredient` predicate:

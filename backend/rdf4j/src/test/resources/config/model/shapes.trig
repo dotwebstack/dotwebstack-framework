@@ -1,4 +1,5 @@
 @prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix schema: <http://schema.org/> .
 @prefix beer: <https://github.com/dotwebstack/beer/> .
@@ -12,6 +13,7 @@
     sh:property
       beer_sh:Brewery_identifier ,
       beer_sh:Brewery_name ,
+      beer_sh:Brewery_localName ,
       beer_sh:Brewery_address ,
       beer_sh:Brewery_founded ,
       beer_sh:Brewery_openinghours ,
@@ -58,6 +60,15 @@
     sh:maxCount 1 ;
     sh:nodeKind sh:Literal ;
     sh:datatype xsd:string
+  .
+
+  beer_sh:Brewery_localName a sh:PropertyShape ;
+    sh:name "localName" ;
+    sh:path beer_def:localName ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:Literal ;
+    sh:datatype rdf:langString
   .
 
   beer_sh:Brewery_owners a sh:PropertyShape ;

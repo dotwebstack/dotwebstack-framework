@@ -29,6 +29,9 @@ public class Rdf4jProperties {
     private IRI graph;
 
     @NotNull
+    private String language;
+
+    @NotNull
     private String prefix;
 
   }

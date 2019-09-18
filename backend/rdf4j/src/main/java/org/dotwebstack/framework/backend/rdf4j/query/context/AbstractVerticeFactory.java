@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFacto
 import static org.dotwebstack.framework.backend.rdf4j.query.context.VerticeFactoryHelper.hasChildEdgeOfType;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 
+import com.google.common.collect.ImmutableList;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
@@ -21,25 +22,31 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties;
 import org.dotwebstack.framework.backend.rdf4j.serializers.SerializerRouter;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.propertypath.BasePath;
 import org.dotwebstack.framework.core.directives.CoreDirectives;
 import org.dotwebstack.framework.core.directives.FilterOperator;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Operand;
 import org.eclipse.rdf4j.sparqlbuilder.core.Orderable;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.OuterQuery;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.Iri;
+import org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf;
 import org.eclipse.rdf4j.sparqlbuilder.rdf.RdfPredicate;
 
 abstract class AbstractVerticeFactory {
 
   private SerializerRouter serializerRouter;
 
-  public AbstractVerticeFactory(SerializerRouter serializerRouter) {
+  private Rdf4jProperties rdf4jProperties;
+
+  public AbstractVerticeFactory(SerializerRouter serializerRouter, Rdf4jProperties rdf4jProperties) {
     this.serializerRouter = serializerRouter;
+    this.rdf4jProperties = rdf4jProperties;
   }
 
   Edge createSimpleEdge(Variable subject, BasePath basePath, boolean isOptional, boolean isVisible) {
@@ -145,7 +152,9 @@ abstract class AbstractVerticeFactory {
     }
 
     List<Operand> operands = filterArguments.stream()
-        .map(filterArgument -> getOperand(nodeShape, argumentName, serializerRouter.serialize(filterArgument)))
+        .map(filterArgument -> getOperand(nodeShape, argumentName, serializerRouter.serialize(filterArgument),
+            rdf4jProperties.getShape()
+                .getLanguage()))
         .collect(Collectors.toList());
 
     return Filter.builder()
@@ -259,5 +268,21 @@ abstract class AbstractVerticeFactory {
     List<Orderable> orderables = Objects.nonNull(vertice.getOrderables()) ? vertice.getOrderables() : new ArrayList<>();
     orderables.add((Objects.isNull(order) || order.equalsIgnoreCase("desc")) ? subject.desc() : subject.asc());
     vertice.setOrderables(orderables);
+  }
+
+  void addLanguageFilter(Edge edge, PropertyShape propertyShape) {
+    if (Objects.equals(RDF.LANGSTRING, propertyShape.getDatatype())) {
+      edge.getObject()
+          .getFilters()
+          .add(createLanguageFilter());
+    }
+  }
+
+  private Filter createLanguageFilter() {
+    return Filter.builder()
+        .operator(FilterOperator.LANGUAGE)
+        .operands(ImmutableList.of(Rdf.literalOf(rdf4jProperties.getShape()
+            .getLanguage())))
+        .build();
   }
 }

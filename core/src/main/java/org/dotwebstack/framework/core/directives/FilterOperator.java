@@ -6,7 +6,7 @@ import lombok.Getter;
 
 public enum FilterOperator {
 
-  EQ("="), NE("!="), GT(">"), GTE(">="), LT("<"), LTE("<=");
+  EQ("="), NE("!="), GT(">"), GTE(">="), LT("<"), LTE("<="), LANGUAGE("lang");
 
   @Getter
   private String value;

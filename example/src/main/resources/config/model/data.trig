@@ -87,6 +87,9 @@
     schema:address address_id:5 ;
     schema:email "info@ambrass.nl" ;
     schema:name "Ambrass Bierbrouwerij" ;
+    beer_def:localName "Ambrass Beer Brewery"@en ;
+    beer_def:localName "Ambrass Brauerei"@de ;
+    beer_def:localName "Ambrass Bierbrouwerij"@nl ;
     schema:taxID "52966534" ;
     schema:telephone "046-4009300" ;
     schema:url <http://www.ambrass.nl>
