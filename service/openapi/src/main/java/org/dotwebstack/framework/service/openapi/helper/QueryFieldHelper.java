@@ -36,8 +36,8 @@ public class QueryFieldHelper {
         .filter(fieldDefinition -> fieldDefinition.getName()
             .equals(dwsQuery))
         .findFirst()
-        .orElseThrow(() -> invalidConfigurationException(
-            "x-dws-query with value '{}' not found in GraphQL schema.", dwsQuery));
+        .orElseThrow(
+            () -> invalidConfigurationException("x-dws-query with value '{}' not found in GraphQL schema.", dwsQuery));
   }
 
 }
