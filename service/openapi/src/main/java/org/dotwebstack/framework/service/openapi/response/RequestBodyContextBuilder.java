@@ -50,7 +50,7 @@ public class RequestBodyContextBuilder {
         .keySet()));
     if (propertyNames.size() != 1) {
       throw invalidConfigurationException(
-          "Request body responseObject should contain exactly 1 property, found properties ().", propertyNames.size());
+          "Request body schema should contain exactly 1 property, found properties ().", propertyNames.size());
     }
     return propertyNames.get(0);
   }

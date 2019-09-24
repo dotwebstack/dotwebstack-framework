@@ -18,7 +18,7 @@ public class ResponseContextValidator {
   private final TypeValidator typeValidator = new TypeValidator();
 
   public void validate(@NonNull ResponseObject responseObject, @NonNull GraphQlField field,
-      Set<Schema<?>> validatedSchemaRefs) {
+      Set<Schema<?>> validatedSchemas) {
     String graphQlType = field.getType();
     ResponseSchema template = responseObject.getSchema();
     String oasType = template.getType();
@@ -26,20 +26,20 @@ public class ResponseContextValidator {
       case ARRAY_TYPE:
         ResponseObject fieldTemplate = template.getItems()
             .get(0);
-        if (!validatedSchemaRefs.contains(fieldTemplate.getSchema()
+        if (!validatedSchemas.contains(fieldTemplate.getSchema()
             .getSchema())) {
-          validate(fieldTemplate, field, validatedSchemaRefs);
+          validate(fieldTemplate, field, validatedSchemas);
         }
         break;
       case OBJECT_TYPE:
         List<ResponseObject> children = template.getChildren();
         if (Objects.nonNull(template.getSchema())) {
-          validatedSchemaRefs.add(template.getSchema());
+          validatedSchemas.add(template.getSchema());
         }
         children.stream()
             .filter(child -> Objects.isNull(child.getSchema()
                 .getDwsExpr())
-                && !validatedSchemaRefs.contains(child.getSchema()
+                && !validatedSchemas.contains(child.getSchema()
                     .getSchema()))
             .forEach(child -> {
               if (child.getSchema()
@@ -47,7 +47,7 @@ public class ResponseContextValidator {
                 ResponseObject embedded = child.getSchema()
                     .getChildren()
                     .get(0);
-                validate(embedded, field, validatedSchemaRefs);
+                validate(embedded, field, validatedSchemas);
               } else {
                 GraphQlField graphQlChildField = field.getFields()
                     .stream()
@@ -55,10 +55,10 @@ public class ResponseContextValidator {
                         .equals(child.getIdentifier()))
                     .findFirst()
                     .orElseThrow(() -> invalidOpenApiConfigurationException(
-                        "OAS field '{}' not found in matching GraphQl object '{}' for responseObject type '{}'",
+                        "OAS field '{}' not found in matching GraphQl object '{}' for schema type '{}'",
                         child.getIdentifier(), field.getName(), field.getType()));
 
-                validate(child, graphQlChildField, validatedSchemaRefs);
+                validate(child, graphQlChildField, validatedSchemas);
               }
             });
         break;
