@@ -63,12 +63,14 @@ public class ResponseMapper {
   }
 
   private Object mapDataToResponse(@NonNull ResponseWriteContext writeContext) {
-    switch (writeContext.getSchema()
+    switch (writeContext.getResponseObject()
+        .getSchema()
         .getType()) {
       case ARRAY_TYPE:
         return mapArrayDataToResponse(writeContext);
       case OBJECT_TYPE:
-        if (writeContext.getSchema()
+        if (writeContext.getResponseObject()
+            .getSchema()
             .isEnvelope()) {
           return mapEnvelopeObjectToResponse(writeContext);
         }
@@ -97,13 +99,15 @@ public class ResponseMapper {
       return null;
     }
 
-    if (Objects.nonNull(parentContext.getSchema()
+    if (Objects.nonNull(parentContext.getResponseObject()
+        .getSchema()
         .getDwsType())) {
       return parentContext.getData();
     }
 
     Map<String, Object> result = new HashMap<>();
-    parentContext.getSchema()
+    parentContext.getResponseObject()
+        .getSchema()
         .getChildren()
         .forEach(childSchema -> {
           ResponseWriteContext writeContext = createResponseWriteContextFromChildSchema(parentContext, childSchema);
@@ -116,7 +120,8 @@ public class ResponseMapper {
   }
 
   private Object mapScalarDataToResponse(@NonNull ResponseWriteContext writeContext) {
-    if (Objects.isNull(writeContext.getSchema()
+    if (Objects.isNull(writeContext.getResponseObject()
+        .getSchema()
         .getDwsExpr())) {
       return writeContext.getData();
     }
@@ -129,7 +134,7 @@ public class ResponseMapper {
     if (writeContext.isSchemaRequiredNonNillable()) {
       throw mappingException(String.format(
           "Could not create response: required and non-nillable property '%s' expression evaluation returned null.",
-          writeContext.getSchema()
+          writeContext.getResponseObject()
               .getIdentifier()));
     }
 
@@ -141,28 +146,30 @@ public class ResponseMapper {
     Map<String, Object> result = new HashMap<>();
     unwrapChildSchema(parentContext).forEach(child -> {
       Object object = mapDataToResponse(child);
-      result.put(child.getSchema()
+      result.put(child.getResponseObject()
           .getIdentifier(), object);
     });
     return result;
   }
 
   private Object convertType(ResponseWriteContext writeContext, Object item) {
-    return Objects.nonNull(writeContext.getSchema()
+    return Objects.nonNull(writeContext.getResponseObject()
+        .getSchema()
         .getDwsType()) ? typeConverterRouter.convert(item, writeContext.getParameters()) : item;
   }
 
 
   private Object mapObject(ResponseWriteContext writeContext, Object object) {
     if (isRequiredAndNullOrEmpty(writeContext, object)) {
-      if (writeContext.getSchema()
+      if (writeContext.getResponseObject()
+          .getSchema()
           .isNillable()) {
         return null;
       } else {
         throw mappingException(
             "Could not map GraphQL response: Required and non-nillable "
                 + "property '{}' was not returned in GraphQL response.",
-            writeContext.getSchema()
+            writeContext.getResponseObject()
                 .getIdentifier());
       }
     }
@@ -207,7 +214,8 @@ public class ResponseMapper {
     this.properties.getAllProperties()
         .forEach((key, value) -> context.set("env." + key, value));
 
-    return jexlHelper.evaluateScript(writeContext.getSchema()
+    return jexlHelper.evaluateScript(writeContext.getResponseObject()
+        .getSchema()
         .getDwsExpr(), context, String.class);
   }
 }

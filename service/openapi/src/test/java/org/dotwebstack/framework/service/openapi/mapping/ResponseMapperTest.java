@@ -20,6 +20,7 @@ import org.dotwebstack.framework.service.openapi.conversion.TypeConverterRouter;
 import org.dotwebstack.framework.service.openapi.exception.NoResultFoundException;
 import org.dotwebstack.framework.service.openapi.response.FieldContext;
 import org.dotwebstack.framework.service.openapi.response.ResponseObject;
+import org.dotwebstack.framework.service.openapi.response.ResponseSchema;
 import org.dotwebstack.framework.service.openapi.response.ResponseWriteContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,7 +67,7 @@ class ResponseMapperTest {
     dataStack.push(createFieldContext(data, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .schema(getObject("root", ImmutableList.of(REQUIRED_NILLABLE_STRING)))
+        .responseObject(getObject("root", ImmutableList.of(REQUIRED_NILLABLE_STRING)))
         .data(ImmutableMap.of(REQUIRED_NILLABLE_STRING.getIdentifier(), "prop1value"))
         .dataStack(dataStack)
         .build();
@@ -82,7 +83,7 @@ class ResponseMapperTest {
   public void map_returnsException_ForMissingRequiredProperty() {
     // Arrange
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .schema(getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING)))
+        .responseObject(getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING)))
         .build();
 
     // Act & Assert
@@ -97,7 +98,7 @@ class ResponseMapperTest {
     dataStack.push(createFieldContext(data, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .schema(getObject("root", ImmutableList.of(NOT_REQUIRED_NILLABLE_STRING)))
+        .responseObject(getObject("root", ImmutableList.of(NOT_REQUIRED_NILLABLE_STRING)))
         .data(data)
         .dataStack(dataStack)
         .build();
@@ -113,7 +114,7 @@ class ResponseMapperTest {
   public void map_throwsException_ForMissingRequiredNonNillableProperty() {
     // Arrange
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .schema(getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING)))
+        .responseObject(getObject("root", ImmutableList.of(REQUIRED_NON_NILLABLE_STRING)))
         .data(ImmutableMap.of("other key", "prop1value"))
         .build();
 
@@ -141,7 +142,7 @@ class ResponseMapperTest {
     URI uri = URI.create("http://dontcare.com:90210/bh?a=b");
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .schema(responseObject)
+        .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
         .parameters(Collections.emptyMap())
@@ -174,7 +175,7 @@ class ResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .schema(responseObject)
+        .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -204,7 +205,7 @@ class ResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .schema(responseObject)
+        .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -235,7 +236,7 @@ class ResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .schema(responseObject)
+        .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -265,7 +266,7 @@ class ResponseMapperTest {
     dataStack.push(createFieldContext(rootData, Collections.emptyMap()));
 
     ResponseWriteContext writeContext = ResponseWriteContext.builder()
-        .schema(responseObject)
+        .responseObject(responseObject)
         .data(rootData)
         .dataStack(dataStack)
         .build();
@@ -285,10 +286,12 @@ class ResponseMapperTest {
       List<ResponseObject> children) {
     return ResponseObject.builder()
         .identifier(identifier)
-        .type(type)
-        .children(children)
-        .items(items)
-        .isEnvelope(envelop)
+        .schema(ResponseSchema.builder()
+            .type(type)
+            .children(children)
+            .items(items)
+            .isEnvelope(envelop)
+            .build())
         .build();
   }
 
@@ -296,10 +299,12 @@ class ResponseMapperTest {
       String dwsTemplate) {
     return ResponseObject.builder()
         .identifier(identifier)
-        .type(type)
-        .required(required)
-        .nillable(nillable)
-        .dwsExpr(dwsTemplate)
+        .schema(ResponseSchema.builder()
+            .type(type)
+            .required(required)
+            .nillable(nillable)
+            .dwsExpr(dwsTemplate)
+            .build())
         .build();
   }
 }

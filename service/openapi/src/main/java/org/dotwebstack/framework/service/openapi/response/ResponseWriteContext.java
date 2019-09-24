@@ -11,7 +11,7 @@ import lombok.Getter;
 @Getter
 public class ResponseWriteContext {
 
-  ResponseObject schema;
+  ResponseObject responseObject;
 
   Object data;
 
@@ -23,6 +23,9 @@ public class ResponseWriteContext {
   URI uri;
 
   public boolean isSchemaRequiredNonNillable() {
-    return getSchema().isRequired() && !getSchema().isNillable();
+    return getResponseObject().getSchema()
+        .isRequired()
+        && !getResponseObject().getSchema()
+            .isNillable();
   }
 }

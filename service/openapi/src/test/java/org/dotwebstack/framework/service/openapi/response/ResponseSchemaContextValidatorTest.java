@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -42,7 +43,7 @@ public class ResponseSchemaContextValidatorTest {
     // Act / Assert
     this.validator.validate(getResponseSchemaContext.getResponses()
         .get(0)
-        .getResponseObject(), getResponseSchemaContext.getGraphQlField());
+        .getResponseObject(), getResponseSchemaContext.getGraphQlField(), new HashSet<>());
   }
 
   @Test
@@ -53,7 +54,7 @@ public class ResponseSchemaContextValidatorTest {
     // Act / Assert
     this.validator.validate(getResponseSchemaContext.getResponses()
         .get(0)
-        .getResponseObject(), getResponseSchemaContext.getGraphQlField());
+        .getResponseObject(), getResponseSchemaContext.getGraphQlField(), new HashSet<>());
   }
 
   @Test
@@ -64,7 +65,7 @@ public class ResponseSchemaContextValidatorTest {
     // Act / Assert
     this.validator.validate(getResponseSchemaContext.getResponses()
         .get(0)
-        .getResponseObject(), getResponseSchemaContext.getGraphQlField());
+        .getResponseObject(), getResponseSchemaContext.getGraphQlField(), new HashSet<>());
   }
 
   @Test
@@ -77,7 +78,7 @@ public class ResponseSchemaContextValidatorTest {
     assertThrows(InvalidConfigurationException.class,
         () -> this.validator.validate(getResponseSchemaContext.getResponses()
             .get(0)
-            .getResponseObject(), getResponseSchemaContext.getGraphQlField()));
+            .getResponseObject(), getResponseSchemaContext.getGraphQlField(), new HashSet<>()));
   }
 
   @Test
@@ -90,7 +91,7 @@ public class ResponseSchemaContextValidatorTest {
     assertThrows(InvalidConfigurationException.class,
         () -> this.validator.validate(getResponseSchemaContext.getResponses()
             .get(0)
-            .getResponseObject(), getResponseSchemaContext.getGraphQlField()));
+            .getResponseObject(), getResponseSchemaContext.getGraphQlField(), new HashSet<>()));
   }
 
   @Test
@@ -153,7 +154,7 @@ public class ResponseSchemaContextValidatorTest {
     assertThrows(InvalidConfigurationException.class,
         () -> this.validator.validate(getResponseSchemaContext.getResponses()
             .get(0)
-            .getResponseObject(), getResponseSchemaContext.getGraphQlField()));
+            .getResponseObject(), getResponseSchemaContext.getGraphQlField(), new HashSet<>()));
   }
 
   private ResponseSchemaContext getResponseContext(String path, HttpMethod httpMethod) {
