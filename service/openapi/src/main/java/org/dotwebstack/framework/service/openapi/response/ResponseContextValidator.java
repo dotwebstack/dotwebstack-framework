@@ -5,9 +5,14 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRA
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJECT_TYPE;
 
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.mapping.TypeValidator;
@@ -18,7 +23,7 @@ public class ResponseContextValidator {
   private final TypeValidator typeValidator = new TypeValidator();
 
   public void validate(@NonNull ResponseObject responseObject, @NonNull GraphQlField field,
-      Set<Schema<?>> validatedSchemas) {
+      Set<Schema<?>> validatedSchemas, List<ResponseObject> parents) {
     String graphQlType = field.getType();
     ResponseSchema responseSchema = responseObject.getSchema();
     String oasType = responseSchema.getType();
@@ -28,7 +33,7 @@ public class ResponseContextValidator {
             .get(0);
         if (!validatedSchemas.contains(fieldTemplate.getSchema()
             .getSchema())) {
-          validate(fieldTemplate, field, validatedSchemas);
+          validate(fieldTemplate, field, validatedSchemas, copyAndAddToList(parents, responseObject));
         }
         break;
       case OBJECT_TYPE:
@@ -50,7 +55,7 @@ public class ResponseContextValidator {
                 ResponseObject embedded = child.getSchema()
                     .getChildren()
                     .get(0);
-                validate(embedded, usedField, validatedSchemas);
+                validate(embedded, usedField, validatedSchemas, copyAndAddToList(parents, responseObject, child));
               } else {
                 GraphQlField graphQlChildField = usedField.getFields()
                     .stream()
@@ -59,9 +64,9 @@ public class ResponseContextValidator {
                     .findFirst()
                     .orElseThrow(() -> invalidOpenApiConfigurationException(
                         "OAS field '{}' not found in matching GraphQl object '{}' for schema type '{}'",
-                        child.getIdentifier(), usedField.getName(), usedField.getType()));
+                        getPath(parents, child.getIdentifier()), usedField.getName(), usedField.getType()));
 
-                validate(child, graphQlChildField, validatedSchemas);
+                validate(child, graphQlChildField, validatedSchemas, copyAndAddToList(parents, responseObject));
               }
             });
         break;
@@ -76,5 +81,37 @@ public class ResponseContextValidator {
         .filter(childField -> Objects.equals(childField.getName(), name))
         .findFirst()
         .orElse(field);
+  }
+
+  private ArrayList<ResponseObject> copyAndAddToList(List<ResponseObject> list, ResponseObject... responseObject) {
+    ArrayList<ResponseObject> responseObjects = new ArrayList<>(list);
+    responseObjects.addAll(Arrays.asList(responseObject));
+    return responseObjects;
+  }
+
+  private String getPath(List<ResponseObject> parents, String identifier) {
+    StringJoiner joiner = new StringJoiner(".");
+    int arrayCount = 0;
+    for (ResponseObject parent : parents) {
+      if (ARRAY_TYPE.equals(parent.getSchema()
+          .getType())) {
+        arrayCount++;
+      } else {
+        String parentIdentifier = parent.getIdentifier();
+        if (parent.getSchema()
+            .isEnvelope()) {
+          parentIdentifier = "<" + parentIdentifier + ">";
+        }
+        if (arrayCount > 0) {
+          parentIdentifier = parentIdentifier + IntStream.range(0, arrayCount)
+              .mapToObj(i -> "[]")
+              .collect(Collectors.joining());
+          arrayCount = 0;
+        }
+        joiner.add(parentIdentifier);
+      }
+    }
+    joiner.add(identifier);
+    return joiner.toString();
   }
 }

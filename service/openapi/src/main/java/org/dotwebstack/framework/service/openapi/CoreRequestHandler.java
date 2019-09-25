@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.net.URI;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -120,7 +121,8 @@ public class CoreRequestHandler implements HandlerFunction<ServerResponse> {
     responseSchemaContext.getResponses()
         .stream()
         .filter(responseTemplate -> responseTemplate.isApplicable(200, 299))
-        .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field, new HashSet<>()));
+        .forEach(response -> responseContextValidator.validate(response.getResponseObject(), field, new HashSet<>(),
+            new ArrayList<>()));
   }
 
   private void validateParameters(GraphQlField field, List<Parameter> parameters, String pathName) {
