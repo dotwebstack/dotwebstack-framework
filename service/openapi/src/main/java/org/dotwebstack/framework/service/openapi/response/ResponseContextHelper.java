@@ -48,9 +48,7 @@ public class ResponseContextHelper {
 
     ResponseSchema responseSchema = responseObject.getSchema();
     boolean skip = skipPath;
-    if (!responseSchema.isEnvelope() && !Objects.equals(responseSchema.getType(), OasConstants.ARRAY_TYPE)
-        && !responseObject.getIdentifier()
-            .startsWith("#")) {
+    if (!responseSchema.isEnvelope() && !Objects.equals(responseSchema.getType(), OasConstants.ARRAY_TYPE)) {
       if (!skipPath || !Objects.equals(responseSchema.getType(), OasConstants.OBJECT_TYPE)) {
         joiner.add(responseObject.getIdentifier());
         if (responseSchema.isRequired()) {

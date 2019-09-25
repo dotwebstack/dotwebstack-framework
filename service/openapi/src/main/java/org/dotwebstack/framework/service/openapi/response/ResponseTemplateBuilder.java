@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsType;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveRequestBody;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 
@@ -45,7 +46,10 @@ public class ResponseTemplateBuilder {
             httpMethodOperation.getHttpMethod()
                 .name(),
             resolveRequestBody(openApi, httpMethodOperation.getOperation()
-                .getRequestBody())).stream())
+                .getRequestBody()),
+            (String) httpMethodOperation.getOperation()
+                .getExtensions()
+                .get(X_DWS_QUERY)).stream())
         .collect(Collectors.toList());
 
     long successResponseCount = responses.stream()
@@ -60,7 +64,7 @@ public class ResponseTemplateBuilder {
   }
 
   private List<ResponseTemplate> createResponses(OpenAPI openApi, String responseCode, ApiResponse apiResponse,
-      String pathName, String methodName, RequestBody requestBody) {
+      String pathName, String methodName, RequestBody requestBody, String queryName) {
     validateMediaType(responseCode, apiResponse.getContent(), pathName, methodName);
     if (requestBody != null) {
       validateMediaType(responseCode, requestBody.getContent(), pathName, methodName);
@@ -68,7 +72,7 @@ public class ResponseTemplateBuilder {
     return apiResponse.getContent()
         .entrySet()
         .stream()
-        .map(entry -> createResponseObjectTemplate(openApi, responseCode, entry.getKey(), entry.getValue()))
+        .map(entry -> createResponseObjectTemplate(openApi, responseCode, entry.getKey(), entry.getValue(), queryName))
         .collect(Collectors.toList());
   }
 
@@ -93,16 +97,17 @@ public class ResponseTemplateBuilder {
 
   @SuppressWarnings("rawtypes")
   private ResponseTemplate createResponseObjectTemplate(OpenAPI openApi, String responseCode, String mediaType,
-      io.swagger.v3.oas.models.media.MediaType content) {
+      io.swagger.v3.oas.models.media.MediaType content, String queryName) {
     String ref = content.getSchema()
         .get$ref();
 
     ResponseObject root;
     Map<ObjectSchema, ResponseSchema> referenceMap = new HashMap<>();
     if (Objects.nonNull(ref)) {
-      root = createResponseObject(openApi, ref, resolveSchema(openApi, content.getSchema()), true, false, referenceMap);
+      root = createResponseObject(openApi, queryName, resolveSchema(openApi, content.getSchema()), true, false,
+          referenceMap);
     } else {
-      root = createResponseObject(openApi, null, content.getSchema(), true, false, referenceMap);
+      root = createResponseObject(openApi, queryName, content.getSchema(), true, false, referenceMap);
     }
 
     return ResponseTemplate.builder()
