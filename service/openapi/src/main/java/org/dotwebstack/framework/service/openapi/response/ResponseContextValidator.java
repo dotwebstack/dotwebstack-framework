@@ -36,6 +36,9 @@ public class ResponseContextValidator {
         if (Objects.nonNull(responseSchema.getSchema())) {
           validatedSchemas.add(responseSchema.getSchema());
         }
+
+        GraphQlField usedField = getChildFieldWithName(field, responseObject.getIdentifier());
+
         children.stream()
             .filter(child -> Objects.isNull(child.getSchema()
                 .getDwsExpr())
@@ -47,16 +50,16 @@ public class ResponseContextValidator {
                 ResponseObject embedded = child.getSchema()
                     .getChildren()
                     .get(0);
-                validate(embedded, field, validatedSchemas);
+                validate(embedded, usedField, validatedSchemas);
               } else {
-                GraphQlField graphQlChildField = field.getFields()
+                GraphQlField graphQlChildField = usedField.getFields()
                     .stream()
                     .filter(childField -> childField.getName()
                         .equals(child.getIdentifier()))
                     .findFirst()
                     .orElseThrow(() -> invalidOpenApiConfigurationException(
                         "OAS field '{}' not found in matching GraphQl object '{}' for schema type '{}'",
-                        child.getIdentifier(), field.getName(), field.getType()));
+                        child.getIdentifier(), usedField.getName(), usedField.getType()));
 
                 validate(child, graphQlChildField, validatedSchemas);
               }
@@ -65,5 +68,13 @@ public class ResponseContextValidator {
       default:
         this.typeValidator.validateTypesGraphQlToOpenApi(oasType, graphQlType, responseObject.getIdentifier());
     }
+  }
+
+  private GraphQlField getChildFieldWithName(GraphQlField field, String name) {
+    return field.getFields()
+        .stream()
+        .filter(childField -> Objects.equals(childField.getName(), name))
+        .findFirst()
+        .orElse(field);
   }
 }
