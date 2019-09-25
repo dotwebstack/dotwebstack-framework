@@ -19,7 +19,7 @@ public class ResponseContextHelper {
   private ResponseContextHelper() {}
 
   public static Set<String> getRequiredResponseObjectsForSuccessResponse(
-      @NonNull ResponseSchemaContext responseSchemaContext, Map<String, Object> inputParams) {
+      @NonNull ResponseSchemaContext responseSchemaContext, @NonNull Map<String, Object> inputParams) {
     ResponseTemplate successResponse = responseSchemaContext.getResponses()
         .stream()
         .filter(template -> template.isApplicable(200, 299))
@@ -104,7 +104,7 @@ public class ResponseContextHelper {
   }
 
   @SuppressWarnings("unchecked")
-  public static boolean isExpanded(Map<String, Object> inputParams, String path) {
+  public static boolean isExpanded(@NonNull Map<String, Object> inputParams, @NonNull String path) {
     List<String> expandVariables = (List<String>) inputParams.get(X_DWS_EXPANDED_PARAMS);
     if (Objects.nonNull(expandVariables)) {
       return expandVariables.stream()

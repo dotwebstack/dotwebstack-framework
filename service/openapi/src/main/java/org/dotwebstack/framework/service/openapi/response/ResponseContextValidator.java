@@ -20,11 +20,11 @@ public class ResponseContextValidator {
   public void validate(@NonNull ResponseObject responseObject, @NonNull GraphQlField field,
       Set<Schema<?>> validatedSchemas) {
     String graphQlType = field.getType();
-    ResponseSchema template = responseObject.getSchema();
-    String oasType = template.getType();
+    ResponseSchema responseSchema = responseObject.getSchema();
+    String oasType = responseSchema.getType();
     switch (oasType) {
       case ARRAY_TYPE:
-        ResponseObject fieldTemplate = template.getItems()
+        ResponseObject fieldTemplate = responseSchema.getItems()
             .get(0);
         if (!validatedSchemas.contains(fieldTemplate.getSchema()
             .getSchema())) {
@@ -32,9 +32,9 @@ public class ResponseContextValidator {
         }
         break;
       case OBJECT_TYPE:
-        List<ResponseObject> children = template.getChildren();
-        if (Objects.nonNull(template.getSchema())) {
-          validatedSchemas.add(template.getSchema());
+        List<ResponseObject> children = responseSchema.getChildren();
+        if (Objects.nonNull(responseSchema.getSchema())) {
+          validatedSchemas.add(responseSchema.getSchema());
         }
         children.stream()
             .filter(child -> Objects.isNull(child.getSchema()

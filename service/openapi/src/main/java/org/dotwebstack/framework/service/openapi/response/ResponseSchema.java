@@ -9,7 +9,6 @@ import lombok.Setter;
 
 @Builder
 @Getter
-@Setter
 public class ResponseSchema {
 
   private String type;
@@ -25,9 +24,11 @@ public class ResponseSchema {
   private Schema<?> schema;
 
   @Builder.Default
+  @Setter
   private List<ResponseObject> children = new ArrayList<>();
 
   @Builder.Default
+  @Setter
   private List<ResponseObject> items = new ArrayList<>();
 
   private String dwsExpr;
